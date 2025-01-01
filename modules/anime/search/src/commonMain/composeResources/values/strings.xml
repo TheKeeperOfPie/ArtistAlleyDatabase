@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_search_type_anime">Anime</string>
+    <string name="anime_search_type_manga">Manga</string>
+    <string name="anime_search_type_character">Characters</string>
+    <string name="anime_search_type_staff">Staff</string>
+    <string name="anime_search_type_studio">Studios</string>
+    <string name="anime_search_type_user">Users</string>
+    <string name="anime_search_anime">Search anime…</string>
+    <string name="anime_search_manga">Search manga…</string>
+    <string name="anime_search_characters">Search characters…</string>
+    <string name="anime_search_staff">Search staff…</string>
+    <string name="anime_search_studio">Search studios…</string>
+    <string name="anime_search_user">Search users…</string>
+
+    <string name="anime_search_clear">Clear</string>
+
+    <!-- TODO: Find a way to move these -->
+    <string name="anime_home_suggestion_top">Top all time</string>
+    <string name="anime_home_suggestion_popular_all_time">Popular</string>
+    <string name="anime_home_trending_screen_title">Trending</string>
+    <string name="anime_home_last_added_screen_title">Last added</string>
+    <string name="anime_home_top_released_this_year_title">Top released this year</string>
+</resources>

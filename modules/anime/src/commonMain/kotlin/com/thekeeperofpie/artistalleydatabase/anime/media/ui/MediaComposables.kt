@@ -53,9 +53,9 @@ import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_current_progress
 import artistalleydatabase.modules.anime.generated.resources.anime_media_current_progress_unknown_max
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_fab_user_status_edit_icon_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_genre_description_attribution
 import artistalleydatabase.modules.anime.generated.resources.anime_media_rating_population_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_no_description_error
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_genre_description_attribution
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_cover_image_content_description
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_media_rating_icon_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.close
@@ -71,13 +71,13 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
@@ -103,6 +103,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 fun <T> LazyGridScope.mediaListSection(
@@ -552,7 +553,7 @@ fun MediaGenrePreview(
         text = {
             Column {
                 Text(
-                    text = stringResource(Res.string.anime_media_genre_description_attribution),
+                    text = stringResource(MediaDataRes.string.anime_media_genre_description_attribution),
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )

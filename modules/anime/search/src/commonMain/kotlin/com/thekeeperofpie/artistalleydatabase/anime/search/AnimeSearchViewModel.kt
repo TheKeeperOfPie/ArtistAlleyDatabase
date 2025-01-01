@@ -16,35 +16,34 @@ import com.anilist.data.MediaAdvancedSearchQuery
 import com.anilist.data.StaffSearchQuery
 import com.anilist.data.StudioSearchQuery
 import com.anilist.data.UserSearchQuery
+import com.anilist.data.fragment.MediaPreview
 import com.anilist.data.fragment.MediaPreviewWithDescription
+import com.anilist.data.fragment.MediaWithListStatus
+import com.anilist.data.fragment.StudioListRowFragment
+import com.anilist.data.fragment.UserNavigationData
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterListRow
-import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSortFilterParams
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterEntryProvider
+import com.thekeeperofpie.artistalleydatabase.anime.characters.data.filter.CharacterSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaWithListStatusEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.search.data.AnimeSearchMediaPagingSource
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter.StaffSortFilterParams
-import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
+import com.thekeeperofpie.artistalleydatabase.anime.studios.data.StudioEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.studios.data.filter.StudiosSortFilterParams
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserUtils
+import com.thekeeperofpie.artistalleydatabase.anime.users.data.UserEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.users.data.filter.UsersSortFilterParams
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -74,31 +73,43 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @Inject
-class AnimeSearchViewModel<MediaEntry>(
+class AnimeSearchViewModel<MediaPreviewEntry : Any, MediaWithListStatusEntry, CharacterEntry, StaffEntry, StudioEntry, UserEntry>(
     aniListApi: AuthedAniListApi,
-    settings: AnimeSettings,
+    settings: MediaDataSettings,
     private val statusController: MediaListStatusController,
     val ignoreController: IgnoreController,
-    featureOverrideProvider: FeatureOverrideProvider,
-    private val monetizationController: MonetizationController,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
-    @Assisted mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
+    @Assisted val unlocked: StateFlow<Boolean>,
+    @Assisted animeSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
+    @Assisted private val animeFilterMedia: (
+        result: PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>,
+        transform: (AnimeSearchEntry.Media<MediaPreviewEntry>) -> MediaPreview,
+    ) -> Flow<PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>>,
+    @Assisted mangaSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
+    @Assisted private val mangaFilterMedia: (
+        result: PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>,
+        transform: (AnimeSearchEntry.Media<MediaPreviewEntry>) -> MediaPreview,
+    ) -> Flow<PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>>,
     @Assisted characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
     @Assisted staffSortFilterParams: StateFlow<StaffSortFilterParams>,
     @Assisted studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
     @Assisted usersSortFilterParams: StateFlow<UsersSortFilterParams>,
-    @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
+    @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaPreviewEntry>,
+    @Assisted mediaWithListStatusEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaWithListStatusEntry>,
+    @Assisted characterEntryProvider: CharacterEntryProvider<CharacterAdvancedSearchQuery.Data.Page.Character, CharacterEntry, MediaWithListStatusEntry>,
+    @Assisted staffEntryProvider: StaffEntryProvider<StaffSearchQuery.Data.Page.Staff, StaffEntry, MediaWithListStatusEntry>,
+    @Assisted studioEntryProvider: StudioEntryProvider<StudioListRowFragment, StudioEntry, MediaWithListStatusEntry>,
+    @Assisted userEntryProvider: UserEntryProvider<UserNavigationData, UserEntry, MediaWithListStatusEntry>,
 ) : ViewModel() {
 
     private val destination = if (savedStateHandle.keys().isEmpty()) {
-        AnimeDestination.SearchMedia(
+        SearchDestinations.SearchMedia(
             sort = MediaSortOption.SEARCH_MATCH,
             lockSortOverride = false,
         )
     } else {
-        savedStateHandle.toDestination<AnimeDestination.SearchMedia>(navigationTypeMap)
+        savedStateHandle.toDestination<SearchDestinations.SearchMedia>(navigationTypeMap)
     }
 
     val mediaViewOption = savedStateHandle.getMutableStateFlow(
@@ -109,9 +120,7 @@ class AnimeSearchViewModel<MediaEntry>(
     )
     val viewer = aniListApi.authedUser
     val query = savedStateHandle.getMutableStateFlow<String>("query") { "" }
-    var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
-
-    val unlocked = monetizationController.unlocked
+    var content = MutableStateFlow(PagingData.Companion.empty<AnimeSearchEntry>())
 
     private val refresh = RefreshFlow()
 
@@ -141,18 +150,24 @@ class AnimeSearchViewModel<MediaEntry>(
                 it to when (it) {
                     SearchType.ANIME,
                     SearchType.MANGA,
-                        -> PagingData.empty<AnimeSearchEntry.Media<MediaEntry>>(loadStates)
-                    SearchType.CHARACTER -> PagingData.empty<AnimeSearchEntry.Character>(loadStates)
-                    SearchType.STAFF -> PagingData.empty<AnimeSearchEntry.Staff>(loadStates)
-                    SearchType.STUDIO -> PagingData.empty<AnimeSearchEntry.Studio>(loadStates)
-                    SearchType.USER -> PagingData.empty<AnimeSearchEntry.User>(loadStates)
+                        -> PagingData.Companion.empty<AnimeSearchEntry.Media<MediaPreviewEntry>>(loadStates)
+                    SearchType.CHARACTER -> PagingData.Companion.empty<AnimeSearchEntry.Character<CharacterEntry>>(
+                        loadStates
+                    )
+                    SearchType.STAFF -> PagingData.Companion.empty<AnimeSearchEntry.Staff<StaffEntry>>(
+                        loadStates
+                    )
+                    SearchType.STUDIO -> PagingData.Companion.empty<AnimeSearchEntry.Studio<StudioEntry>>(
+                        loadStates
+                    )
+                    SearchType.USER -> PagingData.Companion.empty<AnimeSearchEntry.User<UserEntry>>(loadStates)
                 }.let(::MutableStateFlow)
             }.associate { it }
         }
 
     // TODO: lockSort was removed, was it ever used?
     init {
-        viewModelScope.launch(CustomDispatchers.Main) {
+        viewModelScope.launch(CustomDispatchers.Companion.Main) {
             selectedType
                 .flatMapLatest { results[it]!! }
                 .collectLatest {
@@ -171,7 +186,7 @@ class AnimeSearchViewModel<MediaEntry>(
                     query.debounce(1.seconds),
                     includeDescriptionFlow,
                     refresh.updates,
-                    animeSortFilterViewModel.filterParams,
+                    animeSortFilterParams,
                     settings.showAdult,
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
@@ -192,7 +207,7 @@ class AnimeSearchViewModel<MediaEntry>(
                 )
             },
             filter = {
-                animeSortFilterViewModel.filterMedia(it) {
+                animeFilterMedia(it) {
                     mediaPreviewWithDescriptionEntryProvider.media(it.entry)
                 }
             },
@@ -221,7 +236,7 @@ class AnimeSearchViewModel<MediaEntry>(
                     query.debounce(1.seconds),
                     includeDescriptionFlow,
                     refresh.updates,
-                    mangaSortFilterViewModel.filterParams,
+                    mangaSortFilterParams,
                     settings.showAdult,
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
@@ -242,7 +257,7 @@ class AnimeSearchViewModel<MediaEntry>(
                 )
             },
             filter = {
-                mangaSortFilterViewModel.filterMedia(it) {
+                mangaFilterMedia(it) {
                     mediaPreviewWithDescriptionEntryProvider.media(it.entry)
                 }
             },
@@ -288,11 +303,12 @@ class AnimeSearchViewModel<MediaEntry>(
             id = { it.id },
             entry = {
                 AnimeSearchEntry.Character(
-                    CharacterListRow.Entry(
-                        character = it,
-                        media = it.media?.edges?.mapNotNull { it?.node }.orEmpty()
+                    it.id.toString(),
+                    characterEntryProvider.characterEntry(
+                        it,
+                        it.media?.edges?.mapNotNull { it?.node }.orEmpty()
                             .distinctBy { it.id }
-                            .map(::MediaWithListStatusEntry)
+                            .map(mediaWithListStatusEntryProvider::mediaEntry)
                     )
                 )
             },
@@ -304,16 +320,25 @@ class AnimeSearchViewModel<MediaEntry>(
                         settings.mediaFilteringData(),
                     ) { statuses, _, filteringData ->
                         it.mapNotNull {
-                            it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
-                                applyMediaFiltering(
-                                    statuses = statuses,
-                                    ignoreController = ignoreController,
-                                    filteringData = filteringData,
-                                    entry = it,
-                                    filterableData = it.mediaFilterable,
-                                    copy = { copy(mediaFilterable = it) },
+                            it.copy(
+                                entry = characterEntryProvider.copyCharacterEntry(
+                                    entry = it.entry,
+                                    media = characterEntryProvider.media(it.entry).mapNotNull {
+                                        applyMediaFiltering(
+                                            statuses = statuses,
+                                            ignoreController = ignoreController,
+                                            filteringData = filteringData,
+                                            entry = it,
+                                            filterableData =
+                                                mediaWithListStatusEntryProvider.mediaFilterable(it),
+                                            copy = {
+                                                mediaWithListStatusEntryProvider
+                                                    .copyMediaEntry(this, it)
+                                            },
+                                        )
+                                    },
                                 )
-                            }))
+                            )
                         }
                     }
                 }
@@ -344,11 +369,12 @@ class AnimeSearchViewModel<MediaEntry>(
             id = { it.id },
             entry = {
                 AnimeSearchEntry.Staff(
-                    StaffListRow.Entry(
-                        staff = it,
-                        media = it.staffMedia?.nodes?.filterNotNull().orEmpty()
+                    it.id.toString(),
+                    staffEntryProvider.staffEntry(
+                        it,
+                        it.staffMedia?.nodes?.filterNotNull().orEmpty()
                             .distinctBy { it.id }
-                            .map(::MediaWithListStatusEntry)
+                            .map(mediaWithListStatusEntryProvider::mediaEntry)
                     )
                 )
             },
@@ -360,16 +386,25 @@ class AnimeSearchViewModel<MediaEntry>(
                         settings.mediaFilteringData(),
                     ) { statuses, _, filteringData ->
                         it.mapNotNull {
-                            it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
-                                applyMediaFiltering(
-                                    statuses = statuses,
-                                    ignoreController = ignoreController,
-                                    filteringData = filteringData,
-                                    entry = it,
-                                    filterableData = it.mediaFilterable,
-                                    copy = { copy(mediaFilterable = it) },
+                            it.copy(
+                                entry = staffEntryProvider.copyStaffEntry(
+                                    entry = it.entry,
+                                    media = staffEntryProvider.media(it.entry).mapNotNull {
+                                        applyMediaFiltering(
+                                            statuses = statuses,
+                                            ignoreController = ignoreController,
+                                            filteringData = filteringData,
+                                            entry = it,
+                                            filterableData =
+                                                mediaWithListStatusEntryProvider.mediaFilterable(it),
+                                            copy = {
+                                                mediaWithListStatusEntryProvider
+                                                    .copyMediaEntry(this, it)
+                                            },
+                                        )
+                                    },
                                 )
-                            }))
+                            )
                         }
                     }
                 }
@@ -399,13 +434,13 @@ class AnimeSearchViewModel<MediaEntry>(
             id = { it.id },
             entry = {
                 AnimeSearchEntry.Studio(
-                    StudioListRowFragmentEntry(
-                        studio = it,
-                        media = (it.main?.nodes?.filterNotNull().orEmpty()
+                    it.id.toString(),
+                    studioEntryProvider.studioEntry(
+                        it, (it.main?.nodes?.filterNotNull().orEmpty()
                                 + it.nonMain?.nodes?.filterNotNull().orEmpty())
                             .distinctBy { it.id }
-                            .map(::MediaWithListStatusEntry),
-                    )
+                            .map(mediaWithListStatusEntryProvider::mediaEntry)
+                    ),
                 )
             },
             finalTransform = {
@@ -417,21 +452,23 @@ class AnimeSearchViewModel<MediaEntry>(
                     ) { statuses, _, filteringData ->
                         it.mapNotNull {
                             it.copy(
-                                entry =
-                                    StudioListRowFragmentEntry.provider<MediaWithListStatusEntry>()
-                                        .copyStudioEntry(
-                                            it.entry,
-                                            it.entry.media.mapNotNull {
-                                                applyMediaFiltering(
-                                                    statuses = statuses,
-                                                    ignoreController = ignoreController,
-                                                    filteringData = filteringData,
-                                                    entry = it,
-                                                    filterableData = it.mediaFilterable,
-                                                    copy = { copy(mediaFilterable = it) },
-                                                )
-                                            }
+                                entry = studioEntryProvider.copyStudioEntry(
+                                    it.entry,
+                                    studioEntryProvider.media(it.entry).mapNotNull {
+                                        applyMediaFiltering(
+                                            statuses = statuses,
+                                            ignoreController = ignoreController,
+                                            filteringData = filteringData,
+                                            entry = it,
+                                            filterableData =
+                                                mediaWithListStatusEntryProvider.mediaFilterable(it),
+                                            copy = {
+                                                mediaWithListStatusEntryProvider
+                                                    .copyMediaEntry(this, it)
+                                            },
                                         )
+                                    }
+                                )
                             )
                         }
                     }
@@ -461,14 +498,25 @@ class AnimeSearchViewModel<MediaEntry>(
             },
             id = { it.id },
             entry = {
+                val anime = it.favourites?.anime?.edges
+                    ?.filterNotNull()
+                    ?.sortedBy { it.favouriteOrder }
+                    ?.mapNotNull { it.node }
+                    .orEmpty()
+                    .map(mediaWithListStatusEntryProvider::mediaEntry)
+
+                val manga = it.favourites?.manga?.edges
+                    ?.filterNotNull()
+                    ?.sortedBy { it.favouriteOrder }
+                    ?.mapNotNull { it.node }
+                    .orEmpty()
+                    .map(mediaWithListStatusEntryProvider::mediaEntry)
                 AnimeSearchEntry.User(
-                    UserListRow.Entry(
-                        user = it,
-                        media = UserUtils.buildInitialMediaEntries(
-                            user = it,
-                            mediaEntryProvider = MediaWithListStatusEntry.Provider,
-                        ),
-                    )
+                    it.id.toString(),
+                    userEntryProvider.userEntry(
+                        it,
+                        (anime + manga).distinctBy(mediaWithListStatusEntryProvider::id)
+                    ),
                 )
             },
             finalTransform = {
@@ -479,16 +527,25 @@ class AnimeSearchViewModel<MediaEntry>(
                         settings.mediaFilteringData(),
                     ) { statuses, _, filteringData ->
                         it.mapNotNull {
-                            it.copy(entry = it.entry.copy(media = it.entry.media.mapNotNull {
-                                applyMediaFiltering(
-                                    statuses = statuses,
-                                    ignoreController = ignoreController,
-                                    filteringData = filteringData,
-                                    entry = it,
-                                    filterableData = it.mediaFilterable,
-                                    copy = { copy(mediaFilterable = it) },
-                                )
-                            }))
+                            it.copy(
+                                entry = userEntryProvider.copyUserEntry(
+                                    entry = it.entry,
+                                    media = userEntryProvider.media(it.entry).mapNotNull {
+                                        applyMediaFiltering(
+                                            statuses = statuses,
+                                            ignoreController = ignoreController,
+                                            filteringData = filteringData,
+                                            entry = it,
+                                            filterableData =
+                                                mediaWithListStatusEntryProvider.mediaFilterable(it),
+                                            copy = {
+                                                mediaWithListStatusEntryProvider
+                                                    .copyMediaEntry(this, it)
+                                            },
+                                        )
+                                    }
+                                ),
+                            )
                         }
                     }
                 }
@@ -505,13 +562,12 @@ class AnimeSearchViewModel<MediaEntry>(
         filter: ((PagingData<Entry>) -> Flow<PagingData<Entry>>)? = null,
         finalTransform: Flow<PagingData<Entry>>.() -> Flow<PagingData<Entry>> = { this },
     ) {
-        viewModelScope.launch(CustomDispatchers.Main) {
-            monetizationController.unlocked
-                .filter { it || searchType == SearchType.ANIME || searchType == SearchType.MANGA }
+        viewModelScope.launch(CustomDispatchers.Companion.Main) {
+            unlocked.filter { it || searchType == SearchType.ANIME || searchType == SearchType.MANGA }
                 .flatMapLatest { selectedType }
                 .filter { it == searchType }
                 .flatMapLatest { flow() }
-                .flowOn(CustomDispatchers.IO)
+                .flowOn(CustomDispatchers.Companion.IO)
                 .debounce(100.milliseconds)
                 .distinctUntilChanged()
                 .flatMapLatest {
@@ -549,38 +605,56 @@ class AnimeSearchViewModel<MediaEntry>(
     @Inject
     class Factory(
         private val aniListApi: AuthedAniListApi,
-        private val settings: AnimeSettings,
+        private val settings: MediaDataSettings,
         private val statusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
-        private val featureOverrideProvider: FeatureOverrideProvider,
-        private val monetizationController: MonetizationController,
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
-        @Assisted private val animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
-        @Assisted private val mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
+        @Assisted private val unlocked: StateFlow<Boolean>,
+        @Assisted private val animeSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
+        @Assisted private val mangaSortFilterParams: StateFlow<MediaSearchFilterParams<MediaSortOption>>,
         @Assisted private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
         @Assisted private val staffSortFilterParams: StateFlow<StaffSortFilterParams>,
         @Assisted private val studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
         @Assisted private val usersSortFilterParams: StateFlow<UsersSortFilterParams>,
     ) {
-        fun <MediaEntry> create(
-            mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
+        fun <MediaPreviewEntry : Any, MediaWithListStatusEntry, CharacterEntry, StaffEntry, StudioEntry, UserEntry> create(
+            animeFilterMedia: (
+                result: PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>,
+                transform: (AnimeSearchEntry.Media<MediaPreviewEntry>) -> MediaPreview,
+            ) -> Flow<PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>>,
+            mangaFilterMedia: (
+                result: PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>,
+                transform: (AnimeSearchEntry.Media<MediaPreviewEntry>) -> MediaPreview,
+            ) -> Flow<PagingData<AnimeSearchEntry.Media<MediaPreviewEntry>>>,
+            mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaPreviewEntry>,
+            mediaWithListStatusEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaWithListStatusEntry>,
+            characterEntryProvider: CharacterEntryProvider<CharacterAdvancedSearchQuery.Data.Page.Character, CharacterEntry, MediaWithListStatusEntry>,
+            staffEntryProvider: StaffEntryProvider<StaffSearchQuery.Data.Page.Staff, StaffEntry, MediaWithListStatusEntry>,
+            studioEntryProvider: StudioEntryProvider<StudioListRowFragment, StudioEntry, MediaWithListStatusEntry>,
+            userEntryProvider: UserEntryProvider<UserNavigationData, UserEntry, MediaWithListStatusEntry>,
         ) = AnimeSearchViewModel(
             aniListApi = aniListApi,
             settings = settings,
             statusController = statusController,
             ignoreController = ignoreController,
-            featureOverrideProvider = featureOverrideProvider,
-            monetizationController = monetizationController,
+            unlocked = unlocked,
             navigationTypeMap = navigationTypeMap,
-            animeSortFilterViewModel = animeSortFilterViewModel,
-            mangaSortFilterViewModel = mangaSortFilterViewModel,
+            animeSortFilterParams = animeSortFilterParams,
+            animeFilterMedia = animeFilterMedia,
+            mangaSortFilterParams = mangaSortFilterParams,
+            mangaFilterMedia = mangaFilterMedia,
             characterSortFilterParams = characterSortFilterParams,
             staffSortFilterParams = staffSortFilterParams,
             studiosSortFilterParams = studiosSortFilterParams,
             usersSortFilterParams = usersSortFilterParams,
             savedStateHandle = savedStateHandle,
-            mediaPreviewWithDescriptionEntryProvider = mediaEntryProvider,
+            mediaPreviewWithDescriptionEntryProvider = mediaPreviewWithDescriptionEntryProvider,
+            mediaWithListStatusEntryProvider = mediaWithListStatusEntryProvider,
+            characterEntryProvider = characterEntryProvider,
+            staffEntryProvider = staffEntryProvider,
+            studioEntryProvider = studioEntryProvider,
+            userEntryProvider = userEntryProvider,
         )
     }
 }

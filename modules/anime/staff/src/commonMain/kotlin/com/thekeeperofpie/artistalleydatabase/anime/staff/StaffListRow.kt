@@ -239,25 +239,25 @@ object StaffListRow {
         val occupations: List<String>,
     ) {
         constructor(
-            staff: StaffSearchQuery.Data.Page.Staff,
+            searchStaff: StaffSearchQuery.Data.Page.Staff,
             media: List<MediaEntry>,
         ) : this(
-            staff = staff,
+            staff = searchStaff,
             media = media,
-            characters = staff.characters?.nodes?.filterNotNull().orEmpty().distinctBy { it.id },
-            favorites = staff.favourites,
-            occupations = staff.primaryOccupations?.filterNotNull().orEmpty(),
+            characters = searchStaff.characters?.nodes?.filterNotNull().orEmpty().distinctBy { it.id },
+            favorites = searchStaff.favourites,
+            occupations = searchStaff.primaryOccupations?.filterNotNull().orEmpty(),
         )
 
         constructor(
-            staff: UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node,
+            userFavoritesStaff: UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node,
             media: List<MediaEntry>,
         ) : this(
-            staff = staff,
+            staff = userFavoritesStaff,
             media = media,
-            characters = staff.characters?.nodes?.filterNotNull().orEmpty().distinctBy { it.id },
-            favorites = staff.favourites,
-            occupations = staff.primaryOccupations?.filterNotNull().orEmpty(),
+            characters = userFavoritesStaff.characters?.nodes?.filterNotNull().orEmpty().distinctBy { it.id },
+            favorites = userFavoritesStaff.favourites,
+            occupations = userFavoritesStaff.primaryOccupations?.filterNotNull().orEmpty(),
         )
 
         class Provider<MediaEntry> :
@@ -265,7 +265,7 @@ object StaffListRow {
             override fun staffEntry(
                 staff: UserFavoritesStaffQuery.Data.User.Favourites.Staff.Node,
                 media: List<MediaEntry>,
-            ) = Entry(staff = staff, media = media)
+            ) = Entry(userFavoritesStaff = staff, media = media)
 
             override fun id(entry: Entry<MediaEntry>) = entry.staff.id.toString()
             override fun media(entry: Entry<MediaEntry>) = entry.media
@@ -273,7 +273,21 @@ object StaffListRow {
                 entry: Entry<MediaEntry>,
                 media: List<MediaEntry>,
             ) = entry.copy(media = media)
+        }
 
+        class SearchProvider<MediaEntry> :
+            StaffEntryProvider<StaffSearchQuery.Data.Page.Staff, Entry<MediaEntry>, MediaEntry> {
+            override fun staffEntry(
+                staff: StaffSearchQuery.Data.Page.Staff,
+                media: List<MediaEntry>,
+            ) = Entry(searchStaff = staff, media = media)
+
+            override fun id(entry: Entry<MediaEntry>) = entry.staff.id.toString()
+            override fun media(entry: Entry<MediaEntry>) = entry.media
+            override fun copyStaffEntry(
+                entry: Entry<MediaEntry>,
+                media: List<MediaEntry>,
+            ) = entry.copy(media = media)
         }
     }
 }

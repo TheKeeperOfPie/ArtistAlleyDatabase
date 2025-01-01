@@ -275,7 +275,7 @@ object AnimeHomeScreen {
         homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
         currentMedia: () -> LoadingResult<List<UserMediaListController.MediaEntry>>,
         currentMediaState: () -> CurrentMediaState,
-        suggestions: List<Pair<StringResource, AnimeDestination>>,
+        suggestions: List<Pair<StringResource, NavDestination>>,
         notificationsUnreadCount: () -> Int,
         unlocked: () -> Boolean,
         viewer: () -> AniListViewer?,
@@ -469,7 +469,7 @@ object AnimeHomeScreen {
         homeEntry: () -> LoadingResult<AnimeHomeDataEntry>,
         activities: LazyPagingItems<ActivityEntry<MediaCompactWithTagsEntry>>,
         currentMediaState: () -> CurrentMediaState,
-        suggestions: List<Pair<StringResource, AnimeDestination>>,
+        suggestions: List<Pair<StringResource, NavDestination>>,
         onClickListEdit: (MediaNavigationData) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         recommendations: LazyPagingItems<RecommendationEntry<MediaCompactWithTagsEntry>>,
@@ -1159,7 +1159,7 @@ object AnimeHomeScreen {
     @Composable
     private fun Suggestions(
         mediaType: MediaType,
-        suggestions: List<Pair<StringResource, AnimeDestination>>,
+        suggestions: List<Pair<StringResource, NavDestination>>,
     ) {
         RowHeader(
             titleRes = Res.string.anime_home_suggestions_header,

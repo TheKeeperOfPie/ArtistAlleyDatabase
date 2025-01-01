@@ -49,7 +49,6 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_search_clear
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_anime_search
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_header_expand_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_manga_search
@@ -57,6 +56,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_user_list_tab
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_user_name_anime_search
 import artistalleydatabase.modules.anime.generated.resources.anime_user_list_user_name_manga_search
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
+import artistalleydatabase.modules.anime.search.generated.resources.anime_search_clear
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaType
 import com.anilist.data.type.ScoreFormat
@@ -94,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSa
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
+import artistalleydatabase.modules.anime.search.generated.resources.Res as SearchRes
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -283,7 +284,7 @@ object AnimeUserListScreen {
                                 Icon(
                                     imageVector = Icons.Filled.Clear,
                                     contentDescription = stringResource(
-                                        Res.string.anime_search_clear
+                                        SearchRes.string.anime_search_clear
                                     ),
                                 )
                             }

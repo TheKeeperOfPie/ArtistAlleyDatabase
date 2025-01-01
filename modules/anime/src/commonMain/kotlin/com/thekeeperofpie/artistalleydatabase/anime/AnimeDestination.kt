@@ -1,12 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import androidx.compose.runtime.Composable
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_home_last_added_screen_title
-import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_popular_all_time
-import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_top
-import artistalleydatabase.modules.anime.generated.resources.anime_home_top_released_this_year_title
-import artistalleydatabase.modules.anime.generated.resources.anime_home_trending_screen_title
 import com.anilist.data.fragment.AniListDate
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaListStatus
@@ -21,17 +14,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.ui.SearchMediaGenreRoute
-import com.thekeeperofpie.artistalleydatabase.anime.ui.SearchMediaTagRoute
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserHeaderParams
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import kotlinx.serialization.Serializable
-import org.jetbrains.compose.resources.stringResource
 import kotlin.reflect.typeOf
 
 sealed interface AnimeDestination : NavDestination {
@@ -53,7 +44,7 @@ sealed interface AnimeDestination : NavDestination {
             typeOf<StaffHeaderParams?>() to CustomNavTypes.SerializableType<StaffHeaderParams>(),
             typeOf<UserHeaderParams?>() to CustomNavTypes.SerializableType<UserHeaderParams>(),
             typeOf<ForumDestinations.ForumSearch.Title?>() to CustomNavTypes.SerializableType<ForumDestinations.ForumSearch.Title>(),
-            typeOf<SearchMedia.Title?>() to CustomNavTypes.SerializableType<SearchMedia.Title>(),
+            typeOf< SearchDestinations.SearchMedia.Title?>() to CustomNavTypes.SerializableType<SearchDestinations.SearchMedia.Title>(),
         )
     }
 
@@ -132,78 +123,5 @@ sealed interface AnimeDestination : NavDestination {
                 coverImage = coverImage,
             ),
         )
-    }
-
-    @Serializable
-    data class SearchMedia(
-        val title: Title? = null,
-        val tagId: String? = null,
-        val genre: String? = null,
-        val mediaType: MediaType? = null,
-        val sort: MediaSortOption? = null,
-        val year: Int? = null,
-        val lockSortOverride: Boolean? = null,
-    ) : AnimeDestination {
-        companion object {
-            val genreRoute: SearchMediaGenreRoute = { genre, mediaType ->
-                SearchMedia(
-                    title = Title.Custom(genre),
-                    genre = genre,
-                    mediaType = mediaType,
-                )
-            }
-            val tagRoute: SearchMediaTagRoute = { tagId, tagName, mediaType ->
-                SearchMedia(
-                    title = Title.Custom(tagName),
-                    tagId = tagId,
-                    mediaType = mediaType,
-                )
-            }
-        }
-
-        // TODO: Find a way to serialize StringResource
-        @Serializable
-        sealed interface Title {
-            @Composable
-            fun text(): String
-
-            @Serializable
-            data object HomeSuggestionPopularAllTime : Title {
-                @Composable
-                override fun text() =
-                    stringResource(Res.string.anime_home_suggestion_popular_all_time)
-            }
-
-            @Serializable
-            data object HomeSuggestionTop : Title {
-                @Composable
-                override fun text() = stringResource(Res.string.anime_home_suggestion_top)
-            }
-
-            @Serializable
-            data object HomeTrending : Title {
-                @Composable
-                override fun text() = stringResource(Res.string.anime_home_trending_screen_title)
-            }
-
-            @Serializable
-            data object HomeLastAdded : Title {
-                @Composable
-                override fun text() = stringResource(Res.string.anime_home_last_added_screen_title)
-            }
-
-            @Serializable
-            data object HomeReleasedThisYear : Title {
-                @Composable
-                override fun text() =
-                    stringResource(Res.string.anime_home_top_released_this_year_title)
-            }
-
-            @Serializable
-            data class Custom(val title: String) : Title {
-                @Composable
-                override fun text() = title
-            }
-        }
     }
 }

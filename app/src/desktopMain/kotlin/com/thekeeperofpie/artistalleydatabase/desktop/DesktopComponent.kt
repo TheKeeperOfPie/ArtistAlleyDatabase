@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsStore
@@ -43,6 +44,7 @@ abstract class DesktopComponent(
     abstract val httpClient: HttpClient
     abstract val navigationTypeMap: NavigationTypeMap
     abstract val settingsProvider: DesktopSettingsProvider
+    abstract val monetizationController: MonetizationController
 
     val DesktopSettingsProvider.bindAppSettings: AppSettings
         @Provides get() = this

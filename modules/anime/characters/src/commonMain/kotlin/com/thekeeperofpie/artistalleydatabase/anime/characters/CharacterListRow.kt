@@ -349,40 +349,40 @@ object CharacterListRow {
         private val voiceActors: Map<String?, List<StaffNavigationData>>,
     ) {
         constructor(
-            character: CharacterAdvancedSearchQuery.Data.Page.Character,
+            searchCharacter: CharacterAdvancedSearchQuery.Data.Page.Character,
             media: List<MediaEntry>,
         ) : this(
-            character = character,
+            character = searchCharacter,
             role = null,
             media = media,
-            favorites = character.favourites,
-            voiceActors = character.media?.edges?.filterNotNull()
+            favorites = searchCharacter.favourites,
+            voiceActors = searchCharacter.media?.edges?.filterNotNull()
                 ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
                 ?.groupBy { it.languageV2 }
                 .orEmpty()
         )
 
         constructor(
-            character: CharacterWithRoleAndFavorites,
+            characterWithRole: CharacterWithRoleAndFavorites,
             media: List<MediaEntry>,
         ) : this(
-            character = character.node,
-            role = character.role,
+            character = characterWithRole.node,
+            role = characterWithRole.role,
             media = media,
-            favorites = character.node.favourites,
-            voiceActors = character.voiceActors?.filterNotNull().orEmpty()
+            favorites = characterWithRole.node.favourites,
+            voiceActors = characterWithRole.voiceActors?.filterNotNull().orEmpty()
                 .groupBy { it.languageV2 }
         )
 
         constructor(
-            character: UserFavoritesCharactersQuery.Data.User.Favourites.Characters.Node,
+            userFavoritesCharacter: UserFavoritesCharactersQuery.Data.User.Favourites.Characters.Node,
             media: List<MediaEntry>,
         ) : this(
-            character = character,
+            character = userFavoritesCharacter,
             role = null,
             media = media,
-            favorites = character.favourites,
-            voiceActors = character.media?.edges?.filterNotNull()
+            favorites = userFavoritesCharacter.favourites,
+            voiceActors = userFavoritesCharacter.media?.edges?.filterNotNull()
                 ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
                 ?.groupBy { it.languageV2 }
                 .orEmpty()
@@ -396,7 +396,25 @@ object CharacterListRow {
             override fun characterEntry(
                 character: CharacterWithRoleAndFavorites,
                 media: List<MediaEntry>,
-            ) = Entry(character = character, media = media)
+            ) = Entry(characterWithRole = character, media = media)
+
+            override fun id(characterEntry: Entry<MediaEntry>) =
+                characterEntry.character.id.toString()
+
+            override fun media(characterEntry: Entry<MediaEntry>) = characterEntry.media
+
+            override fun copyCharacterEntry(
+                entry: Entry<MediaEntry>,
+                media: List<MediaEntry>,
+            ) = entry.copy(media = media)
+        }
+
+        class SearchProvider<MediaEntry> :
+            CharacterEntryProvider<CharacterAdvancedSearchQuery.Data.Page.Character, Entry<MediaEntry>, MediaEntry> {
+            override fun characterEntry(
+                character: CharacterAdvancedSearchQuery.Data.Page.Character,
+                media: List<MediaEntry>,
+            ) = Entry(searchCharacter = character, media = media)
 
             override fun id(characterEntry: Entry<MediaEntry>) =
                 characterEntry.character.id.toString()
@@ -414,7 +432,7 @@ object CharacterListRow {
             override fun characterEntry(
                 character: UserFavoritesCharactersQuery.Data.User.Favourites.Characters.Node,
                 media: List<MediaEntry>,
-            ) = Entry(character = character, media = media)
+            ) = Entry(userFavoritesCharacter = character, media = media)
 
             override fun id(characterEntry: Entry<MediaEntry>) =
                 characterEntry.character.id.toString()

@@ -46,7 +46,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_clear_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_placeholder
-import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_search_show_when_spoiler
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
@@ -58,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterS
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
+import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @Composable
 fun TagSection(
@@ -126,7 +127,7 @@ fun TagSection(
                         .clickable { onShowMediaWithTagSpoilerChange(!showMediaWithTagSpoiler()) }
                 ) {
                     Text(
-                        text = stringResource(Res.string.anime_media_tag_search_show_when_spoiler),
+                        text = stringResource(MediaDataRes.string.anime_media_tag_search_show_when_spoiler),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier
                             .padding(start = 32.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)

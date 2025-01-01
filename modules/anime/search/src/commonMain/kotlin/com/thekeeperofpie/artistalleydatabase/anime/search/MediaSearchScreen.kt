@@ -23,7 +23,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,23 +32,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_genre_info_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_info_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_show_when_spoiler
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_genre_info_content_description
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_info_content_description
+import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_search_show_when_spoiler
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.anilist.data.fragment.MediaNavigationData
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.widthAdaptiveCells
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
@@ -58,7 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
@@ -68,27 +59,29 @@ object MediaSearchScreen {
 
     @Composable
     operator fun invoke(
-        animeComponent: AnimeComponent = LocalAnimeComponent.current,
+        mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         state: State,
         upIconOption: UpIconOption?,
-        title: AnimeDestination.SearchMedia.Title?,
-        viewModel: AnimeSearchViewModel<MediaPreviewWithDescriptionEntry>,
+        title: SearchDestinations.SearchMedia.Title?,
+        onRefresh: () -> Unit,
+        content: LazyPagingItems<AnimeSearchEntry>,
         tagId: String?,
         genre: String?,
         sortFilterState: () -> SortFilterState<*>,
         showWithSpoiler: () -> MutableStateFlow<Boolean>,
+        onLongClickTag: (String) -> Unit,
+        onLongClickGenre: (String) -> Unit,
+        item: @Composable (
+            AnimeSearchEntry.Media<*>?,
+            onClickListEdit: (MediaNavigationData) -> Unit,
+        ) -> Unit,
     ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-
-        val editViewModel = viewModel { animeComponent.mediaEditViewModel() }
-        MediaEditBottomSheetScaffold(
-            viewModel = editViewModel,
-        ) {
+        mediaEditBottomSheetScaffold { padding, onClickListEdit ->
+            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
             SortFilterBottomScaffold(
                 state = sortFilterState(),
                 topBar = {
                     TopBar(
-                        viewModel = viewModel,
                         state = state,
                         upIconOption = upIconOption,
                         title = title,
@@ -96,12 +89,13 @@ object MediaSearchScreen {
                         genre = genre,
                         scrollBehavior = scrollBehavior,
                         showWithSpoiler = showWithSpoiler,
+                        onLongClickTag = onLongClickTag,
+                        onLongClickGenre = onLongClickGenre,
                     )
                 },
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                modifier = Modifier.Companion.padding(padding)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
-                val viewer by viewModel.viewer.collectAsState()
-                val content = viewModel.content.collectAsLazyPagingItems()
                 val gridState = rememberLazyGridState()
                 val mediaViewOption by state.mediaViewOption.collectAsStateWithLifecycle()
                 val columns = mediaViewOption.widthAdaptiveCells
@@ -115,7 +109,7 @@ object MediaSearchScreen {
                     items = content,
                     itemKey = { it.entryId.scopedId },
                     gridState = gridState,
-                    onRefresh = viewModel::onRefresh,
+                    onRefresh = onRefresh,
                     columns = columns,
                     contentPadding = PaddingValues(
                         top = 16.dp,
@@ -125,15 +119,9 @@ object MediaSearchScreen {
                     ),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(scaffoldPadding)
+                    modifier = Modifier.Companion.padding(scaffoldPadding)
                 ) {
-                    val item = it as? AnimeSearchEntry.Media<*>
-                    MediaViewOptionRow(
-                        mediaViewOption = mediaViewOption,
-                        viewer = viewer,
-                        onClickListEdit = editViewModel::initialize,
-                        entry = item?.entry as? MediaPreviewWithDescriptionEntry,
-                    )
+                    item(it as? AnimeSearchEntry.Media<*>, onClickListEdit)
                 }
             }
         }
@@ -141,14 +129,15 @@ object MediaSearchScreen {
 
     @Composable
     private fun TopBar(
-        viewModel: AnimeSearchViewModel<*>,
         state: State,
         upIconOption: UpIconOption?,
-        title: AnimeDestination.SearchMedia.Title?,
+        title: SearchDestinations.SearchMedia.Title?,
         tagId: String?,
         genre: String?,
         scrollBehavior: TopAppBarScrollBehavior,
         showWithSpoiler: () -> MutableStateFlow<Boolean>,
+        onLongClickTag: (String) -> Unit,
+        onLongClickGenre: (String) -> Unit,
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             Column {
@@ -164,22 +153,20 @@ object MediaSearchScreen {
                     actions = {
                         val infoContentDescriptionRes = remember {
                             if (tagId != null) {
-                                Res.string.anime_media_tag_info_content_description
+                                MediaDataRes.string.anime_media_tag_info_content_description
                             } else if (genre != null) {
                                 if (MediaGenre.entries.any { it.id == genre }) {
-                                    Res.string.anime_media_genre_info_content_description
+                                    MediaDataRes.string.anime_media_genre_info_content_description
                                 } else null
                             } else null
                         }
 
                         if (infoContentDescriptionRes != null) {
-                            val mediaTagDialogController = LocalMediaTagDialogController.current
-                            val mediaGenreDialogController = LocalMediaGenreDialogController.current
                             IconButton(onClick = {
                                 if (tagId != null) {
-                                    mediaTagDialogController?.onLongClickTag(tagId)
+                                    onLongClickTag(tagId)
                                 } else if (genre != null) {
-                                    mediaGenreDialogController.onLongClickGenre(genre)
+                                    onLongClickGenre(genre)
                                 }
                             }) {
                                 Icon(
@@ -215,7 +202,7 @@ object MediaSearchScreen {
                 if (tagId != null) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier.Companion.padding(horizontal = 16.dp)
                     ) {
                         var showWithSpoiler by showWithSpoiler().collectAsMutableStateWithLifecycle()
                         Switch(
@@ -224,8 +211,8 @@ object MediaSearchScreen {
                         )
 
                         Text(
-                            text = stringResource(Res.string.anime_media_tag_search_show_when_spoiler),
-                            modifier = Modifier.padding(vertical = 16.dp)
+                            text = stringResource(MediaDataRes.string.anime_media_tag_search_show_when_spoiler),
+                            modifier = Modifier.Companion.padding(vertical = 16.dp)
                         )
                     }
                 }
@@ -233,9 +220,9 @@ object MediaSearchScreen {
                 val selectedIsAnime = selectedType == SearchType.ANIME
                 TabRow(
                     selectedTabIndex = if (selectedIsAnime) 0 else 1,
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally)
+                        .align(Alignment.Companion.CenterHorizontally)
                 ) {
                     Tab(
                         selected = selectedIsAnime,
@@ -249,7 +236,7 @@ object MediaSearchScreen {
                     )
                     Tab(
                         selected = !selectedIsAnime,
-                        onClick = { selectedType = SearchType.MANGA},
+                        onClick = { selectedType = SearchType.MANGA },
                         text = {
                             Text(
                                 text = stringResource(SearchType.MANGA.tabText),

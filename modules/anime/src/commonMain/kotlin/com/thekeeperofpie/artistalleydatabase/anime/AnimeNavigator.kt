@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.LineBreak
@@ -99,8 +98,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewComposables
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.reviewsSection
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.ScheduleDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
-import com.thekeeperofpie.artistalleydatabase.anime.search.SearchType
+import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
 import com.thekeeperofpie.artistalleydatabase.anime.songs.songsSection
@@ -113,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.studios.studiosSection
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.cdsSection
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
@@ -131,6 +130,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedEle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -145,8 +145,11 @@ object AnimeNavigator {
         onClickSettings: () -> Unit,
         onClickShowLastCrash: () -> Unit,
         component: AnimeComponent,
+        unlocked: StateFlow<Boolean>,
         cdEntryComponent: CdEntryComponent,
         onCdEntryClick: (entryIds: List<String>, imageCornerDp: Dp) -> Unit = { _, _ -> },
+        onLongClickTag: (String) -> Unit,
+        onLongClickGenre: (String) -> Unit,
     ) {
         navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.HOME.id,
@@ -162,96 +165,8 @@ object AnimeNavigator {
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
                 onClickSettings = onClickSettings,
                 onClickShowLastCrash = onClickShowLastCrash,
+                unlockedFlow = unlocked,
                 userRoute = UserDestinations.User.route,
-            )
-        }
-
-        navGraphBuilder.sharedElementComposable<AnimeDestination.SearchMedia>(navigationTypeMap) {
-            val destination = it.toRoute<AnimeDestination.SearchMedia>()
-            val animeSortFilterViewModel = viewModel {
-                component.animeSearchSortFilterViewModelFactory(createSavedStateHandle())
-                    .create(
-                        MediaSortFilterViewModel.InitialParams(
-                            defaultSort = destination.sort ?: MediaSortOption.SEARCH_MATCH,
-                            sortClass = MediaSortOption::class,
-                            mediaType = MediaType.ANIME,
-                            tagId = destination.tagId,
-                            genre = destination.genre,
-                            year = destination.year,
-                        )
-                    )
-            }
-            val mangaSortFilterViewModel = viewModel {
-                component.mangaSearchSortFilterViewModelFactory(createSavedStateHandle())
-                    .create(
-                        MediaSortFilterViewModel.InitialParams(
-                            sortClass = MediaSortOption::class,
-                            defaultSort = MediaSortOption.SEARCH_MATCH,
-                            mediaType = MediaType.MANGA,
-                            tagId = destination.tagId,
-                            genre = destination.genre,
-                            year = destination.year,
-                        )
-                    )
-            }
-            // TODO: Split the search ViewModel and remove these
-            val characterSortFilterViewModel = viewModel {
-                component.characterSortFilterViewModel(
-                    createSavedStateHandle(),
-                    CharacterSortFilterViewModel.InitialParams()
-                )
-            }
-            val staffSortFilterViewModel = viewModel {
-                component.staffSortFilterViewModel(
-                    createSavedStateHandle(),
-                    StaffSortFilterViewModel.InitialParams()
-                )
-            }
-            val studiosSortFilterViewModel = viewModel {
-                component.studiosSortFilterViewModel(createSavedStateHandle())
-            }
-            val usersSortFilterViewModel = viewModel {
-                component.usersSortFilterViewModel(createSavedStateHandle())
-            }
-            val viewModel = viewModel {
-                component.animeSearchViewModelFactory(
-                    createSavedStateHandle(),
-                    animeSortFilterViewModel,
-                    mangaSortFilterViewModel,
-                    characterSortFilterViewModel.state.filterParams,
-                    staffSortFilterViewModel.state.filterParams,
-                    studiosSortFilterViewModel.state.filterParams,
-                    usersSortFilterViewModel.state.filterParams,
-                ).create(MediaPreviewWithDescriptionEntry.Provider)
-            }
-            val state = remember {
-                MediaSearchScreen.State(
-                    selectedType = viewModel.selectedType,
-                    mediaViewOption = viewModel.mediaViewOption,
-                )
-            }
-            val selectedType by state.selectedType.collectAsStateWithLifecycle()
-            MediaSearchScreen(
-                title = destination.title,
-                state = state,
-                viewModel = viewModel,
-                upIconOption = UpIconOption.Back(navigationController),
-                tagId = destination.tagId,
-                genre = destination.genre,
-                sortFilterState = {
-                    if (selectedType == SearchType.ANIME) {
-                        animeSortFilterViewModel.state
-                    } else {
-                        mangaSortFilterViewModel.state
-                    }
-                },
-                showWithSpoiler = {
-                    if (selectedType == SearchType.ANIME) {
-                        animeSortFilterViewModel.tagShowWhenSpoiler
-                    } else {
-                        mangaSortFilterViewModel.tagShowWhenSpoiler
-                    }
-                },
             )
         }
 
@@ -1010,6 +925,89 @@ object AnimeNavigator {
             },
         )
 
+        SearchDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
+            mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
+            unlocked = unlocked,
+            sortFilterStates = { destination ->
+                val animeSortFilterViewModel = viewModel {
+                    component.animeSearchSortFilterViewModelFactory(createSavedStateHandle())
+                        .create(
+                            MediaSortFilterViewModel.InitialParams(
+                                defaultSort = destination.sort ?: MediaSortOption.SEARCH_MATCH,
+                                sortClass = MediaSortOption::class,
+                                mediaType = MediaType.ANIME,
+                                tagId = destination.tagId,
+                                genre = destination.genre,
+                                year = destination.year,
+                            )
+                        )
+                }
+                val mangaSortFilterViewModel = viewModel {
+                    component.mangaSearchSortFilterViewModelFactory(createSavedStateHandle())
+                        .create(
+                            MediaSortFilterViewModel.InitialParams(
+                                sortClass = MediaSortOption::class,
+                                defaultSort = MediaSortOption.SEARCH_MATCH,
+                                mediaType = MediaType.MANGA,
+                                tagId = destination.tagId,
+                                genre = destination.genre,
+                                year = destination.year,
+                            )
+                        )
+                }
+                // TODO: Split the search ViewModel and remove these
+                val characterSortFilterViewModel = viewModel {
+                    component.characterSortFilterViewModel(
+                        createSavedStateHandle(),
+                        CharacterSortFilterViewModel.InitialParams()
+                    )
+                }
+                val staffSortFilterViewModel = viewModel {
+                    component.staffSortFilterViewModel(
+                        createSavedStateHandle(),
+                        StaffSortFilterViewModel.InitialParams()
+                    )
+                }
+                val studiosSortFilterViewModel = viewModel {
+                    component.studiosSortFilterViewModel(createSavedStateHandle())
+                }
+                val usersSortFilterViewModel = viewModel {
+                    component.usersSortFilterViewModel(createSavedStateHandle())
+                }
+                SearchDestinations.SortFilterStates(
+                    animeSortFilterState = animeSortFilterViewModel.state,
+                    animeTagShowWhenSpoiler = animeSortFilterViewModel.tagShowWhenSpoiler,
+                    animeFilterMedia = animeSortFilterViewModel::filterMedia,
+                    mangaSortFilterState = mangaSortFilterViewModel.state,
+                    mangaTagShowWhenSpoiler = mangaSortFilterViewModel.tagShowWhenSpoiler,
+                    mangaFilterMedia = mangaSortFilterViewModel::filterMedia,
+                    characterSortFilterState = characterSortFilterViewModel.state,
+                    staffSortFilterState = staffSortFilterViewModel.state,
+                    studiosSortFilterState = studiosSortFilterViewModel.state,
+                    usersSortFilterState = usersSortFilterViewModel.state,
+                )
+            },
+            mediaPreviewWithDescriptionEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
+            mediaWithListStatusEntryProvider = MediaWithListStatusEntry.Provider,
+            characterEntryProvider = CharacterListRow.Entry.SearchProvider(),
+            staffEntryProvider = StaffListRow.Entry.SearchProvider(),
+            studioEntryProvider = StudioListRowFragmentEntry.Provider(),
+            userEntryProvider = UserListRow.Entry.Provider(),
+            onLongClickTag = onLongClickTag,
+            onLongClickGenre = onLongClickGenre,
+            mediaViewOptionRow = { viewer, mediaViewOption, entry, onClickListEdit ->
+                MediaViewOptionRow(
+                    mediaViewOption = mediaViewOption,
+                    viewer = viewer,
+                    onClickListEdit = onClickListEdit,
+                    entry = entry?.entry as? MediaPreviewWithDescriptionEntry,
+                )
+            }
+        )
+
         SeasonalDestinations.addToGraph(
             navGraphBuilder = navGraphBuilder,
             navigationTypeMap = navigationTypeMap,
@@ -1205,8 +1203,8 @@ object AnimeNavigator {
             component = component,
             mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
             mediaDetailsRoute = AnimeDestination.MediaDetails.route,
-            searchMediaGenreRoute = AnimeDestination.SearchMedia.genreRoute,
-            searchMediaTagRoute = AnimeDestination.SearchMedia.tagRoute,
+            searchMediaGenreRoute = SearchDestinations.SearchMedia.genreRoute,
+            searchMediaTagRoute = SearchDestinations.SearchMedia.tagRoute,
             staffDetailsRoute = StaffDestinations.StaffDetails.route,
             studioMediasRoute = StudioDestinations.StudioMedias.route,
             activityEntryProvider =
@@ -1230,7 +1228,7 @@ object AnimeNavigator {
             mediaCompactWithTagsEntryProvider = MediaCompactWithTagsEntry.Provider,
             mediaPreviewWithDescriptionEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
             staffEntryProvider = StaffListRow.Entry.Provider(),
-            studioEntryProvider = StudioListRowFragmentEntry.provider(),
+            studioEntryProvider = StudioListRowFragmentEntry.Provider(),
             mediaHorizontalRow = { viewer, titleRes, entries, viewAllRoute, viewAllContentDescriptionTextRes, onClickListEdit ->
                 // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
                 mediaHorizontalRow(

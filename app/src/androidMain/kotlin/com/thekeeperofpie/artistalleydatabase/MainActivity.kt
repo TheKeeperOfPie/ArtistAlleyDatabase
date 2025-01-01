@@ -77,6 +77,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime2anime.Anime2AnimeScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
@@ -349,6 +351,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 SharedTransitionLayout {
                     CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                        val mediaTagDialogController = LocalMediaTagDialogController.current
+                        val mediaGenreDialogController = LocalMediaGenreDialogController.current
                         NavHost(
                             navController = navHostController,
                             startDestination = startDestination,
@@ -368,11 +372,20 @@ class MainActivity : ComponentActivity() {
                                     navHostController.navigate(AppNavDestinations.CRASH.id)
                                 },
                                 component = applicationComponent,
+                                unlocked = monetizationController.unlocked,
                                 cdEntryComponent = applicationComponent,
                                 onCdEntryClick = { entryIds, imageCornerDp ->
                                     cdEntryNavigator
                                         .onCdEntryClick(navHostController, entryIds, imageCornerDp)
-                                }
+                                },
+                                onLongClickTag = {
+                                    mediaTagDialogController
+                                        ?.onLongClickTag(it)
+                                },
+                                onLongClickGenre = {
+                                    mediaGenreDialogController
+                                        .onLongClickGenre(it)
+                                },
                             )
 
                             artEntryNavigator.initialize(

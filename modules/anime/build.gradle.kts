@@ -21,7 +21,7 @@ kotlin {
             api(projects.modules.anime.recommendations)
             api(projects.modules.anime.reviews)
             api(projects.modules.anime.schedule)
-            api(projects.modules.anime.search.data)
+            api(projects.modules.anime.search)
             api(projects.modules.anime.seasonal)
             api(projects.modules.anime.songs)
             api(projects.modules.anime.staff)

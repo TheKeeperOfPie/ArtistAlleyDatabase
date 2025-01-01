@@ -168,7 +168,6 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
@@ -189,6 +188,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBot
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
+import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DescriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -824,8 +824,8 @@ object AnimeMediaDetailsScreen {
                 AssistChip(
                     onClick = {
                         navigationController.navigate(
-                            AnimeDestination.SearchMedia(
-                                title = AnimeDestination.SearchMedia.Title.Custom(it.name),
+                            SearchDestinations.SearchMedia(
+                                title = SearchDestinations.SearchMedia.Title.Custom(it.name),
                                 genre = it.name,
                                 mediaType = mediaType ?: MediaType.ANIME,
                             )
@@ -1217,8 +1217,8 @@ object AnimeMediaDetailsScreen {
                             },
                             onTagClick = { id, name ->
                                 navigationController.navigate(
-                                    AnimeDestination.SearchMedia(
-                                        title = AnimeDestination.SearchMedia.Title.Custom(name),
+                                    SearchDestinations.SearchMedia(
+                                        title = SearchDestinations.SearchMedia.Title.Custom(name),
                                         tagId = id,
                                         mediaType = entry.media.type ?: MediaType.ANIME,
                                     )

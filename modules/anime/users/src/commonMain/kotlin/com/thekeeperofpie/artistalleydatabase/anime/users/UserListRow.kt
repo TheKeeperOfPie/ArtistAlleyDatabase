@@ -37,6 +37,7 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
+import com.thekeeperofpie.artistalleydatabase.anime.users.data.UserEntryProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -188,5 +189,21 @@ object UserListRow {
         }
     }
 
-    data class Entry<MediaEntry>(val user: UserNavigationData, val media: List<MediaEntry>)
+    data class Entry<MediaEntry>(val user: UserNavigationData, val media: List<MediaEntry>) {
+        class Provider<MediaEntry> : UserEntryProvider<UserNavigationData, Entry<MediaEntry>, MediaEntry> {
+            override fun userEntry(
+                user: UserNavigationData,
+                media: List<MediaEntry>,
+            ) = Entry(user, media)
+
+            override fun id(userEntry: Entry<MediaEntry>) = userEntry.user.id.toString()
+
+            override fun media(userEntry: Entry<MediaEntry>) = userEntry.media
+
+            override fun copyUserEntry(
+                entry: Entry<MediaEntry>,
+                media: List<MediaEntry>,
+            ) = entry.copy(media = media)
+        }
+    }
 }

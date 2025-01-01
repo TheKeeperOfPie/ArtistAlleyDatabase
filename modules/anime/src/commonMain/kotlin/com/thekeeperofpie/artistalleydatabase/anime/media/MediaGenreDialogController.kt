@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import me.tatarka.inject.annotations.Inject
 

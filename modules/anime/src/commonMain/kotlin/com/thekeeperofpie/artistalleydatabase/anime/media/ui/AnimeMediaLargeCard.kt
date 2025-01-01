@@ -64,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreContr
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
+import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -215,8 +216,8 @@ object AnimeMediaLargeCard {
                                 onTagClick = { id, name ->
                                     if (entry != null) {
                                         navigationController.navigate(
-                                            AnimeDestination.SearchMedia(
-                                                title = AnimeDestination.SearchMedia.Title.Custom(
+                                            SearchDestinations.SearchMedia(
+                                                title = SearchDestinations.SearchMedia.Title.Custom(
                                                     name
                                                 ),
                                                 tagId = id,

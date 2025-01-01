@@ -19,16 +19,15 @@ import artistalleydatabase.modules.anime.generated.resources.anime_home_manga_cu
 import artistalleydatabase.modules.anime.generated.resources.anime_home_popular_last_season
 import artistalleydatabase.modules.anime.generated.resources.anime_home_popular_next_season
 import artistalleydatabase.modules.anime.generated.resources.anime_home_popular_this_season
-import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_popular_all_time
-import artistalleydatabase.modules.anime.generated.resources.anime_home_suggestion_top
 import artistalleydatabase.modules.anime.generated.resources.anime_home_top_released_this_year
 import artistalleydatabase.modules.anime.generated.resources.anime_home_trending_row_label
+import artistalleydatabase.modules.anime.search.generated.resources.anime_home_suggestion_popular_all_time
+import artistalleydatabase.modules.anime.search.generated.resources.anime_home_suggestion_top
 import com.anilist.data.fragment.HomeMedia
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
@@ -38,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalDestinations
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
@@ -59,6 +59,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
+import artistalleydatabase.modules.anime.search.generated.resources.Res as SearchRes
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class AnimeHomeMediaViewModel(
@@ -91,7 +92,7 @@ abstract class AnimeHomeMediaViewModel(
 
     protected abstract suspend fun rows(): Flow<LoadingResult<List<RowInput>>>
 
-    abstract val suggestions: List<Pair<StringResource, AnimeDestination>>
+    abstract val suggestions: List<Pair<StringResource, NavDestination>>
 
     // It is faster to load the specific current list,
     // but this duplicates with the full user media lists
@@ -269,13 +270,13 @@ abstract class AnimeHomeMediaViewModel(
         currentMediaPreviousSize = settings.currentMediaListSizeAnime,
     ) {
         override val suggestions = listOf(
-            Res.string.anime_home_suggestion_popular_all_time to AnimeDestination.SearchMedia(
-                title = AnimeDestination.SearchMedia.Title.HomeSuggestionPopularAllTime,
+            SearchRes.string.anime_home_suggestion_popular_all_time to SearchDestinations.SearchMedia(
+                title = SearchDestinations.SearchMedia.Title.HomeSuggestionPopularAllTime,
                 mediaType = mediaType,
                 sort = MediaSortOption.POPULARITY
             ),
-            Res.string.anime_home_suggestion_top to AnimeDestination.SearchMedia(
-                title = AnimeDestination.SearchMedia.Title.HomeSuggestionTop,
+            SearchRes.string.anime_home_suggestion_top to SearchDestinations.SearchMedia(
+                title = SearchDestinations.SearchMedia.Title.HomeSuggestionTop,
                 mediaType = mediaType,
                 sort = MediaSortOption.SCORE,
             ),
@@ -285,8 +286,8 @@ abstract class AnimeHomeMediaViewModel(
             val trending = RowInput(
                 id = "anime_trending",
                 titleRes = Res.string.anime_home_trending_row_label,
-                viewAllRoute = AnimeDestination.SearchMedia(
-                    title = AnimeDestination.SearchMedia.Title.HomeTrending,
+                viewAllRoute = SearchDestinations.SearchMedia(
+                    title = SearchDestinations.SearchMedia.Title.HomeTrending,
                     mediaType = mediaType,
                     sort = MediaSortOption.TRENDING,
                 )
@@ -299,8 +300,8 @@ abstract class AnimeHomeMediaViewModel(
             val lastAdded = RowInput(
                 id = "anime_last_added",
                 titleRes = Res.string.anime_home_last_added,
-                viewAllRoute = AnimeDestination.SearchMedia(
-                    title = AnimeDestination.SearchMedia.Title.HomeLastAdded,
+                viewAllRoute = SearchDestinations.SearchMedia(
+                    title = SearchDestinations.SearchMedia.Title.HomeLastAdded,
                     mediaType = mediaType,
                     sort = MediaSortOption.ID,
                 )
@@ -364,13 +365,13 @@ abstract class AnimeHomeMediaViewModel(
         currentMediaPreviousSize = settings.currentMediaListSizeManga,
     ) {
         override val suggestions = listOf(
-            Res.string.anime_home_suggestion_popular_all_time to AnimeDestination.SearchMedia(
-                title = AnimeDestination.SearchMedia.Title.HomeSuggestionPopularAllTime,
+            SearchRes.string.anime_home_suggestion_popular_all_time to SearchDestinations.SearchMedia(
+                title = SearchDestinations.SearchMedia.Title.HomeSuggestionPopularAllTime,
                 mediaType = mediaType,
                 sort = MediaSortOption.POPULARITY,
             ),
-            Res.string.anime_home_suggestion_top to AnimeDestination.SearchMedia(
-                title = AnimeDestination.SearchMedia.Title.HomeSuggestionTop,
+            SearchRes.string.anime_home_suggestion_top to SearchDestinations.SearchMedia(
+                title = SearchDestinations.SearchMedia.Title.HomeSuggestionTop,
                 mediaType = mediaType,
                 sort = MediaSortOption.SCORE,
             ),
@@ -380,8 +381,8 @@ abstract class AnimeHomeMediaViewModel(
             val trending = RowInput(
                 id = "manga_trending",
                 titleRes = Res.string.anime_home_trending_row_label,
-                viewAllRoute = AnimeDestination.SearchMedia(
-                    title = AnimeDestination.SearchMedia.Title.HomeTrending,
+                viewAllRoute = SearchDestinations.SearchMedia(
+                    title = SearchDestinations.SearchMedia.Title.HomeTrending,
                     mediaType = mediaType,
                     sort = MediaSortOption.TRENDING,
                 )
@@ -389,8 +390,8 @@ abstract class AnimeHomeMediaViewModel(
             val lastAdded = RowInput(
                 id = "manga_last_added",
                 titleRes = Res.string.anime_home_last_added,
-                viewAllRoute = AnimeDestination.SearchMedia(
-                    title = AnimeDestination.SearchMedia.Title.HomeLastAdded,
+                viewAllRoute = SearchDestinations.SearchMedia(
+                    title = SearchDestinations.SearchMedia.Title.HomeLastAdded,
                     mediaType = mediaType,
                     sort = MediaSortOption.ID,
                 )
@@ -398,8 +399,8 @@ abstract class AnimeHomeMediaViewModel(
             val topReleasedThisYear = RowInput(
                 id = "manga_top_released_this_year",
                 titleRes = Res.string.anime_home_top_released_this_year,
-                viewAllRoute = AnimeDestination.SearchMedia(
-                    title = AnimeDestination.SearchMedia.Title.HomeReleasedThisYear,
+                viewAllRoute = SearchDestinations.SearchMedia(
+                    title = SearchDestinations.SearchMedia.Title.HomeReleasedThisYear,
                     mediaType = mediaType,
                     sort = MediaSortOption.SCORE,
                 )

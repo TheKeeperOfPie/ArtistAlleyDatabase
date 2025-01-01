@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.characters
+package com.thekeeperofpie.artistalleydatabase.anime.characters.data.filter
 
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 

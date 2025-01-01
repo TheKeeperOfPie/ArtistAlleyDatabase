@@ -64,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.search.SearchDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -206,9 +207,9 @@ object AnimeMediaListRow {
                                 onTagClick = { id, name ->
                                     if (entry != null) {
                                         navigationController.navigate(
-                                            AnimeDestination.SearchMedia(
+                                            SearchDestinations.SearchMedia(
                                                 title =
-                                                    AnimeDestination.SearchMedia.Title.Custom(name),
+                                                    SearchDestinations.SearchMedia.Title.Custom(name),
                                                 tagId = id,
                                                 mediaType = entry.media.type ?: MediaType.ANIME,
                                             )
