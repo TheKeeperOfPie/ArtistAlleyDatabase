@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlin.coroutines.suspendCoroutine
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -145,4 +146,16 @@ private class MappedMutableStateFlowWrapper<Original, Mapped>(
 
     @ExperimentalCoroutinesApi
     override fun resetReplayCache() = original.resetReplayCache()
+}
+
+@Suppress("OPT_IN_TO_INHERITANCE")
+class ReadOnlyStateFlow<T>(override val value: T) : StateFlow<T> {
+    override suspend fun collect(collector: FlowCollector<T>): Nothing {
+        collector.emit(value)
+        while (true) {
+            suspendCoroutine<Unit> { }
+        }
+    }
+
+    override val replayCache by lazy { listOf(value) }
 }

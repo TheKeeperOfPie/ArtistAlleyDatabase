@@ -30,6 +30,7 @@ abstract class SortFilteredViewModel<EntryType, ListItemType : Any, ListEntryTyp
     private val loadingErrorTextRes: StringResource,
 ) : ViewModel() {
 
+    // TODO: Convert this to StateFlow
     var entry by mutableStateOf<LoadingResult<EntryType>>(LoadingResult.loading())
 
     val items = MutableStateFlow(PagingData.empty<ListEntryType>())

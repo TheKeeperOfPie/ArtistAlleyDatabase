@@ -220,7 +220,7 @@ class ActivitySortFilterViewModel(
     }.debounceState(viewModelScope, 1.seconds)
 
     val state = SortFilterState<FilterParams>(
-        sections = MutableStateFlow(sections),
+        sections = sections,
         filterParams = filterParams,
         collapseOnClose = mediaDataSettings.collapseAnimeFiltersOnClose,
     )

@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -26,6 +27,7 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @Inject
 class ForumSubsectionSortFilterViewModel(
@@ -104,10 +106,10 @@ class ForumSubsectionSortFilterViewModel(
                 mediaCategoryId = ((it[4]) as MediaNavigationData?)?.id?.toString()
                     ?: initialParams.mediaCategoryId,
             )
-        }
+        }.debounceState(viewModelScope, 1.seconds)
 
     val state = SortFilterState(
-        sections = MutableStateFlow(sections),
+        sections = sections,
         filterParams = filterParams,
         collapseOnClose = mediaDataSettings.collapseAnimeFiltersOnClose,
     )

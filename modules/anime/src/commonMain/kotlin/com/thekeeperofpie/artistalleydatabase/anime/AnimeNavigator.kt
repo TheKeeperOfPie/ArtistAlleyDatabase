@@ -551,8 +551,15 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel =
-                viewModel { component.mediaCharactersViewModel(createSavedStateHandle()) }
+            val mediaCharactersSortFilterViewModel = viewModel {
+                component.mediaCharactersSortFilterViewModel(createSavedStateHandle())
+            }
+            val viewModel = viewModel {
+                component.mediaCharactersViewModel(
+                    createSavedStateHandle(),
+                    mediaCharactersSortFilterViewModel,
+                )
+            }
             val destination = it.toRoute<AnimeDestination.MediaCharacters>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -562,6 +569,7 @@ object AnimeNavigator {
 
             MediaCharactersScreen(
                 viewModel = viewModel,
+                sortFilterState = mediaCharactersSortFilterViewModel.state,
                 upIconOption = UpIconOption.Back(navigationController),
                 headerValues = headerValues,
             )

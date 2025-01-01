@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.characters.media
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.characters.generated.resources.Res
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_on_list_label
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_setting_title_language
@@ -11,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataS
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -19,6 +21,7 @@ import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @Inject
 class CharacterMediaSortFilterViewModel(
@@ -78,10 +81,10 @@ class CharacterMediaSortFilterViewModel(
                 sortAscending = sortAscending,
                 onList = onList,
             )
-        }
+        }.debounceState(viewModelScope, 1.seconds)
 
     val state = SortFilterState(
-        sections = MutableStateFlow(sections),
+        sections = sections,
         filterParams = filterParams,
         collapseOnClose = mediaDataSettings.collapseAnimeFiltersOnClose,
     )

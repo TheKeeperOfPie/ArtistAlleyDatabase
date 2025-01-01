@@ -83,7 +83,7 @@ class CharacterSortFilterViewModel(
         }.debounceState(viewModelScope, 1.seconds)
 
     val state = SortFilterState(
-        sections = MutableStateFlow(sections),
+        sections = sections,
         filterParams = filterParams,
         collapseOnClose = settings.collapseAnimeFiltersOnClose,
     )

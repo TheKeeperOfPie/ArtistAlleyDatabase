@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
@@ -48,6 +49,16 @@ class SortFilterState<FilterParams>(
     val filterParams: StateFlow<FilterParams>,
     val collapseOnClose: StateFlow<Boolean>,
 ) {
+    constructor(
+        sections: List<SortFilterSectionState>,
+        filterParams: StateFlow<FilterParams>,
+        collapseOnClose: StateFlow<Boolean>,
+    ) : this(
+        sections = ReadOnlyStateFlow(sections),
+        filterParams = filterParams,
+        collapseOnClose = collapseOnClose,
+    )
+
     val expanded = SortFilterSection.ExpandedState()
 
     @Composable

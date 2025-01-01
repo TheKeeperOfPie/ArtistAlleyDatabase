@@ -3,43 +3,40 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.characters
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_characters_error_loading
 import com.anilist.data.fragment.CharacterWithRole
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
-import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import kotlinx.coroutines.flow.Flow
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 class MediaCharactersViewModel(
-    aniListApi: AuthedAniListApi,
+    private val aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
-    settings: AnimeSettings,
-    featureOverrideProvider: FeatureOverrideProvider,
-    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : HeaderAndListViewModel<MediaCharactersScreen.Entry, CharacterWithRole, CharacterDetails, CharacterSortOption, MediaCharactersSortFilterController.FilterParams>(
-    aniListApi = aniListApi,
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaCharactersSortFilterViewModel: MediaCharactersSortFilterViewModel,
+) : SortFilteredViewModel<MediaCharactersScreen.Entry, CharacterWithRole, CharacterDetails, MediaCharactersSortFilterViewModel.FilterParams>(
     loadingErrorTextRes = Res.string.anime_characters_error_loading,
 ) {
     private val destination = savedStateHandle.toDestination<AnimeDestination.MediaCharacters>(navigationTypeMap)
     val mediaId = destination.mediaId
+    val viewer = aniListApi.authedUser
 
-    override val sortFilterController =
-        MediaCharactersSortFilterController(viewModelScope, settings, featureOverrideProvider)
+    override val filterParams = mediaCharactersSortFilterViewModel.state.filterParams
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -60,19 +57,20 @@ class MediaCharactersViewModel(
     override fun entryId(entry: CharacterDetails) = entry.id
 
     override suspend fun initialRequest(
-        filterParams: MediaCharactersSortFilterController.FilterParams?,
+        filterParams: MediaCharactersSortFilterViewModel.FilterParams?,
     ) = MediaCharactersScreen.Entry(
         aniListApi.mediaAndCharacters(mediaId = mediaId)
     )
 
-    override suspend fun pagedRequest(
-        page: Int,
-        filterParams: MediaCharactersSortFilterController.FilterParams?,
-    ) = aniListApi.mediaAndCharactersPage(
-        mediaId = mediaId,
-        page = page,
-        sort = filterParams!!.sort.selectedOption(CharacterSortOption.RELEVANCE)
-            .toApiValue(filterParams.sortAscending),
-        role = filterParams.role,
-    ).media.characters.run { pageInfo to edges }
+    override suspend fun request(
+        filterParams: MediaCharactersSortFilterViewModel.FilterParams?,
+    ): Flow<PagingData<CharacterWithRole>> =
+        AniListPager { page ->
+            aniListApi.mediaAndCharactersPage(
+                mediaId = mediaId,
+                page = page,
+                sort = filterParams!!.sort.toApiValue(filterParams.sortAscending),
+                role = filterParams.role,
+            ).media.characters.run { pageInfo to edges }
+        }
 }

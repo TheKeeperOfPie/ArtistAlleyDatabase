@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.MangaUserListSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.characters.MediaCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
@@ -83,7 +84,8 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
         mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
     ) -> AnimeUserListViewModel
     val mediaActivitiesViewModel: (SavedStateHandle, ActivitySortFilterViewModel) -> MediaActivitiesViewModel
-    val mediaCharactersViewModel: (SavedStateHandle) -> MediaCharactersViewModel
+    val mediaCharactersSortFilterViewModel: (SavedStateHandle) -> MediaCharactersSortFilterViewModel
+    val mediaCharactersViewModel: (SavedStateHandle, MediaCharactersSortFilterViewModel) -> MediaCharactersViewModel
     val mediaEditViewModel: () -> MediaEditViewModel
     val mediaRecommendationsViewModelFactory: (mediaId: String) -> MediaRecommendationsViewModel.Factory
     val unlockScreenViewModel: () -> UnlockScreenViewModel
