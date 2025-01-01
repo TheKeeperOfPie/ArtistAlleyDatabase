@@ -56,7 +56,7 @@ fun NewsRow(
 ) {
     NavigationHeader(
         titleRes = Res.string.anime_news_row_title,
-        viewAllRoute = AnimeNewsNavDestinations.News,
+        viewAllRoute = AnimeNewsDestinations.News,
         viewAllContentDescriptionTextRes = Res.string.anime_news_row_view_all_content_description,
     )
 

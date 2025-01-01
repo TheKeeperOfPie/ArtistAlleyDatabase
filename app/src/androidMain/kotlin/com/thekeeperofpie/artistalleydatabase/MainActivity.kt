@@ -353,10 +353,6 @@ class MainActivity : ComponentActivity() {
                             navController = navHostController,
                             startDestination = startDestination,
                         ) {
-                            applicationComponent.navDestinationProviders.forEach {
-                                it.composable(this, navigationTypeMap)
-                            }
-
                             AnimeNavigator.initialize(
                                 navigationController = navigationController,
                                 navGraphBuilder = this,

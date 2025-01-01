@@ -127,10 +127,6 @@ fun main() {
                                     navController = navHostController,
                                     startDestination = AnimeNavDestinations.HOME.id,
                                 ) {
-                                    desktopComponent.navDestinationProviders.forEach {
-                                        it.composable(this, navigationTypeMap)
-                                    }
-
                                     AnimeNavigator.initialize(
                                         navigationController = navigationController,
                                         navGraphBuilder = this,

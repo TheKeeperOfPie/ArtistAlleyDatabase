@@ -89,6 +89,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.characterMediaItems
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCardRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationComposables
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationDestinations
@@ -721,6 +722,12 @@ object AnimeNavigator {
                 )
             },
             mediaEntryProvider = MediaCompactWithTagsEntry.Provider,
+        )
+
+        AnimeNewsDestinations.addToGraph(
+            navGraphBuilder = navGraphBuilder,
+            navigationTypeMap = navigationTypeMap,
+            component = component,
         )
 
         CharacterDestinations.addToGraph(

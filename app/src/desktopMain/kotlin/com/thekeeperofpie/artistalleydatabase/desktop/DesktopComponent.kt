@@ -19,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsStore
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestinationProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkComponent
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
@@ -44,8 +43,6 @@ abstract class DesktopComponent(
     abstract val httpClient: HttpClient
     abstract val navigationTypeMap: NavigationTypeMap
     abstract val settingsProvider: DesktopSettingsProvider
-
-    abstract val navDestinationProviders: Set<NavDestinationProvider>
 
     val DesktopSettingsProvider.bindAppSettings: AppSettings
         @Provides get() = this

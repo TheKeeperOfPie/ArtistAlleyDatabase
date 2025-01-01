@@ -172,6 +172,7 @@ sealed class SortFilterSectionState(val id: String) {
 
         enum class SelectionMethod {
             AT_MOST_ONE,
+            EXACTLY_ONE,
             ONLY_INCLUDE,
             ALLOW_EXCLUDE,
         }
@@ -205,6 +206,16 @@ sealed class SortFilterSectionState(val id: String) {
                         SelectionMethod.AT_MOST_ONE -> {
                             if (lockedFilterIn.isNotEmpty()) return@FilterSection
                             filterIn = if (it in filterIn) emptySet() else setOf(it)
+                            filterNotIn = emptySet()
+                        }
+                        SelectionMethod.EXACTLY_ONE -> {
+                            filterIn = setOf(
+                                if (it in filterIn) {
+                                    options[(options.indexOf(it) + 1) % options.size]
+                                } else {
+                                    it
+                                }
+                            )
                             filterNotIn = emptySet()
                         }
                         SelectionMethod.ONLY_INCLUDE -> {

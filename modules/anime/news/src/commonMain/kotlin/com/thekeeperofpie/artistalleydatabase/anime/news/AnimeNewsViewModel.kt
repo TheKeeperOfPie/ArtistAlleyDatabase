@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -15,25 +14,23 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 class AnimeNewsViewModel(
-    settings: NewsSettings,
     private val animeNewsController: AnimeNewsController,
+    @Assisted newsSortFilterViewModel: NewsSortFilterViewModel,
 ) : ViewModel() {
-
-    val sortFilterController = NewsSortFilterController(viewModelScope, settings)
 
     private val refresh = RefreshFlow()
 
-    var news = combine(refresh.updates, sortFilterController.filterParams, ::Pair)
-        .flowOn(CustomDispatchers.Main)
+    // TODO: Loading indicator isn't propagated from AnimeNewsController
+    var news = combine(refresh.updates, newsSortFilterViewModel.state.filterParams, ::Pair)
         .flatMapLatest { (_, filterParams) ->
             // More efficient to pre-calculate
             @Suppress("MoveVariableDeclarationIntoWhen")
-            val sortOption =
-                filterParams.sort.selectedOption(AnimeNewsSortOption.DATETIME)
+            val sortOption = filterParams.sort
             val baseComparator: Comparator<AnimeNewsEntry<*>> =
                 when (sortOption) {
                     AnimeNewsSortOption.DATETIME -> compareBy { it.date }
