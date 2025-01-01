@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.favorite.UserFavoriteC
 import com.thekeeperofpie.artistalleydatabase.anime.users.favorite.UserFavoriteMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.users.favorite.UserFavoriteStaffViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.users.favorite.UserFavoriteStudiosViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.users.follow.UserFollowSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.users.follow.UserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.users.social.UserSocialViewModel
 
@@ -14,8 +15,9 @@ interface UsersComponent {
     val userFavoriteMediaViewModelFactory: (SavedStateHandle) -> UserFavoriteMediaViewModel.Factory
     val userFavoriteStaffViewModelFactory: (SavedStateHandle) -> UserFavoriteStaffViewModel.Factory
     val userFavoriteStudiosViewModelFactory: (SavedStateHandle) -> UserFavoriteStudiosViewModel.Factory
-    val userListViewModelFollowersFactory: (SavedStateHandle) -> UserListViewModel.Followers.Factory
-    val userListViewModelFollowingFactory: (SavedStateHandle) -> UserListViewModel.Following.Factory
+    val userListViewModelFollowersFactory: (SavedStateHandle, UserFollowSortFilterViewModel) -> UserListViewModel.Followers.Factory
+    val userListViewModelFollowingFactory: (SavedStateHandle, UserFollowSortFilterViewModel) -> UserListViewModel.Following.Factory
     val userSocialViewModelFollowers: (userId: String?) -> UserSocialViewModel.Followers
     val userSocialViewModelFollowing: (userId: String?) -> UserSocialViewModel.Following
+    val userFollowSortFilterViewModel: (SavedStateHandle) -> UserFollowSortFilterViewModel
 }

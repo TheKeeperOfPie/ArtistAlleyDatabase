@@ -18,11 +18,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserUtils
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
@@ -45,19 +42,17 @@ abstract class UserListViewModel<MediaEntry>(
     mediaListStatusController: MediaListStatusController,
     ignoreController: IgnoreController,
     settings: MediaDataSettings,
-    featureOverrideProvider: FeatureOverrideProvider,
     private val apiCall: suspend (
         userId: String,
-        filterParams: UserFollowSortFilterController.FilterParams,
+        filterParams: UserFollowSortFilterViewModel.FilterParams,
         page: Int,
     ) -> Pair<PaginationInfo?, List<UserWithFavorites>>,
     mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
+    userFollowSortFilterViewModel: UserFollowSortFilterViewModel,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
 
-    val sortFilterController =
-        UserFollowSortFilterController(viewModelScope, settings, featureOverrideProvider)
     val users = MutableStateFlow(PagingData.empty<UserListRow.Entry<MediaEntry>>())
 
     abstract val userId: String?
@@ -66,7 +61,7 @@ abstract class UserListViewModel<MediaEntry>(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 aniListApi.authedUser,
-                sortFilterController.filterParams,
+                userFollowSortFilterViewModel.state.filterParams,
                 ::Pair
             ).flatMapLatest { (viewer, filterParams) ->
                 val userId = userId ?: viewer?.id
@@ -120,27 +115,26 @@ abstract class UserListViewModel<MediaEntry>(
         mediaListStatusController: MediaListStatusController,
         ignoreController: IgnoreController,
         settings: MediaDataSettings,
-        featureOverrideProvider: FeatureOverrideProvider,
         navigationTypeMap: NavigationTypeMap,
         @Assisted savedStateHandle: SavedStateHandle,
+        @Assisted userFollowSortFilterViewModel: UserFollowSortFilterViewModel,
         @Assisted mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
     ) : UserListViewModel<MediaEntry>(
         aniListApi = aniListApi,
         mediaListStatusController = mediaListStatusController,
         ignoreController = ignoreController,
         settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
         apiCall = { userId, filterParams, page ->
             val result = aniListApi.userSocialFollowingWithFavorites(
                 userId = userId,
-                sort = filterParams.sort.selectedOption(UserSortOption.ID)
-                    .toApiValue(filterParams.sortAscending),
+                sort = filterParams.sort.toApiValue(filterParams.sortAscending),
                 page = page,
             )
             result.page?.pageInfo to result.page?.following?.filterNotNull()
                 .orEmpty()
         },
         mediaEntryProvider = mediaEntryProvider,
+        userFollowSortFilterViewModel = userFollowSortFilterViewModel,
     ) {
         override val userId =
             savedStateHandle.toDestination<UserDestinations.UserFollowing>(navigationTypeMap).userId
@@ -151,9 +145,9 @@ abstract class UserListViewModel<MediaEntry>(
             private val mediaListStatusController: MediaListStatusController,
             private val ignoreController: IgnoreController,
             private val settings: MediaDataSettings,
-            private val featureOverrideProvider: FeatureOverrideProvider,
             private val navigationTypeMap: NavigationTypeMap,
             @Assisted private val savedStateHandle: SavedStateHandle,
+            @Assisted private val userFollowSortFilterViewModel: UserFollowSortFilterViewModel,
         ) {
             fun <MediaEntry> create(
                 mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
@@ -162,9 +156,9 @@ abstract class UserListViewModel<MediaEntry>(
                 mediaListStatusController = mediaListStatusController,
                 ignoreController = ignoreController,
                 settings = settings,
-                featureOverrideProvider = featureOverrideProvider,
                 navigationTypeMap = navigationTypeMap,
                 savedStateHandle = savedStateHandle,
+                userFollowSortFilterViewModel = userFollowSortFilterViewModel,
                 mediaEntryProvider = mediaEntryProvider,
             )
         }
@@ -176,27 +170,26 @@ abstract class UserListViewModel<MediaEntry>(
         mediaListStatusController: MediaListStatusController,
         ignoreController: IgnoreController,
         settings: MediaDataSettings,
-        featureOverrideProvider: FeatureOverrideProvider,
         navigationTypeMap: NavigationTypeMap,
         @Assisted savedStateHandle: SavedStateHandle,
+        @Assisted userFollowSortFilterViewModel: UserFollowSortFilterViewModel,
         @Assisted mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
     ) : UserListViewModel<MediaEntry>(
         aniListApi = aniListApi,
         mediaListStatusController = mediaListStatusController,
         ignoreController = ignoreController,
         settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
         apiCall = { userId, filterParams, page ->
             val result = aniListApi.userSocialFollowersWithFavorites(
                 userId = userId,
-                sort = filterParams.sort.selectedOption(UserSortOption.ID)
-                    .toApiValue(filterParams.sortAscending),
+                sort = filterParams.sort.toApiValue(filterParams.sortAscending),
                 page = page,
             )
             result.page?.pageInfo to result.page?.followers?.filterNotNull()
                 .orEmpty()
         },
         mediaEntryProvider = mediaEntryProvider,
+        userFollowSortFilterViewModel = userFollowSortFilterViewModel,
     ) {
         override val userId =
             savedStateHandle.toDestination<UserDestinations.UserFollowers>(navigationTypeMap).userId
@@ -207,9 +200,9 @@ abstract class UserListViewModel<MediaEntry>(
             private val mediaListStatusController: MediaListStatusController,
             private val ignoreController: IgnoreController,
             private val settings: MediaDataSettings,
-            private val featureOverrideProvider: FeatureOverrideProvider,
             private val navigationTypeMap: NavigationTypeMap,
             @Assisted private val savedStateHandle: SavedStateHandle,
+            @Assisted private val userFollowSortFilterViewModel: UserFollowSortFilterViewModel,
         ) {
             fun <MediaEntry> create(
                 mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
@@ -218,9 +211,9 @@ abstract class UserListViewModel<MediaEntry>(
                 mediaListStatusController = mediaListStatusController,
                 ignoreController = ignoreController,
                 settings = settings,
-                featureOverrideProvider = featureOverrideProvider,
                 navigationTypeMap = navigationTypeMap,
                 savedStateHandle = savedStateHandle,
+                userFollowSortFilterViewModel = userFollowSortFilterViewModel,
                 mediaEntryProvider = mediaEntryProvider,
             )
         }

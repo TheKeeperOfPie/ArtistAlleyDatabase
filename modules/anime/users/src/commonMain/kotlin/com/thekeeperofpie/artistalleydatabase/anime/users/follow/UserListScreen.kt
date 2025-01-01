@@ -23,8 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
@@ -35,7 +35,7 @@ object UserListScreen {
     operator fun <MediaEntry> invoke(
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         upIconOption: UpIconOption?,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         title: @Composable () -> String,
         users: LazyPagingItems<UserListRow.Entry<MediaEntry>>,
         mediaRow: LazyListScope.(
@@ -45,7 +45,7 @@ object UserListScreen {
     ) {
         mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = sortFilterState,
                 topBar = {
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -69,7 +69,7 @@ object UserListScreen {
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { sortFilterScaffoldPadding ->
                 val gridState = rememberLazyGridState()
-                sortFilterState().ImmediateScrollResetEffect(gridState)
+                sortFilterState.ImmediateScrollResetEffect(gridState)
                 VerticalList(
                     itemHeaderText = null,
                     items = users,

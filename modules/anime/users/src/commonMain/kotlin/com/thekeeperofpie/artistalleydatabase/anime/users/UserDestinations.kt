@@ -295,15 +295,20 @@ object UserDestinations {
 
         navGraphBuilder.sharedElementComposable<UserFollowing>(navigationTypeMap) {
             val destination = it.toRoute<UserFollowing>()
+            val userFollowSortFilterViewModel = viewModel {
+                component.userFollowSortFilterViewModel(createSavedStateHandle())
+            }
             val viewModel = viewModel {
-                component.userListViewModelFollowingFactory(createSavedStateHandle())
-                    .create(mediaWithListStatusEntryProvider)
+                component.userListViewModelFollowingFactory(
+                    createSavedStateHandle(),
+                    userFollowSortFilterViewModel,
+                ).create(mediaWithListStatusEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
             UserListScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = userFollowSortFilterViewModel.state,
                 title = {
                     if (destination.userId == null) {
                         stringResource(Res.string.anime_user_following_you)
@@ -323,15 +328,20 @@ object UserDestinations {
 
         navGraphBuilder.sharedElementComposable<UserFollowers>(navigationTypeMap) {
             val destination = it.toRoute<UserFollowers>()
+            val userFollowSortFilterViewModel = viewModel {
+                component.userFollowSortFilterViewModel(createSavedStateHandle())
+            }
             val viewModel = viewModel {
-                component.userListViewModelFollowersFactory(createSavedStateHandle())
-                    .create(mediaWithListStatusEntryProvider)
+                component.userListViewModelFollowersFactory(
+                    createSavedStateHandle(),
+                    userFollowSortFilterViewModel
+                ).create(mediaWithListStatusEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
             UserListScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = userFollowSortFilterViewModel.state,
                 title = {
                     if (destination.userId == null) {
                         stringResource(Res.string.anime_user_followers_you)
