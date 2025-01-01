@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
@@ -79,12 +80,14 @@ object UserListScreen {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                     item = {
-                        UserListRow(
-                            entry = it,
-                            mediaRow = { media ->
-                                mediaRow(media, onClickListEdit)
-                            }
-                        )
+                        SharedTransitionKeyScope("user_list_row", it?.user?.id?.toString()) {
+                            UserListRow(
+                                entry = it,
+                                mediaRow = { media ->
+                                    mediaRow(media, onClickListEdit)
+                                }
+                            )
+                        }
                     },
                     modifier = Modifier.padding(sortFilterScaffoldPadding)
                 )

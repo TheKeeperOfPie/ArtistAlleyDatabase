@@ -82,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
@@ -168,7 +169,8 @@ object AnimeSearchScreen {
                     SearchType.ANIME,
                     SearchType.MANGA,
                     SearchType.CHARACTER,
-                    SearchType.STAFF -> TODO()
+                    SearchType.STAFF,
+                        -> TODO()
                     SearchType.STUDIO -> viewModel.studioSortFilterController
                     SearchType.USER -> viewModel.userSortFilterController
                 }
@@ -430,29 +432,35 @@ object AnimeSearchScreen {
                     )
                 },
             )
-            is AnimeSearchEntry.Staff -> StaffListRow(
-                entry = entry.entry,
-                charactersSection = { horizontalCharactersRow(it) },
-                mediaSection = { media ->
-                    horizontalMediaCardRow(
-                        viewer = { viewer },
-                        media = media,
-                        onClickListEdit = onClickListEdit,
+            is AnimeSearchEntry.Staff ->
+                SharedTransitionKeyScope("staff_list_row", entry.entry.staff.id.toString()) {
+                    StaffListRow(
+                        entry = entry.entry,
+                        charactersSection = { horizontalCharactersRow(it) },
+                        mediaSection = { media ->
+                            horizontalMediaCardRow(
+                                viewer = { viewer },
+                                media = media,
+                                onClickListEdit = onClickListEdit,
+                            )
+                        },
                     )
-                },
-            )
-            is AnimeSearchEntry.Studio -> StudioListRow(
-                entry = entry.entry,
-                mediaRow = { media ->
-                    horizontalMediaCardRow(
-                        viewer = { viewer },
-                        media = media,
-                        onClickListEdit = onClickListEdit,
-                        mediaWidth = 120.dp,
-                        mediaHeight = 180.dp,
+                }
+            is AnimeSearchEntry.Studio ->
+                SharedTransitionKeyScope("studio_list_row", entry.entry.studio.id.toString()) {
+                    StudioListRow(
+                        entry = entry.entry,
+                        mediaRow = { media ->
+                            horizontalMediaCardRow(
+                                viewer = { viewer },
+                                media = media,
+                                onClickListEdit = onClickListEdit,
+                                mediaWidth = 120.dp,
+                                mediaHeight = 180.dp,
+                            )
+                        },
                     )
-                },
-            )
+                }
             is AnimeSearchEntry.User -> UserListRow(
                 entry = entry.entry,
                 mediaRow = { media ->

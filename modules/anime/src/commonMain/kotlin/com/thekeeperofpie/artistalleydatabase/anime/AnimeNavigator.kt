@@ -120,6 +120,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -1280,17 +1281,19 @@ object AnimeNavigator {
                 )
             },
             staffRow = { viewer, entry, onClickListEdit ->
-                StaffListRow(
-                    entry = entry,
-                    charactersSection = { horizontalCharactersRow(it) },
-                    mediaSection = { media ->
-                        horizontalMediaCardRow(
-                            viewer = { viewer },
-                            media = media,
-                            onClickListEdit = onClickListEdit,
-                        )
-                    },
-                )
+                SharedTransitionKeyScope("staff_list_row", entry?.staff?.id?.toString()) {
+                    StaffListRow(
+                        entry = entry,
+                        charactersSection = { horizontalCharactersRow(it) },
+                        mediaSection = { media ->
+                            horizontalMediaCardRow(
+                                viewer = { viewer },
+                                media = media,
+                                onClickListEdit = onClickListEdit,
+                            )
+                        },
+                    )
+                }
             },
             studiosSection = { viewer, studios, hasMore, onClickListEdit ->
                 studiosSection(
@@ -1308,19 +1311,21 @@ object AnimeNavigator {
                 )
             },
             studioRow = { viewer, entry, onClickListEdit ->
-                StudioListRow(
-                    entry = entry,
-                    mediaHeight = 180.dp,
-                    mediaRow = { media ->
-                        horizontalMediaCardRow(
-                            viewer = { viewer },
-                            media = media,
-                            onClickListEdit = onClickListEdit,
-                            mediaWidth = 120.dp,
-                            mediaHeight = 180.dp,
-                        )
-                    },
-                )
+                SharedTransitionKeyScope("studio_list_row", entry?.studio?.id?.toString()) {
+                    StudioListRow(
+                        entry = entry,
+                        mediaHeight = 180.dp,
+                        mediaRow = { media ->
+                            horizontalMediaCardRow(
+                                viewer = { viewer },
+                                media = media,
+                                onClickListEdit = onClickListEdit,
+                                mediaWidth = 120.dp,
+                                mediaHeight = 180.dp,
+                            )
+                        },
+                    )
+                }
             },
             activitySection = { viewer, activities, sortFilterState, onActivityStatusUpdate, onClickListEdit, modifier ->
                 ActivityList(
