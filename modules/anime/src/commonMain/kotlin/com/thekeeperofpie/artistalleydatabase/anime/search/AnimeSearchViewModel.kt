@@ -18,7 +18,6 @@ import com.anilist.data.StudioSearchQuery
 import com.anilist.data.UserSearchQuery
 import com.anilist.data.fragment.MediaPreviewWithDescription
 import com.anilist.data.type.MediaType
-import com.anilist.data.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
@@ -40,7 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.data.AnimeSearchMedia
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter.StaffSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
-import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.studios.data.filter.StudiosSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortOption
@@ -49,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationControlle
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -91,6 +89,7 @@ class AnimeSearchViewModel<MediaEntry>(
     @Assisted mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
     @Assisted characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
     @Assisted staffSortFilterParams: StateFlow<StaffSortFilterParams>,
+    @Assisted studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
     @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
@@ -114,9 +113,6 @@ class AnimeSearchViewModel<MediaEntry>(
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
 
     val unlocked = monetizationController.unlocked
-
-    val studioSortFilterController =
-        StudioSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     val userSortFilterController =
         UserSortFilterController(viewModelScope, settings, featureOverrideProvider)
@@ -390,7 +386,7 @@ class AnimeSearchViewModel<MediaEntry>(
                 combine(
                     query.debounce(1.seconds),
                     refresh.updates,
-                    studioSortFilterController.filterParams,
+                    studiosSortFilterParams,
                     ::Triple,
                 )
             },
@@ -400,9 +396,7 @@ class AnimeSearchViewModel<MediaEntry>(
                         query = query,
                         page = it,
                         perPage = 25,
-                        sort = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                            .flatMap { it.value.toApiValue(filterParams.sortAscending) }
-                            .ifEmpty { listOf(StudioSort.SEARCH_MATCH) }
+                        sort = filterParams.sort.toApiValue(filterParams.sortAscending),
                     ).page.run { pageInfo to studios }
                 }
             },
@@ -571,6 +565,7 @@ class AnimeSearchViewModel<MediaEntry>(
         @Assisted private val mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
         @Assisted private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
         @Assisted private val staffSortFilterParams: StateFlow<StaffSortFilterParams>,
+        @Assisted private val studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
@@ -586,6 +581,7 @@ class AnimeSearchViewModel<MediaEntry>(
             mangaSortFilterViewModel = mangaSortFilterViewModel,
             characterSortFilterParams = characterSortFilterParams,
             staffSortFilterParams = staffSortFilterParams,
+            studiosSortFilterParams = studiosSortFilterParams,
             savedStateHandle = savedStateHandle,
             mediaPreviewWithDescriptionEntryProvider = mediaEntryProvider,
         )

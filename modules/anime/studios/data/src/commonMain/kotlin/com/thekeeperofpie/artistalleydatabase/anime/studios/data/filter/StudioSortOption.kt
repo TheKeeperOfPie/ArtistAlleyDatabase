@@ -1,10 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.anime.studios
+package com.thekeeperofpie.artistalleydatabase.anime.studios.data.filter
 
-import artistalleydatabase.modules.anime.studios.generated.resources.Res
-import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_favorites
-import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_id
-import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_name
-import artistalleydatabase.modules.anime.studios.generated.resources.anime_studio_sort_search_match
+import artistalleydatabase.modules.anime.studios.data.generated.resources.Res
+import artistalleydatabase.modules.anime.studios.data.generated.resources.anime_studio_sort_favorites
+import artistalleydatabase.modules.anime.studios.data.generated.resources.anime_studio_sort_id
+import artistalleydatabase.modules.anime.studios.data.generated.resources.anime_studio_sort_name
+import artistalleydatabase.modules.anime.studios.data.generated.resources.anime_studio_sort_search_match
 import com.anilist.data.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource

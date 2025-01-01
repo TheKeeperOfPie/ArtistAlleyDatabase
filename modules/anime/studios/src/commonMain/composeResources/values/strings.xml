@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="anime_studio_sort_search_match">Search match</string>
-    <string name="anime_studio_sort_id">Last added</string>
-    <string name="anime_studio_sort_name">Name</string>
-    <string name="anime_studio_sort_favorites">Favorites</string>
     <string name="anime_studio_filter_sort_label">Sort</string>
-
     <string name="anime_studio_media_filter_sort_label">Sort</string>
     <string name="anime_studio_media_filter_main_label">Main studio</string>
     <string name="anime_studio_media_filter_setting_title_language">Title language</string>

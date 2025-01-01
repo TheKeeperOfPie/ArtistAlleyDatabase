@@ -110,6 +110,7 @@ object AnimeSearchScreen {
         mangaSortFilterViewModel: MediaSortFilterViewModel<*>,
         characterSortFilterState: SortFilterState<*>,
         staffSortFilterState: SortFilterState<*>,
+        studiosSortFilterState: SortFilterState<*>,
         upIconOption: UpIconOption? = null,
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
@@ -123,12 +124,13 @@ object AnimeSearchScreen {
             bottomNavigationState = bottomNavigationState,
         ) {
             val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA || selectedType == SearchType.CHARACTER || selectedType == SearchType.STAFF) {
+            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA || selectedType == SearchType.CHARACTER || selectedType == SearchType.STAFF || selectedType == SearchType.STUDIO) {
                 val sortFilterState = when (selectedType) {
                     SearchType.ANIME -> animeSortFilterViewModel.state
                     SearchType.MANGA -> mangaSortFilterViewModel.state
                     SearchType.CHARACTER -> characterSortFilterState
                     SearchType.STAFF -> staffSortFilterState
+                    SearchType.STUDIO -> studiosSortFilterState
                     else -> TODO()
                 }
                 SortFilterBottomScaffold2(
@@ -170,8 +172,8 @@ object AnimeSearchScreen {
                     SearchType.MANGA,
                     SearchType.CHARACTER,
                     SearchType.STAFF,
+                    SearchType.STUDIO,
                         -> TODO()
-                    SearchType.STUDIO -> viewModel.studioSortFilterController
                     SearchType.USER -> viewModel.userSortFilterController
                 }
                 sortFilterController.PromptDialog()

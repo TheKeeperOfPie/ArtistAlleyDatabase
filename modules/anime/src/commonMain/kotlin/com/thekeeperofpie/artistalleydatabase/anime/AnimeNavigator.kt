@@ -206,6 +206,9 @@ object AnimeNavigator {
                     StaffSortFilterViewModel.InitialParams()
                 )
             }
+            val studiosSortFilterViewModel = viewModel {
+                component.studiosSortFilterViewModel(createSavedStateHandle())
+            }
             val viewModel = viewModel {
                 component.animeSearchViewModelFactory(
                     createSavedStateHandle(),
@@ -213,6 +216,7 @@ object AnimeNavigator {
                     mangaSortFilterViewModel,
                     characterSortFilterViewModel.state.filterParams,
                     staffSortFilterViewModel.state.filterParams,
+                    studiosSortFilterViewModel.state.filterParams,
                 ).create(MediaPreviewWithDescriptionEntry.Provider)
             }
             val state = remember {
