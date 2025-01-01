@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -12,6 +13,7 @@ import androidx.navigation.toRoute
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaHeaderData
 import com.anilist.data.fragment.MediaNavigationData
+import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
@@ -82,17 +84,36 @@ object ReviewDestinations {
         ) -> Unit,
     ) {
         navGraphBuilder.sharedElementComposable<Reviews>(navigationTypeMap) {
+            val animeSortFilterViewModel = viewModel {
+                component.reviewsSortFilterViewModel(
+                    createSavedStateHandle(),
+                    mediaDetailsRoute,
+                    MediaType.ANIME,
+                )
+            }
+            val mangaSortFilterViewModel = viewModel {
+                component.reviewsSortFilterViewModel(
+                    createSavedStateHandle(),
+                    mediaDetailsRoute,
+                    MediaType.MANGA,
+                )
+            }
             val viewModel = viewModel {
-                component.reviewsViewModelFactory().create(mediaEntryProvider, mediaDetailsRoute)
+                component.reviewsViewModelFactory(
+                    animeSortFilterViewModel,
+                    mangaSortFilterViewModel,
+                ).create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
+            val animeSelectedMedia by animeSortFilterViewModel.media.collectAsStateWithLifecycle()
+            val mangaSelectedMedia by mangaSortFilterViewModel.media.collectAsStateWithLifecycle()
             ReviewsScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
-                sortFilterStateAnime = viewModel.sortFilterControllerAnime::state,
-                sortFilterStateManga = viewModel.sortFilterControllerManga::state,
-                selectedMediaAnime = { viewModel.sortFilterControllerAnime.selectedMedia() },
-                selectedMediaManga = { viewModel.sortFilterControllerManga.selectedMedia() },
+                sortFilterStateAnime = animeSortFilterViewModel.state,
+                sortFilterStateManga = mangaSortFilterViewModel.state,
+                selectedMediaAnime = { animeSelectedMedia },
+                selectedMediaManga = { mangaSelectedMedia },
                 anime = viewModel.anime,
                 manga = viewModel.manga,
                 preferredMediaType = viewModel.preferredMediaType,

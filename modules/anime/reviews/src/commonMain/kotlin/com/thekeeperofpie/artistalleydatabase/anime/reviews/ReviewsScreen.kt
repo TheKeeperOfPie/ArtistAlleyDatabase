@@ -42,8 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -64,8 +64,8 @@ object ReviewsScreen {
     operator fun <MediaEntry> invoke(
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
         upIconOption: UpIconOption,
-        sortFilterStateAnime: () -> SortFilterController<*>.State,
-        sortFilterStateManga: () -> SortFilterController<*>.State,
+        sortFilterStateAnime: SortFilterState<*>,
+        sortFilterStateManga: SortFilterState<*>,
         selectedMediaAnime: () -> MediaNavigationData?,
         selectedMediaManga: () -> MediaNavigationData?,
         preferredMediaType: MediaType,
@@ -88,7 +88,7 @@ object ReviewsScreen {
         mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = if (selectedIsAnime) sortFilterStateAnime else sortFilterStateManga,
                 topBar = {
                     TopBar(
@@ -117,9 +117,9 @@ object ReviewsScreen {
                     showMedia = selectedMedia == null,
                     sortFilterState = {
                         if (selectedIsAnime) {
-                            sortFilterStateAnime()
+                            sortFilterStateAnime
                         } else {
-                            sortFilterStateManga()
+                            sortFilterStateManga
                         }
                     },
                     userRoute = userRoute,
@@ -187,7 +187,7 @@ object ReviewsScreen {
         scaffoldPadding: PaddingValues,
         reviews: LazyPagingItems<ReviewEntry<MediaEntry>>,
         showMedia: Boolean,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: () -> SortFilterState<*>,
         userRoute: UserRoute,
         mediaTitle: @Composable (MediaEntry) -> String?,
         mediaHeaderParams: (MediaEntry, title: String?, ImageState) -> MediaHeaderParams,

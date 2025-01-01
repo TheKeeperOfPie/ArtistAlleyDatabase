@@ -10,14 +10,12 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,8 +37,10 @@ class ReviewsViewModel<MediaEntry>(
     featureOverrideProvider: FeatureOverrideProvider,
     private val mediaListStatusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
+    // TODO: Sharing sort option was lost during ViewModel refactor
+    @Assisted private val animeSortFilterViewModel: ReviewsSortFilterViewModel,
+    @Assisted private val mangaSortFilterViewModel: ReviewsSortFilterViewModel,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
-    @Assisted private val mediaDetailsRoute: MediaDetailsRoute,
 ) : ViewModel() {
 
     val preferredMediaType get() = settings.preferredMediaType.value
@@ -50,47 +50,22 @@ class ReviewsViewModel<MediaEntry>(
     val anime = MutableStateFlow(PagingData.empty<ReviewEntry<MediaEntry>>())
     val manga = MutableStateFlow(PagingData.empty<ReviewEntry<MediaEntry>>())
 
-    // Shares the sort option between the tabs
-    val sortSection = ReviewSortFilterController.sortSection()
-
-    val sortFilterControllerAnime = ReviewSortFilterController(
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings,
-        featureOverrideProvider,
-        mediaType = MediaType.ANIME,
-        sortSection = sortSection,
-        mediaDetailsRoute = mediaDetailsRoute,
-    )
-
-    val sortFilterControllerManga = ReviewSortFilterController(
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings,
-        featureOverrideProvider,
-        mediaType = MediaType.MANGA,
-        sortSection = sortSection,
-        mediaDetailsRoute = mediaDetailsRoute,
-    )
-
     init {
-        collectReviews(MediaType.ANIME, anime, sortFilterControllerAnime)
-        collectReviews(MediaType.MANGA, manga, sortFilterControllerManga)
+        collectReviews(MediaType.ANIME, anime, animeSortFilterViewModel)
+        collectReviews(MediaType.MANGA, manga, mangaSortFilterViewModel)
     }
 
     private fun collectReviews(
         type: MediaType,
         reviews: MutableStateFlow<PagingData<ReviewEntry<MediaEntry>>>,
-        sortFilterController: ReviewSortFilterController,
+        sortFilterController: ReviewsSortFilterViewModel,
     ) {
         viewModelScope.launch(CustomDispatchers.Main) {
-            sortFilterController.filterParams
+            sortFilterController.state.filterParams
                 .flatMapLatest { filterParams ->
                     AniListPager {
                         val result = aniListApi.reviewSearch(
-                            sort = filterParams.sort
-                                .selectedOption(ReviewSortOption.CREATED_AT)
-                                .toApiValue(filterParams.sortAscending),
+                            sort = filterParams.sort.toApiValue(filterParams.sortAscending),
                             mediaType = type,
                             mediaId = filterParams.mediaId,
                             page = it,
@@ -138,10 +113,11 @@ class ReviewsViewModel<MediaEntry>(
         private val featureOverrideProvider: FeatureOverrideProvider,
         private val mediaListStatusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
+        @Assisted private val animeSortFilterViewModel: ReviewsSortFilterViewModel,
+        @Assisted private val mangaSortFilterViewModel: ReviewsSortFilterViewModel,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
-            mediaDetailsRoute: MediaDetailsRoute,
         ) = ReviewsViewModel(
             aniListApi = aniListApi,
             settings = settings,
@@ -149,7 +125,8 @@ class ReviewsViewModel<MediaEntry>(
             mediaListStatusController = mediaListStatusController,
             ignoreController = ignoreController,
             mediaEntryProvider = mediaEntryProvider,
-            mediaDetailsRoute = mediaDetailsRoute,
+            animeSortFilterViewModel = animeSortFilterViewModel,
+            mangaSortFilterViewModel = mangaSortFilterViewModel,
         )
     }
 }
