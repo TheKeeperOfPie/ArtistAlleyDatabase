@@ -58,10 +58,10 @@ class ReviewsViewModel<MediaEntry>(
     private fun collectReviews(
         type: MediaType,
         reviews: MutableStateFlow<PagingData<ReviewEntry<MediaEntry>>>,
-        sortFilterController: ReviewsSortFilterViewModel,
+        sortFilterViewModel: ReviewsSortFilterViewModel,
     ) {
         viewModelScope.launch(CustomDispatchers.Main) {
-            sortFilterController.state.filterParams
+            sortFilterViewModel.state.filterParams
                 .flatMapLatest { filterParams ->
                     AniListPager {
                         val result = aniListApi.reviewSearch(

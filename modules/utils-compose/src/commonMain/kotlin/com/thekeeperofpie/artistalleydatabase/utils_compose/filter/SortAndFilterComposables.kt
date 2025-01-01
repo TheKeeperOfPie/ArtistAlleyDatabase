@@ -835,39 +835,6 @@ fun RangeDataFilterSection(
     }
 }
 
-@Deprecated("Use SortFilterState variant")
-@Composable
-fun SortFilterOptionsPanelLegacy(
-    state: () -> SortFilterController<*>.State,
-    modifier: Modifier = Modifier,
-    showClear: Boolean = true,
-) {
-    HorizontalDivider()
-    Column(modifier = modifier) {
-        val sections = state().sections
-        Column(
-            Modifier
-                .weight(1f, fill = false)
-                .verticalScroll(rememberScrollState())
-                .animateContentSize()
-        ) {
-            sections.forEach {
-                it.Content(state().expanded, showDivider = true)
-            }
-        }
-
-        HorizontalDivider()
-
-        if (showClear) {
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = { sections.forEach(SortFilterSection::clear) }) {
-                    Text(text = stringResource(Res.string.clear))
-                }
-            }
-        }
-    }
-}
-
 @Composable
 fun SortFilterOptionsPanel(
     state: SortFilterState<*>,
@@ -895,98 +862,6 @@ fun SortFilterOptionsPanel(
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = { sections.forEach { it.clear() } }) {
                     Text(text = stringResource(Res.string.clear))
-                }
-            }
-        }
-    }
-}
-
-@Deprecated("Use state variant instead")
-@Composable
-fun SheetDragHandleLegacy(
-    state: () -> SortFilterController<*>.State?,
-    targetValue: () -> SheetValue,
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
-
-        val state = state() ?: return
-        val expandedMap = state.expanded.expandedState
-        val sections = state.sections
-
-        val collapseOnClose = state.collapseOnClose
-        val targetValue = targetValue()
-        LaunchedEffect(collapseOnClose, targetValue) {
-            if (targetValue != SheetValue.Expanded) {
-                if (collapseOnClose) {
-                    expandedMap.clear()
-                }
-            }
-        }
-
-        val showExpandAll by remember { derivedStateOf { expandedMap.none { it.value } } }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 8.dp)
-        ) {
-            val activatedCount by remember {
-                derivedStateOf { sections.count { it.nonDefault() } }
-            }
-
-            val badgeProgress by animateFloatAsState(
-                targetValue = if (activatedCount > 0) 1f else 0f,
-                label = "Sort filter badge progress",
-            )
-            if (badgeProgress > 0f) {
-                Box(
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .size(32.dp * badgeProgress)
-                        .background(MaterialTheme.colorScheme.secondary, CircleShape)
-                        .padding(4.dp * badgeProgress)
-                        .align(Alignment.CenterVertically)
-                ) {
-                    AutoSizeText(
-                        text = activatedCount.coerceAtLeast(1).toString(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-            }
-
-            AnimatedVisibility(visible = targetValue == SheetValue.Expanded) {
-                IconButton(
-                    onClick = {
-                        if (showExpandAll) {
-                            sections.forEach {
-                                expandedMap[it.id] = true
-                                if (it is SortFilterSection.Group<*> && it.children.size == 1) {
-                                    expandedMap[it.children.first().id] = true
-                                }
-                            }
-                        } else {
-                            expandedMap.clear()
-                        }
-                    },
-                ) {
-                    Icon(
-                        imageVector = if (showExpandAll) {
-                            Icons.Filled.UnfoldMore
-                        } else {
-                            Icons.Filled.UnfoldLess
-                        },
-                        contentDescription = stringResource(
-                            Res.string.section_expand_all_content_description
-                        ),
-                    )
                 }
             }
         }
@@ -1082,23 +957,6 @@ fun SheetDragHandle(
     }
 }
 
-@Deprecated("Use state variant instead")
-@Composable
-fun SheetContentLegacy(
-    state: () -> SortFilterController<*>.State?,
-    bottomNavigationState: BottomNavigationState?,
-) {
-    val state = state()
-    if (state != null) {
-        SortFilterOptionsPanelLegacy(
-            state = { state },
-            modifier = Modifier.padding(
-                bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
-            )
-        )
-    }
-}
-
 @Composable
 fun SheetContent(
     state: SortFilterState<*>,
@@ -1112,84 +970,8 @@ fun SheetContent(
     )
 }
 
-@Deprecated("Use state variant instead")
 @Composable
 fun SortFilterBottomScaffold(
-    sortFilterController: SortFilterController<*>?,
-    modifier: Modifier = Modifier,
-    topBar: @Composable (() -> Unit)? = null,
-    sheetState: SheetState = rememberStandardBottomSheetState(),
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
-    bottomNavigationState: BottomNavigationState? = null,
-    content: @Composable (PaddingValues) -> Unit,
-) = SortFilterBottomScaffold(
-    state = { sortFilterController?.state },
-    topBar = topBar,
-    sheetState = sheetState,
-    scaffoldState = scaffoldState,
-    bottomNavigationState = bottomNavigationState,
-    content = content,
-    modifier = modifier,
-)
-
-@Deprecated("Use state variant instead")
-@Composable
-fun SortFilterBottomScaffold(
-    state: () -> SortFilterController<*>.State?,
-    modifier: Modifier = Modifier,
-    topBar: @Composable (() -> Unit)? = null,
-    sheetState: SheetState = rememberStandardBottomSheetState(),
-    scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
-    bottomNavigationState: BottomNavigationState? = null,
-    content: @Composable (PaddingValues) -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(
-        enabled = bottomSheetState.targetValue == SheetValue.Expanded
-                && !WindowInsets.isImeVisibleKmp
-    ) {
-        scope.launch { bottomSheetState.partialExpand() }
-    }
-
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = if (state() == null) {
-            0.dp
-        } else {
-            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
-        },
-        sheetDragHandle = {
-            SheetDragHandleLegacy(
-                state = state,
-                targetValue = { bottomSheetState.targetValue },
-                onClick = {
-                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
-                        scope.launch { bottomSheetState.partialExpand() }
-                    } else {
-                        scope.launch { bottomSheetState.expand() }
-                    }
-                },
-            )
-        },
-        sheetContent = {
-            SheetContentLegacy(
-                state = state,
-                bottomNavigationState = bottomNavigationState,
-            )
-        },
-        sheetTonalElevation = 4.dp,
-        sheetShadowElevation = 4.dp,
-        topBar = topBar,
-        modifier = modifier,
-        content = content,
-        // TODO: Error state
-        // snackbarHost = {},
-    )
-}
-
-@Composable
-fun SortFilterBottomScaffold2(
     state: SortFilterState<*>,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,

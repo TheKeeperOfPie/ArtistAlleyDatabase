@@ -123,7 +123,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -189,8 +190,8 @@ object Anime2AnimeScreen {
         selectedTab: () -> GameTab,
         onSelectedTabChange: (GameTab) -> Unit,
         onSwitchStartTargetClick: () -> Unit,
-        options: () -> List<SortFilterSection>,
-        optionsState: () -> SortFilterSection.ExpandedState,
+        options: () -> List<SortFilterSectionState>,
+        optionsState: () -> SortFilterExpandedState,
         startMedia: () -> LoadingResult<GameContinuation>,
         startMediaCustomText: () -> String,
         onStartMediaCustomTextChange: (String) -> Unit,

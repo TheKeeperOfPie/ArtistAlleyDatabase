@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -52,7 +52,7 @@ object CharacterMediasScreen {
             val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
                 snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
             )
-            SortFilterBottomScaffold2(
+            SortFilterBottomScaffold(
                 state = sortFilterState,
                 topBar = {
                     CollapsingToolbar(

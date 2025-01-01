@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection2
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
@@ -62,7 +62,7 @@ class RecommendationsSortFilterViewModel(
     private val sourceMedia =
         savedStateHandle.getMutableStateFlow<MediaNavigationDataImpl?>(json, "sourceMedia", null)
     private val sourceMediaQuery = savedStateHandle.getMutableStateFlow("sourceMediaQuery", "")
-    private val sourceMediaSection = MediaSearchSortFilterSection2(
+    private val sourceMediaSection = MediaSearchSortFilterSection(
         id = "sourceMedia",
         titleTextRes = Res.string.anime_recommendation_filter_source_media_label,
         titleDropdownContentDescriptionRes = Res.string.anime_recommendation_filter_source_media_expand_content_description,
@@ -78,7 +78,7 @@ class RecommendationsSortFilterViewModel(
     private val targetMedia =
         savedStateHandle.getMutableStateFlow<MediaNavigationDataImpl?>(json, "targetMedia", null)
     private val targetMediaQuery = savedStateHandle.getMutableStateFlow("targetMediaQuery", "")
-    private val targetMediaSection = MediaSearchSortFilterSection2(
+    private val targetMediaSection = MediaSearchSortFilterSection(
         id = "targetMedia",
         titleTextRes = Res.string.anime_recommendation_filter_target_media_label,
         titleDropdownContentDescriptionRes = Res.string.anime_recommendation_filter_target_media_expand_content_description,

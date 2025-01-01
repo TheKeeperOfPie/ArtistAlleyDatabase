@@ -23,7 +23,7 @@ import artistalleydatabase.modules.anime.news.generated.resources.anime_news_tit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -50,7 +50,7 @@ object AnimeNewsScreen {
         }
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        SortFilterBottomScaffold2(
+        SortFilterBottomScaffold(
             state = sortFilterState,
             topBar = {
                 AppBar(

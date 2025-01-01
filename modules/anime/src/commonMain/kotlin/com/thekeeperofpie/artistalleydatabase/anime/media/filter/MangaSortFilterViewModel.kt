@@ -34,7 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection.ExpandedState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
@@ -126,7 +126,7 @@ open class MangaSortFilterViewModel<SortType>(
             releaseDate.collectAsStateWithLifecycle().value.summaryText() == null
 
         @Composable
-        override fun Content(state: ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             val releaseDate by releaseDate.collectAsStateWithLifecycle()
             var releaseDateShown by releaseDateShown.collectAsMutableStateWithLifecycle()
             val expanded = state.expandedState[id] == true

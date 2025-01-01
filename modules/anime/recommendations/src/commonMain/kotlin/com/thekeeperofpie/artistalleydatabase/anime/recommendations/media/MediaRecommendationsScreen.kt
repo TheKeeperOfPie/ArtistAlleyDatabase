@@ -13,7 +13,7 @@ import artistalleydatabase.modules.anime.recommendations.generated.resources.Res
 import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_recommendations_header
 import com.anilist.data.MediaAndRecommendationsQuery
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -33,7 +33,7 @@ object MediaRecommendationsScreen {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
-        SortFilterBottomScaffold2(
+        SortFilterBottomScaffold(
             state = sortFilterState,
             topBar = {
                 CollapsingToolbar(

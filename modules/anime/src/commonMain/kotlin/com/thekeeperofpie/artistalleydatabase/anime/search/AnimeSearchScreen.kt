@@ -85,7 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
@@ -132,7 +132,7 @@ object AnimeSearchScreen {
                 SearchType.STUDIO -> studiosSortFilterState
                 SearchType.USER -> usersSortFilterState
             }
-            SortFilterBottomScaffold2(
+            SortFilterBottomScaffold(
                 state = sortFilterState,
                 topBar = {
                     TopBar(

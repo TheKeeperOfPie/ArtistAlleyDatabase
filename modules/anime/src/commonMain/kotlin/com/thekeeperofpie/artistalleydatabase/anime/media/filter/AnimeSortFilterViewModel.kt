@@ -27,7 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
@@ -138,7 +138,7 @@ open class AnimeSortFilterViewModel<SortType>(
         }
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             var airingDateIsAdvanced by airingDateIsAdvanced.collectAsMutableStateWithLifecycle()
             var airingDate by airingDate.collectAsMutableStateWithLifecycle()
             var airingDateShown by airingDateShown.collectAsMutableStateWithLifecycle()

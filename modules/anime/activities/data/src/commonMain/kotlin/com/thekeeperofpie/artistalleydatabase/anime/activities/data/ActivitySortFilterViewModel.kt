@@ -29,14 +29,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDateAdvancedSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection2
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection.ExpandedState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -119,7 +119,7 @@ class ActivitySortFilterViewModel(
         override fun isDefault() = date.collectAsStateWithLifecycle().value.summaryText() == null
 
         @Composable
-        override fun Content(state: ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             var date by date.collectAsMutableStateWithLifecycle()
             var dateShown by dateShown.collectAsMutableStateWithLifecycle()
             val expanded = state.expandedState[id] == true
@@ -161,7 +161,7 @@ class ActivitySortFilterViewModel(
         savedStateHandle.getMutableStateFlow<MediaNavigationDataImpl?>(json, "mediaSelected", null)
     private val mediaQuery = savedStateHandle.getMutableStateFlow("mediaQuery", "")
     private val mediaSection =
-        if (initialParams.isMediaSpecific) null else MediaSearchSortFilterSection2(
+        if (initialParams.isMediaSpecific) null else MediaSearchSortFilterSection(
             titleTextRes = Res.string.anime_activity_filter_media_label,
             titleDropdownContentDescriptionRes = Res.string.anime_activity_filter_media_expand_content_description,
             scope = viewModelScope,

@@ -15,13 +15,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 class GameVariantUserList(
     api: AuthedAniListApi,
@@ -43,34 +46,36 @@ class GameVariantUserList(
     onClearText
 ) {
 
-    private val listStatusSection = SortFilterSection.Filter(
-        titleRes = Res.string.anime2anime_filter_list_status_label,
-        titleDropdownContentDescriptionRes = Res.string.anime2anime_filter_list_status_content_description,
-        includeExcludeIconContentDescriptionRes = Res.string.anime2anime_filter_list_status_chip_state_content_description,
-        values = listOf(
-            MediaListStatus.CURRENT,
-            MediaListStatus.PLANNING,
-            MediaListStatus.COMPLETED,
-            MediaListStatus.DROPPED,
-            MediaListStatus.PAUSED,
-            MediaListStatus.REPEATING,
+    // TODO: Wire up to SavedStateHandle
+    private val listStatusIn = MutableStateFlow(emptySet<MediaListStatus>())
+    private val listStatusNotIn = MutableStateFlow(setOf(MediaListStatus.DROPPED))
+    private val listStatusSection = SortFilterSectionState.Filter(
+        title = Res.string.anime2anime_filter_list_status_label,
+        titleDropdownContentDescription = Res.string.anime2anime_filter_list_status_content_description,
+        includeExcludeIconContentDescription = Res.string.anime2anime_filter_list_status_chip_state_content_description,
+        options = MutableStateFlow(
+            listOf(
+                MediaListStatus.CURRENT,
+                MediaListStatus.PLANNING,
+                MediaListStatus.COMPLETED,
+                MediaListStatus.DROPPED,
+                MediaListStatus.PAUSED,
+                MediaListStatus.REPEATING,
+            )
         ),
-        valueToText = { stringResource(it.value.toTextRes(MediaType.ANIME)) },
-    ).apply {
-        filterOptions = filterOptions.map {
-            if (it.value == MediaListStatus.DROPPED) {
-                it.copy(state = FilterIncludeExcludeState.EXCLUDE)
-            } else {
-                it
-            }
-        }
-    }
+        filterIn = listStatusIn,
+        filterNotIn = listStatusNotIn,
+        valueToText = { stringResource(it.toTextRes(MediaType.ANIME)) },
+    )
 
     override val options = listOf(listStatusSection)
 
-    override fun options() = Options(
-        listStatuses = listStatusSection.filterOptions,
-    )
+    override val optionsFlow by lazy {
+        combineStates(listStatusIn, listStatusNotIn) { listStatusIn, listStatusNotIn ->
+            Options(listStatusIn = listStatusIn, listStatusNotIn = listStatusNotIn)
+        }
+            .debounceState(scope, 1.seconds)
+    }
 
     override suspend fun loadStartId(options: Options) = loadRandomUserMediaId(options)
     override suspend fun loadTargetId(options: Options) = loadRandomUserMediaId(options)
@@ -89,8 +94,9 @@ class GameVariantUserList(
         val userList = userListResult.result.orEmpty()
         val media = userList.flatMap { it.entries }.let {
             FilterIncludeExcludeState.applyFiltering(
-                listStatusSection.filterOptions,
-                it,
+                includes = options.listStatusIn,
+                excludes = options.listStatusNotIn,
+                list = it,
                 { listOfNotNull(it.mediaFilterable.mediaListStatus?.toMediaListStatus()) },
                 mustContainAll = false,
             )
@@ -101,6 +107,7 @@ class GameVariantUserList(
     }
 
     data class Options(
-        val listStatuses: List<FilterEntry<MediaListStatus>>,
+        val listStatusIn: Set<MediaListStatus>,
+        val listStatusNotIn: Set<MediaListStatus>,
     )
 }

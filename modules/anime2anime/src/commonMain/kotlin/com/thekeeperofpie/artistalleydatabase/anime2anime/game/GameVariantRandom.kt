@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.CoroutineScope
 import kotlin.random.Random
@@ -87,7 +88,7 @@ class GameVariantRandom(
         }
     }
 
-    override fun options() = Unit
+    override val optionsFlow = ReadOnlyStateFlow(Unit)
 
     override suspend fun loadStartId(options: Unit) = loadRandom(
         random = Random,

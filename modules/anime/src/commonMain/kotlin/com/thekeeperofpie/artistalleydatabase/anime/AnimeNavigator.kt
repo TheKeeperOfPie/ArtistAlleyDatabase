@@ -1030,8 +1030,8 @@ object AnimeNavigator {
             },
             sortFilterState = { it.state },
             filterParams = { it.filterParams },
-            filterMedia = { sortFilterController, result, transform ->
-                sortFilterController.filterMedia(result, transform)
+            filterMedia = { sortFilterViewModel, result, transform ->
+                sortFilterViewModel.filterMedia(result, transform)
             },
             mediaViewOptionRow = { viewer, mediaViewOption, entry, onClickListEdit ->
                 MediaViewOptionRow(

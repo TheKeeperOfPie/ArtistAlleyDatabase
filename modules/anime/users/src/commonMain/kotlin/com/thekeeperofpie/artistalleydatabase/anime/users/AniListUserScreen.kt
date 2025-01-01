@@ -64,7 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
@@ -298,7 +298,7 @@ object AniListUserScreen {
                                             bottomNavigationState = bottomNavigationState,
                                         )
                                     UserTab.ACTIVITY -> {
-                                        SortFilterBottomScaffold2(state = activitySortFilterState) {
+                                        SortFilterBottomScaffold(state = activitySortFilterState) {
                                             activitySection(onClickListEdit, Modifier.padding(it))
                                         }
                                     }

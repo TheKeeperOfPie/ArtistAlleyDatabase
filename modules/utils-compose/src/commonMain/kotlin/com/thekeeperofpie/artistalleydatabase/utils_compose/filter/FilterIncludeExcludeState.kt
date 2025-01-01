@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState.values
+
+
 enum class FilterIncludeExcludeState {
     DEFAULT, INCLUDE, EXCLUDE;
 
@@ -44,8 +47,8 @@ enum class FilterIncludeExcludeState {
         )
 
         fun <Base, Comparison> applyFiltering(
-            includes: List<Comparison>,
-            excludes: List<Comparison>,
+            includes: Collection<Comparison>,
+            excludes: Collection<Comparison>,
             list: List<Base>,
             transform: (Base) -> List<Comparison>,
             transformIncludes: ((Base) -> List<Comparison>)? = null,

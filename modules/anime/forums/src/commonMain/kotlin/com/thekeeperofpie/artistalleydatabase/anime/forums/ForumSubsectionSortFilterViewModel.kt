@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaNavigationDataI
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection2
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
@@ -76,7 +76,7 @@ class ForumSubsectionSortFilterViewModel(
         savedStateHandle.getMutableStateFlow<MediaNavigationDataImpl?>(json, "mediaSelected", null)
     private val mediaQuery = savedStateHandle.getMutableStateFlow("mediaQuery", "")
     private val mediaSection =
-        if (initialParams.mediaCategoryId != null) null else MediaSearchSortFilterSection2(
+        if (initialParams.mediaCategoryId != null) null else MediaSearchSortFilterSection(
             titleTextRes = Res.string.anime_forum_filter_media_label,
             titleDropdownContentDescriptionRes = Res.string.anime_forum_filter_media_expand_content_description,
             scope = viewModelScope,

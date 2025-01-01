@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import app.cash.molecule.launchMolecule
 import artistalleydatabase.modules.anime2anime.generated.resources.Res
 import artistalleydatabase.modules.anime2anime.generated.resources.anime2anime_error_loading_media
 import co.touchlab.kermit.Logger
@@ -26,13 +25,14 @@ import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUiDispatcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.debounce
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -45,7 +45,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class GameVariant<Options>(
@@ -64,20 +63,17 @@ abstract class GameVariant<Options>(
 
     val state = GameState()
 
-    open val options: List<SortFilterSection> = emptyList()
-    val optionsState = SortFilterSection.ExpandedState()
+    open val options: List<SortFilterSectionState> = emptyList()
+    val optionsState = SortFilterExpandedState()
 
     protected val refreshStart = MutableStateFlow(-1L)
     protected val refreshTarget = MutableStateFlow(-1L)
     private val moleculeScope = CoroutineScope(scope.coroutineContext + ComposeUiDispatcher.Main)
-    private val optionsFlow by lazy(LazyThreadSafetyMode.NONE) {
-        moleculeScope.launchMolecule(ComposeUiDispatcher.recompositionMode) {
-            debounce(currentValue = options(), duration = 500.milliseconds)
-        }
-    }
 
     private var continuations by mutableStateOf(emptyList<GameContinuation>())
     private var continuationsJob: Job? = null
+
+    abstract val optionsFlow: StateFlow<Options>
 
     init {
         scope.launch(CustomDispatchers.Main) {
@@ -134,8 +130,6 @@ abstract class GameVariant<Options>(
                 .collectLatest { state.targetMedia.media = it }
         }
     }
-
-    abstract fun options(): Options
 
     abstract suspend fun loadStartId(options: Options): LoadingResult<Int>
     abstract suspend fun loadTargetId(options: Options): LoadingResult<Int>

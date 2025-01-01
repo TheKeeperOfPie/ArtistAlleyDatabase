@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection2
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
@@ -51,7 +51,7 @@ class ReviewsSortFilterViewModel(
     val media =
         savedStateHandle.getMutableStateFlow<MediaNavigationDataImpl?>(json, "media", null)
     private val mediaQuery = savedStateHandle.getMutableStateFlow("mediaQuery", "")
-    private val mediaSection = MediaSearchSortFilterSection2(
+    private val mediaSection = MediaSearchSortFilterSection(
         titleTextRes = Res.string.anime_review_filter_media_label,
         titleDropdownContentDescriptionRes = Res.string.anime_review_filter_media_expand_content_description,
         scope = viewModelScope,

@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime2anime.game.GameVariantRandom.Companion.loadRandom
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.CoroutineScope
 import kotlin.random.Random
@@ -34,7 +35,7 @@ class GameVariantDaily(
         private const val DAILY_END_TRIM = 500
     }
 
-    override fun options() = Unit
+    override val optionsFlow = ReadOnlyStateFlow(Unit)
 
     override suspend fun loadStartId(options: Unit): LoadingResult<Int> {
         val (animeCount, seed) = animeCountAndDate()

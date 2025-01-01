@@ -84,7 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
@@ -125,7 +125,7 @@ object AnimeUserListScreen {
             )
             val sortFilterViewModel = viewModel.mediaSortFilterViewModel
             val sortSheetState = rememberStandardBottomSheetState()
-            SortFilterBottomScaffold2(
+            SortFilterBottomScaffold(
                 state = sortFilterViewModel.state,
                 topBar = {
                     TopBar(

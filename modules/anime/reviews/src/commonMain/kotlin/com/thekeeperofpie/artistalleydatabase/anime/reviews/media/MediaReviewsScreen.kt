@@ -21,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
@@ -49,7 +49,7 @@ object MediaReviewsScreen {
             val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
                 snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
             )
-            SortFilterBottomScaffold2(
+            SortFilterBottomScaffold(
                 state = sortFilterState,
                 topBar = {
                     CollapsingToolbar(

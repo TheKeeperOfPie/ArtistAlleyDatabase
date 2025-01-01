@@ -59,7 +59,7 @@ class SortFilterState<FilterParams>(
         collapseOnClose = collapseOnClose,
     )
 
-    val expanded = SortFilterSection.ExpandedState()
+    val expanded = SortFilterExpandedState()
 
     @Composable
     fun ImmediateScrollResetEffect(lazyGridState: LazyGridState) {
@@ -78,7 +78,7 @@ sealed class SortFilterSectionState(val id: String) {
     abstract fun isDefault(): Boolean
 
     @Composable
-    abstract fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean)
+    abstract fun Content(state: SortFilterExpandedState, showDivider: Boolean)
 
     @Stable
     class Sort<SortType : SortOption>(
@@ -101,7 +101,7 @@ sealed class SortFilterSectionState(val id: String) {
             sortOption.collectAsStateWithLifecycle().value == defaultSort
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             val sortOptions by sortOptions.collectAsStateWithLifecycle()
             var sortOption by sortOption.collectAsMutableStateWithLifecycle()
             val sortAscending = sortAscending?.collectAsMutableStateWithLifecycle()
@@ -189,7 +189,7 @@ sealed class SortFilterSectionState(val id: String) {
                 && filterNotIn.collectAsStateWithLifecycle().value.isEmpty()
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             val options by options.collectAsStateWithLifecycle()
             var filterIn by filterIn.collectAsMutableStateWithLifecycle()
             var filterNotIn by filterNotIn.collectAsMutableStateWithLifecycle()
@@ -266,7 +266,7 @@ sealed class SortFilterSectionState(val id: String) {
         override fun isDefault() = data.collectAsStateWithLifecycle().value == initialData
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             var data by data.collectAsMutableStateWithLifecycle()
             RangeDataFilterSection(
                 expanded = { state.expandedState[id] == true },
@@ -303,13 +303,13 @@ sealed class SortFilterSectionState(val id: String) {
             children.collectAsStateWithLifecycle().value.all { it.isDefault() }
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             val children by children.collectAsStateWithLifecycle()
             if (onlyShowChildIfSingle && children.size == 1) {
                 children.first().Content(state = state, showDivider = showDivider)
                 return
             }
-            val expanded = state.expandedState[id] ?: false
+            val expanded = state.expandedState[id] == true
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -360,7 +360,7 @@ sealed class SortFilterSectionState(val id: String) {
         }
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             var enabled by property.collectAsMutableStateWithLifecycle()
             SortAndFilterComposables.SwitchRow(
                 title = title,
@@ -385,7 +385,7 @@ sealed class SortFilterSectionState(val id: String) {
         override fun isDefault() = true
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             var expanded by remember { mutableStateOf(false) }
             var selectedIndex by rememberSaveable {
                 mutableIntStateOf(values.indexOf(property.value).coerceAtLeast(0))
@@ -459,7 +459,7 @@ sealed class SortFilterSectionState(val id: String) {
         override fun isDefault() = true
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             SuggestionsSection(
                 expanded = { state.expandedState[id] == true },
                 onExpandedChange = { state.expandedState[id] = it },
@@ -491,7 +491,7 @@ sealed class SortFilterSectionState(val id: String) {
         override fun isDefault() = enabled.collectAsStateWithLifecycle().value == defaultEnabled
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             var enabled by enabled.collectAsMutableStateWithLifecycle()
             SortAndFilterComposables.SwitchRow(
                 title = title,
@@ -515,7 +515,7 @@ sealed class SortFilterSectionState(val id: String) {
         }
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             var enabled by enabled.collectAsMutableStateWithLifecycle()
             Row(
                 verticalAlignment = Alignment.CenterVertically,

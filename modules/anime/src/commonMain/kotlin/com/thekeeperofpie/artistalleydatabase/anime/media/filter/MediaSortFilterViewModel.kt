@@ -50,7 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
@@ -245,7 +245,7 @@ abstract class MediaSortFilterViewModel<SortType>(
                 && tagSearchQuery.collectAsState().value.isEmpty()
 
         @Composable
-        override fun Content(state: SortFilterSection.ExpandedState, showDivider: Boolean) {
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
             val tags by mediaTagsController.tags.collectAsStateWithLifecycle()
             var tagIn by tagIdIn.collectAsMutableStateWithLifecycle()
             var tagNotIn by tagIdNotIn.collectAsMutableStateWithLifecycle()
