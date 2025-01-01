@@ -17,8 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
@@ -29,7 +29,7 @@ object StaffCharactersScreen {
     operator fun <CharacterEntry : Any> invoke(
         staffId: String,
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         onRefresh: () -> Unit,
         characters: LazyPagingItems<CharacterEntry>,
         characterItemKey: (CharacterEntry) -> String,
@@ -45,7 +45,7 @@ object StaffCharactersScreen {
         mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = sortFilterState,
                 topBar = {
                     CollapsingToolbar(
@@ -66,7 +66,7 @@ object StaffCharactersScreen {
                 modifier = Modifier.padding(padding)
             ) {
                 val gridState = rememberLazyGridState()
-                sortFilterState().ImmediateScrollResetEffect(gridState)
+                sortFilterState.ImmediateScrollResetEffect(gridState)
                 VerticalList(
                     gridState = gridState,
                     onRefresh = onRefresh,

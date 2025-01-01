@@ -96,9 +96,14 @@ object StaffDestinations {
         navGraphBuilder.sharedElementComposable<StaffCharacters>(
             navigationTypeMap = navigationTypeMap,
         ) {
+            val staffCharactersSortFilterViewModel = viewModel {
+                component.staffCharactersSortFilterViewModel(createSavedStateHandle())
+            }
             val viewModel = viewModel {
-                component.staffCharactersViewModelFactory(createSavedStateHandle())
-                    .create(characterEntryProvider, mediaEntryProvider)
+                component.staffCharactersViewModelFactory(
+                    createSavedStateHandle(),
+                    staffCharactersSortFilterViewModel
+                ).create(characterEntryProvider, mediaEntryProvider)
             }
             val destination = it.toRoute<StaffCharacters>()
             val headerValues = StaffHeaderValues(
@@ -111,7 +116,7 @@ object StaffDestinations {
             StaffCharactersScreen(
                 staffId = viewModel.staffId,
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = staffCharactersSortFilterViewModel.state,
                 onRefresh = viewModel::refresh,
                 characters = viewModel.items.collectAsLazyPagingItems(),
                 characterItemKey = characterEntryProvider::id,

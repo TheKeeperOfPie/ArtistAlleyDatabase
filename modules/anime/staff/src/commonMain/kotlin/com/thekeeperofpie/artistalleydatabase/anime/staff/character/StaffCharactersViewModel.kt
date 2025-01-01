@@ -12,7 +12,6 @@ import com.anilist.data.fragment.MediaWithListStatus
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterEntryProvider
-import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHelper
@@ -23,9 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
@@ -44,12 +41,12 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
     private val ignoreController: IgnoreController,
     private val settings: StaffSettings,
     favoritesController: FavoritesController,
-    featureOverrideProvider: FeatureOverrideProvider,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted staffCharactersSortFilterViewModel: StaffCharactersSortFilterViewModel,
     @Assisted private val characterEntryProvider: CharacterEntryProvider<CharacterWithRoleAndFavorites, CharacterEntry, MediaEntry>,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaWithListStatus, MediaEntry>,
-) : SortFilteredViewModel<StaffAndCharactersQuery.Data.Staff, CharacterWithRoleAndFavorites, CharacterEntry, StaffCharactersSortFilterController.FilterParams>(
+) : SortFilteredViewModel<StaffAndCharactersQuery.Data.Staff, CharacterWithRoleAndFavorites, CharacterEntry, StaffCharactersSortFilterViewModel.FilterParams>(
     loadingErrorTextRes = Res.string.anime_staff_characters_error_loading,
 ) {
     private val destination =
@@ -59,10 +56,7 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    val sortFilterController =
-        StaffCharactersSortFilterController(viewModelScope, settings, featureOverrideProvider)
-
-    override val filterParams = sortFilterController.filterParams
+    override val filterParams = staffCharactersSortFilterViewModel.state.filterParams
 
     init {
         favoritesToggleHelper.initializeTracking(
@@ -84,17 +78,16 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
     override fun entryId(entry: CharacterEntry) = characterEntryProvider.id(entry)
 
     override suspend fun initialRequest(
-        filterParams: StaffCharactersSortFilterController.FilterParams?,
+        filterParams: StaffCharactersSortFilterViewModel.FilterParams?,
     ) = aniListApi.staffAndCharacters(staffId = staffId)
 
     override suspend fun request(
-        filterParams: StaffCharactersSortFilterController.FilterParams?,
+        filterParams: StaffCharactersSortFilterViewModel.FilterParams?,
     ): Flow<PagingData<CharacterWithRoleAndFavorites>> =
         AniListPager { page ->
             aniListApi.staffAndCharactersPage(
                 staffId = staffId,
-                sort = filterParams!!.sort.selectedOption(CharacterSortOption.FAVORITES)
-                    .toApiValue(filterParams.sortAscending),
+                sort = filterParams!!.sort.toApiValue(filterParams.sortAscending),
                 page = page,
             ).staff.characters.run { pageInfo to edges }
         }
@@ -131,9 +124,9 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
         private val ignoreController: IgnoreController,
         private val settings: StaffSettings,
         private val favoritesController: FavoritesController,
-        private val featureOverrideProvider: FeatureOverrideProvider,
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val staffCharactersSortFilterViewModel: StaffCharactersSortFilterViewModel,
     ) {
         fun <CharacterEntry : Any, MediaEntry> create(
             characterEntryProvider: CharacterEntryProvider<CharacterWithRoleAndFavorites, CharacterEntry, MediaEntry>,
@@ -144,9 +137,9 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
             ignoreController = ignoreController,
             settings = settings,
             favoritesController = favoritesController,
-            featureOverrideProvider = featureOverrideProvider,
             navigationTypeMap = navigationTypeMap,
             savedStateHandle = savedStateHandle,
+            staffCharactersSortFilterViewModel = staffCharactersSortFilterViewModel,
             characterEntryProvider = characterEntryProvider,
             mediaEntryProvider = mediaEntryProvider,
         )
