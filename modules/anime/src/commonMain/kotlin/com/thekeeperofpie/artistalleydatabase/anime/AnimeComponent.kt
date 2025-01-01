@@ -44,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter.StaffSortF
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
 import com.thekeeperofpie.artistalleydatabase.anime.studios.data.filter.StudiosSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
+import com.thekeeperofpie.artistalleydatabase.anime.users.data.filter.UsersSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
 import kotlinx.coroutines.flow.StateFlow
@@ -77,6 +78,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
         StateFlow<CharacterSortFilterParams>,
         StateFlow<StaffSortFilterParams>,
         StateFlow<StudiosSortFilterParams>,
+        StateFlow<UsersSortFilterParams>,
     ) -> AnimeSearchViewModel.Factory
 
     // TODO; Move into users module?

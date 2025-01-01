@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_user_sort_id">Last added</string>
+    <string name="anime_user_sort_search_match">Search match</string>
+    <string name="anime_user_sort_username">Username</string>
+    <string name="anime_user_sort_watched_time">Watched time</string>
+    <string name="anime_user_sort_chapters_read">Chapters read</string>
+</resources>

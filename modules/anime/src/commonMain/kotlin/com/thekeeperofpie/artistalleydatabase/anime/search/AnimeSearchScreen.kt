@@ -85,7 +85,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -111,6 +110,7 @@ object AnimeSearchScreen {
         characterSortFilterState: SortFilterState<*>,
         staffSortFilterState: SortFilterState<*>,
         studiosSortFilterState: SortFilterState<*>,
+        usersSortFilterState: SortFilterState<*>,
         upIconOption: UpIconOption? = null,
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
@@ -124,92 +124,45 @@ object AnimeSearchScreen {
             bottomNavigationState = bottomNavigationState,
         ) {
             val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA || selectedType == SearchType.CHARACTER || selectedType == SearchType.STAFF || selectedType == SearchType.STUDIO) {
-                val sortFilterState = when (selectedType) {
-                    SearchType.ANIME -> animeSortFilterViewModel.state
-                    SearchType.MANGA -> mangaSortFilterViewModel.state
-                    SearchType.CHARACTER -> characterSortFilterState
-                    SearchType.STAFF -> staffSortFilterState
-                    SearchType.STUDIO -> studiosSortFilterState
-                    else -> TODO()
-                }
-                SortFilterBottomScaffold2(
-                    state = sortFilterState,
-                    topBar = {
-                        TopBar(
-                            viewModel = viewModel,
-                            state = state,
-                            upIconOption = upIconOption,
-                            scrollBehavior = scrollBehavior,
-                            sheetState = bottomSheetScaffoldState.bottomSheetState,
-                            mediaEditState = editViewModel.state,
-                        )
-                    },
-                    sheetState = bottomSheetScaffoldState.bottomSheetState,
-                    scaffoldState = bottomSheetScaffoldState,
-                    bottomNavigationState = bottomNavigationState,
-                    modifier = Modifier
-                        .conditionally(bottomNavigationState != null) {
-                            nestedScroll(bottomNavigationState!!.nestedScrollConnection)
-                        }
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                ) { scaffoldPadding ->
-                    val gridState = scrollStateSaver.lazyGridState()
-                    sortFilterState.ImmediateScrollResetEffect(gridState)
-                    Content(
+            val sortFilterState = when (selectedType) {
+                SearchType.ANIME -> animeSortFilterViewModel.state
+                SearchType.MANGA -> mangaSortFilterViewModel.state
+                SearchType.CHARACTER -> characterSortFilterState
+                SearchType.STAFF -> staffSortFilterState
+                SearchType.STUDIO -> studiosSortFilterState
+                SearchType.USER -> usersSortFilterState
+            }
+            SortFilterBottomScaffold2(
+                state = sortFilterState,
+                topBar = {
+                    TopBar(
                         state = state,
-                        viewModel = viewModel,
-                        selectedType = selectedType,
-                        gridState = gridState,
-                        scaffoldPadding = scaffoldPadding,
-                        bottomSheetScaffoldState = bottomSheetScaffoldState,
-                        onClickListEdit = editViewModel::initialize,
+                        upIconOption = upIconOption,
+                        scrollBehavior = scrollBehavior,
+                        sheetState = bottomSheetScaffoldState.bottomSheetState,
+                        mediaEditState = editViewModel.state,
                     )
-                }
-            } else {
-                val sortFilterController = when (selectedType) {
-                    SearchType.ANIME,
-                    SearchType.MANGA,
-                    SearchType.CHARACTER,
-                    SearchType.STAFF,
-                    SearchType.STUDIO,
-                        -> TODO()
-                    SearchType.USER -> viewModel.userSortFilterController
-                }
-                sortFilterController.PromptDialog()
-                SortFilterBottomScaffold(
-                    sortFilterController = sortFilterController,
-                    topBar = {
-                        TopBar(
-                            viewModel = viewModel,
-                            state = state,
-                            upIconOption = upIconOption,
-                            scrollBehavior = scrollBehavior,
-                            sheetState = bottomSheetScaffoldState.bottomSheetState,
-                            mediaEditState = editViewModel.state,
-                        )
-                    },
-                    sheetState = bottomSheetScaffoldState.bottomSheetState,
-                    scaffoldState = bottomSheetScaffoldState,
-                    bottomNavigationState = bottomNavigationState,
-                    modifier = Modifier
-                        .conditionally(bottomNavigationState != null) {
-                            nestedScroll(bottomNavigationState!!.nestedScrollConnection)
-                        }
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                ) { scaffoldPadding ->
-                    val gridState = scrollStateSaver.lazyGridState()
-                    sortFilterController.ImmediateScrollResetEffect(gridState)
-                    Content(
-                        state = state,
-                        viewModel = viewModel,
-                        selectedType = selectedType,
-                        gridState = gridState,
-                        scaffoldPadding = scaffoldPadding,
-                        bottomSheetScaffoldState = bottomSheetScaffoldState,
-                        onClickListEdit = editViewModel::initialize,
-                    )
-                }
+                },
+                sheetState = bottomSheetScaffoldState.bottomSheetState,
+                scaffoldState = bottomSheetScaffoldState,
+                bottomNavigationState = bottomNavigationState,
+                modifier = Modifier
+                    .conditionally(bottomNavigationState != null) {
+                        nestedScroll(bottomNavigationState!!.nestedScrollConnection)
+                    }
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+            ) { scaffoldPadding ->
+                val gridState = scrollStateSaver.lazyGridState()
+                sortFilterState.ImmediateScrollResetEffect(gridState)
+                Content(
+                    state = state,
+                    viewModel = viewModel,
+                    selectedType = selectedType,
+                    gridState = gridState,
+                    scaffoldPadding = scaffoldPadding,
+                    bottomSheetScaffoldState = bottomSheetScaffoldState,
+                    onClickListEdit = editViewModel::initialize,
+                )
             }
         }
     }
@@ -316,7 +269,6 @@ object AnimeSearchScreen {
 
     @Composable
     private fun TopBar(
-        viewModel: AnimeSearchViewModel<*>,
         state: State,
         upIconOption: UpIconOption? = null,
         scrollBehavior: TopAppBarScrollBehavior,

@@ -55,7 +55,7 @@ class CharacterMediaSortFilterViewModel(
 
     private val onList = savedStateHandle.getMutableStateFlow<Boolean?>(json, "onList", null)
     private val onListSection = SortFilterSectionState.TriStateBoolean(
-        titleRes = Res.string.anime_character_media_filter_on_list_label,
+        title = Res.string.anime_character_media_filter_on_list_label,
         defaultEnabled = null,
         enabled = onList,
     )

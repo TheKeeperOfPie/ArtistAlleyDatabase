@@ -15,6 +15,7 @@ kotlin {
             api(projects.modules.anime.media.data)
             api(projects.modules.anime.staff.data)
             api(projects.modules.anime.studios.data)
+            api(projects.modules.anime.users.data)
             api(projects.modules.markdown)
             implementation(projects.modules.anime.ui)
             implementation(projects.modules.utils)

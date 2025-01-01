@@ -20,4 +20,5 @@ interface UsersComponent {
     val userSocialViewModelFollowers: (userId: String?) -> UserSocialViewModel.Followers
     val userSocialViewModelFollowing: (userId: String?) -> UserSocialViewModel.Following
     val userFollowSortFilterViewModel: (SavedStateHandle) -> UserFollowSortFilterViewModel
+    val usersSortFilterViewModel: (SavedStateHandle) -> UsersSortFilterViewModel
 }

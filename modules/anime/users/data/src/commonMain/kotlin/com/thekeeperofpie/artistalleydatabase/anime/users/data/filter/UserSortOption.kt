@@ -1,11 +1,11 @@
-package com.thekeeperofpie.artistalleydatabase.anime.users
+package com.thekeeperofpie.artistalleydatabase.anime.users.data.filter
 
-import artistalleydatabase.modules.anime.users.generated.resources.Res
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_sort_chapters_read
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_sort_id
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_sort_search_match
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_sort_username
-import artistalleydatabase.modules.anime.users.generated.resources.anime_user_sort_watched_time
+import artistalleydatabase.modules.anime.users.data.generated.resources.Res
+import artistalleydatabase.modules.anime.users.data.generated.resources.anime_user_sort_chapters_read
+import artistalleydatabase.modules.anime.users.data.generated.resources.anime_user_sort_id
+import artistalleydatabase.modules.anime.users.data.generated.resources.anime_user_sort_search_match
+import artistalleydatabase.modules.anime.users.data.generated.resources.anime_user_sort_username
+import artistalleydatabase.modules.anime.users.data.generated.resources.anime_user_sort_watched_time
 import com.anilist.data.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource

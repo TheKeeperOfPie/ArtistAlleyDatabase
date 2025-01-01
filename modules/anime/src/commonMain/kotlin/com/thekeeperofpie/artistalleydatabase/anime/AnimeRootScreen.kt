@@ -312,6 +312,9 @@ object AnimeRootScreen {
                             val studiosSortFilterViewModel = viewModel {
                                 component.studiosSortFilterViewModel(createSavedStateHandle())
                             }
+                            val usersSortFilterViewModel = viewModel {
+                                component.usersSortFilterViewModel(createSavedStateHandle())
+                            }
                             val viewModel = viewModel {
                                 component.animeSearchViewModelFactory(
                                     createSavedStateHandle(),
@@ -320,6 +323,7 @@ object AnimeRootScreen {
                                     characterSortFilterViewModel.state.filterParams,
                                     staffSortFilterViewModel.state.filterParams,
                                     studiosSortFilterViewModel.state.filterParams,
+                                    usersSortFilterViewModel.state.filterParams,
                                 ).create(MediaPreviewWithDescriptionEntry.Provider)
                             }
                             val state = AnimeSearchScreen.State(
@@ -336,6 +340,7 @@ object AnimeRootScreen {
                                 characterSortFilterState = characterSortFilterViewModel.state,
                                 staffSortFilterState = staffSortFilterViewModel.state,
                                 studiosSortFilterState = studiosSortFilterViewModel.state,
+                                usersSortFilterState = usersSortFilterViewModel.state,
                                 state = state,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeRootNavDestination.SEARCH.id,

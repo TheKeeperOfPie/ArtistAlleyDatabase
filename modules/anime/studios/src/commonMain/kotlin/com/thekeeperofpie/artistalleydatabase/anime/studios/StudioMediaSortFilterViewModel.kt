@@ -49,7 +49,7 @@ class StudioMediaSortFilterViewModel(
 
     private val main = savedStateHandle.getMutableStateFlow<Boolean?>(json, "main", null)
     private val mainSection = SortFilterSectionState.TriStateBoolean(
-        titleRes = Res.string.anime_studio_media_filter_main_label,
+        title = Res.string.anime_studio_media_filter_main_label,
         defaultEnabled = false,
         enabled = main,
     )

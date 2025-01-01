@@ -57,6 +57,7 @@
             <option value="$PROJECT_DIR$/modules/anime/studios/data" />
             <option value="$PROJECT_DIR$/modules/anime/ui" />
             <option value="$PROJECT_DIR$/modules/anime/users" />
+            <option value="$PROJECT_DIR$/modules/anime/users/data" />
             <option value="$PROJECT_DIR$/modules/anime2anime" />
             <option value="$PROJECT_DIR$/modules/animethemes" />
             <option value="$PROJECT_DIR$/modules/apollo" />

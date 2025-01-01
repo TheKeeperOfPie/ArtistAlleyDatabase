@@ -492,10 +492,10 @@ sealed class SortFilterSectionState(val id: String) {
     }
 
     class TriStateBoolean(
-        private val titleRes: StringResource,
+        private val title: StringResource,
         private val defaultEnabled: Boolean?,
         private val enabled: MutableStateFlow<Boolean?>,
-    ) : SortFilterSectionState(titleRes.key) {
+    ) : SortFilterSectionState(title.key) {
         @Composable
         override fun isDefault() = enabled.collectAsStateWithLifecycle().value == defaultEnabled
 
@@ -519,7 +519,7 @@ sealed class SortFilterSectionState(val id: String) {
                     }
             ) {
                 Text(
-                    text = stringResource(titleRes),
+                    text = stringResource(title),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 10.dp)

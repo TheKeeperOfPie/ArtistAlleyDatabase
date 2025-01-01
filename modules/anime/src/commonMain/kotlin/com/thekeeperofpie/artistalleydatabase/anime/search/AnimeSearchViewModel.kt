@@ -41,14 +41,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter.StaffSortF
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.studios.data.filter.StudiosSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.users.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserUtils
+import com.thekeeperofpie.artistalleydatabase.anime.users.data.filter.UsersSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -90,6 +88,7 @@ class AnimeSearchViewModel<MediaEntry>(
     @Assisted characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
     @Assisted staffSortFilterParams: StateFlow<StaffSortFilterParams>,
     @Assisted studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
+    @Assisted usersSortFilterParams: StateFlow<UsersSortFilterParams>,
     @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
@@ -113,9 +112,6 @@ class AnimeSearchViewModel<MediaEntry>(
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
 
     val unlocked = monetizationController.unlocked
-
-    val userSortFilterController =
-        UserSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     private val refresh = RefreshFlow()
 
@@ -448,7 +444,7 @@ class AnimeSearchViewModel<MediaEntry>(
             flow = {
                 combine(
                     query.debounce(1.seconds),
-                    userSortFilterController.filterParams,
+                    usersSortFilterParams,
                     refresh.updates,
                     ::Triple,
                 )
@@ -458,8 +454,7 @@ class AnimeSearchViewModel<MediaEntry>(
                     aniListApi.searchUsers(
                         query = query,
                         page = it,
-                        sort = filterParams.sort.selectedOption(UserSortOption.SEARCH_MATCH)
-                            .toApiValue(filterParams.sortAscending),
+                        sort = filterParams.sort.toApiValue(filterParams.sortAscending),
                         isModerator = filterParams.isModerator,
                     ).page.run { pageInfo to users }
                 }
@@ -566,6 +561,7 @@ class AnimeSearchViewModel<MediaEntry>(
         @Assisted private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
         @Assisted private val staffSortFilterParams: StateFlow<StaffSortFilterParams>,
         @Assisted private val studiosSortFilterParams: StateFlow<StudiosSortFilterParams>,
+        @Assisted private val usersSortFilterParams: StateFlow<UsersSortFilterParams>,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
@@ -582,6 +578,7 @@ class AnimeSearchViewModel<MediaEntry>(
             characterSortFilterParams = characterSortFilterParams,
             staffSortFilterParams = staffSortFilterParams,
             studiosSortFilterParams = studiosSortFilterParams,
+            usersSortFilterParams = usersSortFilterParams,
             savedStateHandle = savedStateHandle,
             mediaPreviewWithDescriptionEntryProvider = mediaEntryProvider,
         )
