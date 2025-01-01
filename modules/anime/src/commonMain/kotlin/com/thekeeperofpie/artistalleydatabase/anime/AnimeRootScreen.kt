@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_root_menu_history
@@ -65,7 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigationBarEnterAlwaysScrollBehavior
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -274,7 +274,7 @@ object AnimeRootScreen {
                         AnimeRootNavDestination.SEARCH -> {
                             val animeSortFilterViewModel = viewModel {
                                 component.animeSearchSortFilterViewModelFactory(
-                                    createSavedStateHandle("animeSearchSortFilter")
+                                    createSavedStateHandle()
                                 )
                                     .create(
                                         MediaSortFilterViewModel.InitialParams(
@@ -286,7 +286,7 @@ object AnimeRootScreen {
                             }
                             val mangaSortFilterViewModel = viewModel {
                                 component.mangaSearchSortFilterViewModelFactory(
-                                    createSavedStateHandle("mangaSearchSortFilter")
+                                    createSavedStateHandle()
                                 )
                                     .create(
                                         MediaSortFilterViewModel.InitialParams(
@@ -298,13 +298,13 @@ object AnimeRootScreen {
                             }
                             val characterSortFilterViewModel = viewModel {
                                 component.characterSortFilterViewModel(
-                                    createSavedStateHandle("characterSortFilter"),
+                                    createSavedStateHandle(),
                                     CharacterSortFilterViewModel.InitialParams()
                                 )
                             }
                             val viewModel = viewModel {
                                 component.animeSearchViewModelFactory(
-                                    createSavedStateHandle("animeSearch"),
+                                    createSavedStateHandle(),
                                     animeSortFilterViewModel,
                                     mangaSortFilterViewModel,
                                     characterSortFilterViewModel.state.filterParams,
@@ -349,7 +349,7 @@ object AnimeRootScreen {
                                 activitySortFilterViewModelProvider = {
                                     viewModel {
                                         component.activitySortFilterViewModel(
-                                            createSavedStateHandle("activitySortFilter"),
+                                            createSavedStateHandle(),
                                             AnimeDestination.MediaDetails.route,
                                             ActivitySortFilterViewModel.InitialParams(
                                                 // TODO: Re-evaluate this

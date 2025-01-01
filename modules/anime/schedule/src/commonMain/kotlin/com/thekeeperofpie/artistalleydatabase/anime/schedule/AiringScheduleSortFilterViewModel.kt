@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.schedule.generated.resources.Res
 import artistalleydatabase.modules.anime.schedule.generated.resources.anime_airing_schedule_sort_label
@@ -8,7 +9,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataS
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -23,7 +23,7 @@ class AiringScheduleSortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
     mediaDataSettings: MediaDataSettings,
-    @Assisted savedStateHandle: ScopedSavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
 ) : MediaDataSortFilterViewModel(
     featureOverrideProvider = featureOverrideProvider,
     settings = mediaDataSettings,

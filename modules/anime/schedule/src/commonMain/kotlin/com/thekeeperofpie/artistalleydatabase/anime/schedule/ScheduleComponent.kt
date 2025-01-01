@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
+import androidx.lifecycle.SavedStateHandle
 
 interface ScheduleComponent {
-    val airingScheduleSortFilterViewModel: (ScopedSavedStateHandle) -> AiringScheduleSortFilterViewModel
+    val airingScheduleSortFilterViewModel: (SavedStateHandle) -> AiringScheduleSortFilterViewModel
     val airingScheduleViewModelFactory: (AiringScheduleSortFilterViewModel) -> AiringScheduleViewModel.Factory
 }

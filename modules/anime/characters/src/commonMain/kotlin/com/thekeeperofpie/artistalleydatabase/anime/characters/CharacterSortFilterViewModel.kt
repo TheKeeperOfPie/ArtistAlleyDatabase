@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.characters
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.characters.generated.resources.Res
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_filter_birthday_label
@@ -11,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataS
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -27,7 +27,7 @@ class CharacterSortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
     settings: CharacterSettings,
-    @Assisted savedStateHandle: ScopedSavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted initialParams: InitialParams,
 ) : MediaDataSortFilterViewModel(
     featureOverrideProvider = featureOverrideProvider,

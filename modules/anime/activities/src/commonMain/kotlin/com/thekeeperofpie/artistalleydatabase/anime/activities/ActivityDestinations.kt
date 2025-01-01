@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ActivityDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -106,7 +105,7 @@ object ActivityDestinations {
         navGraphBuilder.sharedElementComposable<Activity>(navigationTypeMap) {
             val activitySortFilterViewModel = viewModel {
                 component.activitySortFilterViewModel(
-                    createSavedStateHandle("activitySortFilter"),
+                    createSavedStateHandle(),
                     mediaDetailsRoute,
                     ActivitySortFilterViewModel.InitialParams(
                         mediaSharedElement = true,

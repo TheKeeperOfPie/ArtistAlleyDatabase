@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.collection.LruCache
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
@@ -49,7 +50,6 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationControlle
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -87,23 +87,21 @@ class AnimeSearchViewModel<MediaEntry>(
     featureOverrideProvider: FeatureOverrideProvider,
     private val monetizationController: MonetizationController,
     navigationTypeMap: NavigationTypeMap,
-    @Assisted savedStateHandle: ScopedSavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
     @Assisted mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
     @Assisted characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
     @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
-    private val destination =
-        if (savedStateHandle.savedStateHandle.keys().isEmpty()) {
-            AnimeDestination.SearchMedia(
-                sort = MediaSortOption.SEARCH_MATCH,
-                lockSortOverride = false,
-            )
-        } else {
-            savedStateHandle.savedStateHandle
-                .toDestination<AnimeDestination.SearchMedia>(navigationTypeMap)
-        }
+    private val destination = if (savedStateHandle.keys().isEmpty()) {
+        AnimeDestination.SearchMedia(
+            sort = MediaSortOption.SEARCH_MATCH,
+            lockSortOverride = false,
+        )
+    } else {
+        savedStateHandle.toDestination<AnimeDestination.SearchMedia>(navigationTypeMap)
+    }
 
     val mediaViewOption = savedStateHandle.getMutableStateFlow(
         key = "mediaViewOption",
@@ -572,7 +570,7 @@ class AnimeSearchViewModel<MediaEntry>(
         private val featureOverrideProvider: FeatureOverrideProvider,
         private val monetizationController: MonetizationController,
         private val navigationTypeMap: NavigationTypeMap,
-        @Assisted private val savedStateHandle: ScopedSavedStateHandle,
+        @Assisted private val savedStateHandle: SavedStateHandle,
         @Assisted private val animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
         @Assisted private val mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
         @Assisted private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,

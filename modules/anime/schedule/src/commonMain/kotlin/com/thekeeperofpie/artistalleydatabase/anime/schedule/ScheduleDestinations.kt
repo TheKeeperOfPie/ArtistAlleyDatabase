@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.schedule
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import com.anilist.data.fragment.MediaNavigationData
@@ -13,7 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvide
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen.Entry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.SeasonalCurrentRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -40,7 +40,7 @@ object ScheduleDestinations {
     ) {
         navGraphBuilder.sharedElementComposable<AiringSchedule>(navigationTypeMap) {
             val airingScheduleSortFilterViewModel = viewModel {
-                component.airingScheduleSortFilterViewModel(createSavedStateHandle("airingScheduleSortFilter"))
+                component.airingScheduleSortFilterViewModel(createSavedStateHandle())
             }
             val viewModel = viewModel {
                 component.airingScheduleViewModelFactory(airingScheduleSortFilterViewModel)

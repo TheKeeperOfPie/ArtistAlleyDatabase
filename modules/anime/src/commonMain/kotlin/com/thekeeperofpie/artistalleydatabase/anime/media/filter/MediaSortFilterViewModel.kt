@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -47,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
@@ -74,7 +74,7 @@ abstract class MediaSortFilterViewModel<SortType>(
     private val mediaTagsController: MediaTagsController,
     mediaDataSettings: MediaDataSettings,
     initialParams: InitialParams<SortType>,
-    savedStateHandle: ScopedSavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     sortOptions: MutableStateFlow<List<SortType>>? = null,
 ) : MediaDataSortFilterViewModel(
     featureOverrideProvider = featureOverrideProvider,

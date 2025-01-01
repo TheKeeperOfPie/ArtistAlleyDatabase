@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_list_their_status_chip_state_content_description
@@ -24,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -46,7 +46,7 @@ class MangaUserListSortFilterViewModel(
     mediaLicensorsController: MediaLicensorsController,
     mediaTagsController: MediaTagsController,
     mediaDataSettings: MediaDataSettings,
-    @Assisted savedStateHandle: ScopedSavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted targetUserId: String?,
     @Assisted initialParams: InitialParams<MediaListSortOption>,
 ) : MangaSortFilterViewModel<MediaListSortOption>(
@@ -207,7 +207,7 @@ class MangaUserListSortFilterViewModel(
         private val mediaLicensorsController: MediaLicensorsController,
         private val mediaTagsController: MediaTagsController,
         private val mediaDataSettings: MediaDataSettings,
-        @Assisted private val savedStateHandle: ScopedSavedStateHandle,
+        @Assisted private val savedStateHandle: SavedStateHandle,
         @Assisted private val targetUserId: String?,
     ) {
         fun create(@Assisted initialParams: InitialParams<MediaListSortOption>) =

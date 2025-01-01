@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadCommentRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ForumThreadRoute
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -147,7 +146,7 @@ object ForumDestinations {
             val destination = it.toRoute<ForumSearch>()
             val forumSubsectionSortFilterViewModel = viewModel {
                 component.forumSubsectionSortFilterViewModel(
-                    createSavedStateHandle("forumSubsectionSortFilter"),
+                    createSavedStateHandle(),
                     mediaDetailsRoute, ForumSubsectionSortFilterViewModel.InitialParams(
                         defaultSort = destination.sort,
                         categoryId = destination.categoryId,

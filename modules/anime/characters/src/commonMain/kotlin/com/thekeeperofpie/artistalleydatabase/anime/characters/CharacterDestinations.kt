@@ -30,7 +30,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffDetails
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -145,7 +144,7 @@ object CharacterDestinations {
             val destination = it.toRoute<CharacterMedias>()
             val characterMediaSortFilterViewModel = viewModel {
                 component.characterMediaSortFilterViewModel(
-                    createSavedStateHandle("characterMediaSortFilter"),
+                    createSavedStateHandle(),
                     CharacterMediaSortFilterViewModel.InitialParams()
                 )
             }

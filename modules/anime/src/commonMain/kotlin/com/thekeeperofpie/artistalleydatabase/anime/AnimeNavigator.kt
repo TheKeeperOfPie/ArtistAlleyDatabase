@@ -121,7 +121,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.createSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -169,7 +168,7 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.SearchMedia>(navigationTypeMap) {
             val destination = it.toRoute<AnimeDestination.SearchMedia>()
             val animeSortFilterViewModel = viewModel {
-                component.animeSearchSortFilterViewModelFactory(createSavedStateHandle("animeSearchSortFilter"))
+                component.animeSearchSortFilterViewModelFactory(createSavedStateHandle())
                     .create(
                         MediaSortFilterViewModel.InitialParams(
                             defaultSort = destination.sort ?: MediaSortOption.SEARCH_MATCH,
@@ -182,7 +181,7 @@ object AnimeNavigator {
                     )
             }
             val mangaSortFilterViewModel = viewModel {
-                component.mangaSearchSortFilterViewModelFactory(createSavedStateHandle("mangaSearchSortFilter"))
+                component.mangaSearchSortFilterViewModelFactory(createSavedStateHandle())
                     .create(
                         MediaSortFilterViewModel.InitialParams(
                             sortClass = MediaSortOption::class,
@@ -196,13 +195,13 @@ object AnimeNavigator {
             }
             val characterSortFilterViewModel = viewModel {
                 component.characterSortFilterViewModel(
-                    createSavedStateHandle("characterSortFilter"),
+                    createSavedStateHandle(),
                     CharacterSortFilterViewModel.InitialParams()
                 )
             }
             val viewModel = viewModel {
                 component.animeSearchViewModelFactory(
-                    createSavedStateHandle("animeSearch"),
+                    createSavedStateHandle(),
                     animeSortFilterViewModel,
                     mangaSortFilterViewModel,
                     characterSortFilterViewModel.state.filterParams,
@@ -645,7 +644,7 @@ object AnimeNavigator {
         ) {
             val activitySortFilterViewModel = viewModel {
                 component.activitySortFilterViewModel(
-                    createSavedStateHandle("activitySortFilter"),
+                    createSavedStateHandle(),
                     AnimeDestination.MediaDetails.route,
                     ActivitySortFilterViewModel.InitialParams(
                         mediaSharedElement = true,
@@ -988,7 +987,7 @@ object AnimeNavigator {
             mediaEntryProvider = MediaPreviewWithDescriptionEntry.Provider,
             sortFilterViewModelProvider = {
                 viewModel {
-                    component.animeSortFilterViewModelFactory(createSavedStateHandle("animeSortFilter")).create(
+                    component.animeSortFilterViewModelFactory(createSavedStateHandle()).create(
                         MediaSortFilterViewModel.InitialParams(
                             mediaType = MediaType.ANIME,
                             sortClass = MediaSortOption::class,
@@ -1184,7 +1183,7 @@ object AnimeNavigator {
             activitySortFilterViewModelProvider = {
                 viewModel {
                     component.activitySortFilterViewModel(
-                        createSavedStateHandle("activitySortFilter"),
+                        createSavedStateHandle(),
                         AnimeDestination.MediaDetails.route,
                         ActivitySortFilterViewModel.InitialParams(
                             // TODO: Re-evaluate this
@@ -1360,10 +1359,10 @@ object AnimeNavigator {
         )
         val mediaSortFilterViewModel = viewModel(key = mediaType.rawValue + "_sortFilter") {
             if (mediaType == MediaType.ANIME) {
-                component.animeUserListSortFilterViewModelFactory(createSavedStateHandle("animeUserListSort"), userId)
+                component.animeUserListSortFilterViewModelFactory(createSavedStateHandle(), userId)
                     .create(initialParams)
             } else {
-                component.mangaUserListSortFilterViewModelFactory(createSavedStateHandle("mangaUserListSort"), userId)
+                component.mangaUserListSortFilterViewModelFactory(createSavedStateHandle(), userId)
                     .create(initialParams)
             }
         }

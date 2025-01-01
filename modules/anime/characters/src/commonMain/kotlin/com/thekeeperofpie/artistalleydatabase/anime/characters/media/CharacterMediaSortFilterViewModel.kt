@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.characters.media
 
+import androidx.lifecycle.SavedStateHandle
 import artistalleydatabase.modules.anime.characters.generated.resources.Res
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_on_list_label
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_setting_title_language
@@ -10,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataS
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -25,7 +25,7 @@ class CharacterMediaSortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
     mediaDataSettings: MediaDataSettings,
-    @Assisted savedStateHandle: ScopedSavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted initialParams: InitialParams,
 ) : MediaDataSortFilterViewModel(
     featureOverrideProvider = featureOverrideProvider,

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forums
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.forums.generated.resources.Res
@@ -17,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchSortFilterSection2
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ScopedSavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -32,7 +32,7 @@ class ForumSubsectionSortFilterViewModel(
     aniListApi: AuthedAniListApi,
     json: Json,
     mediaDataSettings: MediaDataSettings,
-    @Assisted savedStateHandle: ScopedSavedStateHandle,
+    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted mediaDetailsRoute: MediaDetailsRoute,
     @Assisted initialParams: InitialParams,
 ) : ViewModel() {

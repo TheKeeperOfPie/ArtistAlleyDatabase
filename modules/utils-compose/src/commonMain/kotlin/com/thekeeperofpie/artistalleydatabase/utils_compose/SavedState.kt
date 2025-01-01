@@ -1,11 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
-import androidx.annotation.MainThread
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapMutableState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
@@ -13,25 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.Json
 
-// TODO: Can this just use class name as prefix?
-@MainThread
-fun CreationExtras.createSavedStateHandle(scopeKey: String) =
-    ScopedSavedStateHandle(scopeKey, createSavedStateHandle())
-
-class ScopedSavedStateHandle(private val prefix: String, val savedStateHandle: SavedStateHandle) {
-
-    @MainThread
-    operator fun <T> get(key: String) = savedStateHandle.get<T>("$prefix-$key")
-
-    @MainThread
-    operator fun <T> set(key: String, value: T?) = savedStateHandle.set("$prefix-$key", value)
-
-    @MainThread
-    fun <T> getStateFlow(key: String, initialValue: T) =
-        savedStateHandle.getStateFlow<T>("$prefix-$key", initialValue)
-}
-
-inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     key: String,
     initialValue: () -> T,
 ): MutableStateFlow<T> {
@@ -40,7 +19,7 @@ inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
     return SavedStateStateFlowWrapper(key, this, stateFlow)
 }
 
-inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     key: String,
     initialValue: T,
 ): MutableStateFlow<T> {
@@ -51,7 +30,7 @@ inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
 
 context(ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
-inline fun <reified Input, Output> ScopedSavedStateHandle.getMutableStateFlow(
+inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
     key: String,
     initialValue: () -> Output,
     noinline serialize: (Output) -> Input,
@@ -61,7 +40,7 @@ inline fun <reified Input, Output> ScopedSavedStateHandle.getMutableStateFlow(
 
 context(ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
-inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     json: Json,
     key: String,
     initialValue: () -> T,
@@ -70,7 +49,7 @@ inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
 
 context(ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
-inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
+inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     json: Json,
     key: String,
     initialValue: T,
@@ -80,7 +59,7 @@ inline fun <reified T> ScopedSavedStateHandle.getMutableStateFlow(
 @OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 class SavedStateStateFlowWrapper<T>(
     private val key: String,
-    private val savedStateHandle: ScopedSavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val stateFlow: StateFlow<T>,
 ) : MutableStateFlow<T>, StateFlow<T> by stateFlow {
 
