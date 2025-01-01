@@ -64,15 +64,18 @@ object StudioDestinations {
             ),
         ) {
             val destination = it.toRoute<StudioMedias>()
+            val studioMediaSortFilterViewModel = viewModel {
+                component.studioMediaSortFilterViewModel(createSavedStateHandle())
+            }
             val viewModel = viewModel {
-                component.studioMediasViewModelFactory(createSavedStateHandle())
+                component.studioMediasViewModelFactory(createSavedStateHandle(), studioMediaSortFilterViewModel)
                     .create(mediaEntryProvider)
             }
 
             val viewer by viewModel.viewer.collectAsState()
             StudioMediasScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = studioMediaSortFilterViewModel.state,
                 upIconOption = UpIconOption.Back(LocalNavigationController.current),
                 onRefresh = viewModel::refresh,
                 media = viewModel.items.collectAsLazyPagingItems(),

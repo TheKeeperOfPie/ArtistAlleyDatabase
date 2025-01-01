@@ -58,6 +58,7 @@ fun <T1, T2, T3, T4, R> combineStates(
     )
 }
 
+// TODO: Use an auto-typing Array which returns T on operator fun get<T>?
 fun <R> combineStates(
     vararg flows: StateFlow<*>,
     transform: (Array<*>) -> R,

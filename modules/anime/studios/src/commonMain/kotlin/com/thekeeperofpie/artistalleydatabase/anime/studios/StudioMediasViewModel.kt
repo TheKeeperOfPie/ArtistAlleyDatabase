@@ -17,11 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.flow.Flow
@@ -35,20 +32,17 @@ class StudioMediasViewModel<MediaEntry : Any>(
     private val ignoreController: IgnoreController,
     private val settings: MediaDataSettings,
     favoritesController: FavoritesController,
-    featureOverrideProvider: FeatureOverrideProvider,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted studioMediaSortFilterViewModel: StudioMediaSortFilterViewModel,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
-) : SortFilteredViewModel<StudioMediasScreen.Entry, MediaPreview, MediaEntry, StudioMediaSortFilterController.FilterParams>(
+) : SortFilteredViewModel<StudioMediasScreen.Entry, MediaPreview, MediaEntry, StudioMediaSortFilterViewModel.FilterParams>(
     loadingErrorTextRes = Res.string.anime_studio_medias_error_loading,
 ) {
     val studioId =
         savedStateHandle.toDestination<StudioDestinations.StudioMedias>(navigationTypeMap).studioId
 
-    val sortFilterController =
-        StudioMediaSortFilterController(viewModelScope, settings, featureOverrideProvider)
-
-    override val filterParams = sortFilterController.filterParams
+    override val filterParams = studioMediaSortFilterViewModel.state.filterParams
 
     val viewer = aniListApi.authedUser
     val favoritesToggleHelper =
@@ -69,16 +63,15 @@ class StudioMediasViewModel<MediaEntry : Any>(
     override fun entryId(entry: MediaEntry) = mediaEntryProvider.id(entry)
 
     override suspend fun initialRequest(
-        filterParams: StudioMediaSortFilterController.FilterParams?,
+        filterParams: StudioMediaSortFilterViewModel.FilterParams?,
     ) = StudioMediasScreen.Entry(aniListApi.studioMedias(studioId = studioId))
 
     override suspend fun request(
-        filterParams: StudioMediaSortFilterController.FilterParams?,
+        filterParams: StudioMediaSortFilterViewModel.FilterParams?,
     ): Flow<PagingData<MediaPreview>> = AniListPager { page ->
         aniListApi.studioMediasPage(
             studioId = studioId,
-            sort = filterParams!!.sort.selectedOption(MediaSortOption.TRENDING)
-                .toApiValue(filterParams.sortAscending),
+            sort = filterParams!!.sort.toApiValue(filterParams.sortAscending),
             main = filterParams.main,
             page = page,
         ).studio.media.run { pageInfo to nodes }
@@ -100,9 +93,9 @@ class StudioMediasViewModel<MediaEntry : Any>(
         private val ignoreController: IgnoreController,
         private val settings: MediaDataSettings,
         private val favoritesController: FavoritesController,
-        private val featureOverrideProvider: FeatureOverrideProvider,
         private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val savedStateHandle: SavedStateHandle,
+        @Assisted private val studioMediaSortFilterViewModel: StudioMediaSortFilterViewModel,
     ) {
         fun <MediaEntry : Any> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
@@ -112,9 +105,9 @@ class StudioMediasViewModel<MediaEntry : Any>(
             ignoreController = ignoreController,
             settings = settings,
             favoritesController = favoritesController,
-            featureOverrideProvider = featureOverrideProvider,
             navigationTypeMap = navigationTypeMap,
             savedStateHandle = savedStateHandle,
+            studioMediaSortFilterViewModel = studioMediaSortFilterViewModel,
             mediaEntryProvider = mediaEntryProvider,
         )
     }

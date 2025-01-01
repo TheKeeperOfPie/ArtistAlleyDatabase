@@ -3,5 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.studios
 import androidx.lifecycle.SavedStateHandle
 
 interface StudiosComponent {
-    val studioMediasViewModelFactory: (SavedStateHandle) -> StudioMediasViewModel.Factory
+    val studioMediaSortFilterViewModel: (SavedStateHandle) -> StudioMediaSortFilterViewModel
+    val studioMediasViewModelFactory: (SavedStateHandle, StudioMediaSortFilterViewModel) -> StudioMediasViewModel.Factory
 }

@@ -15,8 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
@@ -27,7 +27,7 @@ object StudioMediasScreen {
     @Composable
     operator fun <MediaEntry : Any> invoke(
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         upIconOption: UpIconOption?,
         onRefresh: () -> Unit,
         media: LazyPagingItems<MediaEntry>,
@@ -44,7 +44,7 @@ object StudioMediasScreen {
         mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = sortFilterState,
                 topBar = {
                     TopAppBar(
@@ -66,7 +66,7 @@ object StudioMediasScreen {
                 modifier = Modifier.padding(padding)
             ) {
                 val gridState = rememberLazyGridState()
-                sortFilterState().ImmediateScrollResetEffect(gridState)
+                sortFilterState.ImmediateScrollResetEffect(gridState)
                 VerticalList(
                     gridState = gridState,
                     onRefresh = onRefresh,
