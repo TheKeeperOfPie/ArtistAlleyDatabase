@@ -84,14 +84,14 @@ object ReviewDestinations {
         ) -> Unit,
     ) {
         navGraphBuilder.sharedElementComposable<Reviews>(navigationTypeMap) {
-            val animeSortFilterViewModel = viewModel {
+            val animeSortFilterViewModel = viewModel(key = "anime") {
                 component.reviewsSortFilterViewModel(
                     createSavedStateHandle(),
                     mediaDetailsRoute,
                     MediaType.ANIME,
                 )
             }
-            val mangaSortFilterViewModel = viewModel {
+            val mangaSortFilterViewModel = viewModel(key = "manga") {
                 component.reviewsSortFilterViewModel(
                     createSavedStateHandle(),
                     mediaDetailsRoute,
