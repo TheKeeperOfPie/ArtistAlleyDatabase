@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import com.anilist.data.fragment.MediaCompactWithTags
@@ -45,15 +46,18 @@ object RecommendationDestinations {
         mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
     ) {
         navGraphBuilder.sharedElementComposable<Recommendations>(navigationTypeMap) {
+            val recommendationsSortFilterViewModel = viewModel {
+                component.recommendationsSortFilterViewModel(createSavedStateHandle(), mediaDetailsRoute)
+            }
             val viewModel = viewModel {
-                component.recommendationsViewModelFactory(mediaDetailsRoute)
+                component.recommendationsViewModelFactory(recommendationsSortFilterViewModel)
                     .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
             val navigationController = LocalNavigationController.current
             RecommendationsScreen(
                 mediaEditBottomSheetScaffold = mediaEditBottomSheetScaffold,
-                sortFilterState = { viewModel.sortFilterController.state },
+                sortFilterState = recommendationsSortFilterViewModel.state,
                 viewer = { viewer },
                 upIconOption = UpIconOption.Back(navigationController),
                 recommendations = viewModel.recommendations.collectAsLazyPagingItems(),
@@ -78,6 +82,7 @@ object RecommendationDestinations {
                     }
                 },
                 userRoute = userRoute,
+                onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
             )
         }
     }

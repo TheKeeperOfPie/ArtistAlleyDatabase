@@ -10,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
@@ -19,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,23 +36,14 @@ import me.tatarka.inject.annotations.Inject
 class RecommendationsViewModel<MediaEntry>(
     private val aniListApi: AuthedAniListApi,
     private val settings: MediaDataSettings,
-    featureOverrideProvider: FeatureOverrideProvider,
     private val mediaListStatusController: MediaListStatusController,
     private val recommendationStatusController: RecommendationStatusController,
     private val ignoreController: IgnoreController,
-    @Assisted mediaDetailsRoute: MediaDetailsRoute,
+    @Assisted recommendationsSortFilterViewModel: RecommendationsSortFilterViewModel,
     @Assisted mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
-
-    val sortFilterController = RecommendationSortFilterController(
-        scope = viewModelScope,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider,
-        mediaDetailsRoute = mediaDetailsRoute,
-    )
 
     val recommendations =
         MutableStateFlow(PagingData.empty<RecommendationEntry<MediaEntry>>())
@@ -65,13 +54,11 @@ class RecommendationsViewModel<MediaEntry>(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            combine(sortFilterController.filterParams, refresh.updates, ::Pair)
+            combine(recommendationsSortFilterViewModel.state.filterParams, refresh.updates, ::Pair)
                 .flatMapLatest { (filterParams) ->
                     AniListPager {
                         val result = aniListApi.recommendationSearch(
-                            sort = filterParams.sort
-                                .selectedOption(RecommendationSortOption.ID)
-                                .toApiValue(filterParams.sortAscending),
+                            sort = filterParams.sort.toApiValue(filterParams.sortAscending),
                             sourceMediaId = filterParams.sourceMediaId,
                             targetMediaId = filterParams.targetMediaId,
                             ratingGreater = filterParams.ratingRange.apiStart,
@@ -160,18 +147,17 @@ class RecommendationsViewModel<MediaEntry>(
         private val mediaListStatusController: MediaListStatusController,
         private val recommendationStatusController: RecommendationStatusController,
         private val ignoreController: IgnoreController,
-        @Assisted private val mediaDetailsRoute: MediaDetailsRoute,
+        @Assisted private val recommendationsSortFilterViewModel: RecommendationsSortFilterViewModel,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
         ) = RecommendationsViewModel(
             aniListApi = aniListApi,
             settings = settings,
-            featureOverrideProvider = featureOverrideProvider,
             mediaListStatusController = mediaListStatusController,
             recommendationStatusController = recommendationStatusController,
             ignoreController = ignoreController,
-            mediaDetailsRoute = mediaDetailsRoute,
+            recommendationsSortFilterViewModel = recommendationsSortFilterViewModel,
             mediaEntryProvider = mediaEntryProvider,
         )
     }

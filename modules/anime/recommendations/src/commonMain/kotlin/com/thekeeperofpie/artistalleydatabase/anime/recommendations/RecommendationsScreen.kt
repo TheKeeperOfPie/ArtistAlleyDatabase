@@ -25,8 +25,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.stringResource
@@ -37,7 +37,7 @@ object RecommendationsScreen {
     @Composable
     operator fun <MediaEntry> invoke(
         mediaEditBottomSheetScaffold: MediaEditBottomSheetScaffoldComposable,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         viewer: () -> AniListViewer?,
         upIconOption: UpIconOption?,
         recommendations: LazyPagingItems<RecommendationEntry<MediaEntry>>,
@@ -50,12 +50,12 @@ object RecommendationsScreen {
         onUserRecommendationRating: (
             recommendation: RecommendationData,
             newRating: RecommendationRating,
-        ) -> Unit = { _, _ -> },
+        ) -> Unit,
     ) {
         mediaEditBottomSheetScaffold { padding, onClickListEdit ->
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = sortFilterState,
                 topBar = {
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
