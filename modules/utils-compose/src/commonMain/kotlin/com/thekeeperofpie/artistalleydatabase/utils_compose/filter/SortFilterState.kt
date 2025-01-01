@@ -363,11 +363,11 @@ sealed class SortFilterSectionState(val id: String) {
     @OptIn(ExperimentalMaterial3Api::class)
     @Stable
     class Dropdown<T>(
-        private val labelTextRes: StringResource,
+        private val labelText: StringResource,
         private val values: List<T>,
         private val valueToText: @Composable (T) -> String,
         private val property: MutableStateFlow<T>,
-    ) : SortFilterSectionState(labelTextRes.key) {
+    ) : SortFilterSectionState(labelText.key) {
         override fun clear() = Unit
 
         @Composable
@@ -387,7 +387,7 @@ sealed class SortFilterSectionState(val id: String) {
                     .clickable { expanded = true }
             ) {
                 Text(
-                    text = stringResource(labelTextRes),
+                    text = stringResource(labelText),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .weight(1f)

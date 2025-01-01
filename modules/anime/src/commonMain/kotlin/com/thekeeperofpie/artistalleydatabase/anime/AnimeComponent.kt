@@ -40,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalComponent
 import com.thekeeperofpie.artistalleydatabase.anime.songs.SongsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffComponent
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter.StaffSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
 import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
@@ -73,6 +74,7 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
         MediaSortFilterViewModel<MediaSortOption>,
         MediaSortFilterViewModel<MediaSortOption>,
         StateFlow<CharacterSortFilterParams>,
+        StateFlow<StaffSortFilterParams>,
     ) -> AnimeSearchViewModel.Factory
 
     // TODO; Move into users module?

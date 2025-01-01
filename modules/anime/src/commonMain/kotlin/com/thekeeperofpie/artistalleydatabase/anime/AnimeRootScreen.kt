@@ -54,6 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.horizontalMediaCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
@@ -302,12 +303,19 @@ object AnimeRootScreen {
                                     CharacterSortFilterViewModel.InitialParams()
                                 )
                             }
+                            val staffSortFilterViewModel = viewModel {
+                                component.staffSortFilterViewModel(
+                                    createSavedStateHandle(),
+                                    StaffSortFilterViewModel.InitialParams()
+                                )
+                            }
                             val viewModel = viewModel {
                                 component.animeSearchViewModelFactory(
                                     createSavedStateHandle(),
                                     animeSortFilterViewModel,
                                     mangaSortFilterViewModel,
                                     characterSortFilterViewModel.state.filterParams,
+                                    staffSortFilterViewModel.state.filterParams,
                                 ).create(MediaPreviewWithDescriptionEntry.Provider)
                             }
                             val state = AnimeSearchScreen.State(
@@ -322,6 +330,7 @@ object AnimeRootScreen {
                                 animeSortFilterViewModel = animeSortFilterViewModel,
                                 mangaSortFilterViewModel = mangaSortFilterViewModel,
                                 characterSortFilterState = characterSortFilterViewModel.state,
+                                staffSortFilterState = staffSortFilterViewModel.state,
                                 state = state,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeRootNavDestination.SEARCH.id,

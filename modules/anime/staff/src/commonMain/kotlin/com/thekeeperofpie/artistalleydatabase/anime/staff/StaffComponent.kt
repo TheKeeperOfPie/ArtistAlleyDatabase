@@ -12,4 +12,5 @@ interface StaffComponent {
     val staffCharactersSortFilterViewModel: (SavedStateHandle) -> StaffCharactersSortFilterViewModel
     val staffCharactersViewModelFactory: (SavedStateHandle, StaffCharactersSortFilterViewModel) -> StaffCharactersViewModel.Factory
     val staffDetailsViewModelFactory: (SavedStateHandle) -> StaffDetailsViewModel.Factory
+    val staffSortFilterViewModel: (SavedStateHandle, StaffSortFilterViewModel.InitialParams) -> StaffSortFilterViewModel
 }

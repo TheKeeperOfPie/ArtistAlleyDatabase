@@ -38,8 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringDat
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.search.data.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter.StaffSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRowFragmentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserListRow
@@ -91,6 +90,7 @@ class AnimeSearchViewModel<MediaEntry>(
     @Assisted animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
     @Assisted mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
     @Assisted characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
+    @Assisted staffSortFilterParams: StateFlow<StaffSortFilterParams>,
     @Assisted mediaPreviewWithDescriptionEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
 ) : ViewModel() {
 
@@ -114,9 +114,6 @@ class AnimeSearchViewModel<MediaEntry>(
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
 
     val unlocked = monetizationController.unlocked
-
-    val staffSortFilterController =
-        StaffSortFilterController(viewModelScope, settings, featureOverrideProvider)
 
     val studioSortFilterController =
         StudioSortFilterController(viewModelScope, settings, featureOverrideProvider)
@@ -336,7 +333,7 @@ class AnimeSearchViewModel<MediaEntry>(
             flow = {
                 combine(
                     query.debounce(1.seconds),
-                    staffSortFilterController.filterParams,
+                    staffSortFilterParams,
                     refresh.updates,
                     ::Triple
                 )
@@ -347,8 +344,7 @@ class AnimeSearchViewModel<MediaEntry>(
                         query = query,
                         page = it,
                         perPage = 25,
-                        sort = filterParams.sort.selectedOption(StaffSortOption.SEARCH_MATCH)
-                            .toApiValueForSearch(filterParams.sortAscending),
+                        sort = filterParams.sort.toApiValueForSearch(filterParams.sortAscending),
                         isBirthday = filterParams.isBirthday,
                     ).page.run { pageInfo to staff }
                 }
@@ -574,6 +570,7 @@ class AnimeSearchViewModel<MediaEntry>(
         @Assisted private val animeSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
         @Assisted private val mangaSortFilterViewModel: MediaSortFilterViewModel<MediaSortOption>,
         @Assisted private val characterSortFilterParams: StateFlow<CharacterSortFilterParams>,
+        @Assisted private val staffSortFilterParams: StateFlow<StaffSortFilterParams>,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreviewWithDescription, MediaEntry>,
@@ -588,6 +585,7 @@ class AnimeSearchViewModel<MediaEntry>(
             animeSortFilterViewModel = animeSortFilterViewModel,
             mangaSortFilterViewModel = mangaSortFilterViewModel,
             characterSortFilterParams = characterSortFilterParams,
+            staffSortFilterParams = staffSortFilterParams,
             savedStateHandle = savedStateHandle,
             mediaPreviewWithDescriptionEntryProvider = mediaEntryProvider,
         )

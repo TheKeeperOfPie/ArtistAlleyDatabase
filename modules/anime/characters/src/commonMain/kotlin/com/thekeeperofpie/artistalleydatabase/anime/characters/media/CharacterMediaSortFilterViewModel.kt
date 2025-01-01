@@ -61,7 +61,7 @@ class CharacterMediaSortFilterViewModel(
     )
 
     private val titleLanguageSection = SortFilterSectionState.Dropdown(
-        labelTextRes = Res.string.anime_character_media_filter_setting_title_language,
+        labelText = Res.string.anime_character_media_filter_setting_title_language,
         values = AniListLanguageOption.entries,
         valueToText = { stringResource(it.textRes) },
         property = mediaDataSettings.languageOptionMedia,

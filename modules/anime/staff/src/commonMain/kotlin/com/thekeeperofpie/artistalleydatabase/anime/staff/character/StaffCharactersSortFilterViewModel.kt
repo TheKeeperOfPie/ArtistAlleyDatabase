@@ -50,7 +50,7 @@ class StaffCharactersSortFilterViewModel(
     )
 
     private val nameLanguageSection = SortFilterSectionState.Dropdown(
-        labelTextRes = Res.string.anime_staff_characters_filter_setting_name_language,
+        labelText = Res.string.anime_staff_characters_filter_setting_name_language,
         values = AniListLanguageOption.entries,
         valueToText = { stringResource(it.textRes) },
         property = staffSettings.languageOptionCharacters,

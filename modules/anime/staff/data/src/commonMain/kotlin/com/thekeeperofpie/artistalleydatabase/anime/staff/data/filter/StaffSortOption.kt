@@ -1,12 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.anime.staff
+package com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter
 
-import artistalleydatabase.modules.anime.staff.generated.resources.Res
-import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_sort_favorites
-import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_sort_id
-import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_sort_language
-import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_sort_relevance
-import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_sort_role
-import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_sort_search_match
+import artistalleydatabase.modules.anime.staff.data.generated.resources.Res
+import artistalleydatabase.modules.anime.staff.data.generated.resources.anime_staff_sort_favorites
+import artistalleydatabase.modules.anime.staff.data.generated.resources.anime_staff_sort_id
+import artistalleydatabase.modules.anime.staff.data.generated.resources.anime_staff_sort_language
+import artistalleydatabase.modules.anime.staff.data.generated.resources.anime_staff_sort_relevance
+import artistalleydatabase.modules.anime.staff.data.generated.resources.anime_staff_sort_role
+import artistalleydatabase.modules.anime.staff.data.generated.resources.anime_staff_sort_search_match
 import com.anilist.data.type.StaffSort
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import org.jetbrains.compose.resources.StringResource

@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="anime_staff_sort_id">Last added</string>
-    <string name="anime_staff_sort_search_match">Search match</string>
-    <string name="anime_staff_sort_role">Role</string>
-    <string name="anime_staff_sort_language">Language</string>
-    <string name="anime_staff_sort_favorites">Favorites</string>
-    <string name="anime_staff_sort_relevance">Relevance</string>
-
     <string name="anime_staff_overview_label">Overview</string>
     <string name="anime_staff_media_label">Media</string>
     <string name="anime_staff_staff_label">Staff</string>

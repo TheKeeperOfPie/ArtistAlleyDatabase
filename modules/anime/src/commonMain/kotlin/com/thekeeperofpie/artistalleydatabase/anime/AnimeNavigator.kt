@@ -105,6 +105,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongComposables
 import com.thekeeperofpie.artistalleydatabase.anime.songs.songsSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudioListRow
@@ -191,10 +192,17 @@ object AnimeNavigator {
                         )
                     )
             }
+            // TODO: Split the search ViewModel and remove these
             val characterSortFilterViewModel = viewModel {
                 component.characterSortFilterViewModel(
                     createSavedStateHandle(),
                     CharacterSortFilterViewModel.InitialParams()
+                )
+            }
+            val staffSortFilterViewModel = viewModel {
+                component.staffSortFilterViewModel(
+                    createSavedStateHandle(),
+                    StaffSortFilterViewModel.InitialParams()
                 )
             }
             val viewModel = viewModel {
@@ -203,6 +211,7 @@ object AnimeNavigator {
                     animeSortFilterViewModel,
                     mangaSortFilterViewModel,
                     characterSortFilterViewModel.state.filterParams,
+                    staffSortFilterViewModel.state.filterParams,
                 ).create(MediaPreviewWithDescriptionEntry.Provider)
             }
             val state = remember {

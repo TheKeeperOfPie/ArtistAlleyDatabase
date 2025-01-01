@@ -108,6 +108,7 @@ object AnimeSearchScreen {
         animeSortFilterViewModel: MediaSortFilterViewModel<*>,
         mangaSortFilterViewModel: MediaSortFilterViewModel<*>,
         characterSortFilterState: SortFilterState<*>,
+        staffSortFilterState: SortFilterState<*>,
         upIconOption: UpIconOption? = null,
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
@@ -121,11 +122,12 @@ object AnimeSearchScreen {
             bottomNavigationState = bottomNavigationState,
         ) {
             val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA || selectedType == SearchType.CHARACTER) {
+            if (selectedType == SearchType.ANIME || selectedType == SearchType.MANGA || selectedType == SearchType.CHARACTER || selectedType == SearchType.STAFF) {
                 val sortFilterState = when (selectedType) {
                     SearchType.ANIME -> animeSortFilterViewModel.state
                     SearchType.MANGA -> mangaSortFilterViewModel.state
                     SearchType.CHARACTER -> characterSortFilterState
+                    SearchType.STAFF -> staffSortFilterState
                     else -> TODO()
                 }
                 SortFilterBottomScaffold2(
@@ -163,10 +165,10 @@ object AnimeSearchScreen {
                 }
             } else {
                 val sortFilterController = when (selectedType) {
-                    SearchType.ANIME -> TODO()
-                    SearchType.MANGA -> TODO()
-                    SearchType.CHARACTER -> TODO()
-                    SearchType.STAFF -> viewModel.staffSortFilterController
+                    SearchType.ANIME,
+                    SearchType.MANGA,
+                    SearchType.CHARACTER,
+                    SearchType.STAFF -> TODO()
                     SearchType.STUDIO -> viewModel.studioSortFilterController
                     SearchType.USER -> viewModel.userSortFilterController
                 }

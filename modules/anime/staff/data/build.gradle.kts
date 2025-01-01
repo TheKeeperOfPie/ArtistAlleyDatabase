@@ -8,6 +8,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.anilist)
+            api(projects.modules.utilsCompose)
         }
     }
 }

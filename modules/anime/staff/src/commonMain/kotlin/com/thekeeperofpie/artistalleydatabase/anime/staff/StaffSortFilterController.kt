@@ -8,6 +8,7 @@ import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_f
 import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_filter_sort_label
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettingsSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.staff.data.filter.StaffSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSection
