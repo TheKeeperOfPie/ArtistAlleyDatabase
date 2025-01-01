@@ -18,14 +18,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationToggleHelper
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -43,11 +39,11 @@ class MediaRecommendationsViewModel<MediaEntry>(
     private val ignoreController: IgnoreController,
     private val settings: MediaDataSettings,
     favoritesController: FavoritesController,
-    featureOverrideProvider: FeatureOverrideProvider,
     @Assisted val mediaId: String,
+    @Assisted mediaRecommendationsSortFilterViewModel: MediaRecommendationsSortFilterViewModel,
     @Assisted private val mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
 ) : SortFilteredViewModel<MediaRecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
-        MediaRecommendationEntry<MediaEntry>, MediaRecommendationSortFilterController.FilterParams>(
+        MediaRecommendationEntry<MediaEntry>, MediaRecommendationsSortFilterViewModel.FilterParams>(
     loadingErrorTextRes = Res.string.anime_recommendations_error_loading
 ) {
     val viewer = aniListApi.authedUser
@@ -57,10 +53,7 @@ class MediaRecommendationsViewModel<MediaEntry>(
     val recommendationToggleHelper =
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
-    val sortFilterController =
-        MediaRecommendationSortFilterController(viewModelScope, settings, featureOverrideProvider)
-
-    override val filterParams = sortFilterController.filterParams
+    override val filterParams = mediaRecommendationsSortFilterViewModel.state.filterParams
 
     init {
         favoritesToggleHelper.initializeTracking(
@@ -83,17 +76,16 @@ class MediaRecommendationsViewModel<MediaEntry>(
         entry.recommendation.id.toString()
 
     override suspend fun initialRequest(
-        filterParams: MediaRecommendationSortFilterController.FilterParams?,
+        filterParams: MediaRecommendationsSortFilterViewModel.FilterParams?,
     ) = MediaRecommendationsScreen.Entry(aniListApi.mediaAndRecommendations(mediaId = mediaId))
 
     override suspend fun request(
-        filterParams: MediaRecommendationSortFilterController.FilterParams?,
+        filterParams: MediaRecommendationsSortFilterViewModel.FilterParams?,
     ): Flow<PagingData<MediaAndRecommendationsRecommendation>> =
         AniListPager { page ->
             aniListApi.mediaAndRecommendationsPage(
                 mediaId = mediaId,
-                sort = filterParams!!.sort.selectedOption(RecommendationSortOption.RATING)
-                    .toApiValue(filterParams.sortAscending),
+                sort = filterParams!!.sort.toApiValue(filterParams.sortAscending),
                 page = page,
             ).media.recommendations.run { pageInfo to nodes }
         }
@@ -134,9 +126,8 @@ class MediaRecommendationsViewModel<MediaEntry>(
         private val ignoreController: IgnoreController,
         private val settings: MediaDataSettings,
         private val favoritesController: FavoritesController,
-        private val featureOverrideProvider: FeatureOverrideProvider,
-        private val navigationTypeMap: NavigationTypeMap,
         @Assisted private val mediaId: String,
+        @Assisted private val mediaRecommendationsSortFilterViewModel: MediaRecommendationsSortFilterViewModel,
     ) {
         fun <MediaEntry> create(mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>) =
             MediaRecommendationsViewModel(
@@ -146,8 +137,8 @@ class MediaRecommendationsViewModel<MediaEntry>(
                 ignoreController = ignoreController,
                 settings = settings,
                 favoritesController = favoritesController,
-                featureOverrideProvider = featureOverrideProvider,
                 mediaId = mediaId,
+                mediaRecommendationsSortFilterViewModel = mediaRecommendationsSortFilterViewModel,
                 mediaEntryProvider = mediaEntryProvider,
             )
     }

@@ -41,7 +41,7 @@ class MediaCharactersSortFilterViewModel(
     settings = mediaDataSettings,
 ) {
     private val sortOption =
-        savedStateHandle.getMutableStateFlow("sortOption", CharacterSortOption.RELEVANCE)
+        savedStateHandle.getMutableStateFlow(json, "sortOption", CharacterSortOption.RELEVANCE)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
         enumClass = CharacterSortOption::class,

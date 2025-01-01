@@ -3,9 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.recommendations.media
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,6 +13,8 @@ import artistalleydatabase.modules.anime.recommendations.generated.resources.Res
 import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_recommendations_header
 import com.anilist.data.MediaAndRecommendationsQuery
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
@@ -22,7 +23,7 @@ object MediaRecommendationsScreen {
 
     @Composable
     operator fun <MediaEntry> invoke(
-        gridState: LazyGridState,
+        sortFilterState: SortFilterState<*>,
         onRefresh: () -> Unit,
         items: LazyPagingItems<MediaRecommendationEntry<MediaEntry>>,
         mediaHeader: @Composable (progress: Float) -> Unit,
@@ -32,7 +33,8 @@ object MediaRecommendationsScreen {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
-        Scaffold(
+        SortFilterBottomScaffold2(
+            state = sortFilterState,
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
@@ -44,6 +46,8 @@ object MediaRecommendationsScreen {
             },
             modifier = modifier
         ) {
+            val gridState = rememberLazyGridState()
+            sortFilterState.ImmediateScrollResetEffect(gridState)
             VerticalList(
                 gridState = gridState,
                 onRefresh = onRefresh,

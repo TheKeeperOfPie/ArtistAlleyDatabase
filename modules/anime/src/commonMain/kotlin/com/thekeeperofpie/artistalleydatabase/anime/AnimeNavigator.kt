@@ -8,7 +8,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -121,7 +120,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionPrefixKeys
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
@@ -578,11 +576,15 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaRecommendations>(
             navigationTypeMap = navigationTypeMap,
         ) {
+            val mediaRecommendationsSortFilterViewModel = viewModel {
+                component.mediaRecommendationsSortFilterViewModel(createSavedStateHandle())
+            }
             val viewModel = viewModel {
                 component.mediaRecommendationsViewModelFactory(
                     createSavedStateHandle()
                         .toDestination<AnimeDestination.MediaRecommendations>(navigationTypeMap)
-                        .mediaId
+                        .mediaId,
+                    mediaRecommendationsSortFilterViewModel,
                 ).create(MediaPreviewEntry.Provider)
             }
             val destination = it.toRoute<AnimeDestination.MediaRecommendations>()
@@ -598,52 +600,48 @@ object AnimeNavigator {
                 state = { editViewModel.state },
                 eventSink = editViewModel::onEvent,
             ) {
-                SortFilterBottomScaffold(state = { viewModel.sortFilterController.state }) {
-                    val gridState = rememberLazyGridState()
-                    viewModel.sortFilterController.ImmediateScrollResetEffect(gridState)
-                    MediaRecommendationsScreen(
-                        gridState = gridState,
-                        onRefresh = viewModel::refresh,
-                        items = viewModel.items.collectAsLazyPagingItemsWithLifecycle(),
-                        mediaHeader = { progress ->
-                            val entry = viewModel.entry
-                            val media = entry.result?.media
-                            MediaHeader(
-                                viewer = viewer,
-                                upIconOption = UpIconOption.Back(navigationController),
-                                mediaId = viewModel.mediaId,
-                                mediaType = media?.type,
-                                titles = entry.result?.titlesUnique,
-                                episodes = media?.episodes,
-                                format = media?.format,
-                                averageScore = media?.averageScore,
-                                popularity = media?.popularity,
-                                progress = progress,
-                                headerValues = headerValues,
-                                onFavoriteChanged = {
-                                    viewModel.favoritesToggleHelper.set(
-                                        headerValues.type.toFavoriteType(),
-                                        viewModel.mediaId,
-                                        it,
-                                    )
-                                },
-                                enableCoverImageSharedElement = false
-                            )
-                        },
-                        mediaRow = { entry, modifier ->
-                            AnimeMediaListRow(
-                                entry = entry?.media,
-                                viewer = viewer,
-                                modifier = modifier,
-                                onClickListEdit = editViewModel::initialize,
-                                recommendation = entry?.recommendationData,
-                                onUserRecommendationRating =
-                                    viewModel.recommendationToggleHelper::toggle,
-                            )
-                        },
-                        modifier = Modifier.padding(it)
-                    )
-                }
+                MediaRecommendationsScreen(
+                    sortFilterState = mediaRecommendationsSortFilterViewModel.state,
+                    onRefresh = viewModel::refresh,
+                    items = viewModel.items.collectAsLazyPagingItemsWithLifecycle(),
+                    mediaHeader = { progress ->
+                        val entry = viewModel.entry
+                        val media = entry.result?.media
+                        MediaHeader(
+                            viewer = viewer,
+                            upIconOption = UpIconOption.Back(navigationController),
+                            mediaId = viewModel.mediaId,
+                            mediaType = media?.type,
+                            titles = entry.result?.titlesUnique,
+                            episodes = media?.episodes,
+                            format = media?.format,
+                            averageScore = media?.averageScore,
+                            popularity = media?.popularity,
+                            progress = progress,
+                            headerValues = headerValues,
+                            onFavoriteChanged = {
+                                viewModel.favoritesToggleHelper.set(
+                                    headerValues.type.toFavoriteType(),
+                                    viewModel.mediaId,
+                                    it,
+                                )
+                            },
+                            enableCoverImageSharedElement = false
+                        )
+                    },
+                    mediaRow = { entry, modifier ->
+                        AnimeMediaListRow(
+                            entry = entry?.media,
+                            viewer = viewer,
+                            modifier = modifier,
+                            onClickListEdit = editViewModel::initialize,
+                            recommendation = entry?.recommendationData,
+                            onUserRecommendationRating =
+                                viewModel.recommendationToggleHelper::toggle,
+                        )
+                    },
+                    modifier = Modifier.padding(it)
+                )
             }
         }
 
