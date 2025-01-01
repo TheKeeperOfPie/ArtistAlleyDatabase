@@ -21,8 +21,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserRoute
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold2
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -39,7 +39,7 @@ object MediaReviewsScreen {
         onRefresh: () -> Unit,
         entry: LoadingResult<Entry>,
         items: LazyPagingItems<MediaAndReviewsReview>,
-        sortFilterState: () -> SortFilterController<*>.State,
+        sortFilterState: SortFilterState<*>,
         mediaHeader: @Composable (progress: Float) -> Unit,
         favorite: () -> Boolean?,
     ) {
@@ -49,7 +49,7 @@ object MediaReviewsScreen {
             val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
                 snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
             )
-            SortFilterBottomScaffold(
+            SortFilterBottomScaffold2(
                 state = sortFilterState,
                 topBar = {
                     CollapsingToolbar(
@@ -63,7 +63,7 @@ object MediaReviewsScreen {
                 modifier = Modifier.padding(padding)
             ) {
                 val gridState = rememberLazyGridState()
-                sortFilterState().ImmediateScrollResetEffect(gridState)
+                sortFilterState.ImmediateScrollResetEffect(gridState)
                 VerticalList(
                     gridState = gridState,
                     onRefresh = onRefresh,

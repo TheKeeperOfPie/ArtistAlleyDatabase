@@ -161,8 +161,15 @@ object ReviewDestinations {
         navGraphBuilder.sharedElementComposable<MediaReviews>(
             navigationTypeMap = navigationTypeMap,
         ) {
-            val viewModel =
-                viewModel { component.mediaReviewsViewModel(createSavedStateHandle()) }
+            val mediaReviewsSortFilterViewModel = viewModel {
+                component.mediaReviewsSortFilterViewModel(createSavedStateHandle())
+            }
+            val viewModel = viewModel {
+                component.mediaReviewsViewModel(
+                    createSavedStateHandle(),
+                    mediaReviewsSortFilterViewModel,
+                )
+            }
             val destination = it.toRoute<MediaReviews>()
             val headerValues = MediaHeaderValues(
                 params = destination.headerParams,
@@ -179,7 +186,7 @@ object ReviewDestinations {
                 onRefresh = viewModel::refresh,
                 entry = viewModel.entry,
                 items = viewModel.items.collectAsLazyPagingItems(),
-                sortFilterState = viewModel.sortFilterController::state,
+                sortFilterState = mediaReviewsSortFilterViewModel.state,
                 mediaHeader = {
                     val entry = viewModel.entry
                     val media = entry.result?.media

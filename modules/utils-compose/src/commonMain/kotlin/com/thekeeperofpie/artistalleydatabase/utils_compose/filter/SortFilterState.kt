@@ -95,6 +95,7 @@ sealed class SortFilterSectionState(val id: String) {
             sortOption.value = defaultSort
         }
 
+        // TODO: Should sort be reset when cleared?
         @Composable
         override fun isDefault() =
             sortOption.collectAsStateWithLifecycle().value == defaultSort

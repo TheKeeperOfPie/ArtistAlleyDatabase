@@ -14,10 +14,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoritesToggleHel
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.flow.Flow
@@ -30,9 +28,10 @@ class MediaReviewsViewModel(
     favoritesController: FavoritesController,
     settings: MediaDataSettings,
     featureOverrideProvider: FeatureOverrideProvider,
-    @Assisted savedStateHandle: SavedStateHandle,
     navigationTypeMap: NavigationTypeMap,
-) : SortFilteredViewModel<MediaReviewsScreen.Entry, MediaAndReviewsReview, MediaAndReviewsReview, MediaReviewsSortFilterController.FilterParams>(
+    @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted mediaReviewsSortFilterViewModel: MediaReviewsSortFilterViewModel,
+) : SortFilteredViewModel<MediaReviewsScreen.Entry, MediaAndReviewsReview, MediaAndReviewsReview, MediaReviewsSortFilterViewModel.FilterParams>(
     loadingErrorTextRes = Res.string.anime_reviews_error_loading,
 ) {
     private val destination =
@@ -42,10 +41,7 @@ class MediaReviewsViewModel(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    val sortFilterController =
-        MediaReviewsSortFilterController(viewModelScope, settings, featureOverrideProvider)
-
-    override val filterParams = sortFilterController.filterParams
+    override val filterParams = mediaReviewsSortFilterViewModel.state.filterParams
 
     init {
         favoritesToggleHelper.initializeTracking(
@@ -62,16 +58,15 @@ class MediaReviewsViewModel(
     override fun entryId(entry: MediaAndReviewsReview) = entry.id.toString()
 
     override suspend fun initialRequest(
-        filterParams: MediaReviewsSortFilterController.FilterParams?,
+        filterParams: MediaReviewsSortFilterViewModel.FilterParams?,
     ) = MediaReviewsScreen.Entry(aniListApi.mediaAndReviews(mediaId = mediaId))
 
     override suspend fun request(
-        filterParams: MediaReviewsSortFilterController.FilterParams?,
+        filterParams: MediaReviewsSortFilterViewModel.FilterParams?,
     ): Flow<PagingData<MediaAndReviewsReview>> = AniListPager { page ->
         aniListApi.mediaAndReviewsPage(
             mediaId = mediaId,
-            sort = filterParams!!.sort.selectedOption(ReviewSortOption.RATING)
-                .toApiValue(filterParams.sortAscending),
+            sort = filterParams!!.sort.toApiValue(filterParams.sortAscending),
             page = page,
         ).media.reviews.run { pageInfo to nodes }
     }
