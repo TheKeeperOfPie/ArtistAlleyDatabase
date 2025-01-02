@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
-import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -37,7 +36,6 @@ import kotlin.random.Random
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
 class ArtistSearchViewModel(
-    private val application: Application,
     private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val settings: ArtistAlleySettings,
@@ -90,7 +88,7 @@ class ArtistSearchViewModel(
     }.flow
         .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
-        .map { it.map { ArtistEntryGridModel.buildFromEntry(application, appFileSystem, it) } }
+        .map { it.map { ArtistEntryGridModel.buildFromEntry(appFileSystem, it) } }
         .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {

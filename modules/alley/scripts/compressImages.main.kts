@@ -1,7 +1,7 @@
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-val assetsPath = "src/main/assets"
+val assetsPath = "src/commonMain/composeResources/files"
 val catalogsDir = __FILE__.resolve("../../$assetsPath/catalogs")
 val ralliesDir = __FILE__.resolve("../../$assetsPath/rallies")
 

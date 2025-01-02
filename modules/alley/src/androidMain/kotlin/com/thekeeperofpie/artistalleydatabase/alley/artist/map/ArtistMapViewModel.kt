@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.map
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,7 +25,6 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ArtistMapViewModel(
-    application: Application,
     appFileSystem: AppFileSystem,
     artistEntryDao: ArtistEntryDao,
     navigationTypeMap: NavigationTypeMap,
@@ -47,7 +45,7 @@ class ArtistMapViewModel(
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
                 .flowOn(CustomDispatchers.IO)
-                .map { ArtistEntryGridModel.buildFromEntry(application, appFileSystem, it) }
+                .map { ArtistEntryGridModel.buildFromEntry(appFileSystem, it) }
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {
                         artist = it

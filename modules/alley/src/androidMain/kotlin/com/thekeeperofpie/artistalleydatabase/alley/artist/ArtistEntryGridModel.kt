@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import android.app.Application
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,14 +31,12 @@ class ArtistEntryGridModel(
     companion object {
         @WorkerThread
         fun buildFromEntry(
-            application: Application,
             appFileSystem: AppFileSystem,
             entry: ArtistEntry,
         ): ArtistEntryGridModel {
             return ArtistEntryGridModel(
                 value = entry,
                 images = ArtistAlleyUtils.getImages(
-                    application,
                     appFileSystem,
                     "catalogs",
                     entry.booth,

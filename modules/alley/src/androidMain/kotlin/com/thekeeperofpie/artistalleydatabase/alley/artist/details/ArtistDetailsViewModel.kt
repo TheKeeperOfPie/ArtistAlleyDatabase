@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,7 +25,6 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ArtistDetailsViewModel(
-    private val application: Application,
     private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val json: Json,
@@ -44,7 +42,7 @@ class ArtistDetailsViewModel(
         viewModelScope.launch(CustomDispatchers.IO) {
             val (artist, stampRallies) = artistEntryDao.getEntryWithStampRallies(id)
                 ?: return@launch
-            val catalogImages = ArtistAlleyUtils.getImages(application, appFileSystem, "catalogs", artist.booth)
+            val catalogImages = ArtistAlleyUtils.getImages(appFileSystem, "catalogs", artist.booth)
             val seriesConfirmed = artist.seriesConfirmed(json)
             val seriesInferred = artist.seriesInferred(json)
                 .toMutableList()

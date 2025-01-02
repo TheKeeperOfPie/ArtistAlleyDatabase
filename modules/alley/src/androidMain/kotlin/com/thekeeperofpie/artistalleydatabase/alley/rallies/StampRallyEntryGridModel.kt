@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import android.app.Application
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,13 +31,11 @@ class StampRallyEntryGridModel(
     companion object {
         @WorkerThread
         fun buildFromEntry(
-            application: Application,
             appFileSystem: AppFileSystem,
             entry: StampRallyEntry,
         ) = StampRallyEntryGridModel(
             value = entry,
             images = ArtistAlleyUtils.getImages(
-                application = application,
                 appFileSystem = appFileSystem,
                 folder = "rallies",
                 file = entry.id.replace("-", " - "),

@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import android.app.Application
+import artistalleydatabase.modules.alley.generated.resources.Res
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyArtistConnection
@@ -11,16 +13,22 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
+import kotlinx.io.Source
+import kotlinx.io.asInputStream
+import kotlinx.io.buffered
 import me.tatarka.inject.annotations.Inject
 import org.apache.commons.csv.CSVFormat
-import java.io.Reader
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 
+@OptIn(ExperimentalResourceApi::class)
 @Inject
 class DataInitializer(
     private val application: Application,
+    private val appFileSystem: AppFileSystem,
     private val appScope: ApplicationScope,
     private val artistEntryDao: ArtistEntryDao,
     private val stampRallyEntryDao: StampRallyEntryDao,
@@ -54,101 +62,131 @@ class DataInitializer(
         }
     }
 
+    @OptIn(ExperimentalResourceApi::class)
     private suspend fun parseArtists() {
         artistEntryDao.clearSeriesConnections()
         artistEntryDao.clearMerchConnections()
-        application.assets.open(ARTISTS_CSV_NAME).use { input ->
-            input.reader().use { reader ->
-                var counter = 1
-                csvReader(reader)
-                    .mapNotNull {
-                        // Booth,Artist,Summary,Links,Store,Catalog / table,
-                        // Series - Inferred,Merch - Inferred,Notes,Series - Confirmed,
-                        // Merch - Confirmed,Drive,Catalog images
-                        val booth = it["Booth"]
-                        val artist = it["Artist"]
-                        val summary = it["Summary"]
+        appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$ARTISTS_CSV_NAME")))!!
+            .use {
+                it.buffered().use {
+                    var counter = 1
+                    csvReader(it)
+                        .mapNotNull {
+                            // Booth,Artist,Summary,Links,Store,Catalog / table,
+                            // Series - Inferred,Merch - Inferred,Notes,Series - Confirmed,
+                            // Merch - Confirmed,Drive,Catalog images
+                            val booth = it["Booth"]
+                            val artist = it["Artist"]
+                            val summary = it["Summary"]
 
-                        val newLineRegex = Regex("\n\\s?")
-                        val links = it["Links"].split(newLineRegex)
-                            .filter(String::isNotBlank)
-                        val storeLinks = it["Store"].split(newLineRegex)
-                            .filter(String::isNotBlank)
-                        val catalogLinks = it["Catalog / table"].split(newLineRegex)
-                            .filter(String::isNotBlank)
-                        val driveLink = it["Drive"]
+                            val newLineRegex = Regex("\n\\s?")
+                            val links = it["Links"].split(newLineRegex)
+                                .filter(String::isNotBlank)
+                            val storeLinks = it["Store"].split(newLineRegex)
+                                .filter(String::isNotBlank)
+                            val catalogLinks = it["Catalog / table"].split(newLineRegex)
+                                .filter(String::isNotBlank)
+                            val driveLink = it["Drive"]
 
-                        val commaRegex = Regex(",\\s?")
-                        val seriesInferred = it["Series - Inferred"].split(commaRegex)
-                            .filter(String::isNotBlank)
-                        val merchInferred = it["Merch - Inferred"].split(commaRegex)
-                            .filter(String::isNotBlank)
+                            val commaRegex = Regex(",\\s?")
+                            val seriesInferred = it["Series - Inferred"].split(commaRegex)
+                                .filter(String::isNotBlank)
+                            val merchInferred = it["Merch - Inferred"].split(commaRegex)
+                                .filter(String::isNotBlank)
 
-                        val seriesConfirmed = it["Series - Confirmed"].split(commaRegex)
-                            .filter(String::isNotBlank)
-                        val merchConfirmed = it["Merch - Confirmed"].split(commaRegex)
-                            .filter(String::isNotBlank)
+                            val seriesConfirmed = it["Series - Confirmed"].split(commaRegex)
+                                .filter(String::isNotBlank)
+                            val merchConfirmed = it["Merch - Confirmed"].split(commaRegex)
+                                .filter(String::isNotBlank)
 
-                        val notes = it["Notes"]
+                            val notes = it["Notes"]
 
-                        val artistEntry = ArtistEntry(
-                            id = booth,
-                            booth = booth,
-                            name = artist,
-                            summary = summary,
-                            links = links,
-                            storeLinks = storeLinks,
-                            catalogLinks = catalogLinks,
-                            driveLink = driveLink,
-                            seriesInferredSerialized = seriesInferred,
-                            seriesInferredSearchable = seriesInferred,
-                            seriesConfirmedSerialized = seriesConfirmed,
-                            seriesConfirmedSearchable = seriesConfirmed,
-                            merchInferred = merchInferred,
-                            merchConfirmed = merchConfirmed,
-                            notes = notes,
-                            counter = counter++
-                        )
+                            val artistEntry = ArtistEntry(
+                                id = booth,
+                                booth = booth,
+                                name = artist,
+                                summary = summary,
+                                links = links,
+                                storeLinks = storeLinks,
+                                catalogLinks = catalogLinks,
+                                driveLink = driveLink,
+                                seriesInferredSerialized = seriesInferred,
+                                seriesInferredSearchable = seriesInferred,
+                                seriesConfirmedSerialized = seriesConfirmed,
+                                seriesConfirmedSearchable = seriesConfirmed,
+                                merchInferred = merchInferred,
+                                merchConfirmed = merchConfirmed,
+                                notes = notes,
+                                counter = counter++
+                            )
 
-                        val seriesConnectionsInferred = (seriesInferred - seriesConfirmed.toSet())
-                            .map { ArtistSeriesConnection(artistId = booth, seriesId = it, confirmed = false) }
-                        val seriesConnectionsConfirmed = seriesConfirmed
-                            .map { ArtistSeriesConnection(artistId = booth, seriesId = it, confirmed = true) }
-                        val seriesConnections = seriesConnectionsInferred + seriesConnectionsConfirmed
+                            val seriesConnectionsInferred =
+                                (seriesInferred - seriesConfirmed.toSet())
+                                    .map {
+                                        ArtistSeriesConnection(
+                                            artistId = booth,
+                                            seriesId = it,
+                                            confirmed = false
+                                        )
+                                    }
+                            val seriesConnectionsConfirmed = seriesConfirmed
+                                .map {
+                                    ArtistSeriesConnection(
+                                        artistId = booth,
+                                        seriesId = it,
+                                        confirmed = true
+                                    )
+                                }
+                            val seriesConnections =
+                                seriesConnectionsInferred + seriesConnectionsConfirmed
 
-                        val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
-                            .map { ArtistMerchConnection(artistId = booth, merchId = it, confirmed = false) }
-                        val merchConnectionsConfirmed = merchConfirmed
-                            .map { ArtistMerchConnection(artistId = booth, merchId = it, confirmed = true) }
-                        val merchConnections = merchConnectionsInferred + merchConnectionsConfirmed
+                            val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
+                                .map {
+                                    ArtistMerchConnection(
+                                        artistId = booth,
+                                        merchId = it,
+                                        confirmed = false
+                                    )
+                                }
+                            val merchConnectionsConfirmed = merchConfirmed
+                                .map {
+                                    ArtistMerchConnection(
+                                        artistId = booth,
+                                        merchId = it,
+                                        confirmed = true
+                                    )
+                                }
+                            val merchConnections =
+                                merchConnectionsInferred + merchConnectionsConfirmed
 
-                        Triple(artistEntry, seriesConnections, merchConnections)
-                    }
-                    .chunked(20)
-                    .forEach { artistEntryDao.insertUpdatedEntries(it) }
+                            Triple(artistEntry, seriesConnections, merchConnections)
+                        }
+                        .chunked(20)
+                        .forEach { artistEntryDao.insertUpdatedEntries(it) }
+                }
             }
-        }
     }
 
     private suspend fun parseTags() {
         tagEntryDao.clearSeries()
-        application.assets.open(SERIES_CSV_NAME).use { input ->
-            input.reader().use { reader ->
-                csvReader(reader)
-                    .mapNotNull {
-                        // Series, Notes
-                        val name = it["Series"]
-                        val notes = it["Notes"]
-                        SeriesEntry(name = name, notes = notes)
-                    }
-                    .chunked(20)
-                    .forEach { tagEntryDao.insertSeries(it) }
+        appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$SERIES_CSV_NAME")))!!
+            .use { input ->
+                input.buffered().use {
+                    csvReader(it)
+                        .mapNotNull {
+                            // Series, Notes
+                            val name = it["Series"]
+                            val notes = it["Notes"]
+                            SeriesEntry(name = name, notes = notes)
+                        }
+                        .chunked(20)
+                        .forEach { tagEntryDao.insertSeries(it) }
+                }
             }
-        }
         tagEntryDao.clearMerch()
-        application.assets.open(MERCH_CSV_NAME).use { input ->
-            input.reader().use { reader ->
-                csvReader(reader)
+        appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$MERCH_CSV_NAME")))!!.use { input ->
+            input.buffered().use {
+                csvReader(it)
                     .mapNotNull {
                         // Merch, Notes
                         val name = it["Merch"]
@@ -164,10 +202,10 @@ class DataInitializer(
     private suspend fun parseStampRallies() {
         stampRallyEntryDao.clearConnections()
         val allIds = mutableListOf<String>()
-        application.assets.open(STAMP_RALLIES_CSV_NAME).use { input ->
-            input.reader().use { reader ->
+        appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$STAMP_RALLIES_CSV_NAME")))!!.use {
+            it.buffered().use {
                 var counter = 1
-                csvReader(reader)
+                csvReader(it)
                     .mapNotNull {
                         // Theme,Link,Tables,Table Min, Total, Notes,Images
                         val theme = it["Theme"]
@@ -219,17 +257,18 @@ class DataInitializer(
         stampRallyEntryDao.retainIds(allIds)
     }
 
-    private fun csvReader(reader: Reader) =
+    private fun csvReader(source: Source) =
         CSVFormat.RFC4180.builder()
             .setHeader()
             .setSkipHeaderRecord(true)
             .build()
-            .parse(reader)
+            .parse(source.asInputStream().reader())
             .asSequence()
 
     private fun parseSize(application: Application, csvName: String) = try {
-        application.assets.open(csvName).use { it.available().toLong() }
-    } catch (ignored: Throwable) {
-        -1
+        appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$csvName")))!!
+            .use { it.asInputStream().available().toLong() }
+    } catch (_: Throwable) {
+        -1L
     }
 }

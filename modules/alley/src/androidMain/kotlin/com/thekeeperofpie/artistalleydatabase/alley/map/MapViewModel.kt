@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,7 +23,6 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class MapViewModel(
-    private val application: Application,
     private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val settings: ArtistAlleySettings,
@@ -69,7 +67,7 @@ class MapViewModel(
             booths.map {
                 val tableNumber = it.booth.filter { it.isDigit() }.toInt()
                 val images =
-                    ArtistAlleyUtils.getImages(application, appFileSystem, "catalogs", it.booth)
+                    ArtistAlleyUtils.getImages(appFileSystem, "catalogs", it.booth)
                 val imageIndex = if (showRandomCatalogImage) {
                     images.indices.randomOrNull()
                 } else {
@@ -104,7 +102,7 @@ class MapViewModel(
     }
 
     suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.booth)?.let {
-        ArtistEntryGridModel.buildFromEntry(application, appFileSystem, it)
+        ArtistEntryGridModel.buildFromEntry(appFileSystem, it)
     }
 
     data class GridData(

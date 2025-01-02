@@ -11,7 +11,6 @@ import com.eygraber.uri.toAndroidUri
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.datetime.Instant
 import kotlinx.io.Sink
-import kotlinx.io.Source
 import kotlinx.io.asInputStream
 import kotlinx.io.asSink
 import kotlinx.io.asSource
@@ -39,8 +38,11 @@ actual class AppFileSystem(private val application: Application, private val mas
 
     actual fun cachePath(path: String) = Path(application.cacheDir.resolve(path).path)
     actual fun filePath(path: String) = Path(application.filesDir.resolve(path).path)
-    actual fun openUriSource(uri: Uri): Source? =
-        application.contentResolver.openInputStream(uri.toAndroidUri())?.asSource()?.buffered()
+    actual fun openUriSource(uri: Uri) = if (uri.path?.startsWith("/android_asset") == true) {
+        application.assets.open(uri.path!!.removePrefix("/android_asset/"))
+    } else {
+        application.contentResolver.openInputStream(uri.toAndroidUri())
+    }?.asSource()?.buffered()
 
     actual fun openUriSink(uri: Uri, mode: String): Sink? =
         application.contentResolver.openOutputStream(uri.toAndroidUri(), mode)?.asSink()?.buffered()

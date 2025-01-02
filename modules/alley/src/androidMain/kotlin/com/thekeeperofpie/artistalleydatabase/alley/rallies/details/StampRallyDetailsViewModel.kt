@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,7 +23,6 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class StampRallyDetailsViewModel(
-    private val application: Application,
     appFileSystem: AppFileSystem,
     private val stampRallyEntryDao: StampRallyEntryDao,
     navigationTypeMap: NavigationTypeMap,
@@ -42,7 +40,6 @@ class StampRallyDetailsViewModel(
             val (stampRallyEntry, artists) = stampRallyEntryDao.getEntryWithArtists(id)
                 ?: return@launch
             val catalogImages = ArtistAlleyUtils.getImages(
-                application,
                 appFileSystem,
                 "rallies",
                 stampRallyEntry.id.replace("-", " - "),

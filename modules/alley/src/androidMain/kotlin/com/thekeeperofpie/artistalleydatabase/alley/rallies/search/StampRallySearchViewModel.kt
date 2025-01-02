@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
-import android.app.Application
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -34,7 +33,6 @@ import kotlin.random.Random
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
 class StampRallySearchViewModel(
-    private val application: Application,
     private val appFileSystem: AppFileSystem,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val settings: ArtistAlleySettings,
@@ -72,7 +70,7 @@ class StampRallySearchViewModel(
     }.flow
         .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
-        .map { it.map { StampRallyEntryGridModel.buildFromEntry(application, appFileSystem, it) } }
+        .map { it.map { StampRallyEntryGridModel.buildFromEntry(appFileSystem, it) } }
         .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: StampRallyEntryGridModel, favorite: Boolean) {

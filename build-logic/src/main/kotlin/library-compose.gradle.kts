@@ -11,16 +11,25 @@ plugins {
     id("org.jetbrains.compose")
 }
 
+val composeFiles = project.layout.projectDirectory.dir("src/commonMain/composeResources/files").asFile
+if (composeFiles.exists()) {
+    tasks.register<ComposeFilesParseTask>("parseComposeFiles")
+    tasks.named { it == "preBuild" }.first().dependsOn("parseComposeFiles")
+}
+
 kotlin {
     sourceSets {
-        commonMain.dependencies {
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
+        commonMain {
+            kotlin.srcDir(project.layout.buildDirectory.dir("generated/source"))
+            dependencies {
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.materialIconsExtended)
+                implementation(compose.ui)
+            }
         }
         commonTest.dependencies {
             implementation(compose.uiTest)
