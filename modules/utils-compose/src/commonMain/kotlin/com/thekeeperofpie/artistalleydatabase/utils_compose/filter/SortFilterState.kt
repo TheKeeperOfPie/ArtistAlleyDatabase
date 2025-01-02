@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,9 +63,16 @@ class SortFilterState<FilterParams>(
     val expanded = SortFilterExpandedState()
 
     @Composable
-    fun ImmediateScrollResetEffect(lazyGridState: LazyGridState) {
+    fun ImmediateScrollResetEffect(gridState: LazyGridState) {
         OnChangeEffect(currentValue = filterParams.collectAsStateWithLifecycle().value) {
-            lazyGridState.scrollToItem(0)
+            gridState.scrollToItem(0)
+        }
+    }
+
+    @Composable
+    fun ImmediateScrollResetEffect(gridState: LazyStaggeredGridState) {
+        OnChangeEffect(currentValue = filterParams.collectAsStateWithLifecycle().value) {
+            gridState.scrollToItem(0)
         }
     }
 }

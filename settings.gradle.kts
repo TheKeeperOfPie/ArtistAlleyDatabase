@@ -34,7 +34,7 @@ includeBuild("build-logic")
 include(":app")
 include(":desktop")
 
-val excludedDirectories = setOf(".idea", "build", "alley-app", "alley")
+val excludedDirectories = setOf(".idea", "build")
 file("modules")
     .walkTopDown()
     .onEnter { !excludedDirectories.contains(it.name) }

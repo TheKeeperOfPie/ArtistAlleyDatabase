@@ -25,6 +25,8 @@
             <option value="$PROJECT_DIR$/build-logic" />
             <option value="$PROJECT_DIR$/desktop" />
             <option value="$PROJECT_DIR$/modules" />
+            <option value="$PROJECT_DIR$/modules/alley" />
+            <option value="$PROJECT_DIR$/modules/alley-app" />
             <option value="$PROJECT_DIR$/modules/anilist" />
             <option value="$PROJECT_DIR$/modules/anilist/data" />
             <option value="$PROJECT_DIR$/modules/anime" />

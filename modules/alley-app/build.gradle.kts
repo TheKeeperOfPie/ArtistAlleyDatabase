@@ -1,12 +1,13 @@
-import jdk.tools.jlink.resources.plugins
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    kotlin("android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.multiplatform")
+    id("androidx.room")
 }
 
 android {
@@ -92,8 +93,14 @@ android {
 }
 
 kotlin {
+    androidTarget {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_18
+        }
+    }
+    jvm("desktop")
+
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_18
         jvmToolchain(18)
         sourceSets.all {
             languageSettings {
@@ -102,10 +109,57 @@ kotlin {
         }
         freeCompilerArgs.add("-Xcontext-receivers")
     }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.modules.alley)
+            implementation(projects.modules.utils)
+            implementation(projects.modules.utilsCompose)
+            implementation(projects.modules.utilsInject)
+            implementation(projects.modules.utilsRoom)
+
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
+            implementation(compose.ui)
+
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.androidx.sqlite.bundled)
+
+            implementation(libs.coil3.coil.compose)
+            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.kermit)
+            implementation(libs.kotlin.inject.runtime.kmp)
+        }
+        androidMain.dependencies {
+            runtimeOnly(libs.kotlinx.coroutines.android)
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.kotlinx.coroutines.swing)
+            }
+        }
+    }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
+dependencies {
+    add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
+    arrayOf(
+        kspProcessors.room.compiler,
+        kspProcessors.kotlin.inject.compiler.ksp,
+    ).forEach {
+        add("kspAndroid", it)
+        add("kspDesktop", it)
+    }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
+    generateKotlin = true
 }
 
 tasks.register("installAll") {
@@ -154,21 +208,3 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
-
-dependencies {
-    implementation(projects.modules.alley)
-
-    implementation(libs.kotlinx.serialization.json)
-    runtimeOnly(libs.kotlinx.coroutines.android)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.activity.compose)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.navigation.compose)
-
-    runtimeOnly(libs.room.runtime)
-    ksp(kspProcessors.room.compiler)
-    testImplementation(libs.room.testing)
-    implementation(libs.room.paging)
-}
