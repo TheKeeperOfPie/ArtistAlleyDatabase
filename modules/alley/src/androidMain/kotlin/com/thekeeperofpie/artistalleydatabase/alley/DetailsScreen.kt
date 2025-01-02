@@ -60,6 +60,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Dimension
+import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -262,26 +263,23 @@ object DetailsScreen {
                             }
                         }
 
-//                        AnimatedVisibility(
-//                            visible = zoomPanState.canPanExternal(),
-//                            enter = fadeIn(),
-//                            exit = fadeOut(),
-//                            modifier = Modifier.align(Alignment.BottomCenter)
-//                        ) {
-//                            // TODO: Replace
-//                            @Suppress("DEPRECATION")
-//                            HorizontalPagerIndicator(
-//                                pagerState = headerPagerState,
-//                                pageCount = headerPagerState.pageCount,
-//                                modifier = Modifier
-//                                    .sharedElement(
-//                                        "pagerIndicator",
-//                                        sharedElementId,
-//                                        zIndexInOverlay = 1f,
-//                                    )
-//                                    .padding(8.dp)
-//                            )
-//                        }
+                        AnimatedVisibility(
+                            visible = zoomPanState.canPanExternal(),
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        ) {
+                            HorizontalPagerIndicator(
+                                pagerState = headerPagerState,
+                                modifier = Modifier
+                                    .sharedElement(
+                                        "pagerIndicator",
+                                        sharedElementId,
+                                        zIndexInOverlay = 1f,
+                                    )
+                                    .padding(8.dp)
+                            )
+                        }
 
                         AnimatedVisibility(
                             visible = fullPagerState.currentPage != 0 && zoomPanState.canPanExternal(),
@@ -405,21 +403,18 @@ object DetailsScreen {
                 exit = fadeOut(),
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-//                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-//                    // TODO: Replace
-//                    @Suppress("DEPRECATION")
-//                    HorizontalPagerIndicator(
-//                        pagerState = pagerState,
-//                        pageCount = pagerState.pageCount,
-//                        modifier = Modifier
-//                            .sharedElement(
-//                                "pagerIndicator",
-//                                sharedElementId,
-//                                zIndexInOverlay = 1f,
-//                            )
-//                            .padding(8.dp)
-//                    )
-//                }
+                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                    HorizontalPagerIndicator(
+                        pagerState = pagerState,
+                        modifier = Modifier
+                            .sharedElement(
+                                "pagerIndicator",
+                                sharedElementId,
+                                zIndexInOverlay = 1f,
+                            )
+                            .padding(8.dp)
+                    )
+                }
             }
 
             AnimatedVisibility(

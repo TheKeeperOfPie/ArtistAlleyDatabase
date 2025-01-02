@@ -8,17 +8,21 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -41,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -309,22 +314,19 @@ private fun ImagePager(
             }
         }
 
-//        androidx.compose.animation.AnimatedVisibility(
-//            visible = images.size > 1 && zoomPanState.canPanExternal(),
-//            enter = fadeIn(),
-//            exit = fadeOut(),
-//            modifier = Modifier.align(Alignment.BottomCenter)
-//        ) {
-//            // TODO: Replace
-//            @Suppress("DEPRECATION")
-//            HorizontalPagerIndicator(
-//                pagerState = pagerState,
-//                pageCount = pagerState.pageCount,
-//                modifier = Modifier
-//                    .sharedElement("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
-//                    .padding(8.dp)
-//            )
-//        }
+        androidx.compose.animation.AnimatedVisibility(
+            visible = images.size > 1 && zoomPanState.canPanExternal(),
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            HorizontalPagerIndicator(
+                pagerState = pagerState,
+                modifier = Modifier
+                    .sharedElement("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
+                    .padding(8.dp)
+            )
+        }
 
         androidx.compose.animation.AnimatedVisibility(
             visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
@@ -375,5 +377,26 @@ fun Modifier.sharedBounds(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modif
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
             zIndexInOverlay = zIndexInOverlay,
         )
+    }
+}
+
+@Composable
+fun HorizontalPagerIndicator(pagerState: PagerState, modifier: Modifier = Modifier) {
+    val scope = rememberCoroutineScope()
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier,
+    ) {
+        repeat(pagerState.pageCount) {
+            val color = if (pagerState.currentPage == it) Color.DarkGray else Color.LightGray
+            Box(
+                modifier = Modifier
+                    .clickable { scope.launch { pagerState.animateScrollToPage(it) } }
+                    .padding(2.dp)
+                    .background(color, CircleShape)
+                    .border(1.dp, Color.DarkGray, CircleShape)
+                    .size(8.dp)
+            )
+        }
     }
 }

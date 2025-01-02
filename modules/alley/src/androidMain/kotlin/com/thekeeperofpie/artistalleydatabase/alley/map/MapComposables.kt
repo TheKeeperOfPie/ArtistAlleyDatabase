@@ -58,8 +58,8 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import org.jetbrains.compose.resources.stringResource
 
@@ -267,17 +267,14 @@ fun TablePopup(
                     }
                 }
 
-//                if (images.size > 1) {
-//                    // TODO: Replace
-//                    @Suppress("DEPRECATION")
-//                    HorizontalPagerIndicator(
-//                        pagerState = pagerState,
-//                        pageCount = pagerState.pageCount,
-//                        modifier = Modifier
-//                            .align(Alignment.BottomCenter)
-//                            .padding(8.dp)
-//                    )
-//                }
+                if (images.size > 1) {
+                    HorizontalPagerIndicator(
+                        pagerState = pagerState,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(8.dp)
+                    )
+                }
             }
         }
 
