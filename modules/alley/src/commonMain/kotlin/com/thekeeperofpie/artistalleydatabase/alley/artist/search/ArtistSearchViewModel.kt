@@ -86,9 +86,9 @@ class ArtistSearchViewModel(
     ) = Pager(PagingConfig(pageSize = 20)) {
         trackPagingSource { artistEntryDao.search(query, options) }
     }.flow
-        .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
         .map { it.map { ArtistEntryGridModel.buildFromEntry(appFileSystem, it) } }
+        .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {

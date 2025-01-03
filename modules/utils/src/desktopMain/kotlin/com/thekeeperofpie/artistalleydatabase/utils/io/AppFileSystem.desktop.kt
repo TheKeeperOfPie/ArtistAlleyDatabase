@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.io.Sink
 import kotlinx.io.Source
+import kotlinx.io.asInputStream
 import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
@@ -17,6 +18,8 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.StandardOpenOption
+import javax.imageio.ImageIO
+import javax.imageio.stream.FileCacheImageInputStream
 import kotlin.io.path.pathString
 
 @SingletonScope
@@ -46,25 +49,32 @@ actual class AppFileSystem {
             *modeToOptions(mode).toTypedArray(),
         ).asSink().buffered()
 
-    actual fun getImageWidthHeight(
-        uri: Uri,
-    ): Pair<Int?, Int?> {
-        // TODO
-        return null to null
-    }
+    actual fun getImageWidthHeight(uri: Uri): Pair<Int?, Int?> =
+        openUriSource(uri)?.use {
+            it.asInputStream().use {
+                uri.path?.substringAfterLast('.')
+                    ?.let(ImageIO::getImageReadersBySuffix)
+                    ?.forEach { reader ->
+                        try {
+                            FileCacheImageInputStream(it, null).use {
+                                reader.setInput(it)
+                                val width = reader.getWidth(reader.minIndex)
+                                val height = reader.getHeight(reader.minIndex)
+                                return width to height
+                            }
+                        } catch (_: Throwable) {
+                        } finally {
+                            reader.dispose()
+                        }
+                    }
+                null to null
+            }
+        } ?: (null to null)
 
-    actual fun getImageType(
-        path: Path,
-    ): String? {
-        // TODO
-        return null
-    }
+    // TODO
+    actual fun getImageType(path: Path): String? = null
 
-    actual fun writeEntryImage(
-        outputPath: Path,
-        imageUri: Uri?,
-    ): Result<*>? {
-        // TODO
+    actual fun writeEntryImage(outputPath: Path, imageUri: Uri?): Result<*>? {
         imageUri ?: return null
         try {
             openUriSource(imageUri).use { input ->

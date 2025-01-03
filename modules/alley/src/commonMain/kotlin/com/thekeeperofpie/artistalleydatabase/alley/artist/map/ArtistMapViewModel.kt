@@ -44,8 +44,8 @@ class ArtistMapViewModel(
             // Need to observe updates since it's possible to
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
-                .flowOn(CustomDispatchers.IO)
                 .map { ArtistEntryGridModel.buildFromEntry(appFileSystem, it) }
+                .flowOn(CustomDispatchers.IO)
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {
                         artist = it

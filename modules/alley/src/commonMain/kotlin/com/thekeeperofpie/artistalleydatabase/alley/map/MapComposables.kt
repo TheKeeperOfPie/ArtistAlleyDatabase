@@ -59,8 +59,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -117,7 +119,9 @@ fun TableCell(
             BackHandler { showPopup = false }
             var tableEntry by remember { mutableStateOf<ArtistEntryGridModel?>(null) }
             LaunchedEffect(table) {
-                tableEntry = mapViewModel.tableEntry(table)
+                tableEntry = withContext(CustomDispatchers.IO) {
+                    mapViewModel.tableEntry(table)
+                }
             }
             Popup(
                 alignment = Alignment.TopCenter,

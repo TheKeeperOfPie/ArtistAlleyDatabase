@@ -52,7 +52,6 @@ fun main() {
                             options: Options,
                             imageLoader: ImageLoader,
                         ): Fetcher? {
-                            println("fetcher create $data")
                             if (data.scheme != "jar") return null
                             return object : Fetcher {
                                 override suspend fun fetch(): FetchResult? {
