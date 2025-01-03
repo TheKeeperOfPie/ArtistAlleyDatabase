@@ -42,7 +42,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.reflect.KClass
 
 @Stable
 class SortFilterState<FilterParams>(
@@ -89,15 +88,28 @@ sealed class SortFilterSectionState(val id: String) {
     abstract fun Content(state: SortFilterExpandedState, showDivider: Boolean)
 
     @Stable
-    class Sort<SortType : SortOption>(
-        private val enumClass: KClass<SortType>,
+    class Sort<SortType>(
         val headerText: StringResource,
         private val defaultSort: SortType,
         private val sortAscending: MutableStateFlow<Boolean>?,
         private val sortOption: MutableStateFlow<SortType>,
-        var sortOptions: MutableStateFlow<List<SortType>> =
-            MutableStateFlow(enumClass.java.enumConstants?.toList().orEmpty()),
-    ) : SortFilterSectionState(headerText.key) {
+        var sortOptions: MutableStateFlow<List<SortType>>,
+    ) : SortFilterSectionState(headerText.key) where SortType : SortOption, SortType : Enum<SortType> {
+
+        companion object {
+            inline operator fun <reified SortType> invoke(
+                headerText: StringResource,
+                defaultSort: SortType,
+                sortAscending: MutableStateFlow<Boolean>?,
+                sortOption: MutableStateFlow<SortType>,
+            ) where SortType : SortOption, SortType : Enum<SortType> = Sort(
+                headerText = headerText,
+                defaultSort = defaultSort,
+                sortAscending = sortAscending,
+                sortOption = sortOption,
+                sortOptions = MutableStateFlow(enumValues<SortType>().toList()),
+            )
+        }
 
         override fun clear() {
             sortOption.value = defaultSort

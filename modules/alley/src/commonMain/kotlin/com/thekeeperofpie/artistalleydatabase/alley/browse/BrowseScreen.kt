@@ -53,7 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -100,7 +100,7 @@ object BrowseScreen {
                         query = { tagsViewModel.seriesQuery },
                         onQueryChange = { tagsViewModel.seriesQuery = it },
                         entriesSize = { tagsViewModel.seriesSize },
-                        values = tagsViewModel.series.collectAsLazyPagingItems(),
+                        values = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle(),
                         itemKey = { it.name },
                         itemToText = { it.name },
                         onItemClick = onSeriesClick,
@@ -110,7 +110,7 @@ object BrowseScreen {
                         query = { tagsViewModel.merchQuery },
                         onQueryChange = { tagsViewModel.merchQuery = it },
                         entriesSize = { tagsViewModel.merchSize },
-                        values = tagsViewModel.merch.collectAsLazyPagingItems(),
+                        values = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle(),
                         itemKey = { it.name },
                         itemToText = { it.name },
                         onItemClick = onMerchClick,

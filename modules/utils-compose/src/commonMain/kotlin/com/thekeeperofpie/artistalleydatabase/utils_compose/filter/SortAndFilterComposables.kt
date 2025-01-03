@@ -135,39 +135,6 @@ object SortAndFilterComposables {
         )
     }
 
-    @Deprecated("Use sortOptionsEnabled variant")
-    @Composable
-    fun <SortType : SortOption> SortSection(
-        headerTextRes: StringResource,
-        expanded: () -> Boolean,
-        onExpandedChange: (Boolean) -> Unit,
-        sortOptions: @Composable () -> List<SortEntry<SortType>>,
-        onSortClick: (SortType) -> Unit,
-        sortAscending: @Composable () -> Boolean,
-        onSortAscendingChange: (Boolean) -> Unit,
-        clickable: Boolean = true,
-        showDivider: Boolean = true,
-    ) {
-        val sortOptions = sortOptions().map { it.value }
-        val enabledSortOptions = sortOptions()
-            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-            .map { it.value }
-            .toSet()
-        val sortAscending = sortAscending()
-        SortSection(
-            headerTextRes = headerTextRes,
-            expanded = expanded,
-            onExpandedChange = onExpandedChange,
-            sortOptions = { sortOptions },
-            sortOptionsEnabled = { enabledSortOptions },
-            onSortClick = onSortClick,
-            sortAscending = { sortAscending },
-            onSortAscendingChange = onSortAscendingChange,
-            clickable = clickable,
-            showDivider = showDivider,
-        )
-    }
-
     @Composable
     fun <SortType : SortOption> SortSection(
         headerTextRes: StringResource,

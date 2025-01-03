@@ -49,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -120,7 +121,7 @@ class AnimeSearchViewModel<MediaPreviewEntry : Any, MediaWithListStatusEntry, Ch
     )
     val viewer = aniListApi.authedUser
     val query = savedStateHandle.getMutableStateFlow<String>("query") { "" }
-    var content = MutableStateFlow(PagingData.Companion.empty<AnimeSearchEntry>())
+    var content = MutableStateFlow(PagingUtils.loading<AnimeSearchEntry>())
 
     private val refresh = RefreshFlow()
 

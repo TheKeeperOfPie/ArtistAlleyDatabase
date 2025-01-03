@@ -33,7 +33,6 @@ class UserFollowSortFilterViewModel(
         savedStateHandle.getMutableStateFlow(json, "sortOption", UserSortOption.ID)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = UserSortOption::class,
         headerText = Res.string.anime_user_filter_sort_label,
         defaultSort = UserSortOption.ID,
         sortOptions = MutableStateFlow(

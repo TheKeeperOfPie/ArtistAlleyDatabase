@@ -144,6 +144,7 @@ object Versions {
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
+    const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
     const val placeholder = "1.0.8"
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
@@ -164,6 +165,23 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
             maven("https://maven.pkg.jetbrains.space/public/p/compose/dev/")
             google()
             mavenCentral()
+
+            // https://github.com/cashapp/multiplatform-paging/pull/376
+            maven {
+                url = uri("https://maven.pkg.github.com/edna-aa/sqldelight")
+                credentials {
+                    // Borrowed from https://github.com/0ffz/gpr-for-gradle
+                    username = "token"
+                    password = "\u0037\u0066\u0066\u0036\u0030\u0039\u0033\u0066\u0032\u0037\u0033\u0036\u0033\u0037\u0064\u0036\u0037\u0066\u0038\u0030\u0034\u0039\u0062\u0030\u0039\u0038\u0039\u0038\u0066\u0034\u0066\u0034\u0031\u0064\u0062\u0033\u0064\u0033\u0038\u0065"
+                }
+                content {
+                    includeGroup("app.cash.sqldelight")
+                    includeGroup("app.cash.paging")
+                    includeVersionByRegex("app.cash.sqldelight", ".*", ".*-wasm.*")
+                    includeVersionByRegex("app.cash.paging", ".*", ".*-wasm.*")
+                }
+            }
+
             flatDir { dirs = setOf(rootProject.projectDir.resolve("/libs")) }
         }
         versionCatalogs {
@@ -229,7 +247,9 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                     withVersion(paging) {
                         library("androidx.paging:paging-common")
+                        library("androidx.paging:paging-common-jvm")
                         library("androidx.paging:paging-compose")
+                        library("androidx.paging:paging-compose-android")
                         library("androidx.paging:paging-runtime-ktx")
                     }
 
@@ -299,6 +319,13 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         "com.squareup.okhttp3:logging-interceptor:${Versions.okhttp}",
                         prefix = "okhttp3"
                     )
+                }
+
+                prefix("pagingMultiplatform") {
+                    withVersion(Versions.pagingMultiplatform) {
+                        library("app.cash.paging:paging-common")
+                        library("app.cash.paging:paging-compose-common")
+                    }
                 }
 
                 prefix("coil3") {

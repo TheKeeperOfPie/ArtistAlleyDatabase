@@ -66,19 +66,15 @@ class SavedStateStateFlowWrapper<T>(
     override var value: T
         get() = stateFlow.value
         set(value) {
-            synchronized(savedStateHandle) {
-                savedStateHandle[key] = value
-            }
+            savedStateHandle[key] = value
         }
 
     override fun compareAndSet(expect: T, update: T): Boolean {
-        // TODO: Figure out a way to not sync around SavedStateHandle
-        synchronized(savedStateHandle) {
-            val current: T? = savedStateHandle[key]
-            if (expect != current) return false
-            savedStateHandle[key] = update
-            return true
-        }
+        // TODO: Synchronization was removed for wasmJs
+        val current: T? = savedStateHandle[key]
+        if (expect != current) return false
+        savedStateHandle[key] = update
+        return true
     }
 
     // TODO: Violates contract

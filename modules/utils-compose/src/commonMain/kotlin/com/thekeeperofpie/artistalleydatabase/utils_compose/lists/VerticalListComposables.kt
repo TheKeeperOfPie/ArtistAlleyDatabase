@@ -30,7 +30,10 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.paging.LoadState
+import app.cash.paging.LoadState
+import app.cash.paging.LoadStateError
+import app.cash.paging.LoadStateLoading
+import app.cash.paging.LoadStateNotLoading
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.error_loading
 import artistalleydatabase.modules.utils_compose.generated.resources.no_results
@@ -85,7 +88,7 @@ object VerticalList {
         contentPadding = contentPadding,
         placeholderCount = placeholderCount,
         pullRefreshState =
-            rememberPullRefreshState(items.loadState.refresh is LoadState.Loading, onRefresh),
+            rememberPullRefreshState(items.loadState.refresh is LoadStateLoading, onRefresh),
         pullRefreshIndicator = { refreshing, pullRefreshState ->
             PullRefreshIndicator(
                 refreshing = refreshing,
@@ -132,8 +135,8 @@ object VerticalList {
         placeholderCount = placeholderCount,
         pullRefreshState = null,
         pullRefreshIndicator = null,
-        refreshState = { if (items == null) LoadState.Loading else LoadState.NotLoading(true) },
-        appendState = { LoadState.NotLoading(true) },
+        refreshState = { (if (items == null) LoadStateLoading else LoadStateNotLoading(true)) as LoadState },
+        appendState = { LoadStateNotLoading(true) as LoadState },
         showScrollbar = showScrollbar,
         item = item,
     )
@@ -199,14 +202,14 @@ object VerticalList {
                 }
                 val refreshState = refreshState()
                 when {
-                    refreshState is LoadState.Error && itemCount() == 0 ->
+                    refreshState is LoadStateError && itemCount() == 0 ->
                         item(key = "errorLoading", span = GridUtils.maxSpanFunction) {
                             ErrorContent(
                                 errorText = stringResource(Res.string.error_loading),
                                 exception = refreshState.error,
                             )
                         }
-                    refreshState is LoadState.NotLoading && itemCount() == 0 ->
+                    refreshState is LoadStateNotLoading && itemCount() == 0 ->
                         item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
                             NoResults()
                         }
@@ -223,25 +226,26 @@ object VerticalList {
                         }
 
                         when (appendState()) {
-                            is LoadState.Loading -> item(
+                            is LoadStateLoading -> item(
                                 key = "load_more_append",
                                 span = GridUtils.maxSpanFunction
                             ) {
                                 LoadingMore()
                             }
-                            is LoadState.Error -> item(
+                            is LoadStateError -> item(
                                 key = "load_more_error",
                                 span = GridUtils.maxSpanFunction
                             ) {
                                 ErrorAppend(onRefresh)
                             }
-                            is LoadState.NotLoading -> Unit
+                            is LoadStateNotLoading -> Unit
+                            else -> Unit
                         }
                     }
                 }
             }
             if (pullRefreshState != null && pullRefreshIndicator != null) {
-                pullRefreshIndicator(this, refreshState() is LoadState.Loading, pullRefreshState)
+                pullRefreshIndicator(this, refreshState() is LoadStateLoading, pullRefreshState)
             }
 
             if (showScrollbar) {

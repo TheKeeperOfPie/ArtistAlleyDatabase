@@ -41,7 +41,6 @@ class ReviewsSortFilterViewModel(
         savedStateHandle.getMutableStateFlow(json, "sortOption", ReviewSortOption.CREATED_AT)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = ReviewSortOption::class,
         headerText = Res.string.anime_review_filter_sort_label,
         defaultSort = ReviewSortOption.CREATED_AT,
         sortOption = sortOption,

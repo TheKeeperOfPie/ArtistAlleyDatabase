@@ -45,7 +45,6 @@ class NewsSortFilterViewModel(
         )
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = AnimeNewsSortOption::class,
         defaultSort = AnimeNewsSortOption.DATETIME,
         headerText = Res.string.anime_news_filter_sort_label,
         sortOption = sortOption,

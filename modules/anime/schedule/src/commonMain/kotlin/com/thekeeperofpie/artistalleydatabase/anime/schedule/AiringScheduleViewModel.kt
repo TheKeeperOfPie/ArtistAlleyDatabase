@@ -22,8 +22,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.loading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -69,7 +69,7 @@ class AiringScheduleViewModel<MediaEntry : Any>(
 
     // Spans last week, current week, next week
     private val dayFlows = Array(21) {
-        MutableStateFlow(PagingData.loading<AiringScheduleScreen.Entry<MediaEntry>>())
+        MutableStateFlow(PagingUtils.loading<AiringScheduleScreen.Entry<MediaEntry>>())
     }
     private val initialized = Array(21) { false }
 

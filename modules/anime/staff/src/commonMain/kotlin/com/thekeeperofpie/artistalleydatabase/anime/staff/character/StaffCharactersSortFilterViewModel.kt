@@ -38,7 +38,6 @@ class StaffCharactersSortFilterViewModel(
         savedStateHandle.getMutableStateFlow(json, "sortOption", CharacterSortOption.FAVORITES)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = CharacterSortOption::class,
         headerText = Res.string.anime_staff_characters_filter_sort_label,
         defaultSort = CharacterSortOption.FAVORITES,
         sortOptions = MutableStateFlow(

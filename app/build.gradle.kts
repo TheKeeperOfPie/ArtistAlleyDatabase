@@ -225,14 +225,12 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.lifecycle.livedata.ktx)
             implementation(libs.lifecycle.viewmodel.compose)
-            implementation(libs.paging.runtime.ktx)
             implementation(libs.room.paging)
             implementation(libs.work.runtime)
             implementation(libs.work.runtime.ktx)
 
             runtimeOnly(libs.kotlin.reflect)
             runtimeOnly(libs.kotlinx.coroutines.android)
-            runtimeOnly(libs.paging.runtime.ktx)
             runtimeOnly(libs.room.runtime)
         }
         val desktopMain by getting {

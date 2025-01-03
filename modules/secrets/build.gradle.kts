@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     id("library-android")
     id("library-desktop")
+    id("library-web")
     alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 

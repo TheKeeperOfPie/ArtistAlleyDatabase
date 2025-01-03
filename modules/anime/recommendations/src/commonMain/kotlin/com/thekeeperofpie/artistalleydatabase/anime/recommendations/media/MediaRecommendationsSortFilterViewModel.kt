@@ -35,7 +35,6 @@ class MediaRecommendationsSortFilterViewModel(
         savedStateHandle.getMutableStateFlow(json, "sortOption", RecommendationSortOption.RATING)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = RecommendationSortOption::class,
         defaultSort = RecommendationSortOption.RATING,
         headerText = Res.string.anime_media_recommendations_filter_sort_label,
         sortOption = sortOption,

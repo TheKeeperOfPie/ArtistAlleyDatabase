@@ -32,7 +32,6 @@ class AiringScheduleSortFilterViewModel(
     private val sortAscending =
         savedStateHandle.getMutableStateFlow<Boolean>("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = AiringScheduleSortOption::class,
         headerText = Res.string.anime_airing_schedule_sort_label,
         defaultSort = AiringScheduleSortOption.POPULARITY,
         sortAscending = sortAscending,

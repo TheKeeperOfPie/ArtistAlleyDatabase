@@ -17,7 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.paging.LoadState
+import app.cash.paging.LoadStateError
+import app.cash.paging.LoadStateLoading
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.error_loading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -83,7 +84,7 @@ fun <T : Any> HorizontalPagerItemsRow(
         contentPadding = contentPadding,
         loading = if (showLoadingBar) {
             {
-                val loading = refreshState is LoadState.Loading
+                val loading = refreshState is LoadStateLoading
                 if (loading) {
                     LinearProgressIndicator(
                         modifier = Modifier
@@ -93,7 +94,7 @@ fun <T : Any> HorizontalPagerItemsRow(
                 }
             }
         } else null,
-        error = if (refreshState is LoadState.Error) {
+        error = if (refreshState is LoadStateError) {
             {
                 Text(
                     text = refreshState.error.message ?: stringResource(Res.string.error_loading),

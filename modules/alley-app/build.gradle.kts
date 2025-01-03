@@ -159,6 +159,11 @@ kotlin {
         }
     }
 }
+configurations.all {
+    resolutionStrategy {
+        force("androidx.paging:paging-common:3.3.0-alpha02")
+    }
+}
 
 dependencies {
     add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
@@ -222,3 +227,9 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
+
+configurations.all {
+    resolutionStrategy.capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
+        select("com.google.guava:guava:0")
+    }
+}

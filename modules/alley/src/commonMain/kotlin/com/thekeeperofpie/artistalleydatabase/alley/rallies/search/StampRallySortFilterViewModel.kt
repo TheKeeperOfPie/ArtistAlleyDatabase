@@ -51,7 +51,6 @@ class StampRallySortFilterViewModel(
             serialize = { it.name.orEmpty() },
         )
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = StampRallySearchSortOption::class,
         headerText = Res.string.alley_sort_label,
         defaultSort = StampRallySearchSortOption.RANDOM,
         sortOption = sortOption,

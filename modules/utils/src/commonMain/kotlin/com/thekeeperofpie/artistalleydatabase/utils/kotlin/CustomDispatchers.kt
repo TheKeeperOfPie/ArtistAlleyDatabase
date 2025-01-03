@@ -6,7 +6,7 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class CustomDispatchers(
-    val io: CoroutineDispatcher = Dispatchers.IO,
+    val io: CoroutineDispatcher = PlatformDispatchers.IO,
     val main: CoroutineDispatcher = Dispatchers.Main,
     val default: CoroutineDispatcher = Dispatchers.Default,
 ) {
@@ -20,7 +20,7 @@ class CustomDispatchers(
     @Deprecated("Use injected instance")
     companion object {
         val Main get() = Dispatchers.Main
-        val IO get() = Dispatchers.IO
+        val IO get() = PlatformDispatchers.IO
         val Default get() = Dispatchers.Default
     }
 }

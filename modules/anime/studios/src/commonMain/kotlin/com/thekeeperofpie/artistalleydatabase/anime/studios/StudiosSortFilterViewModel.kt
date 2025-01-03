@@ -33,7 +33,6 @@ class StudiosSortFilterViewModel(
         savedStateHandle.getMutableStateFlow(json, "sortOption", StudioSortOption.SEARCH_MATCH)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = StudioSortOption::class,
         headerText = Res.string.anime_studio_filter_sort_label,
         defaultSort = StudioSortOption.SEARCH_MATCH,
         sortOption = sortOption,

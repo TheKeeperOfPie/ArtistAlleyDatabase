@@ -39,7 +39,6 @@ class CharacterSortFilterViewModel(
     private val sortAscending =
         savedStateHandle.getMutableStateFlow<Boolean>("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = CharacterSortOption::class,
         defaultSort = CharacterSortOption.SEARCH_MATCH,
         headerText = Res.string.anime_character_media_filter_sort_label,
         sortOptions = MutableStateFlow(

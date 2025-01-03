@@ -45,7 +45,6 @@ class ForumSubsectionSortFilterViewModel(
     private val sortAscending =
         savedStateHandle.getMutableStateFlow<Boolean>("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = ForumThreadSortOption::class,
         headerText = Res.string.anime_forum_sort_label,
         defaultSort = initialParams.defaultSort ?: ForumThreadSortOption.SEARCH_MATCH,
         sortOption = sortOption,

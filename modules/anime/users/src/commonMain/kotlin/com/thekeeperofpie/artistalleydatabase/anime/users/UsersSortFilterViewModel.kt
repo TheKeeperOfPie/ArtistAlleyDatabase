@@ -31,7 +31,6 @@ class UsersSortFilterViewModel(
         savedStateHandle.getMutableStateFlow(json, "sortOption", UserSortOption.SEARCH_MATCH)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = UserSortOption::class,
         headerText = Res.string.anime_user_filter_sort_label,
         defaultSort = UserSortOption.SEARCH_MATCH,
         sortOption = sortOption,

@@ -68,7 +68,6 @@ class ArtistSortFilterViewModel(
             serialize = { it.name.orEmpty() },
         )
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = ArtistSearchSortOption::class,
         headerText = Res.string.alley_sort_label,
         defaultSort = ArtistSearchSortOption.RANDOM,
         sortOption = sortOption,

@@ -36,7 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
 
@@ -62,7 +62,7 @@ object StampRallySearchScreen {
             val displayType = SearchScreen.DisplayType.fromSerializedValue(
                 viewModel.displayType.collectAsState().value
             )
-            val entries = viewModel.results.collectAsLazyPagingItems()
+            val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
             SearchScreen(
                 viewModel = viewModel,
                 entries = entries,

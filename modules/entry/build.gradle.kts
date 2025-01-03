@@ -23,7 +23,6 @@ kotlin {
             implementation(libs.jetBrainsCompose.navigation.compose)
             implementation(libs.kotlin.multiplatform.diff)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.paging.common)
             implementation(libs.uri.kmp)
             implementation(libs.uuid)
         }

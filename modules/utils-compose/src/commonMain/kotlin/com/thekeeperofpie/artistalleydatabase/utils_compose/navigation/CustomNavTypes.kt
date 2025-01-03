@@ -72,14 +72,8 @@ object CustomNavTypes {
     }
 
     class NullableEnumType<EnumType : Enum<*>>(
-        private val type: KClass<EnumType>,
         private val fromName: (String) -> EnumType?,
     ) : NavType<EnumType?>(true) {
-        companion object {
-            inline operator fun <reified T : Enum<*>> invoke(noinline fromName: (String) -> T?) =
-                CustomNavTypes.NullableEnumType(T::class, fromName)
-        }
-
         override fun get(bundle: Bundle, key: String) =
             bundle.getString(key)?.let(fromName)
 
@@ -90,7 +84,7 @@ object CustomNavTypes {
         override fun parseValue(value: String) = if (value == "null") {
             null
         } else {
-            type.java.enumConstants?.find { it.name.equals(value, ignoreCase = true) }
+            fromName(value)
         }
 
         override fun serializeAsValue(value: EnumType?) = value?.name?.let(::encode) ?: "null"
@@ -103,7 +97,7 @@ object CustomNavTypes {
                 CustomNavTypes.SerializableType(T::class)
         }
 
-        override val name: String = type.java.name
+        override val name: String = type.simpleName!!
 
         private val serializer by lazy { type.serializer() }
 
@@ -140,7 +134,7 @@ object CustomNavTypes {
             ) = CustomNavTypes.StringValueType(T::class, toString, fromString)
         }
 
-        override val name: String = type.java.name
+        override val name: String = type.simpleName!!
 
         override fun put(bundle: Bundle, key: String, value: Type?) {
             bundle.putString(key, value?.let(toString))

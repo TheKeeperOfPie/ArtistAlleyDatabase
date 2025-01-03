@@ -71,7 +71,6 @@ class ActivitySortFilterViewModel(
             initialValue = ActivitySortOption.PINNED,
         )
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = ActivitySortOption::class,
         headerText = Res.string.anime_activity_sort_label,
         defaultSort = ActivitySortOption.PINNED,
         sortAscending = null,

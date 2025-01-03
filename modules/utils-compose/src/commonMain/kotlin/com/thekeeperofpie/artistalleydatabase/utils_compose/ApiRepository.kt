@@ -5,8 +5,8 @@ import com.hoc081098.flowext.concatWith
 import com.hoc081098.flowext.flowFromSuspend
 import com.hoc081098.flowext.mapEager
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.distinctWithBuffer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -23,7 +23,7 @@ abstract class ApiRepository<DataType>(protected val scope: ApplicationScope) {
     private val fetchFlow = MutableStateFlow("")
 
     init {
-        scope.launch(Dispatchers.IO) {
+        scope.launch(PlatformDispatchers.IO) {
             @Suppress("OPT_IN_USAGE")
             fetchFlow
                 .drop(1) // Ignore initial value

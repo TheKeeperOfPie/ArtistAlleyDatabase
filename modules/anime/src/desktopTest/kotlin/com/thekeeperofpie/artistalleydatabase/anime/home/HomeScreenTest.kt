@@ -26,7 +26,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_recommendatio
 import artistalleydatabase.modules.anime.generated.resources.anime_reviews_home_title
 import com.anilist.data.type.MediaType
 import com.google.common.truth.Truth.assertThat
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeDestination
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityEntry
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel.CurrentMediaState
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
@@ -37,10 +36,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditState
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.reviews.ReviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.test_utils.ComposeTestRoot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.loading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -65,9 +65,9 @@ class HomeScreenTest {
             Dispatchers.setMain(UnconfinedTestDispatcher())
             setContent {
                 HomeScreen(
-                    activities = if (index == 0) PagingData.loading() else PagingData.empty(),
-                    recommendations = if (index == 1) PagingData.loading() else PagingData.empty(),
-                    reviews = if (index == 2) PagingData.loading() else PagingData.empty(),
+                    activities = if (index == 0) PagingUtils.loading() else PagingData.empty(),
+                    recommendations = if (index == 1) PagingUtils.loading() else PagingData.empty(),
+                    reviews = if (index == 2) PagingUtils.loading() else PagingData.empty(),
                     news = if (index == 3) LoadingResult.loading() else LoadingResult.empty(),
                     homeEntry = if (index == 4) LoadingResult.loading() else LoadingResult.empty(),
                     currentMedia = if (index == 5) LoadingResult.loading() else LoadingResult.empty(),
@@ -197,7 +197,7 @@ class HomeScreenTest {
     private fun HomeScreen(
         activities: PagingData<ActivityEntry<MediaCompactWithTagsEntry>>,
         recommendations: PagingData<RecommendationEntry<MediaCompactWithTagsEntry>>,
-        reviews: PagingData<ReviewEntry>,
+        reviews: PagingData<ReviewEntry<MediaCompactWithTagsEntry>>,
         news: LoadingResult<List<AnimeNewsEntry<*>>>,
         homeEntry: LoadingResult<AnimeHomeDataEntry>,
         currentMedia: LoadingResult<List<UserMediaListController.MediaEntry>>,
@@ -243,7 +243,7 @@ class HomeScreenTest {
                 editEventSink = {},
                 onClickListEdit = {},
                 onClickIncrementProgress = {},
-                userRoute = AnimeDestination.User.route,
+                userRoute = UserDestinations.User.route,
             )
         }
     }

@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.paging
 
 import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.paging.PagingConfig
+import kotlin.jvm.JvmSuppressWildcards
 
 /**
  * Returns a factory of stable and unique keys representing the item.

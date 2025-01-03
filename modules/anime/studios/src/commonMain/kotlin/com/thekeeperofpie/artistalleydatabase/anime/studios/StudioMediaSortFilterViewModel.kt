@@ -37,7 +37,6 @@ class StudioMediaSortFilterViewModel(
         savedStateHandle.getMutableStateFlow(json, "sortOption", MediaSortOption.TRENDING)
     private val sortAscending = savedStateHandle.getMutableStateFlow("sortAscending", false)
     private val sortSection = SortFilterSectionState.Sort(
-        enumClass = MediaSortOption::class,
         headerText = Res.string.anime_studio_media_filter_sort_label,
         defaultSort = MediaSortOption.TRENDING,
         sortOptions = MutableStateFlow(
