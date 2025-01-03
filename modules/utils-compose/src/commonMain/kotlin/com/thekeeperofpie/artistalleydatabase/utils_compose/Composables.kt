@@ -3,7 +3,6 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,8 +25,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -51,8 +47,6 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.log_exception
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -246,28 +240,6 @@ fun <T> ItemDropdown(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun ClickableBottomSheetDragHandle(scope: CoroutineScope, sheetState: SheetState) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier
-        .fillMaxWidth()
-        .clickable {
-            if (sheetState.currentValue == SheetValue.Expanded) {
-                scope.launch {
-                    try {
-                        sheetState.hide()
-                    } catch (ignored: Throwable) {
-                        sheetState.partialExpand()
-                    }
-                }
-            } else {
-                scope.launch { sheetState.expand() }
-            }
-        }
-    ) {
-        BottomSheetDefaults.DragHandle()
     }
 }
 

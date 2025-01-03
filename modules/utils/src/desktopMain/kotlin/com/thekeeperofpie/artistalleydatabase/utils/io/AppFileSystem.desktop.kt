@@ -13,6 +13,7 @@ import kotlinx.io.buffered
 import kotlinx.io.files.FileMetadata
 import kotlinx.io.files.Path
 import me.tatarka.inject.annotations.Inject
+import java.net.URI
 import java.nio.file.Files
 import java.nio.file.OpenOption
 import java.nio.file.StandardOpenOption
@@ -33,8 +34,11 @@ actual class AppFileSystem {
 
     actual fun filePath(path: String) = Path("/files/$path")
 
-    actual fun openUriSource(uri: Uri): Source? =
+    actual fun openUriSource(uri: Uri): Source? = if (uri.scheme == "jar") {
+        URI.create(uri.toString()).toURL().openStream().asSource().buffered()
+    } else {
         Files.newInputStream(fileSystem.getPath(uri.pathOrThrow)).asSource().buffered()
+    }
 
     actual fun openUriSink(uri: Uri, mode: String): Sink? =
         Files.newOutputStream(
@@ -138,7 +142,7 @@ actual class AppFileSystem {
     private val Uri.pathOrThrow: String
         get() {
             if (scheme != "file" || path == null) {
-                throw IllegalArgumentException("Platform only supports file:// URIs")
+                throw IllegalArgumentException("Platform only supports file:// URIs, got $this")
             }
             return path!!
         }

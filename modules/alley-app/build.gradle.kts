@@ -1,3 +1,4 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -92,6 +93,18 @@ android {
     }
 }
 
+compose.desktop {
+    application {
+        mainClass = "com.thekeeperofpie.artistalleydatabase.alley.app.MainKt"
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Exe)
+            packageName = "com.thekeeperofpie.artistalley"
+            packageVersion = "0.0.1"
+        }
+    }
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -140,6 +153,7 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(libs.coil3.coil.network.ktor3)
                 implementation(libs.kotlinx.coroutines.swing)
             }
         }

@@ -20,9 +20,9 @@ kotlin {
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsRoom)
 
-            // TODO: This import doesn't work
+            // TODO: This import doesn't work since 1.8.0-alpha01 isn't published for this artifact
 //            implementation(compose.material3AdaptiveNavigationSuite)
-            implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
+            implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.7.3")
             implementation(libs.coil3.coil.compose)
             implementation(libs.coil3.coil.compose)
             implementation(libs.commons.csv)
