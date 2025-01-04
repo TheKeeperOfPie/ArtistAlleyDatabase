@@ -37,16 +37,17 @@ class StampRallyDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val (stampRallyEntry, artists) = stampRallyEntryDao.getEntryWithArtists(id)
-                ?: return@launch
+            val entryWithArtists = stampRallyEntryDao.getEntryWithArtists(id) ?: return@launch
+            val stampRally = entryWithArtists.stampRally
+            val artists = entryWithArtists.artists
             val catalogImages = ArtistAlleyUtils.getImages(
                 appFileSystem,
                 "rallies",
-                stampRallyEntry.id.replace("-", " - "),
+                stampRally.id.replace("-", " - "),
             )
 
             // Some stamp rallies have artists in non-AA regions, try and show those
-            val otherTables = stampRallyEntry.tables
+            val otherTables = stampRally.tables
                 .filter { table ->
                     artists.none { artist ->
                         artist.booth == table.substringBefore("-").trim()
@@ -55,7 +56,7 @@ class StampRallyDetailsViewModel(
 
             withContext(CustomDispatchers.Main) {
                 entry = Entry(
-                    stampRally = stampRallyEntry,
+                    stampRally = stampRally,
                     artists = artists,
                     otherTables = otherTables,
                 )

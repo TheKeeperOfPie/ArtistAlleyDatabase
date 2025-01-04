@@ -99,7 +99,7 @@ object ArtistAlleyAppScreen {
                                     onClickBack = navController::navigateUp,
                                     onSeriesClick = {
                                         navController.navigate(
-                                            Destinations.Series(it.text)
+                                            Destinations.Series(it)
                                         )
                                     },
                                     onMerchClick = {

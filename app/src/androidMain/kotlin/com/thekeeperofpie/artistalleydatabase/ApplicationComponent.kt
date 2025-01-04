@@ -111,7 +111,8 @@ abstract class ApplicationComponent(
 
     @SingletonScope
     @Provides
-    fun provideMasterKey(application: Application) = CryptoUtils.masterKey(application)
+    fun provideMasterKey(application: Application) =
+        CryptoUtils.masterKey(application, "AnichiveMasterKey")
 
     @SingletonScope
     @Provides
@@ -178,7 +179,7 @@ abstract class ApplicationComponent(
     @SingletonScope
     @Provides
     @IntoSet
-    fun provideBaseTypeMap() : Map<KType, NavType<*>> = CustomNavTypes.baseTypeMap
+    fun provideBaseTypeMap(): Map<KType, NavType<*>> = CustomNavTypes.baseTypeMap
 
     @SingletonScope
     @Provides

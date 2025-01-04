@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.annotation.WorkerThread
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -8,13 +7,14 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemPathSeparator
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 object EntryUtils {
 
@@ -36,11 +36,9 @@ object EntryUtils {
             else -> throw IllegalArgumentException("Unrecognized type $type")
         }
 
-    @WorkerThread
     fun getEntryImageFolder(appFileSystem: AppFileSystem, entryId: EntryId) =
         appFileSystem.filePath("${entryId.imageFolderName}$SystemPathSeparator${entryId.valueId}")
 
-    @WorkerThread
     fun getImages(
         appFileSystem: AppFileSystem,
         entryId: EntryId,
@@ -50,9 +48,10 @@ object EntryUtils {
                 emptyList()
             } else if (appFileSystem.metadataOrNull(it)?.isRegularFile == true) {
                 listOf(
+                    @OptIn(ExperimentalUuidApi::class)
                     EntryImage(
                         entryId = entryId,
-                        imageId = Uuid.randomUUID().toString(),
+                        imageId = Uuid.random().toString(),
                         uri = it.toUri(),
                         width = 1,
                         height = 1,

@@ -1,15 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import androidx.annotation.WorkerThread
 import androidx.compose.runtime.mutableStateListOf
 import artistalleydatabase.modules.utils_compose.generated.resources.error_fail_to_load_image
-import com.benasher44.uuid.Uuid
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.image.ImageHandler
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropState
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.walk
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +18,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import org.jetbrains.compose.resources.StringResource
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class EntryImageController(
     private val scope: CoroutineScope,
@@ -41,7 +42,7 @@ class EntryImageController(
         },
         addAllowed = { entryIds.size <= 1 },
         onAdded = {
-            scope.launch(Dispatchers.IO.limitedParallelism(8)) {
+            scope.launch(PlatformDispatchers.IO.limitedParallelism(8)) {
                 val newImages = it.map {
                     async {
                         val (width, height) = appFileSystem.getImageWidthHeight(it)
@@ -100,7 +101,7 @@ class EntryImageController(
             return
         }
 
-        scope.launch(Dispatchers.IO) {
+        scope.launch(PlatformDispatchers.IO) {
             val (width, height) = appFileSystem.getImageWidthHeight(uri)
             width ?: return@launch
             height ?: return@launch
@@ -117,7 +118,6 @@ class EntryImageController(
         }
     }
 
-    @WorkerThread
     suspend fun replaceMainImage(entryId: EntryId?, uri: Uri) {
         val entryIdsSize = withContext(Dispatchers.Main) { entryIds.size }
         if (entryIdsSize > 1) return
@@ -147,8 +147,9 @@ class EntryImageController(
             images.mapIndexed { index, entryImage ->
                 async {
                     // Generate a new ID for new entries
+                    @OptIn(ExperimentalUuidApi::class)
                     val entryId =
-                        entryImage.entryId ?: EntryId(scopedIdType, Uuid.randomUUID().toString())
+                        entryImage.entryId ?: EntryId(scopedIdType, Uuid.random().toString())
                     val originalPath = EntryUtils.getImagePath(
                         appFileSystem = appFileSystem,
                         entryId = entryId,

@@ -55,16 +55,11 @@ class MapViewModel(
     }
 
     private fun mapBooths(booths: List<ArtistBoothWithFavorite>): List<Table> {
-        val letterToBooths = booths.groupBy { it.booth.take(1) }.toSortedMap()
-        val maxRow = letterToBooths.size
-        val maxColumn =
-            letterToBooths.maxOf {
-                it.value.mapNotNull { it.booth.drop(1).toIntOrNull() }.maxOrNull() ?: 0
-            }
+        val letterToBooths = booths.groupBy { it.booth.take(1) }.toList().sortedBy { it.first }
         var currentIndex = 0
         val showRandomCatalogImage = settings.showRandomCatalogImage.value
-        return letterToBooths.values.mapIndexed { letterIndex, booths ->
-            booths.map {
+        return letterToBooths.mapIndexed { letterIndex, pair ->
+            pair.second.map {
                 val tableNumber = it.booth.filter { it.isDigit() }.toInt()
                 val images =
                     ArtistAlleyUtils.getImages(appFileSystem, "catalogs", it.booth)

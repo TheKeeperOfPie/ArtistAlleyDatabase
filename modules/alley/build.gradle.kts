@@ -1,4 +1,5 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.util.Properties
 
 plugins {
@@ -6,27 +7,40 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
-    id("library-room")
+    id("library-web")
     alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvm") {
+                withAndroidTarget()
+                withJvm()
+            }
+        }
+    }
+
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.modules.anilist)
-            api(projects.modules.data)
             api(projects.modules.entry)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
-            implementation(projects.modules.utilsRoom)
 
             // TODO: This import doesn't work since 1.8.0-alpha01 isn't published for this artifact
 //            implementation(compose.material3AdaptiveNavigationSuite)
             implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.7.3")
             implementation(libs.coil3.coil.compose)
-            implementation(libs.coil3.coil.compose)
-            implementation(libs.commons.csv)
             implementation(libs.jetBrainsCompose.navigation.compose)
+        }
+        val jvmMain by getting {
+            dependencies {
+                implementation(projects.modules.utilsRoom)
+                api(libs.room.paging)
+                implementation(libs.commons.csv)
+                runtimeOnly(libs.room.runtime)
+            }
         }
     }
 }
@@ -48,3 +62,17 @@ buildkonfig {
         }
     }
 }
+
+dependencies {
+    add("kspAndroid", kspProcessors.room.compiler)
+    add("kspDesktop", kspProcessors.room.compiler)
+}
+
+val composeFilesDependentTasks = setOf(
+    "compileKotlinDesktop",
+    "compileKotlinWasmJs",
+    "kspAndroid",
+    "kspCommonMainKotlinMetadata",
+    "kspKotlinDesktop",
+)
+tasks.named { it in composeFilesDependentTasks }.configureEach { dependsOn("parseComposeFiles") }

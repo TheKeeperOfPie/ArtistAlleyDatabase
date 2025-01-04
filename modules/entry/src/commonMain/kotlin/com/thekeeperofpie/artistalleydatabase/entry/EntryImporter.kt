@@ -1,13 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.benasher44.uuid.uuidFrom
+import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import kotlinx.io.Source
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemPathSeparator
 import kotlinx.serialization.ExperimentalSerializationApi
-import java.io.File
 
 @OptIn(ExperimentalSerializationApi::class)
 abstract class EntryImporter(
@@ -18,7 +17,7 @@ abstract class EntryImporter(
 
     override suspend fun readInnerFile(source: Source, fileName: String, dryRun: Boolean) {
         if (!dryRun) {
-            val pathSegments = fileName.split(File.separator)
+            val pathSegments = fileName.split(SystemPathSeparator)
             val entryName = pathSegments.last().substringBefore(".")
             try {
                 // Try to resolve the name directly as a UUID,
@@ -35,7 +34,7 @@ abstract class EntryImporter(
                     source.transferTo(it)
                 }
                 EntryUtils.fixImageName(appFileSystem, outputPath)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 val entryId = pathSegments[pathSegments.size - 2]
                 val folder =
                     EntryUtils.getEntryImageFolder(

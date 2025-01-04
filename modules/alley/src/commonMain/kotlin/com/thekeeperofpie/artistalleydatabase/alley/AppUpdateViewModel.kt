@@ -7,9 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Inject
-import java.net.URL
 
 @Inject
 class AppUpdateViewModel : ViewModel() {
@@ -18,18 +16,19 @@ class AppUpdateViewModel : ViewModel() {
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
-                val latestVersion = URL(Secrets.updateUrl)
-                    .openStream()
-                    .use { it.reader().readText() }
-                    .let(Regex("(\\d+)", RegexOption.MULTILINE)::find)
-                    ?.groupValues
-                    ?.firstOrNull()
-                if (latestVersion != Secrets.currentSheetVersion) {
-                    withContext(CustomDispatchers.Main) {
-                        updateAppUrl = Secrets.apkUrl
-                    }
-                }
-            } catch (ignored: Throwable) {
+                // TODO: Re-enable, URL not multiplatform, should use Ktor
+//                val latestVersion = URL(Secrets.updateUrl)
+//                    .openStream()
+//                    .use { it.reader().readText() }
+//                    .let(Regex("(\\d+)", RegexOption.MULTILINE)::find)
+//                    ?.groupValues
+//                    ?.firstOrNull()
+//                if (latestVersion != Secrets.currentSheetVersion) {
+//                    withContext(CustomDispatchers.Main) {
+//                        updateAppUrl = Secrets.apkUrl
+//                    }
+//                }
+            } catch (_: Throwable) {
             }
         }
     }

@@ -7,10 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
+import app.cash.paging.PagingData
+import app.cash.paging.cachedIn
+import app.cash.paging.createPager
+import app.cash.paging.createPagingConfig
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +37,7 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
         viewModelScope.launch(CustomDispatchers.IO) {
             snapshotFlow { seriesQuery }
                 .flatMapLatest { query ->
-                    Pager(PagingConfig(pageSize = 20)) {
+                    createPager(createPagingConfig(pageSize = 20)) {
                         if (query.isBlank()) {
                             tagsEntryDao.getSeries()
                         } else {
@@ -58,7 +58,7 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
         viewModelScope.launch(CustomDispatchers.IO) {
             snapshotFlow { merchQuery }
                 .flatMapLatest { query ->
-                    Pager(PagingConfig(pageSize = 20)) {
+                    createPager(createPagingConfig(pageSize = 20)) {
                         if (query.isBlank()) {
                             tagsEntryDao.getMerch()
                         } else {

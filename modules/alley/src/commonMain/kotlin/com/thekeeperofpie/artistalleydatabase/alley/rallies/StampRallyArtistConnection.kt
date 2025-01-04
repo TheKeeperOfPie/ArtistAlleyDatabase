@@ -1,11 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+expect class StampRallyArtistConnection {
+    val stampRallyId: String
+    val artistId: String
 
-@Entity(primaryKeys = ["stampRallyId", "artistId"], tableName = "stamp_rally_artist_connections")
-data class StampRallyArtistConnection(
-    val stampRallyId: String,
-    @ColumnInfo(index = true)
-    val artistId: String,
-)
+    constructor(stampRallyId: String, artistId: String)
+}

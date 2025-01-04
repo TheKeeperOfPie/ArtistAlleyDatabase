@@ -56,7 +56,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -70,7 +69,7 @@ object ArtistDetailsScreen {
     operator fun invoke(
         viewModel: ArtistDetailsViewModel,
         onClickBack: () -> Unit,
-        onSeriesClick: (Series) -> Unit,
+        onSeriesClick: (String) -> Unit,
         onMerchClick: (String) -> Unit,
         onStampRallyClick: (StampRallyEntry) -> Unit,
         onArtistMapClick: () -> Unit,
@@ -107,11 +106,12 @@ object ArtistDetailsScreen {
                 )
             }
 
-            if (!artist.summary.isNullOrBlank()) {
+            val summary = artist.summary
+            if (!summary.isNullOrBlank()) {
                 ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     InfoText(
-                        stringResource(Res.string.alley_artist_details_description),
-                        artist.summary,
+                        label = stringResource(Res.string.alley_artist_details_description),
+                        body = summary,
                         showDividerAbove = false
                     )
                 }
@@ -187,7 +187,7 @@ object ArtistDetailsScreen {
                 headerTextResUnconfirmed = Res.string.alley_artist_details_series_unconfirmed,
                 unconfirmedIconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
                 expandTextRes = Res.string.alley_artist_details_series_unconfirmed_expand,
-                itemToText = { it.text },
+                itemToText = { it },
                 onClick = onSeriesClick,
             )
 

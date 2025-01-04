@@ -1,15 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.tatarka.inject.annotations.Inject
 
 @Inject
-class ArtistAlleyDesktopSettings : AniListSettings, ArtistAlleySettings {
-    override val aniListViewer = MutableStateFlow<AniListViewer?>(null)
-    override val ignoreViewer = MutableStateFlow(false)
+class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val lastKnownArtistsCsvSize = MutableStateFlow(-1L)
     override val lastKnownStampRalliesCsvSize = MutableStateFlow(-1L)
     override val displayType = MutableStateFlow("")

@@ -13,9 +13,9 @@ import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.utils.Exporter
+import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
-import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
-import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 

@@ -1,48 +1,49 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Fts4
-import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
-@Entity(tableName = "stamp_rally_entries")
-data class StampRallyEntry(
-    @PrimaryKey
-    val id: String,
-    @ColumnInfo(collate = ColumnInfo.NOCASE)
-    val fandom: String,
-    @ColumnInfo(collate = ColumnInfo.NOCASE)
-    val hostTable: String,
-    val tables: List<String> = emptyList(),
-    val links: List<String> = emptyList(),
-    val tableMin: Int? = null,
-    val totalCost: Int? = null,
-    val prizeLimit: Int? = null,
-    val favorite: Boolean = false,
-    val ignored: Boolean = false,
-    val notes: String? = null,
-    // Used fo random ordering while maintaining a stable key
-    @ColumnInfo(defaultValue = "1")
-    val counter: Int = 1,
-)
+@Serializable
+expect class StampRallyEntry {
+    val id: String
+    val fandom: String
+    val hostTable: String
+    val tables: List<String>
+    val links: List<String>
+    val tableMin: Int?
+    val totalCost: Int?
+    val prizeLimit: Int?
+    val favorite: Boolean
+    val ignored: Boolean
+    val notes: String?
+    // Used for random ordering while maintaining a stable key
+    val counter: Int
 
-@Entity(tableName = "stamp_rally_entries_fts")
-@Fts4(contentEntity = StampRallyEntry::class)
-data class StampRallyEntryFts(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "rowid")
-    val rowId: Int? = null,
-    val id: String,
-    @ColumnInfo(collate = ColumnInfo.NOCASE)
-    val fandom: String,
-    @ColumnInfo(collate = ColumnInfo.NOCASE)
-    val hostTable: String,
-    val tables: List<String>,
-    val links: List<String>,
-    val tableMin: Int?,
-    val totalCost: Int?,
-    val prizeLimit: Int?,
-    val favorite: Boolean,
-    val ignored: Boolean,
-    val notes: String?,
-)
+    constructor(
+        id: String,
+        fandom: String,
+        hostTable: String,
+        tables: List<String>,
+        links: List<String> = emptyList(),
+        tableMin: Int? = null,
+        totalCost: Int? = null,
+        prizeLimit: Int? = null,
+        favorite: Boolean = false,
+        ignored: Boolean = false,
+        notes: String? = null,
+        counter: Int = 1,
+    )
+
+    fun copy(
+        id: String = this.id,
+        fandom: String = this.fandom,
+        hostTable: String = this.hostTable,
+        tables: List<String> = this.tables,
+        links: List<String> = this.links,
+        tableMin: Int? = this.tableMin,
+        totalCost: Int? = this.totalCost,
+        prizeLimit: Int? = this.prizeLimit,
+        favorite: Boolean = this.favorite,
+        ignored: Boolean = this.ignored,
+        notes: String? = this.notes,
+    ) : StampRallyEntry
+}

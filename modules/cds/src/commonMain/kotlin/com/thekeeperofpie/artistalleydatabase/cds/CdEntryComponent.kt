@@ -9,8 +9,8 @@ import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdExporter
 import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdImporter
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
-import com.thekeeperofpie.artistalleydatabase.utils_room.Importer
+import com.thekeeperofpie.artistalleydatabase.utils.Exporter
+import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 

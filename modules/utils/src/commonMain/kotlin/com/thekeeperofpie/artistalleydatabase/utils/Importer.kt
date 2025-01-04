@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils_room
+package com.thekeeperofpie.artistalleydatabase.utils
 
 import kotlinx.io.Source
 

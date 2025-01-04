@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.cachedIn
-import androidx.paging.filter
-import androidx.paging.map
+import app.cash.paging.cachedIn
+import app.cash.paging.createPager
+import app.cash.paging.createPagingConfig
+import app.cash.paging.filter
+import app.cash.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -65,9 +65,8 @@ class StampRallySearchViewModel(
     override fun mapQuery(
         query: String,
         options: StampRallySearchQuery,
-    ) = Pager(PagingConfig(pageSize = 20)) {
-        trackPagingSource { stampRallyEntryDao.search(query, options) }
-    }.flow
+    ) = createPager(createPagingConfig(pageSize = 20)) { stampRallyEntryDao.search(query, options) }
+        .flow
         .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
         .map { it.map { StampRallyEntryGridModel.buildFromEntry(appFileSystem, it) } }

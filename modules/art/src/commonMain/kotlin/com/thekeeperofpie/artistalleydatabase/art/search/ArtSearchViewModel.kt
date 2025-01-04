@@ -104,9 +104,7 @@ open class ArtSearchViewModel(
         query: String,
         options: ArtSearchQuery,
     ): Flow<PagingData<ArtEntryGridModel>> =
-        Pager(PagingConfig(pageSize = 20)) {
-            trackPagingSource { artEntryDao.search(query, options) }
-        }
+        Pager(PagingConfig(pageSize = 20)) { artEntryDao.search(query, options) }
             .flow.catch { emit(PagingData.empty()) }
             .cachedIn(viewModelScope)
             .onEach {

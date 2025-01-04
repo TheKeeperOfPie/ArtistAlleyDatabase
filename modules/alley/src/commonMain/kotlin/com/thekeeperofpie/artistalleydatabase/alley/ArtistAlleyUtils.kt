@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import androidx.annotation.WorkerThread
 import artistalleydatabase.modules.alley.generated.resources.Res
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.generated.ComposeFiles
@@ -9,7 +8,6 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 object ArtistAlleyUtils {
 
-    @WorkerThread
     fun getImages(
         appFileSystem: AppFileSystem,
         folder: String,

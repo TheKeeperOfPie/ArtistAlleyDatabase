@@ -8,7 +8,7 @@ plugins {
 kotlin {
     sourceSets {
         androidMain.dependencies {
-            implementation(libs.androidx.security.crypto)
+            api(libs.androidx.security.crypto)
         }
         commonMain.dependencies {
             api(libs.bignum)

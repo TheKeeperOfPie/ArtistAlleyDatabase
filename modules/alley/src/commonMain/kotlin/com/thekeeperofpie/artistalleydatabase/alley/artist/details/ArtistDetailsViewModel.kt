@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -40,11 +39,13 @@ class ArtistDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val (artist, stampRallies) = artistEntryDao.getEntryWithStampRallies(id)
-                ?: return@launch
+            val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(id) ?: return@launch
+            val artist = entryWithStampRallies.artist
+            val stampRallies = entryWithStampRallies.stampRallies
+
             val catalogImages = ArtistAlleyUtils.getImages(appFileSystem, "catalogs", artist.booth)
-            val seriesConfirmed = artist.seriesConfirmed(json)
-            val seriesInferred = artist.seriesInferred(json)
+            val seriesConfirmed = artist.seriesConfirmed
+            val seriesInferred = artist.seriesInferred
                 .toMutableList()
                 .apply { removeAll(seriesConfirmed) }
             withContext(CustomDispatchers.Main) {
@@ -69,8 +70,8 @@ class ArtistDetailsViewModel(
 
     data class Entry(
         val artist: ArtistEntry,
-        val seriesInferred: List<Series>,
-        val seriesConfirmed: List<Series>,
+        val seriesInferred: List<String>,
+        val seriesConfirmed: List<String>,
         val stampRallies: List<StampRallyEntry>,
     ) {
         var favorite by mutableStateOf(artist.favorite)

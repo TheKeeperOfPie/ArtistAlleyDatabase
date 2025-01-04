@@ -128,9 +128,7 @@ class CdSearchViewModel(
         query: String,
         options: CdSearchQuery,
     ): Flow<PagingData<CdEntryGridModel>> =
-        Pager(PagingConfig(pageSize = 20)) {
-            trackPagingSource { cdEntryDao.search(query, options) }
-        }
+        Pager(PagingConfig(pageSize = 20)) { cdEntryDao.search(query, options) }
             .flow.cachedIn(viewModelScope)
             .onEach {
                 viewModelScope.launch(Dispatchers.Main) {

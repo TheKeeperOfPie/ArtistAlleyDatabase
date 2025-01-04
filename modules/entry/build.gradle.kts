@@ -7,6 +7,7 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
+    id("library-web")
 }
 
 kotlin {
@@ -16,7 +17,6 @@ kotlin {
             implementation(projects.modules.markdown)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
-            implementation(projects.modules.utilsRoom)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.flowExt)

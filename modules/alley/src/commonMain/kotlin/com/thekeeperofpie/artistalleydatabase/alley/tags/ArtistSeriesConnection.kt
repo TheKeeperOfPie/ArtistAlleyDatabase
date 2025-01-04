@@ -1,12 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+expect class ArtistSeriesConnection {
+    val artistId: String
+    val seriesId: String
+    val confirmed: Boolean
 
-@Entity(primaryKeys = ["artistId", "seriesId"], tableName = "artist_series_connections")
-data class ArtistSeriesConnection(
-    val artistId: String,
-    val seriesId: String,
-    @ColumnInfo(defaultValue = "0")
-    val confirmed: Boolean = false,
-)
+    constructor(artistId: String, seriesId: String, confirmed: Boolean = false)
+}

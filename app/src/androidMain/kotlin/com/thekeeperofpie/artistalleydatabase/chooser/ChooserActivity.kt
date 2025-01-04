@@ -94,7 +94,8 @@ class ChooserActivity : ComponentActivity() {
                                         viewModel.viewModelScope.launch(Dispatchers.Main) {
                                             it.withResumed {
                                                 viewModel.viewModelScope.launch(Dispatchers.Main) {
-                                                    viewModel.invalidate()
+                                                    // TODO: This was removed for multiplatform
+//                                                    viewModel.invalidate()
                                                 }
                                             }
                                         }

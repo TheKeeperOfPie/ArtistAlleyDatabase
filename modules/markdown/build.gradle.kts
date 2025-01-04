@@ -3,14 +3,11 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
+    id("library-web")
 }
 
 kotlin {
     sourceSets {
-        commonMain.dependencies {
-            implementation(libs.multiplatform.markdown.renderer.m3)
-            implementation(libs.multiplatform.markdown.renderer.coil3)
-        }
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
             implementation(libs.coil3.coil)
@@ -19,6 +16,10 @@ kotlin {
             implementation(libs.markwon.ext.tables)
             implementation(libs.markwon.html)
             implementation(libs.markwon.linkify)
+        }
+        desktopMain.dependencies {
+            implementation(libs.multiplatform.markdown.renderer.m3)
+            implementation(libs.multiplatform.markdown.renderer.coil3)
         }
     }
 }

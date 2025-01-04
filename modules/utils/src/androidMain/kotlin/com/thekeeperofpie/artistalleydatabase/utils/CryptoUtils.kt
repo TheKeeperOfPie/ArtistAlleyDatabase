@@ -7,8 +7,8 @@ import androidx.security.crypto.MasterKey
 
 object CryptoUtils {
 
-    fun masterKey(application: Application): MasterKey {
-        val masterKeyAlias = "${application.packageName}.AnichiveMasterKey"
+    fun masterKey(application: Application, keySuffix: String): MasterKey {
+        val masterKeyAlias = "${application.packageName}.$keySuffix"
         return MasterKey.Builder(application, masterKeyAlias)
             .setKeyGenParameterSpec(
                 KeyGenParameterSpec.Builder(

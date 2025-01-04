@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.StateFlow
 import me.tatarka.inject.annotations.Provides
 
-interface ArtistAlleyComponent {
+interface ArtistAlleyComponent{
 
     val appUpdateViewModel: () -> AppUpdateViewModel
     val artistDetailsViewModel: (SavedStateHandle) -> ArtistDetailsViewModel

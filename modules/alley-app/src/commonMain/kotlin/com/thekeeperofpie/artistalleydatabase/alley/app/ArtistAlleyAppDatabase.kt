@@ -36,7 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_room.Converters
         MerchEntryFts::class,
     ],
     exportSchema = true,
-    version = 8,
+    version = 9,
     autoMigrations = [
         AutoMigration(1, 2),
         AutoMigration(2, 3),
@@ -74,6 +74,19 @@ abstract class ArtistAlleyAppDatabase : RoomDatabase(), ArtistAlleyDatabase {
                 """
                 CREATE VIRTUAL TABLE IF NOT EXISTS `stamp_rally_entries_fts` USING FTS4(`id` TEXT NOT NULL, `fandom` TEXT NOT NULL COLLATE NOCASE, `hostTable` TEXT NOT NULL COLLATE NOCASE, `tables` TEXT NOT NULL, `links` TEXT NOT NULL, `tableMin` INTEGER, `totalCost` INTEGER, `prizeLimit` INTEGER, `favorite` INTEGER NOT NULL, `ignored` INTEGER NOT NULL, `notes` TEXT, content=`stamp_rally_entries`)
                 """.trimIndent()
+            )
+        }
+    }
+
+    object Version_8_9 : Migration(8, 9) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("ALTER TABLE `artist_entries` DROP COLUMN `seriesInferredSerialized`")
+            connection.execSQL("ALTER TABLE `artist_entries` DROP COLUMN `seriesInferredSearchable`")
+            connection.execSQL("ALTER TABLE `artist_entries` ADD COLUMN `seriesInferred` TEXT DEFAULT NULL")
+            connection.execSQL("ALTER TABLE `artist_entries` ADD COLUMN `seriesConfirmed` TEXT DEFAULT NULL")
+            connection.execSQL("DROP TABLE artist_entries_fts")
+            connection.execSQL(
+                "CREATE VIRTUAL TABLE IF NOT EXISTS `artist_entries_fts` USING FTS4(`id` TEXT NOT NULL, `booth` TEXT NOT NULL COLLATE NOCASE, `name` TEXT NOT NULL COLLATE NOCASE, `summary` TEXT, `links` TEXT NOT NULL, `storeLinks` TEXT NOT NULL, `catalogLinks` TEXT NOT NULL, `driveLink` TEXT, `favorite` INTEGER NOT NULL, `ignored` INTEGER NOT NULL, `notes` TEXT, `seriesInferred` TEXT NOT NULL, `seriesConfirmed` TEXT NOT NULL, `merchInferred` TEXT NOT NULL, `merchConfirmed` TEXT NOT NULL, content=`artist_entries`)"
             )
         }
     }

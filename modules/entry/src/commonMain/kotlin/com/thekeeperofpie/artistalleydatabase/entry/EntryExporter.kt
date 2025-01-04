@@ -1,11 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.utils.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import kotlinx.io.Source
 import kotlinx.io.files.SystemPathSeparator
-import java.io.File
 
 abstract class EntryExporter(private val appFileSystem: AppFileSystem) : Exporter {
 
@@ -61,7 +60,7 @@ abstract class EntryExporter(private val appFileSystem: AppFileSystem) : Exporte
             if (cropped) "$it-cropped" else it
         }
         val filePath = buildEntryFilePath(
-            lastPathSegments = "${entryId.valueId}${File.separator}$fileName",
+            lastPathSegments = "${entryId.valueId}$SystemPathSeparator$fileName",
             values = values
         )
 

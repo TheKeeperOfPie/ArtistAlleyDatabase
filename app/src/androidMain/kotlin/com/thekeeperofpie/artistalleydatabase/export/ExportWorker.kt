@@ -17,9 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
-import com.thekeeperofpie.artistalleydatabase.utils_room.Exporter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,7 +28,6 @@ class ArtistEntryGridModel(
     override val booth get() = value.booth
 
     companion object {
-        @WorkerThread
         fun buildFromEntry(
             appFileSystem: AppFileSystem,
             entry: ArtistEntry,

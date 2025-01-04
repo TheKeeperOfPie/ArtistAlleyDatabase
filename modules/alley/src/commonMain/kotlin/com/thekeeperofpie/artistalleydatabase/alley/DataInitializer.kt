@@ -16,11 +16,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.launch
-import kotlinx.io.Source
-import kotlinx.io.asInputStream
+import kotlinx.io.InternalIoApi
 import kotlinx.io.buffered
 import me.tatarka.inject.annotations.Inject
-import org.apache.commons.csv.CSVFormat
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 @OptIn(ExperimentalResourceApi::class)
@@ -68,33 +66,33 @@ class DataInitializer(
             .use {
                 it.buffered().use {
                     var counter = 1
-                    csvReader(it)
-                        .mapNotNull {
+                    CsvReader.read(it)
+                        .map {
                             // Booth,Artist,Summary,Links,Store,Catalog / table,
                             // Series - Inferred,Merch - Inferred,Notes,Series - Confirmed,
                             // Merch - Confirmed,Drive,Catalog images
-                            val booth = it["Booth"]
-                            val artist = it["Artist"]
+                            val booth = it["Booth"]!!
+                            val artist = it["Artist"]!!
                             val summary = it["Summary"]
 
                             val newLineRegex = Regex("\n\\s?")
-                            val links = it["Links"].split(newLineRegex)
+                            val links = it["Links"]!!.split(newLineRegex)
                                 .filter(String::isNotBlank)
-                            val storeLinks = it["Store"].split(newLineRegex)
+                            val storeLinks = it["Store"]!!.split(newLineRegex)
                                 .filter(String::isNotBlank)
-                            val catalogLinks = it["Catalog / table"].split(newLineRegex)
+                            val catalogLinks = it["Catalog / table"]!!.split(newLineRegex)
                                 .filter(String::isNotBlank)
                             val driveLink = it["Drive"]
 
                             val commaRegex = Regex(",\\s?")
-                            val seriesInferred = it["Series - Inferred"].split(commaRegex)
+                            val seriesInferred = it["Series - Inferred"]!!.split(commaRegex)
                                 .filter(String::isNotBlank)
-                            val merchInferred = it["Merch - Inferred"].split(commaRegex)
+                            val merchInferred = it["Merch - Inferred"]!!.split(commaRegex)
                                 .filter(String::isNotBlank)
 
-                            val seriesConfirmed = it["Series - Confirmed"].split(commaRegex)
+                            val seriesConfirmed = it["Series - Confirmed"]!!.split(commaRegex)
                                 .filter(String::isNotBlank)
-                            val merchConfirmed = it["Merch - Confirmed"].split(commaRegex)
+                            val merchConfirmed = it["Merch - Confirmed"]!!.split(commaRegex)
                                 .filter(String::isNotBlank)
 
                             val notes = it["Notes"]
@@ -108,10 +106,8 @@ class DataInitializer(
                                 storeLinks = storeLinks,
                                 catalogLinks = catalogLinks,
                                 driveLink = driveLink,
-                                seriesInferredSerialized = seriesInferred,
-                                seriesInferredSearchable = seriesInferred,
-                                seriesConfirmedSerialized = seriesConfirmed,
-                                seriesConfirmedSearchable = seriesConfirmed,
+                                seriesInferred = seriesInferred,
+                                seriesConfirmed = seriesConfirmed,
                                 merchInferred = merchInferred,
                                 merchConfirmed = merchConfirmed,
                                 notes = notes,
@@ -170,10 +166,10 @@ class DataInitializer(
         appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$SERIES_CSV_NAME")))!!
             .use { input ->
                 input.buffered().use {
-                    csvReader(it)
-                        .mapNotNull {
+                    CsvReader.read(it)
+                        .map {
                             // Series, Notes
-                            val name = it["Series"]
+                            val name = it["Series"]!!
                             val notes = it["Notes"]
                             SeriesEntry(name = name, notes = notes)
                         }
@@ -184,10 +180,10 @@ class DataInitializer(
         tagEntryDao.clearMerch()
         appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$MERCH_CSV_NAME")))!!.use { input ->
             input.buffered().use {
-                csvReader(it)
-                    .mapNotNull {
+                CsvReader.read(it)
+                    .map {
                         // Merch, Notes
-                        val name = it["Merch"]
+                        val name = it["Merch"]!!
                         val notes = it["Notes"]
                         MerchEntry(name = name, notes = notes)
                     }
@@ -203,18 +199,18 @@ class DataInitializer(
         appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$STAMP_RALLIES_CSV_NAME")))!!.use {
             it.buffered().use {
                 var counter = 1
-                csvReader(it)
+                CsvReader.read(it)
                     .mapNotNull {
                         // Theme,Link,Tables,Table Min, Total, Notes,Images
-                        val theme = it["Theme"]
-                        val links = it["Link"].split("\n")
+                        val theme = it["Theme"]!!
+                        val links = it["Link"]!!.split("\n")
                             .filter(String::isNotBlank)
-                        val tables = it["Tables"].split("\n")
+                        val tables = it["Tables"]!!.split("\n")
                             .filter(String::isNotBlank)
                         val hostTable = tables.firstOrNull { it.contains("-") }
                             ?.substringBefore("-")
                             ?.trim() ?: return@mapNotNull null
-                        val tableMin = it["Table Min"].let {
+                        val tableMin = it["Table Min"]!!.let {
                             when {
                                 it.equals("Free", ignoreCase = true) -> 0
                                 it.equals("Any", ignoreCase = true) -> 1
@@ -222,7 +218,7 @@ class DataInitializer(
                             }
                         }
                         val totalCost = it["Total"]?.removePrefix("$")?.toIntOrNull()
-                        val prizeLimit = it["Prize Limit"].toIntOrNull()
+                        val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
                         val notes = it["Notes"]
 
                         val stampRallyId = "$hostTable-$theme"
@@ -255,17 +251,10 @@ class DataInitializer(
         stampRallyEntryDao.retainIds(allIds)
     }
 
-    private fun csvReader(source: Source) =
-        CSVFormat.RFC4180.builder()
-            .setHeader()
-            .setSkipHeaderRecord(true)
-            .build()
-            .parse(source.asInputStream().reader())
-            .asSequence()
-
+    @OptIn(InternalIoApi::class)
     private fun parseSize(csvName: String) = try {
         appFileSystem.openUriSource(Uri.parse(Res.getUri("files/$csvName")))!!
-            .use { it.asInputStream().available().toLong() }
+            .use { it.buffer.size }
     } catch (_: Throwable) {
         -1L
     }

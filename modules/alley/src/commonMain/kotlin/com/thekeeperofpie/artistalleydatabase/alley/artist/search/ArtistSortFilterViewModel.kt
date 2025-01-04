@@ -23,7 +23,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_header
 import artistalleydatabase.modules.alley.generated.resources.alley_series_header_zero
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
@@ -43,6 +42,7 @@ class ArtistSortFilterViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
+    // TODO: Add specific search filters
     val boothSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_booth)
     val artistSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_artist)
     val summarySection =
@@ -130,12 +130,8 @@ class ArtistSortFilterViewModel(
                 booth = boothSection.value.trim(),
                 artist = artistSection.value.trim(),
                 summary = summarySection.value.trim(),
-                series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
-                    .map { it.serializedValue }
+                series = seriesContents.map { it.serializedValue }
                     .filterNot(String::isBlank),
-                seriesById = seriesContents
-                    .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                    .mapNotNull(AniListUtils::mediaId),
                 merch = merchSection.finalContents().map { it.serializedValue },
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, SnapshotState()),
@@ -152,7 +148,6 @@ class ArtistSortFilterViewModel(
             artist = snapshotState.artist,
             summary = snapshotState.summary,
             series = snapshotState.series,
-            seriesById = snapshotState.seriesById,
             merch = snapshotState.merch,
             sortOption = it[1] as ArtistSearchSortOption,
             sortAscending = it[2] as Boolean,
@@ -174,7 +169,6 @@ class ArtistSortFilterViewModel(
         val artist: String? = null,
         val summary: String? = null,
         val series: List<String> = emptyList(),
-        val seriesById: List<String> = emptyList(),
         val merch: List<String> = emptyList(),
     )
 
@@ -183,7 +177,6 @@ class ArtistSortFilterViewModel(
         val artist: String?,
         val summary: String?,
         val series: List<String>,
-        val seriesById: List<String>,
         val merch: List<String>,
         val sortOption: ArtistSearchSortOption,
         val sortAscending: Boolean,
