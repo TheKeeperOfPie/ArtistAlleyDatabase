@@ -11,8 +11,8 @@ import androidx.room.RoomRawQuery
 import androidx.room.Transaction
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.toBit
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils.toBit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
 import kotlinx.serialization.json.Json
@@ -201,39 +201,35 @@ interface CdEntryDao {
 
         filterOptions.catalogId.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "catalogId:${RoomUtils.wrapMatchQuery(it)}" }
+                .map { "catalogId:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
         queryPieces += filterOptions.titles.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "titles:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "titles:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.performers.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "performersSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "performersSearchable:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.performersById
-            .map { "performers:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "performers:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.composers.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "composersSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "composersSearchable:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.composersById
-            .map { "composers:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "composers:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.series.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "seriesSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "seriesSearchable:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.seriesById.map {
-            "seriesSerialized:${
-                RoomUtils.wrapMatchQuery(
-                    it
-                )
-            }"
+            "seriesSerialized:${DatabaseUtils.wrapMatchQuery(it)}"
         }
         queryPieces += filterOptions.characters.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "charactersSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "charactersSearchable:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.charactersById
-            .map { "charactersSerialized:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "charactersSerialized:${DatabaseUtils.wrapMatchQuery(it)}" }
         // TODO: Search by discs is hard to implement
 //        queryPieces += filterOptions.discs.flatMap { it.split(WHITESPACE_REGEX) }
-//            .map { "discs:${RoomUtils.wrapMatchQuery(it)}" }
+//            .map { "discs:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.tags.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "tags:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "tags:${DatabaseUtils.wrapMatchQuery(it)}" }
         filterOptions.notes.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "notes:${RoomUtils.wrapMatchQuery(it)}" }
+                .map { "notes:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
         filterOptions.catalogIdLocked?.let { queryPieces += "catalogIdLocked:${it.toBit()}" }
         filterOptions.titlesLocked?.let { queryPieces += "titlesLocked:${it.toBit()}" }

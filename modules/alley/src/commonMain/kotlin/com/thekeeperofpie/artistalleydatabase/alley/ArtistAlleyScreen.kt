@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Approval
@@ -7,9 +10,10 @@ import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.lifecycle.createSavedStateHandle
@@ -75,10 +81,72 @@ object ArtistAlleyScreen {
         val scrollPositions = ScrollStateSaver.scrollPositions()
         val mapTransformState = MapScreen.rememberTransformState()
         var currentDestination by rememberSaveable { mutableStateOf(Destinations.ARTISTS) }
-        NavigationSuiteScaffold(
-            navigationSuiteItems = {
+        Column {
+            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                when (currentDestination) {
+                    Destinations.ARTISTS -> {
+                        val sortViewModel =
+                            viewModel { component.artistSortFilterViewModel(createSavedStateHandle()) }
+                        val viewModel = viewModel {
+                            component.artistSearchViewModel(
+                                createSavedStateHandle(),
+                                sortViewModel.state.filterParams,
+                            )
+                        }
+                        ArtistSearchScreen(
+                            viewModel = viewModel,
+                            sortViewModel = sortViewModel,
+                            onClickBack = null,
+                            onEntryClick = onArtistClick,
+                            scaffoldState = artistsScaffoldState,
+                            scrollStateSaver = ScrollStateSaver.fromMap(
+                                Destinations.ARTISTS.name,
+                                scrollPositions,
+                            ),
+                        )
+                    }
+                    Destinations.BROWSE -> {
+                        val tagsViewModel = viewModel { component.tagsViewModel() }
+                        BrowseScreen(
+                            tagsViewModel = tagsViewModel,
+                            onSeriesClick = onSeriesClick,
+                            onMerchClick = onMerchClick,
+                        )
+                    }
+                    Destinations.MAP -> {
+                        val viewModel = viewModel {
+                            component.favoritesSortFilterViewModel()
+                        }
+                        val mapViewModel = viewModel { component.mapViewModel() }
+                        FavoritesMapScreen(
+                            viewModel = viewModel,
+                            mapViewModel = mapViewModel,
+                            mapTransformState = mapTransformState,
+                            onArtistClick = onArtistClick,
+                        )
+                    }
+                    Destinations.STAMP_RALLIES -> {
+                        val sortViewModel = viewModel {
+                            component.stampRallySortFilterViewModel(createSavedStateHandle())
+                        }
+                        val viewModel = viewModel {
+                            component.stampRallySearchViewModel(sortViewModel.state.filterParams)
+                        }
+                        StampRallySearchScreen(
+                            viewModel = viewModel,
+                            sortViewModel = sortViewModel,
+                            onEntryClick = onStampRallyClick,
+                            scrollStateSaver = ScrollStateSaver.fromMap(
+                                Destinations.STAMP_RALLIES.name,
+                                scrollPositions,
+                            ),
+                        )
+                    }
+                }
+            }
+            NavigationBar(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 Destinations.entries.forEach {
-                    item(
+                    NavigationBarItem(
                         icon = {
                             Icon(
                                 it.icon,
@@ -87,72 +155,28 @@ object ArtistAlleyScreen {
                         },
                         label = { Text(stringResource(it.textRes)) },
                         selected = it == currentDestination,
-                        onClick = { currentDestination = it }
-                    )
-                }
-            }
-        ) {
-            when (currentDestination) {
-                Destinations.ARTISTS -> {
-                    val sortViewModel =
-                        viewModel { component.artistSortFilterViewModel(createSavedStateHandle()) }
-                    val viewModel = viewModel {
-                        component.artistSearchViewModel(
-                            createSavedStateHandle(),
-                            sortViewModel.state.filterParams,
-                        )
-                    }
-                    ArtistSearchScreen(
-                        viewModel = viewModel,
-                        sortViewModel = sortViewModel,
-                        onClickBack = null,
-                        onEntryClick = onArtistClick,
-                        scaffoldState = artistsScaffoldState,
-                        scrollStateSaver = ScrollStateSaver.fromMap(
-                            Destinations.ARTISTS.name,
-                            scrollPositions,
-                        ),
-                    )
-                }
-                Destinations.BROWSE -> {
-                    val tagsViewModel = viewModel { component.tagsViewModel() }
-                    BrowseScreen(
-                        tagsViewModel = tagsViewModel,
-                        onSeriesClick = onSeriesClick,
-                        onMerchClick = onMerchClick,
-                    )
-                }
-                Destinations.MAP -> {
-                    val viewModel = viewModel {
-                        component.favoritesSortFilterViewModel()
-                    }
-                    val mapViewModel = viewModel { component.mapViewModel() }
-                    FavoritesMapScreen(
-                        viewModel = viewModel,
-                        mapViewModel = mapViewModel,
-                        mapTransformState = mapTransformState,
-                        onArtistClick = onArtistClick,
-                    )
-                }
-                Destinations.STAMP_RALLIES -> {
-                    val sortViewModel = viewModel {
-                        component.stampRallySortFilterViewModel(createSavedStateHandle())
-                    }
-                    val viewModel = viewModel {
-                        component.stampRallySearchViewModel(sortViewModel.state.filterParams)
-                    }
-                    StampRallySearchScreen(
-                        viewModel = viewModel,
-                        sortViewModel = sortViewModel,
-                        onEntryClick = onStampRallyClick,
-                        scrollStateSaver = ScrollStateSaver.fromMap(
-                            Destinations.STAMP_RALLIES.name,
-                            scrollPositions,
-                        ),
+                        onClick = { currentDestination = it },
                     )
                 }
             }
         }
+        // TODO: Doesn't work on wasmJs, might be due to version mismatch
+//        NavigationSuiteScaffold(
+//            navigationSuiteItems = {c
+//                    item(
+//                        icon = {
+//                            Icon(
+//                                it.icon,
+//                                contentDescription = stringResource(it.textRes)
+//                            )
+//                        },
+//                        label = { Text(stringResource(it.textRes)) },
+//                        selected = it == currentDestination,
+//                        onClick = { currentDestination = it }
+//                    )
+//                }
+//            }
+//        ) {
     }
 
     enum class Destinations(val icon: ImageVector, val textRes: StringResource) {

@@ -1,26 +1,28 @@
-package com.thekeeperofpie.artistalleydatabase.utils_room
+package com.thekeeperofpie.artistalleydatabase.utils
 
 import kotlinx.serialization.json.Json
 
-object RoomUtils {
+object DatabaseUtils {
+
+    val WHITESPACE_REGEX = Regex("\\s+")
 
     // android.database.DatabaseUtils
     fun sqlEscapeString(sqlString: String) {
         val builder = StringBuilder("\'")
         val length = sqlString.length
-        sqlString.forEachIndexed { index, c ->
-            if (Character.isHighSurrogate(c)) {
-                if (index < length - 1 && Character.isLowSurrogate(sqlString[index + 1])) {
-                    builder.append(c)
+        sqlString.forEachIndexed { index, char ->
+            if (char.isHighSurrogate()) {
+                if (index < length - 1 && sqlString[index + 1].isLowSurrogate()) {
+                    builder.append(char)
                     builder.append(sqlString[index + 1])
                 }
                 return@forEachIndexed
-            } else if (Character.isLowSurrogate(c)) {
+            } else if (char.isLowSurrogate()) {
                 return@forEachIndexed
-            } else if (c == '\'') {
+            } else if (char == '\'') {
                 builder.append('\'')
             }
-            builder.append(c)
+            builder.append(char)
         }
         builder.append('\'')
     }

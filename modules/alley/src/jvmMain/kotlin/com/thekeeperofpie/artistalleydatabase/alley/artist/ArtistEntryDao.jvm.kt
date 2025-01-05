@@ -15,7 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -34,16 +34,6 @@ actual interface ArtistEntryDao {
     @Transaction
     @Query("""SELECT * FROM artist_entries WHERE id = :id""")
     actual suspend fun getEntryWithStampRallies(id: String): ArtistWithStampRalliesEntry?
-
-    @Query(
-        """
-        SELECT *
-        FROM artist_entries
-        JOIN artist_entries_fts ON artist_entries.id = artist_entries_fts.id
-        ORDER BY artist_entries_fts.booth
-        """
-    )
-    fun getEntries(): PagingSource<Int, ArtistEntry>
 
     @RawQuery([ArtistEntry::class])
     fun getEntries(query: RoomRawQuery): PagingSource<Int, ArtistEntry>
@@ -117,12 +107,12 @@ actual interface ArtistEntryDao {
             "artist_entries.id IN (SELECT artistId from artist_series_connections WHERE " +
                     (if (filterParams.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND" else "") +
                     " artist_series_connections.seriesId == " +
-                    "${RoomUtils.sqlEscapeString(searchQuery.lockedSeries)})"
+                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
         } else if (searchQuery.lockedMerch != null) {
             "artist_entries.id IN (SELECT artistId from artist_merch_connections WHERE " +
                     (if (filterParams.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND" else "") +
                     " artist_merch_connections.merchId == " +
-                    "${RoomUtils.sqlEscapeString(searchQuery.lockedMerch)})"
+                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
         } else {
             null
         }
@@ -206,32 +196,32 @@ actual interface ArtistEntryDao {
 
         filterParams.artist.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "artistNames:${RoomUtils.wrapMatchQuery(it)}" }
+                .map { "artistNames:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
         filterParams.booth.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "booth:${RoomUtils.wrapMatchQuery(it)}" }
+                .map { "booth:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
         filterParams.summary.takeUnless(String?::isNullOrBlank)?.let {
             queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "description:${RoomUtils.wrapMatchQuery(it)}" }
+                .map { "description:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
         queryPieces += filterParams.series.flatMap { it.split(WHITESPACE_REGEX) }
             .map {
                 if (filterParams.showOnlyConfirmedTags) {
-                    "seriesConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+                    "seriesConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
                 } else {
-                    "seriesInferred:${RoomUtils.wrapMatchQuery(it)}" +
-                            " OR seriesConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+                    "seriesInferred:${DatabaseUtils.wrapMatchQuery(it)}" +
+                            " OR seriesConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
                 }
             }
         queryPieces += filterParams.merch
             .map {
                 if (filterParams.showOnlyConfirmedTags) {
-                    "merchConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+                    "merchConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
                 } else {
-                    "merchInferred:${RoomUtils.wrapMatchQuery(it)}" +
-                            " OR merchConfirmed:${RoomUtils.wrapMatchQuery(it)}"
+                    "merchInferred:${DatabaseUtils.wrapMatchQuery(it)}" +
+                            " OR merchConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
                 }
             }
 

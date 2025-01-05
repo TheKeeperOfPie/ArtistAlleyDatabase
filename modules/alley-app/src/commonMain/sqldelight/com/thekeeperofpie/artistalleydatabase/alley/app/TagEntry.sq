@@ -1,0 +1,48 @@
+/** Generic get is unused, but generates the object and cursor code for easy copy-paste */
+getSeries:
+SELECT * FROM series_entries;
+
+getMerch:
+SELECT * FROM merch_entries;
+
+getSeriesSize:
+SELECT COUNT(*) FROM series_entries;
+
+getMerchSize:
+SELECT COUNT(*) FROM merch_entries;
+
+insertSeries:
+INSERT OR REPLACE INTO series_entries
+VALUES ?;
+
+insertMerch:
+INSERT OR REPLACE INTO merch_entries
+VALUES ?;
+
+clearSeries:
+DELETE FROM series_entries;
+
+clearMerch:
+DELETE FROM merch_entries;
+
+getBoothsBySeriesId:
+SELECT artist_entries.booth FROM artist_series_connections
+INNER JOIN artist_entries ON (artist_series_connections.artistId = artist_entries.id)
+WHERE artist_series_connections.seriesId = :seriesId;
+
+getBoothsBySeriesIdConfirmed:
+SELECT artist_entries.booth FROM artist_series_connections
+INNER JOIN artist_entries ON (artist_series_connections.artistId = artist_entries.id)
+WHERE artist_series_connections.seriesId = :seriesId
+AND artist_series_connections.confirmed IS 1;
+
+getBoothsByMerchId:
+SELECT artist_entries.booth FROM artist_merch_connections
+INNER JOIN artist_entries ON (artist_merch_connections.artistId = artist_entries.id)
+WHERE artist_merch_connections.merchId = :merchId;
+
+getBoothsByMerchIdConfirmed:
+SELECT artist_entries.booth FROM artist_merch_connections
+INNER JOIN artist_entries ON (artist_merch_connections.artistId = artist_entries.id)
+WHERE artist_merch_connections.merchId = :merchId
+AND artist_merch_connections.confirmed IS 1;

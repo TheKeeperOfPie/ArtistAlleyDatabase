@@ -1,5 +1,8 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     id("com.android.application")
@@ -9,6 +12,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.multiplatform")
     id("androidx.room")
+    id("app.cash.sqldelight")
 }
 
 android {
@@ -106,12 +110,39 @@ compose.desktop {
 }
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvm") {
+                withAndroidTarget()
+                withJvm()
+            }
+        }
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_18
         }
     }
     jvm("desktop")
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        moduleName = "ArtistAlley"
+        browser {
+            val projectDirPath = project.projectDir.path
+            commonWebpackConfig {
+                outputFileName = "composeApp.js"
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                    static = (static ?: mutableListOf()).apply {
+                        add(projectDirPath)
+                    }
+                }
+            }
+        }
+        binaries.executable()
+    }
 
     compilerOptions {
         jvmToolchain(18)
@@ -121,6 +152,7 @@ kotlin {
             }
         }
         freeCompilerArgs.add("-Xcontext-receivers")
+        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
     sourceSets {
@@ -129,7 +161,6 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsInject)
-            implementation(projects.modules.utilsRoom)
 
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
@@ -140,7 +171,6 @@ kotlin {
             implementation(compose.ui)
 
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.androidx.sqlite.bundled)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsCompose.navigation.compose)
@@ -157,13 +187,38 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.swing)
             }
         }
+        val jvmMain by getting {
+            dependencies {
+                implementation(projects.modules.utilsRoom)
+                implementation(libs.androidx.sqlite.bundled)
+            }
+        }
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(libs.indexeddb)
+                implementation(libs.okio.fakefilesystem)
+                implementation(libs.sqldelight.coroutines.extensions)
+                implementation(libs.sqldelight.web.worker.driver.wasm.js)
+                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
+                implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.0.2"))
+                implementation(npm("sql.js", "1.12.0"))
+            }
+        }
     }
 }
-configurations.all {
-    resolutionStrategy {
-        force("androidx.paging:paging-common:3.3.0-alpha02")
-    }
-}
+
+//configurations/*.named { "wasm" in it }*/.configureEach {
+//    resolutionStrategy {
+//        force("androidx.paging:paging-common:3.3.0-alpha02")
+//        eachDependency {
+//            // https://github.com/coil-kt/coil/issues/2771
+//            if (requested.group.contains("org.jetbrains.compose")
+//                && requested.version == "1.8.0-alpha01") {
+//                useVersion("1.7.3")
+//            }
+//        }
+//    }
+//}
 
 dependencies {
     add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
@@ -174,11 +229,21 @@ dependencies {
         add("kspAndroid", it)
         add("kspDesktop", it)
     }
+    add("kspWasmJs", kspProcessors.kotlin.inject.compiler.ksp)
 }
 
 room {
     schemaDirectory("$projectDir/schemas")
     generateKotlin = true
+}
+
+sqldelight {
+    databases {
+        create("ArtistAlleyAppDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.app")
+            generateAsync = true
+        }
+    }
 }
 
 tasks.register("installAll") {

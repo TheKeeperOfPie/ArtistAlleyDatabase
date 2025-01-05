@@ -77,7 +77,6 @@ class MediaEditBottomSheetTest {
             BottomSheet(
                 state = state,
                 eventSink = {
-                    println("event = $it")
                     if (it is AnimeMediaEditBottomSheet.Event.Save) {
                         state.saving = true
                         state.showConfirmClose = false

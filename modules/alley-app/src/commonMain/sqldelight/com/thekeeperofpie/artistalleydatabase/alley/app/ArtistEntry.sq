@@ -1,0 +1,40 @@
+getEntry:
+SELECT * FROM artist_entries WHERE id = :id;
+
+insert:
+INSERT OR REPLACE INTO artist_entries
+VALUES ?;
+
+insertSeriesConnection:
+INSERT OR REPLACE INTO artist_series_connections
+VALUES ?;
+
+clearSeriesConnections:
+DELETE FROM artist_series_connections;
+
+insertMerchConnection:
+INSERT OR REPLACE INTO artist_merch_connections
+VALUES ?;
+
+clearMerchConnections:
+DELETE FROM artist_merch_connections;
+
+getEntries:
+SELECT * FROM artist_entries;
+
+getEntriesCount:
+SELECT COUNT(*)
+FROM artist_entries;
+
+getEntriesRandom:
+SELECT *
+FROM artist_entries
+ORDER BY substr(artist_entries.counter * ?, length(artist_entries.counter) + 2);
+
+getStampRallyEntries:
+SELECT stamp_rally_entries.* FROM stamp_rally_artist_connections
+INNER JOIN stamp_rally_entries ON (stamp_rally_artist_connections.stampRallyId = stamp_rally_entries.id)
+WHERE stamp_rally_artist_connections.artistId = :artistId;
+
+getBoothsWithFavorites:
+SELECT artist_entries.booth, artist_entries.favorite FROM artist_entries;

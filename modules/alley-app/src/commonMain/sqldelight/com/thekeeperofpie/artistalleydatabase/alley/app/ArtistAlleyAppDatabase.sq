@@ -1,0 +1,372 @@
+import kotlin.Boolean;
+
+CREATE TABLE
+    IF NOT EXISTS `artist_entries` (
+        `id` TEXT NOT NULL,
+        `booth` TEXT NOT NULL COLLATE NOCASE,
+        `name` TEXT NOT NULL COLLATE NOCASE,
+        `summary` TEXT,
+        `links` TEXT NOT NULL,
+        `storeLinks` TEXT NOT NULL DEFAULT '',
+        `catalogLinks` TEXT NOT NULL DEFAULT '',
+        `driveLink` TEXT,
+        `favorite` INTEGER AS Boolean NOT NULL,
+        `ignored` INTEGER AS Boolean NOT NULL,
+        `notes` TEXT,
+        `seriesInferred` TEXT NOT NULL,
+        `seriesConfirmed` TEXT NOT NULL,
+        `merchInferred` TEXT NOT NULL,
+        `merchConfirmed` TEXT NOT NULL,
+        `counter` INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (`id`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `artist_entries_fts` USING FTS4 (
+    `id` TEXT NOT NULL,
+    `booth` TEXT NOT NULL COLLATE NOCASE,
+    `name` TEXT NOT NULL COLLATE NOCASE,
+    `summary` TEXT,
+    `links` TEXT NOT NULL,
+    `storeLinks` TEXT NOT NULL,
+    `catalogLinks` TEXT NOT NULL,
+    `driveLink` TEXT,
+    `favorite` INTEGER AS Boolean NOT NULL,
+    `ignored` INTEGER AS Boolean NOT NULL,
+    `notes` TEXT,
+    `seriesInferred` TEXT NOT NULL,
+    `seriesConfirmed` TEXT NOT NULL,
+    `merchInferred` TEXT NOT NULL,
+    `merchConfirmed` TEXT NOT NULL,
+    content=`artist_entries`
+);
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_BEFORE_UPDATE BEFORE
+UPDATE ON `artist_entries` BEGIN
+DELETE FROM `artist_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_BEFORE_DELETE BEFORE DELETE ON `artist_entries` BEGIN
+DELETE FROM `artist_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_UPDATE AFTER
+UPDATE ON `artist_entries` BEGIN
+INSERT INTO
+    `artist_entries_fts` (
+        `docid`,
+        `id`,
+        `booth`,
+        `name`,
+        `summary`,
+        `links`,
+        `storeLinks`,
+        `catalogLinks`,
+        `driveLink`,
+        `favorite`,
+        `ignored`,
+        `notes`,
+        `seriesInferred`,
+        `seriesConfirmed`,
+        `merchInferred`,
+        `merchConfirmed`
+    )
+VALUES
+    (
+        new.`rowid`,
+        new.`id`,
+        new.`booth`,
+        new.`name`,
+        new.`summary`,
+        new.`links`,
+        new.`storeLinks`,
+        new.`catalogLinks`,
+        new.`driveLink`,
+        new.`favorite`,
+        new.`ignored`,
+        new.`notes`,
+        new.`seriesInferred`,
+        new.`seriesConfirmed`,
+        new.`merchInferred`,
+        new.`merchConfirmed`
+    );
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_INSERT AFTER INSERT ON `artist_entries` BEGIN
+INSERT INTO
+    `artist_entries_fts` (
+        `docid`,
+        `id`,
+        `booth`,
+        `name`,
+        `summary`,
+        `links`,
+        `storeLinks`,
+        `catalogLinks`,
+        `driveLink`,
+        `favorite`,
+        `ignored`,
+        `notes`,
+        `seriesInferred`,
+        `seriesConfirmed`,
+        `merchInferred`,
+        `merchConfirmed`
+    )
+VALUES
+    (
+        new.`rowid`,
+        new.`id`,
+        new.`booth`,
+        new.`name`,
+        new.`summary`,
+        new.`links`,
+        new.`storeLinks`,
+        new.`catalogLinks`,
+        new.`driveLink`,
+        new.`favorite`,
+        new.`ignored`,
+        new.`notes`,
+        new.`seriesInferred`,
+        new.`seriesConfirmed`,
+        new.`merchInferred`,
+        new.`merchConfirmed`
+    );
+
+END;
+
+CREATE TABLE
+    IF NOT EXISTS `artist_series_connections` (
+        `artistId` TEXT NOT NULL,
+        `seriesId` TEXT NOT NULL,
+        `confirmed` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (`artistId`, `seriesId`)
+    );
+
+CREATE TABLE
+    IF NOT EXISTS `artist_merch_connections` (
+        `artistId` TEXT NOT NULL,
+        `merchId` TEXT NOT NULL,
+        `confirmed` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (`artistId`, `merchId`)
+    );
+
+CREATE TABLE
+    IF NOT EXISTS `stamp_rally_entries` (
+        `id` TEXT NOT NULL,
+        `fandom` TEXT NOT NULL COLLATE NOCASE,
+        `hostTable` TEXT NOT NULL COLLATE NOCASE,
+        `tables` TEXT NOT NULL,
+        `links` TEXT NOT NULL,
+        `tableMin` INTEGER,
+        `totalCost` INTEGER,
+        `prizeLimit` INTEGER,
+        `favorite` INTEGER AS Boolean NOT NULL,
+        `ignored` INTEGER AS Boolean NOT NULL,
+        `notes` TEXT,
+        `counter` INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (`id`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `stamp_rally_entries_fts` USING FTS4 (
+    `id` TEXT NOT NULL,
+    `fandom` TEXT NOT NULL COLLATE NOCASE,
+    `hostTable` TEXT NOT NULL COLLATE NOCASE,
+    `tables` TEXT NOT NULL,
+    `links` TEXT NOT NULL,
+    `tableMin` INTEGER,
+    `totalCost` INTEGER,
+    `prizeLimit` INTEGER,
+    `favorite` INTEGER AS Boolean NOT NULL,
+    `ignored` INTEGER AS Boolean NOT NULL,
+    `notes` TEXT,
+    content=`stamp_rally_entries`
+);
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stamp_rally_entries_fts_BEFORE_UPDATE BEFORE
+UPDATE ON `stamp_rally_entries` BEGIN
+DELETE FROM `stamp_rally_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stamp_rally_entries_fts_BEFORE_DELETE BEFORE DELETE ON `stamp_rally_entries` BEGIN
+DELETE FROM `stamp_rally_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stamp_rally_entries_fts_AFTER_UPDATE AFTER
+UPDATE ON `stamp_rally_entries` BEGIN
+INSERT INTO
+    `stamp_rally_entries_fts` (
+        `docid`,
+        `id`,
+        `fandom`,
+        `hostTable`,
+        `tables`,
+        `links`,
+        `tableMin`,
+        `totalCost`,
+        `prizeLimit`,
+        `favorite`,
+        `ignored`,
+        `notes`
+    )
+VALUES
+    (
+        new.`rowid`,
+        new.`id`,
+        new.`fandom`,
+        new.`hostTable`,
+        new.`tables`,
+        new.`links`,
+        new.`tableMin`,
+        new.`totalCost`,
+        new.`prizeLimit`,
+        new.`favorite`,
+        new.`ignored`,
+        new.`notes`
+    );
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stamp_rally_entries_fts_AFTER_INSERT AFTER INSERT ON `stamp_rally_entries` BEGIN
+INSERT INTO
+    `stamp_rally_entries_fts` (
+        `docid`,
+        `id`,
+        `fandom`,
+        `hostTable`,
+        `tables`,
+        `links`,
+        `tableMin`,
+        `totalCost`,
+        `prizeLimit`,
+        `favorite`,
+        `ignored`,
+        `notes`
+    )
+VALUES
+    (
+        new.`rowid`,
+        new.`id`,
+        new.`fandom`,
+        new.`hostTable`,
+        new.`tables`,
+        new.`links`,
+        new.`tableMin`,
+        new.`totalCost`,
+        new.`prizeLimit`,
+        new.`favorite`,
+        new.`ignored`,
+        new.`notes`
+    );
+
+END;
+
+CREATE TABLE
+    IF NOT EXISTS `stamp_rally_artist_connections` (
+        `stampRallyId` TEXT NOT NULL,
+        `artistId` TEXT NOT NULL,
+        PRIMARY KEY (`stampRallyId`, `artistId`)
+    );
+
+CREATE INDEX IF NOT EXISTS `index_stamp_rally_artist_connections_artistId` ON `stamp_rally_artist_connections` (`artistId`);
+
+CREATE TABLE
+    IF NOT EXISTS `series_entries` (
+        `name` TEXT NOT NULL COLLATE NOCASE,
+        `notes` TEXT,
+        PRIMARY KEY (`name`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `series_entries_fts` USING FTS4 (
+    `name` TEXT NOT NULL COLLATE NOCASE,
+    `notes` TEXT,
+    content=`series_entries`
+);
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_series_entries_fts_BEFORE_UPDATE BEFORE
+UPDATE ON `series_entries` BEGIN
+DELETE FROM `series_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_series_entries_fts_BEFORE_DELETE BEFORE DELETE ON `series_entries` BEGIN
+DELETE FROM `series_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_series_entries_fts_AFTER_UPDATE AFTER
+UPDATE ON `series_entries` BEGIN
+INSERT INTO
+    `series_entries_fts` (`docid`, `name`, `notes`)
+VALUES
+    (new.`rowid`, new.`name`, new.`notes`);
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_series_entries_fts_AFTER_INSERT AFTER INSERT ON `series_entries` BEGIN
+INSERT INTO
+    `series_entries_fts` (`docid`, `name`, `notes`)
+VALUES
+    (new.`rowid`, new.`name`, new.`notes`);
+
+END;
+
+CREATE TABLE
+    IF NOT EXISTS `merch_entries` (
+        `name` TEXT NOT NULL,
+        `notes` TEXT,
+        PRIMARY KEY (`name`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `merch_entries_fts` USING FTS4 (
+    `name` TEXT NOT NULL COLLATE NOCASE,
+    `notes` TEXT,
+    content=`merch_entries`
+);
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merch_entries_fts_BEFORE_UPDATE BEFORE
+UPDATE ON `merch_entries` BEGIN
+DELETE FROM `merch_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merch_entries_fts_BEFORE_DELETE BEFORE DELETE ON `merch_entries` BEGIN
+DELETE FROM `merch_entries_fts`
+WHERE
+    `docid` = old.`rowid`;
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merch_entries_fts_AFTER_UPDATE AFTER
+UPDATE ON `merch_entries` BEGIN
+INSERT INTO
+    `merch_entries_fts` (`docid`, `name`, `notes`)
+VALUES
+    (new.`rowid`, new.`name`, new.`notes`);
+
+END;
+
+CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merch_entries_fts_AFTER_INSERT AFTER INSERT ON `merch_entries` BEGIN
+INSERT INTO
+    `merch_entries_fts` (`docid`, `name`, `notes`)
+VALUES
+    (new.`rowid`, new.`name`, new.`notes`);
+
+END;

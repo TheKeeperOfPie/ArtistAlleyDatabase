@@ -11,14 +11,10 @@ import androidx.room.Transaction
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 
 @Dao
 actual interface StampRallyEntryDao {
-
-    companion object {
-        private val WHITESPACE_REGEX = Regex("\\s+")
-    }
 
     @Query("""SELECT * FROM stamp_rally_entries WHERE id = :id""")
     actual suspend fun getEntry(id: String): StampRallyEntry?
@@ -26,16 +22,6 @@ actual interface StampRallyEntryDao {
     @Transaction
     @Query("""SELECT * FROM stamp_rally_entries WHERE id = :id""")
     actual suspend fun getEntryWithArtists(id: String): StampRallyWithArtistsEntry?
-
-    @Query(
-        """
-        SELECT *
-        FROM stamp_rally_entries
-        JOIN stamp_rally_entries_fts ON stamp_rally_entries.id = stamp_rally_entries_fts.id
-        ORDER BY stamp_rally_entries_fts.hostTable
-        """
-    )
-    fun getEntries(): PagingSource<Int, StampRallyEntry>
 
     @RawQuery([StampRallyEntry::class])
     fun getEntries(query: RoomRawQuery): PagingSource<Int, StampRallyEntry>
@@ -168,12 +154,12 @@ actual interface StampRallyEntryDao {
         val queryPieces = mutableListOf<String>()
 
         filterParams.fandom.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "fandom:${RoomUtils.wrapMatchQuery(it)}" }
+            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
+                .map { "fandom:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
         filterParams.tables.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "tables:${RoomUtils.wrapMatchQuery(it)}" }
+            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
+                .map { "tables:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
 
         return queryPieces

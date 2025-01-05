@@ -11,7 +11,7 @@ deleteLarger(catalogsDir)
 compressImages(ralliesDir)
 deleteLarger(ralliesDir)
 
-private fun compressImages(directory: File) {
+fun compressImages(directory: File) {
     directory.walk()
         .filter { it.extension != "webp" }
         .filter { it.isFile }
@@ -21,7 +21,7 @@ private fun compressImages(directory: File) {
             ProcessBuilder(
                 "cwebp",
                 "-q",
-                "80",
+                "30",
                 "-m",
                 "6",
                 it.absolutePath,
@@ -34,7 +34,7 @@ private fun compressImages(directory: File) {
         }
 }
 
-private fun deleteLarger(directory: File) {
+fun deleteLarger(directory: File) {
     directory.walk()
         .filter { it.extension != "webp" }
         .filter { it.isFile }
@@ -50,6 +50,6 @@ private fun deleteLarger(directory: File) {
         }
 }
 
-private fun readableName(file: File) = file.path
+fun readableName(file: File) = file.path
     .substringAfter(assetsPath.replace("/", File.separator))
     .removePrefix(File.separator)

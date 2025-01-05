@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.cds.data
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 
 @Dao
 interface CdEntryDetailsDao : CdEntryDao {
@@ -11,7 +11,7 @@ interface CdEntryDetailsDao : CdEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = DatabaseUtils.queryListStringColumn(
         query,
         { queryPerformersViaMatch(it, limit, offset) },
         { queryPerformersViaLike(it, limit, offset) }
@@ -50,7 +50,7 @@ interface CdEntryDetailsDao : CdEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = DatabaseUtils.queryListStringColumn(
         query,
         { queryComposersViaMatch(it, limit, offset) },
         { queryComposersViaLike(it, limit, offset) }
@@ -89,7 +89,7 @@ interface CdEntryDetailsDao : CdEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = DatabaseUtils.queryListStringColumn(
         query,
         { querySeriesViaMatch(it, limit, offset) },
         { querySeriesViaLike(it, limit, offset) }
@@ -128,7 +128,7 @@ interface CdEntryDetailsDao : CdEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = DatabaseUtils.queryListStringColumn(
         query,
         { queryCharactersViaMatch(it, limit, offset) },
         { queryCharactersViaLike(it, limit, offset) }
@@ -167,7 +167,7 @@ interface CdEntryDetailsDao : CdEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = RoomUtils.queryListStringColumn(
+    ) = DatabaseUtils.queryListStringColumn(
         query,
         { queryTagsViaMatch(it, limit, offset) },
         { queryTagsViaLike(it, limit, offset) }

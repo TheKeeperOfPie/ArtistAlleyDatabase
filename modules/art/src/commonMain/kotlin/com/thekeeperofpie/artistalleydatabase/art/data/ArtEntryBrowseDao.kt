@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.art.data
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.wrapLikeQuery
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -61,10 +61,10 @@ interface ArtEntryBrowseDao : ArtEntryDao {
     )
     fun getTags(limit: Int = Int.MAX_VALUE, offset: Int = 0): Flow<List<String>>
 
-    fun getArtist(query: String) = getArtistInternal(wrapLikeQuery(query))
+    fun getArtist(query: String) = getArtistInternal(DatabaseUtils.wrapLikeQuery(query))
 
     fun getArtistFlow(query: String, limit: Int = 1) =
-        getArtistFlowInternal(query = wrapLikeQuery(query), limit = limit)
+        getArtistFlowInternal(query = DatabaseUtils.wrapLikeQuery(query), limit = limit)
 
     @Query(
         """
@@ -85,10 +85,10 @@ interface ArtEntryBrowseDao : ArtEntryDao {
     )
     fun getArtistFlowInternal(query: String, limit: Int): Flow<List<ArtEntry>>
 
-    fun getSeries(query: String) = getSeriesInternal(wrapLikeQuery(query))
+    fun getSeries(query: String) = getSeriesInternal(DatabaseUtils.wrapLikeQuery(query))
 
     fun getSeriesFlow(query: String, limit: Int = 1) =
-        getSeriesFlowInternal(query = wrapLikeQuery(query), limit = limit)
+        getSeriesFlowInternal(query = DatabaseUtils.wrapLikeQuery(query), limit = limit)
 
     @Query(
         """
@@ -109,10 +109,10 @@ interface ArtEntryBrowseDao : ArtEntryDao {
     )
     fun getSeriesFlowInternal(query: String, limit: Int): Flow<List<ArtEntry>>
 
-    fun getCharacter(query: String) = getCharacterInternal(wrapLikeQuery(query))
+    fun getCharacter(query: String) = getCharacterInternal(DatabaseUtils.wrapLikeQuery(query))
 
     fun getCharacterFlow(query: String, limit: Int = 1) =
-        getCharacterFlowInternal(query = wrapLikeQuery(query), limit = limit)
+        getCharacterFlowInternal(query = DatabaseUtils.wrapLikeQuery(query), limit = limit)
 
     @Query(
         """
@@ -133,10 +133,10 @@ interface ArtEntryBrowseDao : ArtEntryDao {
     )
     fun getCharacterFlowInternal(query: String, limit: Int): Flow<List<ArtEntry>>
 
-    fun getTag(query: String) = getTagInternal(wrapLikeQuery(query))
+    fun getTag(query: String) = getTagInternal(DatabaseUtils.wrapLikeQuery(query))
 
     fun getTagFlow(query: String, limit: Int = 1) =
-        getTagFlowInternal(query = wrapLikeQuery(query), limit = limit)
+        getTagFlowInternal(query = DatabaseUtils.wrapLikeQuery(query), limit = limit)
 
     @Query(
         """

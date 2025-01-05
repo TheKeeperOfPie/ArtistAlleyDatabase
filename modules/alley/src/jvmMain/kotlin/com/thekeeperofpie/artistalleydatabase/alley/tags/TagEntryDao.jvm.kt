@@ -8,7 +8,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -126,14 +126,14 @@ actual interface TagEntryDao {
             """
             (SELECT artistId from artist_series_connections WHERE
             ${if (tagMapQuery.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND " else ""}
-            artist_series_connections.seriesId == ${RoomUtils.sqlEscapeString(tagMapQuery.series)}
+            artist_series_connections.seriesId == ${DatabaseUtils.sqlEscapeString(tagMapQuery.series)}
             )
             """
         } else {
             """
             (SELECT artistId from artist_merch_connections WHERE
             ${if (tagMapQuery.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND " else ""}
-            artist_merch_connections.merchId == ${RoomUtils.sqlEscapeString(tagMapQuery.merch!!)}
+            artist_merch_connections.merchId == ${DatabaseUtils.sqlEscapeString(tagMapQuery.merch!!)}
             )
             """
         }

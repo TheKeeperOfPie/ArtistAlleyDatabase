@@ -22,5 +22,7 @@ expect interface ArtistEntryDao {
     suspend fun clearSeriesConnections()
     suspend fun clearMerchConnections()
     suspend fun insertMerchConnections(entries: List<ArtistMerchConnection>)
-    open suspend fun insertUpdatedEntries(entries: Collection<Triple<ArtistEntry, List<ArtistSeriesConnection>, List<ArtistMerchConnection>>>)
+    open suspend fun insertUpdatedEntries(
+        entries: Collection<Triple<ArtistEntry, List<ArtistSeriesConnection>, List<ArtistMerchConnection>>>,
+    )
 }

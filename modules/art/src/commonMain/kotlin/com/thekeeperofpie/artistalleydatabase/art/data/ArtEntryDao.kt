@@ -11,16 +11,12 @@ import androidx.room.RoomRawQuery
 import androidx.room.Transaction
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchQuery
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils.toBit
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils.toBit
 import kotlinx.coroutines.yield
 
 @Dao
 interface ArtEntryDao {
-
-    companion object {
-        private val WHITESPACE_REGEX = Regex("\\s+")
-    }
 
     @Query("""SELECT * FROM art_entries WHERE id = :id""")
     suspend fun getEntry(id: String): ArtEntry
@@ -161,47 +157,47 @@ interface ArtEntryDao {
     private fun filterOptionsQuery(filterOptions: ArtSearchQuery): List<String> {
         val queryPieces = mutableListOf<String>()
 
-        queryPieces += filterOptions.artists.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "artists:${RoomUtils.wrapMatchQuery(it)}" }
-        queryPieces += filterOptions.series.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "seriesSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.artists.flatMap { it.split(DatabaseUtils.WHITESPACE_REGEX) }
+            .map { "artists:${DatabaseUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.series.flatMap { it.split(DatabaseUtils.WHITESPACE_REGEX) }
+            .map { "seriesSearchable:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.seriesById.map {
-            "seriesSerialized:${RoomUtils.wrapMatchQuery(it)}"
+            "seriesSerialized:${DatabaseUtils.wrapMatchQuery(it)}"
         }
-        queryPieces += filterOptions.characters.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "charactersSearchable:${RoomUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.characters.flatMap { it.split(DatabaseUtils.WHITESPACE_REGEX) }
+            .map { "charactersSearchable:${DatabaseUtils.wrapMatchQuery(it)}" }
         queryPieces += filterOptions.charactersById
-            .map { "charactersSerialized:${RoomUtils.wrapMatchQuery(it)}" }
-        queryPieces += filterOptions.tags.flatMap { it.split(WHITESPACE_REGEX) }
-            .map { "tags:${RoomUtils.wrapMatchQuery(it)}" }
+            .map { "charactersSerialized:${DatabaseUtils.wrapMatchQuery(it)}" }
+        queryPieces += filterOptions.tags.flatMap { it.split(DatabaseUtils.WHITESPACE_REGEX) }
+            .map { "tags:${DatabaseUtils.wrapMatchQuery(it)}" }
         filterOptions.notes.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(WHITESPACE_REGEX)
-                .map { "notes:${RoomUtils.wrapMatchQuery(it)}" }
+            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
+                .map { "notes:${DatabaseUtils.wrapMatchQuery(it)}" }
         }
         when (val source = filterOptions.source) {
             is SourceType.Convention -> {
                 queryPieces += "sourceType:${source.serializedType}"
                 queryPieces += source.name.takeIf(String::isNotBlank)
-                    ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.split(DatabaseUtils.WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${DatabaseUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
                 source.year
-                    ?.let { "sourceValue:${RoomUtils.wrapMatchQuery(it.toString())}" }
+                    ?.let { "sourceValue:${DatabaseUtils.wrapMatchQuery(it.toString())}" }
                     ?.let { queryPieces += it }
                 queryPieces += source.hall.takeIf(String::isNotBlank)
-                    ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.split(DatabaseUtils.WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${DatabaseUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
                 queryPieces += source.booth.takeIf(String::isNotBlank)
-                    ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.split(DatabaseUtils.WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${DatabaseUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
             }
             is SourceType.Custom -> {
                 queryPieces += "sourceType:${source.serializedType}"
                 queryPieces += source.value.takeIf(String::isNotBlank)
-                    ?.split(WHITESPACE_REGEX)
-                    ?.map { "sourceValue:${RoomUtils.wrapMatchQuery(it)}" }
+                    ?.split(DatabaseUtils.WHITESPACE_REGEX)
+                    ?.map { "sourceValue:${DatabaseUtils.wrapMatchQuery(it)}" }
                     .orEmpty()
             }
             is SourceType.Online -> TODO()

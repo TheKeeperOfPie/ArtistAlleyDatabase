@@ -73,7 +73,6 @@ internal class TestViewModel(
 
     fun editModel(data: String) {
         model!!.data = data
-        println("editModel $model")
     }
 
     // TODO: Add tests for unsaved changes prompt

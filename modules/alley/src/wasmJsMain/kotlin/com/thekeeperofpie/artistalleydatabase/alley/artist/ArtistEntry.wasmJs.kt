@@ -19,7 +19,7 @@ actual data class ArtistEntry actual constructor(
     actual val seriesConfirmed: List<String>,
     actual val merchInferred: List<String>,
     actual val merchConfirmed: List<String>,
-    // Used fo random ordering while maintaining a stable key
+    // Used for random ordering while maintaining a stable key
     actual val counter: Int,
 ) {
     actual fun copy(

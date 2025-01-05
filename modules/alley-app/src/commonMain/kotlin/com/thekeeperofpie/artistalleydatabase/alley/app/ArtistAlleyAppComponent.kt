@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import androidx.navigation.NavType
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyComponent
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.DataInitializer
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
@@ -10,16 +9,13 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
+import kotlin.jvm.JvmSuppressWildcards
 import kotlin.reflect.KType
 
 @SingletonScope
 interface ArtistAlleyAppComponent : ArtistAlleyComponent {
     val dataInitializer: DataInitializer
     val navigationTypeMap: NavigationTypeMap
-
-    @SingletonScope
-    @Provides
-    fun provideArtistAlleyDatabase(database: ArtistAlleyAppDatabase): ArtistAlleyDatabase = database
 
     @SingletonScope
     @Provides

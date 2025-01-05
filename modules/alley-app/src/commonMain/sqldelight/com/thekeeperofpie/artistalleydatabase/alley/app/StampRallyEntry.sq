@@ -1,0 +1,24 @@
+getEntry:
+SELECT * FROM stamp_rally_entries WHERE id = :id;
+
+insert:
+INSERT OR REPLACE INTO stamp_rally_entries
+VALUES ?;
+
+clear:
+DELETE FROM stamp_rally_entries;
+
+clearArtistConnections:
+DELETE FROM stamp_rally_artist_connections;
+
+insertArtistConnection:
+INSERT OR REPLACE INTO stamp_rally_artist_connections
+VALUES ?;
+
+retainIds:
+DELETE FROM stamp_rally_entries WHERE stamp_rally_entries.id NOT IN (:ids);
+
+getArtistEntries:
+SELECT artist_entries.* FROM stamp_rally_artist_connections
+INNER JOIN artist_entries ON (stamp_rally_artist_connections.artistId = artist_entries.id)
+WHERE stamp_rally_artist_connections.stampRallyId = :stampRallyId;

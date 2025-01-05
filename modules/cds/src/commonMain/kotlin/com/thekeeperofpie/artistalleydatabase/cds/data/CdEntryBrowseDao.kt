@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.cds.data
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.utils_room.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -18,10 +18,10 @@ interface CdEntryBrowseDao : CdEntryDao {
     )
     fun getPerformers(limit: Int = Int.MAX_VALUE, offset: Int = 0): Flow<List<String>>
 
-    fun getPerformer(query: String) = getPerformerInternal(RoomUtils.wrapLikeQuery(query))
+    fun getPerformer(query: String) = getPerformerInternal(DatabaseUtils.wrapLikeQuery(query))
 
     fun getPerformerFlow(query: String, limit: Int = 1) =
-        getPerformerFlowInternal(query = RoomUtils.wrapLikeQuery(query), limit = limit)
+        getPerformerFlowInternal(query = DatabaseUtils.wrapLikeQuery(query), limit = limit)
 
     @Query(
         """

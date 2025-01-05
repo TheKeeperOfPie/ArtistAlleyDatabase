@@ -76,3 +76,7 @@ val composeFilesDependentTasks = setOf(
     "kspKotlinDesktop",
 )
 tasks.named { it in composeFilesDependentTasks }.configureEach { dependsOn("parseComposeFiles") }
+
+compose.resources {
+    publicResClass = true
+}

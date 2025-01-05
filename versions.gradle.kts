@@ -87,8 +87,8 @@ object Versions {
             const val navigation = "2.8.0-SNAPSHOT+pull-1739"
         }
 
-        const val plugin = "1.8.0-alpha01"
-        const val runtime = "1.8.0-alpha01"
+        const val plugin = "1.7.3"//"1.8.0-alpha01"
+        const val runtime = "1.7.3"//"1.8.0-alpha01"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -111,6 +111,7 @@ object Versions {
     const val htmlConverter = "1.0.2"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.10.0"
+    const val indexeddb = "0.9.0"
     const val jackson = "2.18.2"
     const val javaPoet = "1.13.0"
     const val jimfs = "1.3.0"
@@ -144,10 +145,12 @@ object Versions {
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
+    const val okio = "3.9.1"
     const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
     const val placeholder = "1.0.8"
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
+    const val sqldelight = "2.1.0-wasm.2"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.0"
     const val unityAds = "4.12.5"
@@ -157,33 +160,6 @@ object Versions {
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
     dependencyResolutionManagement.apply {
-        repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-        repositories {
-            maven("https://jitpack.io/")
-            maven("https://oss.sonatype.org/content/repositories/snapshots")
-            maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
-            maven("https://maven.pkg.jetbrains.space/public/p/compose/dev/")
-            google()
-            mavenCentral()
-
-            // https://github.com/cashapp/multiplatform-paging/pull/376
-            maven {
-                url = uri("https://maven.pkg.github.com/edna-aa/sqldelight")
-                credentials {
-                    // Borrowed from https://github.com/0ffz/gpr-for-gradle
-                    username = "token"
-                    password = "\u0037\u0066\u0066\u0036\u0030\u0039\u0033\u0066\u0032\u0037\u0033\u0036\u0033\u0037\u0064\u0036\u0037\u0066\u0038\u0030\u0034\u0039\u0062\u0030\u0039\u0038\u0039\u0038\u0066\u0034\u0066\u0034\u0031\u0064\u0062\u0033\u0064\u0033\u0038\u0065"
-                }
-                content {
-                    includeGroup("app.cash.sqldelight")
-                    includeGroup("app.cash.paging")
-                    includeVersionByRegex("app.cash.sqldelight", ".*", ".*-wasm.*")
-                    includeVersionByRegex("app.cash.paging", ".*", ".*-wasm.*")
-                }
-            }
-
-            flatDir { dirs = setOf(rootProject.projectDir.resolve("/libs")) }
-        }
         versionCatalogs {
             create("kspProcessors") {
                 with(Versions.androidx) {
@@ -196,6 +172,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 fun plugin(id: String) = plugin(id, id)
                 plugin("androidx.room").version(Versions.androidx.room)
                 plugin("app.cash.burst").version(Versions.burst)
+                plugin("app.cash.sqldelight").version(Versions.sqldelight)
                 plugin("com.android.application").version(Versions.android.gradle)
                 plugin("com.android.library").version(Versions.android.gradle)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
@@ -401,6 +378,13 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.mikepenz:multiplatform-markdown-renderer-coil3")
                 }
 
+                prefix("sqldelight") {
+                    withVersion(Versions.sqldelight) {
+                        library("app.cash.sqldelight:coroutines-extensions")
+                        library("app.cash.sqldelight:web-worker-driver-wasm-js")
+                    }
+                }
+
                 prefix("xmlutil") {
                     withVersion(Versions.xmlUtil) {
                         library("io.github.pdvrieze.xmlutil:serialization")
@@ -417,8 +401,10 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("co.touchlab:stately-concurrent-collections:${Versions.statelyConcurrentCollections}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
-                library("com.eygraber:uri-kmp:${Versions.uriKmp}")
+                // TODO: Use the real library once it's available
+                library("com.eygraber.indexeddb:core-wasm-js:0.0.1", alias = "indexeddb")
                 library("com.eygraber:compose-placeholder-material3:${Versions.placeholder}")
+                library("com.eygraber:uri-kmp:${Versions.uriKmp}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")
                 library("com.github.ajalt.colormath:colormath-ext-jetpack-compose:${Versions.colormath}")
@@ -435,6 +421,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.sebastianneubauer.jsontree:jsontree:${Versions.jsonTree}")
                 library("com.squareup:javapoet:${Versions.javaPoet}")
                 library("com.squareup:kotlinpoet:${Versions.kotlinPoet}")
+                library("com.squareup.okio:okio-fakefilesystem:${Versions.okio}")
                 library("com.unity3d.ads:unity-ads:${Versions.unityAds}")
                 library("de.charlex.compose:html-text:${Versions.htmlText}")
                 library("io.fluidsonic.country:fluid-country:${Versions.fluidI18n}")

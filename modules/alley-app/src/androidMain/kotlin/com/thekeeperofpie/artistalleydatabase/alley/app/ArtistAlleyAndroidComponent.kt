@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import android.app.Application
 import androidx.room.Room
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils
@@ -17,6 +18,9 @@ abstract class ArtistAlleyAndroidComponent(
 ) : ArtistAlleyAppComponent {
 
     val ArtistAlleyAppSettings.bindArtistAlleySettings: ArtistAlleySettings
+        @Provides get() = this
+
+    val ArtistAlleyAppDatabase.bindArtistAlleyDatabase: ArtistAlleyDatabase
         @Provides get() = this
 
     @SingletonScope
