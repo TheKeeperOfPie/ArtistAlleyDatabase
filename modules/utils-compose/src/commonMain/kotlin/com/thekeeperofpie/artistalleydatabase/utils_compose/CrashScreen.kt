@@ -20,14 +20,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.crash_intro
 import artistalleydatabase.modules.utils_compose.generated.resources.crash_open_discord
 import artistalleydatabase.modules.utils_compose.generated.resources.crash_share_icon_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.crash_title
-import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +36,7 @@ object CrashScreen {
         crash: @Composable () -> String,
         onClickBack: () -> Unit,
         onClickShare: (crash: String) -> Unit,
+        onClickOpenDiscord: () -> Unit,
     ) {
         Scaffold(
             topBar = {
@@ -70,9 +69,8 @@ object CrashScreen {
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                 )
 
-                val uriHandler = LocalUriHandler.current
                 FilledTonalButton(
-                    onClick = { uriHandler.openUri(Secrets.discordServerInviteLink) },
+                    onClick = onClickOpenDiscord,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(text = stringResource(Res.string.crash_open_discord))

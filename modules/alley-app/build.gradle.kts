@@ -207,19 +207,6 @@ kotlin {
     }
 }
 
-//configurations/*.named { "wasm" in it }*/.configureEach {
-//    resolutionStrategy {
-//        force("androidx.paging:paging-common:3.3.0-alpha02")
-//        eachDependency {
-//            // https://github.com/coil-kt/coil/issues/2771
-//            if (requested.group.contains("org.jetbrains.compose")
-//                && requested.version == "1.8.0-alpha01") {
-//                useVersion("1.7.3")
-//            }
-//        }
-//    }
-//}
-
 dependencies {
     add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
     arrayOf(

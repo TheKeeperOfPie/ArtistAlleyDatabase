@@ -32,8 +32,6 @@ kotlin {
             runtimeOnly(libs.paging.runtime.ktx)
         }
         commonMain.dependencies {
-            // TODO: Remove secrets dependency
-            implementation(projects.modules.secrets)
             implementation(projects.modules.utils)
 
             api(libs.pagingMultiplatform.paging.common)

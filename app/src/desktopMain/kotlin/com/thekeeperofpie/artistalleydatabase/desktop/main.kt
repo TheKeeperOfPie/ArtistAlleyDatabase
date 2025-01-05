@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
@@ -37,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
@@ -164,10 +166,14 @@ fun main() {
 
                                     sharedElementComposable(route = NavDestinations.CRASH.name) {
                                         SideEffect { settings.lastCrashShown.value = true }
+                                        val uriHandler = LocalUriHandler.current
                                         CrashScreen(
                                             crash = { settings.lastCrash.collectAsState().value },
                                             onClickBack = { navHostController.navigateUp() },
-                                            onClickShare = { TODO() }
+                                            onClickShare = { TODO() },
+                                            onClickOpenDiscord = {
+                                                uriHandler.openUri(Secrets.discordServerInviteLink)
+                                            },
                                         )
                                     }
                                 }

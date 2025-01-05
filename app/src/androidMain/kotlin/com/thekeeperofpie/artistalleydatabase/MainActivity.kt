@@ -50,6 +50,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
@@ -86,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalSubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
+import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.ui.theme.AndroidTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
@@ -506,6 +508,7 @@ class MainActivity : ComponentActivity() {
                                 SideEffect { settings.lastCrashShown.value = true }
                                 val shareTitle =
                                     stringResource(Res.string.crash_share_chooser_title)
+                                val uriHandler = LocalUriHandler.current
                                 CrashScreen(
                                     crash = { settings.lastCrash.collectAsState().value },
                                     onClickBack = { navHostController.navigateUp() },
@@ -521,7 +524,10 @@ class MainActivity : ComponentActivity() {
                                             Intent.createChooser(it, shareTitle)
                                         }
                                         startActivity(shareIntent)
-                                    }
+                                    },
+                                    onClickOpenDiscord = {
+                                        uriHandler.openUri(Secrets.discordServerInviteLink)
+                                    },
                                 )
                             }
                         }
