@@ -79,4 +79,6 @@ tasks.named { it in composeFilesDependentTasks }.configureEach { dependsOn("pars
 
 compose.resources {
     publicResClass = true
+    // TODO: Doesn't actually work, need to manually copy database file
+//    customDirectory("commonMain", project.layout.buildDirectory.dir("generated/composeResources"))
 }

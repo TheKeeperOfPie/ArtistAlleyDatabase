@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import app.cash.sqldelight.async.coroutines.awaitCreate
-import app.cash.sqldelight.driver.worker.createDefaultWebWorkerDriver
+import app.cash.sqldelight.driver.worker.WebWorkerDriver
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.app.dao.ArtistEntryDaoImpl
 import com.thekeeperofpie.artistalleydatabase.alley.app.dao.StampRallyEntryDaoImpl
@@ -15,6 +15,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
+import org.w3c.dom.Worker
+
+private fun createCustomWorker(): Worker =
+    js("""new Worker(new URL("@thekeeperofpie/sqldelight-sqljs-worker/sqljs.worker.js", import.meta.url))""")
 
 @Inject
 class ArtistAlleyWasmJsDatabase(
@@ -24,8 +28,7 @@ class ArtistAlleyWasmJsDatabase(
 
     private val databaseState = MutableStateFlow<ArtistAlleyAppDatabase?>(null)
     private val database = suspend { databaseState.filterNotNull().first() }
-
-    val driver = createDefaultWebWorkerDriver()
+    private val driver = WebWorkerDriver(createCustomWorker())
 
     init {
         applicationScope.launch(PlatformDispatchers.IO) {

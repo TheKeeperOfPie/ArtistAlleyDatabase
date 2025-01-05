@@ -1,0 +1,8 @@
+{
+  "name": "@thekeeperofpie/sqldelight-sqljs-worker",
+  "version": "0.0.1",
+  "description": "Custom SQLDelight driver to pre-load database",
+  "dependencies": {
+    "sql.js": "^1.8.0"
+  }
+}

@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"@cashapp/sqldelight-sqljs-worker@2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@cashapp/sqldelight-sqljs-worker/-/sqldelight-sqljs-worker-2.0.2.tgz#5503bbac49dd8c0d6e6c7bf5c8e59795475ba566"
-  integrity sha512-jmk1Tnkwknu4eG/6hbetWf4Z+s/bPfvC9GWdW+uMXPsHNWSxX4ZyPMVdJnH0Jzi4Qrohc7Pby01HX+UdTIevow==
-
 "@colors/colors@1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
@@ -92,6 +87,9 @@
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz#821f8442f4175d8f0467b9daf26e3a18e2d02af2"
   integrity sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==
+
+"@thekeeperofpie/sqldelight-sqljs-worker@file:../../modules/alley-app/sqljs":
+  version "0.0.1"
 
 "@types/body-parser@*":
   version "1.19.5"

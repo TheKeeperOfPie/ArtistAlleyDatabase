@@ -30,8 +30,6 @@ import Versions_gradle.Versions.kotlin.ksp
 import Versions_gradle.Versions.kotlin.serialization
 import org.gradle.api.initialization.dsl.VersionCatalogBuilder
 import org.gradle.api.initialization.resolve.DependencyResolutionManagement
-import org.gradle.api.initialization.resolve.RepositoriesMode
-import org.gradle.kotlin.dsl.maven
 
 object Versions {
     const val accompanist = "0.36.0"
@@ -64,6 +62,7 @@ object Versions {
     object apache {
         const val commonsCompress = "1.27.1"
         const val commonsCsv = "1.11.0"
+        const val commonsIo = "2.18.0"
     }
 
     const val apollo = "4.0.0-beta.7"
@@ -111,7 +110,6 @@ object Versions {
     const val htmlConverter = "1.0.2"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.10.0"
-    const val indexeddb = "0.9.0"
     const val jackson = "2.18.2"
     const val javaPoet = "1.13.0"
     const val jimfs = "1.3.0"
@@ -325,6 +323,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 with(Versions.apache) {
                     library("org.apache.commons:commons-compress:$commonsCompress")
                     library("org.apache.commons:commons-csv:$commonsCsv")
+                    library("commons-io:commons-io:$commonsIo")
                 }
 
                 with(Versions.kotlin) {
@@ -381,6 +380,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 prefix("sqldelight") {
                     withVersion(Versions.sqldelight) {
                         library("app.cash.sqldelight:coroutines-extensions")
+                        library("app.cash.sqldelight:sqlite-driver")
                         library("app.cash.sqldelight:web-worker-driver-wasm-js")
                     }
                 }
@@ -401,8 +401,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("co.touchlab:stately-concurrent-collections:${Versions.statelyConcurrentCollections}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
-                // TODO: Use the real library once it's available
-                library("com.eygraber.indexeddb:core-wasm-js:0.0.1", alias = "indexeddb")
                 library("com.eygraber:compose-placeholder-material3:${Versions.placeholder}")
                 library("com.eygraber:uri-kmp:${Versions.uriKmp}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")

@@ -14,7 +14,8 @@ plugins {
 val composeFiles = project.layout.projectDirectory.dir("src/commonMain/composeResources/files").asFile
 if (composeFiles.exists()) {
     tasks.register<ComposeFilesParseTask>("parseComposeFiles")
-    tasks.named { it == "preBuild" }.first().dependsOn("parseComposeFiles")
+    tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
+    tasks.named { it == "preBuild" }.configureEach { dependsOn("parseComposeFiles") }
 }
 
 kotlin {

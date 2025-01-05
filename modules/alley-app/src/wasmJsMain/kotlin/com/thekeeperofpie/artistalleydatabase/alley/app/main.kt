@@ -30,7 +30,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.browser.document
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okio.Buffer
 import okio.fakefilesystem.FakeFileSystem
@@ -41,7 +40,7 @@ private val fakeFileSystem = FakeFileSystem()
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
-        val scope = rememberCoroutineScope { Dispatchers.Main }
+        val scope = rememberCoroutineScope()
         val component = ArtistAlleyWasmJsComponent::class.create(scope)
         scope.launch(PlatformDispatchers.IO) {
             component.dataInitializer.init()

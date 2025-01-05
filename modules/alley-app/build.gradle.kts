@@ -195,12 +195,11 @@ kotlin {
         }
         val wasmJsMain by getting {
             dependencies {
-                implementation(libs.indexeddb)
                 implementation(libs.okio.fakefilesystem)
                 implementation(libs.sqldelight.coroutines.extensions)
                 implementation(libs.sqldelight.web.worker.driver.wasm.js)
                 implementation(devNpm("copy-webpack-plugin", "9.1.0"))
-                implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.0.2"))
+                implementation(npm("@thekeeperofpie/sqldelight-sqljs-worker", file("./sqljs")))
                 implementation(npm("sql.js", "1.12.0"))
             }
         }
