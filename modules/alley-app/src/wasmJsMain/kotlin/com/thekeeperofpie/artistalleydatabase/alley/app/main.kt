@@ -24,13 +24,11 @@ import coil3.memory.MemoryCache
 import coil3.request.Options
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.browser.document
-import kotlinx.coroutines.launch
 import okio.Buffer
 import okio.fakefilesystem.FakeFileSystem
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -42,9 +40,6 @@ fun main() {
     ComposeViewport(document.body!!) {
         val scope = rememberCoroutineScope()
         val component = ArtistAlleyWasmJsComponent::class.create(scope)
-        scope.launch(PlatformDispatchers.IO) {
-            component.dataInitializer.init()
-        }
 
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)

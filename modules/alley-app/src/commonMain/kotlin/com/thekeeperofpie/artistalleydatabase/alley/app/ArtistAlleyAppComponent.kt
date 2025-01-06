@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import androidx.navigation.NavType
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyComponent
-import com.thekeeperofpie.artistalleydatabase.alley.DataInitializer
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -14,7 +13,6 @@ import kotlin.reflect.KType
 
 @SingletonScope
 interface ArtistAlleyAppComponent : ArtistAlleyComponent {
-    val dataInitializer: DataInitializer
     val navigationTypeMap: NavigationTypeMap
 
     @SingletonScope

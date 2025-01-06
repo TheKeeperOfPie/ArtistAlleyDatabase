@@ -11,13 +11,6 @@ plugins {
     id("org.jetbrains.compose")
 }
 
-val composeFiles = project.layout.projectDirectory.dir("src/commonMain/composeResources/files").asFile
-if (composeFiles.exists()) {
-    tasks.register<ComposeFilesParseTask>("parseComposeFiles")
-    tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
-    tasks.named { it == "preBuild" }.configureEach { dependsOn("parseComposeFiles") }
-}
-
 kotlin {
     sourceSets {
         commonMain {

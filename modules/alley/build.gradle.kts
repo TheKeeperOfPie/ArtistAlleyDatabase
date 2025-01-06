@@ -68,17 +68,9 @@ dependencies {
     add("kspDesktop", kspProcessors.room.compiler)
 }
 
-val composeFilesDependentTasks = setOf(
-    "compileKotlinDesktop",
-    "compileKotlinWasmJs",
-    "kspAndroid",
-    "kspCommonMainKotlinMetadata",
-    "kspKotlinDesktop",
-)
-tasks.named { it in composeFilesDependentTasks }.configureEach { dependsOn("parseComposeFiles") }
+val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
 
 compose.resources {
     publicResClass = true
-    // TODO: Doesn't actually work, need to manually copy database file
-//    customDirectory("commonMain", project.layout.buildDirectory.dir("generated/composeResources"))
+    customDirectory("commonMain", inputsTask.map { it.outputResources.get() })
 }

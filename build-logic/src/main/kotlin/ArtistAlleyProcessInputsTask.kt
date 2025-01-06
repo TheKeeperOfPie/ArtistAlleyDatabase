@@ -1,4 +1,14 @@
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import com.thekeeperofpie.artistalleydatabase.alley.app.Artist_entries
 import com.thekeeperofpie.artistalleydatabase.alley.app.Artist_merch_connections
 import com.thekeeperofpie.artistalleydatabase.alley.app.Artist_series_connections
@@ -14,11 +24,17 @@ import kotlinx.io.buffered
 import kotlinx.io.readLine
 import kotlinx.io.readString
 import kotlinx.serialization.json.Json
+import org.apache.commons.io.FileUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import java.io.File
+import javax.imageio.ImageIO
+import javax.imageio.stream.FileCacheImageInputStream
+import javax.inject.Inject
 
 abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
@@ -28,44 +44,288 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         private const val SERIES_CSV_NAME = "series.csv"
         private const val MERCH_CSV_NAME = "merch.csv"
         private const val CHUNK_SIZE = 50
+        private const val PACKAGE_NAME = "com.thekeeperofpie.artistalleydatabase.generated"
     }
+
+    @get:Inject
+    abstract val layout: ProjectLayout
 
     @get:InputDirectory
     abstract val inputFolder: DirectoryProperty
 
-//    @get:InputDirectory
-//    abstract val commonMainResourcesFolder: DirectoryProperty
+    @get:InputDirectory
+    abstract val commonMainResourcesFolder: DirectoryProperty
 
     @get:OutputDirectory
-    abstract val outputFolder: DirectoryProperty
+    abstract val outputResources: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputSource: DirectoryProperty
 
     init {
-        inputFolder.convention(project.layout.projectDirectory.dir("inputs"))
-//        commonMainResourcesFolder.convention(project.layout.projectDirectory.dir("src/commonMain/composeResources"))
-        outputFolder.convention(project.layout.buildDirectory.dir("generated/composeResources"))
+        inputFolder.convention(layout.projectDirectory.dir("inputs"))
+        commonMainResourcesFolder.convention(layout.projectDirectory.dir("src/commonMain/composeResources"))
+        outputResources.convention(layout.buildDirectory.dir("generated/composeResources"))
+        outputSource.convention(layout.buildDirectory.dir("generated/source"))
     }
+
+    private val composeFileType = ClassName(PACKAGE_NAME, "ComposeFile")
+    private val listComposeFileType =
+        List::class.asClassName().parameterizedBy(composeFileType)
+    private val nullableIntType = Int::class.asTypeName().copy(nullable = true)
 
     @TaskAction
     fun process() {
-        // CMP resources only supports 1 composeResources directory, so copy over source files
-        // TODO: Not needed since manual copy-paste is necessary anyways
-//        FileUtils.copyDirectory(commonMainResourcesFolder.asFile.get(), outputFolder.asFile.get())
+        outputResources.get().asFile.deleteRecursively()
 
         val dbFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
-        dbFile.delete()
-        dbFile.createNewFile()
+        if (dbFile.exists() && !dbFile.delete()) {
+            println("Failed to delete $dbFile, manually delete to re-process inputs")
+            dbFile.copyTo(outputResources.file("files/database.sqlite").get().asFile, overwrite = true)
+        } else {
+            dbFile.createNewFile()
+            val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
+            BuildLogicDatabase.Schema.create(driver)
+            val database = BuildLogicDatabase(driver)
 
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
-        BuildLogicDatabase.Schema.create(driver)
-        val database = BuildLogicDatabase(driver)
+            parseArtists(database)
+            parseTags(database)
+            parseStampRallies(database)
 
-        parseArtists(database)
-        parseTags(database)
-        parseStampRallies(database)
+            driver.close()
+        }
 
-        driver.close()
-        dbFile.copyTo(outputFolder.file("files/database.sqlite").get().asFile, overwrite = true)
+        val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
+
+        copyInputFiles()
+        buildComposeFiles(imageCacheDir)
     }
+
+    private fun copyInputFiles() {
+        FileUtils.copyDirectory(
+            commonMainResourcesFolder.asFile.get(),
+            outputResources.asFile.get()
+        )
+
+        // Catalogs/rallies strip out "-" because CMP uses that as a type qualifier
+        val catalogsInput = inputFolder.dir("catalogs").get().asFile
+        val catalogsOutput = outputResources.dir("files/catalogs").get().asFile
+        catalogsInput.listFiles().forEach {
+            FileUtils.copyDirectory(it, catalogsOutput.resolve(it.name.substringBefore(" -")))
+        }
+
+        // TODO: Re-add compression
+        catalogsOutput.listFiles()
+            .forEach { catalogDir ->
+                catalogDir.listFiles()
+                    .filter { it.isFile }
+                    .sorted()
+                    .forEachIndexed { index, file ->
+                        file.renameTo(file.resolveSibling("$index.${file.extension}"))
+                    }
+            }
+
+        val ralliesInput = inputFolder.dir("rallies").get().asFile
+        val ralliesOutput = outputResources.dir("files/rallies").get().asFile
+        ralliesInput.listFiles().forEach {
+            FileUtils.copyDirectory(
+                it, ralliesOutput.resolve(
+                    it.name
+                        .replace(" - ", "")
+                        .replace("'", "_")
+                )
+            )
+        }
+        ralliesOutput.listFiles()
+            .forEach { ralliesDir ->
+                ralliesDir.listFiles()
+                    .filter { it.isFile }
+                    .sorted()
+                    .forEachIndexed { index, file ->
+                        file.renameTo(file.resolveSibling("$index.${file.extension}"))
+                    }
+            }
+    }
+
+    private fun buildComposeFiles(imageCacheDir: File) {
+        FileSpec.builder(PACKAGE_NAME, "ComposeFiles")
+            .addType(accessorType(imageCacheDir))
+            .addType(folderType())
+            .build()
+            .writeTo(outputSource.asFile.get())
+    }
+
+    private fun accessorType(imageCacheDir: File): TypeSpec {
+        val folders = parseFolders()
+        return TypeSpec.objectBuilder("ComposeFiles")
+            .addProperty(
+                PropertySpec.builder("root", listComposeFileType)
+                    .initializer(
+                        CodeBlock.builder()
+                            .apply {
+                                add("listOf(\n")
+                                folders.forEach {
+                                    appendFileCode(imageCacheDir, it, 1)
+                                }
+                                add(")")
+                            }
+                            .build()
+                    )
+                    .build()
+            )
+            .build()
+    }
+
+    private fun folderType() = TypeSpec.interfaceBuilder("ComposeFile")
+        .addModifiers(KModifier.SEALED)
+        .addType(
+            TypeSpec.classBuilder("Folder")
+                .addModifiers(KModifier.DATA)
+                .addSuperinterface(composeFileType)
+                .primaryConstructor(
+                    FunSpec.constructorBuilder()
+                        .addParameter("name", String::class)
+                        .addParameter("files", listComposeFileType)
+                        .build()
+                )
+                .addProperty(
+                    PropertySpec.builder("name", String::class)
+                        .initializer("name")
+                        .build()
+                )
+                .addProperty(
+                    PropertySpec.builder("files", listComposeFileType)
+                        .initializer("files")
+                        .build()
+                )
+                .build()
+        )
+        .addType(
+            TypeSpec.classBuilder("File")
+                .addModifiers(KModifier.DATA)
+                .addSuperinterface(composeFileType)
+                .primaryConstructor(
+                    FunSpec.constructorBuilder()
+                        .addParameter("name", String::class)
+                        .build()
+                )
+                .addProperty(
+                    PropertySpec.builder("name", String::class)
+                        .initializer("name")
+                        .build()
+                )
+                .build()
+        )
+        .addType(
+            TypeSpec.classBuilder("Image")
+                .addModifiers(KModifier.DATA)
+                .addSuperinterface(composeFileType)
+                .primaryConstructor(
+                    FunSpec.constructorBuilder()
+                        .addParameter("name", String::class)
+                        .addParameter("width", nullableIntType)
+                        .addParameter("height", nullableIntType)
+                        .build()
+                )
+                .addProperty(
+                    PropertySpec.builder("name", String::class)
+                        .initializer("name")
+                        .build()
+                )
+                .addProperty(
+                    PropertySpec.builder("width", nullableIntType)
+                        .initializer("width")
+                        .build()
+                )
+                .addProperty(
+                    PropertySpec.builder("height", nullableIntType)
+                        .initializer("height")
+                        .build()
+                )
+                .build()
+        )
+        .build()
+
+    private fun parseFolders() =
+        outputResources.dir("files").get().asFile.listFiles().map(::parseFile)
+
+    private fun parseFile(file: File, name: String = file.name): ComposeFile =
+        if (file.isDirectory) {
+            ComposeFile(
+                name = name,
+                file = file,
+                files = file.listFiles().sorted().mapIndexed { index, child ->
+                    parseFile(
+                        file = child,
+                        name = if (child.isDirectory) {
+                            child.name
+                        } else {
+                            "$index.${child.extension}"
+                        }
+                    )
+                },
+            )
+        } else {
+            ComposeFile(name, file, emptyList())
+        }
+
+    private fun CodeBlock.Builder.appendFileCode(
+        imageCacheDir: File,
+        file: ComposeFile,
+        level: Int,
+    ) {
+        if (file.files.isEmpty()) {
+            if (file.name.endsWith(".jpg")
+                || file.name.endsWith(".png")
+                || file.name.endsWith(".webp")
+            ) {
+                val (width, height) = parseImageWidthHeight(imageCacheDir, file)
+                addStatement(
+                    "ComposeFile.Image(name = %S, width = %L, height = %L),",
+                    file.name,
+                    width,
+                    height,
+                )
+                return
+            }
+            addStatement("ComposeFile.File(name = %S),", file.name)
+            return
+        }
+        addStatement("ComposeFile.Folder(")
+        addStatement("name = %S,", file.name)
+        addStatement("files = listOf(")
+        file.files.forEach {
+            appendFileCode(imageCacheDir, it, level + 1)
+        }
+        add("),\n),\n")
+    }
+
+    private fun parseImageWidthHeight(imageCacheDir: File, file: ComposeFile): Pair<Int?, Int?> {
+        file.file.extension
+            .let(ImageIO::getImageReadersBySuffix)
+            .forEach { reader ->
+                try {
+                    file.file.inputStream().use {
+                        FileCacheImageInputStream(it, imageCacheDir).use {
+                            reader.setInput(it)
+                            val width = reader.getWidth(reader.minIndex)
+                            val height = reader.getHeight(reader.minIndex)
+                            return width to height
+                        }
+                    }
+                } finally {
+                    reader.dispose()
+                }
+            }
+
+        return null to null
+    }
+
+    data class ComposeFile(
+        val name: String,
+        val file: File,
+        val files: List<ComposeFile>,
+    )
 
     private fun parseArtists(database: BuildLogicDatabase) {
         val json = Json.Default

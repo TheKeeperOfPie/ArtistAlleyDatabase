@@ -134,11 +134,7 @@ kotlin {
             val projectDirPath = project.projectDir.path
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        add(projectDirPath)
-                    }
-                }
+                devServer = devServer ?: KotlinWebpackConfig.DevServer()
             }
         }
         binaries.executable()

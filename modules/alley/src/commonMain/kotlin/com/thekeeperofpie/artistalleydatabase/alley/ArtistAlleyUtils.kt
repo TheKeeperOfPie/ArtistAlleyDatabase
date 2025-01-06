@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import artistalleydatabase.modules.alley.generated.resources.Res
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.generated.ComposeFile
 import com.thekeeperofpie.artistalleydatabase.generated.ComposeFiles
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -13,23 +14,23 @@ object ArtistAlleyUtils {
         folder: String,
         file: String,
     ): List<CatalogImage> {
-        val targetName = file.replace("'", "_")
-        val targetFolder = ComposeFiles.folders
+        val targetName = file.replace(" - ", "").replace("'", "_")
+        val targetFolder = ComposeFiles.root
+            .filterIsInstance<ComposeFile.Folder>()
             .find { it.name == folder }
             ?.files
+            ?.filterIsInstance<ComposeFile.Folder>()
             ?.find { it.name.startsWith(targetName) }
 
         @OptIn(ExperimentalResourceApi::class)
         return targetFolder?.files
-            ?.filterNot { it.name.endsWith(".pdf") }
+            ?.filterIsInstance<ComposeFile.Image>()
             ?.sortedBy { it.name }
-            ?.map { Uri.parse(Res.getUri("files/$folder/${targetFolder.name}/${it.name}")) }
             ?.map {
-                val (width, height) = appFileSystem.getImageWidthHeight(it)
                 CatalogImage(
-                    uri = it,
-                    width = width,
-                    height = height,
+                    uri = Uri.parse(Res.getUri("files/$folder/${targetFolder.name}/${it.name}")),
+                    width = it.width,
+                    height = it.height,
                 )
             }
             .orEmpty()
