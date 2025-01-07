@@ -92,10 +92,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         val dbFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
         if (dbFile.exists() && !dbFile.delete()) {
             println("Failed to delete $dbFile, manually delete to re-process inputs")
-            dbFile.copyTo(
-                outputResources.file("files/database.sqlite").get().asFile,
-                overwrite = true
-            )
         } else {
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
             BuildLogicDatabase.Schema.create(driver)
@@ -107,6 +103,12 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
             driver.closeConnection(driver.getConnection())
             driver.close()
+
+            dbFile.copyTo(
+                outputResources.file("files/database.sqlite").get().asFile,
+                overwrite = true,
+            )
+            dbFile.delete()
         }
 
         val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)

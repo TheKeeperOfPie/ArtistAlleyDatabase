@@ -270,7 +270,7 @@ object DetailsScreen {
                             modifier = Modifier.align(Alignment.BottomCenter)
                         ) {
                             HorizontalPagerIndicator(
-                                pagerState = headerPagerState,
+                                pagerState = fullPagerState,
                                 modifier = Modifier
                                     .sharedElement(
                                         "pagerIndicator",
