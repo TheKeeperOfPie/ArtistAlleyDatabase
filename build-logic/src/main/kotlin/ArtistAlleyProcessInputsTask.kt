@@ -17,6 +17,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.app.Series_entries
 import com.thekeeperofpie.artistalleydatabase.alley.app.Stamp_rally_artist_connections
 import com.thekeeperofpie.artistalleydatabase.alley.app.Stamp_rally_entries
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.Source
 import kotlinx.io.asSource
@@ -32,6 +37,8 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import javax.imageio.stream.FileCacheImageInputStream
 import javax.inject.Inject
@@ -45,6 +52,10 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         private const val MERCH_CSV_NAME = "merch.csv"
         private const val CHUNK_SIZE = 50
         private const val PACKAGE_NAME = "com.thekeeperofpie.artistalleydatabase.generated"
+        private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp")
+        private const val RESIZE_TARGET = 800
+        private const val WEBP_TARGET_QUALITY = 15
+        private const val WEBP_METHOD = 6
     }
 
     @get:Inject
@@ -81,9 +92,11 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         val dbFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
         if (dbFile.exists() && !dbFile.delete()) {
             println("Failed to delete $dbFile, manually delete to re-process inputs")
-            dbFile.copyTo(outputResources.file("files/database.sqlite").get().asFile, overwrite = true)
+            dbFile.copyTo(
+                outputResources.file("files/database.sqlite").get().asFile,
+                overwrite = true
+            )
         } else {
-            dbFile.createNewFile()
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
             BuildLogicDatabase.Schema.create(driver)
             val database = BuildLogicDatabase(driver)
@@ -92,6 +105,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             parseTags(database)
             parseStampRallies(database)
 
+            driver.closeConnection(driver.getConnection())
             driver.close()
         }
 
@@ -114,17 +128,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             FileUtils.copyDirectory(it, catalogsOutput.resolve(it.name.substringBefore(" -")))
         }
 
-        // TODO: Re-add compression
-        catalogsOutput.listFiles()
-            .forEach { catalogDir ->
-                catalogDir.listFiles()
-                    .filter { it.isFile }
-                    .sorted()
-                    .forEachIndexed { index, file ->
-                        file.renameTo(file.resolveSibling("$index.${file.extension}"))
-                    }
-            }
-
         val ralliesInput = inputFolder.dir("rallies").get().asFile
         val ralliesOutput = outputResources.dir("files/rallies").get().asFile
         ralliesInput.listFiles().forEach {
@@ -136,15 +139,73 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 )
             )
         }
-        ralliesOutput.listFiles()
-            .forEach { ralliesDir ->
-                ralliesDir.listFiles()
-                    .filter { it.isFile }
-                    .sorted()
-                    .forEachIndexed { index, file ->
-                        file.renameTo(file.resolveSibling("$index.${file.extension}"))
-                    }
+
+        compressAndRenameImages(catalogsOutput)
+        compressAndRenameImages(ralliesOutput)
+    }
+
+    /**
+     * Compresses and renames files to their index in their parent, to shrink paths and line up with
+     * how they were parsed by [parseFolders].
+     */
+    private fun compressAndRenameImages(dir: File) {
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
+            runBlocking {
+                withContext(it.asCoroutineDispatcher()) {
+                    dir.listFiles()
+                        .filter { it.isDirectory }
+                        .flatMap {
+                            it.listFiles()
+                                .filter { it.isFile && it.extension in IMAGE_EXTENSIONS }
+                                .sorted()
+                                .withIndex()
+                        }
+                        .map { (index, file) ->
+                            async {
+                                var image = ImageIO.read(file)
+                                var width: Int? = null
+                                var height: Int? = null
+                                if (image.width > image.height && image.width > RESIZE_TARGET) {
+                                    logger.lifecycle("Resizing $file")
+                                    width = RESIZE_TARGET
+                                    height = 0
+                                } else if (image.height >= image.width && image.height > RESIZE_TARGET) {
+                                    logger.lifecycle("Resizing $file")
+                                    width = 0
+                                    height = RESIZE_TARGET
+                                }
+                                logger.lifecycle("Compressing $file")
+                                val output = file.resolveSibling("$index.webp")
+                                val params = mutableListOf(
+                                    "cwebp",
+                                    "-af",
+                                    "-q",
+                                    WEBP_TARGET_QUALITY.toString(),
+                                    "-m",
+                                    WEBP_METHOD.toString(),
+                                    file.absolutePath,
+                                    "-o",
+                                    output.absolutePath,
+                                )
+                                if (width != null) {
+                                    params += "-resize"
+                                    params += width.toString()
+                                    params += height.toString()
+                                }
+                                val success = ProcessBuilder(params)
+                                    .redirectErrorStream(true)
+                                    .start()
+                                    .waitFor(30, TimeUnit.SECONDS)
+                                if (!success) {
+                                    throw IllegalStateException("Failed to compress $file")
+                                }
+                                file.delete()
+                            }
+                        }
+                        .awaitAll()
+                }
             }
+        }
     }
 
     private fun buildComposeFiles(imageCacheDir: File) {

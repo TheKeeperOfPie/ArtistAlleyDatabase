@@ -153,6 +153,7 @@ object Versions {
     const val turbine = "1.2.0"
     const val unityAds = "4.12.5"
     const val uriKmp = "0.0.18"
+    const val webpImageIo = "0.9.0"
     const val xmlUtil = "0.90.3"
 }
 
@@ -406,6 +407,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")
                 library("com.github.ajalt.colormath:colormath-ext-jetpack-compose:${Versions.colormath}")
+                library("com.github.usefulness:webp-imageio:${Versions.webpImageIo}")
                 library("com.google.jimfs:jimfs:${Versions.jimfs}")
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")

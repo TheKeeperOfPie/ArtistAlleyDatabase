@@ -32,10 +32,11 @@ dependencies {
     implementation(libs.kotlinpoet)
     implementation(libs.kotlinx.io.core)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.coroutines.swing)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.parcelize.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
+    implementation(libs.webp.imageio)
     // TODO: Replace with catalog version once officially published
     implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
 }
