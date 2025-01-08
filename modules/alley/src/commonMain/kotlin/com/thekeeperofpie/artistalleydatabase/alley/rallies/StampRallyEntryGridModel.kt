@@ -8,7 +8,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 
 class StampRallyEntryGridModel(
     val value: StampRallyEntry,
@@ -28,14 +27,10 @@ class StampRallyEntryGridModel(
     override val booth get() = value.hostTable
 
     companion object {
-        fun buildFromEntry(
-            appFileSystem: AppFileSystem,
-            entry: StampRallyEntry,
-        ) = StampRallyEntryGridModel(
+        fun buildFromEntry(entry: StampRallyEntry) = StampRallyEntryGridModel(
             value = entry,
             images = ArtistAlleyUtils.getImages(
-                appFileSystem = appFileSystem,
-                folder = "rallies",
+                folder = ArtistAlleyUtils.Folder.RALLIES,
                 file = entry.id.replace("-", " - "),
             ),
             placeholderText = entry.fandom,

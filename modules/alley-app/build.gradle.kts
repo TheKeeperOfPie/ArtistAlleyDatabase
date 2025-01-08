@@ -1,5 +1,5 @@
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
@@ -11,8 +11,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.multiplatform")
-    id("androidx.room")
-    id("app.cash.sqldelight")
 }
 
 android {
@@ -110,16 +108,6 @@ compose.desktop {
 }
 
 kotlin {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyDefaultHierarchyTemplate {
-        common {
-            group("jvm") {
-                withAndroidTarget()
-                withJvm()
-            }
-        }
-    }
-
     androidTarget {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_18
@@ -183,20 +171,9 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.swing)
             }
         }
-        val jvmMain by getting {
-            dependencies {
-                implementation(projects.modules.utilsRoom)
-                implementation(libs.androidx.sqlite.bundled)
-            }
-        }
         val wasmJsMain by getting {
             dependencies {
                 implementation(libs.okio.fakefilesystem)
-                implementation(libs.sqldelight.coroutines.extensions)
-                implementation(libs.sqldelight.web.worker.driver.wasm.js)
-                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
-                implementation(npm("@thekeeperofpie/sqldelight-sqljs-worker", file("./sqljs")))
-                implementation(npm("sql.js", "1.12.0"))
             }
         }
     }
@@ -204,28 +181,9 @@ kotlin {
 
 dependencies {
     add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
-    arrayOf(
-        kspProcessors.room.compiler,
-        kspProcessors.kotlin.inject.compiler.ksp,
-    ).forEach {
-        add("kspAndroid", it)
-        add("kspDesktop", it)
-    }
+    add("kspAndroid", kspProcessors.kotlin.inject.compiler.ksp)
+    add("kspDesktop", kspProcessors.kotlin.inject.compiler.ksp)
     add("kspWasmJs", kspProcessors.kotlin.inject.compiler.ksp)
-}
-
-room {
-    schemaDirectory("$projectDir/schemas")
-    generateKotlin = true
-}
-
-sqldelight {
-    databases {
-        create("ArtistAlleyAppDatabase") {
-            packageName.set("com.thekeeperofpie.artistalleydatabase.app")
-            generateAsync = true
-        }
-    }
 }
 
 tasks.register("installAll") {

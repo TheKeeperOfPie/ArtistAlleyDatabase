@@ -23,7 +23,6 @@ class CustomApplication : Application(), ComponentProvider, SingletonImageLoader
 
     override fun onCreate() {
         super.onCreate()
-        applicationComponent.dataInitializer.init()
     }
 
     override fun newImageLoader(context: PlatformContext) = ImageLoader.Builder(context)

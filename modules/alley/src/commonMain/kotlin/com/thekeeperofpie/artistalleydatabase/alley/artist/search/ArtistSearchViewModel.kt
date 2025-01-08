@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -36,7 +35,6 @@ import kotlin.random.Random
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
 class ArtistSearchViewModel(
-    private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val settings: ArtistAlleySettings,
     navigationTypeMap: NavigationTypeMap,
@@ -86,7 +84,7 @@ class ArtistSearchViewModel(
     ) = createPager(createPagingConfig(pageSize = 20)) { artistEntryDao.search(query, options) }
         .flow
         .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
-        .map { it.map { ArtistEntryGridModel.buildFromEntry(appFileSystem, it) } }
+        .map { it.map { ArtistEntryGridModel.buildFromEntry(it) } }
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 

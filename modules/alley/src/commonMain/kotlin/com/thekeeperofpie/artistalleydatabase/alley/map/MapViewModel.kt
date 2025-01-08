@@ -11,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistBoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,7 +22,6 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class MapViewModel(
-    private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val settings: ArtistAlleySettings,
 ) : ViewModel() {
@@ -61,8 +59,10 @@ class MapViewModel(
         return letterToBooths.mapIndexed { letterIndex, pair ->
             pair.second.map {
                 val tableNumber = it.booth.filter { it.isDigit() }.toInt()
-                val images =
-                    ArtistAlleyUtils.getImages(appFileSystem, "catalogs", it.booth)
+                val images = ArtistAlleyUtils.getImages(
+                    folder = ArtistAlleyUtils.Folder.CATALOGS,
+                    file = it.booth,
+                )
                 val imageIndex = if (showRandomCatalogImage) {
                     images.indices.randomOrNull()
                 } else {
@@ -97,7 +97,7 @@ class MapViewModel(
     }
 
     suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.booth)?.let {
-        ArtistEntryGridModel.buildFromEntry(appFileSystem, it)
+        ArtistEntryGridModel.buildFromEntry(it)
     }
 
     data class GridData(

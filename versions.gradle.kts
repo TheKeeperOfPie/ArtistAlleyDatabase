@@ -10,7 +10,6 @@ import Versions_gradle.Versions.androidx.paging
 import Versions_gradle.Versions.androidx.palette
 import Versions_gradle.Versions.androidx.room
 import Versions_gradle.Versions.androidx.securityCrypto
-import Versions_gradle.Versions.androidx.sqlite
 import Versions_gradle.Versions.androidx.tracing
 import Versions_gradle.Versions.androidx.work
 import Versions_gradle.Versions.apache.commonsCompress
@@ -242,7 +241,12 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         prefix = "androidx"
                     )
 
-                    library("androidx.sqlite:sqlite-bundled:$sqlite", prefix = "androidx")
+                    prefix("androidx") {
+                        withVersion(Versions.androidx.sqlite) {
+                            library("androidx.sqlite:sqlite")
+                            library("androidx.sqlite:sqlite-bundled")
+                        }
+                    }
                     library("androidx.tracing:tracing:$tracing", prefix = "androidx")
 
                     withVersion(work) {
@@ -380,6 +384,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 prefix("sqldelight") {
                     withVersion(Versions.sqldelight) {
+                        library("app.cash.sqldelight:android-driver")
                         library("app.cash.sqldelight:coroutines-extensions")
                         library("app.cash.sqldelight:sqlite-driver")
                         library("app.cash.sqldelight:web-worker-driver-wasm-js")

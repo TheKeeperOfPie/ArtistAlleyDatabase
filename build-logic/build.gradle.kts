@@ -15,7 +15,7 @@ sqldelight {
             packageName.set("com.thekeeperofpie.artistalleydatabase.build_logic")
             srcDirs(
                 project.layout.projectDirectory
-                    .dir("../modules/alley-app/src/commonMain/sqldelight")
+                    .dir("../modules/alley/src/commonMain/sqldelight")
             )
         }
     }

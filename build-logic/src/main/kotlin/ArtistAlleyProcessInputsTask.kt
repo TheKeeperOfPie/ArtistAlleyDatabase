@@ -9,13 +9,13 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
-import com.thekeeperofpie.artistalleydatabase.alley.app.Artist_entries
-import com.thekeeperofpie.artistalleydatabase.alley.app.Artist_merch_connections
-import com.thekeeperofpie.artistalleydatabase.alley.app.Artist_series_connections
-import com.thekeeperofpie.artistalleydatabase.alley.app.Merch_entries
-import com.thekeeperofpie.artistalleydatabase.alley.app.Series_entries
-import com.thekeeperofpie.artistalleydatabase.alley.app.Stamp_rally_artist_connections
-import com.thekeeperofpie.artistalleydatabase.alley.app.Stamp_rally_entries
+import com.thekeeperofpie.artistalleydatabase.alley.Artist_entries
+import com.thekeeperofpie.artistalleydatabase.alley.Artist_merch_connections
+import com.thekeeperofpie.artistalleydatabase.alley.Artist_series_connections
+import com.thekeeperofpie.artistalleydatabase.alley.Merch_entries
+import com.thekeeperofpie.artistalleydatabase.alley.Series_entries
+import com.thekeeperofpie.artistalleydatabase.alley.Stamp_rally_artist_connections
+import com.thekeeperofpie.artistalleydatabase.alley.Stamp_rally_entries
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -36,6 +36,7 @@ import org.gradle.api.file.ProjectLayout
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.extensions.stdlib.capitalized
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -50,12 +51,13 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         private const val STAMP_RALLIES_CSV_NAME = "rallies.csv"
         private const val SERIES_CSV_NAME = "series.csv"
         private const val MERCH_CSV_NAME = "merch.csv"
-        private const val CHUNK_SIZE = 50
+        private const val DATABASE_CHUNK_SIZE = 50
         private const val PACKAGE_NAME = "com.thekeeperofpie.artistalleydatabase.generated"
         private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp")
         private const val RESIZE_TARGET = 800
         private const val WEBP_TARGET_QUALITY = 15
         private const val WEBP_METHOD = 6
+        private const val COMPOSE_FILES_CHUNK_SIZE = 50
     }
 
     @get:Inject
@@ -81,6 +83,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     }
 
     private val composeFileType = ClassName(PACKAGE_NAME, "ComposeFile")
+    private val composeFolderType = ClassName(PACKAGE_NAME, "ComposeFile.Folder")
     private val listComposeFileType =
         List::class.asClassName().parameterizedBy(composeFileType)
     private val nullableIntType = Int::class.asTypeName().copy(nullable = true)
@@ -212,31 +215,77 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     private fun buildComposeFiles(imageCacheDir: File) {
         FileSpec.builder(PACKAGE_NAME, "ComposeFiles")
-            .addType(accessorType(imageCacheDir))
+            .apply {
+                addType(accessorType(this, imageCacheDir))
+            }
             .addType(folderType())
             .build()
             .writeTo(outputSource.asFile.get())
     }
 
-    private fun accessorType(imageCacheDir: File): TypeSpec {
+    private fun accessorType(fileSpec: FileSpec.Builder, imageCacheDir: File): TypeSpec {
         val folders = parseFolders()
+        val catalogs = folders.first { it.name == "catalogs" }
+        val rallies = folders.first { it.name == "rallies" }
         return TypeSpec.objectBuilder("ComposeFiles")
-            .addProperty(
-                PropertySpec.builder("root", listComposeFileType)
-                    .initializer(
-                        CodeBlock.builder()
-                            .apply {
-                                add("listOf(\n")
-                                folders.forEach {
-                                    appendFileCode(imageCacheDir, it, 1)
-                                }
-                                add(")")
-                            }
+            .addChunkedFolder(fileSpec, imageCacheDir, catalogs)
+            .addChunkedFolder(fileSpec, imageCacheDir, rallies)
+            .build()
+    }
+
+    private fun TypeSpec.Builder.addChunkedFolder(
+        fileSpec: FileSpec.Builder,
+        imageCacheDir: File,
+        folder: ComposeFile,
+    ) = apply {
+        val chunks = folder.files.chunked(COMPOSE_FILES_CHUNK_SIZE)
+            .map {
+                CodeBlock.Builder()
+                    .apply {
+                        add("listOf(")
+                        it.forEach { appendFileCode(imageCacheDir, it, 1) }
+                        add(")")
+                    }
+                    .build()
+            }
+        chunks.forEachIndexed { index, chunk ->
+            fileSpec.addType(
+                TypeSpec.objectBuilder("${folder.name}$index".capitalized())
+                    .addProperty(
+                        PropertySpec.builder("files", listComposeFileType)
+                            .initializer(
+                                CodeBlock.builder()
+                                    .add(chunk)
+                                    .build()
+                            )
                             .build()
                     )
                     .build()
             )
-            .build()
+        }
+
+        addProperty(
+            PropertySpec.builder(folder.name, composeFolderType)
+                .initializer(
+                    CodeBlock.builder()
+                        .apply {
+                            add(
+                                """
+                                    ComposeFile.Folder(
+                                        name = %S,
+                                        files = 
+                                """.trimIndent(), folder.name
+                            )
+                            chunks.indices.forEach { index ->
+                                add("${folder.name}$index".capitalized() + ".files ")
+                                if (index != chunks.lastIndex) add(" + ")
+                            }
+                            add(")")
+                        }
+                        .build()
+                )
+                .build()
+        )
     }
 
     private fun folderType() = TypeSpec.interfaceBuilder("ComposeFile")
@@ -360,7 +409,10 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         file.files.forEach {
             appendFileCode(imageCacheDir, it, level + 1)
         }
-        add("),\n),\n")
+        add("),\n)")
+        if (level > 0) {
+            add(",\n")
+        }
     }
 
     private fun parseImageWidthHeight(imageCacheDir: File, file: ComposeFile): Pair<Int?, Int?> {
@@ -510,7 +562,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     val notes = it["Notes"]
                     Series_entries(name = name, notes = notes)
                 }
-                .chunked(CHUNK_SIZE)
+                .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
                     tagEntryQueries.transaction {
                         it.forEach(tagEntryQueries::insertSeries)
@@ -525,7 +577,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     val notes = it["Notes"]
                     Merch_entries(name = name, notes = notes)
                 }
-                .chunked(CHUNK_SIZE)
+                .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
                     tagEntryQueries.transaction {
                         it.forEach(tagEntryQueries::insertMerch)
@@ -583,7 +635,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         ignored = false,
                     ) to connections
                 }
-                .chunked(CHUNK_SIZE)
+                .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
                     val stampRallies = it.map { it.first }
                     val artistConnections = it.flatMap { it.second }

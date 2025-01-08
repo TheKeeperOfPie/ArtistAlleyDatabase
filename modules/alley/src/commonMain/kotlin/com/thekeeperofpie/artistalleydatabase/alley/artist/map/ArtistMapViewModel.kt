@@ -10,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -25,7 +24,6 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ArtistMapViewModel(
-    appFileSystem: AppFileSystem,
     artistEntryDao: ArtistEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -44,7 +42,7 @@ class ArtistMapViewModel(
             // Need to observe updates since it's possible to
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
-                .map { ArtistEntryGridModel.buildFromEntry(appFileSystem, it) }
+                .map { ArtistEntryGridModel.buildFromEntry(it) }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {

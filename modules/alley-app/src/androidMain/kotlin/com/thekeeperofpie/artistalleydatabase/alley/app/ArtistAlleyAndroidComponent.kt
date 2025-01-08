@@ -1,8 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import android.app.Application
-import androidx.room.Room
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.CryptoUtils
@@ -19,25 +17,6 @@ abstract class ArtistAlleyAndroidComponent(
 
     val ArtistAlleyAppSettings.bindArtistAlleySettings: ArtistAlleySettings
         @Provides get() = this
-
-    val ArtistAlleyAppDatabase.bindArtistAlleyDatabase: ArtistAlleyDatabase
-        @Provides get() = this
-
-    @SingletonScope
-    @Provides
-    fun provideArtistAlleyAppDatabase(application: Application) =
-        Room.databaseBuilder(
-            application,
-            ArtistAlleyAppDatabase::class.java,
-            "artistAlleyAppDatabase"
-        )
-            .fallbackToDestructiveMigration(true)
-            .addMigrations(
-                ArtistAlleyAppDatabase.Version_6_7,
-                ArtistAlleyAppDatabase.Version_7_8,
-                ArtistAlleyAppDatabase.Version_8_9,
-            )
-            .build()
 
     @SingletonScope
     @Provides

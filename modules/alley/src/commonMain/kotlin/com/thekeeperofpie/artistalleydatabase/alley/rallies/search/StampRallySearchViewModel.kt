@@ -14,7 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,7 +32,6 @@ import kotlin.random.Random
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
 class StampRallySearchViewModel(
-    private val appFileSystem: AppFileSystem,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val settings: ArtistAlleySettings,
     @Assisted private val filterParams: StateFlow<StampRallySortFilterViewModel.FilterParams>,
@@ -69,7 +67,7 @@ class StampRallySearchViewModel(
         .flow
         .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
-        .map { it.map { StampRallyEntryGridModel.buildFromEntry(appFileSystem, it) } }
+        .map { it.map { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: StampRallyEntryGridModel, favorite: Boolean) {

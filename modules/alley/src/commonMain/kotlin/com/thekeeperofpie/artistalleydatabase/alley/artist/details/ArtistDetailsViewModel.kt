@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -24,13 +23,13 @@ import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ArtistDetailsViewModel(
-    private val appFileSystem: AppFileSystem,
     private val artistEntryDao: ArtistEntryDao,
     private val json: Json,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val route = savedStateHandle.toDestination<Destinations.ArtistDetails>(navigationTypeMap)
+    private val route =
+        savedStateHandle.toDestination<Destinations.ArtistDetails>(navigationTypeMap)
     val id = route.id
     val initialImageIndex = route.imageIndex?.toIntOrNull() ?: 0
 
@@ -43,7 +42,10 @@ class ArtistDetailsViewModel(
             val artist = entryWithStampRallies.artist
             val stampRallies = entryWithStampRallies.stampRallies
 
-            val catalogImages = ArtistAlleyUtils.getImages(appFileSystem, "catalogs", artist.booth)
+            val catalogImages = ArtistAlleyUtils.getImages(
+                folder = ArtistAlleyUtils.Folder.CATALOGS,
+                file = artist.booth,
+            )
             val seriesConfirmed = artist.seriesConfirmed
             val seriesInferred = artist.seriesInferred
                 .toMutableList()

@@ -1,19 +1,21 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.lifecycle.SavedStateHandle
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.StateFlow
 import me.tatarka.inject.annotations.Provides
 
@@ -33,15 +35,12 @@ interface ArtistAlleyComponent{
     val tagMapViewModel: (SavedStateHandle) -> TagMapViewModel
     val favoritesSortFilterViewModel: () -> FavoritesSortFilterViewModel
 
-    @SingletonScope
-    @Provides
-    fun provideArtistEntryDao(database: ArtistAlleyDatabase) = database.artistEntryDao()
+    val ArtistAlleyDatabase.bindArtistEntryDao: ArtistEntryDao
+        @Provides get() = this.artistEntryDao
 
-    @SingletonScope
-    @Provides
-    fun provideStampRallyEntryDao(database: ArtistAlleyDatabase) = database.stampRallyEntryDao()
+    val ArtistAlleyDatabase.bindStampRallyEntryDao: StampRallyEntryDao
+        @Provides get() = this.stampRallyEntryDao
 
-    @SingletonScope
-    @Provides
-    fun provideTagEntryDao(database: ArtistAlleyDatabase) = database.tagEntryDao()
+    val ArtistAlleyDatabase.bindTagEntryDao: TagEntryDao
+        @Provides get() = this.tagEntryDao
 }

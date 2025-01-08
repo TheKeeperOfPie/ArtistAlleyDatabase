@@ -8,6 +8,7 @@ plugins {
     id("library-desktop")
     id("library-inject")
     id("library-web")
+    id("app.cash.sqldelight")
     alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
@@ -33,13 +34,29 @@ kotlin {
             implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.7.3")
             implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.sqldelight.coroutines.extensions)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.sqlite)
+            implementation(libs.sqldelight.android.driver)
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.sqlite.driver)
+            }
         }
         val jvmMain by getting {
             dependencies {
-                implementation(projects.modules.utilsRoom)
-                api(libs.room.paging)
                 implementation(libs.commons.csv)
-                runtimeOnly(libs.room.runtime)
+            }
+        }
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(libs.okio.fakefilesystem)
+                implementation(libs.sqldelight.web.worker.driver.wasm.js)
+                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
+                implementation(npm("@thekeeperofpie/sqldelight-sqljs-worker", file("./sqljs")))
+                implementation(npm("sql.js", "1.12.0"))
             }
         }
     }
@@ -69,6 +86,15 @@ dependencies {
 }
 
 val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
+
+sqldelight {
+    databases {
+        create("AlleySqlDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.alley")
+            generateAsync = true
+        }
+    }
+}
 
 compose.resources {
     publicResClass = true

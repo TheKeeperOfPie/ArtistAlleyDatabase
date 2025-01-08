@@ -29,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.io.asInputStream
 import okio.FileSystem
 import okio.buffer
@@ -39,9 +38,6 @@ fun main() {
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
         val component = ArtistAlleyDesktopComponent::class.create(scope)
-        scope.launch(Dispatchers.IO) {
-            component.dataInitializer.init()
-        }
 
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
