@@ -35,7 +35,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.9.0-alpha07"
+        const val gradle = "8.9.0-alpha08"
     }
 
     object androidx {
@@ -61,7 +61,7 @@ object Versions {
 
     object apache {
         const val commonsCompress = "1.27.1"
-        const val commonsCsv = "1.11.0"
+        const val commonsCsv = "1.12.0"
         const val commonsIo = "2.18.0"
     }
 
@@ -74,7 +74,7 @@ object Versions {
     const val buildKonfig = "0.15.2"
     const val burst = "2.2.0"
     const val coil = "3.0.4"
-    const val colormath = "3.6.0"
+    const val colormath = "3.6.1"
 
     object compose {
         const val core = "1.7.2"
@@ -119,12 +119,12 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.1.0"
+        const val core = "2.1.20-Beta1"
         const val coroutines = "1.10.1"
         const val datetime = "0.6.1"
         const val io = "0.6.0"
         const val ksp = "2.1.20-Beta1-1.0.29"
-        const val serialization = "1.8.0-RC"
+        const val serialization = "1.8.0"
     }
 
     const val kotlinInject = "0.7.2"
@@ -132,18 +132,18 @@ object Versions {
     const val ktor = "3.0.3"
     const val ksoup = "0.2.1"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.43"
+    const val manifoldGraphql = "2024.1.47"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.28.0-b01"
+    const val multiplatformMarkdown = "0.30.0-b02"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
-    const val okio = "3.9.1"
+    const val okio = "3.10.1"
     const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
     const val placeholder = "1.0.8"
     const val sekret = "2.0.0-alpha-07"
