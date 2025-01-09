@@ -36,8 +36,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
@@ -140,9 +140,9 @@ object StampRallyDetailsScreen {
 
                 val body = if (tableMin == null) {
                     stringResource(Res.string.alley_stamp_rally_cost_unknown)
-                } else if (tableMin == 0) {
+                } else if (tableMin == 0L) {
                     stringResource(Res.string.alley_stamp_rally_cost_free)
-                } else if (tableMin == 1) {
+                } else if (tableMin == 1L) {
                     if (tableCount > 0) {
                         stringResource(Res.string.alley_stamp_rally_cost_equation_any, tableCount)
                     } else {

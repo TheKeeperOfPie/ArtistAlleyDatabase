@@ -143,7 +143,7 @@ object StampRallySearchScreen {
                 val totalCost = stampRally.totalCost
                 if (totalCost != null) {
                     Text(
-                        text = if (totalCost == 0) {
+                        text = if (totalCost == 0L) {
                             stringResource(Res.string.alley_stamp_rally_total_free)
                         } else {
                             stringResource(

@@ -1,40 +1,30 @@
 getEntry:
-SELECT * FROM artist_entries WHERE id = :id;
+SELECT * FROM artistEntry WHERE id = :id;
 
 insert:
-INSERT OR REPLACE INTO artist_entries
+INSERT OR REPLACE INTO artistEntry
 VALUES ?;
 
 insertSeriesConnection:
-INSERT OR REPLACE INTO artist_series_connections
+INSERT OR REPLACE INTO artistSeriesConnection
 VALUES ?;
-
-clearSeriesConnections:
-DELETE FROM artist_series_connections;
 
 insertMerchConnection:
-INSERT OR REPLACE INTO artist_merch_connections
+INSERT OR REPLACE INTO artistMerchConnection
 VALUES ?;
 
-clearMerchConnections:
-DELETE FROM artist_merch_connections;
-
 getEntries:
-SELECT * FROM artist_entries;
-
-getEntriesCount:
-SELECT COUNT(*)
-FROM artist_entries;
+SELECT * FROM artistEntry;
 
 getEntriesRandom:
 SELECT *
-FROM artist_entries
-ORDER BY substr(artist_entries.counter * ?, length(artist_entries.counter) + 2);
+FROM artistEntry
+ORDER BY substr(artistEntry.counter * ?, length(artistEntry.counter) + 2);
 
 getStampRallyEntries:
-SELECT stamp_rally_entries.* FROM stamp_rally_artist_connections
-INNER JOIN stamp_rally_entries ON (stamp_rally_artist_connections.stampRallyId = stamp_rally_entries.id)
-WHERE stamp_rally_artist_connections.artistId = :artistId;
+SELECT stampRallyEntry.* FROM stampRallyArtistConnection
+INNER JOIN stampRallyEntry ON (stampRallyArtistConnection.stampRallyId = stampRallyEntry.id)
+WHERE stampRallyArtistConnection.artistId = :artistId;
 
 getBoothsWithFavorites:
-SELECT artist_entries.booth, artist_entries.favorite FROM artist_entries;
+SELECT artistEntry.booth, artistEntry.favorite FROM artistEntry;

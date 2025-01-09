@@ -8,30 +8,24 @@ import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.Merch_entries
-import com.thekeeperofpie.artistalleydatabase.alley.Series_entries
+import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.TagEntryQueries
-import com.thekeeperofpie.artistalleydatabase.alley.dao.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 
-fun SqlCursor.toSeriesEntry() = Series_entries(
+fun SqlCursor.toSeriesEntry() = SeriesEntry(
     getString(0)!!,
     getString(1),
-).toSeriesEntry()
+)
 
-fun Series_entries.toSeriesEntry() = SeriesEntry(name = name, notes = notes)
-fun SeriesEntry.toSqlObject() = Series_entries(name = name, notes = notes)
-
-fun SqlCursor.toMerchEntry() = Merch_entries(
+fun SqlCursor.toMerchEntry() = MerchEntry(
     getString(0)!!,
     getString(1),
-).toMerchEntry()
-
-fun Merch_entries.toMerchEntry() = MerchEntry(name = name, notes = notes)
-fun MerchEntry.toSqlObject() = Merch_entries(name = name, notes = notes)
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TagEntryDao(
@@ -40,12 +34,12 @@ class TagEntryDao(
     private val dao: suspend () -> TagEntryQueries = { database().tagEntryQueries },
 ) {
     fun getSeries(): PagingSource<Int, SeriesEntry> {
-        val statement = "SELECT * FROM series_entries ORDER BY name COLLATE NOCASE"
+        val statement = "SELECT * FROM seriesEntry ORDER BY name COLLATE NOCASE"
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             statement = statement,
-            tableNames = listOf("series_entries"),
+            tableNames = listOf("seriesEntry"),
             mapper = SqlCursor::toSeriesEntry,
         )
     }
@@ -56,12 +50,12 @@ class TagEntryDao(
             .mapLatest { it.awaitAsOne().toInt() }
 
     fun getMerch(): PagingSource<Int, MerchEntry> {
-        val statement = "SELECT * FROM merch_entries ORDER BY name COLLATE NOCASE"
+        val statement = "SELECT * FROM merchEntry ORDER BY name COLLATE NOCASE"
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             statement = statement,
-            tableNames = listOf("merch_entries"),
+            tableNames = listOf("merchEntry"),
             mapper = SqlCursor::toMerchEntry,
         )
     }
@@ -70,24 +64,6 @@ class TagEntryDao(
         flowFromSuspend { dao() }
             .flatMapLatest { it.getMerchSize().asFlow() }
             .mapLatest { it.awaitAsOne().toInt() }
-
-    suspend fun insertSeries(entries: List<SeriesEntry>) =
-        dao().transaction {
-            entries.forEach {
-                dao().insertSeries(it.toSqlObject())
-            }
-        }
-
-    suspend fun insertMerch(entries: List<MerchEntry>) =
-        dao().transaction {
-            entries.forEach {
-                dao().insertMerch(it.toSqlObject())
-            }
-        }
-
-    suspend fun clearSeries() = dao().clearSeries()
-
-    suspend fun clearMerch() = dao().clearMerch()
 
     fun searchSeries(query: String): PagingSource<Int, SeriesEntry> {
         val options = query.split(Regex("\\s+"))
@@ -99,16 +75,16 @@ class TagEntryDao(
                 )
             }
 
-        val sortSuffix = "\nORDER BY series_entries_fts.name COLLATE NOCASE"
+        val sortSuffix = "\nORDER BY seriesEntry_fts.name COLLATE NOCASE"
         val optionsArguments = options.map { it.joinToString(separator = " OR ") }
         val bindArguments = optionsArguments.filterNot { it.isEmpty() }
 
         val statement = bindArguments.joinToString("\nINTERSECT\n") {
             """
                 SELECT *
-                FROM series_entries
-                JOIN series_entries_fts ON series_entries.name = series_entries_fts.name
-                WHERE series_entries_fts MATCH ?
+                FROM seriesEntry
+                JOIN seriesEntry_fts ON seriesEntry.name = seriesEntry_fts.name
+                WHERE seriesEntry_fts MATCH ?
                 """.trimIndent()
         } + sortSuffix
 
@@ -116,7 +92,7 @@ class TagEntryDao(
             driver = driver,
             database = database,
             statement = statement,
-            tableNames = listOf("series_entries", "series_entries_fts"),
+            tableNames = listOf("seriesEntry", "seriesEntry_fts"),
             parameters = bindArguments,
             mapper = SqlCursor::toSeriesEntry,
         )
@@ -132,16 +108,16 @@ class TagEntryDao(
                 )
             }
 
-        val sortSuffix = "\nORDER BY merch_entries_fts.name COLLATE NOCASE"
+        val sortSuffix = "\nORDER BY merchEntry_fts.name COLLATE NOCASE"
         val optionsArguments = options.map { it.joinToString(separator = " OR ") }
         val bindArguments = optionsArguments.filterNot { it.isEmpty() }
 
         val statement = bindArguments.joinToString("\nINTERSECT\n") {
             """
                 SELECT *
-                FROM merch_entries
-                JOIN merch_entries_fts ON merch_entries.name = merch_entries_fts.name
-                WHERE merch_entries_fts MATCH ?
+                FROM merchEntry
+                JOIN merchEntry_fts ON merchEntry.name = merchEntry_fts.name
+                WHERE merchEntry_fts MATCH ?
                 """.trimIndent()
         } + sortSuffix
 
@@ -149,7 +125,7 @@ class TagEntryDao(
             driver = driver,
             database = database,
             statement = statement,
-            tableNames = listOf("merch_entries", "merch_entries_fts"),
+            tableNames = listOf("merchEntry", "merchEntry_fts"),
             parameters = bindArguments,
             mapper = SqlCursor::toMerchEntry,
         )

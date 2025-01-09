@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import app.cash.paging.PagingSource
 import app.cash.sqldelight.async.coroutines.awaitAsList
-import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOne
@@ -10,75 +9,20 @@ import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistBoothWithFavorite
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryQueries
-import com.thekeeperofpie.artistalleydatabase.alley.Artist_entries
-import com.thekeeperofpie.artistalleydatabase.alley.Artist_merch_connections
-import com.thekeeperofpie.artistalleydatabase.alley.Artist_series_connections
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.dao.DaoUtils
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistMerchConnection
-import com.thekeeperofpie.artistalleydatabase.alley.tags.ArtistSeriesConnection
+import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
-
-fun Artist_entries.toArtistEntry(json: Json) = ArtistEntry(
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links.let(json::decodeFromString),
-    storeLinks = storeLinks.let(json::decodeFromString),
-    catalogLinks = catalogLinks.let(json::decodeFromString),
-    driveLink = driveLink,
-    favorite = favorite,
-    ignored = ignored,
-    notes = notes,
-    seriesInferred = seriesInferred.let(json::decodeFromString),
-    seriesConfirmed = seriesConfirmed.let(json::decodeFromString),
-    merchInferred = merchInferred.let(json::decodeFromString),
-    merchConfirmed = merchConfirmed.let(json::decodeFromString),
-    counter = counter.toInt(),
-)
-
-fun ArtistEntry.toSqlObject(json: Json) = Artist_entries(
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links.let(json::encodeToString),
-    storeLinks = storeLinks.let(json::encodeToString),
-    catalogLinks = catalogLinks.let(json::encodeToString),
-    driveLink = driveLink,
-    favorite = favorite,
-    ignored = ignored,
-    notes = notes,
-    seriesInferred = seriesInferred.let(json::encodeToString),
-    seriesConfirmed = seriesConfirmed.let(json::encodeToString),
-    merchInferred = merchInferred.let(json::encodeToString),
-    merchConfirmed = merchConfirmed.let(json::encodeToString),
-    counter = counter.toLong(),
-)
-
-fun ArtistSeriesConnection.toSqlObject() = Artist_series_connections(
-    artistId = artistId,
-    seriesId = seriesId,
-    confirmed = confirmed,
-)
-
-fun ArtistMerchConnection.toSqlObject() = Artist_merch_connections(
-    artistId = artistId,
-    merchId = merchId,
-    confirmed = confirmed,
-)
 
 fun GetBoothsWithFavorites.toArtistBoothWithFavorite() = ArtistBoothWithFavorite(
     booth = booth,
@@ -89,29 +33,21 @@ fun GetBoothsWithFavorites.toArtistBoothWithFavorite() = ArtistBoothWithFavorite
 class ArtistEntryDao(
     private val driver: SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val json: Json,
     private val dao: suspend () -> ArtistEntryQueries = { database().artistEntryQueries },
 ) {
-    suspend fun getEntry(id: String) =
-        dao().getEntry(id)
-            .awaitAsOneOrNull()
-            ?.toArtistEntry(json)
+    suspend fun getEntry(id: String) = dao().getEntry(id).awaitAsOneOrNull()
 
     fun getEntryFlow(id: String) =
         flowFromSuspend { dao() }
             .flatMapLatest { it.getEntry(id).asFlow() }
             .mapToOne(PlatformDispatchers.IO)
-            .mapLatest { it.toArtistEntry(json) }
 
     suspend fun getEntryWithStampRallies(id: String) =
         dao().transactionWithResult {
             val artist = getEntry(id) ?: return@transactionWithResult null
             val stampRallies = dao().getStampRallyEntries(id).awaitAsList()
-                .map { it.toStampRallyEntry(json) }
             ArtistWithStampRalliesEntry(artist, stampRallies)
         }
-
-    suspend fun getEntriesSize() = dao().getEntriesCount().awaitAsOne().toInt()
 
     fun getBoothsWithFavorite() =
         flowFromSuspend { dao() }
@@ -124,28 +60,9 @@ class ArtistEntryDao(
     suspend fun insertEntries(entries: List<ArtistEntry>) =
         dao().transaction {
             entries.forEach {
-                dao().insert(it.toSqlObject(json))
+                dao().insert(it)
             }
         }
-
-    suspend fun insertSeriesConnections(entries: List<ArtistSeriesConnection>) =
-        dao().transaction {
-            entries.forEach {
-                dao().insertSeriesConnection(it.toSqlObject())
-            }
-        }
-
-    suspend fun clearSeriesConnections() = dao().clearSeriesConnections()
-
-    suspend fun clearMerchConnections() = dao().clearMerchConnections()
-
-    suspend fun insertMerchConnections(entries: List<ArtistMerchConnection>) {
-        dao().transaction {
-            entries.forEach {
-                dao().insertMerchConnection(it.toSqlObject())
-            }
-        }
-    }
 
     fun search(
         query: String,
@@ -177,27 +94,27 @@ class ArtistEntryDao(
             }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
-        val basicSortSuffix = "\nORDER BY artist_entries_fts.FIELD COLLATE NOCASE $ascending"
+        val basicSortSuffix = "\nORDER BY artistEntry_fts.FIELD COLLATE NOCASE $ascending"
         val sortSuffix = when (filterParams.sortOption) {
             ArtistSearchSortOption.BOOTH -> basicSortSuffix.replace("FIELD", "booth")
             ArtistSearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "name")
             ArtistSearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
         }
-        val selectSuffix = (", substr(artist_entries.counter * 0.${searchQuery.randomSeed}," +
-                " length(artist_entries.counter) + 2) as orderIndex")
+        val selectSuffix = (", substr(artistEntry.counter * 0.${searchQuery.randomSeed}," +
+                " length(artistEntry.counter) + 2) as orderIndex")
             .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
             .orEmpty()
 
         val lockedSuffix = if (searchQuery.lockedSeries != null) {
-            "artist_entries.id IN (SELECT artistId from artist_series_connections WHERE " +
+            "artistEntry.id IN (SELECT artistId from artist_series_connections WHERE " +
                     (if (filterParams.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND" else "") +
                     " artist_series_connections.seriesId == " +
-                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries!!)})"
+                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
         } else if (searchQuery.lockedMerch != null) {
-            "artist_entries.id IN (SELECT artistId from artist_merch_connections WHERE " +
+            "artistEntry.id IN (SELECT artistId from artist_merch_connections WHERE " +
                     (if (filterParams.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND" else "") +
                     " artist_merch_connections.merchId == " +
-                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch!!)})"
+                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
         } else {
             null
         }
@@ -205,8 +122,8 @@ class ArtistEntryDao(
         if (options.isEmpty() && filterParamsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
                 SELECT *$selectSuffix
-                FROM artist_entries
-                JOIN artist_entries_fts ON artist_entries.id = artist_entries_fts.id
+                FROM artistEntry
+                JOIN artistEntry_fts ON artistEntry.id = artistEntry_fts.id
                 ${if (lockedSuffix == null) "" else "WHERE $lockedSuffix"}
                 """.trimIndent() + sortSuffix
 
@@ -214,26 +131,26 @@ class ArtistEntryDao(
                 driver = driver,
                 database = database,
                 statement = statement,
-                tableNames = listOf("artist_entries"),
+                tableNames = listOf("artistEntry"),
             ) {
-                Artist_entries(
+                ArtistEntry(
                     it.getString(0)!!,
                     it.getString(1)!!,
                     it.getString(2)!!,
                     it.getString(3),
-                    it.getString(4)!!,
-                    it.getString(5)!!,
-                    it.getString(6)!!,
+                    it.getString(4)!!.let(Json::decodeFromString),
+                    it.getString(5)!!.let(Json::decodeFromString),
+                    it.getString(6)!!.let(Json::decodeFromString),
                     it.getString(7),
                     it.getBoolean(8)!!,
                     it.getBoolean(9)!!,
                     it.getString(10),
-                    it.getString(11)!!,
-                    it.getString(12)!!,
-                    it.getString(13)!!,
-                    it.getString(14)!!,
+                    it.getString(11)!!.let(Json::decodeFromString),
+                    it.getString(12)!!.let(Json::decodeFromString),
+                    it.getString(13)!!.let(Json::decodeFromString),
+                    it.getString(14)!!.let(Json::decodeFromString),
                     it.getLong(15)!!
-                ).toArtistEntry(json)
+                )
             }
         }
 
@@ -250,9 +167,9 @@ class ArtistEntryDao(
             (bindArguments + filterParamsQueryPieces).joinToString("\nINTERSECT\n") {
                 """
                 SELECT *$selectSuffix
-                FROM artist_entries
-                JOIN artist_entries_fts ON artist_entries.id = artist_entries_fts.id
-                WHERE artist_entries_fts MATCH ?
+                FROM artistEntry
+                JOIN artistEntry_fts ON artistEntry.id = artistEntry_fts.id
+                WHERE artistEntry_fts MATCH ?
                 ${if (lockedSuffix == null) "" else "AND $lockedSuffix"}
                 """.trimIndent()
             } + sortSuffix
@@ -261,43 +178,27 @@ class ArtistEntryDao(
             driver = driver,
             database = database,
             statement = statement,
-            tableNames = listOf("artist_entries", "artist_entries_fts"),
+            tableNames = listOf("artistEntry", "artistEntry_fts"),
             parameters = bindArguments + filterParamsQueryPieces
         ) {
-            Artist_entries(
+            ArtistEntry(
                 it.getString(0)!!,
                 it.getString(1)!!,
                 it.getString(2)!!,
                 it.getString(3),
-                it.getString(4)!!,
-                it.getString(5)!!,
-                it.getString(6)!!,
+                it.getString(4)!!.let(Json::decodeFromString),
+                it.getString(5)!!.let(Json::decodeFromString),
+                it.getString(6)!!.let(Json::decodeFromString),
                 it.getString(7),
                 it.getBoolean(8)!!,
                 it.getBoolean(9)!!,
                 it.getString(10),
-                it.getString(11)!!,
-                it.getString(12)!!,
-                it.getString(13)!!,
-                it.getString(14)!!,
+                it.getString(11)!!.let(Json::decodeFromString),
+                it.getString(12)!!.let(Json::decodeFromString),
+                it.getString(13)!!.let(Json::decodeFromString),
+                it.getString(14)!!.let(Json::decodeFromString),
                 it.getLong(15)!!
-            ).toArtistEntry(json)
-        }
-    }
-
-    suspend fun insertUpdatedEntries(entries: Collection<Triple<ArtistEntry, List<ArtistSeriesConnection>, List<ArtistMerchConnection>>>) {
-        dao().transaction {
-            val mergedEntries = entries.map { (entry, _) ->
-                val existingEntry = getEntry(entry.id)
-                entry.copy(
-                    favorite = existingEntry?.favorite == true,
-                    ignored = existingEntry?.ignored == true,
-                )
-            }
-
-            insertEntries(mergedEntries)
-            insertSeriesConnections(entries.flatMap { it.second })
-            insertMerchConnections(entries.flatMap { it.third })
+            )
         }
     }
 

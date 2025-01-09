@@ -1,3 +1,5 @@
+
+import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -9,13 +11,13 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
-import com.thekeeperofpie.artistalleydatabase.alley.Artist_entries
-import com.thekeeperofpie.artistalleydatabase.alley.Artist_merch_connections
-import com.thekeeperofpie.artistalleydatabase.alley.Artist_series_connections
-import com.thekeeperofpie.artistalleydatabase.alley.Merch_entries
-import com.thekeeperofpie.artistalleydatabase.alley.Series_entries
-import com.thekeeperofpie.artistalleydatabase.alley.Stamp_rally_artist_connections
-import com.thekeeperofpie.artistalleydatabase.alley.Stamp_rally_entries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistMerchConnection
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistSeriesConnection
+import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyArtistConnection
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -88,6 +90,13 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         List::class.asClassName().parameterizedBy(composeFileType)
     private val nullableIntType = Int::class.asTypeName().copy(nullable = true)
 
+    private val listStringAdapter = object : ColumnAdapter<List<String>, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<List<String>>(databaseValue)
+
+        override fun encode(value: List<String>) = Json.encodeToString(value)
+    }
+
     @TaskAction
     fun process() {
         outputResources.get().asFile.deleteRecursively()
@@ -98,7 +107,22 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         } else {
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
             BuildLogicDatabase.Schema.create(driver)
-            val database = BuildLogicDatabase(driver)
+            val database = BuildLogicDatabase(
+                driver = driver,
+                artistEntryAdapter = ArtistEntry.Adapter(
+                    linksAdapter = listStringAdapter,
+                    storeLinksAdapter = listStringAdapter,
+                    catalogLinksAdapter = listStringAdapter,
+                    seriesInferredAdapter = listStringAdapter,
+                    seriesConfirmedAdapter = listStringAdapter,
+                    merchInferredAdapter = listStringAdapter,
+                    merchConfirmedAdapter = listStringAdapter,
+                ),
+                stampRallyEntryAdapter = StampRallyEntry.Adapter(
+                    tablesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
+                ),
+            )
 
             parseArtists(database)
             parseTags(database)
@@ -443,7 +467,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     )
 
     private fun parseArtists(database: BuildLogicDatabase) {
-        val json = Json.Default
         open(ARTISTS_CSV_NAME).use {
             var counter = 1L
             read(it)
@@ -477,19 +500,19 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
                     val notes = it["Notes"]
 
-                    val artistEntry = Artist_entries(
+                    val artistEntry = ArtistEntry(
                         id = booth,
                         booth = booth,
                         name = artist,
                         summary = summary,
-                        links = links.let(json::encodeToString),
-                        storeLinks = storeLinks.let(json::encodeToString),
-                        catalogLinks = catalogLinks.let(json::encodeToString),
+                        links = links,
+                        storeLinks = storeLinks,
+                        catalogLinks = catalogLinks,
                         driveLink = driveLink,
-                        seriesInferred = seriesInferred.let(json::encodeToString),
-                        seriesConfirmed = seriesConfirmed.let(json::encodeToString),
-                        merchInferred = merchInferred.let(json::encodeToString),
-                        merchConfirmed = merchConfirmed.let(json::encodeToString),
+                        seriesInferred = seriesInferred,
+                        seriesConfirmed = seriesConfirmed,
+                        merchInferred = merchInferred,
+                        merchConfirmed = merchConfirmed,
                         notes = notes,
                         counter = counter++,
                         favorite = false,
@@ -499,7 +522,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     val seriesConnectionsInferred =
                         (seriesInferred - seriesConfirmed.toSet())
                             .map {
-                                Artist_series_connections(
+                                ArtistSeriesConnection(
                                     artistId = booth,
                                     seriesId = it,
                                     confirmed = false
@@ -507,7 +530,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                             }
                     val seriesConnectionsConfirmed = seriesConfirmed
                         .map {
-                            Artist_series_connections(
+                            ArtistSeriesConnection(
                                 artistId = booth,
                                 seriesId = it,
                                 confirmed = true
@@ -518,7 +541,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
                     val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
                         .map {
-                            Artist_merch_connections(
+                            ArtistMerchConnection(
                                 artistId = booth,
                                 merchId = it,
                                 confirmed = false
@@ -526,7 +549,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         }
                     val merchConnectionsConfirmed = merchConfirmed
                         .map {
-                            Artist_merch_connections(
+                            ArtistMerchConnection(
                                 artistId = booth,
                                 merchId = it,
                                 confirmed = true
@@ -560,7 +583,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     // Series, Notes
                     val name = it["Series"]!!
                     val notes = it["Notes"]
-                    Series_entries(name = name, notes = notes)
+                    SeriesEntry(name = name, notes = notes)
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
@@ -575,7 +598,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     // Merch, Notes
                     val name = it["Merch"]!!
                     val notes = it["Notes"]
-                    Merch_entries(name = name, notes = notes)
+                    MerchEntry(name = name, notes = notes)
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
@@ -587,7 +610,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     }
 
     private fun parseStampRallies(database: BuildLogicDatabase) {
-        val json = Json.Default
         val stampRallyEntryQueries = database.stampRallyEntryQueries
         open(STAMP_RALLIES_CSV_NAME).use {
             var counter = 1L
@@ -618,14 +640,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         .filter { it.contains("-") }
                         .map { it.substringBefore("-") }
                         .map(String::trim)
-                        .map { Stamp_rally_artist_connections(stampRallyId, it) }
+                        .map { StampRallyArtistConnection(stampRallyId, it) }
 
-                    Stamp_rally_entries(
+                    StampRallyEntry(
                         id = stampRallyId,
                         fandom = theme,
-                        tables = tables.let(json::encodeToString),
+                        tables = tables,
                         hostTable = hostTable,
-                        links = links.let(json::encodeToString),
+                        links = links,
                         tableMin = tableMin?.toLong(),
                         totalCost = (if (tableMin == 0) 0 else totalCost)?.toLong(),
                         prizeLimit = prizeLimit?.toLong(),

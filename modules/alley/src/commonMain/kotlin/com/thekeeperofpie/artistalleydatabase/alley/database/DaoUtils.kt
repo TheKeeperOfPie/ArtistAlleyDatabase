@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.dao
+package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import app.cash.paging.PagingSource
 import app.cash.sqldelight.Query
@@ -22,7 +22,7 @@ object DaoUtils {
             throw IllegalArgumentException("Cannot queryPagingSource with $statement")
         }
         val countStatement = statement.replaceFirst("SELECT *", "SELECT COUNT(*)")
-        val countQuery = DaoUtils.makeQuery(
+        val countQuery = makeQuery(
             driver = driver,
             statement = countStatement,
             tableNames = tableNames,

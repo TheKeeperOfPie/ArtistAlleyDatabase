@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.dao
+package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import app.cash.paging.PagingSource
 import app.cash.paging.PagingSourceLoadParams

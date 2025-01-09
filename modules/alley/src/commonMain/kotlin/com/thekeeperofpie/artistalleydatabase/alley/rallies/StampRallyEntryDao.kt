@@ -6,58 +6,21 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryQueries
-import com.thekeeperofpie.artistalleydatabase.alley.Stamp_rally_artist_connections
-import com.thekeeperofpie.artistalleydatabase.alley.Stamp_rally_entries
-import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.dao.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import kotlinx.serialization.json.Json
 
-fun Stamp_rally_entries.toStampRallyEntry(json: Json) = StampRallyEntry(
-    id = id,
-    fandom = fandom,
-    hostTable = hostTable,
-    tables = tables.let(json::decodeFromString),
-    links = links.let(json::decodeFromString),
-    tableMin = tableMin?.toInt(),
-    totalCost = totalCost?.toInt(),
-    prizeLimit = prizeLimit?.toInt(),
-    favorite = favorite,
-    ignored = ignored,
-    notes = notes,
-    counter = counter.toInt(),
-)
-
-fun StampRallyEntry.toSqlObject(json: Json) = Stamp_rally_entries(
-    id = id,
-    fandom = fandom,
-    hostTable = hostTable,
-    tables = tables.let(json::encodeToString),
-    links = links.let(json::encodeToString),
-    tableMin = tableMin?.toLong(),
-    totalCost = totalCost?.toLong(),
-    prizeLimit = prizeLimit?.toLong(),
-    favorite = favorite,
-    ignored = ignored,
-    notes = notes,
-    counter = counter.toLong(),
-)
-
-fun StampRallyArtistConnection.toSqlObject() = Stamp_rally_artist_connections(
-    stampRallyId = stampRallyId,
-    artistId = artistId,
-)
-
-fun SqlCursor.toStampRallyEntry(json: Json) = Stamp_rally_entries(
+fun SqlCursor.toStampRallyEntry(json: Json) = StampRallyEntry(
     id = getString(0)!!,
     fandom = getString(1)!!,
     hostTable = getString(2)!!,
-    tables = getString(3)!!,
-    links = getString(4)!!,
+    tables = getString(3)!!.let(json::decodeFromString),
+    links = getString(4)!!.let(json::decodeFromString),
     tableMin = getLong(5),
     totalCost = getLong(6),
     prizeLimit = getLong(7),
@@ -65,7 +28,7 @@ fun SqlCursor.toStampRallyEntry(json: Json) = Stamp_rally_entries(
     ignored = getBoolean(9)!!,
     notes = getString(10),
     counter = getLong(11)!!,
-).toStampRallyEntry(json)
+)
 
 class StampRallyEntryDao(
     private val driver: SqlDriver,
@@ -73,16 +36,12 @@ class StampRallyEntryDao(
     private val json: Json,
     private val dao: suspend () -> StampRallyEntryQueries = { database().stampRallyEntryQueries },
 ) {
-    suspend fun getEntry(id: String) =
-        dao().getEntry(id)
-            .awaitAsOneOrNull()
-            ?.toStampRallyEntry(json)
+    suspend fun getEntry(id: String) = dao().getEntry(id).awaitAsOneOrNull()
 
     suspend fun getEntryWithArtists(id: String) =
         dao().transactionWithResult {
             val stampRally = getEntry(id) ?: return@transactionWithResult null
             val artists = dao().getArtistEntries(id).awaitAsList()
-                .map { it.toArtistEntry(json) }
             StampRallyWithArtistsEntry(stampRally, artists)
         }
 
@@ -92,23 +51,9 @@ class StampRallyEntryDao(
     suspend fun insertEntries(entries: List<StampRallyEntry>) =
         dao().transaction {
             entries.forEach {
-                dao().insert(it.toSqlObject(json))
+                dao().insert(it)
             }
         }
-
-    suspend fun clearEntries() = dao().clear()
-
-    suspend fun clearConnections() = dao().clearArtistConnections()
-
-    suspend fun insertConnections(entries: List<StampRallyArtistConnection>) =
-        dao().transaction {
-            entries.forEach {
-                dao().insertArtistConnection(it.toSqlObject())
-            }
-        }
-
-    suspend fun retainIds(ids: List<String>) =
-        dao().retainIds(ids.joinToString(separator = ","))
 
     fun search(
         query: String,
@@ -131,7 +76,7 @@ class StampRallyEntryDao(
             }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
-        val basicSortSuffix = "\nORDER BY stamp_rally_entries.FIELD $ascending"
+        val basicSortSuffix = "\nORDER BY stampRallyEntry.FIELD $ascending"
         val sortSuffix = when (filterParams.sortOption) {
             StampRallySearchSortOption.MAIN_TABLE -> basicSortSuffix.replace(
                 "FIELD",
@@ -152,22 +97,22 @@ class StampRallyEntryDao(
             ) + " NULLS LAST"
         }
         val selectSuffix =
-            (", substr(stamp_rally_entries.counter * 0.${searchQuery.randomSeed}," +
-                    " length(stamp_rally_entries.counter) + 2) as orderIndex")
+            (", substr(stampRallyEntry.counter * 0.${searchQuery.randomSeed}," +
+                    " length(stampRallyEntry.counter) + 2) as orderIndex")
                 .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
                 .orEmpty()
 
         if (options.isEmpty() && filterParamsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
                 SELECT *$selectSuffix
-                FROM stamp_rally_entries
+                FROM stampRallyEntry
                 """.trimIndent() + sortSuffix
 
             return DaoUtils.queryPagingSource(
                 driver = driver,
                 database = database,
                 statement = statement,
-                tableNames = listOf("stamp_rally_entries"),
+                tableNames = listOf("stampRallyEntry"),
                 mapper = { it.toStampRallyEntry(json) },
             )
         }
@@ -183,9 +128,9 @@ class StampRallyEntryDao(
         val statement = (bindArguments + filterParamsQueryPieces).joinToString("\nINTERSECT\n") {
             """
                 SELECT *$selectSuffix
-                FROM stamp_rally_entries
-                JOIN stamp_rally_entries_fts ON stamp_rally_entries.id = stamp_rally_entries_fts.id
-                WHERE stamp_rally_entries_fts MATCH ?
+                FROM stampRallyEntry
+                JOIN stampRallyEntry_fts ON stampRallyEntry.id = stampRallyEntry_fts.id
+                WHERE stampRallyEntry_fts MATCH ?
                 """.trimIndent()
         } + sortSuffix
 
@@ -193,25 +138,10 @@ class StampRallyEntryDao(
             driver = driver,
             database = database,
             statement = statement,
-            tableNames = listOf("stamp_rally_entries", "stamp_rally_entries_fts"),
+            tableNames = listOf("stampRallyEntry", "stampRallyEntry_fts"),
             parameters = bindArguments + filterParamsQueryPieces,
             mapper = { it.toStampRallyEntry(json) },
         )
-    }
-
-    suspend fun insertUpdatedEntries(entries: Collection<Pair<StampRallyEntry, List<StampRallyArtistConnection>>>) {
-        dao().transaction {
-            val mergedEntries = entries.map { (entry, _) ->
-                val existingEntry = getEntry(entry.id)
-                entry.copy(
-                    favorite = existingEntry?.favorite == true,
-                    ignored = existingEntry?.ignored == true,
-                )
-            }
-
-            insertEntries(mergedEntries)
-            insertConnections(entries.flatMap { it.second })
-        }
     }
 
     private fun filterParamsQuery(

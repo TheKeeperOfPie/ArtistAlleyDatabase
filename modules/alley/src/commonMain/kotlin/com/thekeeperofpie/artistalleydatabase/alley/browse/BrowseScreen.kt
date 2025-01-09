@@ -45,8 +45,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_se
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
-import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
