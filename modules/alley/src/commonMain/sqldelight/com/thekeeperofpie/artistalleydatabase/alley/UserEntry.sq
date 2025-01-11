@@ -1,0 +1,20 @@
+insertArtistUserEntry:
+INSERT OR REPLACE INTO artistUserEntry
+VALUES ?;
+
+insertStampRallyUserEntry:
+INSERT OR REPLACE INTO stampRallyUserEntry
+VALUES ?;
+
+getArtistUserEntry:
+SELECT * FROM artistUserEntry
+WHERE artistId = :artistId;
+
+getBoothsWithFavorites:
+SELECT artistEntry.id, artistEntry.booth, artistUserEntry.favorite FROM artistEntry
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry.id = artistUserEntry.artistId;
+
+getStampRallyUserEntry:
+SELECT * FROM stampRallyUserEntry
+WHERE stampRallyId = :stampRallyId;

@@ -7,10 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistBoothWithFavorite
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,15 +24,16 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class MapViewModel(
     private val artistEntryDao: ArtistEntryDao,
+    private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
 ) : ViewModel() {
     var gridData by mutableStateOf(LoadingResult.loading<GridData>())
-    private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
+    private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
             // TODO: This is very inefficient to respond to favorites updates
-            artistEntryDao.getBoothsWithFavorite()
+            userEntryDao.getBoothsWithFavorites()
                 .map(::mapBooths)
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { tables ->
@@ -47,12 +49,12 @@ class MapViewModel(
 
         viewModelScope.launch(CustomDispatchers.IO) {
             mutationUpdates.collectLatest {
-                artistEntryDao.insertEntries(it)
+                userEntryDao.insertArtistUserEntry(it)
             }
         }
     }
 
-    private fun mapBooths(booths: List<ArtistBoothWithFavorite>): List<Table> {
+    private fun mapBooths(booths: List<GetBoothsWithFavorites>): List<Table> {
         val letterToBooths = booths.groupBy { it.booth.take(1) }.toList().sortedBy { it.first }
         var currentIndex = 0
         val showRandomCatalogImage = settings.showRandomCatalogImage.value
@@ -73,7 +75,7 @@ class MapViewModel(
                     section = Table.Section.fromTableNumber(tableNumber),
                     image = imageIndex?.let(images::getOrNull),
                     imageIndex = imageIndex,
-                    favorite = it.favorite,
+                    favorite = it.favorite == true,
                     gridX = currentIndex,
                     // There's a physical gap not accounted for in the numbers between 41 and 42
                     gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
@@ -89,11 +91,11 @@ class MapViewModel(
     }
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.value.copy(favorite = favorite))
+        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
     }
 
     fun onIgnoredToggle(entry: ArtistEntryGridModel, ignored: Boolean) {
-        mutationUpdates.tryEmit(entry.value.copy(ignored = ignored))
+        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
     suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.booth)?.let {

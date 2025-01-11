@@ -1,0 +1,27 @@
+insertArtist:
+INSERT OR REPLACE INTO artistEntry
+VALUES ?;
+
+insertSeriesConnection:
+INSERT OR REPLACE INTO artistSeriesConnection
+VALUES ?;
+
+insertMerchConnection:
+INSERT OR REPLACE INTO artistMerchConnection
+VALUES ?;
+
+insertStampRally:
+INSERT OR REPLACE INTO stampRallyEntry
+VALUES ?;
+
+insertArtistConnection:
+INSERT OR REPLACE INTO stampRallyArtistConnection
+VALUES ?;
+
+insertSeries:
+INSERT OR REPLACE INTO seriesEntry
+VALUES ?;
+
+insertMerch:
+INSERT OR REPLACE INTO merchEntry
+VALUES ?;

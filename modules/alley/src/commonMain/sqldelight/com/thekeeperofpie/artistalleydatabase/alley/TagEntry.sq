@@ -11,14 +11,6 @@ SELECT COUNT(*) FROM seriesEntry;
 getMerchSize:
 SELECT COUNT(*) FROM merchEntry;
 
-insertSeries:
-INSERT OR REPLACE INTO seriesEntry
-VALUES ?;
-
-insertMerch:
-INSERT OR REPLACE INTO merchEntry
-VALUES ?;
-
 getBoothsBySeriesId:
 SELECT artistEntry.booth FROM artistSeriesConnection
 INNER JOIN artistEntry ON (artistSeriesConnection.artistId = artistEntry.id)

@@ -8,33 +8,36 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 class StampRallyEntryGridModel(
-    val value: StampRallyEntry,
+    val stampRally: StampRallyEntry,
+    val userEntry: StampRallyUserEntry,
     override val images: List<CatalogImage>,
     override val placeholderText: String,
 ) : SearchScreen.SearchEntryModel {
 
-    override val id = EntryId("artist_entry", value.id)
+    override val id = EntryId("artist_entry", stampRally.id)
     override val imageUri: Uri? = null
     override val imageWidth get() = 0
     override val imageHeight get() = 0
     override val imageWidthToHeightRatio get() = 1f
 
-    override var favorite by mutableStateOf(value.favorite)
-    override var ignored by mutableStateOf(value.ignored)
+    override var favorite by mutableStateOf(userEntry.favorite)
+    override var ignored by mutableStateOf(userEntry.ignored)
 
-    override val booth get() = value.hostTable
+    override val booth get() = stampRally.hostTable
 
     companion object {
-        fun buildFromEntry(entry: StampRallyEntry) = StampRallyEntryGridModel(
-            value = entry,
+        fun buildFromEntry(entry: StampRallyWithUserData) = StampRallyEntryGridModel(
+            stampRally = entry.stampRally,
+            userEntry = entry.userEntry,
             images = ArtistAlleyUtils.getImages(
                 folder = ArtistAlleyUtils.Folder.RALLIES,
-                file = entry.id.replace("-", " - "),
+                file = entry.stampRally.id.replace("-", " - "),
             ),
-            placeholderText = entry.fandom,
+            placeholderText = entry.stampRally.fandom,
         )
     }
 }

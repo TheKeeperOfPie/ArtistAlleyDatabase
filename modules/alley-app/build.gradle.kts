@@ -119,7 +119,6 @@ kotlin {
     wasmJs {
         moduleName = "ArtistAlley"
         browser {
-            val projectDirPath = project.projectDir.path
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
                 devServer = devServer ?: KotlinWebpackConfig.DevServer()
@@ -136,7 +135,7 @@ kotlin {
             }
         }
         freeCompilerArgs.add("-Xcontext-receivers")
-//        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
+        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
     sourceSets {

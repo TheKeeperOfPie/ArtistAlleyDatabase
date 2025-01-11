@@ -38,7 +38,7 @@ class StampRallyMapViewModel(
                 .map { it.booth }
                 .toSet()
             withContext(CustomDispatchers.Main) {
-                stampRally = entry.stampRally
+                stampRally = entry.stampRally.stampRally
                 artistTables = tables
             }
         }

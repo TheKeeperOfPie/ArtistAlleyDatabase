@@ -8,23 +8,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ArtistDetailsViewModel(
     private val artistEntryDao: ArtistEntryDao,
-    private val json: Json,
+    private val userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -39,7 +40,9 @@ class ArtistDetailsViewModel(
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(id) ?: return@launch
-            val artist = entryWithStampRallies.artist
+            val artistWithUserData = entryWithStampRallies.artist
+            val artist = artistWithUserData.artist
+            val userEntry = artistWithUserData.userEntry
             val stampRallies = entryWithStampRallies.stampRallies
 
             val catalogImages = ArtistAlleyUtils.getImages(
@@ -53,6 +56,7 @@ class ArtistDetailsViewModel(
             withContext(CustomDispatchers.Main) {
                 entry = Entry(
                     artist = artist,
+                    userEntry = userEntry,
                     seriesInferred = seriesInferred,
                     seriesConfirmed = seriesConfirmed,
                     stampRallies = stampRallies,
@@ -66,16 +70,17 @@ class ArtistDetailsViewModel(
         val entry = entry ?: return
         entry.favorite = favorite
         viewModelScope.launch(CustomDispatchers.IO) {
-            artistEntryDao.insertEntries(entry.artist.copy(favorite = favorite))
+            userEntryDao.insertArtistUserEntry(entry.userEntry.copy(favorite = favorite))
         }
     }
 
     data class Entry(
         val artist: ArtistEntry,
+        val userEntry: ArtistUserEntry,
         val seriesInferred: List<String>,
         val seriesConfirmed: List<String>,
         val stampRallies: List<StampRallyEntry>,
     ) {
-        var favorite by mutableStateOf(artist.favorite)
+        var favorite by mutableStateOf(userEntry.favorite)
     }
 }

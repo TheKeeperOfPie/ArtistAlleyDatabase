@@ -6,10 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -25,6 +26,7 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class ArtistMapViewModel(
     artistEntryDao: ArtistEntryDao,
+    userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -35,7 +37,7 @@ class ArtistMapViewModel(
     var artist by mutableStateOf<ArtistEntryGridModel?>(null)
         private set
 
-    private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
+    private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
@@ -52,12 +54,12 @@ class ArtistMapViewModel(
         }
         viewModelScope.launch(CustomDispatchers.IO) {
             mutationUpdates.collectLatest {
-                artistEntryDao.insertEntries(it)
+                userEntryDao.insertArtistUserEntry(it)
             }
         }
     }
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.value.copy(favorite = favorite))
+        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
     }
 }

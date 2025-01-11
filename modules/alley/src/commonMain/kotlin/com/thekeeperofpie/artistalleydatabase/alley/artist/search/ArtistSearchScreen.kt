@@ -97,7 +97,7 @@ object ArtistSearchScreen {
                             || viewModel.lockedSeries != null
                             || viewModel.lockedMerch != null
                 },
-                itemToSharedElementId = { it.value.id },
+                itemToSharedElementId = { it.artist.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(entry, onFavoriteToggle, modifier)
                 }

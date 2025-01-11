@@ -6,6 +6,17 @@ config.resolve = {
     }
 };
 
+config.devServer = Object.assign(
+    {},
+    config.devServer || {},
+    {
+        headers: {
+            "Cross-Origin-Opener-Policy": "same-origin",
+            "Cross-Origin-Embedder-Policy": "require-corp"
+        }
+    }
+);
+
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 config.plugins.push(
     new CopyWebpackPlugin({
@@ -19,15 +30,15 @@ config.plugins.push(
 const webpack = require("webpack");
 
 module.exports = function override(config) {
-  const fallback = config.resolve.fallback || {};
-  Object.assign(fallback, {
-    path: require.resolve("path-browserify"),
-    fs: require.resolve("browserify-fs"),
-    "util": require.resolve("util/"),
-    "buffer": require.resolve("buffer/"),
-    "stream": require.resolve("stream-browserify"),
-    "crypto": require.resolve("crypto-browserify")
-  });
-  config.resolve.fallback = fallback;
+    const fallback = config.resolve.fallback || {};
+    Object.assign(fallback, {
+        path: require.resolve("path-browserify"),
+        fs: require.resolve("browserify-fs"),
+        "util": require.resolve("util/"),
+        "buffer": require.resolve("buffer/"),
+        "stream": require.resolve("stream-browserify"),
+        "crypto": require.resolve("crypto-browserify")
+    });
+    config.resolve.fallback = fallback;
   return config;
 };

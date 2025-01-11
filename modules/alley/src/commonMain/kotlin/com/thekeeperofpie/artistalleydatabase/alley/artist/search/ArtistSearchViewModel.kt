@@ -9,10 +9,11 @@ import app.cash.paging.filter
 import app.cash.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -36,6 +37,7 @@ import kotlin.random.Random
 @Inject
 class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
+    private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -56,12 +58,12 @@ class ArtistSearchViewModel(
 
     val displayType = settings.displayType
     val randomSeed = Random.nextInt().absoluteValue
-    private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
+    private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             mutationUpdates.collectLatest {
-                artistEntryDao.insertEntries(it)
+                userEntryDao.insertArtistUserEntry(it)
             }
         }
     }
@@ -83,17 +85,17 @@ class ArtistSearchViewModel(
         options: ArtistSearchQuery,
     ) = createPager(createPagingConfig(pageSize = 20)) { artistEntryDao.search(query, options) }
         .flow
-        .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
+        .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
         .map { it.map { ArtistEntryGridModel.buildFromEntry(it) } }
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.value.copy(favorite = favorite))
+        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
     }
 
     fun onIgnoredToggle(entry: ArtistEntryGridModel, ignored: Boolean) {
-        mutationUpdates.tryEmit(entry.value.copy(ignored = ignored))
+        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
     fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {

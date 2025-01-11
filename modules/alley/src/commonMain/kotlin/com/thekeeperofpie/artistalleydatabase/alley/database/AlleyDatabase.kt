@@ -31,7 +31,25 @@ class ArtistAlleyDatabase(
 
     init {
         applicationScope.launch(PlatformDispatchers.IO) {
-            driverFactory.applySchema(driver)
+            // SQLDelight doesn't support splitting this from the other tables
+            driver.execute(null, """
+                |CREATE TABLE IF NOT EXISTS `artistUserEntry` (
+                |    `artistId` TEXT NOT NULL,
+                |    `favorite`  INTEGER NOT NULL DEFAULT 0,
+                |    `ignored`  INTEGER NOT NULL DEFAULT 0,
+                |    `notes` TEXT,
+                |    PRIMARY KEY (`artistId`)
+                |)
+                """.trimMargin(), 0).await()
+            driver.execute(null, """
+                |CREATE TABLE IF NOT EXISTS `stampRallyUserEntry` (
+                |    `stampRallyId` TEXT NOT NULL,
+                |    `favorite`  INTEGER NOT NULL DEFAULT 0,
+                |    `ignored`  INTEGER NOT NULL DEFAULT 0,
+                |    `notes` TEXT,
+                |    PRIMARY KEY (`stampRallyId`)
+                |)
+                """.trimMargin(), 0).await()
             databaseState.value = AlleySqlDatabase(
                 driver = driver,
                 artistEntryAdapter = ArtistEntry.Adapter(
@@ -54,6 +72,7 @@ class ArtistAlleyDatabase(
     internal val artistEntryDao = ArtistEntryDao(driver, database)
     internal val stampRallyEntryDao = StampRallyEntryDao(driver, database, json)
     internal val tagEntryDao = TagEntryDao(driver, database)
+    internal val userEntryDao = UserEntryDao(database)
 }
 
 private val listStringAdapter = object : ColumnAdapter<List<String>, String> {

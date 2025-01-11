@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import app.cash.sqldelight.async.coroutines.awaitCreate
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -18,7 +17,8 @@ actual class DriverFactory {
         runBlocking {
             file.writeBytes(Res.readBytes("files/database.sqlite"))
         }
-        return JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        return JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also {
+            it.execute(null, "ATTACH DATABASE '${file.absolutePath}' AS readOnly;", 0)
+        }
     }
-    actual suspend fun applySchema(driver: SqlDriver) = AlleySqlDatabase.Schema.awaitCreate(driver)
 }

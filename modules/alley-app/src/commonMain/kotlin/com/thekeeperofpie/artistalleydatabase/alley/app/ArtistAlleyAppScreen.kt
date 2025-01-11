@@ -69,7 +69,7 @@ object ArtistAlleyAppScreen {
                                     onStampRallyClick = { entry, imageIndex ->
                                         navController.navigate(
                                             Destinations.StampRallyDetails(
-                                                entry.value.id,
+                                                entry.stampRally.id,
                                                 imageIndex.toString(),
                                             )
                                         )
@@ -174,7 +174,7 @@ object ArtistAlleyAppScreen {
                                     onArtistClick = { entry, imageIndex ->
                                         navController.navigate(
                                             Destinations.ArtistDetails(
-                                                entry.value.id,
+                                                entry.artist.id,
                                                 imageIndex.toString(),
                                             )
                                         )

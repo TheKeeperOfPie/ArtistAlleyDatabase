@@ -85,7 +85,7 @@ object StampRallySearchScreen {
                 onIgnoredToggle = viewModel::onIgnoredToggle,
                 onEntryClick = onEntryClick,
                 shouldShowCount = { viewModel.query.isNotEmpty() || showOnlyFavorites },
-                itemToSharedElementId = { it.value.id },
+                itemToSharedElementId = { it.stampRally.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     StampRallyListRow(entry, onFavoriteToggle, modifier)
                 }
@@ -99,7 +99,7 @@ object StampRallySearchScreen {
         onFavoriteToggle: (Boolean) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val stampRally = entry.value
+        val stampRally = entry.stampRally
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),

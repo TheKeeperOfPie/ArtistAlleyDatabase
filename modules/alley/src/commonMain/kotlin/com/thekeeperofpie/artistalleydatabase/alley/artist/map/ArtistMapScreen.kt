@@ -38,14 +38,14 @@ object ArtistMapScreen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { viewModel.artist?.let { ArtistTitle(it.value) } },
+                    title = { viewModel.artist?.let { ArtistTitle(it.artist) } },
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
                     actions = {
                         IconButton(
                             onClick = {
                                 viewModel.artist?.let {
                                     val newFavorite = !it.favorite
-                                    it.favorite = it.favorite
+                                    it.favorite = newFavorite
                                     viewModel.onFavoriteToggle(it, newFavorite)
                                 }
                             },
@@ -73,7 +73,7 @@ object ArtistMapScreen {
                 )
             }
         ) {
-            val artist = viewModel.artist?.value ?: return@Scaffold
+            val artist = viewModel.artist?.artist ?: return@Scaffold
             val gridData = mapViewModel.gridData.result ?: return@Scaffold
             val targetTable = gridData.tables.find { it.booth == artist.booth }
             val transformState = MapScreen.rememberTransformState()

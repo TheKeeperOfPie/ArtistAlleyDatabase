@@ -515,8 +515,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         merchConfirmed = merchConfirmed,
                         notes = notes,
                         counter = counter++,
-                        favorite = false,
-                        ignored = false,
                     )
 
                     val seriesConnectionsInferred =
@@ -565,18 +563,18 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     val artists = it.map { it.first }
                     val seriesConnections = it.flatMap { it.second }
                     val merchConnections = it.flatMap { it.third }
-                    val artistEntryQueries = database.artistEntryQueries
-                    artistEntryQueries.transaction {
-                        artists.forEach(artistEntryQueries::insert)
-                        seriesConnections.forEach(artistEntryQueries::insertSeriesConnection)
-                        merchConnections.forEach(artistEntryQueries::insertMerchConnection)
+                    val mutationQueries = database.mutationQueries
+                    mutationQueries.transaction {
+                        artists.forEach(mutationQueries::insertArtist)
+                        seriesConnections.forEach(mutationQueries::insertSeriesConnection)
+                        merchConnections.forEach(mutationQueries::insertMerchConnection)
                     }
                 }
         }
     }
 
     private fun parseTags(database: BuildLogicDatabase) {
-        val tagEntryQueries = database.tagEntryQueries
+        val mutationQueries = database.mutationQueries
         open(SERIES_CSV_NAME).use {
             read(it)
                 .map {
@@ -587,8 +585,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
-                    tagEntryQueries.transaction {
-                        it.forEach(tagEntryQueries::insertSeries)
+                    mutationQueries.transaction {
+                        it.forEach(mutationQueries::insertSeries)
                     }
                 }
         }
@@ -602,15 +600,15 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
-                    tagEntryQueries.transaction {
-                        it.forEach(tagEntryQueries::insertMerch)
+                    mutationQueries.transaction {
+                        it.forEach(mutationQueries::insertMerch)
                     }
                 }
         }
     }
 
     private fun parseStampRallies(database: BuildLogicDatabase) {
-        val stampRallyEntryQueries = database.stampRallyEntryQueries
+        val mutationQueries = database.mutationQueries
         open(STAMP_RALLIES_CSV_NAME).use {
             var counter = 1L
             read(it)
@@ -653,17 +651,15 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         prizeLimit = prizeLimit?.toLong(),
                         notes = notes,
                         counter = counter++,
-                        favorite = false,
-                        ignored = false,
                     ) to connections
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
                     val stampRallies = it.map { it.first }
                     val artistConnections = it.flatMap { it.second }
-                    stampRallyEntryQueries.transaction {
-                        stampRallies.forEach(stampRallyEntryQueries::insert)
-                        artistConnections.forEach(stampRallyEntryQueries::insertArtistConnection)
+                    mutationQueries.transaction {
+                        stampRallies.forEach(mutationQueries::insertStampRally)
+                        artistConnections.forEach(mutationQueries::insertArtistConnection)
                     }
                 }
         }

@@ -12,8 +12,6 @@ CREATE TABLE
         `storeLinks` TEXT AS List<String> NOT NULL DEFAULT '',
         `catalogLinks` TEXT AS List<String> NOT NULL DEFAULT '',
         `driveLink` TEXT,
-        `favorite` INTEGER AS Boolean NOT NULL,
-        `ignored` INTEGER AS Boolean NOT NULL,
         `notes` TEXT,
         `seriesInferred` TEXT AS List<String> NOT NULL,
         `seriesConfirmed` TEXT AS List<String> NOT NULL,
@@ -23,22 +21,20 @@ CREATE TABLE
         PRIMARY KEY (`id`)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry_fts` USING FTS4 (
-    `id` TEXT NOT NULL,
-    `booth` TEXT NOT NULL COLLATE NOCASE,
-    `name` TEXT NOT NULL COLLATE NOCASE,
-    `summary` TEXT,
-    `links` TEXT AS List<String> NOT NULL,
-    `storeLinks` TEXT AS List<String> NOT NULL,
-    `catalogLinks` TEXT AS List<String> NOT NULL,
-    `driveLink` TEXT,
-    `favorite` INTEGER AS Boolean NOT NULL,
-    `ignored` INTEGER AS Boolean NOT NULL,
-    `notes` TEXT,
-    `seriesInferred` TEXT AS List<String> NOT NULL,
-    `seriesConfirmed` TEXT AS List<String> NOT NULL,
-    `merchInferred` TEXT AS List<String> NOT NULL,
-    `merchConfirmed` TEXT AS List<String> NOT NULL,
+CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry_fts` USING FTS5 (
+    `id`,
+    `booth`,
+    `name`,
+    `summary`,
+    `links`,
+    `storeLinks`,
+    `catalogLinks`,
+    `driveLink`,
+    `notes`,
+    `seriesInferred`,
+    `seriesConfirmed`,
+    `merchInferred`,
+    `merchConfirmed`,
     content=`artistEntry`
 );
 
@@ -46,14 +42,14 @@ CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artistEntry_fts_BEFORE_UPDATE
 UPDATE ON `artistEntry` BEGIN
 DELETE FROM `artistEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artistEntry_fts_BEFORE_DELETE BEFORE DELETE ON `artistEntry` BEGIN
 DELETE FROM `artistEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
@@ -61,7 +57,7 @@ CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artistEntry_fts_AFTER_UPDATE 
 UPDATE ON `artistEntry` BEGIN
 INSERT INTO
     `artistEntry_fts` (
-        `docid`,
+        `rowid`,
         `id`,
         `booth`,
         `name`,
@@ -70,8 +66,6 @@ INSERT INTO
         `storeLinks`,
         `catalogLinks`,
         `driveLink`,
-        `favorite`,
-        `ignored`,
         `notes`,
         `seriesInferred`,
         `seriesConfirmed`,
@@ -89,8 +83,6 @@ VALUES
         new.`storeLinks`,
         new.`catalogLinks`,
         new.`driveLink`,
-        new.`favorite`,
-        new.`ignored`,
         new.`notes`,
         new.`seriesInferred`,
         new.`seriesConfirmed`,
@@ -103,7 +95,7 @@ END;
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artistEntry_fts_AFTER_INSERT AFTER INSERT ON `artistEntry` BEGIN
 INSERT INTO
     `artistEntry_fts` (
-        `docid`,
+        `rowid`,
         `id`,
         `booth`,
         `name`,
@@ -112,8 +104,6 @@ INSERT INTO
         `storeLinks`,
         `catalogLinks`,
         `driveLink`,
-        `favorite`,
-        `ignored`,
         `notes`,
         `seriesInferred`,
         `seriesConfirmed`,
@@ -131,8 +121,6 @@ VALUES
         new.`storeLinks`,
         new.`catalogLinks`,
         new.`driveLink`,
-        new.`favorite`,
-        new.`ignored`,
         new.`notes`,
         new.`seriesInferred`,
         new.`seriesConfirmed`,
@@ -168,25 +156,21 @@ CREATE TABLE
         `tableMin` INTEGER,
         `totalCost` INTEGER,
         `prizeLimit` INTEGER,
-        `favorite` INTEGER AS Boolean NOT NULL,
-        `ignored` INTEGER AS Boolean NOT NULL,
         `notes` TEXT,
         `counter` INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (`id`)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry_fts` USING FTS4 (
-    `id` TEXT NOT NULL,
-    `fandom` TEXT NOT NULL COLLATE NOCASE,
-    `hostTable` TEXT NOT NULL COLLATE NOCASE,
-    `tables` TEXT AS List<String> NOT NULL,
-    `links` TEXT AS List<String> NOT NULL,
-    `tableMin` INTEGER,
-    `totalCost` INTEGER,
-    `prizeLimit` INTEGER,
-    `favorite` INTEGER AS Boolean NOT NULL,
-    `ignored` INTEGER AS Boolean NOT NULL,
-    `notes` TEXT,
+CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry_fts` USING FTS5 (
+    `id`,
+    `fandom`,
+    `hostTable`,
+    `tables`,
+    `links`,
+    `tableMin`,
+    `totalCost`,
+    `prizeLimit`,
+    `notes`,
     content=`stampRallyEntry`
 );
 
@@ -194,14 +178,14 @@ CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stampRallyEntry_fts_BEFORE_UP
 UPDATE ON `stampRallyEntry` BEGIN
 DELETE FROM `stampRallyEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stampRallyEntry_fts_BEFORE_DELETE BEFORE DELETE ON `stampRallyEntry` BEGIN
 DELETE FROM `stampRallyEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
@@ -209,7 +193,7 @@ CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stampRallyEntry_fts_AFTER_UPD
 UPDATE ON `stampRallyEntry` BEGIN
 INSERT INTO
     `stampRallyEntry_fts` (
-        `docid`,
+        `rowid`,
         `id`,
         `fandom`,
         `hostTable`,
@@ -218,8 +202,6 @@ INSERT INTO
         `tableMin`,
         `totalCost`,
         `prizeLimit`,
-        `favorite`,
-        `ignored`,
         `notes`
     )
 VALUES
@@ -233,8 +215,6 @@ VALUES
         new.`tableMin`,
         new.`totalCost`,
         new.`prizeLimit`,
-        new.`favorite`,
-        new.`ignored`,
         new.`notes`
     );
 
@@ -243,7 +223,7 @@ END;
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stampRallyEntry_fts_AFTER_INSERT AFTER INSERT ON `stampRallyEntry` BEGIN
 INSERT INTO
     `stampRallyEntry_fts` (
-        `docid`,
+        `rowid`,
         `id`,
         `fandom`,
         `hostTable`,
@@ -252,8 +232,6 @@ INSERT INTO
         `tableMin`,
         `totalCost`,
         `prizeLimit`,
-        `favorite`,
-        `ignored`,
         `notes`
     )
 VALUES
@@ -267,8 +245,6 @@ VALUES
         new.`tableMin`,
         new.`totalCost`,
         new.`prizeLimit`,
-        new.`favorite`,
-        new.`ignored`,
         new.`notes`
     );
 
@@ -290,9 +266,9 @@ CREATE TABLE
         PRIMARY KEY (`name`)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `seriesEntry_fts` USING FTS4 (
-    `name` TEXT NOT NULL COLLATE NOCASE,
-    `notes` TEXT,
+CREATE VIRTUAL TABLE IF NOT EXISTS `seriesEntry_fts` USING FTS5 (
+    `name`,
+    `notes`,
     content=`seriesEntry`
 );
 
@@ -300,21 +276,21 @@ CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_seriesEntry_fts_BEFORE_UPDATE
 UPDATE ON `seriesEntry` BEGIN
 DELETE FROM `seriesEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_seriesEntry_fts_BEFORE_DELETE BEFORE DELETE ON `seriesEntry` BEGIN
 DELETE FROM `seriesEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_seriesEntry_fts_AFTER_UPDATE AFTER
 UPDATE ON `seriesEntry` BEGIN
 INSERT INTO
-    `seriesEntry_fts` (`docid`, `name`, `notes`)
+    `seriesEntry_fts` (`rowid`, `name`, `notes`)
 VALUES
     (new.`rowid`, new.`name`, new.`notes`);
 
@@ -322,7 +298,7 @@ END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_seriesEntry_fts_AFTER_INSERT AFTER INSERT ON `seriesEntry` BEGIN
 INSERT INTO
-    `seriesEntry_fts` (`docid`, `name`, `notes`)
+    `seriesEntry_fts` (`rowid`, `name`, `notes`)
 VALUES
     (new.`rowid`, new.`name`, new.`notes`);
 
@@ -335,9 +311,9 @@ CREATE TABLE
         PRIMARY KEY (`name`)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `merchEntry_fts` USING FTS4 (
-    `name` TEXT NOT NULL COLLATE NOCASE,
-    `notes` TEXT,
+CREATE VIRTUAL TABLE IF NOT EXISTS `merchEntry_fts` USING FTS5 (
+    `name`,
+    `notes`,
     content=`merchEntry`
 );
 
@@ -345,21 +321,21 @@ CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchEntry_fts_BEFORE_UPDATE 
 UPDATE ON `merchEntry` BEGIN
 DELETE FROM `merchEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchEntry_fts_BEFORE_DELETE BEFORE DELETE ON `merchEntry` BEGIN
 DELETE FROM `merchEntry_fts`
 WHERE
-    `docid` = old.`rowid`;
+    `rowid` = old.`rowid`;
 
 END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchEntry_fts_AFTER_UPDATE AFTER
 UPDATE ON `merchEntry` BEGIN
 INSERT INTO
-    `merchEntry_fts` (`docid`, `name`, `notes`)
+    `merchEntry_fts` (`rowid`, `name`, `notes`)
 VALUES
     (new.`rowid`, new.`name`, new.`notes`);
 
@@ -367,7 +343,7 @@ END;
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchEntry_fts_AFTER_INSERT AFTER INSERT ON `merchEntry` BEGIN
 INSERT INTO
-    `merchEntry_fts` (`docid`, `name`, `notes`)
+    `merchEntry_fts` (`rowid`, `name`, `notes`)
 VALUES
     (new.`rowid`, new.`name`, new.`notes`);
 

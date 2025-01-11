@@ -58,7 +58,7 @@ fun ArtistListRow(
     onFavoriteToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val artist = entry.value
+    val artist = entry.artist
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),

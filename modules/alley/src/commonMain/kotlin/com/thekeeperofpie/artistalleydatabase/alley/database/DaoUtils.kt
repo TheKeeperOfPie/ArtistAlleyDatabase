@@ -10,6 +10,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 
 object DaoUtils {
 
+    private val countReplaceRegex = Regex("(\\QSELECT\\E )(.*?)(,|\\n|\\Q FROM\\E)")
+
     fun <T : Any> queryPagingSource(
         driver: SqlDriver,
         database: suspend () -> SuspendingTransacter,
@@ -18,10 +20,9 @@ object DaoUtils {
         parameters: List<String> = emptyList(),
         mapper: (SqlCursor) -> T,
     ): PagingSource<Int, T> {
-        if (!statement.startsWith("SELECT *")) {
-            throw IllegalArgumentException("Cannot queryPagingSource with $statement")
+        val countStatement = statement.replace(countReplaceRegex) {
+            "${it.groupValues[1]}COUNT (*)${it.groupValues[3]}"
         }
-        val countStatement = statement.replaceFirst("SELECT *", "SELECT COUNT(*)")
         val countQuery = makeQuery(
             driver = driver,
             statement = countStatement,

@@ -1,20 +1,8 @@
 getEntry:
-SELECT * FROM artistEntry WHERE id = :id;
-
-insert:
-INSERT OR REPLACE INTO artistEntry
-VALUES ?;
-
-insertSeriesConnection:
-INSERT OR REPLACE INTO artistSeriesConnection
-VALUES ?;
-
-insertMerchConnection:
-INSERT OR REPLACE INTO artistMerchConnection
-VALUES ?;
-
-getEntries:
-SELECT * FROM artistEntry;
+SELECT artistEntry.*, artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.notes AS userNotes FROM artistEntry
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry.id = artistUserEntry.artistId
+WHERE id = :id;
 
 getEntriesRandom:
 SELECT *
@@ -25,6 +13,3 @@ getStampRallyEntries:
 SELECT stampRallyEntry.* FROM stampRallyArtistConnection
 INNER JOIN stampRallyEntry ON (stampRallyArtistConnection.stampRallyId = stampRallyEntry.id)
 WHERE stampRallyArtistConnection.artistId = :artistId;
-
-getBoothsWithFavorites:
-SELECT artistEntry.booth, artistEntry.favorite FROM artistEntry;

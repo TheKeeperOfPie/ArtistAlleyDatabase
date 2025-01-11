@@ -9,7 +9,8 @@ import app.cash.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
@@ -32,6 +33,7 @@ import kotlin.random.Random
 @Inject
 class StampRallySearchViewModel(
     private val stampRallyEntryDao: StampRallyEntryDao,
+    private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
     @Assisted private val filterParams: StateFlow<StampRallySortFilterViewModel.FilterParams>,
 ) : EntrySearchViewModel<StampRallySearchQuery, StampRallyEntryGridModel>() {
@@ -40,12 +42,12 @@ class StampRallySearchViewModel(
 
     val displayType = settings.displayType
     val randomSeed = Random.nextInt().absoluteValue
-    private val mutationUpdates = MutableSharedFlow<StampRallyEntry>(5, 5)
+    private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             mutationUpdates.collectLatest {
-                stampRallyEntryDao.insertEntries(it)
+                userEntryDao.insertStampRallyUserEntry(it)
             }
         }
     }
@@ -65,16 +67,16 @@ class StampRallySearchViewModel(
     ) = createPager(createPagingConfig(pageSize = 20)) { stampRallyEntryDao.search(query, options) }
         .flow
         .flowOn(CustomDispatchers.IO)
-        .map { it.filter { !it.ignored || options.filterParams.showIgnored } }
+        .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
         .map { it.map { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
     fun onFavoriteToggle(entry: StampRallyEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.value.copy(favorite = favorite))
+        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
     }
 
     fun onIgnoredToggle(entry: StampRallyEntryGridModel, ignored: Boolean) {
-        mutationUpdates.tryEmit(entry.value.copy(ignored = ignored))
+        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
     fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {

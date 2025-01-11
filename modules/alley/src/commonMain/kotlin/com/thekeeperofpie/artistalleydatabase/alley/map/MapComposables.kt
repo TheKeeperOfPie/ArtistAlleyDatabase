@@ -290,13 +290,13 @@ fun TablePopup(
                 .conditionally(images.size > 1) { fillMaxWidth() }
         ) {
             Text(
-                text = entry.value.booth,
+                text = entry.artist.booth,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(vertical = 12.dp)
             )
 
             Text(
-                text = entry.value.name,
+                text = entry.artist.name,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier

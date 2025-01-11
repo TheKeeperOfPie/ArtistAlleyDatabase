@@ -1,13 +1,8 @@
 getEntry:
-SELECT * FROM stampRallyEntry WHERE id = :id;
-
-insert:
-INSERT OR REPLACE INTO stampRallyEntry
-VALUES ?;
-
-insertArtistConnection:
-INSERT OR REPLACE INTO stampRallyArtistConnection
-VALUES ?;
+SELECT stampRallyEntry.*, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyUserEntry.notes AS userNotes FROM stampRallyEntry
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
+WHERE id = :id;
 
 getArtistEntries:
 SELECT artistEntry.* FROM stampRallyArtistConnection
