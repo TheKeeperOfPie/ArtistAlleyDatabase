@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
@@ -107,143 +106,140 @@ class ArtistEntryDao(
         searchQuery: ArtistSearchQuery,
     ): PagingSource<Int, ArtistWithUserData> {
         val filterParams = searchQuery.filterParams
-        val booleanOptions = mutableListOf<String>().apply {
-            if (filterParams.showOnlyFavorites) this += "artistUserEntry.favorite:1"
+        val andClauses = mutableListOf<String>().apply {
+            if (filterParams.showOnlyFavorites) this += "artistUserEntry.favorite = 1"
 
             // Search for "http" as a simplification of logic, since checking
             // not empty would require a separate query template
-            if (filterParams.showOnlyWithCatalog) this += "driveLink:*http*"
-        }
+            if (filterParams.showOnlyWithCatalog) this += "artistEntry_fts.driveLink LIKE 'http%'"
 
-        val filterParamsQueryPieces = filterParamsQuery(filterParams)
-        val options = query.split(Regex("\\s+"))
-            .filter(String::isNotBlank)
-            .map { "*$it*" }
-            .map {
-                listOf(
-                    "booth:$it",
-                    "name:$it",
-                    "summary:$it",
-                    "seriesInferredSearchable:$it",
-                    "seriesConfirmedSearchable:$it",
-                    "merchInferredSearchable:$it",
-                    "merchConfirmedSearchable:$it",
-                )
+            if (searchQuery.lockedSeries != null) {
+                this += "artistEntry_fts.id IN (SELECT artistId from artistSeriesConnection WHERE " +
+                        (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed IS 1 AND" else "") +
+                        " artistSeriesConnection.seriesId == " +
+                        "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
+            } else if (searchQuery.lockedMerch != null) {
+                this += "artistEntry_fts.id IN (SELECT artistId from artistMerchConnection WHERE " +
+                        (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed IS 1 AND" else "") +
+                        "artistMerchConnection.merchId == " +
+                        "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
             }
+        }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
-        val basicSortSuffix = "\nORDER BY artistEntry.FIELD COLLATE NOCASE $ascending"
         val sortSuffix = when (filterParams.sortOption) {
-            ArtistSearchSortOption.BOOTH -> basicSortSuffix.replace("FIELD", "booth")
-            ArtistSearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "name")
-            ArtistSearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
-        }
-        val randomSortSuffix = (", substr(artistEntry.counter * 0.${searchQuery.randomSeed}," +
-                " length(artistEntry.counter) + 2) as orderIndex")
+            ArtistSearchSortOption.BOOTH -> "\nORDER BY artistEntry_fts.booth COLLATE NOCASE"
+            ArtistSearchSortOption.ARTIST -> "\nORDER BY artistEntry_fts.name COLLATE NOCASE"
+            ArtistSearchSortOption.RANDOM -> "\nORDER BY orderIndex"
+        } + " $ascending"
+        val randomSortSuffix = (", substr(artistEntry_fts.counter * 0.${searchQuery.randomSeed}," +
+                " length(artistEntry_fts.counter) + 2) as orderIndex")
             .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
             .orEmpty()
         val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored, " +
                 "artistUserEntry.notes$randomSortSuffix"
 
-        val lockedSuffix = if (searchQuery.lockedSeries != null) {
-            "artistEntry.id IN (SELECT artistId from artist_series_connections WHERE " +
-                    (if (filterParams.showOnlyConfirmedTags) "artist_series_connections.confirmed IS 1 AND" else "") +
-                    " artist_series_connections.seriesId == " +
-                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
-        } else if (searchQuery.lockedMerch != null) {
-            "artistEntry.id IN (SELECT artistId from artist_merch_connections WHERE " +
-                    (if (filterParams.showOnlyConfirmedTags) "artist_merch_connections.confirmed IS 1 AND" else "") +
-                    " artist_merch_connections.merchId == " +
-                    "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
-        } else {
-            null
+        val matchOptions = mutableListOf<String>()
+        filterParams.artist.takeUnless(String?::isNullOrBlank)?.let {
+            matchOptions += "(name : ${makeMatchOrQuery(listOf(it))})"
+        }
+        filterParams.booth.takeUnless(String?::isNullOrBlank)?.let {
+            matchOptions += "(booth : ${makeMatchOrQuery(listOf(it))})"
+        }
+        filterParams.summary.takeUnless(String?::isNullOrBlank)?.let {
+            matchOptions += "(summary : ${makeMatchOrQuery(listOf(it))})"
+        }
+        filterParams.series.takeUnless { it.isEmpty() }?.let {
+            if (filterParams.showOnlyConfirmedTags) {
+                "(seriesConfirmed : ${makeMatchOrQuery(it)})"
+            } else {
+                "({seriesInferred seriesConfirmed} : ${makeMatchOrQuery(it)})"
+            }
+        }
+        filterParams.merch.takeUnless { it.isEmpty() }?.let {
+            if (filterParams.showOnlyConfirmedTags) {
+                "(merchConfirmed : ${makeMatchOrQuery(it)})"
+            } else {
+                "({merchInferred merchConfirmed} : ${makeMatchOrQuery(it)})"
+            }
         }
 
-        if (options.isEmpty() && filterParamsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
-            val statement = """
-                SELECT artistEntry.*$selectSuffix
-                FROM artistEntry
+        if (query.isEmpty() && matchOptions.isEmpty()) {
+            val andStatement = andClauses.takeIf { it.isNotEmpty() }
+                ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+            val countStatement = """
+                SELECT COUNT(*)
+                FROM artistEntry_fts
                 LEFT OUTER JOIN artistUserEntry
-                ON artistEntry.id = artistUserEntry.artistId
-                ${if (lockedSuffix == null) "" else "WHERE $lockedSuffix"}
-                """.trimIndent() + sortSuffix
+                ON artistEntry_fts.id = artistUserEntry.artistId
+                $andStatement
+            """.trimIndent()
+            val statement = """
+                SELECT artistEntry_fts.*$selectSuffix
+                FROM artistEntry_fts
+                LEFT OUTER JOIN artistUserEntry
+                ON artistEntry_fts.id = artistUserEntry.artistId
+                $andStatement
+                $sortSuffix
+                """.trimIndent()
 
             return DaoUtils.queryPagingSource<ArtistWithUserData>(
                 driver = driver,
                 database = database,
+                countStatement = countStatement,
                 statement = statement,
-                tableNames = listOf("artistEntry"),
+                tableNames = listOf("artistEntry_fts", "artistUserEntry"),
                 mapper = SqlCursor::toArtistWithUserData,
             )
         }
 
-        val optionsArguments = options.map { it.joinToString(separator = " OR ") }
-        val booleanArguments = booleanOptions.joinToString(separator = " ")
-        val separator = " ".takeIf {
-            optionsArguments.isNotEmpty() && booleanArguments.isNotEmpty()
+        val queryWithOr = makeMatchOrQuery(query.split(Regex("\\s+")))
+        val targetColumns = listOfNotNull(
+            "booth",
+            "name",
+            "summary",
+            "seriesInferred".takeUnless { filterParams.showOnlyConfirmedTags },
+            "seriesConfirmed",
+            "merchInferred".takeUnless { filterParams.showOnlyConfirmedTags },
+            "merchConfirmed",
+        )
+        val matchClause = buildString {
+            append("MATCH ")
+            append(matchOptions.joinToString(separator = " "))
+            append("'{ ${targetColumns.joinToString(separator = " ")} } : $queryWithOr'")
         }
-        val bindArguments = (optionsArguments + separator + booleanArguments)
-            .filterNotNull()
-            .filter { it.isNotEmpty() }
 
-        val statement =
-            (bindArguments + filterParamsQueryPieces).joinToString("\nINTERSECT\n") {
-                """
-                SELECT artistEntry.*$selectSuffix
-                FROM artistEntry
-                LEFT OUTER JOIN artistUserEntry
-                ON artistEntry.id = artistUserEntry.artistId
-                MATCH ?
-                ${if (lockedSuffix == null) "" else "AND $lockedSuffix"}
-                """.trimIndent()
-            } + sortSuffix
+        val andStatement = andClauses.takeIf { it.isNotEmpty() }
+            ?.joinToString(prefix = "AND ", separator = "\nAND ").orEmpty()
+        val countStatement = """
+            SELECT COUNT(*)
+            FROM artistEntry_fts
+            LEFT OUTER JOIN artistUserEntry
+            ON artistEntry_fts.id = artistUserEntry.artistId
+            WHERE artistEntry_fts $matchClause
+            $andStatement
+            """.trimIndent()
+        val statement = """
+            SELECT artistEntry_fts.*$selectSuffix
+            FROM artistEntry_fts
+            LEFT OUTER JOIN artistUserEntry
+            ON artistEntry_fts.id = artistUserEntry.artistId
+            WHERE artistEntry_fts $matchClause
+            $andStatement
+            $sortSuffix
+            """.trimIndent()
 
         return DaoUtils.queryPagingSource<ArtistWithUserData>(
             driver = driver,
             database = database,
+            countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("artistEntry", "artistEntry_fts"),
-            parameters = bindArguments + filterParamsQueryPieces,
+            tableNames = listOf("artistEntry_fts", "artistUserEntry"),
             mapper = SqlCursor::toArtistWithUserData,
         )
     }
 
-    private fun filterParamsQuery(
-        filterParams: ArtistSortFilterViewModel.FilterParams,
-    ): MutableList<String> {
-        val queryPieces = mutableListOf<String>()
-
-        filterParams.artist.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
-                .map { "artistNames:${DatabaseUtils.wrapMatchQuery(it)}" }
-        }
-        filterParams.booth.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
-                .map { "booth:${DatabaseUtils.wrapMatchQuery(it)}" }
-        }
-        filterParams.summary.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
-                .map { "description:${DatabaseUtils.wrapMatchQuery(it)}" }
-        }
-        queryPieces += filterParams.series.flatMap { it.split(DatabaseUtils.WHITESPACE_REGEX) }
-            .map {
-                if (filterParams.showOnlyConfirmedTags) {
-                    "seriesConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
-                } else {
-                    "seriesInferred:${DatabaseUtils.wrapMatchQuery(it)}" +
-                            " OR seriesConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
-                }
-            }
-        queryPieces += filterParams.merch
-            .map {
-                if (filterParams.showOnlyConfirmedTags) {
-                    "merchConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
-                } else {
-                    "merchInferred:${DatabaseUtils.wrapMatchQuery(it)}" +
-                            " OR merchConfirmed:${DatabaseUtils.wrapMatchQuery(it)}"
-                }
-            }
-
-        return queryPieces
-    }
+    private fun makeMatchOrQuery(query: List<String>) = query.map { it.replace('"', ' ') }
+        .filter(String::isNotBlank)
+        .joinToString(separator = " OR ") { "\"${it}*\"" }
 }

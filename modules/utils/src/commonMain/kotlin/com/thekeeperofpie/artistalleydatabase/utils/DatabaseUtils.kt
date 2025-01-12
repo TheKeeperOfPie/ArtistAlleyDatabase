@@ -7,7 +7,7 @@ object DatabaseUtils {
     val WHITESPACE_REGEX = Regex("\\s+")
 
     // android.database.DatabaseUtils
-    fun sqlEscapeString(sqlString: String) {
+    fun sqlEscapeString(sqlString: String): String {
         val builder = StringBuilder("\'")
         val length = sqlString.length
         sqlString.forEachIndexed { index, char ->
@@ -25,6 +25,7 @@ object DatabaseUtils {
             builder.append(char)
         }
         builder.append('\'')
+        return builder.toString()
     }
 
     fun wrapMatchQuery(query: String) = "*${query.replaceDoubleQuotes()}*"

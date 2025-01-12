@@ -20,9 +20,31 @@ object DaoUtils {
         parameters: List<String> = emptyList(),
         mapper: (SqlCursor) -> T,
     ): PagingSource<Int, T> {
-        val countStatement = statement.replace(countReplaceRegex) {
-            "${it.groupValues[1]}COUNT (*)${it.groupValues[3]}"
-        }
+        val match = countReplaceRegex.find(statement)!!
+        val countStatement = statement.replaceFirst(
+            countReplaceRegex,
+            "${match.groupValues[1]}COUNT (*)${match.groupValues[3]}"
+        )
+        return queryPagingSource(
+            driver = driver,
+            database = database,
+            countStatement = countStatement,
+            statement = statement,
+            tableNames = tableNames,
+            parameters = parameters,
+            mapper = mapper,
+        )
+    }
+
+    fun <T : Any> queryPagingSource(
+        driver: SqlDriver,
+        database: suspend () -> SuspendingTransacter,
+        countStatement: String,
+        statement: String,
+        tableNames: List<String>,
+        parameters: List<String> = emptyList(),
+        mapper: (SqlCursor) -> T,
+    ): PagingSource<Int, T> {
         val countQuery = makeQuery(
             driver = driver,
             statement = countStatement,

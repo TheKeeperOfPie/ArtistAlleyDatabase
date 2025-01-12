@@ -35,7 +35,9 @@ CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry_fts` USING FTS5 (
     `seriesConfirmed`,
     `merchInferred`,
     `merchConfirmed`,
-    content=`artistEntry`
+    `counter`,
+    content=`artistEntry`,
+    tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artistEntry_fts_BEFORE_UPDATE BEFORE
@@ -70,7 +72,8 @@ INSERT INTO
         `seriesInferred`,
         `seriesConfirmed`,
         `merchInferred`,
-        `merchConfirmed`
+        `merchConfirmed`,
+        `counter`
     )
 VALUES
     (
@@ -87,7 +90,8 @@ VALUES
         new.`seriesInferred`,
         new.`seriesConfirmed`,
         new.`merchInferred`,
-        new.`merchConfirmed`
+        new.`merchConfirmed`,
+        new.`counter`
     );
 
 END;
@@ -108,7 +112,8 @@ INSERT INTO
         `seriesInferred`,
         `seriesConfirmed`,
         `merchInferred`,
-        `merchConfirmed`
+        `merchConfirmed`,
+        `counter`
     )
 VALUES
     (
@@ -125,7 +130,8 @@ VALUES
         new.`seriesInferred`,
         new.`seriesConfirmed`,
         new.`merchInferred`,
-        new.`merchConfirmed`
+        new.`merchConfirmed`,
+        new.`counter`
     );
 
 END;
@@ -171,7 +177,9 @@ CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry_fts` USING FTS5 (
     `totalCost`,
     `prizeLimit`,
     `notes`,
-    content=`stampRallyEntry`
+    `counter`,
+    content=`stampRallyEntry`,
+    tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_stampRallyEntry_fts_BEFORE_UPDATE BEFORE
@@ -202,7 +210,8 @@ INSERT INTO
         `tableMin`,
         `totalCost`,
         `prizeLimit`,
-        `notes`
+        `notes`,
+        `counter`
     )
 VALUES
     (
@@ -215,7 +224,8 @@ VALUES
         new.`tableMin`,
         new.`totalCost`,
         new.`prizeLimit`,
-        new.`notes`
+        new.`notes`,
+        new.`counter`
     );
 
 END;
@@ -232,7 +242,8 @@ INSERT INTO
         `tableMin`,
         `totalCost`,
         `prizeLimit`,
-        `notes`
+        `notes`,
+        `counter`
     )
 VALUES
     (
@@ -245,7 +256,8 @@ VALUES
         new.`tableMin`,
         new.`totalCost`,
         new.`prizeLimit`,
-        new.`notes`
+        new.`notes`,
+        new.`counter`
     );
 
 END;
@@ -269,7 +281,8 @@ CREATE TABLE
 CREATE VIRTUAL TABLE IF NOT EXISTS `seriesEntry_fts` USING FTS5 (
     `name`,
     `notes`,
-    content=`seriesEntry`
+    content=`seriesEntry`,
+    tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_seriesEntry_fts_BEFORE_UPDATE BEFORE
@@ -314,7 +327,8 @@ CREATE TABLE
 CREATE VIRTUAL TABLE IF NOT EXISTS `merchEntry_fts` USING FTS5 (
     `name`,
     `notes`,
-    content=`merchEntry`
+    content=`merchEntry`,
+    tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchEntry_fts_BEFORE_UPDATE BEFORE
