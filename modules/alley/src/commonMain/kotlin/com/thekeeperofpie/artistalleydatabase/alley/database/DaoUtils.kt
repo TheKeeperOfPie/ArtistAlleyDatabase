@@ -15,30 +15,6 @@ object DaoUtils {
     fun <T : Any> queryPagingSource(
         driver: SqlDriver,
         database: suspend () -> SuspendingTransacter,
-        statement: String,
-        tableNames: List<String>,
-        parameters: List<String> = emptyList(),
-        mapper: (SqlCursor) -> T,
-    ): PagingSource<Int, T> {
-        val match = countReplaceRegex.find(statement)!!
-        val countStatement = statement.replaceFirst(
-            countReplaceRegex,
-            "${match.groupValues[1]}COUNT (*)${match.groupValues[3]}"
-        )
-        return queryPagingSource(
-            driver = driver,
-            database = database,
-            countStatement = countStatement,
-            statement = statement,
-            tableNames = tableNames,
-            parameters = parameters,
-            mapper = mapper,
-        )
-    }
-
-    fun <T : Any> queryPagingSource(
-        driver: SqlDriver,
-        database: suspend () -> SuspendingTransacter,
         countStatement: String,
         statement: String,
         tableNames: List<String>,
@@ -94,5 +70,85 @@ object DaoUtils {
                     }
                 },
             )
+    }
+
+    fun makeMatchAndQuery(query: List<String>) = query.map { it.replace('"', ' ') }
+        .filter(String::isNotBlank)
+        .joinToString(separator = " AND ") { "\"${it}*\"" }
+
+    fun makeLikeAndQuery(field: String, query: List<String>) = query.map { it.replace('"', ' ') }
+        .filter(String::isNotBlank)
+        .joinToString(separator = " AND ") {
+            "$field LIKE '%$it%'"
+        }
+
+    fun buildSearchCountStatement(
+        ftsTableName: String,
+        idField: String,
+        matchQuery: String,
+        likeStatement: String,
+    ) = """
+        SELECT COUNT(*) FROM (
+            SELECT * FROM (
+                SELECT * FROM(
+                    SELECT $ftsTableName.$idField as idAsKey
+                    FROM $ftsTableName
+                    WHERE $ftsTableName MATCH $matchQuery
+                )
+                UNION
+                SELECT * FROM(
+                    SELECT $ftsTableName.$idField
+                    FROM $ftsTableName
+                    WHERE (
+                        $likeStatement
+                    )
+                )
+            )
+            GROUP BY idAsKey
+        )
+        """.trimIndent()
+
+    fun buildSearchStatement(
+        tableName: String,
+        ftsTableName: String,
+        idField: String,
+        likeOrderBy: String,
+        matchQuery: String,
+        likeStatement: String,
+        select: String = "$tableName.*",
+        additionalJoinStatement: String = "",
+        orderBy: String = "ORDER BY rank",
+        randomSeed: Int? = null,
+        andStatement: String = "",
+    ): String {
+        val randomOrderIndex = randomSeed?.let {
+            (", substr($ftsTableName.counter * 0.$randomSeed," +
+                    " length($ftsTableName.counter) + 2) as orderIndex")
+        }
+        return """
+            SELECT $select FROM (
+                SELECT * FROM(
+                    SELECT $ftsTableName.$idField as idAsKey, rank as rank$randomOrderIndex
+                    FROM $ftsTableName
+                    WHERE $ftsTableName MATCH $matchQuery
+                    ORDER BY rank
+                )
+                UNION
+                SELECT * FROM(
+                    SELECT $ftsTableName.$idField, 999$randomOrderIndex
+                    FROM $ftsTableName
+                    WHERE (
+                        $likeStatement
+                    )
+                    $likeOrderBy
+                )
+            )
+            JOIN $tableName
+            ON idAsKey = $tableName.$idField
+            $additionalJoinStatement
+            $andStatement
+            GROUP BY idAsKey
+            $orderBy
+            """.trimIndent()
     }
 }

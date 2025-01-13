@@ -12,20 +12,18 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry.GetEntry
-import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import kotlinx.serialization.json.Json
 
-fun SqlCursor.toStampRallyEntry(json: Json): StampRallyWithUserData {
+fun SqlCursor.toStampRallyWithUserData(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
         stampRally = StampRallyEntry(
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
-            tables = getString(3)!!.let(json::decodeFromString),
-            links = getString(4)!!.let(json::decodeFromString),
+            tables = getString(3)!!.let(Json::decodeFromString),
+            links = getString(4)!!.let(Json::decodeFromString),
             tableMin = getLong(5),
             totalCost = getLong(6),
             prizeLimit = getLong(7),
@@ -65,7 +63,6 @@ private fun GetEntry.toStampRallyWithUserData() = StampRallyWithUserData(
 class StampRallyEntryDao(
     private val driver: SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val json: Json,
     private val dao: suspend () -> StampRallyEntryQueries = { database().stampRallyEntryQueries },
 ) {
     suspend fun getEntry(id: String) = dao()
@@ -85,108 +82,117 @@ class StampRallyEntryDao(
         searchQuery: StampRallySearchQuery,
     ): PagingSource<Int, StampRallyWithUserData> {
         val filterParams = searchQuery.filterParams
-        val booleanOptions = mutableListOf<String>().apply {
-            if (filterParams.showOnlyFavorites) this += "stampRallyUserEntry.favorite:1"
+        val andClauses = mutableListOf<String>().apply {
+            if (filterParams.showOnlyFavorites) this += "stampRallyUserEntry.favorite = 1"
         }
-
-        val filterParamsQueryPieces = filterParamsQuery(filterParams)
-        val options = query.split(Regex("\\s+"))
-            .filter(String::isNotBlank)
-            .map { "*$it*" }
-            .map {
-                listOf(
-                    "fandom:$it",
-                    "tables:$it",
-                )
-            }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
-        val basicSortSuffix = "\nORDER BY stampRallyEntry.FIELD $ascending"
         val sortSuffix = when (filterParams.sortOption) {
-            StampRallySearchSortOption.MAIN_TABLE -> basicSortSuffix.replace(
-                "FIELD",
-                "hostTable COLLATE NOCASE"
-            )
-            StampRallySearchSortOption.FANDOM -> basicSortSuffix.replace(
-                "FIELD",
-                "fandom COLLATE NOCASE"
-            )
-            StampRallySearchSortOption.RANDOM -> "\nORDER BY orderIndex $ascending"
-            StampRallySearchSortOption.PRIZE_LIMIT -> basicSortSuffix.replace(
-                "FIELD",
-                "prizeLimit"
-            ) + " NULLS LAST"
-            StampRallySearchSortOption.TOTAL_COST -> basicSortSuffix.replace(
-                "FIELD",
-                "totalCost"
-            ) + " NULLS LAST"
+            StampRallySearchSortOption.MAIN_TABLE ->
+                "ORDER BY stampRallyEntry_fts.hostTable COLLATE NOCASE $ascending"
+            StampRallySearchSortOption.FANDOM ->
+                "ORDER BY stampRallyEntry_fts.fandom COLLATE NOCASE $ascending"
+            StampRallySearchSortOption.RANDOM -> "ORDER BY orderIndex $ascending"
+            StampRallySearchSortOption.PRIZE_LIMIT ->
+                "ORDER BY stampRallyEntry_fts.prizeLimit $ascending NULLS LAST"
+            StampRallySearchSortOption.TOTAL_COST ->
+                "ORDER BY stampRallyEntry_fts.totalCost $ascending NULLS LAST"
         }
-        val randomSortSuffix = (", substr(stampRallyEntry.counter * 0.${searchQuery.randomSeed}," +
-                " length(stampRallyEntry.counter) + 2) as orderIndex")
+        val randomSortSelectSuffix =
+            (", substr(stampRallyEntry_fts.counter * 0.${searchQuery.randomSeed}," +
+                " length(stampRallyEntry_fts.counter) + 2) as orderIndex")
             .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
             .orEmpty()
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, " +
-                "stampRallyUserEntry.notes$randomSortSuffix"
+                "stampRallyUserEntry.notes"
 
-        if (options.isEmpty() && filterParamsQueryPieces.isEmpty() && booleanOptions.isEmpty()) {
-            val statement = """
-                SELECT *$selectSuffix
-                FROM stampRallyEntry
+        val matchOptions = mutableListOf<String>()
+        filterParams.fandom.takeUnless(String?::isNullOrBlank)?.let {
+            matchOptions += "(fandom : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
+        }
+        filterParams.tables.takeUnless(String?::isNullOrBlank)?.let {
+            matchOptions += "(tables : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
+        }
+
+        if (query.isEmpty() && matchOptions.isEmpty()) {
+            val andStatement = andClauses.takeIf { it.isNotEmpty() }
+                ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+            val countStatement = """
+                SELECT COUNT(*)
+                FROM stampRallyEntry_fts
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
-                """.trimIndent() + sortSuffix
+                ON stampRallyEntry_fts.id = stampRallyUserEntry.stampRallyId
+                $andStatement
+                """.trimIndent()
+            val statement = """
+                SELECT stampRallyEntry_fts.*$selectSuffix$randomSortSelectSuffix
+                FROM stampRallyEntry_fts
+                LEFT OUTER JOIN stampRallyUserEntry
+                ON stampRallyEntry_fts.id = stampRallyUserEntry.stampRallyId
+                $andStatement
+                $sortSuffix
+                """.trimIndent()
 
             return DaoUtils.queryPagingSource(
                 driver = driver,
                 database = database,
+                countStatement = countStatement,
                 statement = statement,
-                tableNames = listOf("stampRallyEntry"),
-                mapper = { it.toStampRallyEntry(json) },
+                tableNames = listOf("stampRallyEntry_fts"),
+                mapper = SqlCursor::toStampRallyWithUserData,
             )
         }
 
-        val optionsArguments = options.map { it.joinToString(separator = " OR ") }
-        val booleanArguments = booleanOptions.joinToString(separator = " ")
-        val separator = " ".takeIf {
-            optionsArguments.isNotEmpty() && booleanArguments.isNotEmpty()
+        val queries = query.split(Regex("\\s+"))
+        val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
+        val targetColumns = listOfNotNull(
+            "fandom",
+            "tables",
+        )
+        val matchQuery = buildString {
+            append("'")
+            append(matchOptions.joinToString(separator = " ", postfix = " "))
+            append("{ ${targetColumns.joinToString(separator = " ")} } : $matchOrQuery'")
         }
-        val bindArguments = (optionsArguments + separator + booleanArguments)
-            .filterNotNull()
-            .filter { it.isNotEmpty() }
-        val statement = (bindArguments + filterParamsQueryPieces).joinToString("\nINTERSECT\n") {
-            """
-                SELECT *$selectSuffix
-                FROM stampRallyEntry
+
+        val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
+            "(${DaoUtils.makeLikeAndQuery("stampRallyEntry_fts.$it", queries)})"
+        }
+
+        val andStatement = andClauses.takeIf { it.isNotEmpty() }
+            ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+
+        val countStatement = DaoUtils.buildSearchCountStatement(
+            ftsTableName = "stampRallyEntry_fts",
+            idField = "id",
+            matchQuery = matchQuery,
+            likeStatement = likeStatement,
+        )
+        val statement = DaoUtils.buildSearchStatement(
+            tableName = "stampRallyEntry",
+            ftsTableName = "stampRallyEntry_fts",
+            select = "stampRallyEntry.*$selectSuffix",
+            idField = "id",
+            likeOrderBy = "",
+            matchQuery = matchQuery,
+            likeStatement = likeStatement,
+            additionalJoinStatement = """
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
-                WHERE stampRallyEntry MATCH ?
-                """.trimIndent()
-        } + sortSuffix
+                ON idAsKey = stampRallyUserEntry.stampRallyId
+                """.trimIndent(),
+            orderBy = sortSuffix,
+            randomSeed = searchQuery.randomSeed
+                .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM },
+            andStatement = andStatement,
+        )
 
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
+            countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("stampRallyEntry", "stampRallyEntry_fts"),
-            parameters = bindArguments + filterParamsQueryPieces,
-            mapper = { it.toStampRallyEntry(json) },
+            tableNames = listOf("stampRallyEntry_fts"),
+            mapper = SqlCursor::toStampRallyWithUserData,
         )
-    }
-
-    private fun filterParamsQuery(
-        filterParams: StampRallySortFilterViewModel.FilterParams,
-    ): MutableList<String> {
-        val queryPieces = mutableListOf<String>()
-
-        filterParams.fandom.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
-                .map { "fandom:${DatabaseUtils.wrapMatchQuery(it)}" }
-        }
-        filterParams.tables.takeUnless(String?::isNullOrBlank)?.let {
-            queryPieces += it.split(DatabaseUtils.WHITESPACE_REGEX)
-                .map { "tables:${DatabaseUtils.wrapMatchQuery(it)}" }
-        }
-
-        return queryPieces
     }
 }

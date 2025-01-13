@@ -111,15 +111,15 @@ class ArtistEntryDao(
 
             // Search for "http" as a simplification of logic, since checking
             // not empty would require a separate query template
-            if (filterParams.showOnlyWithCatalog) this += "artistEntry_fts.driveLink LIKE 'http%'"
+            if (filterParams.showOnlyWithCatalog) this += "artistEntry.driveLink LIKE 'http%'"
 
             if (searchQuery.lockedSeries != null) {
-                this += "artistEntry_fts.id IN (SELECT artistId from artistSeriesConnection WHERE " +
+                this += "artistEntry.id IN (SELECT artistId from artistSeriesConnection WHERE " +
                         (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed IS 1 AND" else "") +
                         " artistSeriesConnection.seriesId == " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
             } else if (searchQuery.lockedMerch != null) {
-                this += "artistEntry_fts.id IN (SELECT artistId from artistMerchConnection WHERE " +
+                this += "artistEntry.id IN (SELECT artistId from artistMerchConnection WHERE " +
                         (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed IS 1 AND" else "") +
                         "artistMerchConnection.merchId == " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
@@ -128,45 +128,49 @@ class ArtistEntryDao(
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
-            ArtistSearchSortOption.BOOTH -> "\nORDER BY artistEntry_fts.booth COLLATE NOCASE"
-            ArtistSearchSortOption.ARTIST -> "\nORDER BY artistEntry_fts.name COLLATE NOCASE"
-            ArtistSearchSortOption.RANDOM -> "\nORDER BY orderIndex"
+            ArtistSearchSortOption.BOOTH -> "ORDER BY artistEntry_fts.booth COLLATE NOCASE"
+            ArtistSearchSortOption.ARTIST -> "ORDER BY artistEntry_fts.name COLLATE NOCASE"
+            ArtistSearchSortOption.RANDOM -> "ORDER BY orderIndex"
         } + " $ascending"
-        val randomSortSuffix = (", substr(artistEntry_fts.counter * 0.${searchQuery.randomSeed}," +
-                " length(artistEntry_fts.counter) + 2) as orderIndex")
-            .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
-            .orEmpty()
-        val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored, " +
-                "artistUserEntry.notes$randomSortSuffix"
+        val randomSortSelectSuffix =
+            (", substr(artistEntry_fts.counter * 0.${searchQuery.randomSeed}," +
+                    " length(artistEntry_fts.counter) + 2) as orderIndex")
+                .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
+                .orEmpty()
+        val selectSuffix =
+            ", artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.notes"
 
         val matchOptions = mutableListOf<String>()
         filterParams.artist.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(name : ${makeMatchOrQuery(listOf(it))})"
+            matchOptions += "(name : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
         }
         filterParams.booth.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(booth : ${makeMatchOrQuery(listOf(it))})"
+            matchOptions += "(booth : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
         }
         filterParams.summary.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(summary : ${makeMatchOrQuery(listOf(it))})"
+            matchOptions += "(summary : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
         }
         filterParams.series.takeUnless { it.isEmpty() }?.let {
             if (filterParams.showOnlyConfirmedTags) {
-                "(seriesConfirmed : ${makeMatchOrQuery(it)})"
+                "(seriesConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
             } else {
-                "({seriesInferred seriesConfirmed} : ${makeMatchOrQuery(it)})"
+                "({seriesInferred seriesConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
             }
         }
         filterParams.merch.takeUnless { it.isEmpty() }?.let {
             if (filterParams.showOnlyConfirmedTags) {
-                "(merchConfirmed : ${makeMatchOrQuery(it)})"
+                "(merchConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
             } else {
-                "({merchInferred merchConfirmed} : ${makeMatchOrQuery(it)})"
+                "({merchInferred merchConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
             }
         }
 
         if (query.isEmpty() && matchOptions.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
-                ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+                ?.joinToString(prefix = "WHERE ", separator = "\nAND ") {
+                    it.replace("artistEntry.", "artistEntry_fts.")
+                }
+                .orEmpty()
             val countStatement = """
                 SELECT COUNT(*)
                 FROM artistEntry_fts
@@ -175,7 +179,7 @@ class ArtistEntryDao(
                 $andStatement
             """.trimIndent()
             val statement = """
-                SELECT artistEntry_fts.*$selectSuffix
+                SELECT artistEntry_fts.*$selectSuffix$randomSortSelectSuffix
                 FROM artistEntry_fts
                 LEFT OUTER JOIN artistUserEntry
                 ON artistEntry_fts.id = artistUserEntry.artistId
@@ -193,7 +197,8 @@ class ArtistEntryDao(
             )
         }
 
-        val queryWithOr = makeMatchOrQuery(query.split(Regex("\\s+")))
+        val queries = query.split(Regex("\\s+"))
+        val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
         val targetColumns = listOfNotNull(
             "booth",
             "name",
@@ -203,31 +208,42 @@ class ArtistEntryDao(
             "merchInferred".takeUnless { filterParams.showOnlyConfirmedTags },
             "merchConfirmed",
         )
-        val matchClause = buildString {
-            append("MATCH ")
-            append(matchOptions.joinToString(separator = " "))
-            append("'{ ${targetColumns.joinToString(separator = " ")} } : $queryWithOr'")
+        val matchQuery = buildString {
+            append("'")
+            append(matchOptions.joinToString(separator = " ", postfix = " "))
+            append("{ ${targetColumns.joinToString(separator = " ")} } : $matchOrQuery'")
+        }
+
+        val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
+            "(${DaoUtils.makeLikeAndQuery("artistEntry_fts.$it", queries)})"
         }
 
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
-            ?.joinToString(prefix = "AND ", separator = "\nAND ").orEmpty()
-        val countStatement = """
-            SELECT COUNT(*)
-            FROM artistEntry_fts
-            LEFT OUTER JOIN artistUserEntry
-            ON artistEntry_fts.id = artistUserEntry.artistId
-            WHERE artistEntry_fts $matchClause
-            $andStatement
-            """.trimIndent()
-        val statement = """
-            SELECT artistEntry_fts.*$selectSuffix
-            FROM artistEntry_fts
-            LEFT OUTER JOIN artistUserEntry
-            ON artistEntry_fts.id = artistUserEntry.artistId
-            WHERE artistEntry_fts $matchClause
-            $andStatement
-            $sortSuffix
-            """.trimIndent()
+            ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+
+        val countStatement = DaoUtils.buildSearchCountStatement(
+            ftsTableName = "artistEntry_fts",
+            idField = "id",
+            matchQuery = matchQuery,
+            likeStatement = likeStatement,
+        )
+        val statement = DaoUtils.buildSearchStatement(
+            tableName = "artistEntry",
+            ftsTableName = "artistEntry_fts",
+            select = "artistEntry.*$selectSuffix",
+            idField = "id",
+            likeOrderBy = "",
+            matchQuery = matchQuery,
+            likeStatement = likeStatement,
+            additionalJoinStatement = """
+                LEFT OUTER JOIN artistUserEntry
+                ON idAsKey = artistUserEntry.artistId
+                """.trimIndent(),
+            orderBy = sortSuffix,
+            randomSeed = searchQuery.randomSeed
+                .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM },
+            andStatement = andStatement,
+        )
 
         return DaoUtils.queryPagingSource<ArtistWithUserData>(
             driver = driver,
@@ -238,8 +254,4 @@ class ArtistEntryDao(
             mapper = SqlCursor::toArtistWithUserData,
         )
     }
-
-    private fun makeMatchOrQuery(query: List<String>) = query.map { it.replace('"', ' ') }
-        .filter(String::isNotBlank)
-        .joinToString(separator = " OR ") { "\"${it}*\"" }
 }

@@ -34,10 +34,12 @@ class TagEntryDao(
     private val dao: suspend () -> TagEntryQueries = { database().tagEntryQueries },
 ) {
     fun getSeries(): PagingSource<Int, SeriesEntry> {
+        val countStatement = "SELECT COUNT(*) FROM seriesEntry ORDER BY name COLLATE NOCASE"
         val statement = "SELECT * FROM seriesEntry ORDER BY name COLLATE NOCASE"
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
+            countStatement = countStatement,
             statement = statement,
             tableNames = listOf("seriesEntry"),
             mapper = SqlCursor::toSeriesEntry,
@@ -50,10 +52,12 @@ class TagEntryDao(
             .mapLatest { it.awaitAsOne().toInt() }
 
     fun getMerch(): PagingSource<Int, MerchEntry> {
+        val countStatement = "SELECT COUNT(*) FROM merchEntry ORDER BY name COLLATE NOCASE"
         val statement = "SELECT * FROM merchEntry ORDER BY name COLLATE NOCASE"
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
+            countStatement = countStatement,
             statement = statement,
             tableNames = listOf("merchEntry"),
             mapper = SqlCursor::toMerchEntry,
@@ -66,67 +70,63 @@ class TagEntryDao(
             .mapLatest { it.awaitAsOne().toInt() }
 
     fun searchSeries(query: String): PagingSource<Int, SeriesEntry> {
-        val options = query.split(Regex("\\s+"))
-            .filter(String::isNotBlank)
-            .map { "*$it*" }
-            .map {
-                listOf(
-                    "name:$it",
-                )
-            }
+        val queries = query.split(Regex("\\s+"))
+        val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
+        val likeAndQuery = DaoUtils.makeLikeAndQuery("seriesEntry_fts.name", queries)
 
-        val sortSuffix = "\nORDER BY seriesEntry_fts.name COLLATE NOCASE"
-        val optionsArguments = options.map { it.joinToString(separator = " OR ") }
-        val bindArguments = optionsArguments.filterNot { it.isEmpty() }
-
-        val statement = bindArguments.joinToString("\nINTERSECT\n") {
-            """
-                SELECT *
-                FROM seriesEntry
-                JOIN seriesEntry_fts ON seriesEntry.name = seriesEntry_fts.name
-                WHERE seriesEntry_fts MATCH ?
-                """.trimIndent()
-        } + sortSuffix
+        val matchQuery = "'{ name } : $matchOrQuery'"
+        val countStatement = DaoUtils.buildSearchCountStatement(
+            ftsTableName = "seriesEntry_fts",
+            idField = "name",
+            matchQuery = matchQuery,
+            likeStatement = likeAndQuery,
+        )
+        val statement = DaoUtils.buildSearchStatement(
+            tableName = "seriesEntry",
+            ftsTableName = "seriesEntry_fts",
+            idField = "name",
+            likeOrderBy = "ORDER BY seriesEntry_fts.name COLLATE NOCASE",
+            matchQuery = matchQuery,
+            likeStatement = likeAndQuery,
+        )
 
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
+            countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("seriesEntry", "seriesEntry_fts"),
-            parameters = bindArguments,
+            tableNames = listOf("seriesEntry_fts"),
             mapper = SqlCursor::toSeriesEntry,
         )
     }
 
     fun searchMerch(query: String): PagingSource<Int, MerchEntry> {
-        val options = query.split(Regex("\\s+"))
-            .filter(String::isNotBlank)
-            .map { "*$it*" }
-            .map {
-                listOf(
-                    "name:$it",
-                )
-            }
+        val queries = query.split(Regex("\\s+"))
+        val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
+        val likeAndQuery = DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)
 
-        val sortSuffix = "\nORDER BY merchEntry_fts.name COLLATE NOCASE"
-        val optionsArguments = options.map { it.joinToString(separator = " OR ") }
-        val bindArguments = optionsArguments.filterNot { it.isEmpty() }
-
-        val statement = bindArguments.joinToString("\nINTERSECT\n") {
-            """
-                SELECT *
-                FROM merchEntry
-                JOIN merchEntry_fts ON merchEntry.name = merchEntry_fts.name
-                WHERE merchEntry_fts MATCH ?
-                """.trimIndent()
-        } + sortSuffix
+        val matchQuery = "'{ name } : $matchOrQuery'"
+        val countStatement = DaoUtils.buildSearchCountStatement(
+            ftsTableName = "merchEntry_fts",
+            idField = "name",
+            matchQuery = matchQuery,
+            likeStatement = likeAndQuery,
+        )
+        val statement = DaoUtils.buildSearchStatement(
+            tableName = "merchEntry",
+            ftsTableName = "merchEntry_fts",
+            idField = "name",
+            likeOrderBy = "ORDER BY merchEntry_fts.name COLLATE NOCASE",
+            matchQuery = matchQuery,
+            likeStatement = likeAndQuery,
+        )
 
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
+            countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("merchEntry", "merchEntry_fts"),
-            parameters = bindArguments,
+            tableNames = listOf("merchEntry_fts"),
             mapper = SqlCursor::toMerchEntry,
         )
     }

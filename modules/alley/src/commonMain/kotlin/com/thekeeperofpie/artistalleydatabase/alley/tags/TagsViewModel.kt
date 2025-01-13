@@ -14,6 +14,7 @@ import app.cash.paging.createPagingConfig
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -48,6 +49,7 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
                     }
                         .flow
                 }
+                .enforceUniqueIds { it.name }
                 .cachedIn(viewModelScope)
                 .collectLatest(series::emit)
         }
@@ -69,6 +71,7 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
                     }
                         .flow
                 }
+                .enforceUniqueIds { it.name }
                 .cachedIn(viewModelScope)
                 .collectLatest(merch::emit)
         }

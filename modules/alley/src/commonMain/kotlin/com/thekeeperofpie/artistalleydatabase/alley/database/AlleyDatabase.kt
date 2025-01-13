@@ -22,7 +22,6 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class ArtistAlleyDatabase(
     applicationScope: ApplicationScope,
-    json: Json,
     driverFactory: DriverFactory,
 ) {
     private val databaseState = MutableStateFlow<AlleySqlDatabase?>(null)
@@ -70,7 +69,7 @@ class ArtistAlleyDatabase(
     }
 
     internal val artistEntryDao = ArtistEntryDao(driver, database)
-    internal val stampRallyEntryDao = StampRallyEntryDao(driver, database, json)
+    internal val stampRallyEntryDao = StampRallyEntryDao(driver, database)
     internal val tagEntryDao = TagEntryDao(driver, database)
     internal val userEntryDao = UserEntryDao(database)
 }
