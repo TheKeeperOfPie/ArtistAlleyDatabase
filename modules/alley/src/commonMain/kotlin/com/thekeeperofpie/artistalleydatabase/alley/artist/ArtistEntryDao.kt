@@ -167,24 +167,22 @@ class ArtistEntryDao(
 
         if (query.isEmpty() && matchOptions.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
-                ?.joinToString(prefix = "WHERE ", separator = "\nAND ") {
-                    it.replace("artistEntry.", "artistEntry_fts.")
-                }
+                ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
                 .orEmpty()
             val countStatement = """
                 SELECT COUNT(*)
-                FROM artistEntry_fts
+                FROM artistEntry
                 LEFT OUTER JOIN artistUserEntry
-                ON artistEntry_fts.id = artistUserEntry.artistId
+                ON artistEntry.id = artistUserEntry.artistId
                 $andStatement
             """.trimIndent()
             val statement = """
-                SELECT artistEntry_fts.*$selectSuffix$randomSortSelectSuffix
-                FROM artistEntry_fts
+                SELECT artistEntry.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
+                FROM artistEntry
                 LEFT OUTER JOIN artistUserEntry
-                ON artistEntry_fts.id = artistUserEntry.artistId
+                ON artistEntry.id = artistUserEntry.artistId
                 $andStatement
-                $sortSuffix
+                ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
 
             return DaoUtils.queryPagingSource<ArtistWithUserData>(

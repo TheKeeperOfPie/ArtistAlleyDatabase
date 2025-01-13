@@ -116,21 +116,22 @@ class StampRallyEntryDao(
 
         if (query.isEmpty() && matchOptions.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
-                ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+                ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
+                .orEmpty()
             val countStatement = """
                 SELECT COUNT(*)
-                FROM stampRallyEntry_fts
+                FROM stampRallyEntry
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON stampRallyEntry_fts.id = stampRallyUserEntry.stampRallyId
+                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
                 $andStatement
                 """.trimIndent()
             val statement = """
-                SELECT stampRallyEntry_fts.*$selectSuffix$randomSortSelectSuffix
-                FROM stampRallyEntry_fts
+                SELECT stampRallyEntry.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
+                FROM stampRallyEntry
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON stampRallyEntry_fts.id = stampRallyUserEntry.stampRallyId
+                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
                 $andStatement
-                $sortSuffix
+                ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
 
             return DaoUtils.queryPagingSource(

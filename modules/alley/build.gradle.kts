@@ -86,7 +86,10 @@ dependencies {
     add("kspDesktop", kspProcessors.room.compiler)
 }
 
-val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
+tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase")
+val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs") {
+    dependsOn("generateArtistAlleyDatabase")
+}
 
 sqldelight {
     databases {
