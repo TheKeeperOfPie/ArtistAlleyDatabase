@@ -67,6 +67,7 @@ import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds

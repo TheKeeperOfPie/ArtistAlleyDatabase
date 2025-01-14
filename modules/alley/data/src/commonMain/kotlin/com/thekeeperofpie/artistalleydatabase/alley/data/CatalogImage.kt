@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.data
 
 import com.eygraber.uri.Uri
 

@@ -6,11 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -61,8 +61,8 @@ class MapViewModel(
         return letterToBooths.mapIndexed { letterIndex, pair ->
             pair.second.map {
                 val tableNumber = it.booth.filter { it.isDigit() }.toInt()
-                val images = ArtistAlleyUtils.getImages(
-                    folder = ArtistAlleyUtils.Folder.CATALOGS,
+                val images = AlleyDataUtils.getImages(
+                    folder = AlleyDataUtils.Folder.CATALOGS,
                     file = it.booth,
                 )
                 val imageIndex = if (showRandomCatalogImage) {

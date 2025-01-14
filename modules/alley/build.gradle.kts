@@ -25,6 +25,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(projects.modules.alley.data)
             api(projects.modules.entry)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
@@ -86,11 +87,6 @@ dependencies {
     add("kspDesktop", kspProcessors.room.compiler)
 }
 
-tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase")
-val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs") {
-    dependsOn("generateArtistAlleyDatabase")
-}
-
 sqldelight {
     databases {
         create("AlleySqlDatabase") {
@@ -102,5 +98,4 @@ sqldelight {
 
 compose.resources {
     publicResClass = true
-    customDirectory("commonMain", inputsTask.map { it.outputResources.get() })
 }

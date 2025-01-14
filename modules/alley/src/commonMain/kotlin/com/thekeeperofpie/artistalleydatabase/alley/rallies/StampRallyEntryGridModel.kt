@@ -4,11 +4,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
-import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 class StampRallyEntryGridModel(
@@ -33,8 +33,8 @@ class StampRallyEntryGridModel(
         fun buildFromEntry(entry: StampRallyWithUserData) = StampRallyEntryGridModel(
             stampRally = entry.stampRally,
             userEntry = entry.userEntry,
-            images = ArtistAlleyUtils.getImages(
-                folder = ArtistAlleyUtils.Folder.RALLIES,
+            images = AlleyDataUtils.getImages(
+                folder = AlleyDataUtils.Folder.RALLIES,
                 file = entry.stampRally.id.replace("-", " - "),
             ),
             placeholderText = entry.stampRally.fandom,

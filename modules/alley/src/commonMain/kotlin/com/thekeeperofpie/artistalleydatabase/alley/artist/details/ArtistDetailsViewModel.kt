@@ -6,13 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -45,8 +45,8 @@ class ArtistDetailsViewModel(
             val userEntry = artistWithUserData.userEntry
             val stampRallies = entryWithStampRallies.stampRallies
 
-            val catalogImages = ArtistAlleyUtils.getImages(
-                folder = ArtistAlleyUtils.Folder.CATALOGS,
+            val catalogImages = AlleyDataUtils.getImages(
+                folder = AlleyDataUtils.Folder.CATALOGS,
                 file = artist.booth,
             )
             val seriesConfirmed = artist.seriesConfirmed

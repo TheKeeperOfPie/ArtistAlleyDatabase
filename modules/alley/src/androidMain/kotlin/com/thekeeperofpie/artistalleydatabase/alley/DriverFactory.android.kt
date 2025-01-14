@@ -15,7 +15,7 @@ actual class DriverFactory(private val application: Application) {
         val path = application.getDatabasePath("alleyDatabase")
         // TODO: Skip if the same
         path.outputStream().use { output ->
-            application.assets.open("composeResources/artistalleydatabase.modules.alley.generated.resources/files/database.sqlite")
+            application.assets.open("composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/database.sqlite")
                 .copyTo(output)
         }
         return AndroidSqliteDriver(Schema.synchronous(), application, path.name)

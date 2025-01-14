@@ -1,7 +1,7 @@
 import sqlite3InitModule from "@sqlite.org/sqlite-wasm";
 
 const mutableDatabasePath = "alleyUser.sqlite"
-const readOnlyInputPath = "composeResources/artistalleydatabase.modules.alley.generated.resources/files/database.sqlite"
+const readOnlyInputPath = "composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/database.sqlite"
 const readOnlyDatabasePath = "alleyArtist.sqlite"
 
 let db = null;

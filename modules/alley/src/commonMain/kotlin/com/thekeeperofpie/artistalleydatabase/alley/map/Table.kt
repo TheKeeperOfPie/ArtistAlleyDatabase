@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map
 
 import androidx.compose.ui.graphics.Color
-import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 
 data class Table(
     val booth: String,

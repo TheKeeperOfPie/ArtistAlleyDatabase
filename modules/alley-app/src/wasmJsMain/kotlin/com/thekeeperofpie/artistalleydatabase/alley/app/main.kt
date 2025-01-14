@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.ComposeViewport
 import androidx.navigation.compose.rememberNavController
-import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.data.generated.resources.Res
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.decode.DataSource
@@ -53,7 +53,8 @@ fun main() {
                             imageLoader: ImageLoader,
                         ): Fetcher? {
                             val filePath = data.path?.substringAfter(
-                                "artistalleydatabase.modules.alley.generated.resources/"
+                                "artistalleydatabase.modules.alley.data.generated.resources/",
+                                "",
                             )
                             if (filePath.isNullOrBlank()) return null
                             return object : Fetcher {

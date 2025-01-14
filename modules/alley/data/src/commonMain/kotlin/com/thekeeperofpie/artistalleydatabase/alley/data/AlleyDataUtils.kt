@@ -1,12 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.data
 
-import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.generated.ComposeFile
 import com.thekeeperofpie.artistalleydatabase.generated.ComposeFiles
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
-object ArtistAlleyUtils {
+object AlleyDataUtils {
 
     enum class Folder(val folderName: String) {
         CATALOGS("catalogs"),

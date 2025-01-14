@@ -13,12 +13,18 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -53,15 +59,16 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -397,6 +404,47 @@ fun HorizontalPagerIndicator(pagerState: PagerState, modifier: Modifier = Modifi
                     .border(1.dp, Color.DarkGray, CircleShape)
                     .size(8.dp)
             )
+        }
+    }
+}
+
+@Composable
+internal fun ImageGrid(
+    targetHeight: Int? = null,
+    images: List<CatalogImage>,
+    onImageClick: (index: Int, image: Uri) -> Unit = { _, _ -> },
+) {
+    val density = LocalDensity.current
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(160.dp),
+        contentPadding = PaddingValues(8.dp),
+        verticalItemSpacing = 8.dp,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.let {
+            if (targetHeight == null) {
+                it
+            } else if (targetHeight > 0) {
+                it.height(density.run { targetHeight.toDp() })
+            } else {
+                it.heightIn(max = 320.dp)
+            }
+        }
+    ) {
+        itemsIndexed(images) { index, image ->
+            BoxWithConstraints {
+                AsyncImage(
+                    model = image.uri,
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                    modifier = Modifier
+                        .clickable { onImageClick(index, image.uri) }
+                        .sharedElement("gridImage", image.uri)
+                        .fillMaxWidth()
+                        .conditionally(image.width != null && image.height != null) {
+                            heightIn(min = (image.height!! / image.width!!.toFloat()) * maxWidth)
+                        }
+                )
+            }
         }
     }
 }

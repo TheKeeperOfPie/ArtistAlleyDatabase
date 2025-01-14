@@ -4,12 +4,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 class ArtistEntryGridModel(
@@ -32,14 +31,11 @@ class ArtistEntryGridModel(
 
     companion object {
         fun buildFromEntry(entry: ArtistWithUserData): ArtistEntryGridModel {
-            if (entry.artist.id == "A06") {
-                ConsoleLogger.log("${entry.artist.id} is ${entry.userEntry.ignored}")
-            }
             return ArtistEntryGridModel(
                 artist = entry.artist,
                 userEntry = entry.userEntry,
-                images = ArtistAlleyUtils.getImages(
-                    folder = ArtistAlleyUtils.Folder.CATALOGS,
+                images = AlleyDataUtils.getImages(
+                    folder = AlleyDataUtils.Folder.CATALOGS,
                     file = entry.artist.booth,
                 ),
                 placeholderText = entry.artist.booth,
