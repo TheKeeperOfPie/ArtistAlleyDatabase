@@ -34,7 +34,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.9.0-alpha08"
+        const val gradle = "8.9.0-alpha09"
     }
 
     object androidx {
@@ -60,7 +60,7 @@ object Versions {
 
     object apache {
         const val commonsCompress = "1.27.1"
-        const val commonsCsv = "1.12.0"
+        const val commonsCsv = "1.13.0"
         const val commonsIo = "2.18.0"
     }
 
@@ -131,7 +131,7 @@ object Versions {
     const val ktor = "3.0.3"
     const val ksoup = "0.2.1"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.47"
+    const val manifoldGraphql = "2024.1.50"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
@@ -142,16 +142,16 @@ object Versions {
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
-    const val okio = "3.10.1"
+    const val okio = "3.10.2"
     const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
-    const val placeholder = "1.0.8"
+    const val placeholder = "1.0.9"
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.1.0-wasm.2"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.0"
-    const val unityAds = "4.12.5"
-    const val uriKmp = "0.0.18"
+    const val unityAds = "4.13.0"
+    const val uriKmp = "0.0.19"
     const val webpImageIo = "0.9.0"
     const val xmlUtil = "0.90.3"
 }

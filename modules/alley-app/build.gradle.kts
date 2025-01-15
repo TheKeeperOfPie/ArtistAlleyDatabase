@@ -233,7 +233,11 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
 
 configurations.all {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
-        select("com.google.guava:guava:0")
+    resolutionStrategy{
+        capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
+            select("com.google.guava:guava:0")
+        }
+        // com.eygraber:uri-kmp:0.0.19 bumps this to 0.3, which breaks CMP
+        force("org.jetbrains.kotlinx:kotlinx-browser:0.1")
     }
 }
