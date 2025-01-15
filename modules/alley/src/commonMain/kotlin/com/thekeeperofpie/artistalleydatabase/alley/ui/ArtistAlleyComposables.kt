@@ -40,6 +40,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -58,6 +60,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -69,6 +72,7 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -274,7 +278,7 @@ private fun ImagePager(
                 .clipToBounds()
         ) {
             if (it == 0 && images.size > 1) {
-                ImageGrid(
+                SmallImageGrid(
                     targetHeight = minHeight.coerceAtLeast(
                         density.run { 320.dp.roundToPx() }
                     ),
@@ -409,7 +413,7 @@ fun HorizontalPagerIndicator(pagerState: PagerState, modifier: Modifier = Modifi
 }
 
 @Composable
-internal fun ImageGrid(
+internal fun SmallImageGrid(
     targetHeight: Int? = null,
     images: List<CatalogImage>,
     onImageClick: (index: Int, image: Uri) -> Unit = { _, _ -> },
@@ -446,5 +450,17 @@ internal fun ImageGrid(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@Composable
+internal fun currentWindowSizeClass(): WindowSizeClass {
+    val density = LocalDensity.current
+    val windowConfiguration = LocalWindowConfiguration.current
+    val width = windowConfiguration.screenWidthDp
+    val height = windowConfiguration.screenHeightDp
+    return remember(density, windowConfiguration) {
+        WindowSizeClass.calculateFromSize(DpSize(width, height))
     }
 }

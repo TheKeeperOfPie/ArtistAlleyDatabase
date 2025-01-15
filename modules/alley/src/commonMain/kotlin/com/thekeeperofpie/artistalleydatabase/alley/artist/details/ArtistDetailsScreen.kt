@@ -97,6 +97,7 @@ object ArtistDetailsScreen {
             images = viewModel::images,
             onClickBack = onClickBack,
             initialImageIndex = viewModel.initialImageIndex,
+            onClickOpenInMap = onArtistMapClick,
         ) {
             ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(

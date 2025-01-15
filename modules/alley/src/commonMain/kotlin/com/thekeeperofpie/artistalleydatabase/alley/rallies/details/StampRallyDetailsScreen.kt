@@ -102,6 +102,7 @@ object StampRallyDetailsScreen {
             images = viewModel::images,
             onClickBack = onClickBack,
             initialImageIndex = viewModel.initialImageIndex,
+            onClickOpenInMap = onStampRallyMapClick,
         ) {
             ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(

@@ -10,6 +10,7 @@ import app.cash.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -83,7 +84,9 @@ class ArtistSearchViewModel(
     override fun mapQuery(
         query: String,
         options: ArtistSearchQuery,
-    ) = createPager(createPagingConfig(pageSize = 20)) { artistEntryDao.search(query, options) }
+    ) = createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+        artistEntryDao.search(query, options)
+    }
         .flow
         .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
         .map { it.map { ArtistEntryGridModel.buildFromEntry(it) } }

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -46,21 +47,18 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
-import artistalleydatabase.modules.alley.generated.resources.alley_open_update
-import artistalleydatabase.modules.alley.generated.resources.alley_update_notice
 import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
 import artistalleydatabase.modules.entry.generated.resources.entry_results_one
 import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
@@ -127,10 +125,6 @@ object SearchScreen {
             }
         }
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        var seen by remember { mutableStateOf(false) }
-
-        val updateNotice = stringResource(Res.string.alley_update_notice)
-        val updateOpenUpdate = stringResource(Res.string.alley_open_update)
 
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
@@ -146,270 +140,312 @@ object SearchScreen {
                 )
             ),
         ) {
-            Scaffold(
-                topBar = {
-                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentWidth()
-                                .padding(bottom = 8.dp)
-                        ) {
-                            val isNotEmpty by remember {
-                                derivedStateOf { viewModel.query.isNotEmpty() }
-                            }
-                            BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
-                                viewModel.onQuery("")
-                            }
+            Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
+                Scaffold(
+                    topBar = {
+                        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                val isNotEmpty by remember {
+                                    derivedStateOf { viewModel.query.isNotEmpty() }
+                                }
+                                BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
+                                    viewModel.onQuery("")
+                                }
 
-                            StaticSearchBar(
-                                leadingIcon = if (onClickBack != null) {
-                                    { ArrowBackIconButton(onClickBack) }
-                                } else null,
-                                query = viewModel.query,
-                                onQueryChange = viewModel::onQuery,
-                                placeholder = {
-                                    @Suppress("NAME_SHADOWING")
-                                    val title = title()
-                                    if (title != null) {
-                                        Text(title)
-                                    } else {
-                                        val entriesSize = entries.itemCount
-                                        Text(
-                                            if (entriesSize > 0) {
-                                                stringResource(
-                                                    EntryRes.string.entry_search_hint_with_entry_count,
-                                                    entriesSize,
-                                                )
-                                            } else {
-                                                stringResource(EntryRes.string.entry_search_hint)
+                                StaticSearchBar(
+                                    leadingIcon = if (onClickBack != null) {
+                                        { ArrowBackIconButton(onClickBack) }
+                                    } else null,
+                                    query = viewModel.query,
+                                    onQueryChange = viewModel::onQuery,
+                                    placeholder = {
+                                        @Suppress("NAME_SHADOWING")
+                                        val title = title()
+                                        if (title != null) {
+                                            Text(title)
+                                        } else {
+                                            val entriesSize = entries.itemCount
+                                            Text(
+                                                if (entriesSize > 0) {
+                                                    stringResource(
+                                                        EntryRes.string.entry_search_hint_with_entry_count,
+                                                        entriesSize,
+                                                    )
+                                                } else {
+                                                    stringResource(EntryRes.string.entry_search_hint)
+                                                }
+                                            )
+                                        }
+                                    },
+                                    trailingIcon = {
+                                        Row {
+                                            AnimatedVisibility(isNotEmpty) {
+                                                IconButton(onClick = { viewModel.onQuery("") }) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Clear,
+                                                        contentDescription = stringResource(
+                                                            EntryRes.string.entry_search_clear
+                                                        ),
+                                                    )
+                                                }
                                             }
-                                        )
-                                    }
-                                },
-                                trailingIcon = {
-                                    Row {
-                                        AnimatedVisibility(isNotEmpty) {
-                                            IconButton(onClick = { viewModel.onQuery("") }) {
+
+                                            @Suppress("NAME_SHADOWING")
+                                            val displayType = displayType()
+                                            val entries = DisplayType.entries
+                                            val nextDisplayType =
+                                                entries[(entries.indexOf(displayType) + 1) % entries.size]
+                                            IconButton(onClick = {
+                                                onDisplayTypeToggle(nextDisplayType)
+                                            }) {
                                                 Icon(
-                                                    imageVector = Icons.Filled.Clear,
+                                                    imageVector = nextDisplayType.icon,
                                                     contentDescription = stringResource(
-                                                        EntryRes.string.entry_search_clear
+                                                        Res.string.alley_display_type_icon_content_description,
                                                     ),
                                                 )
                                             }
+
+                                            actions?.invoke(this)
                                         }
-
-                                        @Suppress("NAME_SHADOWING")
-                                        val displayType = displayType()
-                                        val entries = DisplayType.entries
-                                        val nextDisplayType =
-                                            entries[(entries.indexOf(displayType) + 1) % entries.size]
-                                        IconButton(onClick = {
-                                            onDisplayTypeToggle(nextDisplayType)
-                                        }) {
-                                            Icon(
-                                                imageVector = nextDisplayType.icon,
-                                                contentDescription = stringResource(
-                                                    Res.string.alley_display_type_icon_content_description,
-                                                ),
-                                            )
-                                        }
-
-                                        actions?.invoke(this)
-                                    }
-                                },
-                                onSearch = {},
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 4.dp),
-                            )
-                        }
-                    }
-                }
-            ) {
-                val density = LocalDensity.current
-                val topBarPadding by remember {
-                    derivedStateOf {
-                        // Force a snapshot read so that this recomposes
-                        // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
-                        scrollBehavior.state.heightOffset
-                        scrollBehavior.state.heightOffsetLimit
-                            .takeUnless { it == -Float.MAX_VALUE }
-                            ?.let { density.run { -it.toDp() } }
-                            ?: 0.dp
-                    }
-                }
-                val topOffset by remember {
-                    derivedStateOf {
-                        topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() }
-                    }
-                }
-
-                Box {
-                    val coroutineScope = rememberCoroutineScope()
-
-                    @Suppress("NAME_SHADOWING")
-                    val displayType = displayType()
-
-                    @Suppress("NAME_SHADOWING")
-                    val showGridByDefault = showGridByDefault()
-
-                    @Suppress("NAME_SHADOWING")
-                    val showRandomCatalogImage = showRandomCatalogImage()
-                    LazyVerticalStaggeredGrid(
-                        columns = if (forceOneDisplayColumn()) {
-                            StaggeredGridCells.Fixed(1)
-                        } else {
-                            when (displayType) {
-                                DisplayType.LIST,
-                                DisplayType.CARD,
-                                -> StaggeredGridCells.Adaptive(350.dp)
-                                DisplayType.IMAGE,
-                                -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
-                            }
-                        },
-                        state = gridState,
-                        contentPadding = when (displayType) {
-                            DisplayType.LIST,
-                            DisplayType.IMAGE,
-                            -> PaddingValues(
-                                top = 8.dp + topBarPadding,
-                                bottom = 80.dp,
-                            )
-                            DisplayType.CARD,
-                            -> PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = 8.dp + topBarPadding,
-                                bottom = 80.dp,
-                            )
-                        },
-                        verticalItemSpacing = when (displayType) {
-                            DisplayType.LIST,
-                            DisplayType.IMAGE,
-                            -> 0.dp
-                            DisplayType.CARD,
-                            -> 8.dp
-                        },
-                        horizontalArrangement = when (displayType) {
-                            DisplayType.LIST,
-                            DisplayType.CARD,
-                            -> 8.dp
-                            DisplayType.IMAGE -> 0.dp
-                        }.let(Arrangement::spacedBy),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(
-                            count = entries.itemCount,
-                            key = entries.itemKey { it.id.scopedId },
-                            contentType = entries.itemContentType { "search_entry" },
-                        ) { index ->
-                            val entry = entries[index] ?: return@items
-
-                            @Suppress("NAME_SHADOWING")
-                            val onFavoriteToggle: (Boolean) -> Unit = {
-                                entry.favorite = it
-                                onFavoriteToggle(entry, it)
-                            }
-
-                            @Suppress("NAME_SHADOWING")
-                            val onIgnoredToggle: (Boolean) -> Unit = {
-                                entry.ignored = it
-                                onIgnoredToggle(entry, it)
-                            }
-
-                            val sharedElementId = itemToSharedElementId(entry)
-                            when (displayType) {
-                                DisplayType.LIST -> {
-                                    val ignored = entry.ignored
-                                    itemRow(
-                                        entry,
-                                        onFavoriteToggle,
-                                        Modifier
-                                            .sharedBounds("itemContainer", sharedElementId)
-                                            .combinedClickable(
-                                                onClick = { onEntryClick(entry, 1) },
-                                                onLongClick = { onIgnoredToggle(!ignored) }
-                                            )
-                                            .alpha(if (entry.ignored) 0.38f else 1f)
-                                    )
-
-                                    HorizontalDivider()
-                                }
-                                DisplayType.CARD -> ItemCard(
-                                    entry = entry,
-                                    sharedElementId = itemToSharedElementId(entry),
-                                    showGridByDefault = showGridByDefault,
-                                    showRandomCatalogImage = showRandomCatalogImage,
-                                    onFavoriteToggle = onFavoriteToggle,
-                                    onIgnoredToggle = onIgnoredToggle,
-                                    onClick = onEntryClick,
-                                    itemRow = itemRow,
-                                    modifier = Modifier.sharedBounds(
-                                        "itemContainer",
-                                        sharedElementId
-                                    ),
-                                )
-                                DisplayType.IMAGE -> ItemImage(
-                                    entry = entry,
-                                    sharedElementId = itemToSharedElementId(entry),
-                                    showGridByDefault = showGridByDefault,
-                                    showRandomCatalogImage = showRandomCatalogImage,
-                                    onFavoriteToggle = onFavoriteToggle,
-                                    onIgnoredToggle = onIgnoredToggle,
-                                    onClick = onEntryClick,
-                                    itemRow = itemRow,
-                                    modifier = Modifier.sharedBounds(
-                                        "itemContainer",
-                                        sharedElementId
-                                    ),
+                                    },
+                                    onSearch = {},
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp),
                                 )
                             }
                         }
+                    },
+                    modifier = Modifier.widthIn(max = 1200.dp)
+                ) {
+                    val density = LocalDensity.current
+                    val topBarPadding by remember {
+                        derivedStateOf {
+                            // Force a snapshot read so that this recomposes
+                            // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
+                            scrollBehavior.state.heightOffset
+                            scrollBehavior.state.heightOffsetLimit
+                                .takeUnless { it == -Float.MAX_VALUE }
+                                ?.let { density.run { -it.toDp() } }
+                                ?: 0.dp
+                        }
+                    }
+                    val topOffset by remember {
+                        derivedStateOf {
+                            topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() }
+                        }
                     }
 
-                    VerticalScrollbar(
-                        state = gridState,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .fillMaxHeight()
-                            .padding(top = 8.dp + topBarPadding, bottom = 72.dp)
+                    Grid(
+                        entries = entries,
+                        showGridByDefault = showGridByDefault,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                        forceOneDisplayColumn = forceOneDisplayColumn,
+                        displayType = displayType,
+                        gridState = gridState,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onIgnoredToggle = onIgnoredToggle,
+                        onEntryClick = onEntryClick,
+                        shouldShowCount = shouldShowCount,
+                        topOffset = topOffset,
+                        topBarPadding = topBarPadding,
+                        itemToSharedElementId = itemToSharedElementId,
+                        itemRow = itemRow,
                     )
+                }
+            }
+        }
+    }
 
-                    if (shouldShowCount()) {
-                        val stringRes = when (entries.itemCount) {
-                            0 -> EntryRes.string.entry_results_zero
-                            1 -> EntryRes.string.entry_results_one
-                            else -> EntryRes.string.entry_results_multiple
+    @Composable
+    private fun <EntryModel : SearchEntryModel> Grid(
+        entries: LazyPagingItems<EntryModel>,
+        showGridByDefault: () -> Boolean,
+        showRandomCatalogImage: () -> Boolean,
+        forceOneDisplayColumn: () -> Boolean,
+        displayType: () -> DisplayType,
+        gridState: LazyStaggeredGridState,
+        onFavoriteToggle: (EntryModel, Boolean) -> Unit,
+        onIgnoredToggle: (EntryModel, Boolean) -> Unit,
+        onEntryClick: (EntryModel, Int) -> Unit,
+        shouldShowCount: () -> Boolean,
+        topOffset: Dp,
+        topBarPadding: Dp,
+        itemToSharedElementId: (EntryModel) -> Any,
+        itemRow: @Composable (
+            entry: EntryModel,
+            onFavoriteToggle: (Boolean) -> Unit,
+            modifier: Modifier,
+        ) -> Unit,
+    ) {
+        Box {
+            val coroutineScope = rememberCoroutineScope()
+
+            @Suppress("NAME_SHADOWING")
+            val displayType = displayType()
+
+            @Suppress("NAME_SHADOWING")
+            val showGridByDefault = showGridByDefault()
+
+            @Suppress("NAME_SHADOWING")
+            val showRandomCatalogImage = showRandomCatalogImage()
+            LazyVerticalStaggeredGrid(
+                columns = if (forceOneDisplayColumn()) {
+                    StaggeredGridCells.Fixed(1)
+                } else {
+                    when (displayType) {
+                        DisplayType.LIST,
+                        DisplayType.CARD,
+                            -> StaggeredGridCells.Adaptive(350.dp)
+                        DisplayType.IMAGE,
+                            -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
+                    }
+                },
+                state = gridState,
+                contentPadding = when (displayType) {
+                    DisplayType.LIST,
+                    DisplayType.IMAGE,
+                        -> PaddingValues(
+                        top = 8.dp + topBarPadding,
+                        bottom = 80.dp,
+                    )
+                    DisplayType.CARD,
+                        -> PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp + topBarPadding,
+                        bottom = 80.dp,
+                    )
+                },
+                verticalItemSpacing = when (displayType) {
+                    DisplayType.LIST,
+                    DisplayType.IMAGE,
+                        -> 0.dp
+                    DisplayType.CARD,
+                        -> 8.dp
+                },
+                horizontalArrangement = when (displayType) {
+                    DisplayType.LIST,
+                    DisplayType.CARD,
+                        -> 8.dp
+                    DisplayType.IMAGE -> 0.dp
+                }.let(Arrangement::spacedBy),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(
+                    count = entries.itemCount,
+                    key = entries.itemKey { it.id.scopedId },
+                    contentType = entries.itemContentType { "search_entry" },
+                ) { index ->
+                    val entry = entries[index] ?: return@items
+
+                    @Suppress("NAME_SHADOWING")
+                    val onFavoriteToggle: (Boolean) -> Unit = {
+                        entry.favorite = it
+                        onFavoriteToggle(entry, it)
+                    }
+
+                    @Suppress("NAME_SHADOWING")
+                    val onIgnoredToggle: (Boolean) -> Unit = {
+                        entry.ignored = it
+                        onIgnoredToggle(entry, it)
+                    }
+
+                    val sharedElementId = itemToSharedElementId(entry)
+                    when (displayType) {
+                        DisplayType.LIST -> {
+                            val ignored = entry.ignored
+                            itemRow(
+                                entry,
+                                onFavoriteToggle,
+                                Modifier
+                                    .sharedBounds("itemContainer", sharedElementId)
+                                    .combinedClickable(
+                                        onClick = { onEntryClick(entry, 1) },
+                                        onLongClick = { onIgnoredToggle(!ignored) }
+                                    )
+                                    .alpha(if (entry.ignored) 0.38f else 1f)
+                            )
+
+                            HorizontalDivider()
                         }
-
-                        Text(
-                            text = stringResource(stringRes, entries.itemCount),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .wrapContentSize()
-                                .padding(top = 8.dp + topOffset)
-                                .background(
-                                    MaterialTheme.colorScheme.secondary,
-                                    RoundedCornerShape(8.dp)
-                                )
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.secondaryContainer,
-                                    RoundedCornerShape(8.dp)
-                                )
-                                .clickable {
-                                    coroutineScope.launch {
-                                        gridState.animateScrollToItem(0, 0)
-                                    }
-                                }
-                                .padding(8.dp)
+                        DisplayType.CARD -> ItemCard(
+                            entry = entry,
+                            sharedElementId = itemToSharedElementId(entry),
+                            showGridByDefault = showGridByDefault,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                            onFavoriteToggle = onFavoriteToggle,
+                            onIgnoredToggle = onIgnoredToggle,
+                            onClick = onEntryClick,
+                            itemRow = itemRow,
+                            modifier = Modifier.sharedBounds(
+                                "itemContainer",
+                                sharedElementId
+                            ),
+                        )
+                        DisplayType.IMAGE -> ItemImage(
+                            entry = entry,
+                            sharedElementId = itemToSharedElementId(entry),
+                            showGridByDefault = showGridByDefault,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                            onFavoriteToggle = onFavoriteToggle,
+                            onIgnoredToggle = onIgnoredToggle,
+                            onClick = onEntryClick,
+                            itemRow = itemRow,
+                            modifier = Modifier.sharedBounds(
+                                "itemContainer",
+                                sharedElementId
+                            ),
                         )
                     }
                 }
+            }
+
+            VerticalScrollbar(
+                state = gridState,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .padding(top = 8.dp + topBarPadding, bottom = 72.dp)
+            )
+
+            if (shouldShowCount()) {
+                val stringRes = when (entries.itemCount) {
+                    0 -> EntryRes.string.entry_results_zero
+                    1 -> EntryRes.string.entry_results_one
+                    else -> EntryRes.string.entry_results_multiple
+                }
+
+                Text(
+                    text = stringResource(stringRes, entries.itemCount),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .wrapContentSize()
+                        .padding(top = 8.dp + topOffset)
+                        .background(
+                            MaterialTheme.colorScheme.secondary,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable {
+                            coroutineScope.launch {
+                                gridState.animateScrollToItem(0, 0)
+                            }
+                        }
+                        .padding(8.dp)
+                )
             }
         }
     }

@@ -8,6 +8,7 @@ import app.cash.paging.filter
 import app.cash.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -64,7 +65,9 @@ class StampRallySearchViewModel(
     override fun mapQuery(
         query: String,
         options: StampRallySearchQuery,
-    ) = createPager(createPagingConfig(pageSize = 20)) { stampRallyEntryDao.search(query, options) }
+    ) = createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+        stampRallyEntryDao.search(query, options)
+    }
         .flow
         .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }

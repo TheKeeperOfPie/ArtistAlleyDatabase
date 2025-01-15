@@ -12,6 +12,7 @@ import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
@@ -40,7 +41,7 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
         viewModelScope.launch(CustomDispatchers.IO) {
             snapshotFlow { seriesQuery }
                 .flatMapLatest { query ->
-                    createPager(createPagingConfig(pageSize = 20)) {
+                    createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         if (query.isBlank()) {
                             tagsEntryDao.getSeries()
                         } else {
@@ -62,7 +63,7 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
         viewModelScope.launch(CustomDispatchers.IO) {
             snapshotFlow { merchQuery }
                 .flatMapLatest { query ->
-                    createPager(createPagingConfig(pageSize = 20)) {
+                    createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         if (query.isBlank()) {
                             tagsEntryDao.getMerch()
                         } else {
