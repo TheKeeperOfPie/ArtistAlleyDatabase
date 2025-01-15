@@ -23,7 +23,6 @@ import org.gradle.internal.extensions.stdlib.capitalized
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.zip.CRC32
 import javax.imageio.ImageIO
 import javax.imageio.stream.FileCacheImageInputStream
 import javax.inject.Inject
@@ -110,7 +109,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                                 imageCacheDir = imageCacheDir,
                                 file = file
                             )
-                            val hash = hash(file)
+                            val hash = Utils.hash(file)
                             CatalogFolder.Image(
                                 file = file,
                                 width = width,
@@ -160,18 +159,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             .awaitAll()
 
         return folders
-    }
-
-    private fun hash(file: File): Long {
-        val crc32 = CRC32()
-        file.inputStream().use { input ->
-            val buffer = ByteArray(8192)
-            var bytesRead: Int
-            while (input.read(buffer).also { bytesRead = it } != -1) {
-                crc32.update(buffer, 0, bytesRead)
-            }
-        }
-        return crc32.value
     }
 
     private fun compressAndRename(image: CatalogFolder.Image, target: File) {

@@ -117,7 +117,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 outputResources.file("files/database.sqlite").get().asFile,
                 overwrite = true,
             )
+            val hash = Utils.hash(dbFile)
+
             dbFile.delete()
+
+            outputResources.file("files/databaseHash.txt").get().asFile.writeText(hash.toString())
         }
     }
 

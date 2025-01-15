@@ -2,16 +2,43 @@ import sqlite3InitModule from "@sqlite.org/sqlite-wasm";
 
 const mutableDatabasePath = "alleyUser.sqlite"
 const readOnlyInputPath = "composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/database.sqlite"
+const readOnlyInputHashPath = "composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/databaseHash.txt"
 const readOnlyDatabasePath = "alleyArtist.sqlite"
+const readOnlyDatabaseHashPath = "alleyArtistHash.txt"
 
 let db = null;
 async function createDatabase() {
     const sqlite3 = await sqlite3InitModule({ print: console.log, printErr: console.error });
-    console.log("Running SQLite3 version", sqlite3.version.libVersion);
     const response = await fetch(readOnlyInputPath);
     const fileBuffer = await response.arrayBuffer();
     if (sqlite3.oo1.OpfsDb) {
-        await sqlite3.oo1.OpfsDb.importDb(readOnlyDatabasePath, fileBuffer)
+        const opfsRoot = await navigator.storage.getDirectory();
+        const hashFile = await opfsRoot.getFileHandle(readOnlyDatabaseHashPath, { create: true });
+        const hashHandle = await hashFile.createSyncAccessHandle();
+        const oldSize = hashHandle.getSize();
+        let oldHash = ""
+        if (oldSize > 0) {
+            const oldHashDataView = new DataView(new ArrayBuffer(hashHandle.getSize()));
+            hashHandle.read(oldHashDataView);
+            const textDecoder = new TextDecoder();
+            oldHash = textDecoder.decode(oldHashDataView);
+        }
+
+        const newHashResponse = await fetch(readOnlyInputHashPath);
+        const newHash = await newHashResponse.text();
+
+        console.log("Old database hash", oldHash);
+        console.log("New database hash", newHash);
+
+        if (oldHash != newHash) {
+            console.log("Importing new database")
+            await sqlite3.oo1.OpfsDb.importDb(readOnlyDatabasePath, fileBuffer);
+            const textEncoder = new TextEncoder();
+            const encoded = textEncoder.encode(newHash);
+            hashHandle.truncate(0);
+            hashHandle.write(encoded);
+        }
+
         db = new sqlite3.oo1.OpfsDb(mutableDatabasePath, "c");
         db.exec("ATTACH DATABASE 'file:" + readOnlyDatabasePath + "?vfs=opfs&immutable=1' AS readOnly;");
     } else {
