@@ -37,7 +37,9 @@ async function createDatabase() {
             const encoded = textEncoder.encode(newHash);
             hashHandle.truncate(0);
             hashHandle.write(encoded);
+            hashHandle.flush();
         }
+        hashHandle.close();
 
         db = new sqlite3.oo1.OpfsDb(mutableDatabasePath, "c");
         db.exec("ATTACH DATABASE 'file:" + readOnlyDatabasePath + "?vfs=opfs&immutable=1' AS readOnly;");

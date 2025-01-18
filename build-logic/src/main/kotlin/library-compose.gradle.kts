@@ -14,7 +14,6 @@ plugins {
 kotlin {
     sourceSets {
         commonMain {
-            kotlin.srcDir(project.layout.buildDirectory.dir("generated/source"))
             dependencies {
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)

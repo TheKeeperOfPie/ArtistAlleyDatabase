@@ -1,7 +1,9 @@
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
@@ -127,6 +129,26 @@ kotlin {
         binaries.executable()
     }
 
+    js("worker", KotlinJsCompilerType.IR) {
+        binaries.executable()
+        browser {
+            webpackTask {
+                mainOutputFileName = "worker.js"
+            }
+        }
+    }
+
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("nonJsCommon") {
+                withAndroidTarget()
+                withJvm()
+                withWasmJs()
+            }
+        }
+    }
+
     compilerOptions {
         jvmToolchain(18)
         sourceSets.all {
@@ -140,25 +162,29 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.modules.alley)
-            implementation(projects.modules.utils)
-            implementation(projects.modules.utilsCompose)
-            implementation(projects.modules.utilsInject)
-
             implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
             implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
+        }
+        val nonJsCommonMain by getting {
+            dependencies {
+                implementation(projects.modules.alley)
+                implementation(projects.modules.utils)
+                implementation(projects.modules.utilsCompose)
+                implementation(projects.modules.utilsInject)
 
-            implementation(libs.kotlinx.serialization.json)
+                implementation(compose.components.uiToolingPreview)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.materialIconsExtended)
+                implementation(compose.ui)
 
-            implementation(libs.coil3.coil.compose)
-            implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.kermit)
-            implementation(libs.kotlin.inject.runtime.kmp)
+                implementation(libs.kotlinx.serialization.json)
+
+                implementation(libs.coil3.coil.compose)
+                implementation(libs.jetBrainsCompose.navigation.compose)
+                implementation(libs.kermit)
+                implementation(libs.kotlin.inject.runtime.kmp)
+            }
         }
         androidMain.dependencies {
             runtimeOnly(libs.kotlinx.coroutines.android)
@@ -173,6 +199,12 @@ kotlin {
         val wasmJsMain by getting {
             dependencies {
                 implementation(libs.okio.fakefilesystem)
+            }
+            resources.srcDirs(layout.buildDirectory.dir("dist/worker/productionExecutable"))
+        }
+        val workerMain by getting {
+            dependencies {
+                implementation(projects.modules.alley.data)
             }
         }
     }
@@ -231,6 +263,12 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
+
+tasks.named { "wasmJsProcessResources" in it }.configureEach {
+    dependsOn("workerBrowserDistribution")
+    // Ignore duplicate composeResources included from JS :modules:alley:data dependency
+    (this as ProcessResources).duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
 
 configurations.all {
     resolutionStrategy{
