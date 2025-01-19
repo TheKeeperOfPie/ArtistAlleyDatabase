@@ -17,15 +17,6 @@ config.devServer = Object.assign(
     }
 );
 
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-config.plugins.push(
-    new CopyWebpackPlugin({
-        patterns: [
-            '../../node_modules/sql.js/dist/sql-wasm.wasm'
-        ]
-    })
-);
-
 // https://github.com/sqldelight/sqldelight/issues/2057#issuecomment-1087799619
 const webpack = require("webpack");
 

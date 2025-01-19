@@ -164,6 +164,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.components.resources)
             implementation(compose.runtime)
+            implementation(libs.kotlinx.coroutines.core)
         }
         val nonJsCommonMain by getting {
             dependencies {

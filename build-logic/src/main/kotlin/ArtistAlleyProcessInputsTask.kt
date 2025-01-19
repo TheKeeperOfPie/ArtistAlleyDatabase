@@ -134,14 +134,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         folders.map { catalogFolder ->
             async {
                 val images = catalogFolder.images
-                val outputFolder = outputFolder.resolve(catalogFolder.name).apply { mkdirs() }
+                val catalogOutputFolder = outputFolder.resolve(catalogFolder.name).apply { mkdirs() }
 
                 val imagesWithOutput = images.map {
-                    it to outputFolder.resolve("${it.index} - ${it.hash}.webp")
+                    it to catalogOutputFolder.resolve("${it.index} - ${it.hash}.webp")
                 }
 
                 val retainFileNames = imagesWithOutput.map { it.second.name }.toSet()
-                outputFolder.listFiles()
+                catalogOutputFolder.listFiles()
                     .orEmpty()
                     .filter { it.name !in retainFileNames }
                     .forEach(File::deleteRecursively)
