@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="alleyIcon.svg"
+   inkscape:export-filename="alleyIconPlainSvg.png"
+   inkscape:export-xdpi="1024"
+   inkscape:export-ydpi="1024"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ee3c35"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="11.313709"
+     inkscape:cx="16.572815"
+     inkscape:cy="24.35099"
+     inkscape:window-width="1515"
+     inkscape:window-height="1401"
+     inkscape:window-x="1353"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:export-bgcolor="#ee3c35ff" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect3"
+       style="font-variation-settings:'wght' 800;vector-effect:non-scaling-stroke;fill:#802420;fill-opacity:1;stroke:none;stroke-width:0.417776;stroke-dasharray:none;stroke-opacity:1;-inkscape-stroke:hairline"
+       d="M 39.53125 48 L 23.150391 22.890625 L 0 32.183594 L 0 48 L 39.53125 48 z " />
+    <path
+       id="path4"
+       style="font-variation-settings:'wght' 800;vector-effect:non-scaling-stroke;fill:#360f0d;fill-opacity:1;stroke:none;stroke-width:0.417776;stroke-dasharray:none;stroke-opacity:1;-inkscape-stroke:hairline"
+       d="M 48 12.916016 L 23.150391 22.890625 L 39.53125 48 L 48 48 L 48 12.916016 z " />
+    <path
+       id="path3"
+       style="font-variation-settings:'wght' 800;vector-effect:non-scaling-stroke;fill:#ee3c35;fill-opacity:1;stroke:none;stroke-width:0.417776;stroke-dasharray:none;stroke-opacity:1;-inkscape-stroke:hairline"
+       d="M 0 0 L 0 32.183594 L 48 12.916016 L 48 0 L 0 0 z " />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:27.2028px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, @wght=800';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'wght' 800;text-align:start;letter-spacing:-3.17366px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.839645;stroke-dasharray:none;stroke-opacity:1"
+       x="4.47017"
+       y="39.245327"
+       id="text1"
+       transform="scale(1.2283404,0.81410658)"><tspan
+         sodipodi:role="line"
+         id="tspan1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:27.2028px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, @wght=800';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;font-variation-settings:'wght' 800;letter-spacing:-3.17366px;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.839645;stroke-opacity:1"
+         x="4.47017"
+         y="39.245327">AA</tspan></text>
+  </g>
+</svg>
