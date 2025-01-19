@@ -44,8 +44,15 @@ async function createDatabase() {
         db = new sqlite3.oo1.OpfsDb(mutableDatabasePath, "c");
         db.exec("ATTACH DATABASE 'file:" + readOnlyDatabasePath + "?vfs=opfs&immutable=1' AS readOnly;");
     } else {
+        // TODO: Show warning that persistence is not supported for favorites (or just disable)
         console.log("OPFS not initialized");
-        db = new sqlite3.oo1.Db(new Uint8Array(fileBuffer));
+        db = new sqlite3.oo1.DB();
+        const data = sqlite3.wasm.allocFromTypedArray(fileBuffer);
+        const rc = sqlite3.capi.sqlite3_deserialize(
+          db.pointer, 'main', data, fileBuffer.byteLength, fileBuffer.byteLength,
+          sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE | sqlite3.capi.SQLITE_DESERIALIZE_RESIZEABLE
+        );
+        db.checkRc(rc);
     }
 }
 
@@ -78,7 +85,6 @@ function handleMessage() {
                 results: db.exec("ROLLBACK TRANSACTION;"),
             })
         default:
-            console.log(`Unsupported action: ${data && data.action}`)
             throw new Error(`Unsupported action: ${data && data.action}`);
     }
 }
