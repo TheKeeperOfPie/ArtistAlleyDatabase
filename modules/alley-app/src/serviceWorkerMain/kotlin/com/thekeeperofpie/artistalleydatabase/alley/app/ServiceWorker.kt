@@ -35,6 +35,15 @@ private val appFilesNetworkFirst = listOf(
     "/init.js",
     "/manifest.webmanifest",
     "/styles.css",
+    "/composeResources/artistalleydatabase.modules.alley.generated.resources/values/strings.commonMain.cvr",
+    "/composeResources/artistalleydatabase.modules.entry.generated.resources/values/strings.commonMain.cvr",
+    "/composeResources/artistalleydatabase.modules.image.generated.resources/values/strings.commonMain.cvr",
+    "/composeResources/artistalleydatabase.modules.utils_compose.generated.resources/values/strings.commonMain.cvr",
+    "/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/database.sqlite",
+    "/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/databaseHash.txt",
+    "/vendors-node_modules_thekeeperofpie_alley-sqldelight-worker_sqldelight-worker_js.js",
+    "/vendors-node_modules_sqlite_org_sqlite-wasm_sqlite-wasm_jswasm_sqlite3-bundler-friendly_mjs.js",
+    "/vendors-node_modules_sqlite_org_sqlite-wasm_sqlite-wasm_jswasm_sqlite3-opfs-async-proxy_js.js",
 )
 
 private val appFilesCacheFirst = listOf(
@@ -44,15 +53,6 @@ private val appFilesCacheFirst = listOf(
     "/favicon-96x96.png",
     "/web-app-manifest-192x192.png",
     "/web-app-manifest-512x512.png",
-    "/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/database.sqlite",
-    "/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/databaseHash.txt",
-    "/composeResources/artistalleydatabase.modules.alley.generated.resources/values/strings.commonMain.cvr",
-    "/composeResources/artistalleydatabase.modules.entry.generated.resources/values/strings.commonMain.cvr",
-    "/composeResources/artistalleydatabase.modules.image.generated.resources/values/strings.commonMain.cvr",
-    "/composeResources/artistalleydatabase.modules.utils_compose.generated.resources/values/strings.commonMain.cvr",
-    "/vendors-node_modules_thekeeperofpie_alley-sqldelight-worker_sqldelight-worker_js.js",
-    "/vendors-node_modules_sqlite_org_sqlite-wasm_sqlite-wasm_jswasm_sqlite3-bundler-friendly_mjs.js",
-    "/vendors-node_modules_sqlite_org_sqlite-wasm_sqlite-wasm_jswasm_sqlite3-opfs-async-proxy_js.js",
 )
 
 private const val catalogsDir =
