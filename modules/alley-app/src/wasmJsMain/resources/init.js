@@ -1,9 +1,7 @@
 if ("serviceWorker" in navigator) {
-    console.log("Registering worker.js")
-    navigator.serviceWorker.register("worker.js")
-        .then(registration => {
-            console.log("worker.js success", registration);
-            registration.update();
-        })
-        .catch(error => console.error("worker.js failed", error))
+    console.log("Registering serviceWorker.js")
+    // TODO: Automatically call update()?
+    navigator.serviceWorker.register("serviceWorker.js")
+        .then(registration => console.log("serviceWorker.js success", registration))
+        .catch(error => console.error("serviceWorker.js failed", error))
 }

@@ -129,11 +129,11 @@ kotlin {
         binaries.executable()
     }
 
-    js("worker", KotlinJsCompilerType.IR) {
+    js("serviceWorker", KotlinJsCompilerType.IR) {
         binaries.executable()
         browser {
             webpackTask {
-                mainOutputFileName = "worker.js"
+                mainOutputFileName = "serviceWorker.js"
             }
         }
     }
@@ -201,9 +201,9 @@ kotlin {
             dependencies {
                 implementation(libs.okio.fakefilesystem)
             }
-            resources.srcDirs(layout.buildDirectory.dir("dist/worker/productionExecutable"))
+            resources.srcDirs(layout.buildDirectory.dir("dist/serviceWorker/productionExecutable"))
         }
-        val workerMain by getting {
+        val serviceWorkerMain by getting {
             dependencies {
                 implementation(projects.modules.alley.data)
             }
@@ -266,7 +266,7 @@ tasks.register<Exec>("launchReleaseMainActivity") {
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
 
 tasks.named { "wasmJsProcessResources" in it }.configureEach {
-    dependsOn("workerBrowserDistribution")
+    dependsOn("serviceWorkerBrowserDistribution")
     // Ignore duplicate composeResources included from JS :modules:alley:data dependency
     (this as ProcessResources).duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

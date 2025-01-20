@@ -137,7 +137,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogOutputFolder = outputFolder.resolve(catalogFolder.name).apply { mkdirs() }
 
                 val imagesWithOutput = images.map {
-                    it to catalogOutputFolder.resolve("${it.index} - ${it.hash}.webp")
+                    it to catalogOutputFolder.resolve(it.name)
                 }
 
                 val retainFileNames = imagesWithOutput.map { it.second.name }.toSet()
@@ -434,7 +434,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val resized: Boolean,
             val index: Int,
             val hash: String,
-            val name: String = "$index - $hash.webp",
+            val name: String = "$index-$hash.webp",
         )
     }
 }
