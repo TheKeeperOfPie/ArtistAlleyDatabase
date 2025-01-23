@@ -49,7 +49,7 @@ function multiSelect(event: SheetsOnEdit) {
     }
 
     if (newValue == undefined || newValue.length == 0) return
-    if (newValue.indexOf(",") != -1) {
+    if (oldValue == undefined || newValue.indexOf(",") != -1) {
         range.setValue(newValue)
         return
     }
