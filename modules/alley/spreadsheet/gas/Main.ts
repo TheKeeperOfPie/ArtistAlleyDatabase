@@ -12,6 +12,9 @@ const scriptProperties = PropertiesService.getScriptProperties()
 const ROOT_FOLDER_ID = scriptProperties.getProperty("rootFolderId")!!
 const STAMP_RALLY_ROOT_FOLDER_ID = scriptProperties.getProperty("stampRallyFolderId")!!
 
+const DOMAINS = [".com", ".ee", ".app", ".ca", ".site"]
+const SHOP_DOMAINS = ["storeenvy.com", "bigcartel.com", "etsy.com", "inprnt.com"]
+
 function onOpen(event: SheetsOnOpen) {
     SpreadsheetApp.getUi()
         .createMenu("Actions")
@@ -24,11 +27,89 @@ function onOpen(event: SheetsOnOpen) {
 }
 
 function onEdit(event: SheetsOnEdit) {
+    onArbitraryLinkInput(event)
     multiSelect(event)
 }
 
+function onArbitraryLinkInput(event: SheetsOnEdit) {
+    const range = event.range
+    if (range.getNumRows() != 1 || range.getNumColumns() != 1) return
+
+    const sheet = range.getSheet()
+    const inputColumn = findColumnForHeader(sheet, "Input")
+    const column = range.getColumn()
+    if (column != inputColumn) return
+
+    const input = event.value
+    let targetColumn = findColumnForHeader(sheet, "Links")!!
+    if (SHOP_DOMAINS.some(shopDomain => input.indexOf(shopDomain) > 0)) {
+        targetColumn = findColumnForHeader(sheet, "Store")!!
+    }
+
+    const row = range.getRow()
+    const linksRange = sheet.getRange(row, targetColumn, 1, 1)
+    const linksText = linksRange.getValue()
+    Logger.log(`input = ${input}`)
+
+    if (input.indexOf("https") != 0) {
+        SpreadsheetApp.getUi().alert(`Link malformed, requires https`)
+        return
+    }
+
+    const domainEndIndex = findDomainEnd(input)
+    if (domainEndIndex < 0) {        
+        SpreadsheetApp.getUi().alert(`TLD unsupported`)
+        return
+    }
+
+    const domainPart = input.substring(0, domainEndIndex)
+        .replace("twitter.com", "x.com")
+
+    let pathEndIndex = input.indexOf("?")
+    if (pathEndIndex <= 0) {
+        pathEndIndex = input.length
+    }
+
+    let pathPart = input.substring(domainEndIndex, pathEndIndex)
+    if (pathPart.lastIndexOf("/") == pathPart.length - 1) {
+        pathPart = pathPart.substring(0, pathPart.length - 1)
+    }
+
+    const canonicalLink = domainPart + pathPart
+
+    if (linksText == undefined) {
+        linksRange.setValue(canonicalLink)
+        range.setValue("")
+        return
+    }
+
+    const links = linksText.split("\n")
+    if (links.includes(canonicalLink)) {
+        SpreadsheetApp.getUi().alert(`Row ${row} already has link ${canonicalLink}`)
+        range.setValue("")
+        return
+    }
+
+    links.push(canonicalLink)
+    links.sort()
+    Logger.log(`Setting new links = ${links}`)
+
+    fixLinks(linksRange, links.join("\n"))
+    range.setValue("")
+    sheet.autoResizeRows(row, 1)
+}
+
+function findDomainEnd(input: string): number {
+    let index = -1
+    DOMAINS.forEach(domain => {
+        if (index < 6) {
+            index = input.indexOf(domain) + domain.length
+        }
+    })
+    return index
+}
+
 function multiSelect(event: SheetsOnEdit) {
-    const sheet = event.source
     const range = event.range
 
     const validationRule = range.getDataValidation()
@@ -36,8 +117,6 @@ function multiSelect(event: SheetsOnEdit) {
 
     const criteriaType = validationRule.getCriteriaType()
     if (criteriaType !== SpreadsheetApp.DataValidationCriteria.VALUE_IN_RANGE) return
-
-    const validationRange = validationRule.getCriteriaValues()[0]
 
     const oldValue = event.oldValue
     const newValue = event.value
@@ -71,19 +150,20 @@ function multiSelect(event: SheetsOnEdit) {
 }
 
 function fixArtistLinks() {
-    runOverActiveCells(cell => {
-        const text = cell.getValue() as string
-        let lastIndex = 0
-        let nextIndex = text.indexOf("\n")
-        const newTextBuilder = SpreadsheetApp.newRichTextValue().setText(text)
-        while (nextIndex != -1 && nextIndex != lastIndex) {
-            newTextBuilder.setLinkUrl(lastIndex, nextIndex, text.substring(lastIndex, nextIndex))
-            lastIndex = nextIndex + 1
-            nextIndex = text.indexOf("\n", lastIndex)
-        }
-        newTextBuilder.setLinkUrl(lastIndex, text.length, text.substring(lastIndex, text.length))
-        cell.setRichTextValue(newTextBuilder.build())
-    })
+    runOverActiveCells(cell => fixLinks(cell))
+}
+
+function fixLinks(range: SheetRange, text: string = range.getValue() as string) {
+    let lastIndex = 0
+    let nextIndex = text.indexOf("\n")
+    const newTextBuilder = SpreadsheetApp.newRichTextValue().setText(text)
+    while (nextIndex != -1 && nextIndex != lastIndex) {
+        newTextBuilder.setLinkUrl(lastIndex, nextIndex, text.substring(lastIndex, nextIndex))
+        lastIndex = nextIndex + 1
+        nextIndex = text.indexOf("\n", lastIndex)
+    }
+    newTextBuilder.setLinkUrl(lastIndex, text.length, text.substring(lastIndex, text.length))
+    range.setRichTextValue(newTextBuilder.build())
 }
 
 function fixTableLinks() {
