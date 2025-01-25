@@ -12,8 +12,9 @@ const scriptProperties = PropertiesService.getScriptProperties()
 const ROOT_FOLDER_ID = scriptProperties.getProperty("rootFolderId")!!
 const STAMP_RALLY_ROOT_FOLDER_ID = scriptProperties.getProperty("stampRallyFolderId")!!
 
-const DOMAINS = [".com", ".ee", ".app", ".ca", ".site"]
-const SHOP_DOMAINS = ["storeenvy.com", "bigcartel.com", "etsy.com", "inprnt.com"]
+const DOMAINS = [".com", ".ee", ".app", ".ca", ".site", ".gg", ".social"]
+const SHOP_DOMAINS = ["storeenvy.com", "bigcartel.com", "etsy.com", "inprnt.com",
+    "myshopify.com", "threadless.com", "itch.io", "faire.com"]
 
 function onOpen(event: SheetsOnOpen) {
     SpreadsheetApp.getUi()
@@ -40,7 +41,7 @@ function onArbitraryLinkInput(event: SheetsOnEdit) {
     const column = range.getColumn()
     if (column != inputColumn) return
 
-    const input = event.value
+    const input = event.value.replace("http://", "https://")
     let targetColumn = findColumnForHeader(sheet, "Links")!!
     if (SHOP_DOMAINS.some(shopDomain => input.indexOf(shopDomain) > 0)) {
         targetColumn = findColumnForHeader(sheet, "Store")!!
@@ -50,11 +51,6 @@ function onArbitraryLinkInput(event: SheetsOnEdit) {
     const linksRange = sheet.getRange(row, targetColumn, 1, 1)
     const linksText = linksRange.getValue()
     Logger.log(`input = ${input}`)
-
-    if (input.indexOf("https") != 0) {
-        SpreadsheetApp.getUi().alert(`Link malformed, requires https`)
-        return
-    }
 
     const domainEndIndex = findDomainEnd(input)
     if (domainEndIndex < 0) {        
@@ -77,7 +73,7 @@ function onArbitraryLinkInput(event: SheetsOnEdit) {
 
     const canonicalLink = domainPart + pathPart
 
-    if (linksText == undefined) {
+    if (linksText == undefined || linksText.length == 0) {
         linksRange.setValue(canonicalLink)
         range.setValue("")
         return
