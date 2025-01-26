@@ -57,7 +57,7 @@ fun Modifier.sharedElement(
     if (key?.key.isNullOrEmpty()) return this
     return with(LocalSharedTransitionScope.current) {
         sharedElement(
-            state = rememberSharedContentState(listOf(key, identifier)),
+            sharedContentState = rememberSharedContentState(listOf(key, identifier)),
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
             zIndexInOverlay = zIndexInOverlay,
         )
@@ -90,7 +90,7 @@ fun Modifier.sharedElement(
     state ?: return this
     return with(LocalSharedTransitionScope.current) {
         sharedElement(
-            state = state,
+            sharedContentState = state,
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
             zIndexInOverlay = zIndexInOverlay,
         )

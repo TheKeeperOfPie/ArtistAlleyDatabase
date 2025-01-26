@@ -34,11 +34,11 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.9.0-alpha09"
+        const val gradle = "8.10.0-alpha02"
     }
 
     object androidx {
-        const val activity = "1.10.0-rc01"
+        const val activity = "1.10.0"
         const val annotation = "1.9.1"
         const val browser = "1.8.0"
         const val core = "1.16.0-alpha01"
@@ -71,8 +71,10 @@ object Versions {
     const val benManesVersions = "0.51.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.15.2"
-    const val burst = "2.2.0"
-    const val coil = "3.0.4"
+    const val burst = "2.4.0"
+
+    // https://github.com/coil-kt/coil/issues/2771#issuecomment-2607839662
+    const val coil = "3.1.0-SNAPSHOT"
     const val colormath = "3.6.1"
 
     object compose {
@@ -85,8 +87,8 @@ object Versions {
             const val navigation = "2.8.0-SNAPSHOT+pull-1739"
         }
 
-        const val plugin = "1.7.3"//"1.8.0-alpha01"
-        const val runtime = "1.7.3"//"1.8.0-alpha01"
+        const val plugin = "1.8.0-alpha02"
+        const val runtime = "1.8.0-alpha02"
     }
 
     const val cronetEmbedded = "119.6045.31"
@@ -131,14 +133,14 @@ object Versions {
     const val ktor = "3.0.3"
     const val ksoup = "0.2.1"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.50"
+    const val manifoldGraphql = "2024.1.54"
     const val markwon = "4.6.2"
     const val material3 = "1.3.0"
     const val mockito = "5.13.0"
     const val mockitoKotlin = "5.4.0"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.30.0-b02"
+    const val multiplatformMarkdown = "0.31.0-b01"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
