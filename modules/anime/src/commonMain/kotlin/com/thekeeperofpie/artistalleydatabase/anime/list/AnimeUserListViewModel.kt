@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -25,11 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -43,6 +38,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,13 +52,8 @@ class AnimeUserListViewModel(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     val ignoreController: IgnoreController,
-    private val mediaTagsController: MediaTagsController,
-    private val mediaGenresController: MediaGenresController,
-    private val mediaLicensorsController: MediaLicensorsController,
     private val userMediaListController: UserMediaListController,
-    private val featureOverrideProvider: FeatureOverrideProvider,
     private val mediaListStatusController: MediaListStatusController,
-    @Assisted savedStateHandle: SavedStateHandle,
     @Assisted val userId: String?,
     @Assisted userName: String?,
     @Assisted val mediaType: MediaType,
@@ -123,6 +114,7 @@ class AnimeUserListViewModel(
                         val result = aniListApi.userMediaList(
                             userId = userId,
                             type = mediaType,
+                            status = mediaListStatus,
                             includeDescription = it,
                         )
                         result.lists?.filterNotNull()
@@ -134,6 +126,10 @@ class AnimeUserListViewModel(
                             }
                             .orEmpty()
                     }
+                }
+            }.map {
+                it.transformResult {
+                    it.filter { mediaListStatus == null || it.status == mediaListStatus }
                 }
             }
 

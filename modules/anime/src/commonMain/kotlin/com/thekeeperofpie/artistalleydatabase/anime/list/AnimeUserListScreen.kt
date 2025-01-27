@@ -122,7 +122,14 @@ object AnimeUserListScreen {
             val entry = viewModel.entry
             val pagerState = rememberPagerState(
                 initialPage = 0,
-                pageCount = { (entry.result?.lists?.size ?: 0) + 1 },
+                pageCount = {
+                    val listsSize = entry.result?.lists?.size ?: 0
+                    if (listsSize == 1) {
+                        1
+                    } else {
+                        listsSize + 1
+                    }
+                },
             )
             val sortFilterViewModel = viewModel.mediaSortFilterViewModel
             val sortSheetState = rememberStandardBottomSheetState()
@@ -261,7 +268,7 @@ object AnimeUserListScreen {
                                     when (mediaType) {
                                         MediaType.ANIME,
                                         MediaType.UNKNOWN__,
-                                        -> Res.string.anime_user_list_user_name_anime_search
+                                            -> Res.string.anime_user_list_user_name_anime_search
                                         MediaType.MANGA -> Res.string.anime_user_list_user_name_manga_search
                                     },
                                     userName
@@ -271,7 +278,7 @@ object AnimeUserListScreen {
                                     when (mediaType) {
                                         MediaType.ANIME,
                                         MediaType.UNKNOWN__,
-                                        -> Res.string.anime_user_list_anime_search
+                                            -> Res.string.anime_user_list_anime_search
                                         MediaType.MANGA -> Res.string.anime_user_list_manga_search
                                     }
                                 )

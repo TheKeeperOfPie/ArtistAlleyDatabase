@@ -68,7 +68,6 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
 
     // TODO; Move into users module?
     val animeUserListViewModel: (
-        SavedStateHandle,
         userId: String?,
         userName: String?,
         mediaType: MediaType,

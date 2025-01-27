@@ -1401,7 +1401,6 @@ object AnimeNavigator {
         }
         val viewModel = viewModel(key = mediaType.rawValue) {
             component.animeUserListViewModel(
-                createSavedStateHandle(),
                 userId,
                 userName,
                 mediaType,
