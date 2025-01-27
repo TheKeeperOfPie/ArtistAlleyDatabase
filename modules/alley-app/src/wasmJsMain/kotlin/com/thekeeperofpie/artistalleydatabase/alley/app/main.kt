@@ -5,12 +5,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.ComposeViewport
+import androidx.navigation.ExperimentalBrowserHistoryApi
+import androidx.navigation.bindToNavigation
 import androidx.navigation.compose.rememberNavController
 import artistalleydatabase.modules.alley.data.generated.resources.Res
 import coil3.ImageLoader
@@ -29,13 +32,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.browser.document
+import kotlinx.browser.window
 import okio.Buffer
 import okio.fakefilesystem.FakeFileSystem
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 private val fakeFileSystem = FakeFileSystem()
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalBrowserHistoryApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
         val scope = rememberCoroutineScope()
@@ -98,7 +102,11 @@ fun main() {
                 LocalWindowConfiguration provides windowConfiguration,
                 LocalNavigationController provides navigationController,
             ) {
-                ArtistAlleyAppScreen(component)
+                val navController = rememberNavController()
+                ArtistAlleyAppScreen(component, navController)
+                LaunchedEffect(navController) {
+                    window.bindToNavigation(navController)
+                }
             }
         }
     }

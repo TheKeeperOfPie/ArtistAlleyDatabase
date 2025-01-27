@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
@@ -41,9 +42,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSa
 object ArtistAlleyAppScreen {
 
     @Composable
-    operator fun invoke(component: ArtistAlleyAppComponent) {
+    operator fun invoke(
+        component: ArtistAlleyAppComponent,
+        navController: NavHostController = rememberNavController(),
+    ) {
         Surface {
-            val navController = rememberNavController()
             val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
                 navController.navigate(
                     Destinations.ArtistDetails(entry.id.valueId, imageIndex.toString())
@@ -187,7 +190,11 @@ object ArtistAlleyAppScreen {
                             ) {
                                 val route = it.toRoute<Destinations.Series>()
                                 val sortViewModel =
-                                    viewModel { component.artistSortFilterViewModel(createSavedStateHandle()) }
+                                    viewModel {
+                                        component.artistSortFilterViewModel(
+                                            createSavedStateHandle()
+                                        )
+                                    }
                                 val viewModel = viewModel {
                                     component.artistSearchViewModel(
                                         createSavedStateHandle(),
