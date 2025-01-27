@@ -22,8 +22,8 @@ android {
         applicationId = "com.thekeeperofpie.anichive"
         minSdk = 28
         targetSdk = 34
-        versionCode = 15
-        versionName = "0.50"
+        versionCode = 16
+        versionName = "0.51"
 
         vectorDrawables {
             useSupportLibrary = true

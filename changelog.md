@@ -1,6 +1,8 @@
 # Changelog
 
-### Next (16)
+### Next (17)
+
+### 0.51 (16)
 - Add share/copy actions to media details menu
 - Show airing start date for non-seasonal
 - Fix start/end date user media list sorts
