@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.play
 
-import android.app.Activity
 import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
@@ -49,7 +48,7 @@ class PlaySubscriptionProvider(
     private val scope: ApplicationScope,
     private val application: Application,
     private val settings: MonetizationSettings,
-    activity: ComponentActivity,
+    private val activity: ComponentActivity,
 ) : SubscriptionProvider, DefaultLifecycleObserver {
 
     override val subscriptionDetails =
@@ -59,8 +58,6 @@ class PlaySubscriptionProvider(
 
     override var loading by mutableStateOf(false)
         private set
-
-    private lateinit var activity: Activity
 
     private lateinit var billingClient: BillingClient
 

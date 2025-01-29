@@ -1,6 +1,7 @@
 # Changelog
 
 ### Next (17)
+- Fix subscription crash
 
 ### 0.51 (16)
 - Add share/copy actions to media details menu
