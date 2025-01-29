@@ -1,6 +1,8 @@
 # Changelog
 
-### Next (17)
+### Next (18)
+
+### 0.52 (17)
 - Fix subscription crash
 
 ### 0.51 (16)
