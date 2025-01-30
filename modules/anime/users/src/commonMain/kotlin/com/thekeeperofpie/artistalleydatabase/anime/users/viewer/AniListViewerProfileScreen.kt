@@ -268,11 +268,14 @@ object AniListViewerProfileScreen {
                             .padding(16.dp),
                     )
 
-                    FilledTonalButton(onClick = {
-                        val token = value
-                        value = ""
-                        onSubmitAuthToken(token)
-                    }) {
+                    FilledTonalButton(
+                        enabled = value.isNotBlank(),
+                        onClick = {
+                            val token = value
+                            value = ""
+                            onSubmitAuthToken(token)
+                        },
+                    ) {
                         Text(stringResource(UtilsStrings.confirm))
                     }
 

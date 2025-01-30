@@ -27,7 +27,7 @@ class AniListOAuthStore(
 
     override val authHeader get() = authToken.value?.let { "Bearer $it" }
 
-    val hasAuth = authToken.map { !it.isNullOrBlank() }
+    val hasAuth = authToken.map { it != null }
 
     suspend fun storeAuthTokenResult(token: String) {
         platformOAuthStore.storeAuthTokenResult(token)
