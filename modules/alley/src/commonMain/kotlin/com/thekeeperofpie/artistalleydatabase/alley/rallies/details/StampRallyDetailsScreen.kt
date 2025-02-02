@@ -13,10 +13,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -36,8 +32,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
@@ -68,7 +64,6 @@ object StampRallyDetailsScreen {
             return
         }
 
-        var showFullImagesIndex by rememberSaveable { mutableStateOf<Int?>(null) }
         val stampRally = entry.stampRally
         DetailsScreen(
             title = {
@@ -150,7 +145,12 @@ object StampRallyDetailsScreen {
                         stringResource(Res.string.alley_stamp_rally_cost_any)
                     }
                 } else if (totalCost != null && tableCount > 0) {
-                    stringResource(Res.string.alley_stamp_rally_cost_equation_paid, tableMin, tableCount, totalCost)
+                    stringResource(
+                        Res.string.alley_stamp_rally_cost_equation_paid,
+                        tableMin,
+                        tableCount,
+                        totalCost
+                    )
                 } else {
                     stringResource(Res.string.alley_stamp_rally_cost_unknown)
                 }
@@ -171,11 +171,15 @@ object StampRallyDetailsScreen {
                         contentDescriptionTextRes = null,
                         values = entry.artists,
                         valueToText = {
-                            stringResource(
-                                Res.string.alley_artist_details_booth_and_table_name,
-                                it.booth,
+                            if (it.booth == null) {
                                 it.name
-                            )
+                            } else {
+                                stringResource(
+                                    Res.string.alley_artist_details_booth_and_table_name,
+                                    it.booth,
+                                    it.name
+                                )
+                            }
                         },
                         onClick = onArtistClick,
                         allowExpand = false,

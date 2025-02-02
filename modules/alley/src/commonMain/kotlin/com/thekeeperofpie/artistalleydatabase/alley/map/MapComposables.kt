@@ -289,11 +289,14 @@ fun TablePopup(
                 .padding(start = 16.dp)
                 .conditionally(images.size > 1) { fillMaxWidth() }
         ) {
-            Text(
-                text = entry.artist.booth,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(vertical = 12.dp)
-            )
+            val booth = entry.artist.booth
+            if (booth != null) {
+                Text(
+                    text = booth,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(vertical = 12.dp)
+                )
+            }
 
             Text(
                 text = entry.artist.name,

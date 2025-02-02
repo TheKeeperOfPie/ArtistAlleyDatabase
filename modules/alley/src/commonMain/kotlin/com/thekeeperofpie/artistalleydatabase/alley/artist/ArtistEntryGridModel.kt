@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
@@ -46,7 +45,7 @@ class ArtistEntryGridModel(
                     folder = AlleyDataUtils.Folder.CATALOGS,
                     file = entry.artist.booth,
                 ),
-                placeholderText = entry.artist.booth,
+                placeholderText = entry.artist.booth ?: entry.artist.name,
             )
     }
 }

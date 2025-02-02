@@ -85,6 +85,9 @@ object ArtistAlleyAppScreen {
                                             Destinations.Merch(it.name)
                                         )
                                     },
+                                    onActiveYearIs2025Change = {
+                                        component.settings.activeYearIs2025.value = it
+                                    },
                                 )
                             }
 

@@ -202,12 +202,15 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                     )
                     .renderInSharedTransitionScopeOverlay()
             ) {
-                Text(
-                    text = entry.booth,
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
-                        .sharedElement("booth", sharedElementId, zIndexInOverlay = 1f)
-                )
+                val booth = entry.booth
+                if (booth != null) {
+                    Text(
+                        text = booth,
+                        modifier = Modifier
+                            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
+                            .sharedElement("booth", sharedElementId, zIndexInOverlay = 1f)
+                    )
+                }
 
                 IconButton(
                     onClick = { onFavoriteToggle(!entry.favorite) },

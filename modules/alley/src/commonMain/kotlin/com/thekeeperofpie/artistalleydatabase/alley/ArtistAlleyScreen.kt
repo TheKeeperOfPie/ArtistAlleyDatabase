@@ -2,12 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -19,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,6 +38,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_map
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_open_update
 import artistalleydatabase.modules.alley.generated.resources.alley_update_notice
+import artistalleydatabase.modules.alley.generated.resources.alley_year_2024
+import artistalleydatabase.modules.alley.generated.resources.alley_year_2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
@@ -57,6 +63,7 @@ object ArtistAlleyScreen {
         onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
         onSeriesClick: (String) -> Unit,
         onMerchClick: (MerchEntry) -> Unit,
+        onActiveYearIs2025Change: (Boolean) -> Unit,
     ) {
         val updateNotice = stringResource(Res.string.alley_update_notice)
         val updateOpenUpdate = stringResource(Res.string.alley_open_update)
@@ -78,11 +85,11 @@ object ArtistAlleyScreen {
         }
         val scrollPositions = ScrollStateSaver.scrollPositions()
         val mapTransformState = MapScreen.rememberTransformState()
-        var currentDestination by rememberSaveable { mutableStateOf(Destinations.ARTISTS) }
+        var currentDestination by rememberSaveable { mutableStateOf(Destination.ARTISTS) }
         Column {
             Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 when (currentDestination) {
-                    Destinations.ARTISTS -> {
+                    Destination.ARTISTS -> {
                         val sortViewModel =
                             viewModel { component.artistSortFilterViewModel(createSavedStateHandle()) }
                         val viewModel = viewModel {
@@ -98,13 +105,13 @@ object ArtistAlleyScreen {
                             onEntryClick = onArtistClick,
                             scaffoldState = artistsScaffoldState,
                             scrollStateSaver = ScrollStateSaver.fromMap(
-                                Destinations.ARTISTS.name,
+                                Destination.ARTISTS.name,
                                 scrollPositions,
                             ),
                             onSeriesClick = onSeriesClick,
                         )
                     }
-                    Destinations.BROWSE -> {
+                    Destination.BROWSE -> {
                         val tagsViewModel = viewModel { component.tagsViewModel() }
                         BrowseScreen(
                             tagsViewModel = tagsViewModel,
@@ -112,7 +119,7 @@ object ArtistAlleyScreen {
                             onMerchClick = onMerchClick,
                         )
                     }
-                    Destinations.MAP -> {
+                    Destination.MAP -> {
                         val viewModel = viewModel {
                             component.favoritesSortFilterViewModel()
                         }
@@ -125,7 +132,7 @@ object ArtistAlleyScreen {
                             onArtistClick = onArtistClick,
                         )
                     }
-                    Destinations.STAMP_RALLIES -> {
+                    Destination.STAMP_RALLIES -> {
                         val sortViewModel = viewModel {
                             component.stampRallySortFilterViewModel(createSavedStateHandle())
                         }
@@ -137,7 +144,7 @@ object ArtistAlleyScreen {
                             sortViewModel = sortViewModel,
                             onEntryClick = onStampRallyClick,
                             scrollStateSaver = ScrollStateSaver.fromMap(
-                                Destinations.STAMP_RALLIES.name,
+                                Destination.STAMP_RALLIES.name,
                                 scrollPositions,
                             ),
                         )
@@ -145,17 +152,44 @@ object ArtistAlleyScreen {
                 }
             }
             NavigationBar(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                Destinations.entries.forEach {
+                Destination.entries.forEach {
+                    var expanded by remember { mutableStateOf(false) }
                     NavigationBarItem(
                         icon = {
                             Icon(
                                 it.icon,
                                 contentDescription = stringResource(it.textRes)
                             )
+                            if (it == Destination.ARTISTS) {
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(Res.string.alley_year_2024)) },
+                                        onClick = {
+                                            onActiveYearIs2025Change(false)
+                                            expanded = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(Res.string.alley_year_2025)) },
+                                        onClick = {
+                                            onActiveYearIs2025Change(true)
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
                         },
                         label = { Text(stringResource(it.textRes)) },
                         selected = it == currentDestination,
-                        onClick = { currentDestination = it },
+                        onClick = {
+                            if (currentDestination == it) {
+                                expanded = true
+                            } else {
+                                currentDestination = it
+                            }
+                        },
                     )
                 }
             }
@@ -179,7 +213,26 @@ object ArtistAlleyScreen {
 //        ) {
     }
 
-    enum class Destinations(val icon: ImageVector, val textRes: StringResource) {
+    @Composable
+    private fun RowScope.NavBarItem(
+        destination: Destination,
+        selected: Boolean,
+        onClick: () -> Unit,
+    ) {
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    destination.icon,
+                    contentDescription = stringResource(destination.textRes)
+                )
+            },
+            label = { Text(stringResource(destination.textRes)) },
+            selected = selected,
+            onClick = onClick,
+        )
+    }
+
+    enum class Destination(val icon: ImageVector, val textRes: StringResource) {
         ARTISTS(Icons.Default.Brush, Res.string.alley_nav_bar_artists),
         BROWSE(Icons.AutoMirrored.Default.List, Res.string.alley_nav_bar_browse),
         MAP(Icons.Default.Map, Res.string.alley_nav_bar_map),

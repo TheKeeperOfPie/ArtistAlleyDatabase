@@ -7,29 +7,34 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024Queries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.artistEntry.GetEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
+import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2024.GetEntry as GetEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2025.GetEntry as GetEntry2025
 
+// TODO: Split by year
 private fun SqlCursor.toArtistWithUserData(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
             id = artistId,
-            booth = getString(1)!!,
+            booth = getString(1),
             name = getString(2)!!,
             summary = getString(3),
             links = getString(4)!!.let(Json::decodeFromString),
@@ -52,7 +57,7 @@ private fun SqlCursor.toArtistWithUserData(): ArtistWithUserData {
     )
 }
 
-private fun GetEntry.toArtistWithUserData() = ArtistWithUserData(
+private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
         id = id,
         booth = booth,
@@ -77,49 +82,133 @@ private fun GetEntry.toArtistWithUserData() = ArtistWithUserData(
     )
 )
 
+private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        id = id,
+        booth = booth,
+        name = name,
+        summary = summary,
+        links = links,
+        storeLinks = storeLinks,
+        catalogLinks = catalogLinks,
+        driveLink = driveLink,
+        notes = notes,
+        seriesInferred = seriesInferred,
+        seriesConfirmed = seriesConfirmed,
+        merchInferred = merchInferred,
+        merchConfirmed = merchConfirmed,
+        counter = counter,
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        favorite = favorite == true,
+        ignored = ignored == true,
+        notes = userNotes,
+    )
+)
+
+fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
+    id = id,
+    booth = booth,
+    name = name,
+    summary = summary,
+    links = links,
+    storeLinks = storeLinks,
+    catalogLinks = catalogLinks,
+    driveLink = driveLink,
+    notes = notes,
+    seriesInferred = seriesInferred,
+    seriesConfirmed = seriesConfirmed,
+    merchInferred = merchInferred,
+    merchConfirmed = merchConfirmed,
+    counter = counter,
+)
+
+fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
+    id = id,
+    booth = booth,
+    name = name,
+    summary = summary,
+    links = links,
+    storeLinks = storeLinks,
+    catalogLinks = catalogLinks,
+    driveLink = driveLink,
+    notes = notes,
+    seriesInferred = seriesInferred,
+    seriesConfirmed = seriesConfirmed,
+    merchInferred = merchInferred,
+    merchConfirmed = merchConfirmed,
+    counter = counter,
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class ArtistEntryDao(
     private val driver: SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val dao: suspend () -> ArtistEntryQueries = { database().artistEntryQueries },
+    private val settings: ArtistAlleySettings,
+    private val dao2024: suspend () -> ArtistEntry2024Queries = { database().artistEntry2024Queries },
+    private val dao2025: suspend () -> ArtistEntry2025Queries = { database().artistEntry2025Queries },
 ) {
-    suspend fun getEntry(id: String) = dao()
+    suspend fun getEntry(id: String) = dao2024()
         .getEntry(id)
         .awaitAsOneOrNull()
         ?.toArtistWithUserData()
+        ?: dao2025()
+            .getEntry(id)
+            .awaitAsOneOrNull()
+            ?.toArtistWithUserData()
 
-    fun getEntryFlow(id: String) =
-        flowFromSuspend { dao() }
-            .flatMapLatest { it.getEntry(id).asFlow() }
-            .mapToOne(PlatformDispatchers.IO)
-            .mapLatest { it.toArtistWithUserData() }
+    fun getEntryFlow(id: String) = settings.activeYearIs2025
+        .flatMapLatest {
+            if (it) {
+                dao2025()
+                    .getEntry(id)
+                    .asFlow()
+                    .mapToOne(PlatformDispatchers.IO)
+                    .mapLatest { it.toArtistWithUserData() }
+            } else {
+                dao2024()
+                    .getEntry(id)
+                    .asFlow()
+                    .mapToOne(PlatformDispatchers.IO)
+                    .mapLatest { it.toArtistWithUserData() }
+            }
+        }
 
     suspend fun getEntryWithStampRallies(id: String) =
-        dao().transactionWithResult {
+        dao2024().transactionWithResult {
             val artist = getEntry(id) ?: return@transactionWithResult null
-            val stampRallies = dao().getStampRallyEntries(id).awaitAsList()
+            val stampRallies = dao2024().getStampRallyEntries(id).awaitAsList()
+                .map { it.toStampRallyEntry() }
+            ArtistWithStampRalliesEntry(artist, stampRallies)
+        } ?: dao2025().transactionWithResult {
+            val artist = getEntry(id) ?: return@transactionWithResult null
+            val stampRallies = dao2025().getStampRallyEntries(id).awaitAsList()
+                .map { it.toStampRallyEntry() }
             ArtistWithStampRalliesEntry(artist, stampRallies)
         }
 
     fun search(
+        activeYearIs2025: Boolean,
         query: String,
         searchQuery: ArtistSearchQuery,
     ): PagingSource<Int, ArtistWithUserData> {
+        val tableName = if (activeYearIs2025) "artistEntry2025" else "artistEntry2024"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (filterParams.showOnlyFavorites) this += "artistUserEntry.favorite = 1"
 
             // Search for "http" as a simplification of logic, since checking
             // not empty would require a separate query template
-            if (filterParams.showOnlyWithCatalog) this += "artistEntry.driveLink LIKE 'http%'"
+            if (filterParams.showOnlyWithCatalog) this += "$tableName.driveLink LIKE 'http%'"
 
             if (searchQuery.lockedSeries != null) {
-                this += "artistEntry.id IN (SELECT artistId from artistSeriesConnection WHERE " +
+                this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
                         (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed IS 1 AND" else "") +
                         " artistSeriesConnection.seriesId == " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
             } else if (searchQuery.lockedMerch != null) {
-                this += "artistEntry.id IN (SELECT artistId from artistMerchConnection WHERE " +
+                this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
                         (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed IS 1 AND" else "") +
                         "artistMerchConnection.merchId == " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
@@ -128,13 +217,13 @@ class ArtistEntryDao(
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
-            ArtistSearchSortOption.BOOTH -> "ORDER BY artistEntry_fts.booth COLLATE NOCASE"
-            ArtistSearchSortOption.ARTIST -> "ORDER BY artistEntry_fts.name COLLATE NOCASE"
+            ArtistSearchSortOption.BOOTH -> "ORDER BY ${tableName}_fts.booth COLLATE NOCASE"
+            ArtistSearchSortOption.ARTIST -> "ORDER BY ${tableName}_fts.name COLLATE NOCASE"
             ArtistSearchSortOption.RANDOM -> "ORDER BY orderIndex"
         } + " $ascending"
         val randomSortSelectSuffix =
-            (", substr(artistEntry_fts.counter * 0.${searchQuery.randomSeed}," +
-                    " length(artistEntry_fts.counter) + 2) as orderIndex")
+            (", substr(${tableName}_fts.counter * 0.${searchQuery.randomSeed}," +
+                    " length(${tableName}_fts.counter) + 2) as orderIndex")
                 .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
                 .orEmpty()
         val selectSuffix =
@@ -171,16 +260,16 @@ class ArtistEntryDao(
                 .orEmpty()
             val countStatement = """
                 SELECT COUNT(*)
-                FROM artistEntry
+                FROM $tableName
                 LEFT OUTER JOIN artistUserEntry
-                ON artistEntry.id = artistUserEntry.artistId
+                ON $tableName.id = artistUserEntry.artistId
                 $andStatement
             """.trimIndent()
             val statement = """
-                SELECT artistEntry.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
-                FROM artistEntry
+                SELECT $tableName.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
+                FROM $tableName
                 LEFT OUTER JOIN artistUserEntry
-                ON artistEntry.id = artistUserEntry.artistId
+                ON $tableName.id = artistUserEntry.artistId
                 $andStatement
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
@@ -190,7 +279,7 @@ class ArtistEntryDao(
                 database = database,
                 countStatement = countStatement,
                 statement = statement,
-                tableNames = listOf("artistEntry_fts", "artistUserEntry"),
+                tableNames = listOf("${tableName}_fts", "artistUserEntry"),
                 mapper = SqlCursor::toArtistWithUserData,
             )
         }
@@ -213,22 +302,22 @@ class ArtistEntryDao(
         }
 
         val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
-            "(${DaoUtils.makeLikeAndQuery("artistEntry_fts.$it", queries)})"
+            "(${DaoUtils.makeLikeAndQuery("${tableName}_fts.$it", queries)})"
         }
 
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
 
         val countStatement = DaoUtils.buildSearchCountStatement(
-            ftsTableName = "artistEntry_fts",
+            ftsTableName = "${tableName}_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
         )
         val statement = DaoUtils.buildSearchStatement(
-            tableName = "artistEntry",
-            ftsTableName = "artistEntry_fts",
-            select = "artistEntry.*$selectSuffix",
+            tableName = tableName,
+            ftsTableName = "${tableName}_fts",
+            select = "$tableName.*$selectSuffix",
             idField = "id",
             likeOrderBy = "",
             matchQuery = matchQuery,
@@ -248,7 +337,7 @@ class ArtistEntryDao(
             database = database,
             countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("artistEntry_fts", "artistUserEntry"),
+            tableNames = listOf("${tableName}_fts", "artistUserEntry"),
             mapper = SqlCursor::toArtistWithUserData,
         )
     }

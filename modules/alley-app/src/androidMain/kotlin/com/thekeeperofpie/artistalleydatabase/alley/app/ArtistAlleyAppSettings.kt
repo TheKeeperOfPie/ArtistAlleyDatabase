@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
 @Inject
 class ArtistAlleyAppSettings(
     private val application: Application,
@@ -33,6 +35,7 @@ class ArtistAlleyAppSettings(
     override val showOnlyConfirmedTags = boolean("showOnlyConfirmedTags", false)
     override val showOnlyFavorites = boolean("showOnlyFavorites", false)
     override val forceOneDisplayColumn = boolean("forceOneDisplayColumn", false)
+    override val activeYearIs2025 = boolean("activeYearIs2024", false)
 
     private fun long(key: String, default: Long = -1L) = initialize(
         key,

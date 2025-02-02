@@ -3,23 +3,45 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+
+private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
+    BoothWithFavorite(id = id, booth = booth, favorite = favorite)
+
+private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
+    BoothWithFavorite(id = id, booth = booth, favorite = favorite)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class UserEntryDao(
     private val database: suspend () -> AlleySqlDatabase,
+    private val settings: ArtistAlleySettings,
     private val dao: suspend () -> UserEntryQueries = { database().userEntryQueries },
 ) {
-    fun getBoothsWithFavorites() = flowFromSuspend { dao() }
-        .flatMapLatest { it.getBoothsWithFavorites().asFlow() }
-        .mapToList(PlatformDispatchers.IO)
+    fun getBoothsWithFavorites() = settings.activeYearIs2025
+        .flatMapLatest {
+            if (it) {
+                dao().getBoothsWithFavorites2025()
+                    .asFlow()
+                    .mapToList(PlatformDispatchers.IO)
+                    .map { it.map { it.toBoothWithFavorite() } }
+            } else {
+                dao().getBoothsWithFavorites2024()
+                    .asFlow()
+                    .mapToList(PlatformDispatchers.IO)
+                    .map { it.map { it.toBoothWithFavorite() } }
+            }
+        }
 
     suspend fun insertArtistUserEntry(entry: ArtistUserEntry) {
         dao().transaction {

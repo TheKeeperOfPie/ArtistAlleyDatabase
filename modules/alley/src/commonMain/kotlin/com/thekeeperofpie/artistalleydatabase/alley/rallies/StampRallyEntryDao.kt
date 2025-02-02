@@ -6,14 +6,18 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024Queries
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry.GetEntry
 import kotlinx.serialization.json.Json
+import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
 
 fun SqlCursor.toStampRallyWithUserData(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
@@ -39,7 +43,7 @@ fun SqlCursor.toStampRallyWithUserData(): StampRallyWithUserData {
     )
 }
 
-private fun GetEntry.toStampRallyWithUserData() = StampRallyWithUserData(
+private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyEntry(
         id = id,
         fandom = fandom,
@@ -60,27 +64,85 @@ private fun GetEntry.toStampRallyWithUserData() = StampRallyWithUserData(
     )
 )
 
+private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
+    stampRally = StampRallyEntry(
+        id = id,
+        fandom = fandom,
+        hostTable = hostTable,
+        tables = tables,
+        links = links,
+        tableMin = tableMin,
+        totalCost = totalCost,
+        prizeLimit = prizeLimit,
+        notes = notes,
+        counter = counter,
+    ),
+    userEntry = StampRallyUserEntry(
+        stampRallyId = id,
+        favorite = favorite == true,
+        ignored = ignored == true,
+        notes = userNotes,
+    )
+)
+
+fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
+    id = id,
+    fandom = fandom,
+    hostTable = hostTable,
+    tables = tables,
+    links = links,
+    tableMin = tableMin,
+    totalCost = totalCost,
+    prizeLimit = prizeLimit,
+    notes = notes,
+    counter = counter,
+)
+
+fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
+    id = id,
+    fandom = fandom,
+    hostTable = hostTable,
+    tables = tables,
+    links = links,
+    tableMin = tableMin,
+    totalCost = totalCost,
+    prizeLimit = prizeLimit,
+    notes = notes,
+    counter = counter,
+)
+
 class StampRallyEntryDao(
     private val driver: SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
-    private val dao: suspend () -> StampRallyEntryQueries = { database().stampRallyEntryQueries },
+    private val dao2024: suspend () -> StampRallyEntry2024Queries = { database().stampRallyEntry2024Queries },
+    private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
 ) {
-    suspend fun getEntry(id: String) = dao()
+    suspend fun getEntry(id: String) = dao2024()
         .getEntry(id)
         .awaitAsOneOrNull()
         ?.toStampRallyWithUserData()
+        ?: dao2025()
+            .getEntry(id)
+            .awaitAsOneOrNull()
+            ?.toStampRallyWithUserData()
 
     suspend fun getEntryWithArtists(id: String) =
-        dao().transactionWithResult {
+        dao2024().transactionWithResult {
             val stampRally = getEntry(id) ?: return@transactionWithResult null
-            val artists = dao().getArtistEntries(id).awaitAsList()
+            val artists = dao2024().getArtistEntries(id).awaitAsList().map { it.toArtistEntry() }
+            StampRallyWithArtistsEntry(stampRally, artists)
+        } ?: dao2025().transactionWithResult {
+            val stampRally = getEntry(id) ?: return@transactionWithResult null
+            val artists = dao2025().getArtistEntries(id).awaitAsList().map { it.toArtistEntry() }
             StampRallyWithArtistsEntry(stampRally, artists)
         }
 
     fun search(
+        activeYearIs2025: Boolean,
         query: String,
         searchQuery: StampRallySearchQuery,
     ): PagingSource<Int, StampRallyWithUserData> {
+        val tableName = if (activeYearIs2025) "stampRallyEntry2025" else "stampRallyEntry2024"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (filterParams.showOnlyFavorites) this += "stampRallyUserEntry.favorite = 1"
@@ -89,18 +151,18 @@ class StampRallyEntryDao(
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
             StampRallySearchSortOption.MAIN_TABLE ->
-                "ORDER BY stampRallyEntry_fts.hostTable COLLATE NOCASE $ascending"
+                "ORDER BY ${tableName}_fts.hostTable COLLATE NOCASE $ascending"
             StampRallySearchSortOption.FANDOM ->
-                "ORDER BY stampRallyEntry_fts.fandom COLLATE NOCASE $ascending"
+                "ORDER BY ${tableName}_fts.fandom COLLATE NOCASE $ascending"
             StampRallySearchSortOption.RANDOM -> "ORDER BY orderIndex $ascending"
             StampRallySearchSortOption.PRIZE_LIMIT ->
-                "ORDER BY stampRallyEntry_fts.prizeLimit $ascending NULLS LAST"
+                "ORDER BY ${tableName}_fts.prizeLimit $ascending NULLS LAST"
             StampRallySearchSortOption.TOTAL_COST ->
-                "ORDER BY stampRallyEntry_fts.totalCost $ascending NULLS LAST"
+                "ORDER BY ${tableName}_fts.totalCost $ascending NULLS LAST"
         }
         val randomSortSelectSuffix =
-            (", substr(stampRallyEntry_fts.counter * 0.${searchQuery.randomSeed}," +
-                " length(stampRallyEntry_fts.counter) + 2) as orderIndex")
+            (", substr(${tableName}_fts.counter * 0.${searchQuery.randomSeed}," +
+                " length(${tableName}_fts.counter) + 2) as orderIndex")
             .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
             .orEmpty()
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, " +
@@ -120,16 +182,16 @@ class StampRallyEntryDao(
                 .orEmpty()
             val countStatement = """
                 SELECT COUNT(*)
-                FROM stampRallyEntry
+                FROM $tableName
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
+                ON $tableName.id = stampRallyUserEntry.stampRallyId
                 $andStatement
                 """.trimIndent()
             val statement = """
-                SELECT stampRallyEntry.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
-                FROM stampRallyEntry
+                SELECT $tableName.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
+                FROM $tableName
                 LEFT OUTER JOIN stampRallyUserEntry
-                ON stampRallyEntry.id = stampRallyUserEntry.stampRallyId
+                ON $tableName.id = stampRallyUserEntry.stampRallyId
                 $andStatement
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
@@ -139,7 +201,7 @@ class StampRallyEntryDao(
                 database = database,
                 countStatement = countStatement,
                 statement = statement,
-                tableNames = listOf("stampRallyEntry_fts"),
+                tableNames = listOf("${tableName}_fts"),
                 mapper = SqlCursor::toStampRallyWithUserData,
             )
         }
@@ -157,22 +219,22 @@ class StampRallyEntryDao(
         }
 
         val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
-            "(${DaoUtils.makeLikeAndQuery("stampRallyEntry_fts.$it", queries)})"
+            "(${DaoUtils.makeLikeAndQuery("${tableName}_fts.$it", queries)})"
         }
 
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
 
         val countStatement = DaoUtils.buildSearchCountStatement(
-            ftsTableName = "stampRallyEntry_fts",
+            ftsTableName = "${tableName}_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
         )
         val statement = DaoUtils.buildSearchStatement(
-            tableName = "stampRallyEntry",
-            ftsTableName = "stampRallyEntry_fts",
-            select = "stampRallyEntry.*$selectSuffix",
+            tableName = tableName,
+            ftsTableName = "${tableName}_fts",
+            select = "$tableName.*$selectSuffix",
             idField = "id",
             likeOrderBy = "",
             matchQuery = matchQuery,
@@ -192,7 +254,7 @@ class StampRallyEntryDao(
             database = database,
             countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("stampRallyEntry_fts"),
+            tableNames = listOf("${tableName}_fts"),
             mapper = SqlCursor::toStampRallyWithUserData,
         )
     }

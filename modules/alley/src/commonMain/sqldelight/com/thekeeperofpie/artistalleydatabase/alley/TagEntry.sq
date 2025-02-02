@@ -11,24 +11,46 @@ SELECT COUNT(*) FROM seriesEntry;
 getMerchSize:
 SELECT COUNT(*) FROM merchEntry;
 
-getBoothsBySeriesId:
-SELECT artistEntry.booth FROM artistSeriesConnection
-INNER JOIN artistEntry ON (artistSeriesConnection.artistId = artistEntry.id)
+getBoothsBySeriesId2024:
+SELECT artistEntry2024.booth FROM artistSeriesConnection
+INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)
 WHERE artistSeriesConnection.seriesId = :seriesId;
 
-getBoothsBySeriesIdConfirmed:
-SELECT artistEntry.booth FROM artistSeriesConnection
-INNER JOIN artistEntry ON (artistSeriesConnection.artistId = artistEntry.id)
+getBoothsBySeriesIdConfirmed2024:
+SELECT artistEntry2024.booth FROM artistSeriesConnection
+INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
 AND artistSeriesConnection.confirmed IS 1;
 
-getBoothsByMerchId:
-SELECT artistEntry.booth FROM artistMerchConnection
-INNER JOIN artistEntry ON (artistMerchConnection.artistId = artistEntry.id)
+getBoothsByMerchId2024:
+SELECT artistEntry2024.booth FROM artistMerchConnection
+INNER JOIN artistEntry2024 ON (artistMerchConnection.artistId = artistEntry2024.id)
 WHERE artistMerchConnection.merchId = :merchId;
 
-getBoothsByMerchIdConfirmed:
-SELECT artistEntry.booth FROM artistMerchConnection
-INNER JOIN artistEntry ON (artistMerchConnection.artistId = artistEntry.id)
+getBoothsByMerchIdConfirmed2024:
+SELECT artistEntry2024.booth FROM artistMerchConnection
+INNER JOIN artistEntry2024 ON (artistMerchConnection.artistId = artistEntry2024.id)
+WHERE artistMerchConnection.merchId = :merchId
+AND artistMerchConnection.confirmed IS 1;
+
+getBoothsBySeriesId2025:
+SELECT artistEntry2025.booth FROM artistSeriesConnection
+INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025.id)
+WHERE artistSeriesConnection.seriesId = :seriesId;
+
+getBoothsBySeriesIdConfirmed2025:
+SELECT artistEntry2025.booth FROM artistSeriesConnection
+INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025.id)
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND artistSeriesConnection.confirmed IS 1;
+
+getBoothsByMerchId2025:
+SELECT artistEntry2025.booth FROM artistMerchConnection
+INNER JOIN artistEntry2025 ON (artistMerchConnection.artistId = artistEntry2025.id)
+WHERE artistMerchConnection.merchId = :merchId;
+
+getBoothsByMerchIdConfirmed2025:
+SELECT artistEntry2025.booth FROM artistMerchConnection
+INNER JOIN artistEntry2025 ON (artistMerchConnection.artistId = artistEntry2025.id)
 WHERE artistMerchConnection.merchId = :merchId
 AND artistMerchConnection.confirmed IS 1;

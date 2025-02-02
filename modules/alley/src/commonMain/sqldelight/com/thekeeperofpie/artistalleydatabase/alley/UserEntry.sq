@@ -10,10 +10,15 @@ getArtistUserEntry:
 SELECT * FROM artistUserEntry
 WHERE artistId = :artistId;
 
-getBoothsWithFavorites:
-SELECT artistEntry.id, artistEntry.booth, artistUserEntry.favorite FROM artistEntry
+getBoothsWithFavorites2024:
+SELECT artistEntry2024.id, artistEntry2024.booth, artistUserEntry.favorite FROM artistEntry2024
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry.id = artistUserEntry.artistId;
+ON artistEntry2024.id = artistUserEntry.artistId;
+
+getBoothsWithFavorites2025:
+SELECT artistEntry2025.id, artistEntry2025.booth, artistUserEntry.favorite FROM artistEntry2025
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2025.id = artistUserEntry.artistId;
 
 getStampRallyUserEntry:
 SELECT * FROM stampRallyUserEntry

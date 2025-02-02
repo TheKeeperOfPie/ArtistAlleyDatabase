@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -42,13 +43,14 @@ class TagMapViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            settings.showOnlyConfirmedTags
-                .mapLatest {
+            combine(settings.showOnlyConfirmedTags, settings.activeYearIs2025, ::Pair)
+                .mapLatest { (showOnlyConfirmedTags, activeYearIs2025) ->
                     tagEntryDao.getBooths(
+                        activeYearIs2025 = activeYearIs2025,
                         TagMapQuery(
                             series = route.series,
                             merch = route.merch,
-                            showOnlyConfirmedTags = it,
+                            showOnlyConfirmedTags = showOnlyConfirmedTags,
                         )
                     )
                 }

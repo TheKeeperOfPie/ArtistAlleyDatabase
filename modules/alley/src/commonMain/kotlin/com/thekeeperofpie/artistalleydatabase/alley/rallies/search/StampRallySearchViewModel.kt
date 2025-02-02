@@ -21,6 +21,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -65,10 +66,16 @@ class StampRallySearchViewModel(
     override fun mapQuery(
         query: String,
         options: StampRallySearchQuery,
-    ) = createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-        stampRallyEntryDao.search(query, options)
-    }
-        .flow
+    ) = settings.activeYearIs2025
+        .flatMapLatest {
+            createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                stampRallyEntryDao.search(
+                    activeYearIs2025 = it,
+                    query = query,
+                    searchQuery = options,
+                )
+            }.flow
+        }
         .flowOn(CustomDispatchers.IO)
         .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
         .map { it.map { StampRallyEntryGridModel.buildFromEntry(it) } }

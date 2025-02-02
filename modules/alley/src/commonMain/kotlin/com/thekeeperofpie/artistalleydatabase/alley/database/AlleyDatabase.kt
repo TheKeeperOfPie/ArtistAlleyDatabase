@@ -2,9 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import app.cash.sqldelight.ColumnAdapter
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.DriverFactory
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
@@ -23,6 +26,7 @@ import me.tatarka.inject.annotations.Inject
 class ArtistAlleyDatabase(
     applicationScope: ApplicationScope,
     driverFactory: DriverFactory,
+    settings: ArtistAlleySettings,
 ) {
     private val databaseState = MutableStateFlow<AlleySqlDatabase?>(null)
     private val database = suspend { databaseState.filterNotNull().first() }
@@ -51,7 +55,7 @@ class ArtistAlleyDatabase(
                 """.trimMargin(), 0).await()
             databaseState.value = AlleySqlDatabase(
                 driver = driver,
-                artistEntryAdapter = ArtistEntry.Adapter(
+                artistEntry2024Adapter = ArtistEntry2024.Adapter(
                     linksAdapter = listStringAdapter,
                     storeLinksAdapter = listStringAdapter,
                     catalogLinksAdapter = listStringAdapter,
@@ -60,18 +64,33 @@ class ArtistAlleyDatabase(
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
                 ),
-                stampRallyEntryAdapter = StampRallyEntry.Adapter(
+                artistEntry2025Adapter = ArtistEntry2025.Adapter(
+                    linksAdapter = listStringAdapter,
+                    storeLinksAdapter = listStringAdapter,
+                    catalogLinksAdapter = listStringAdapter,
+                    seriesInferredAdapter = listStringAdapter,
+                    seriesConfirmedAdapter = listStringAdapter,
+                    merchInferredAdapter = listStringAdapter,
+                    merchConfirmedAdapter = listStringAdapter,
+                ),
+                stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
+                    tablesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
+                ),
+                stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
                     tablesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
                 ),
             )
+
+            // TODO: Retain only valid IDs
         }
     }
 
-    internal val artistEntryDao = ArtistEntryDao(driver, database)
+    internal val artistEntryDao = ArtistEntryDao(driver, database, settings)
     internal val stampRallyEntryDao = StampRallyEntryDao(driver, database)
     internal val tagEntryDao = TagEntryDao(driver, database)
-    internal val userEntryDao = UserEntryDao(database)
+    internal val userEntryDao = UserEntryDao(database, settings)
 }
 
 private val listStringAdapter = object : ColumnAdapter<List<String>, String> {

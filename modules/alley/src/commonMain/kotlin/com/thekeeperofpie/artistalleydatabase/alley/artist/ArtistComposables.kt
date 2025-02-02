@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
@@ -38,18 +37,20 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ArtistTitle(artist: ArtistEntry) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = artist.booth,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.sharedElement(
-                "booth",
-                artist.id,
-                zIndexInOverlay = 1f,
+        if (artist.booth != null) {
+            Text(
+                text = artist.booth,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.sharedElement(
+                    "booth",
+                    artist.id,
+                    zIndexInOverlay = 1f,
+                )
             )
-        )
 
-        Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
+            Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
+        }
 
         Text(
             text = artist.name,
@@ -75,14 +76,16 @@ fun ArtistListRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.sharedBounds("container", artist.id, zIndexInOverlay = 1f)
         ) {
-            Text(
-                text = artist.booth,
-                style = MaterialTheme.typography.titleLarge
-                    .copy(fontFamily = FontFamily.Monospace),
-                modifier = Modifier
-                    .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
-                    .sharedElement("booth", artist.id, zIndexInOverlay = 1f)
-            )
+            if (artist.booth != null) {
+                Text(
+                    text = artist.booth,
+                    style = MaterialTheme.typography.titleLarge
+                        .copy(fontFamily = FontFamily.Monospace),
+                    modifier = Modifier
+                        .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
+                        .sharedElement("booth", artist.id, zIndexInOverlay = 1f)
+                )
+            }
 
             Text(
                 text = artist.name,
@@ -91,7 +94,11 @@ fun ArtistListRow(
                 modifier = Modifier
                     .sharedElement("name", artist.id, zIndexInOverlay = 1f)
                     .weight(1f)
-                    .padding(vertical = 12.dp)
+                    .padding(
+                        start = if (artist.booth == null) 16.dp else 0.dp,
+                        top = 12.dp,
+                        bottom = 12.dp,
+                    )
             )
 
             val favorite = entry.favorite

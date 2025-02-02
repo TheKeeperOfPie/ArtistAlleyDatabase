@@ -37,6 +37,8 @@ interface ArtistAlleyComponent{
     val tagMapViewModel: (SavedStateHandle) -> TagMapViewModel
     val favoritesSortFilterViewModel: () -> FavoritesSortFilterViewModel
 
+    val settings: ArtistAlleySettings
+
     val ArtistAlleyDatabase.bindArtistEntryDao: ArtistEntryDao
         @Provides get() = this.artistEntryDao
 

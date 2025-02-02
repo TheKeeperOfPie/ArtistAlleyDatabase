@@ -3,7 +3,7 @@ import kotlin.String;
 import kotlin.collections.List;
 
 CREATE TABLE
-    IF NOT EXISTS `artistEntry` (
+    IF NOT EXISTS `artistEntry2024` (
         `id` TEXT NOT NULL,
         `booth` TEXT NOT NULL COLLATE NOCASE,
         `name` TEXT NOT NULL COLLATE NOCASE,
@@ -21,7 +21,7 @@ CREATE TABLE
         PRIMARY KEY (`id`)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry_fts` USING FTS5 (
+CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry2024_fts` USING FTS5 (
     `id`,
     `booth`,
     `name`,
@@ -32,7 +32,41 @@ CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry_fts` USING FTS5 (
     `merchInferred`,
     `merchConfirmed`,
     `counter`,
-    content=`artistEntry`,
+    content=`artistEntry2024`,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE TABLE
+    IF NOT EXISTS `artistEntry2025` (
+        `id` TEXT NOT NULL,
+        `booth` TEXT COLLATE NOCASE,
+        `name` TEXT NOT NULL COLLATE NOCASE,
+        `summary` TEXT,
+        `links` TEXT AS List<String> NOT NULL,
+        `storeLinks` TEXT AS List<String> NOT NULL DEFAULT '',
+        `catalogLinks` TEXT AS List<String> NOT NULL DEFAULT '',
+        `driveLink` TEXT,
+        `notes` TEXT,
+        `seriesInferred` TEXT AS List<String> NOT NULL,
+        `seriesConfirmed` TEXT AS List<String> NOT NULL,
+        `merchInferred` TEXT AS List<String> NOT NULL,
+        `merchConfirmed` TEXT AS List<String> NOT NULL,
+        `counter` INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (`id`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry2025_fts` USING FTS5 (
+    `id`,
+    `booth`,
+    `name`,
+    `summary`,
+    `driveLink`,
+    `seriesInferred`,
+    `seriesConfirmed`,
+    `merchInferred`,
+    `merchConfirmed`,
+    `counter`,
+    content=`artistEntry2025`,
     tokenize="unicode61 remove_diacritics 2"
 );
 
@@ -53,7 +87,7 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    IF NOT EXISTS `stampRallyEntry` (
+    IF NOT EXISTS `stampRallyEntry2024` (
         `id` TEXT NOT NULL,
         `fandom` TEXT NOT NULL COLLATE NOCASE,
         `hostTable` TEXT NOT NULL COLLATE NOCASE,
@@ -67,12 +101,36 @@ CREATE TABLE
         PRIMARY KEY (`id`)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry_fts` USING FTS5 (
+CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry2024_fts` USING FTS5 (
     `id`,
     `fandom`,
     `tables`,
     `counter`,
-    content=`stampRallyEntry`,
+    content=`stampRallyEntry2024`,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE TABLE
+    IF NOT EXISTS `stampRallyEntry2025` (
+        `id` TEXT NOT NULL,
+        `fandom` TEXT NOT NULL COLLATE NOCASE,
+        `hostTable` TEXT NOT NULL COLLATE NOCASE,
+        `tables` TEXT AS List<String> NOT NULL,
+        `links` TEXT AS List<String> NOT NULL,
+        `tableMin` INTEGER,
+        `totalCost` INTEGER,
+        `prizeLimit` INTEGER,
+        `notes` TEXT,
+        `counter` INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (`id`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry2025_fts` USING FTS5 (
+    `id`,
+    `fandom`,
+    `tables`,
+    `counter`,
+    content=`stampRallyEntry2025`,
     tokenize="unicode61 remove_diacritics 2"
 );
 

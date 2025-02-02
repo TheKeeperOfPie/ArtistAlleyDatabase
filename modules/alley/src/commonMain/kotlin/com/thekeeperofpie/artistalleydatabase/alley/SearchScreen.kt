@@ -469,7 +469,7 @@ object SearchScreen {
     }
 
     interface SearchEntryModel : EntryGridModel {
-        val booth: String
+        val booth: String?
         val images: List<CatalogImage>
         var favorite: Boolean
         var ignored: Boolean

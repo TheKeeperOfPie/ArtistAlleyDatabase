@@ -16,4 +16,6 @@ interface ArtistAlleySettings {
     val showOnlyConfirmedTags: MutableStateFlow<Boolean>
     val showOnlyFavorites: MutableStateFlow<Boolean>
     val forceOneDisplayColumn: MutableStateFlow<Boolean>
+
+    val activeYearIs2025: MutableStateFlow<Boolean>
 }

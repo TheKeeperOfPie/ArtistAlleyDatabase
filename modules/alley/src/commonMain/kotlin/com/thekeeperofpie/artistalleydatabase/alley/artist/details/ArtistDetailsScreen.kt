@@ -54,8 +54,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally

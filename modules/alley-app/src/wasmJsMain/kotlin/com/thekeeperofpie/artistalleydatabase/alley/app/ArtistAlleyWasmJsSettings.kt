@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.tatarka.inject.annotations.Inject
 
+@SingletonScope
 @Inject
 class ArtistAlleyWasmJsSettings : ArtistAlleySettings {
     override val lastKnownArtistsCsvSize = MutableStateFlow(-1L)
@@ -18,4 +20,5 @@ class ArtistAlleyWasmJsSettings : ArtistAlleySettings {
     override val showOnlyConfirmedTags = MutableStateFlow(false)
     override val showOnlyFavorites = MutableStateFlow(false)
     override val forceOneDisplayColumn = MutableStateFlow(false)
+    override val activeYearIs2025 = MutableStateFlow(false)
 }

@@ -1,5 +1,9 @@
-insertArtist:
-INSERT OR REPLACE INTO artistEntry
+insertArtist2024:
+INSERT OR REPLACE INTO artistEntry2024
+VALUES ?;
+
+insertArtist2025:
+INSERT OR REPLACE INTO artistEntry2025
 VALUES ?;
 
 insertSeriesConnection:
@@ -10,8 +14,12 @@ insertMerchConnection:
 INSERT OR REPLACE INTO artistMerchConnection
 VALUES ?;
 
-insertStampRally:
-INSERT OR REPLACE INTO stampRallyEntry
+insertStampRally2024:
+INSERT OR REPLACE INTO stampRallyEntry2024
+VALUES ?;
+
+insertStampRally2025:
+INSERT OR REPLACE INTO stampRallyEntry2025
 VALUES ?;
 
 insertArtistConnection:

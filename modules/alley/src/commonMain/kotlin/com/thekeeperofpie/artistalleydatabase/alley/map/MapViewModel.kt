@@ -8,9 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -34,7 +34,8 @@ class MapViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     var gridData by mutableStateOf(LoadingResult.loading<GridData>())
-    private val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
+    private val randomSeed =
+        savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
     init {
@@ -61,12 +62,17 @@ class MapViewModel(
         }
     }
 
-    private fun mapBooths(booths: List<GetBoothsWithFavorites>): List<Table> {
-        val letterToBooths = booths.groupBy { it.booth.take(1) }.toList().sortedBy { it.first }
+    private fun mapBooths(booths: List<BoothWithFavorite>): List<Table> {
+        @Suppress("UNCHECKED_CAST")
+        val letterToBooths = (booths.groupBy { it.booth?.take(1) }
+            .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
+            .toList()
+            .sortedBy { it.first }
         var currentIndex = 0
         val showRandomCatalogImage = settings.showRandomCatalogImage.value
         return letterToBooths.mapIndexed { letterIndex, pair ->
-            pair.second.map {
+            pair.second.mapNotNull {
+                val booth = it.booth ?: return@mapNotNull null
                 val tableNumber = it.booth.filter { it.isDigit() }.toInt()
                 val images = AlleyDataUtils.getImages(
                     folder = AlleyDataUtils.Folder.CATALOGS,

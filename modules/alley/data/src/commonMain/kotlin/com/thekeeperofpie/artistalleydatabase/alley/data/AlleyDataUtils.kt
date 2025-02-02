@@ -13,7 +13,8 @@ object AlleyDataUtils {
         RALLIES("rallies"),
     }
 
-    fun getImages(folder: Folder, file: String): List<CatalogImage> {
+    fun getImages(folder: Folder, file: String?): List<CatalogImage> {
+        file ?: return emptyList()
         val targetName = file.replace(" - ", "").replace("'", "_")
         val targetFolder = when (folder) {
             Folder.CATALOGS -> ComposeFiles.catalogs

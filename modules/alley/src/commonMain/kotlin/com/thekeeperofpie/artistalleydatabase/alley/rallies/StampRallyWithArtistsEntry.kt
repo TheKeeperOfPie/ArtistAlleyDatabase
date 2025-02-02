@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 
 data class StampRallyWithArtistsEntry(
     val stampRally: StampRallyWithUserData,

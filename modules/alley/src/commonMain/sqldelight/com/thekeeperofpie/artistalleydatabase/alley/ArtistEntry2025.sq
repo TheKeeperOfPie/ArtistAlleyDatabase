@@ -1,0 +1,15 @@
+getEntry:
+SELECT artistEntry2025.*, artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.notes AS userNotes FROM artistEntry2025
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2025.id = artistUserEntry.artistId
+WHERE id = :id;
+
+getEntriesRandom:
+SELECT *
+FROM artistEntry2025
+ORDER BY substr(artistEntry2025.counter * ?, length(artistEntry2025.counter) + 2);
+
+getStampRallyEntries:
+SELECT stampRallyEntry2025.* FROM stampRallyArtistConnection
+INNER JOIN stampRallyEntry2025 ON (stampRallyArtistConnection.stampRallyId = stampRallyEntry2025.id)
+WHERE stampRallyArtistConnection.artistId = :artistId;

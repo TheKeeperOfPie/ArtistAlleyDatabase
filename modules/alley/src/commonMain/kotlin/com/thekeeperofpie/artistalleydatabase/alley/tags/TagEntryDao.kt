@@ -131,22 +131,50 @@ class TagEntryDao(
         )
     }
 
-    suspend fun getBooths(tagMapQuery: TagMapQuery): Set<String> =
+    suspend fun getBooths(activeYearIs2025: Boolean, tagMapQuery: TagMapQuery): Set<String> =
         dao().run {
             val seriesId = tagMapQuery.series
             if (seriesId != null) {
                 if (tagMapQuery.showOnlyConfirmedTags) {
-                    getBoothsBySeriesIdConfirmed(seriesId)
+                    if (activeYearIs2025) {
+                        getBoothsBySeriesIdConfirmed2025(seriesId)
+                            .awaitAsList()
+                            .map { it.booth }
+                    } else {
+                        getBoothsBySeriesIdConfirmed2024(seriesId)
+                            .awaitAsList()
+                    }
                 } else {
-                    getBoothsBySeriesId(seriesId)
+                    if (activeYearIs2025) {
+                        getBoothsBySeriesId2025(seriesId)
+                            .awaitAsList()
+                            .map { it.booth }
+                    } else {
+                        getBoothsBySeriesId2024(seriesId)
+                            .awaitAsList()
+                    }
                 }
             } else {
                 val merchId = tagMapQuery.merch!!
                 if (tagMapQuery.showOnlyConfirmedTags) {
-                    getBoothsByMerchIdConfirmed(merchId)
+                    if (activeYearIs2025) {
+                        getBoothsByMerchIdConfirmed2025(merchId)
+                            .awaitAsList()
+                            .map { it.booth }
+                    } else {
+                        getBoothsByMerchIdConfirmed2024(merchId)
+                            .awaitAsList()
+                    }
                 } else {
-                    getBoothsByMerchId(merchId)
+                    if (activeYearIs2025) {
+                        getBoothsByMerchId2025(merchId)
+                            .awaitAsList()
+                            .map { it.booth }
+                    } else {
+                        getBoothsByMerchId2024(merchId)
+                            .awaitAsList()
+                    }
                 }
             }
-        }.awaitAsList().toSet()
+        }.filterNotNull().toSet()
 }

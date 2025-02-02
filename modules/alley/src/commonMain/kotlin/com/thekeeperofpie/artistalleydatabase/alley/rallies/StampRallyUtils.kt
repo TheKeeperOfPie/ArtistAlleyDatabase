@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies
 import androidx.compose.runtime.Composable
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit_unknown
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

@@ -1,13 +1,15 @@
 
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyArtistConnection
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import kotlinx.io.Buffer
 import kotlinx.io.Source
@@ -39,7 +41,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     abstract val layout: ProjectLayout
 
     @get:InputFile
-    abstract val artistsCsv: RegularFileProperty
+    abstract val artistsCsv2024: RegularFileProperty
+
+    @get:InputFile
+    abstract val artistsCsv2025: RegularFileProperty
 
     @get:InputFile
     abstract val stampRalliesCsv: RegularFileProperty
@@ -54,7 +59,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     abstract val outputResources: DirectoryProperty
 
     init {
-        artistsCsv.convention(layout.projectDirectory.file("inputs/$ARTISTS_CSV_NAME"))
+        artistsCsv2024.convention(layout.projectDirectory.file("inputs/2024/$ARTISTS_CSV_NAME"))
+        artistsCsv2025.convention(layout.projectDirectory.file("inputs/2025/$ARTISTS_CSV_NAME"))
         stampRalliesCsv.convention(layout.projectDirectory.file("inputs/$STAMP_RALLIES_CSV_NAME"))
         seriesCsv.convention(layout.projectDirectory.file("inputs/$SERIES_CSV_NAME"))
         merchCsv.convention(layout.projectDirectory.file("inputs/$MERCH_CSV_NAME"))
@@ -78,7 +84,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             BuildLogicDatabase.Schema.create(driver)
             val database = BuildLogicDatabase(
                 driver = driver,
-                artistEntryAdapter = ArtistEntry.Adapter(
+                artistEntry2024Adapter = ArtistEntry2024.Adapter(
                     linksAdapter = listStringAdapter,
                     storeLinksAdapter = listStringAdapter,
                     catalogLinksAdapter = listStringAdapter,
@@ -87,7 +93,20 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
                 ),
-                stampRallyEntryAdapter = StampRallyEntry.Adapter(
+                artistEntry2025Adapter = ArtistEntry2025.Adapter(
+                    linksAdapter = listStringAdapter,
+                    storeLinksAdapter = listStringAdapter,
+                    catalogLinksAdapter = listStringAdapter,
+                    seriesInferredAdapter = listStringAdapter,
+                    seriesConfirmedAdapter = listStringAdapter,
+                    merchInferredAdapter = listStringAdapter,
+                    merchConfirmedAdapter = listStringAdapter,
+                ),
+                stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
+                    tablesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
+                ),
+                stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
                     tablesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
                 ),
@@ -98,8 +117,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             parseStampRallies(database)
 
             val ftsTables = listOf(
-                "artistEntry_fts",
-                "stampRallyEntry_fts",
+                "artistEntry2024_fts",
+                "artistEntry2025_fts",
+                "stampRallyEntry2024_fts",
+                "stampRallyEntry2025_fts",
                 "seriesEntry_fts",
                 "merchEntry_fts",
             )
@@ -126,7 +147,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun parseArtists(database: BuildLogicDatabase) {
-        open(artistsCsv).use {
+        open(artistsCsv2024).use {
             var counter = 1L
             read(it)
                 .map {
@@ -159,7 +180,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                     val notes = it["Notes"]
 
-                    val artistEntry = ArtistEntry(
+                    val artistEntry = ArtistEntry2024(
                         id = booth,
                         booth = booth,
                         name = artist,
@@ -224,7 +245,111 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val merchConnections = it.flatMap { it.third }
                     val mutationQueries = database.mutationQueries
                     mutationQueries.transaction {
-                        artists.forEach(mutationQueries::insertArtist)
+                        artists.forEach(mutationQueries::insertArtist2024)
+                        seriesConnections.forEach(mutationQueries::insertSeriesConnection)
+                        merchConnections.forEach(mutationQueries::insertMerchConnection)
+                    }
+                }
+        }
+
+        open(artistsCsv2025).use {
+            var counter = 1L
+            read(it)
+                .map {
+                    // Input,Booth,Artist,Summary,Links,Store,Catalog - Inferred,Series - Inferred,
+                    // Merch - Inferred,Notes,Commissions
+                    val artist = it["Artist"].orEmpty()
+                    val summary = it["Summary"]
+
+                    val newLineRegex = Regex("\n\\s?")
+                    val links = it["Links"].orEmpty().split(newLineRegex)
+                        .filter(String::isNotBlank)
+                    val storeLinks = it["Store"].orEmpty().split(newLineRegex)
+                        .filter(String::isNotBlank)
+                    val catalogLinks = it["Catalog / table"].orEmpty().split(newLineRegex)
+                        .filter(String::isNotBlank)
+                    val driveLink = it["Drive"]
+
+                    val commaRegex = Regex(",\\s?")
+                    val seriesInferred = it["Series - Inferred"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+                    val merchInferred = it["Merch - Inferred"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+
+                    val seriesConfirmed = it["Series - Confirmed"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+                    val merchConfirmed = it["Merch - Confirmed"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+
+                    val notes = it["Notes"]
+
+                    val artistId = "temp$counter"
+                    val artistEntry = ArtistEntry2025(
+                        id = artistId,
+                        booth = null,
+                        name = artist,
+                        summary = summary,
+                        links = links,
+                        storeLinks = storeLinks,
+                        catalogLinks = catalogLinks,
+                        driveLink = driveLink,
+                        seriesInferred = seriesInferred,
+                        seriesConfirmed = seriesConfirmed,
+                        merchInferred = merchInferred,
+                        merchConfirmed = merchConfirmed,
+                        notes = notes,
+                        counter = counter++,
+                    )
+
+                    val seriesConnectionsInferred =
+                        (seriesInferred - seriesConfirmed.toSet())
+                            .map {
+                                ArtistSeriesConnection(
+                                    artistId = artistId,
+                                    seriesId = it,
+                                    confirmed = false
+                                )
+                            }
+                    val seriesConnectionsConfirmed = seriesConfirmed
+                        .map {
+                            ArtistSeriesConnection(
+                                artistId = artistId,
+                                seriesId = it,
+                                confirmed = true
+                            )
+                        }
+                    val seriesConnections =
+                        seriesConnectionsInferred + seriesConnectionsConfirmed
+
+                    val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
+                        .map {
+                            ArtistMerchConnection(
+                                artistId = artistId,
+                                merchId = it,
+                                confirmed = false
+                            )
+                        }
+                    val merchConnectionsConfirmed = merchConfirmed
+                        .map {
+                            ArtistMerchConnection(
+                                artistId = artistId,
+                                merchId = it,
+                                confirmed = true
+                            )
+                        }
+                    val merchConnections =
+                        merchConnectionsInferred + merchConnectionsConfirmed
+
+                    Triple(artistEntry, seriesConnections, merchConnections)
+                }
+                .chunked(100)
+                .forEach {
+                    val artists = it.map { it.first }
+                    val seriesConnections = it.flatMap { it.second }
+                    val merchConnections = it.flatMap { it.third }
+                    val mutationQueries = database.mutationQueries
+                    mutationQueries.transaction {
+                        artists.forEach(mutationQueries::insertArtist2025)
                         seriesConnections.forEach(mutationQueries::insertSeriesConnection)
                         merchConnections.forEach(mutationQueries::insertMerchConnection)
                     }
@@ -299,7 +424,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         .map(String::trim)
                         .map { StampRallyArtistConnection(stampRallyId, it) }
 
-                    StampRallyEntry(
+                    StampRallyEntry2024(
                         id = stampRallyId,
                         fandom = theme,
                         tables = tables,
@@ -317,7 +442,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val stampRallies = it.map { it.first }
                     val artistConnections = it.flatMap { it.second }
                     mutationQueries.transaction {
-                        stampRallies.forEach(mutationQueries::insertStampRally)
+                        stampRallies.forEach(mutationQueries::insertStampRally2024)
                         artistConnections.forEach(mutationQueries::insertArtistConnection)
                     }
                 }

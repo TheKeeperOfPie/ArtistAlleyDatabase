@@ -1,0 +1,10 @@
+getEntry:
+SELECT stampRallyEntry2024.*, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyUserEntry.notes AS userNotes FROM stampRallyEntry2024
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId
+WHERE id = :id;
+
+getArtistEntries:
+SELECT artistEntry2024.* FROM stampRallyArtistConnection
+INNER JOIN artistEntry2024 ON (stampRallyArtistConnection.artistId = artistEntry2024.id)
+WHERE stampRallyArtistConnection.stampRallyId = :stampRallyId;
