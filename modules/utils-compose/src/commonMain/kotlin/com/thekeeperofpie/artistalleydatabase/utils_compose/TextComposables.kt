@@ -727,6 +727,48 @@ fun <T> expandableListInfoText(
     showDividerAbove: Boolean = true,
     allowExpand: Boolean = values.size > 3,
     header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
+) = expandableListInfoText(
+    labelTextRes,
+    contentDescriptionTextRes,
+    values,
+    showDividerAbove,
+    allowExpand,
+    header,
+    item = { value, expanded, isLast ->
+        val bottomPadding = if (isLast) 12.dp else 8.dp
+        Text(
+            text = valueToText(value),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .optionalClickable(
+                    onClick = onClick
+                        ?.takeIf { expanded }
+                        ?.let { { onClick(value) } }
+                )
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    // If only 1 value, mirror InfoText
+                    top = if (values.size == 1) 0.dp else 8.dp,
+                    bottom = bottomPadding,
+                )
+        )
+    }
+)
+
+/**
+ * @return True if anything shown
+ */
+@Composable
+fun <T> expandableListInfoText(
+    labelTextRes: StringResource,
+    contentDescriptionTextRes: StringResource?,
+    values: List<T>,
+    showDividerAbove: Boolean = true,
+    allowExpand: Boolean = values.size > 3,
+    header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
+    item: @Composable (T, expanded: Boolean, isLast: Boolean) -> Unit,
 ): Boolean {
     if (values.isEmpty()) return false
 
@@ -754,30 +796,8 @@ fun <T> expandableListInfoText(
                     HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
                 }
 
-                val bottomPadding = if (index == values.size - 1) {
-                    12.dp
-                } else {
-                    8.dp
-                }
-
-                Text(
-                    text = valueToText(value),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .optionalClickable(
-                            onClick = onClick
-                                ?.takeIf { expanded }
-                                ?.let { { onClick(value) } }
-                        )
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            // If only 1 value, mirror InfoText
-                            top = if (values.size == 1) 0.dp else 8.dp,
-                            bottom = bottomPadding,
-                        )
-                )
+                val isLast = index == values.size - 1
+                item(value, expanded, isLast)
             }
         }
 

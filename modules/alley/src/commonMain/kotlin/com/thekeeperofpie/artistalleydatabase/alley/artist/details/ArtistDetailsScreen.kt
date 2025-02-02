@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -32,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -53,9 +55,11 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ui.Logos
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -132,10 +136,9 @@ object ArtistDetailsScreen {
                         labelTextRes = Res.string.alley_artist_details_links,
                         contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
                         values = artist.links,
-                        valueToText = { it },
-                        onClick = onClickOpenUri,
                         allowExpand = false,
                         showDividerAbove = false,
+                        item = { link, _, isLast -> LinkRow(link, isLast) },
                     )
                 }
             }
@@ -145,10 +148,9 @@ object ArtistDetailsScreen {
                         labelTextRes = Res.string.alley_artist_details_store,
                         contentDescriptionTextRes = null,
                         values = artist.storeLinks,
-                        valueToText = { it },
-                        onClick = onClickOpenUri,
                         allowExpand = false,
                         showDividerAbove = false,
+                        item = { link, _, isLast -> LinkRow(link, isLast) },
                     )
                 }
             }
@@ -329,4 +331,91 @@ object ArtistDetailsScreen {
             }
         }
     }
+
+    @Composable
+    private fun LinkRow(link: String, isLast: Boolean) {
+        val model = parseLinkModel(link)
+        val uriHandler = LocalUriHandler.current
+        val bottomPadding = if (isLast) 12.dp else 8.dp
+        if (model == null) {
+            Text(
+                text = link.removePrefix("https://"),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { uriHandler.openUri(link) }
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = bottomPadding,
+                    )
+            )
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .clickable { uriHandler.openUri(link) }
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = bottomPadding,
+                    )
+                    .fillMaxWidth()
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(20.dp)) {
+                    Icon(
+                        imageVector = model.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                Text(
+                    text = model.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
+
+    private fun parseLinkModel(link: String): LinkModel? {
+        val uri = Uri.parseOrNull(link) ?: return null
+        val path = uri.path?.removePrefix("/")?.removeSuffix("/") ?: return null
+        val host = uri.host?.removePrefix("www.") ?: return null
+        return when (host) {
+            "artstation.com" -> LinkModel(icon = Logos.artStation, path)
+            "bsky.app" -> LinkModel(icon = Logos.bluesky, path.substringAfter("profile/"))
+            "deviantart.com" -> LinkModel(icon = Logos.deviantArt, path)
+            "discord.com", "discord.gg" -> LinkModel(icon = Logos.discord, "Discord")
+            "gamejolt.com" -> LinkModel(icon = Logos.gameJolt, path)
+            "instagram.com" -> LinkModel(icon = Logos.instagram, path)
+            "ko-fi.com" -> LinkModel(icon = Logos.koFi, path)
+            "linktr.ee" -> LinkModel(icon = Logos.linktree, path)
+            "patreon.com" -> LinkModel(icon = Logos.patreon, path)
+            "threads.net" -> LinkModel(icon = Logos.threads, path)
+            "tiktok.com" -> LinkModel(icon = Logos.tikTok, path)
+            "tumblr.com" -> LinkModel(icon = Logos.tumblr, path.removePrefix("blog/"))
+            "twitch.tv" -> LinkModel(icon = Logos.twitch, path)
+            "x.com", "twitter.com" -> LinkModel(icon = Logos.x, path)
+            "youtube.com" -> LinkModel(
+                icon = Logos.youTube,
+                title = path.takeUnless { it.startsWith("channel/") } ?: "YouTube",
+            )
+            else -> when {
+                host.contains("bsky.social") ->
+                    LinkModel(icon = Logos.bluesky, host.substringBefore(".bksy.social"))
+                host.contains("carrd.co") ->
+                    LinkModel(icon = Logos.carrd, host.substringBefore(".carrd.co"))
+                host.contains("tumblr.com") ->
+                    LinkModel(icon = Logos.tumblr, host.substringBefore(".tumblr.com"))
+                else -> null
+            }
+        }
+    }
+
+    private data class LinkModel(
+        val icon: ImageVector,
+        val title: String,
+    )
 }
