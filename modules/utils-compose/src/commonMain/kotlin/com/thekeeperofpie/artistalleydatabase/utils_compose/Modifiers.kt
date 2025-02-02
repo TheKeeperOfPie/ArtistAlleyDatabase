@@ -230,3 +230,50 @@ fun Modifier.border(
         properties["shape"] = RectangleShape
     }
 )
+
+@Suppress("UnnecessaryComposedModifier")
+fun Modifier.border(
+    width: Dp = Dp.Hairline,
+    color: Color,
+    start: Boolean = false,
+    end: Boolean = false,
+    bottom: Boolean = false,
+): Modifier = composed(
+    factory = {
+        this.then(
+            Modifier.drawWithCache {
+                onDrawWithContent {
+                    drawContent()
+                    if (start) {
+                        drawLine(
+                            color = color,
+                            start = Offset(0f, 0f),
+                            end = Offset(0f, size.height)
+                        )
+                    }
+                    if (end) {
+                        drawLine(
+                            color = color,
+                            start = Offset(size.width, 0f),
+                            end = Offset(size.width, size.height)
+                        )
+                    }
+                    if (bottom) {
+                        drawLine(
+                            color = color,
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, size.height)
+                        )
+                    }
+                }
+            }
+        )
+    },
+    inspectorInfo = debugInspectorInfo {
+        name = "border"
+        properties["width"] = width
+        properties["color"] = color.value
+        value = color
+        properties["shape"] = RectangleShape
+    }
+)

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.map
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
@@ -14,20 +15,26 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 @Inject
 class MapViewModel(
     private val artistEntryDao: ArtistEntryDao,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
+    @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     var gridData by mutableStateOf(LoadingResult.loading<GridData>())
+    private val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
     init {
@@ -99,7 +106,7 @@ class MapViewModel(
     }
 
     suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.booth)?.let {
-        ArtistEntryGridModel.buildFromEntry(it)
+        ArtistEntryGridModel.buildFromEntry(randomSeed, it)
     }
 
     data class GridData(

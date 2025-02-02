@@ -20,7 +20,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.thekeeperofpie.artistalley2024"
+        applicationId = "com.thekeeperofpie.artistalley2025"
         minSdk = 28
         targetSdk = 33
         versionCode = 1

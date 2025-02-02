@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.data.generated.resources.Res
 import kotlinx.coroutines.runBlocking
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.ExperimentalResourceApi

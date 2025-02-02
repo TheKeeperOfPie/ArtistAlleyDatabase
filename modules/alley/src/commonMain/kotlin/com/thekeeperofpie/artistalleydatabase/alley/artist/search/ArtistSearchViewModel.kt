@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -58,7 +59,7 @@ class ArtistSearchViewModel(
     override val sections = emptyList<EntrySection>()
 
     val displayType = settings.displayType
-    val randomSeed = Random.nextInt().absoluteValue
+    val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
     init {
@@ -89,7 +90,7 @@ class ArtistSearchViewModel(
     }
         .flow
         .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
-        .map { it.map { ArtistEntryGridModel.buildFromEntry(it) } }
+        .map { it.map { ArtistEntryGridModel.buildFromEntry(randomSeed, it) } }
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 

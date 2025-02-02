@@ -10,8 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import kotlin.random.Random
 
 class ArtistEntryGridModel(
+    val randomSeed: Int,
     val artist: ArtistEntry,
     val userEntry: ArtistUserEntry,
     override val images: List<CatalogImage>,
@@ -29,9 +31,15 @@ class ArtistEntryGridModel(
 
     override val booth get() = artist.booth
 
+    val tags by lazy {
+        val random = Random(randomSeed)
+        (artist.seriesConfirmed.shuffled(random) + artist.seriesInferred.shuffled(random)).distinct()
+    }
+
     companion object {
-        fun buildFromEntry(entry: ArtistWithUserData): ArtistEntryGridModel {
-            return ArtistEntryGridModel(
+        fun buildFromEntry(randomSeed: Int, entry: ArtistWithUserData) =
+            ArtistEntryGridModel(
+                randomSeed = randomSeed,
                 artist = entry.artist,
                 userEntry = entry.userEntry,
                 images = AlleyDataUtils.getImages(
@@ -40,6 +48,5 @@ class ArtistEntryGridModel(
                 ),
                 placeholderText = entry.artist.booth,
             )
-        }
     }
 }

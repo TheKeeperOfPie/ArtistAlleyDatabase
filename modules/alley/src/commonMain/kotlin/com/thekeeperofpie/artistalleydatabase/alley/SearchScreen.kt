@@ -34,8 +34,8 @@ import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,8 +47,10 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -77,6 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
@@ -295,6 +298,7 @@ object SearchScreen {
 
             @Suppress("NAME_SHADOWING")
             val showRandomCatalogImage = showRandomCatalogImage()
+            var maxLane by remember { mutableIntStateOf(0) }
             LazyVerticalStaggeredGrid(
                 columns = if (forceOneDisplayColumn()) {
                     StaggeredGridCells.Fixed(1)
@@ -331,9 +335,9 @@ object SearchScreen {
                         -> 8.dp
                 },
                 horizontalArrangement = when (displayType) {
-                    DisplayType.LIST,
                     DisplayType.CARD,
                         -> 8.dp
+                    DisplayType.LIST,
                     DisplayType.IMAGE -> 0.dp
                 }.let(Arrangement::spacedBy),
                 modifier = Modifier.fillMaxSize()
@@ -361,6 +365,16 @@ object SearchScreen {
                     when (displayType) {
                         DisplayType.LIST -> {
                             val ignored = entry.ignored
+                            val lane by remember(index) {
+                                derivedStateOf {
+                                    gridState.layoutInfo.visibleItemsInfo.find { it.index == index }
+                                        ?.lane
+                                }
+                            }
+                            val finalLane = lane
+                            if (finalLane != null && maxLane < finalLane) {
+                                maxLane = finalLane
+                            }
                             itemRow(
                                 entry,
                                 onFavoriteToggle,
@@ -371,9 +385,13 @@ object SearchScreen {
                                         onLongClick = { onIgnoredToggle(!ignored) }
                                     )
                                     .alpha(if (entry.ignored) 0.38f else 1f)
+                                    .border(
+                                        width = 1.dp,
+                                        color = DividerDefaults.color,
+                                        start = lane != 0,
+                                        bottom = true,
+                                    )
                             )
-
-                            HorizontalDivider()
                         }
                         DisplayType.CARD -> ItemCard(
                             entry = entry,

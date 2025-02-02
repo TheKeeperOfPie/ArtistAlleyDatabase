@@ -13,7 +13,7 @@ const ROOT_FOLDER_ID = scriptProperties.getProperty("rootFolderId")!!
 const STAMP_RALLY_ROOT_FOLDER_ID = scriptProperties.getProperty("stampRallyFolderId")!!
 
 const DOMAINS = [".com", ".ee", ".app", ".ca", ".site", ".gg", ".social"]
-const SHOP_DOMAINS = ["storeenvy.com", "bigcartel.com", "etsy.com", "inprnt.com",
+const SHOP_DOMAINS = ["storenvy.com", "bigcartel.com", "etsy.com", "inprnt.com",
     "myshopify.com", "threadless.com", "itch.io", "faire.com", "gumroad.com",
     "gallerynucleus.com"]
 

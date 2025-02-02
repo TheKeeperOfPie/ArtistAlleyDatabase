@@ -29,7 +29,7 @@ interface ArtistAlleyComponent{
     val artistSortFilterViewModel: (SavedStateHandle) -> ArtistSortFilterViewModel
     val tagsViewModel: () -> TagsViewModel
     val artistMapViewModel: (SavedStateHandle) -> ArtistMapViewModel
-    val mapViewModel: () -> MapViewModel
+    val mapViewModel: (SavedStateHandle) -> MapViewModel
     val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
     val stampRallySortFilterViewModel: (SavedStateHandle) -> StampRallySortFilterViewModel
     val stampRallySearchViewModel: (StateFlow<StampRallySortFilterViewModel.FilterParams>) -> StampRallySearchViewModel

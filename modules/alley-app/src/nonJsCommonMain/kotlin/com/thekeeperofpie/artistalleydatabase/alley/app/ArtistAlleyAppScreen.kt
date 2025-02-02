@@ -78,9 +78,7 @@ object ArtistAlleyAppScreen {
                                         )
                                     },
                                     onSeriesClick = {
-                                        navController.navigate(
-                                            Destinations.Series(it.name)
-                                        )
+                                        navController.navigate(Destinations.Series(it))
                                     },
                                     onMerchClick = {
                                         navController.navigate(
@@ -129,7 +127,8 @@ object ArtistAlleyAppScreen {
                                 val viewModel = viewModel {
                                     component.artistMapViewModel(createSavedStateHandle())
                                 }
-                                val mapViewModel = viewModel { component.mapViewModel() }
+                                val mapViewModel =
+                                    viewModel { component.mapViewModel(createSavedStateHandle()) }
                                 ArtistMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
@@ -169,7 +168,8 @@ object ArtistAlleyAppScreen {
                                 val viewModel = viewModel {
                                     component.stampRallyMapViewModel(createSavedStateHandle())
                                 }
-                                val mapViewModel = viewModel { component.mapViewModel() }
+                                val mapViewModel =
+                                    viewModel { component.mapViewModel(createSavedStateHandle()) }
                                 StampRallyMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
@@ -212,6 +212,9 @@ object ArtistAlleyAppScreen {
                                             Destinations.SeriesMap(route.series)
                                         )
                                     },
+                                    onSeriesClick = {
+                                        navController.navigate(Destinations.Series(it))
+                                    },
                                 )
                             }
 
@@ -241,6 +244,9 @@ object ArtistAlleyAppScreen {
                                             Destinations.MerchMap(route.merch)
                                         )
                                     },
+                                    onSeriesClick = {
+                                        navController.navigate(Destinations.Series(it))
+                                    },
                                 )
                             }
 
@@ -251,7 +257,7 @@ object ArtistAlleyAppScreen {
                                     component.tagMapViewModel(createSavedStateHandle())
                                 }
                                 val mapViewModel = viewModel {
-                                    component.mapViewModel()
+                                    component.mapViewModel(createSavedStateHandle())
                                 }
                                 TagMapScreen(
                                     viewModel = viewModel,
@@ -267,7 +273,8 @@ object ArtistAlleyAppScreen {
                                 val viewModel = viewModel {
                                     component.tagMapViewModel(createSavedStateHandle())
                                 }
-                                val mapViewModel = viewModel { component.mapViewModel() }
+                                val mapViewModel =
+                                    viewModel { component.mapViewModel(createSavedStateHandle()) }
                                 TagMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,

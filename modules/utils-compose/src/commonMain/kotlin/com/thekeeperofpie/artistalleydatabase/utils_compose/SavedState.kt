@@ -10,6 +10,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.Json
 
+fun <T> SavedStateHandle.getOrPut(key: String, defaultValue: () -> T): T {
+    val existing = get<T>(key)
+    if (existing != null) {
+        return existing
+    }
+    val value = defaultValue()
+    this[key] = value
+    return value
+}
+
 inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     key: String,
     initialValue: () -> T,

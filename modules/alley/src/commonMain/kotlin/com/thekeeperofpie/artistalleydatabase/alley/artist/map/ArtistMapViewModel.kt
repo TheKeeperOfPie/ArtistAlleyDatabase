@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,6 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 @Inject
 class ArtistMapViewModel(
@@ -37,6 +40,7 @@ class ArtistMapViewModel(
     var artist by mutableStateOf<ArtistEntryGridModel?>(null)
         private set
 
+    private val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
     init {
@@ -44,7 +48,7 @@ class ArtistMapViewModel(
             // Need to observe updates since it's possible to
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
-                .map { ArtistEntryGridModel.buildFromEntry(it) }
+                .map { ArtistEntryGridModel.buildFromEntry(randomSeed, it) }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {

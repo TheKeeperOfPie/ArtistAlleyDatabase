@@ -1,4 +1,6 @@
+
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     // Doesn't use convention plugins to avoid having to add a JS target to every module
@@ -9,7 +11,15 @@ plugins {
 }
 
 kotlin {
-    androidTarget()
+    compilerOptions {
+        jvmToolchain(18)
+    }
+
+    androidTarget {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_18
+        }
+    }
     jvm()
     js { browser() }
 

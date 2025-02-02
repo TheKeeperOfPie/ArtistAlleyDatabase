@@ -55,7 +55,7 @@ object ArtistAlleyScreen {
         updateAppUrl: () -> String?,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
-        onSeriesClick: (SeriesEntry) -> Unit,
+        onSeriesClick: (String) -> Unit,
         onMerchClick: (MerchEntry) -> Unit,
     ) {
         val updateNotice = stringResource(Res.string.alley_update_notice)
@@ -101,13 +101,14 @@ object ArtistAlleyScreen {
                                 Destinations.ARTISTS.name,
                                 scrollPositions,
                             ),
+                            onSeriesClick = onSeriesClick,
                         )
                     }
                     Destinations.BROWSE -> {
                         val tagsViewModel = viewModel { component.tagsViewModel() }
                         BrowseScreen(
                             tagsViewModel = tagsViewModel,
-                            onSeriesClick = onSeriesClick,
+                            onSeriesClick = { onSeriesClick(it.name) },
                             onMerchClick = onMerchClick,
                         )
                     }
@@ -115,7 +116,8 @@ object ArtistAlleyScreen {
                         val viewModel = viewModel {
                             component.favoritesSortFilterViewModel()
                         }
-                        val mapViewModel = viewModel { component.mapViewModel() }
+                        val mapViewModel =
+                            viewModel { component.mapViewModel(createSavedStateHandle()) }
                         FavoritesMapScreen(
                             viewModel = viewModel,
                             mapViewModel = mapViewModel,

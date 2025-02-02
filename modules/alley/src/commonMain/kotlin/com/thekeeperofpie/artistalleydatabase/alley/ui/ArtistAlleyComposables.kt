@@ -11,12 +11,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -31,9 +35,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -66,6 +73,8 @@ import androidx.compose.ui.unit.times
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_next_page
+import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
 import coil3.compose.AsyncImage
 import com.eygraber.uri.Uri
@@ -79,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -247,16 +257,20 @@ private fun <EntryModel : SearchEntryModel> rememberPagerState(
 }
 
 @Composable
-private fun ImagePager(
+fun ImagePager(
     images: List<CatalogImage>,
     pagerState: PagerState,
     sharedElementId: Any,
-    onClickPage: (Int) -> Unit,
+    onClickPage: ((Int) -> Unit)?,
+    modifier: Modifier = Modifier,
+    onClickOutside: (() -> Unit)? = null,
     clipCorners: Boolean = true,
+    imageContentScale: ContentScale = ContentScale.FillWidth,
 ) {
+    val isFillWidth = imageContentScale == ContentScale.FillWidth
     val zoomPanState = rememberZoomPanState()
-    val coroutineScope = rememberCoroutineScope()
-    Box {
+    val scope = rememberCoroutineScope()
+    Box(Modifier.conditionallyNonNull(onClickOutside) { clickable(onClick = it) }) {
         var minHeight by remember { mutableIntStateOf(0) }
         val density = LocalDensity.current
         HorizontalPager(
@@ -264,8 +278,8 @@ private fun ImagePager(
             pageSpacing = 16.dp,
             userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .heightIn(min = density.run { minHeight.toDp() })
+                .then(modifier)
                 .onSizeChanged {
                     if (it.height > minHeight) {
                         minHeight = it.height
@@ -284,27 +298,31 @@ private fun ImagePager(
                     ),
                     images = images,
                     onImageClick = { index, _ ->
-                        coroutineScope.launch {
+                        scope.launch {
                             pagerState.animateScrollToPage(index + 1)
                         }
                     }
                 )
             } else {
-                ZoomPanBox(state = zoomPanState) {
+                ZoomPanBox(state = zoomPanState, onClick = onClickOutside) {
                     val image = images[(it - 1).coerceAtLeast(0)]
                     val width = image.width
                     val height = image.height
                     AsyncImage(
                         model = image.uri,
-                        contentScale = ContentScale.FillWidth,
+                        contentScale = imageContentScale,
                         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                         contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                         modifier = Modifier
                             .pointerInput(zoomPanState) {
                                 detectTapGestures(
-                                    onTap = { onClickPage(pagerState.settledPage) },
+                                    onTap = if (onClickPage == null) {
+                                        null
+                                    } else {
+                                        { onClickPage(pagerState.settledPage) }
+                                    },
                                     onDoubleTap = {
-                                        coroutineScope.launch {
+                                        scope.launch {
                                             zoomPanState.toggleZoom(it, size)
                                         }
                                     }
@@ -312,14 +330,20 @@ private fun ImagePager(
                             }
                             // This breaks page scrolling
 //                        .sharedElement("image", sharedElementId)
-                            .fillMaxWidth()
-                            .conditionally(width != null && height != null) {
+                            .conditionally(isFillWidth) {
+                                fillMaxWidth()
+                            }
+                            .conditionally(isFillWidth && width != null && height != null) {
                                 aspectRatio(width!! / height!!.toFloat())
                             }
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .conditionally(!isFillWidth) {
+                                fillMaxHeight()
+                            }
                             .conditionally(clipCorners && LocalSharedTransitionScope.current.isTransitionActive) {
                                 clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                             }
+                            .align(Alignment.Center)
+                            .sharedElement("image", image.uri)
                     )
                 }
             }
@@ -347,7 +371,7 @@ private fun ImagePager(
         ) {
             IconButton(
                 onClick = {
-                    coroutineScope.launch {
+                    scope.launch {
                         pagerState.animateScrollToPage(0)
                     }
                 },
@@ -358,6 +382,73 @@ private fun ImagePager(
                     contentDescription = stringResource(
                         Res.string.alley_show_catalog_grid_content_description
                     )
+                )
+            }
+        }
+
+        val previousPageInteractionSource = remember { MutableInteractionSource() }
+        androidx.compose.animation.AnimatedVisibility(
+            visible = pagerState.pageCount > 1 && pagerState.currentPage != 0,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.CenterStart)
+        ) {
+            IconButton(
+                onClick = {
+                    scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                },
+                modifier = Modifier.sharedElement("previousPage", sharedElementId)
+                    .hoverable(previousPageInteractionSource)
+            ) {
+                val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceDim
+                                .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
+                            shape = CircleShape,
+                        )
+                ) {
+                    val willPageToGrid = images.size > 1 && pagerState.currentPage == 1
+                    Icon(
+                        imageVector = if (willPageToGrid) {
+                            Icons.Default.GridView
+                        } else {
+                            Icons.AutoMirrored.Filled.ArrowLeft
+                        },
+                        contentDescription = stringResource(Res.string.alley_previous_page),
+                        modifier = Modifier.conditionally(willPageToGrid) { size(16.dp) }
+                    )
+                }
+            }
+        }
+
+        androidx.compose.animation.AnimatedVisibility(
+            visible = pagerState.currentPage < pagerState.pageCount - 1,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.CenterEnd)
+        ) {
+            val nextPageInteractionSource = remember { MutableInteractionSource() }
+            IconButton(
+                onClick = {
+                    scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                },
+                modifier = Modifier.sharedElement("nextPage", sharedElementId)
+                    .hoverable(nextPageInteractionSource)
+            ) {
+                val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                    contentDescription = stringResource(Res.string.alley_next_page),
+                    modifier = Modifier.padding(8.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceDim
+                                .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
+                            shape = CircleShape,
+                        )
                 )
             }
         }

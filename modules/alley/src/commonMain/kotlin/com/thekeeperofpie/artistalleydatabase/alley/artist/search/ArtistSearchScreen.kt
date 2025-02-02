@@ -39,6 +39,7 @@ object ArtistSearchScreen {
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
         onClickMap: (() -> Unit)? = null,
+        onSeriesClick: (String) -> Unit,
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
         val sortFilterState = sortViewModel.state
@@ -99,7 +100,12 @@ object ArtistSearchScreen {
                 },
                 itemToSharedElementId = { it.artist.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
-                    ArtistListRow(entry, onFavoriteToggle, modifier)
+                    ArtistListRow(
+                        entry = entry,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onSeriesClick = onSeriesClick,
+                        modifier = modifier
+                    )
                 }
             )
         }
