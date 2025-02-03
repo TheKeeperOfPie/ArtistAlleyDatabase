@@ -32,7 +32,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -54,14 +53,14 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
-import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.ui.Logos
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -129,24 +128,24 @@ object ArtistDetailsScreen {
                 }
             }
 
-            if (artist.links.isNotEmpty()) {
+            if (artist.linkModels.isNotEmpty()) {
                 ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_artist_details_links,
                         contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
-                        values = artist.links,
+                        values = artist.linkModels,
                         allowExpand = false,
                         showDividerAbove = false,
                         item = { link, _, isLast -> LinkRow(link, isLast) },
                     )
                 }
             }
-            if (artist.storeLinks.isNotEmpty()) {
+            if (artist.storeLinkModels.isNotEmpty()) {
                 ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_artist_details_store,
                         contentDescriptionTextRes = null,
-                        values = artist.storeLinks,
+                        values = artist.storeLinkModels,
                         allowExpand = false,
                         showDividerAbove = false,
                         item = { link, _, isLast -> LinkRow(link, isLast) },
@@ -332,117 +331,39 @@ object ArtistDetailsScreen {
     }
 
     @Composable
-    private fun LinkRow(link: String, isLast: Boolean) {
-        val model = parseLinkModel(link)
+    private fun LinkRow(link: LinkModel, isLast: Boolean) {
         val uriHandler = LocalUriHandler.current
         val bottomPadding = if (isLast) 12.dp else 8.dp
-        if (model == null) {
-            Text(
-                text = link.removePrefix("https://"),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { uriHandler.openUri(link) }
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = bottomPadding,
-                    )
-            )
-        } else {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .clickable { uriHandler.openUri(link) }
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = bottomPadding,
-                    )
-                    .fillMaxWidth()
-            ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .conditionallyNonNull(link.link) { clickable { uriHandler.openUri(it) } }
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = bottomPadding,
+                )
+                .fillMaxWidth()
+        ) {
+            if (link.icon != null) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.height(20.dp)
                         .widthIn(min = 20.dp)
                 ) {
                     Icon(
-                        imageVector = model.icon,
+                        imageVector = link.icon,
                         contentDescription = null,
                         modifier = Modifier.height(16.dp)
                     )
                 }
-                Text(
-                    text = model.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
             }
-        }
-    }
 
-    private fun parseLinkModel(link: String): LinkModel? {
-        val uri = Uri.parseOrNull(link) ?: return null
-        val path = uri.path?.removePrefix("/")?.removeSuffix("/") ?: return null
-        val host = uri.host?.removePrefix("www.") ?: return null
-        return when (host) {
-            "artstation.com" -> LinkModel(icon = Logos.artStation, path)
-            "bsky.app" -> LinkModel(icon = Logos.bluesky, path.substringAfter("profile/"))
-            "deviantart.com" -> LinkModel(icon = Logos.deviantArt, path)
-            "discord.com", "discord.gg" -> LinkModel(icon = Logos.discord, "Discord")
-            "etsy.com" -> LinkModel(icon = Logos.etsy, path.substringAfter("shop/"))
-            "gallerynucleus.com" -> LinkModel(icon = Logos.galleryNucleus, path.substringAfter("artists/"))
-            "gamejolt.com" -> LinkModel(icon = Logos.gameJolt, path)
-            "inprnt.com" -> LinkModel(icon = Logos.inprnt, path.substringAfter("gallery/"))
-            "instagram.com" -> LinkModel(icon = Logos.instagram, path)
-            "ko-fi.com" -> LinkModel(icon = Logos.koFi, path)
-            "linktr.ee" -> LinkModel(icon = Logos.linktree, path)
-            "patreon.com" -> LinkModel(icon = Logos.patreon, path)
-            "redbubble.com" -> LinkModel(icon = Logos.redbubble, path.substringAfter("people/"))
-            "threads.net" -> LinkModel(icon = Logos.threads, path)
-            "tiktok.com" -> LinkModel(icon = Logos.tikTok, path)
-            "tumblr.com" -> LinkModel(icon = Logos.tumblr, path.removePrefix("blog/"))
-            "twitch.tv" -> LinkModel(icon = Logos.twitch, path)
-            "x.com", "twitter.com" -> LinkModel(icon = Logos.x, path)
-            "youtube.com" -> LinkModel(
-                icon = Logos.youTube,
-                title = path.takeUnless { it.startsWith("channel/") } ?: "YouTube",
+            Text(
+                text = link.title,
+                style = MaterialTheme.typography.bodyMedium,
             )
-            else -> when {
-                host.contains("bigcartel.com") ->
-                    LinkModel(icon = Logos.bigCartel, host.substringBefore(".bigcartel.com"))
-                host.contains("bsky.social") ->
-                    LinkModel(icon = Logos.bluesky, host.substringBefore(".bsky.social"))
-                host.contains("carrd.co") ->
-                    LinkModel(icon = Logos.carrd, host.substringBefore(".carrd.co"))
-                host.contains("etsy.com") ->
-                    LinkModel(icon = Logos.etsy, host.substringBefore(".etsy.com"))
-                host.contains("faire.com") ->
-                    LinkModel(icon = Logos.faire, host.substringBefore(".faire.com"))
-                host.contains("gumroad.com") ->
-                    LinkModel(icon = Logos.gumroad, host.substringBefore(".gumroad.com"))
-                host.contains("itch.io") ->
-                    LinkModel(icon = Logos.itchIo, host.substringBefore(".itch.io"))
-                host.contains("myshopify.com") ->
-                    LinkModel(icon = Logos.shopify, host.substringBefore(".myshopify.com"))
-                host.contains("storenvy.com") ->
-                    LinkModel(icon = Logos.storenvy, host.substringBefore(".storenvy.com"))
-                host.contains("substack.com") ->
-                    LinkModel(icon = Logos.substack, host.substringBefore(".substack.com"))
-                host.contains("threadless.com") ->
-                    LinkModel(icon = Logos.threadless, host.substringBefore(".threadless.com"))
-                host.contains("tumblr.com") ->
-                    LinkModel(icon = Logos.tumblr, host.substringBefore(".tumblr.com"))
-                host.contains("weebly.com") ->
-                    LinkModel(icon = Logos.weebly, host.substringBefore(".weebly.com"))
-                else -> null
-            }
         }
     }
-
-    private data class LinkModel(
-        val icon: ImageVector,
-        val title: String,
-    )
 }

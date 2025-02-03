@@ -22,14 +22,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells.Adaptive
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -70,6 +73,8 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_w
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.Column
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
@@ -87,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.enums.EnumEntries
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 @OptIn(
@@ -96,7 +102,7 @@ import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 object SearchScreen {
 
     @Composable
-    operator fun <SearchQuery, EntryModel : SearchEntryModel> invoke(
+    operator fun <SearchQuery, EntryModel, ColumnType> invoke(
         viewModel: EntrySearchViewModel<SearchQuery, EntryModel>,
         entries: LazyPagingItems<EntryModel>,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
@@ -120,7 +126,9 @@ object SearchScreen {
             onFavoriteToggle: (Boolean) -> Unit,
             modifier: Modifier,
         ) -> Unit,
-    ) {
+        columns: EnumEntries<ColumnType>,
+        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         val scope = rememberCoroutineScope()
         BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
             scope.launch {
@@ -245,29 +253,67 @@ object SearchScreen {
                         }
                     }
 
-                    Grid(
-                        entries = entries,
-                        showGridByDefault = showGridByDefault,
-                        showRandomCatalogImage = showRandomCatalogImage,
-                        forceOneDisplayColumn = forceOneDisplayColumn,
-                        displayType = displayType,
-                        gridState = gridState,
-                        onFavoriteToggle = onFavoriteToggle,
-                        onIgnoredToggle = onIgnoredToggle,
-                        onEntryClick = onEntryClick,
-                        shouldShowCount = shouldShowCount,
-                        topOffset = topOffset,
-                        topBarPadding = topBarPadding,
-                        itemToSharedElementId = itemToSharedElementId,
-                        itemRow = itemRow,
-                    )
+                    if (displayType() == DisplayType.TABLE) {
+                        Table(
+                            entries = entries,
+                            columns = columns,
+                            topBarPadding = topBarPadding,
+                            tableCell = tableCell,
+                        )
+                    } else {
+                        VerticalGrid(
+                            entries = entries,
+                            showGridByDefault = showGridByDefault,
+                            showRandomCatalogImage = showRandomCatalogImage,
+                            forceOneDisplayColumn = forceOneDisplayColumn,
+                            displayType = displayType,
+                            gridState = gridState,
+                            onFavoriteToggle = onFavoriteToggle,
+                            onIgnoredToggle = onIgnoredToggle,
+                            onEntryClick = onEntryClick,
+                            shouldShowCount = shouldShowCount,
+                            topOffset = topOffset,
+                            topBarPadding = topBarPadding,
+                            itemToSharedElementId = itemToSharedElementId,
+                            itemRow = itemRow,
+                        )
+                    }
                 }
             }
         }
     }
 
     @Composable
-    private fun <EntryModel : SearchEntryModel> Grid(
+    private fun <EntryModel, ColumnType> Table(
+        entries: LazyPagingItems<EntryModel>,
+        columns: EnumEntries<ColumnType>,
+        topBarPadding: Dp,
+        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
+        Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
+            Box {
+                val listState = rememberLazyListState()
+                TwoWayGrid(
+                    rows = entries,
+                    columns = columns,
+                    listState = listState,
+                    contentPadding = PaddingValues(top = topBarPadding, bottom = 80.dp),
+                    tableCell = tableCell,
+                )
+
+                VerticalScrollbar(
+                    state = listState,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .padding(top = 8.dp + topBarPadding, bottom = 72.dp)
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun <EntryModel : SearchEntryModel> VerticalGrid(
         entries: LazyPagingItems<EntryModel>,
         showGridByDefault: () -> Boolean,
         showRandomCatalogImage: () -> Boolean,
@@ -306,9 +352,10 @@ object SearchScreen {
                     when (displayType) {
                         DisplayType.LIST,
                         DisplayType.CARD,
-                            -> StaggeredGridCells.Adaptive(350.dp)
+                            -> Adaptive(350.dp)
                         DisplayType.IMAGE,
                             -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
+                        DisplayType.TABLE -> throw IllegalArgumentException()
                     }
                 },
                 state = gridState,
@@ -326,6 +373,7 @@ object SearchScreen {
                         top = 8.dp + topBarPadding,
                         bottom = 80.dp,
                     )
+                    DisplayType.TABLE -> throw IllegalArgumentException()
                 },
                 verticalItemSpacing = when (displayType) {
                     DisplayType.LIST,
@@ -333,12 +381,15 @@ object SearchScreen {
                         -> 0.dp
                     DisplayType.CARD,
                         -> 8.dp
+                    DisplayType.TABLE -> throw IllegalArgumentException()
                 },
                 horizontalArrangement = when (displayType) {
                     DisplayType.CARD,
                         -> 8.dp
                     DisplayType.LIST,
-                    DisplayType.IMAGE -> 0.dp
+                    DisplayType.IMAGE,
+                        -> 0.dp
+                    DisplayType.TABLE -> throw IllegalArgumentException()
                 }.let(Arrangement::spacedBy),
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -421,6 +472,7 @@ object SearchScreen {
                                 sharedElementId
                             ),
                         )
+                        DisplayType.TABLE -> throw IllegalArgumentException()
                     }
                 }
             }
@@ -476,6 +528,7 @@ object SearchScreen {
     }
 
     enum class DisplayType(val icon: ImageVector) {
+        TABLE(Icons.Default.TableChart),
         LIST(Icons.AutoMirrored.Filled.ViewList),
         CARD(Icons.Filled.ViewAgenda),
         IMAGE(Icons.Filled.Image),

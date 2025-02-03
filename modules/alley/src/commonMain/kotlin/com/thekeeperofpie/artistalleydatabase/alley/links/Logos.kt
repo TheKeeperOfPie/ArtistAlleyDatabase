@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.ui
+package com.thekeeperofpie.artistalleydatabase.alley.links
 
 import androidx.compose.material.icons.materialPath
 import androidx.compose.ui.graphics.Color
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 object Logos {
     // https://www.artstation.com/about/logo
     val artStation by lazy {
-        ImageVector.Builder(
+        androidx.compose.ui.graphics.vector.ImageVector.Builder(
             name = "ArtStation",
             defaultWidth = 16.dp,
             defaultHeight = (93.099998 / 105.8 * 16).dp,
@@ -32,7 +32,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.NonZero
+                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
                 ) {
                     moveTo(51.4f, 123.3f)
                     lineToRelative(8.9f, 15.4f)
@@ -47,7 +47,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.NonZero
+                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
                 ) {
                     moveTo(157.2f, 123.4f)
                     curveToRelative(00f, -2.10f, -0.60f, -4.10f, -1.70f, -5.80f)
@@ -62,7 +62,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.NonZero
+                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
                 ) {
                     moveTo(60.2f, 108.1f)
                     lineTo(108.1f, 108.1f)
@@ -75,7 +75,7 @@ object Logos {
 
     // Converted using Inkscape from https://www.bigcartel.com/resources/help/article/brand-guide
     val bigCartel by lazy {
-        ImageVector.Builder(
+        androidx.compose.ui.graphics.vector.ImageVector.Builder(
             name = "Big Cartel",
             defaultWidth = 16.dp,
             defaultHeight = (190.228 / 149.995 * 16).dp,
@@ -89,7 +89,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.NonZero
+                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
                 ) {
                     moveTo(109.897f, 100.133f)
                     curveToRelative(-3.2750f, -2.1110f, -6.4750f, -4.2650f, -7.1120f, -4.7870f)
@@ -121,7 +121,7 @@ object Logos {
 
     // https://nucleoapp.com/social-media-icons
     val bluesky by lazy {
-        ImageVector.Builder(
+        androidx.compose.ui.graphics.vector.ImageVector.Builder(
             name = "Bluesky",
             defaultWidth = 32.dp,
             defaultHeight = 32.dp,
@@ -131,7 +131,7 @@ object Logos {
             materialPath(
                 fillAlpha = 1.0f,
                 strokeAlpha = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
             ) {
                 moveTo(23.931f, 5.298f)
                 curveToRelative(-3.210f, 2.4180f, -6.6630f, 7.320f, -7.9310f, 9.9510f)
@@ -155,7 +155,7 @@ object Logos {
 
     // https://carrd.co/docs/general/brand-assets
     val carrd by lazy {
-        ImageVector.Builder(
+        androidx.compose.ui.graphics.vector.ImageVector.Builder(
             name = "Carrd",
             defaultWidth = 16.dp,
             defaultHeight = (75.631973 / 60.271461 * 16).dp,
@@ -173,7 +173,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.NonZero
+                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
                 ) {
                     moveTo(57.388827f, 113.55036f)
                     curveToRelative(-0.210f, -0.10660f, -0.46330f, -0.33220f, -0.59270f, -0.52760f)
@@ -2107,8 +2107,8 @@ object Logos {
     val koFi by lazy {
         ImageVector.Builder(
             name = "Ko-Fi",
-            defaultWidth = 241.dp,
-            defaultHeight = 194.dp,
+            defaultWidth = 16.dp,
+            defaultHeight = (194f / 241 * 16).dp,
             viewportWidth = 241f,
             viewportHeight = 194f
         ).apply {

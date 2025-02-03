@@ -90,4 +90,13 @@
     <string name="alley_close_fullscreen_images_pager">Close fullscreen images</string>
     <string name="alley_year_2024">2024</string>
     <string name="alley_year_2025">2025</string>
+
+    <string name="alley_artist_column_booth">Booth</string>
+    <string name="alley_artist_column_name">Name</string>
+    <string name="alley_artist_column_summary">Summary</string>
+    <string name="alley_artist_column_links">Links</string>
+    <string name="alley_artist_column_store">Store</string>
+
+    <string name="alley_stamp_rally_column_booth">Booth</string>
+    <string name="alley_stamp_rally_column_fandom">Fandom</string>
 </resources>

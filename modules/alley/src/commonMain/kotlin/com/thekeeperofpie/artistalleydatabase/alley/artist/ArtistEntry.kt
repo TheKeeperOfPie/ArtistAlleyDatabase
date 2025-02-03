@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+
 data class ArtistEntry(
     val id: String,
     val booth: String?,
@@ -15,4 +17,14 @@ data class ArtistEntry(
     val merchInferred: List<String>,
     val merchConfirmed: List<String>,
     val counter: Long,
-)
+) {
+    // TODO: Sort by type
+    val linkModels by lazy {
+        links.map { LinkModel.parseLinkModel(it) }
+            .sortedWith(nullsFirst<LinkModel> { first, second -> first.link.compareTo(second.link) })
+    }
+    val storeLinkModels by lazy {
+        storeLinks.map { LinkModel.parseLinkModel(it) }
+            .sortedWith(nullsFirst<LinkModel> { first, second -> first.link.compareTo(second.link) })
+    }
+}
