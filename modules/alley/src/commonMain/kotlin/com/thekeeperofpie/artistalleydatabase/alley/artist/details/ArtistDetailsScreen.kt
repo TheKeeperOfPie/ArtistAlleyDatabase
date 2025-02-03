@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -364,11 +363,15 @@ object ArtistDetailsScreen {
                     )
                     .fillMaxWidth()
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(20.dp)) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.height(20.dp)
+                        .widthIn(min = 20.dp)
+                ) {
                     Icon(
                         imageVector = model.icon,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.height(16.dp)
                     )
                 }
                 Text(
@@ -388,11 +391,15 @@ object ArtistDetailsScreen {
             "bsky.app" -> LinkModel(icon = Logos.bluesky, path.substringAfter("profile/"))
             "deviantart.com" -> LinkModel(icon = Logos.deviantArt, path)
             "discord.com", "discord.gg" -> LinkModel(icon = Logos.discord, "Discord")
+            "etsy.com" -> LinkModel(icon = Logos.etsy, path.substringAfter("shop/"))
+            "gallerynucleus.com" -> LinkModel(icon = Logos.galleryNucleus, path.substringAfter("artists/"))
             "gamejolt.com" -> LinkModel(icon = Logos.gameJolt, path)
+            "inprnt.com" -> LinkModel(icon = Logos.inprnt, path.substringAfter("gallery/"))
             "instagram.com" -> LinkModel(icon = Logos.instagram, path)
             "ko-fi.com" -> LinkModel(icon = Logos.koFi, path)
             "linktr.ee" -> LinkModel(icon = Logos.linktree, path)
             "patreon.com" -> LinkModel(icon = Logos.patreon, path)
+            "redbubble.com" -> LinkModel(icon = Logos.redbubble, path.substringAfter("people/"))
             "threads.net" -> LinkModel(icon = Logos.threads, path)
             "tiktok.com" -> LinkModel(icon = Logos.tikTok, path)
             "tumblr.com" -> LinkModel(icon = Logos.tumblr, path.removePrefix("blog/"))
@@ -403,12 +410,32 @@ object ArtistDetailsScreen {
                 title = path.takeUnless { it.startsWith("channel/") } ?: "YouTube",
             )
             else -> when {
+                host.contains("bigcartel.com") ->
+                    LinkModel(icon = Logos.bigCartel, host.substringBefore(".bigcartel.com"))
                 host.contains("bsky.social") ->
-                    LinkModel(icon = Logos.bluesky, host.substringBefore(".bksy.social"))
+                    LinkModel(icon = Logos.bluesky, host.substringBefore(".bsky.social"))
                 host.contains("carrd.co") ->
                     LinkModel(icon = Logos.carrd, host.substringBefore(".carrd.co"))
+                host.contains("etsy.com") ->
+                    LinkModel(icon = Logos.etsy, host.substringBefore(".etsy.com"))
+                host.contains("faire.com") ->
+                    LinkModel(icon = Logos.faire, host.substringBefore(".faire.com"))
+                host.contains("gumroad.com") ->
+                    LinkModel(icon = Logos.gumroad, host.substringBefore(".gumroad.com"))
+                host.contains("itch.io") ->
+                    LinkModel(icon = Logos.itchIo, host.substringBefore(".itch.io"))
+                host.contains("myshopify.com") ->
+                    LinkModel(icon = Logos.shopify, host.substringBefore(".myshopify.com"))
+                host.contains("storenvy.com") ->
+                    LinkModel(icon = Logos.storenvy, host.substringBefore(".storenvy.com"))
+                host.contains("substack.com") ->
+                    LinkModel(icon = Logos.substack, host.substringBefore(".substack.com"))
+                host.contains("threadless.com") ->
+                    LinkModel(icon = Logos.threadless, host.substringBefore(".threadless.com"))
                 host.contains("tumblr.com") ->
                     LinkModel(icon = Logos.tumblr, host.substringBefore(".tumblr.com"))
+                host.contains("weebly.com") ->
+                    LinkModel(icon = Logos.weebly, host.substringBefore(".weebly.com"))
                 else -> null
             }
         }

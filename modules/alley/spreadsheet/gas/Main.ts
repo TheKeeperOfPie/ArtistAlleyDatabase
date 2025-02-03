@@ -15,7 +15,7 @@ const STAMP_RALLY_ROOT_FOLDER_ID = scriptProperties.getProperty("stampRallyFolde
 const DOMAINS = [".com", ".ee", ".app", ".ca", ".site", ".gg", ".social"]
 const SHOP_DOMAINS = ["storenvy.com", "bigcartel.com", "etsy.com", "inprnt.com",
     "myshopify.com", "threadless.com", "itch.io", "faire.com", "gumroad.com",
-    "gallerynucleus.com"]
+    "gallerynucleus.com", "redbubble.com"]
 
 function onOpen(event: SheetsOnOpen) {
     SpreadsheetApp.getUi()
