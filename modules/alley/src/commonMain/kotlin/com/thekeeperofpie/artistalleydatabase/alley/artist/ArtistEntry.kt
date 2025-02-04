@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 
 data class ArtistEntry(
@@ -12,19 +13,27 @@ data class ArtistEntry(
     val catalogLinks: List<String>,
     val driveLink: String?,
     val notes: String?,
+    val commissions: List<String> = emptyList(),
     val seriesInferred: List<String>,
     val seriesConfirmed: List<String>,
     val merchInferred: List<String>,
     val merchConfirmed: List<String>,
     val counter: Long,
 ) {
-    // TODO: Sort by type
     val linkModels by lazy {
-        links.map { LinkModel.parseLinkModel(it) }
-            .sortedWith(nullsFirst<LinkModel> { first, second -> first.link.compareTo(second.link) })
+        links.map { LinkModel.parse(it) }.sortedBy { it.logo }
     }
     val storeLinkModels by lazy {
-        storeLinks.map { LinkModel.parseLinkModel(it) }
-            .sortedWith(nullsFirst<LinkModel> { first, second -> first.link.compareTo(second.link) })
+        storeLinks.map { LinkModel.parse(it) }.sortedBy { it.logo }
+    }
+    val commissionModels by lazy {
+        commissions.map { CommissionModel.parse(it) }.sortedBy {
+            when (it) {
+                CommissionModel.OnSite -> 0
+                CommissionModel.Online -> 1
+                is CommissionModel.Link -> 2
+                is CommissionModel.Unknown -> 3
+            }
+        }
     }
 }

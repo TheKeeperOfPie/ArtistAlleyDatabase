@@ -72,6 +72,7 @@ class ArtistAlleyDatabase(
                     seriesConfirmedAdapter = listStringAdapter,
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
+                    commissionsAdapter = listStringAdapter,
                 ),
                 stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
                     tablesAdapter = listStringAdapter,

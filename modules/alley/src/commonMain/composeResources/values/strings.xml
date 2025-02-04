@@ -96,6 +96,12 @@
     <string name="alley_artist_column_summary">Summary</string>
     <string name="alley_artist_column_links">Links</string>
     <string name="alley_artist_column_store">Store</string>
+    <string name="alley_artist_column_commissions">Commissions</string>
+
+    <string name="alley_artist_commission_on_site">On-site</string>
+    <string name="alley_artist_commission_on_site_tooltip">Artist may take limited sign ups at their table</string>
+    <string name="alley_artist_commission_online">Online</string>
+    <string name="alley_artist_commission_online_tooltip">Artist may take online commissions, usually for pickup at con, but has not specified details</string>
 
     <string name="alley_stamp_rally_column_booth">Booth</string>
     <string name="alley_stamp_rally_column_fandom">Fandom</string>

@@ -11,10 +11,10 @@ import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-object Logos {
+enum class Logo(val icon: ImageVector) {
     // https://www.artstation.com/about/logo
-    val artStation by lazy {
-        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+    ART_STATION(
+        ImageVector.Builder(
             name = "ArtStation",
             defaultWidth = 16.dp,
             defaultHeight = (93.099998 / 105.8 * 16).dp,
@@ -22,17 +22,13 @@ object Logos {
             viewportHeight = 93.100001f
         ).apply {
             group(
-                scaleX = 1f,
-                scaleY = 1f,
                 translationX = -51.4f,
                 translationY = -51.5f,
-                pivotX = 0f,
-                pivotY = 0f,
             ) {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.Companion.NonZero
                 ) {
                     moveTo(51.4f, 123.3f)
                     lineToRelative(8.9f, 15.4f)
@@ -47,7 +43,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.Companion.NonZero
                 ) {
                     moveTo(157.2f, 123.4f)
                     curveToRelative(00f, -2.10f, -0.60f, -4.10f, -1.70f, -5.80f)
@@ -62,7 +58,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.Companion.NonZero
                 ) {
                     moveTo(60.2f, 108.1f)
                     lineTo(108.1f, 108.1f)
@@ -71,11 +67,11 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // Converted using Inkscape from https://www.bigcartel.com/resources/help/article/brand-guide
-    val bigCartel by lazy {
-        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+    BIG_CARTEL(
+        ImageVector.Builder(
             name = "Big Cartel",
             defaultWidth = 16.dp,
             defaultHeight = (190.228 / 149.995 * 16).dp,
@@ -89,7 +85,7 @@ object Logos {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.Companion.NonZero
                 ) {
                     moveTo(109.897f, 100.133f)
                     curveToRelative(-3.2750f, -2.1110f, -6.4750f, -4.2650f, -7.1120f, -4.7870f)
@@ -117,21 +113,21 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // https://nucleoapp.com/social-media-icons
-    val bluesky by lazy {
-        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+    BLUESKY(
+        ImageVector.Builder(
             name = "Bluesky",
-            defaultWidth = 32.dp,
-            defaultHeight = 32.dp,
+            defaultWidth = 16.dp,
+            defaultHeight = 16.dp,
             viewportWidth = 32f,
             viewportHeight = 32f
         ).apply {
             materialPath(
                 fillAlpha = 1.0f,
                 strokeAlpha = 1.0f,
-                pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
+                pathFillType = PathFillType.Companion.NonZero
             ) {
                 moveTo(23.931f, 5.298f)
                 curveToRelative(-3.210f, 2.4180f, -6.6630f, 7.320f, -7.9310f, 9.9510f)
@@ -151,11 +147,11 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 
     // https://carrd.co/docs/general/brand-assets
-    val carrd by lazy {
-        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+    CARRD(
+        ImageVector.Builder(
             name = "Carrd",
             defaultWidth = 16.dp,
             defaultHeight = (75.631973 / 60.271461 * 16).dp,
@@ -163,17 +159,13 @@ object Logos {
             viewportHeight = 75.631973f
         ).apply {
             group(
-                scaleX = 1f,
-                scaleY = 1f,
                 translationX = -35.88046f,
                 translationY = -38.078525f,
-                pivotX = 0f,
-                pivotY = 0f,
             ) {
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = androidx.compose.ui.graphics.PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.Companion.NonZero
                 ) {
                     moveTo(57.388827f, 113.55036f)
                     curveToRelative(-0.210f, -0.10660f, -0.46330f, -0.33220f, -0.59270f, -0.52760f)
@@ -351,10 +343,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // https://nucleoapp.com/social-media-icons
-    val deviantArt by lazy {
+    DEVIANT_ART(
         ImageVector.Builder(
             name = "DeviantArt",
             defaultWidth = 16.dp,
@@ -390,10 +382,10 @@ object Logos {
                 lineToRelative(4.901f, -9.356f)
             }
         }.build()
-    }
+    ),
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/discord.svg
-    val discord by lazy {
+    DISCORD(
         ImageVector.Builder(
             name = "Discord",
             defaultWidth = 16.dp,
@@ -620,10 +612,10 @@ object Logos {
                 curveToRelative(0f, 0.888f, -0.631f, 1.612f, -1.438f, 1.612f)
             }
         }.build()
-    }
+    ),
 
     // Converted using Inkscape from https://www.etsy.com/press
-    val etsy by lazy {
+    ETSY(
         ImageVector.Builder(
             name = "Etsy",
             defaultWidth = (605.17 / 286.099 * 16).dp,
@@ -808,10 +800,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // https://news.faire.com/company-info/
-    val faire by lazy {
+    FAIRE(
         ImageVector.Builder(
             name = "Faire",
             defaultWidth = (256 / 32 * 8).dp,
@@ -1139,10 +1131,10 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 
     // Manually converted using Inkscape from official logo
-    val galleryNucleus by lazy {
+    GALLERY_NUCLEUS(
         ImageVector.Builder(
             name = "Gallery Nucleus",
             defaultWidth = 16.dp,
@@ -1204,10 +1196,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // https://gamejolt.com/about
-    val gameJolt by lazy {
+    GAME_JOLT(
         ImageVector.Builder(
             name = "Game Jolt",
             defaultWidth = 16.dp,
@@ -1444,10 +1436,10 @@ object Logos {
                 horizontalLineToRelative(4f)
             }
         }.build()
-    }
+    ),
 
     // Manually converted using Inkscape from official logo
-    val gumroad by lazy {
+    GUMROAD(
         ImageVector.Builder(
             name = "Gumroad",
             defaultWidth = 16.dp,
@@ -1552,10 +1544,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // Converted with Inkscape from https://help.inprnt.com/article/72-is-there-a-high-res-version-of-the-inprnt-logo
-    val inprnt by lazy {
+    INPRNT(
         ImageVector.Builder(
             name = "Inprnt",
             defaultWidth = (158.72078 / 65.269485 * 16).dp,
@@ -1816,10 +1808,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/instagram.svg
-    val instagram by lazy {
+    INSTAGRAM(
         ImageVector.Builder(
             name = "Instagram",
             defaultWidth = 16.dp,
@@ -1992,10 +1984,10 @@ object Logos {
                 )
             }
         }.build()
-    }
+    ),
 
     // https://itch.io/press-kit
-    val itchIo by lazy {
+    ITCH_IO(
         ImageVector.Builder(
             name = "itch.io",
             defaultWidth = 16.dp,
@@ -2028,13 +2020,37 @@ object Logos {
                 curveToRelative(-34.370f, 0.0030f, -81.2280f, 0.540f, -90.6970f, 1.3650f)
                 close()
                 moveToRelative(65.194f, 66.217f)
-                arcToRelative(28.025f, 28.025f, 0f, isMoreThanHalf = false, isPositiveArc = true, -4.78f, 6.155f)
+                arcToRelative(
+                    28.025f,
+                    28.025f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -4.78f,
+                    6.155f
+                )
                 curveToRelative(-5.1280f, 5.0140f, -12.1570f, 8.1220f, -19.9060f, 8.1220f)
-                arcToRelative(28.482f, 28.482f, 0f, isMoreThanHalf = false, isPositiveArc = true, -19.948f, -8.126f)
+                arcToRelative(
+                    28.482f,
+                    28.482f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -19.948f,
+                    -8.126f
+                )
                 curveToRelative(-1.8580f, -1.820f, -3.270f, -3.7660f, -4.5630f, -6.0320f)
                 lineToRelative(-0.006f, 0.004f)
                 curveToRelative(-1.2920f, 2.270f, -3.0920f, 4.2150f, -4.9540f, 6.0370f)
-                arcToRelative(28.5f, 28.5f, 0f, isMoreThanHalf = false, isPositiveArc = true, -19.948f, 8.12f)
+                arcToRelative(
+                    28.5f,
+                    28.5f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -19.948f,
+                    8.12f
+                )
                 curveToRelative(-0.9340f, 00f, -1.9060f, -0.2580f, -2.6920f, -0.5280f)
                 curveToRelative(-1.0920f, 11.3720f, -1.5530f, 22.240f, -1.7160f, 30.1640f)
                 lineToRelative(-0.002f, 0.045f)
@@ -2048,20 +2064,76 @@ object Logos {
                 lineToRelative(-0.003f, -0.045f)
                 curveToRelative(-0.1620f, -7.9260f, -0.6230f, -18.7930f, -1.7150f, -30.1650f)
                 curveToRelative(-0.7860f, 0.270f, -1.7570f, 0.5280f, -2.6920f, 0.5280f)
-                arcToRelative(28.5f, 28.5f, 0f, isMoreThanHalf = false, isPositiveArc = true, -19.948f, -8.12f)
+                arcToRelative(
+                    28.5f,
+                    28.5f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -19.948f,
+                    -8.12f
+                )
                 curveToRelative(-1.8620f, -1.8220f, -3.6620f, -3.7660f, -4.9550f, -6.0370f)
                 lineToRelative(-0.006f, -0.004f)
                 curveToRelative(-1.2940f, 2.2660f, -2.7050f, 4.2130f, -4.5630f, 6.0320f)
-                arcToRelative(28.48f, 28.48f, 0f, isMoreThanHalf = false, isPositiveArc = true, -19.947f, 8.125f)
+                arcToRelative(
+                    28.48f,
+                    28.48f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -19.947f,
+                    8.125f
+                )
                 curveToRelative(-7.7480f, 00f, -14.7780f, -3.110f, -19.9060f, -8.1230f)
-                arcToRelative(28.025f, 28.025f, 0f, isMoreThanHalf = false, isPositiveArc = true, -4.78f, -6.155f)
-                arcToRelative(27.99f, 27.99f, 0f, isMoreThanHalf = false, isPositiveArc = true, -4.736f, 6.155f)
-                arcToRelative(28.49f, 28.49f, 0f, isMoreThanHalf = false, isPositiveArc = true, -19.95f, 8.124f)
+                arcToRelative(
+                    28.025f,
+                    28.025f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -4.78f,
+                    -6.155f
+                )
+                arcToRelative(
+                    27.99f,
+                    27.99f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -4.736f,
+                    6.155f
+                )
+                arcToRelative(
+                    28.49f,
+                    28.49f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -19.95f,
+                    8.124f
+                )
                 curveToRelative(-0.270f, 00f, -0.540f, -0.0120f, -0.810f, -0.020f)
                 horizontalLineToRelative(-0.007f)
                 curveToRelative(-0.270f, 0.0080f, -0.540f, 0.020f, -0.8130f, 0.020f)
-                arcToRelative(28.49f, 28.49f, 0f, isMoreThanHalf = false, isPositiveArc = true, -19.95f, -8.123f)
-                arcToRelative(27.992f, 27.992f, 0f, isMoreThanHalf = false, isPositiveArc = true, -4.736f, -6.155f)
+                arcToRelative(
+                    28.49f,
+                    28.49f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -19.95f,
+                    -8.123f
+                )
+                arcToRelative(
+                    27.992f,
+                    27.992f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -4.736f,
+                    -6.155f
+                )
                 close()
                 moveToRelative(-20.486f, 26.49f)
                 lineToRelative(-0.002f, 0.01f)
@@ -2101,10 +2173,10 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 
     // https://more.ko-fi.com/brand-assets
-    val koFi by lazy {
+    KO_FI(
         ImageVector.Builder(
             name = "Ko-Fi",
             defaultWidth = 16.dp,
@@ -2179,10 +2251,10 @@ object Logos {
                 curveToRelative(-15.91460f, 00f, -26.37450f, 12.95580f, -26.37450f, 27.50830f)
             }
         }.build()
-    }
+    ),
 
     // https://uxwing.com/linktree-logo-icon/
-    val linktree by lazy {
+    LINKTREE(
         ImageVector.Builder(
             name = "Linktree",
             defaultWidth = 16.dp,
@@ -2226,10 +2298,10 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 
     // https://www.patreon.com/brand
-    val patreon by lazy {
+    PATREON(
         ImageVector.Builder(
             name = "Patreon",
             defaultWidth = 16.dp,
@@ -2253,10 +2325,10 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 
     // Converted using Inkscape from https://redbubble.design/brand/logo
-    val redbubble by lazy {
+    REDBUBBLE(
         ImageVector.Builder(
             name = "Redbubble",
             defaultWidth = 16.dp,
@@ -2283,8 +2355,22 @@ object Logos {
                     curveToRelative(23.98880f, 2.15530f, 46.1710f, 13.3510f, 62.22560f, 31.40620f)
                     curveToRelative(12.96390f, 14.57930f, 21.070f, 32.69980f, 23.27240f, 52.0230f)
                     curveToRelative(0.71940f, 6.31220f, 0.80250f, 13.05970f, 0.2380f, 19.34220f)
-                    curveToRelative(-2.16520f, 24.09970f, -13.44970f, 46.36440f, -31.64330f, 62.43380f)
-                    curveToRelative(-18.16530f, 16.04440f, -41.55150f, 24.43420f, -65.85330f, 23.62490f)
+                    curveToRelative(
+                        -2.16520f,
+                        24.09970f,
+                        -13.44970f,
+                        46.36440f,
+                        -31.64330f,
+                        62.43380f
+                    )
+                    curveToRelative(
+                        -18.16530f,
+                        16.04440f,
+                        -41.55150f,
+                        24.43420f,
+                        -65.85330f,
+                        23.62490f
+                    )
                     close()
                     moveToRelative(3.57222f, -60.51124f)
                     curveToRelative(0.67410f, -0.12420f, 1.29650f, -0.52860f, 1.6870f, -1.09620f)
@@ -2295,9 +2381,30 @@ object Logos {
                     curveToRelative(2.70850f, -1.22830f, 4.3070f, -2.30270f, 6.06940f, -4.07930f)
                     curveToRelative(2.73740f, -2.75950f, 4.44160f, -6.05550f, 5.29470f, -10.24040f)
                     curveToRelative(0.88330f, -4.33320f, 0.51360f, -9.6160f, -0.94780f, -13.54550f)
-                    curveToRelative(-1.02880f, -2.76630f, -2.37980f, -4.89370f, -4.37650f, -6.89170f)
-                    curveToRelative(-3.98280f, -3.98540f, -9.54650f, -6.12280f, -16.85790f, -6.47620f)
-                    curveToRelative(-1.74280f, -0.08420f, -26.31530f, -0.07810f, -26.71840f, 0.0070f)
+                    curveToRelative(
+                        -1.02880f,
+                        -2.76630f,
+                        -2.37980f,
+                        -4.89370f,
+                        -4.37650f,
+                        -6.89170f
+                    )
+                    curveToRelative(
+                        -3.98280f,
+                        -3.98540f,
+                        -9.54650f,
+                        -6.12280f,
+                        -16.85790f,
+                        -6.47620f
+                    )
+                    curveToRelative(
+                        -1.74280f,
+                        -0.08420f,
+                        -26.31530f,
+                        -0.07810f,
+                        -26.71840f,
+                        0.0070f
+                    )
                     curveToRelative(-1.00770f, 0.21190f, -1.81850f, 1.0250f, -1.9990f, 2.00440f)
                     curveToRelative(-0.04020f, 0.21790f, -0.0550f, 10.90680f, -0.04490f, 32.35540f)
                     lineToRelative(0.01503f, 32.03001f)
@@ -2317,9 +2424,23 @@ object Logos {
                     lineToRelative(0.42031f, -0.51228f)
                     curveToRelative(2.32880f, -2.83830f, 3.53260f, -6.74190f, 3.53260f, -11.45510f)
                     curveToRelative(00f, -5.62310f, -1.63960f, -10.26260f, -4.75220f, -13.44730f)
-                    curveToRelative(-2.03830f, -2.08550f, -4.78820f, -3.61430f, -8.09430f, -4.49980f)
+                    curveToRelative(
+                        -2.03830f,
+                        -2.08550f,
+                        -4.78820f,
+                        -3.61430f,
+                        -8.09430f,
+                        -4.49980f
+                    )
                     curveToRelative(-1.46780f, -0.39310f, -3.31210f, -0.6990f, -5.42920f, -0.90030f)
-                    curveToRelative(-0.99770f, -0.09480f, -26.28330f, -0.14540f, -26.78030f, -0.05350f)
+                    curveToRelative(
+                        -0.99770f,
+                        -0.09480f,
+                        -26.28330f,
+                        -0.14540f,
+                        -26.78030f,
+                        -0.05350f
+                    )
                     curveToRelative(-1.06360f, 0.19660f, -1.8890f, 1.00590f, -2.07960f, 2.03910f)
                     curveToRelative(-0.08720f, 0.47280f, -0.09240f, 63.75180f, -0.0060f, 64.21860f)
                     curveToRelative(0.13560f, 0.72630f, 0.65110f, 1.44030f, 1.28970f, 1.78630f)
@@ -2329,10 +2450,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // Converted using Inkscape from https://www.shopify.com/brand-assets
-    val shopify by lazy {
+    SHOPIFY(
         ImageVector.Builder(
             name = "Shopify",
             defaultWidth = 16.dp,
@@ -2497,10 +2618,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // Manually converted using Inkscape from the official logo
-    val storenvy by lazy {
+    STORENVY(
         ImageVector.Builder(
             name = "Storenvy",
             defaultWidth = 16.dp,
@@ -2509,12 +2630,8 @@ object Logos {
             viewportHeight = 141.25276f
         ).apply {
             group(
-                scaleX = 1f,
-                scaleY = 1f,
                 translationX = -20.954644f,
                 translationY = -81.119143f,
-                pivotX = 0f,
-                pivotY = 0f,
             ) {
                 materialPath(
                     fillAlpha = 1.0f,
@@ -2760,10 +2877,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // Converted using Inkscape from https://substack.com/brand
-    val substack by lazy {
+    SUBSTACK(
         ImageVector.Builder(
             name = "Substack",
             defaultWidth = 16.dp,
@@ -2819,10 +2936,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // Converted using Inkscape from https://www.threadless.com/about-us/
-    val threadless by lazy {
+    THREADLESS(
         ImageVector.Builder(
             name = "Threadless",
             defaultWidth = (759.655 / 245.638 * 16).dp,
@@ -2830,7 +2947,7 @@ object Logos {
             viewportWidth = 200.992f,
             viewportHeight = 64.992f
         ).apply {
-            group (
+            group(
                 translationX = -4.554f,
                 translationY = -37.961f,
             ) {
@@ -3230,10 +3347,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // https://github.com/twbs/icons/blob/main/icons/threads.svg
-    val threads by lazy {
+    THREADS(
         ImageVector.Builder(
             name = "Threads",
             defaultWidth = 16.dp,
@@ -3285,10 +3402,10 @@ object Logos {
                 )
             }
         }.build()
-    }
+    ),
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/tiktok.svg
-    val tikTok by lazy {
+    TIK_TOK(
         ImageVector.Builder(
             name = "TikTok",
             defaultWidth = 16.dp,
@@ -3314,14 +3431,14 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 
     // https://uxwing.com/tumblr-icon/
-    val tumblr by lazy {
+    TUMBLR(
         ImageVector.Builder(
             name = "Tumblr",
-            defaultWidth = 289.999.dp,
-            defaultHeight = 512.184.dp,
+            defaultWidth = 16.dp,
+            defaultHeight = (512.184 / 289.999 * 16).dp,
             viewportWidth = 289.999f,
             viewportHeight = 512.184f
         ).apply {
@@ -3349,10 +3466,10 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/twitch.svg
-    val twitch by lazy {
+    TWITCH(
         ImageVector.Builder(
             name = "Twitch",
             defaultWidth = 16.dp,
@@ -3402,10 +3519,58 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
+
+    // Converted using Inkscape from https://help.vgen.co/hc/en-us/articles/12884824880663-VGen-Brand-Assets
+    VGEN(
+        ImageVector.Builder(
+            name = "VGen",
+            defaultWidth = 16.dp,
+            defaultHeight = (45.751148 / 58.917126 * 16).dp,
+            viewportWidth = 58.917126f,
+            viewportHeight = 45.751148f
+        ).apply {
+            group(
+                translationX = -72.56781f,
+                translationY = -32.308155f,
+            ) {
+                materialPath(
+                    fillAlpha = 1.0f,
+                    strokeAlpha = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    moveTo(93.318546f, 49.109463f)
+                    curveToRelative(-2.3620f, -2.46970f, -4.05870f, -5.44360f, -7.40830f, -6.71880f)
+                    curveToRelative(-6.28070f, -2.39120f, -13.34240f, 2.42160f, -13.34240f, 9.18830f)
+                    curveToRelative(00f, 5.88570f, 5.97290f, 11.32620f, 9.81460f, 15.16940f)
+                    curveToRelative(5.25230f, 5.25430f, 11.34330f, 10.46110f, 19.050f, 11.22870f)
+                    curveToRelative(10.26670f, 1.02260f, 18.72430f, -7.69030f, 24.38250f, -15.10930f)
+                    curveToRelative(2.00710f, -2.63170f, 4.4950f, -5.5560f, 5.33520f, -8.81940f)
+                    curveToRelative(1.17170f, -4.5510f, -0.9070f, -9.41660f, -3.52260f, -13.05280f)
+                    curveToRelative(-7.93080f, -11.02530f, -24.71450f, -12.25070f, -32.02850f, 0.35280f)
+                    curveToRelative(-1.36620f, 2.35420f, -2.16370f, 5.04780f, -2.28050f, 7.76110f)
+                    moveToRelative(11.994444f, 12.69999f)
+                    curveToRelative(-3.49750f, -3.50720f, -6.98640f, -7.12780f, -7.19850f, -12.34720f)
+                    curveToRelative(-0.32970f, -8.1130f, 7.55810f, -14.06570f, 15.31240f, -12.07880f)
+                    curveToRelative(4.13570f, 1.05970f, 7.37120f, 4.46240f, 9.23920f, 8.19830f)
+                    curveToRelative(2.67290f, 5.34590f, -0.56120f, 8.88290f, -3.82830f, 13.05280f)
+                    curveToRelative(-1.94270f, 2.47950f, -4.05580f, 4.86730f, -6.46920f, 6.90070f)
+                    curveToRelative(-11.16080f, 9.40330f, -21.7080f, 1.8790f, -29.8350f, -7.60620f)
+                    curveToRelative(-1.87260f, -2.18560f, -9.01410f, -10.25860f, -1.9150f, -11.19420f)
+                    curveToRelative(3.11450f, -0.41040f, 5.14840f, 3.54890f, 6.85360f, 5.54970f)
+                    curveToRelative(4.56080f, 5.35150f, 10.38520f, 12.62410f, 17.84090f, 9.5250f)
+                    moveToRelative(3.52778f, -17.4369f)
+                    curveToRelative(-4.89970f, 1.39790f, -3.74810f, 6.59040f, -1.05670f, 9.3230f)
+                    curveToRelative(0.7750f, 0.78680f, 2.16690f, 2.70730f, 3.4660f, 2.34750f)
+                    curveToRelative(6.61970f, -1.83360f, 5.08970f, -13.810f, -2.40930f, -11.67050f)
+                    close()
+                }
+            }
+        }.build()
+    ),
 
     // Converted using Inkscape from https://www.weebly.com/press/press-kit
-    val weebly by lazy {
+    WEEBLY(
         ImageVector.Builder(
             name = "Weebly",
             defaultWidth = 16.dp,
@@ -3473,10 +3638,10 @@ object Logos {
                 }
             }
         }.build()
-    }
+    ),
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/twitter-x.svg
-    val x by lazy {
+    X(
         ImageVector.Builder(
             name = "X",
             defaultWidth = 16.dp,
@@ -3510,10 +3675,11 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
+
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/youtube.svg
-    val youTube by lazy {
+    YOU_TUBE(
         ImageVector.Builder(
             name = "YouTube",
             defaultWidth = 16.dp,
@@ -3608,5 +3774,5 @@ object Logos {
                 close()
             }
         }.build()
-    }
+    ),
 }

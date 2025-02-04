@@ -85,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.border
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
@@ -233,7 +234,10 @@ object SearchScreen {
                             }
                         }
                     },
-                    modifier = Modifier.widthIn(max = 1200.dp)
+                    modifier = Modifier
+                        .conditionally(displayType() != DisplayType.TABLE) {
+                            widthIn(max = 1200.dp)
+                        }
                 ) {
                     val density = LocalDensity.current
                     val topBarPadding by remember {
@@ -257,6 +261,7 @@ object SearchScreen {
                         Table(
                             entries = entries,
                             columns = columns,
+                            topOffset = topOffset,
                             topBarPadding = topBarPadding,
                             tableCell = tableCell,
                         )
@@ -287,6 +292,7 @@ object SearchScreen {
     private fun <EntryModel, ColumnType> Table(
         entries: LazyPagingItems<EntryModel>,
         columns: EnumEntries<ColumnType>,
+        topOffset: Dp,
         topBarPadding: Dp,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
@@ -297,6 +303,7 @@ object SearchScreen {
                     rows = entries,
                     columns = columns,
                     listState = listState,
+                    topOffset = topOffset,
                     contentPadding = PaddingValues(top = topBarPadding, bottom = 80.dp),
                     tableCell = tableCell,
                 )

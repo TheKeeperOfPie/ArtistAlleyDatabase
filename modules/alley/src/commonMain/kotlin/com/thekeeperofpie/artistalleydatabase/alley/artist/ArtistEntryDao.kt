@@ -28,8 +28,7 @@ import kotlinx.serialization.json.Json
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2025.GetEntry as GetEntry2025
 
-// TODO: Split by year
-private fun SqlCursor.toArtistWithUserData(): ArtistWithUserData {
+private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
@@ -53,6 +52,35 @@ private fun SqlCursor.toArtistWithUserData(): ArtistWithUserData {
             favorite = getBoolean(14) == true,
             ignored = getBoolean(15) == true,
             notes = getString(16),
+        )
+    )
+}
+
+private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
+    val artistId = getString(0)!!
+    return ArtistWithUserData(
+        artist = ArtistEntry(
+            id = artistId,
+            booth = getString(1),
+            name = getString(2)!!,
+            summary = getString(3),
+            links = getString(4)!!.let(Json::decodeFromString),
+            storeLinks = getString(5)!!.let(Json::decodeFromString),
+            catalogLinks = getString(6)!!.let(Json::decodeFromString),
+            driveLink = getString(7),
+            notes = getString(8),
+            commissions = getString(9)!!.let(Json::decodeFromString),
+            seriesInferred = getString(10)!!.let(Json::decodeFromString),
+            seriesConfirmed = getString(11)!!.let(Json::decodeFromString),
+            merchInferred = getString(12)!!.let(Json::decodeFromString),
+            merchConfirmed = getString(13)!!.let(Json::decodeFromString),
+            counter = getLong(14)!!,
+        ),
+        userEntry = ArtistUserEntry(
+            artistId = artistId,
+            favorite = getBoolean(15) == true,
+            ignored = getBoolean(16) == true,
+            notes = getString(17),
         )
     )
 }
@@ -93,6 +121,7 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
         catalogLinks = catalogLinks,
         driveLink = driveLink,
         notes = notes,
+        commissions = commissions,
         seriesInferred = seriesInferred,
         seriesConfirmed = seriesConfirmed,
         merchInferred = merchInferred,
@@ -134,6 +163,7 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
     catalogLinks = catalogLinks,
     driveLink = driveLink,
     notes = notes,
+    commissions = commissions,
     seriesInferred = seriesInferred,
     seriesConfirmed = seriesConfirmed,
     merchInferred = merchInferred,
@@ -280,7 +310,11 @@ class ArtistEntryDao(
                 countStatement = countStatement,
                 statement = statement,
                 tableNames = listOf("${tableName}_fts", "artistUserEntry"),
-                mapper = SqlCursor::toArtistWithUserData,
+                mapper = if (activeYearIs2025) {
+                    SqlCursor::toArtistWithUserData2025
+                } else {
+                    SqlCursor::toArtistWithUserData2024
+                },
             )
         }
 
@@ -338,7 +372,11 @@ class ArtistEntryDao(
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("${tableName}_fts", "artistUserEntry"),
-            mapper = SqlCursor::toArtistWithUserData,
+            mapper = if (activeYearIs2025) {
+                SqlCursor::toArtistWithUserData2025
+            } else {
+                SqlCursor::toArtistWithUserData2024
+            },
         )
     }
 }

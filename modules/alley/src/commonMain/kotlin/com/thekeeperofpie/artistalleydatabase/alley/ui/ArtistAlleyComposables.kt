@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
+@file:OptIn(
+    ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.thekeeperofpie.artistalleydatabase.alley.ui
 
@@ -26,6 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -43,6 +47,7 @@ import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +57,7 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -61,15 +67,20 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
+import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
@@ -558,3 +569,63 @@ internal fun currentWindowSizeClass(): WindowSizeClass {
         WindowSizeClass.calculateFromSize(DpSize(width, height))
     }
 }
+
+// TooltipBox crashes on web
+@Composable
+fun Tooltip(
+    text: String,
+    content: @Composable () -> Unit,
+) {
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    Box(
+        modifier = Modifier
+            .hoverable(interactionSource)
+            .onGloballyPositioned { size = it.size }
+    ) {
+        content()
+
+        if (isHovered) {
+            Popup(
+                alignment = Alignment.Center,
+                offset = IntOffset(0, -size.height),
+            ) {
+                Text(
+                    text = text,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceDim,
+                            shape = MaterialTheme.shapes.small,
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = MaterialTheme.shapes.small,
+                        )
+                        .padding(8.dp)
+                        .widthIn(max = 240.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun IconWithTooltip(
+    imageVector: ImageVector,
+    tooltipText: String,
+    onClick: () -> Unit,
+    contentDescription: String? = null,
+) {
+    Tooltip(text = tooltipText) {
+        IconButton(onClick = onClick) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = contentDescription,
+                modifier = Modifier.height(20.dp)
+            )
+        }
+    }
+}
+

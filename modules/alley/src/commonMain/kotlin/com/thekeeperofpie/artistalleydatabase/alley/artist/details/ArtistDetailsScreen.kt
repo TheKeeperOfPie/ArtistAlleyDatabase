@@ -346,14 +346,14 @@ object ArtistDetailsScreen {
                 )
                 .fillMaxWidth()
         ) {
-            if (link.icon != null) {
+            if (link.logo?.icon != null) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.height(20.dp)
                         .widthIn(min = 20.dp)
                 ) {
                     Icon(
-                        imageVector = link.icon,
+                        imageVector = link.logo.icon,
                         contentDescription = null,
                         modifier = Modifier.height(16.dp)
                     )

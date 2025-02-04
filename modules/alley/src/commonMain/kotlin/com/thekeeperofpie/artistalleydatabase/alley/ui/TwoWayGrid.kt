@@ -43,6 +43,7 @@ object TwoWayGrid {
         columns: EnumEntries<ColumnType>,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
         listState: LazyListState = rememberLazyListState(),
+        topOffset: Dp = 0.dp,
         contentPadding: PaddingValues = PaddingValues(0.dp),
         modifier: Modifier = Modifier,
     ) where T : Any, ColumnType : Enum<ColumnType>, ColumnType : Column {
@@ -58,7 +59,7 @@ object TwoWayGrid {
             modifier = modifier.width(width)
         ) {
             stickyHeader {
-                Column {
+                Column(Modifier.padding(top = topOffset)) {
                     Row(
                         Modifier.height(IntrinsicSize.Min)
                             .horizontalScroll(horizontalScrollState)

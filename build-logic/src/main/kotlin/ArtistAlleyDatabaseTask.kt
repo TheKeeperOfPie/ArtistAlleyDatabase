@@ -101,6 +101,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     seriesConfirmedAdapter = listStringAdapter,
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
+                    commissionsAdapter = listStringAdapter,
                 ),
                 stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
                     tablesAdapter = listStringAdapter,
@@ -282,6 +283,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         .filter(String::isNotBlank)
 
                     val notes = it["Notes"]
+                    val commissions = it["Commissions"].orEmpty().split(newLineRegex)
+                        .filter(String::isNotBlank)
 
                     val artistId = "temp$counter"
                     val artistEntry = ArtistEntry2025(
@@ -298,6 +301,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         merchInferred = merchInferred,
                         merchConfirmed = merchConfirmed,
                         notes = notes,
+                        commissions = commissions,
                         counter = counter++,
                     )
 
