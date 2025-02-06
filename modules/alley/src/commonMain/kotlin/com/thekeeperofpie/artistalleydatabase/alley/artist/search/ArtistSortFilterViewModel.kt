@@ -11,6 +11,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_c
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_has_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_search_option_artist
 import artistalleydatabase.modules.alley.generated.resources.alley_search_option_booth
@@ -58,7 +59,7 @@ class ArtistSortFilterViewModel(
         Res.string.alley_search_option_merch_many,
     )
 
-    private val sortOption = settings.artistsSortOption
+    val sortOption = settings.artistsSortOption
         .mapMutableState(
             viewModelScope,
             deserialize = {
@@ -67,11 +68,12 @@ class ArtistSortFilterViewModel(
             },
             serialize = { it.name.orEmpty() },
         )
+    val sortAscending = settings.artistsSortAscending
     private val sortSection = SortFilterSectionState.Sort(
         headerText = Res.string.alley_sort_label,
         defaultSort = ArtistSearchSortOption.RANDOM,
         sortOption = sortOption,
-        sortAscending = settings.artistsSortAscending,
+        sortAscending = sortAscending,
     )
     private val onlyFavoritesSection = SortFilterSectionState.SwitchBySetting(
         Res.string.alley_filter_favorites,
@@ -100,6 +102,11 @@ class ArtistSortFilterViewModel(
         settings.showOnlyConfirmedTags,
     )
 
+    private val onlyHasCommissionsSection = SortFilterSectionState.SwitchBySetting(
+        Res.string.alley_filter_show_only_has_commissions,
+        settings.showOnlyHasCommissions,
+    )
+
     private val showIgnored = savedStateHandle.getMutableStateFlow("showIgnored", true)
     private val showIgnoredSection = SortFilterSectionState.Switch(
         title = Res.string.alley_filter_show_ignored,
@@ -119,6 +126,7 @@ class ArtistSortFilterViewModel(
         gridByDefaultSection,
         randomCatalogImageSection,
         onlyConfirmedTagsSection,
+        onlyHasCommissionsSection,
         showIgnoredSection,
         forceOneDisplayColumnSection,
     )
@@ -140,6 +148,7 @@ class ArtistSortFilterViewModel(
         settings.showOnlyFavorites,
         onlyCatalogImages,
         settings.showOnlyConfirmedTags,
+        settings.showOnlyHasCommissions,
         showIgnored,
     ) {
         val snapshotState = it[0] as SnapshotState
@@ -154,7 +163,8 @@ class ArtistSortFilterViewModel(
             showOnlyFavorites = it[3] as Boolean,
             showOnlyWithCatalog = it[4] as Boolean,
             showOnlyConfirmedTags = it[5] as Boolean,
-            showIgnored = it[6] as Boolean,
+            showOnlyHasCommissions = it[6] as Boolean,
+            showIgnored = it[7] as Boolean,
         )
     }
 
@@ -183,6 +193,7 @@ class ArtistSortFilterViewModel(
         val showOnlyFavorites: Boolean,
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
+        val showOnlyHasCommissions: Boolean,
         val showIgnored: Boolean,
     )
 }

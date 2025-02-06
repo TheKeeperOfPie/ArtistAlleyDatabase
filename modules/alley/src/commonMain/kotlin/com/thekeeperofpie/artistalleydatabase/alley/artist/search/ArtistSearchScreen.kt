@@ -1,21 +1,27 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -23,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
@@ -48,7 +55,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.modifierDefaultCellPadding
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -83,6 +92,8 @@ object ArtistSearchScreen {
                 viewModel.displayType.collectAsState().value
             )
             val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
+            var sortOption by sortViewModel.sortOption.collectAsMutableStateWithLifecycle()
+            var sortAscending by sortViewModel.sortAscending.collectAsMutableStateWithLifecycle()
             SearchScreen<ArtistSearchQuery, ArtistEntryGridModel, ArtistColumn>(
                 viewModel = viewModel,
                 title = { viewModel.lockedSeries ?: viewModel.lockedMerch },
@@ -136,6 +147,48 @@ object ArtistSearchScreen {
                     )
                 },
                 columns = ArtistColumn.entries,
+                columnHeader = { column ->
+                    val columnSortOption = when (column) {
+                        ArtistColumn.BOOTH -> ArtistSearchSortOption.BOOTH
+                        ArtistColumn.NAME -> ArtistSearchSortOption.ARTIST
+                        else -> null
+                    }
+                    Row(
+                        modifier = Modifier.requiredWidth(column.size)
+                            .clickable(enabled = columnSortOption != null) {
+                                if (columnSortOption != null) {
+                                    if (sortOption == columnSortOption) {
+                                        sortAscending = !sortAscending
+                                    } else {
+                                        sortOption = columnSortOption
+                                    }
+                                }
+                            }
+                            .then(modifierDefaultCellPadding)
+                    ) {
+                        AutoSizeText(
+                            text = stringResource(column.text),
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        if (sortOption == columnSortOption) {
+                            Icon(
+                                imageVector = if (sortAscending) {
+                                    Icons.Default.ArrowDropUp
+                                } else {
+                                    Icons.Default.ArrowDropDown
+                                },
+                                contentDescription = null,
+                            )
+                        } else if (columnSortOption != null) {
+                            Icon(
+                                imageVector = Icons.Default.UnfoldMore,
+                                contentDescription = null,
+                                tint = IconButtonDefaults.iconButtonColors().disabledContentColor,
+                            )
+                        }
+                    }
+                },
                 tableCell = { row, column ->
                     when (column) {
                         // TODO: Dynamic minimum column size by measuring header text
@@ -191,7 +244,7 @@ object ArtistSearchScreen {
                                             },
                                         )
                                     }
-                                    CommissionModel.Online ->Tooltip(
+                                    CommissionModel.Online -> Tooltip(
                                         text = stringResource(Res.string.alley_artist_commission_online_tooltip)
                                     ) {
                                         CommissionChip(
@@ -214,7 +267,7 @@ object ArtistSearchScreen {
 
     @Composable
     private fun CommissionChip(model: CommissionModel, label: @Composable () -> Unit) {
-        Box(Modifier.width(ArtistColumn.COMMISSIONS.size).padding(horizontal = 4.dp)) {
+        Box(Modifier.padding(horizontal = 4.dp)) {
             SuggestionChip(
                 onClick = {},
                 icon = {
@@ -233,7 +286,7 @@ object ArtistSearchScreen {
         override val size: Dp,
         override val text: StringResource,
     ) : TwoWayGrid.Column {
-        BOOTH(64.dp, Res.string.alley_artist_column_booth),
+        BOOTH(120.dp, Res.string.alley_artist_column_booth),
         NAME(160.dp, Res.string.alley_artist_column_name),
         SUMMARY(400.dp, Res.string.alley_artist_column_summary),
         LINKS(200.dp, Res.string.alley_artist_column_links),

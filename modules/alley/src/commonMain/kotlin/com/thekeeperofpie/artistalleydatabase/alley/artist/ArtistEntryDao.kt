@@ -232,6 +232,10 @@ class ArtistEntryDao(
             // not empty would require a separate query template
             if (filterParams.showOnlyWithCatalog) this += "$tableName.driveLink LIKE 'http%'"
 
+            if (activeYearIs2025) {
+                if (filterParams.showOnlyHasCommissions) this += "$tableName.commissions != '[]'"
+            }
+
             if (searchQuery.lockedSeries != null) {
                 this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
                         (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed IS 1 AND" else "") +

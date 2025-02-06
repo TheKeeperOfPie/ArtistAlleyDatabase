@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -46,6 +47,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -75,10 +77,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.Column
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.modifierDefaultCellPadding
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
@@ -128,6 +132,13 @@ object SearchScreen {
             modifier: Modifier,
         ) -> Unit,
         columns: EnumEntries<ColumnType>,
+        columnHeader: @Composable (column: ColumnType) -> Unit = {
+            AutoSizeText(
+                text = stringResource(it.text),
+                modifier = Modifier.requiredWidth(it.size)
+                    .then(modifierDefaultCellPadding)
+            )
+        },
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         val scope = rememberCoroutineScope()
@@ -155,84 +166,16 @@ object SearchScreen {
             Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
                 Scaffold(
                     topBar = {
-                        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentWidth()
-                                    .padding(bottom = 8.dp)
-                            ) {
-                                val isNotEmpty by remember {
-                                    derivedStateOf { viewModel.query.isNotEmpty() }
-                                }
-                                BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
-                                    viewModel.onQuery("")
-                                }
-
-                                StaticSearchBar(
-                                    leadingIcon = if (onClickBack != null) {
-                                        { ArrowBackIconButton(onClickBack) }
-                                    } else null,
-                                    query = viewModel.query,
-                                    onQueryChange = viewModel::onQuery,
-                                    placeholder = {
-                                        @Suppress("NAME_SHADOWING")
-                                        val title = title()
-                                        if (title != null) {
-                                            Text(title)
-                                        } else {
-                                            val entriesSize = entries.itemCount
-                                            Text(
-                                                if (entriesSize > 0) {
-                                                    stringResource(
-                                                        EntryRes.string.entry_search_hint_with_entry_count,
-                                                        entriesSize,
-                                                    )
-                                                } else {
-                                                    stringResource(EntryRes.string.entry_search_hint)
-                                                }
-                                            )
-                                        }
-                                    },
-                                    trailingIcon = {
-                                        Row {
-                                            AnimatedVisibility(isNotEmpty) {
-                                                IconButton(onClick = { viewModel.onQuery("") }) {
-                                                    Icon(
-                                                        imageVector = Icons.Filled.Clear,
-                                                        contentDescription = stringResource(
-                                                            EntryRes.string.entry_search_clear
-                                                        ),
-                                                    )
-                                                }
-                                            }
-
-                                            @Suppress("NAME_SHADOWING")
-                                            val displayType = displayType()
-                                            val entries = DisplayType.entries
-                                            val nextDisplayType =
-                                                entries[(entries.indexOf(displayType) + 1) % entries.size]
-                                            IconButton(onClick = {
-                                                onDisplayTypeToggle(nextDisplayType)
-                                            }) {
-                                                Icon(
-                                                    imageVector = nextDisplayType.icon,
-                                                    contentDescription = stringResource(
-                                                        Res.string.alley_display_type_icon_content_description,
-                                                    ),
-                                                )
-                                            }
-
-                                            actions?.invoke(this)
-                                        }
-                                    },
-                                    onSearch = {},
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 4.dp),
-                                )
-                            }
-                        }
+                        TopBar(
+                            viewModel = viewModel,
+                            entries = entries,
+                            scrollBehavior = scrollBehavior,
+                            displayType = displayType,
+                            onDisplayTypeToggle = onDisplayTypeToggle,
+                            onClickBack = onClickBack,
+                            title = title,
+                            actions = actions,
+                        )
                     },
                     modifier = Modifier
                         .conditionally(displayType() != DisplayType.TABLE) {
@@ -251,21 +194,21 @@ object SearchScreen {
                                 ?: 0.dp
                         }
                     }
-                    val topOffset by remember {
-                        derivedStateOf {
-                            topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() }
-                        }
-                    }
 
                     if (displayType() == DisplayType.TABLE) {
                         Table(
                             entries = entries,
                             columns = columns,
-                            topOffset = topOffset,
-                            topBarPadding = topBarPadding,
+                            scaffoldPadding = it,
+                            columnHeader = columnHeader,
                             tableCell = tableCell,
                         )
                     } else {
+                        val topOffset by remember {
+                            derivedStateOf {
+                                topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() }
+                            }
+                        }
                         VerticalGrid(
                             entries = entries,
                             showGridByDefault = showGridByDefault,
@@ -289,22 +232,117 @@ object SearchScreen {
     }
 
     @Composable
+    private fun <SearchQuery, EntryModel : SearchEntryModel> TopBar(
+        viewModel: EntrySearchViewModel<SearchQuery, EntryModel>,
+        entries: LazyPagingItems<EntryModel>,
+        scrollBehavior: TopAppBarScrollBehavior,
+        displayType: () -> DisplayType,
+        onDisplayTypeToggle: (DisplayType) -> Unit,
+        onClickBack: (() -> Unit)? = null,
+        title: () -> String? = { null },
+        actions: (@Composable RowScope.() -> Unit)? = null,
+    ) {
+        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth()
+                    .padding(bottom = 8.dp)
+            ) {
+                val isNotEmpty by remember {
+                    derivedStateOf { viewModel.query.isNotEmpty() }
+                }
+                BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
+                    viewModel.onQuery("")
+                }
+
+                StaticSearchBar(
+                    leadingIcon = if (onClickBack != null) {
+                        { ArrowBackIconButton(onClickBack) }
+                    } else null,
+                    query = viewModel.query,
+                    onQueryChange = viewModel::onQuery,
+                    placeholder = {
+                        @Suppress("NAME_SHADOWING")
+                        val title = title()
+                        if (title != null) {
+                            Text(title)
+                        } else {
+                            val entriesSize = entries.itemCount
+                            Text(
+                                if (entriesSize > 0) {
+                                    stringResource(
+                                        EntryRes.string.entry_search_hint_with_entry_count,
+                                        entriesSize,
+                                    )
+                                } else {
+                                    stringResource(EntryRes.string.entry_search_hint)
+                                }
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        Row {
+                            AnimatedVisibility(isNotEmpty) {
+                                IconButton(onClick = { viewModel.onQuery("") }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Clear,
+                                        contentDescription = stringResource(
+                                            EntryRes.string.entry_search_clear
+                                        ),
+                                    )
+                                }
+                            }
+
+                            @Suppress("NAME_SHADOWING")
+                            val displayType = displayType()
+                            val entries = DisplayType.entries
+                            val nextDisplayType =
+                                entries[(entries.indexOf(displayType) + 1) % entries.size]
+                            IconButton(onClick = {
+                                onDisplayTypeToggle(nextDisplayType)
+                            }) {
+                                Icon(
+                                    imageVector = nextDisplayType.icon,
+                                    contentDescription = stringResource(
+                                        Res.string.alley_display_type_icon_content_description,
+                                    ),
+                                )
+                            }
+
+                            actions?.invoke(this)
+                        }
+                    },
+                    onSearch = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                )
+            }
+        }
+    }
+
+    @Composable
     private fun <EntryModel, ColumnType> Table(
         entries: LazyPagingItems<EntryModel>,
         columns: EnumEntries<ColumnType>,
-        topOffset: Dp,
-        topBarPadding: Dp,
+        scaffoldPadding: PaddingValues,
+        columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
-        Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
+        Box(
+            contentAlignment = Alignment.TopCenter,
+            modifier = Modifier.fillMaxWidth()
+                .padding(scaffoldPadding)
+        ) {
             Box {
                 val listState = rememberLazyListState()
                 TwoWayGrid(
                     rows = entries,
                     columns = columns,
                     listState = listState,
-                    topOffset = topOffset,
-                    contentPadding = PaddingValues(top = topBarPadding, bottom = 80.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp),
+                    columnHeader = columnHeader,
                     tableCell = tableCell,
                 )
 
@@ -313,7 +351,7 @@ object SearchScreen {
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .fillMaxHeight()
-                        .padding(top = 8.dp + topBarPadding, bottom = 72.dp)
+                        .padding(top = 8.dp, bottom = 72.dp)
                 )
             }
         }

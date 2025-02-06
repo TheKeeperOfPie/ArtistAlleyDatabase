@@ -285,6 +285,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val notes = it["Notes"]
                     val commissions = it["Commissions"].orEmpty().split(newLineRegex)
                         .filter(String::isNotBlank)
+                        .sorted()
 
                     val artistId = "temp$counter"
                     val artistEntry = ArtistEntry2025(

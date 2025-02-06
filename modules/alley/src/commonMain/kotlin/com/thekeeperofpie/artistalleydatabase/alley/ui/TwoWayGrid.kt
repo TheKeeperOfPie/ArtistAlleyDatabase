@@ -19,17 +19,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -41,6 +39,7 @@ object TwoWayGrid {
     operator fun <T, ColumnType> invoke(
         rows: LazyPagingItems<T>,
         columns: EnumEntries<ColumnType>,
+        columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
         listState: LazyListState = rememberLazyListState(),
         topOffset: Dp = 0.dp,
@@ -66,11 +65,7 @@ object TwoWayGrid {
                             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
                     ) {
                         columns.forEachIndexed { columnIndex, column ->
-                            AutoSizeText(
-                                text = stringResource(column.text),
-                                modifier = Modifier.requiredWidth(column.size)
-                                    .then(modifierDefaultCellPadding)
-                            )
+                            columnHeader(column)
                             if (columnIndex != columns.lastIndex) {
                                 VerticalDivider()
                             }

@@ -172,16 +172,6 @@ fun TrailingDropdownIconButton(
     }
 }
 
-@Composable
-fun VerticalDivider(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxHeight()
-            .width(DividerDefaults.Thickness)
-            .background(color = DividerDefaults.color)
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> ItemDropdown(

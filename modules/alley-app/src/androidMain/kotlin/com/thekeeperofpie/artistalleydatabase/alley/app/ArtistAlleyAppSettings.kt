@@ -34,6 +34,7 @@ class ArtistAlleyAppSettings(
     override val showRandomCatalogImage = boolean("showRandomCatalogImage", false)
     override val showOnlyConfirmedTags = boolean("showOnlyConfirmedTags", false)
     override val showOnlyFavorites = boolean("showOnlyFavorites", false)
+    override val showOnlyHasCommissions = boolean("showOnlyHasCommissions", false)
     override val forceOneDisplayColumn = boolean("forceOneDisplayColumn", false)
     override val activeYearIs2025 = boolean("activeYearIs2024", false)
 

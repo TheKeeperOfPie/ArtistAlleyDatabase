@@ -577,23 +577,26 @@ fun Tooltip(
     content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
+    val contentInteractionSource = remember { MutableInteractionSource() }
     Box(
         modifier = Modifier
-            .hoverable(interactionSource)
+            .hoverable(contentInteractionSource)
             .onGloballyPositioned { size = it.size }
     ) {
         content()
 
-        if (isHovered) {
+        val popupInteractionSource = remember { MutableInteractionSource() }
+        val contentIsHovered by contentInteractionSource.collectIsHoveredAsState()
+        val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
+        if (contentIsHovered || popupIsHovered) {
             Popup(
-                alignment = Alignment.Center,
+                alignment = Alignment.BottomCenter,
                 offset = IntOffset(0, -size.height),
             ) {
                 Text(
                     text = text,
                     modifier = Modifier
+                        .hoverable(popupInteractionSource)
                         .background(
                             color = MaterialTheme.colorScheme.surfaceDim,
                             shape = MaterialTheme.shapes.small,
