@@ -254,7 +254,7 @@ class ArtistEntryDao(
             ArtistSearchSortOption.BOOTH -> "ORDER BY ${tableName}_fts.booth COLLATE NOCASE"
             ArtistSearchSortOption.ARTIST -> "ORDER BY ${tableName}_fts.name COLLATE NOCASE"
             ArtistSearchSortOption.RANDOM -> "ORDER BY orderIndex"
-        } + " $ascending"
+        } + " $ascending" + " NULLS LAST"
         val randomSortSelectSuffix =
             (", substr(${tableName}_fts.counter * 0.${searchQuery.randomSeed}," +
                     " length(${tableName}_fts.counter) + 2) as orderIndex")

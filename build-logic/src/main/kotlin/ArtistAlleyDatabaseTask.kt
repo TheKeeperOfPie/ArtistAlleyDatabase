@@ -256,11 +256,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         open(artistsCsv2025).use {
             var counter = 1L
             read(it)
-                .map {
+                .mapNotNull {
                     // Input,Booth,Artist,Summary,Links,Store,Catalog - Inferred,Series - Inferred,
                     // Merch - Inferred,Notes,Commissions
+                    val id = it["UUID"]!!
                     val artist = it["Artist"].orEmpty()
+                    val booth = it["Booth"]
                     val summary = it["Summary"]
+
+                    if (artist.isBlank()) return@mapNotNull null
 
                     val newLineRegex = Regex("\n\\s?")
                     val links = it["Links"].orEmpty().split(newLineRegex)
@@ -287,10 +291,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         .filter(String::isNotBlank)
                         .sorted()
 
-                    val artistId = "temp$counter"
                     val artistEntry = ArtistEntry2025(
-                        id = artistId,
-                        booth = null,
+                        id = id,
+                        booth = booth?.takeIf { it.length == 3 },
                         name = artist,
                         summary = summary,
                         links = links,
@@ -310,7 +313,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         (seriesInferred - seriesConfirmed.toSet())
                             .map {
                                 ArtistSeriesConnection(
-                                    artistId = artistId,
+                                    artistId = id,
                                     seriesId = it,
                                     confirmed = false
                                 )
@@ -318,7 +321,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val seriesConnectionsConfirmed = seriesConfirmed
                         .map {
                             ArtistSeriesConnection(
-                                artistId = artistId,
+                                artistId = id,
                                 seriesId = it,
                                 confirmed = true
                             )
@@ -329,7 +332,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
                         .map {
                             ArtistMerchConnection(
-                                artistId = artistId,
+                                artistId = id,
                                 merchId = it,
                                 confirmed = false
                             )
@@ -337,7 +340,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val merchConnectionsConfirmed = merchConfirmed
                         .map {
                             ArtistMerchConnection(
-                                artistId = artistId,
+                                artistId = id,
                                 merchId = it,
                                 confirmed = true
                             )
@@ -459,7 +462,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
     private fun read(source: Source): Sequence<Map<String, String>> {
         val header = source.readLine()!!
-        val columnNames = header.split(",")
+        val columnNames = header.split(",").map { it.removePrefix("\"").removeSuffix("\"") }
         val columnCount = columnNames.size
         return sequence {
             val buffer = Buffer()

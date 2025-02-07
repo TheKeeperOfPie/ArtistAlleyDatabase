@@ -45,7 +45,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.utils_compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.BarChart
 import com.thekeeperofpie.artistalleydatabase.utils_compose.charts.PieChart
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
