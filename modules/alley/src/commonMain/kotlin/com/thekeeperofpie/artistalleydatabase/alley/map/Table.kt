@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 
 data class Table(
+    val id: String,
     val booth: String,
     val section: Section,
     val image: CatalogImage?,

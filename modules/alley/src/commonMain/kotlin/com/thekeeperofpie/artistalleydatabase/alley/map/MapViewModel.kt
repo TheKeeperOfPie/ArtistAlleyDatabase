@@ -85,6 +85,7 @@ class MapViewModel(
                     0
                 }
                 Table(
+                    id = it.id,
                     booth = it.booth,
                     section = Table.Section.fromTableNumber(tableNumber),
                     image = imageIndex?.let(images::getOrNull),
@@ -112,7 +113,7 @@ class MapViewModel(
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
-    suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.booth)?.let {
+    suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.id)?.let {
         ArtistEntryGridModel.buildFromEntry(randomSeed, it)
     }
 
