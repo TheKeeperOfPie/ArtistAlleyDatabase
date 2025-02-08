@@ -33,7 +33,7 @@ class StampRallyMapViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val entry = stampRallyEntryDao.getEntryWithArtists(route.id)!!
+            val entry = stampRallyEntryDao.getEntryWithArtists(route.year, route.id)!!
             val tables = entry.artists
                 .mapNotNull { it.booth }
                 .toSet()

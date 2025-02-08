@@ -49,7 +49,11 @@ object ArtistAlleyAppScreen {
         Surface {
             val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
                 navController.navigate(
-                    Destinations.ArtistDetails(entry.id.valueId, imageIndex.toString())
+                    Destinations.ArtistDetails(
+                        year = entry.artist.year,
+                        id = entry.id.valueId,
+                        imageIndex = imageIndex.toString(),
+                    )
                 )
             }
             Column(modifier = Modifier.fillMaxSize()) {
@@ -72,8 +76,9 @@ object ArtistAlleyAppScreen {
                                     onStampRallyClick = { entry, imageIndex ->
                                         navController.navigate(
                                             Destinations.StampRallyDetails(
-                                                entry.stampRally.id,
-                                                imageIndex.toString(),
+                                                year = entry.stampRally.year,
+                                                id = entry.stampRally.id,
+                                                imageIndex = imageIndex.toString(),
                                             )
                                         )
                                     },
@@ -113,7 +118,7 @@ object ArtistAlleyAppScreen {
                                     },
                                     onStampRallyClick = {
                                         navController.navigate(
-                                            Destinations.StampRallyDetails(it.id)
+                                            Destinations.StampRallyDetails(it.year, it.id)
                                         )
                                     },
                                     onArtistMapClick = {
@@ -154,12 +159,12 @@ object ArtistAlleyAppScreen {
                                     onClickBack = navController::navigateUp,
                                     onArtistClick = {
                                         navController.navigate(
-                                            Destinations.ArtistDetails(it.id)
+                                            Destinations.ArtistDetails(it.year, it.id)
                                         )
                                     },
                                     onStampRallyMapClick = {
                                         navController.navigate(
-                                            Destinations.StampRallyMap(route.id)
+                                            Destinations.StampRallyMap(route.year, route.id)
                                         )
                                     }
                                 )
@@ -180,8 +185,9 @@ object ArtistAlleyAppScreen {
                                     onArtistClick = { entry, imageIndex ->
                                         navController.navigate(
                                             Destinations.ArtistDetails(
-                                                entry.artist.id,
-                                                imageIndex.toString(),
+                                                year = entry.artist.year,
+                                                id = entry.artist.id,
+                                                imageIndex = imageIndex.toString(),
                                             )
                                         )
                                     },

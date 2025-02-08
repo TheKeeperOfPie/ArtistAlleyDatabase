@@ -31,6 +31,7 @@ class ArtistDetailsViewModel(
 ) : ViewModel() {
     private val route =
         savedStateHandle.toDestination<Destinations.ArtistDetails>(navigationTypeMap)
+    val year = route.year
     val id = route.id
     val initialImageIndex = route.imageIndex?.toIntOrNull() ?: 0
 
@@ -39,7 +40,8 @@ class ArtistDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(id) ?: return@launch
+            val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
+                ?: return@launch
             val artistWithUserData = entryWithStampRallies.artist
             val artist = artistWithUserData.artist
             val userEntry = artistWithUserData.userEntry

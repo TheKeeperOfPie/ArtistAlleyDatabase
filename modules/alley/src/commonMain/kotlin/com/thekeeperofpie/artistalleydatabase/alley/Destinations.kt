@@ -1,14 +1,30 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
+import androidx.navigation.NavType
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import kotlinx.serialization.Serializable
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 sealed interface Destinations : NavDestination {
+
+    companion object {
+        val typeMap: Map<KType, NavType<*>> = mapOf(
+            typeOf<DataYear>() to CustomNavTypes.NullableEnumType(DataYear::valueOf)
+        )
+    }
+
     @Serializable
     data object Home : Destinations
 
     @Serializable
-    data class ArtistDetails(val id: String, val imageIndex: String? = null) : Destinations
+    data class ArtistDetails(
+        val year: DataYear,
+        val id: String,
+        val imageIndex: String? = null,
+    ) : Destinations
 
     @Serializable
     data class ArtistMap(val id: String) : Destinations
@@ -26,8 +42,12 @@ sealed interface Destinations : NavDestination {
     data class MerchMap(val merch: String) : Destinations
 
     @Serializable
-    data class StampRallyDetails(val id: String, val imageIndex: String? = null) : Destinations
+    data class StampRallyDetails(
+        val year: DataYear,
+        val id: String,
+        val imageIndex: String? = null,
+    ) : Destinations
 
     @Serializable
-    data class StampRallyMap(val id: String) : Destinations
+    data class StampRallyMap(val year: DataYear, val id: String) : Destinations
 }

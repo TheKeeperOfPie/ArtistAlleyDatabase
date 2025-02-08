@@ -186,14 +186,17 @@ class ArtistEntryDao(
     private val dao2024: suspend () -> ArtistEntry2024Queries = { database().artistEntry2024Queries },
     private val dao2025: suspend () -> ArtistEntry2025Queries = { database().artistEntry2025Queries },
 ) {
-    suspend fun getEntry(id: String) = dao2024()
-        .getEntry(id)
-        .awaitAsOneOrNull()
-        ?.toArtistWithUserData()
-        ?: dao2025()
-            .getEntry(id)
-            .awaitAsOneOrNull()
-            ?.toArtistWithUserData()
+    suspend fun getEntry(year: DataYear, id: String) =
+        when (year) {
+            DataYear.YEAR_2024 -> dao2024()
+                .getEntry(id)
+                .awaitAsOneOrNull()
+                ?.toArtistWithUserData()
+            DataYear.YEAR_2025 -> dao2025()
+                .getEntry(id)
+                .awaitAsOneOrNull()
+                ?.toArtistWithUserData()
+        }
 
     fun getEntryFlow(id: String) = settings.activeYearIs2025
         .flatMapLatest {
@@ -212,17 +215,24 @@ class ArtistEntryDao(
             }
         }
 
-    suspend fun getEntryWithStampRallies(id: String) =
-        dao2024().transactionWithResult {
-            val artist = getEntry(id) ?: return@transactionWithResult null
-            val stampRallies = dao2024().getStampRallyEntries(id).awaitAsList()
-                .map { it.toStampRallyEntry() }
-            ArtistWithStampRalliesEntry(artist, stampRallies)
-        } ?: dao2025().transactionWithResult {
-            val artist = getEntry(id) ?: return@transactionWithResult null
-            val stampRallies = dao2025().getStampRallyEntries(id).awaitAsList()
-                .map { it.toStampRallyEntry() }
-            ArtistWithStampRalliesEntry(artist, stampRallies)
+    suspend fun getEntryWithStampRallies(dataYear: DataYear, artistId: String) =
+        when (dataYear) {
+            DataYear.YEAR_2024 -> {
+                dao2024().transactionWithResult {
+                    val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
+                    val stampRallies = dao2024().getStampRallyEntries(artistId).awaitAsList()
+                        .map { it.toStampRallyEntry() }
+                    ArtistWithStampRalliesEntry(artist, stampRallies)
+                }
+            }
+            DataYear.YEAR_2025 -> {
+                dao2025().transactionWithResult {
+                    val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
+                    val stampRallies = dao2025().getStampRallyEntries(artistId).awaitAsList()
+                        .map { it.toStampRallyEntry() }
+                    ArtistWithStampRalliesEntry(artist, stampRallies)
+                }
+            }
         }
 
     fun search(

@@ -30,6 +30,7 @@ class StampRallyDetailsViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val route = savedStateHandle.toDestination<Destinations.StampRallyDetails>(navigationTypeMap)
+    val year = route.year
     val id = route.id
     val initialImageIndex = route.imageIndex?.toIntOrNull() ?: 0
 
@@ -38,7 +39,7 @@ class StampRallyDetailsViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val entryWithArtists = stampRallyEntryDao.getEntryWithArtists(id) ?: return@launch
+            val entryWithArtists = stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@launch
             val stampRallyWithUserData = entryWithArtists.stampRally
             val stampRally = stampRallyWithUserData.stampRally
             val userEntry = stampRallyWithUserData.userEntry

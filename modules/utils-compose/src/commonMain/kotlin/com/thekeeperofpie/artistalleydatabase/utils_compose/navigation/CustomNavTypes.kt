@@ -14,14 +14,14 @@ import kotlin.reflect.typeOf
 object CustomNavTypes {
 
     val baseTypeMap: Map<KType, NavType<*>> = mapOf(
-        typeOf<ImageState?>() to CustomNavTypes.SerializableType<ImageState>(),
-        typeOf<SharedTransitionKey?>() to CustomNavTypes.StringValueType(
+        typeOf<ImageState?>() to SerializableType<ImageState>(),
+        typeOf<SharedTransitionKey?>() to StringValueType(
             SharedTransitionKey::key,
             SharedTransitionKey::deserialize,
         ),
-        typeOf<Boolean?>() to CustomNavTypes.NullableBooleanType,
-        typeOf<Float?>() to CustomNavTypes.NullableFloatType,
-        typeOf<Int?>() to CustomNavTypes.NullableIntType,
+        typeOf<Boolean?>() to NullableBooleanType,
+        typeOf<Float?>() to NullableFloatType,
+        typeOf<Int?>() to NullableIntType,
     )
 
     object NullableBooleanType : NavType<Boolean?>(true) {
@@ -94,7 +94,7 @@ object CustomNavTypes {
     class SerializableType<Type : Any>(private val type: KClass<Type>) : NavType<Type?>(true) {
         companion object {
             inline operator fun <reified T : Any> invoke() =
-                CustomNavTypes.SerializableType(T::class)
+                SerializableType(T::class)
         }
 
         override val name: String = type.simpleName!!
@@ -131,7 +131,7 @@ object CustomNavTypes {
             inline operator fun <reified T : Any> invoke(
                 noinline toString: (T) -> String,
                 noinline fromString: (String) -> T,
-            ) = CustomNavTypes.StringValueType(T::class, toString, fromString)
+            ) = StringValueType(T::class, toString, fromString)
         }
 
         override val name: String = type.simpleName!!

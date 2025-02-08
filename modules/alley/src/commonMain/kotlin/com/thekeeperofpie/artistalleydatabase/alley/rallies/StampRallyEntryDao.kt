@@ -148,24 +148,39 @@ class StampRallyEntryDao(
     private val dao2024: suspend () -> StampRallyEntry2024Queries = { database().stampRallyEntry2024Queries },
     private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
 ) {
-    suspend fun getEntry(id: String) = dao2024()
-        .getEntry(id)
-        .awaitAsOneOrNull()
-        ?.toStampRallyWithUserData()
-        ?: dao2025()
-            .getEntry(id)
-            .awaitAsOneOrNull()
-            ?.toStampRallyWithUserData()
+    suspend fun getEntry(year: DataYear, stampRallyId: String) =
+        when (year) {
+            DataYear.YEAR_2024 -> dao2024()
+                .getEntry(stampRallyId)
+                .awaitAsOneOrNull()
+                ?.toStampRallyWithUserData()
+            DataYear.YEAR_2025 -> dao2025()
+                .getEntry(stampRallyId)
+                .awaitAsOneOrNull()
+                ?.toStampRallyWithUserData()
+        }
 
-    suspend fun getEntryWithArtists(id: String) =
-        dao2024().transactionWithResult {
-            val stampRally = getEntry(id) ?: return@transactionWithResult null
-            val artists = dao2024().getArtistEntries(id).awaitAsList().map { it.toArtistEntry() }
-            StampRallyWithArtistsEntry(stampRally, artists)
-        } ?: dao2025().transactionWithResult {
-            val stampRally = getEntry(id) ?: return@transactionWithResult null
-            val artists = dao2025().getArtistEntries(id).awaitAsList().map { it.toArtistEntry() }
-            StampRallyWithArtistsEntry(stampRally, artists)
+    suspend fun getEntryWithArtists(year: DataYear, stampRallyId: String) =
+        when (year) {
+            DataYear.YEAR_2024 -> {
+                dao2024().transactionWithResult {
+                    val stampRally =
+                        getEntry(year, stampRallyId) ?: return@transactionWithResult null
+                    val artists = dao2024().getArtistEntries(stampRallyId).awaitAsList()
+                        .map { it.toArtistEntry() }
+                    StampRallyWithArtistsEntry(stampRally, artists)
+                }
+            }
+            DataYear.YEAR_2025 -> {
+                dao2025().transactionWithResult {
+                    val stampRally =
+                        getEntry(year, stampRallyId) ?: return@transactionWithResult null
+                    val artists =
+                        dao2025().getArtistEntries(stampRallyId).awaitAsList()
+                            .map { it.toArtistEntry() }
+                    StampRallyWithArtistsEntry(stampRally, artists)
+                }
+            }
         }
 
     fun search(
@@ -193,9 +208,9 @@ class StampRallyEntryDao(
         }
         val randomSortSelectSuffix =
             (", substr(${tableName}_fts.counter * 0.${searchQuery.randomSeed}," +
-                " length(${tableName}_fts.counter) + 2) as orderIndex")
-            .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
-            .orEmpty()
+                    " length(${tableName}_fts.counter) + 2) as orderIndex")
+                .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
+                .orEmpty()
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, " +
                 "stampRallyUserEntry.notes"
 
