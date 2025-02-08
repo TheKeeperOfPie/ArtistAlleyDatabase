@@ -47,7 +47,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     abstract val artistsCsv2025: RegularFileProperty
 
     @get:InputFile
-    abstract val stampRalliesCsv: RegularFileProperty
+    abstract val stampRalliesCsv2024: RegularFileProperty
+
+    @get:InputFile
+    abstract val stampRalliesCsv2025: RegularFileProperty
 
     @get:InputFile
     abstract val seriesCsv: RegularFileProperty
@@ -61,7 +64,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     init {
         artistsCsv2024.convention(layout.projectDirectory.file("inputs/2024/$ARTISTS_CSV_NAME"))
         artistsCsv2025.convention(layout.projectDirectory.file("inputs/2025/$ARTISTS_CSV_NAME"))
-        stampRalliesCsv.convention(layout.projectDirectory.file("inputs/$STAMP_RALLIES_CSV_NAME"))
+        stampRalliesCsv2024.convention(layout.projectDirectory.file("inputs/2024/$STAMP_RALLIES_CSV_NAME"))
+        stampRalliesCsv2025.convention(layout.projectDirectory.file("inputs/2025/$STAMP_RALLIES_CSV_NAME"))
         seriesCsv.convention(layout.projectDirectory.file("inputs/$SERIES_CSV_NAME"))
         merchCsv.convention(layout.projectDirectory.file("inputs/$MERCH_CSV_NAME"))
         outputResources.convention(layout.buildDirectory.dir("generated/composeResources"))
@@ -401,7 +405,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
     private fun parseStampRallies(database: BuildLogicDatabase) {
         val mutationQueries = database.mutationQueries
-        open(stampRalliesCsv).use {
+        open(stampRalliesCsv2024).use {
             var counter = 1L
             read(it)
                 .mapNotNull {
@@ -451,6 +455,61 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val artistConnections = it.flatMap { it.second }
                     mutationQueries.transaction {
                         stampRallies.forEach(mutationQueries::insertStampRally2024)
+                        artistConnections.forEach(mutationQueries::insertArtistConnection)
+                    }
+                }
+        }
+
+        open(stampRalliesCsv2025).use {
+            var counter = 1L
+            read(it)
+                .mapNotNull {
+                    // Theme,Link,Tables,Table Min, Total, Notes,Images
+                    val theme = it["Theme"]!!
+                    val links = it["Link"]!!.split("\n")
+                        .filter(String::isNotBlank)
+                    val tables = it["Tables"]!!.split("\n")
+                        .filter(String::isNotBlank)
+                    val hostTable = tables.firstOrNull { it.contains("-") }
+                        ?.substringBefore("-")
+                        ?.trim() ?: return@mapNotNull null
+                    val tableMin = it["Table Min"]!!.let {
+                        when {
+                            it.equals("Free", ignoreCase = true) -> 0
+                            it.equals("Any", ignoreCase = true) -> 1
+                            else -> it.removePrefix("$").toIntOrNull()
+                        }
+                    }
+                    val totalCost = it["Total"]?.removePrefix("$")?.toIntOrNull()
+                    val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
+                    val notes = it["Notes"]
+
+                    val stampRallyId = "$hostTable-$theme"
+                    val connections = tables
+                        .filter { it.contains("-") }
+                        .map { it.substringBefore("-") }
+                        .map(String::trim)
+                        .map { StampRallyArtistConnection(stampRallyId, it) }
+
+                    StampRallyEntry2025(
+                        id = stampRallyId,
+                        fandom = theme,
+                        tables = tables,
+                        hostTable = hostTable,
+                        links = links,
+                        tableMin = tableMin?.toLong(),
+                        totalCost = (if (tableMin == 0) 0 else totalCost)?.toLong(),
+                        prizeLimit = prizeLimit?.toLong(),
+                        notes = notes,
+                        counter = counter++,
+                    ) to connections
+                }
+                .chunked(DATABASE_CHUNK_SIZE)
+                .forEach {
+                    val stampRallies = it.map { it.first }
+                    val artistConnections = it.flatMap { it.second }
+                    mutationQueries.transaction {
+                        stampRallies.forEach(mutationQueries::insertStampRally2025)
                         artistConnections.forEach(mutationQueries::insertArtistConnection)
                     }
                 }

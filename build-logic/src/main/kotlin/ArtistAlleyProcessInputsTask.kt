@@ -32,8 +32,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     companion object {
         private const val PACKAGE_NAME = "com.thekeeperofpie.artistalleydatabase.generated"
         private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp")
-        private const val RESIZE_TARGET = 800
-        private const val WEBP_TARGET_QUALITY = 15
+        private const val RESIZE_TARGET = 1000
+        private const val WEBP_TARGET_QUALITY = 30
         private const val WEBP_METHOD = 6
         private const val COMPOSE_FILES_CHUNK_SIZE = 50
     }
@@ -67,30 +67,46 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
             val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
             val dispatcher = it.asCoroutineDispatcher()
-
-            val catalogsInput = inputFolder.dir("catalogs").get().asFile
-            val catalogsOutput = outputResources.dir("files/catalogs").get().asFile
-            val ralliesInput = inputFolder.dir("rallies").get().asFile
-            val ralliesOutput = outputResources.dir("files/rallies").get().asFile
-
             runBlocking(dispatcher) {
-                val catalogFolders = processFolders(
+                val catalogs2024 = "catalogs2024" to processFolder(
                     imageCacheDir = imageCacheDir,
-                    inputFolder = catalogsInput,
-                    outputFolder = catalogsOutput,
+                    path = "2024/catalogs",
+                    transformName = { it.substringBefore(" -") },
+                )
+                val rallies2024 = "rallies2024" to processFolder(
+                    imageCacheDir = imageCacheDir,
+                    path = "2024/rallies",
+                    transformName = { it.substringBefore(" -") },
+                )
+                val catalogs2025 = "catalogs2025" to processFolder(
+                    imageCacheDir = imageCacheDir,
+                    path = "2025/catalogs",
+                    transformName = { it.substringBefore(" -") },
+                )
+                val rallies2025 = "rallies2025" to processFolder(
+                    imageCacheDir = imageCacheDir,
+                    path = "2025/rallies",
                     transformName = { it.substringBefore(" -") },
                 )
 
-                val ralliesFolders = processFolders(
-                    imageCacheDir = imageCacheDir,
-                    inputFolder = ralliesInput,
-                    outputFolder = ralliesOutput,
-                    transformName = { it.replace(" - ", "").replace("'", "_") },
-                )
-
-                buildComposeFiles(catalogFolders, ralliesFolders)
+                buildComposeFiles(catalogs2024, rallies2024, catalogs2025, rallies2025)
             }
         }
+
+    private suspend fun CoroutineScope.processFolder(
+        imageCacheDir: File,
+        path: String,
+        transformName: (String) -> String,
+    ): List<CatalogFolder> {
+        val input = inputFolder.dir(path).get().asFile
+        val output = outputResources.dir("files/$path").get().asFile
+        return processFolders(
+            imageCacheDir = imageCacheDir,
+            inputFolder = input,
+            outputFolder = output,
+            transformName = transformName,
+        )
+    }
 
     private suspend fun CoroutineScope.processFolders(
         imageCacheDir: File,
@@ -99,9 +115,11 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         transformName: (String) -> String,
     ): List<CatalogFolder> {
         val folders = inputFolder.listFiles()
+            .orEmpty()
             .map {
                 async {
                     val images = it.listFiles()
+                        .orEmpty()
                         .filter { it.isFile && it.extension in IMAGE_EXTENSIONS }
                         .sorted()
                         .mapIndexed { index, file ->
@@ -109,7 +127,12 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                                 imageCacheDir = imageCacheDir,
                                 file = file
                             )
-                            val hash = Utils.hash(file)
+                            val hash = Utils.hash(
+                                file = file,
+                                RESIZE_TARGET,
+                                WEBP_METHOD,
+                                WEBP_TARGET_QUALITY
+                            )
                             CatalogFolder.Image(
                                 file = file,
                                 width = width,
@@ -134,7 +157,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         folders.map { catalogFolder ->
             async {
                 val images = catalogFolder.images
-                val catalogOutputFolder = outputFolder.resolve(catalogFolder.name).apply { mkdirs() }
+                val catalogOutputFolder =
+                    outputFolder.resolve(catalogFolder.name).apply { mkdirs() }
 
                 val imagesWithOutput = images.map {
                     it to catalogOutputFolder.resolve(it.name)
@@ -190,12 +214,11 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     }
 
     private fun buildComposeFiles(
-        catalogFolders: List<CatalogFolder>,
-        ralliesFolders: List<CatalogFolder>,
+        vararg folders: Pair<String, List<CatalogFolder>>,
     ) {
         FileSpec.builder(PACKAGE_NAME, "ComposeFiles")
             .apply {
-                addType(accessorType(this, catalogFolders, ralliesFolders))
+                addType(accessorType(this, *folders))
             }
             .addType(folderType())
             .build()
@@ -204,11 +227,13 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     private fun accessorType(
         fileSpec: FileSpec.Builder,
-        catalogFolders: List<CatalogFolder>,
-        ralliesFolders: List<CatalogFolder>,
+        vararg folders: Pair<String, List<CatalogFolder>>,
     ) = TypeSpec.objectBuilder("ComposeFiles")
-        .addChunkedFolder(fileSpec, "catalogs", catalogFolders)
-        .addChunkedFolder(fileSpec, "rallies", ralliesFolders)
+        .apply {
+            folders.forEach { (name, folders) ->
+                addChunkedFolder(fileSpec, name, folders)
+            }
+        }
         .build()
 
     private fun TypeSpec.Builder.addChunkedFolder(
@@ -272,9 +297,13 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                                         files = 
                                 """.trimIndent(), name
                             )
-                            chunks.indices.forEach { index ->
-                                add("$name$index".capitalized() + ".files ")
-                                if (index != chunks.lastIndex) add(" + ")
+                            if (chunks.isEmpty()) {
+                                add("emptyList()")
+                            } else {
+                                chunks.indices.forEach { index ->
+                                    add("$name$index".capitalized() + ".files ")
+                                    if (index != chunks.lastIndex) add(" + ")
+                                }
                             }
                             add(")")
                         }
@@ -359,7 +388,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             ComposeFile(
                 name = name,
                 file = file,
-                files = file.listFiles().sorted().mapIndexed { index, child ->
+                files = file.listFiles().orEmpty().sorted().mapIndexed { index, child ->
                     parseFile(
                         file = child,
                         name = if (child.isDirectory) {

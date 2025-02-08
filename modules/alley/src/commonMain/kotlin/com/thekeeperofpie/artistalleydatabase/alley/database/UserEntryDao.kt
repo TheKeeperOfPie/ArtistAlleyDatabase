@@ -11,16 +11,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
 private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
-    BoothWithFavorite(id = id, booth = booth, favorite = favorite)
+    BoothWithFavorite(year = DataYear.YEAR_2024, id = id, booth = booth, favorite = favorite)
 
 private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
-    BoothWithFavorite(id = id, booth = booth, favorite = favorite)
+    BoothWithFavorite(year = DataYear.YEAR_2025, id = id, booth = booth, favorite = favorite)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class UserEntryDao(

@@ -1,6 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+
 data class StampRallyEntry(
+    val year: DataYear,
     val id: String,
     val fandom: String,
     val hostTable: String,

@@ -13,12 +13,18 @@ object AlleyDataUtils {
         RALLIES("rallies"),
     }
 
-    fun getImages(folder: Folder, file: String?): List<CatalogImage> {
+    fun getImages(year: DataYear, folder: Folder, file: String?): List<CatalogImage> {
         file ?: return emptyList()
         val targetName = file.replace(" - ", "").replace("'", "_")
-        val targetFolder = when (folder) {
-            Folder.CATALOGS -> ComposeFiles.catalogs
-            Folder.RALLIES -> ComposeFiles.rallies
+        val targetFolder = when (year) {
+            DataYear.YEAR_2024 -> when (folder) {
+                Folder.CATALOGS -> ComposeFiles.catalogs2024
+                Folder.RALLIES -> ComposeFiles.rallies2024
+            }
+            DataYear.YEAR_2025 -> when (folder) {
+                Folder.CATALOGS -> ComposeFiles.catalogs2025
+                Folder.RALLIES -> ComposeFiles.rallies2025
+            }
         }.files
             .filterIsInstance<ComposeFile.Folder>()
             .find { it.name.startsWith(targetName) }
@@ -29,7 +35,7 @@ object AlleyDataUtils {
             ?.sortedBy { it.name }
             ?.map {
                 CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/${folder.folderName}/${targetFolder.name}/${it.name}")),
+                    uri = Uri.parse(Res.getUri("files/${year.year}/${folder.folderName}/${targetFolder.name}/${it.name}")),
                     width = it.width,
                     height = it.height,
                 )

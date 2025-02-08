@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
@@ -32,6 +33,7 @@ private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
+            year = DataYear.YEAR_2024,
             id = artistId,
             booth = getString(1),
             name = getString(2)!!,
@@ -60,6 +62,7 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
+            year = DataYear.YEAR_2025,
             id = artistId,
             booth = getString(1),
             name = getString(2)!!,
@@ -87,6 +90,7 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
 
 private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
+        year = DataYear.YEAR_2024,
         id = id,
         booth = booth,
         name = name,
@@ -112,6 +116,7 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
 
 private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
+        year = DataYear.YEAR_2025,
         id = id,
         booth = booth,
         name = name,
@@ -137,6 +142,7 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
 )
 
 fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
+    year = DataYear.YEAR_2024,
     id = id,
     booth = booth,
     name = name,
@@ -154,6 +160,7 @@ fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
 )
 
 fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
+    year = DataYear.YEAR_2025,
     id = id,
     booth = booth,
     name = name,

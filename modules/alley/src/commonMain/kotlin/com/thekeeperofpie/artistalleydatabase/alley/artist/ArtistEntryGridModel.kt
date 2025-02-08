@@ -42,6 +42,7 @@ class ArtistEntryGridModel(
                 artist = entry.artist,
                 userEntry = entry.userEntry,
                 images = AlleyDataUtils.getImages(
+                    year = entry.artist.year,
                     folder = AlleyDataUtils.Folder.CATALOGS,
                     file = entry.artist.booth,
                 ),

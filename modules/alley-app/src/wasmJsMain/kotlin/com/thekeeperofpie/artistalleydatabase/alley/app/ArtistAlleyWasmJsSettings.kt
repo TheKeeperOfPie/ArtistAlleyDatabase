@@ -45,7 +45,7 @@ class ArtistAlleyWasmJsSettings(
     override val showOnlyHasCommissions by registerBoolean(false)
     override val showOnlyFavorites by registerBoolean(false)
     override val forceOneDisplayColumn by registerBoolean(false)
-    override val activeYearIs2025 by registerBoolean(false)
+    override val activeYearIs2025 by registerBoolean(true)
 
     private fun <T> register(serialize: (T) -> String, deserialize: (String?) -> T) =
         object : ReadOnlyProperty<Any?, MutableStateFlow<T>> {

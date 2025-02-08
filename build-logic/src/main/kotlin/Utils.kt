@@ -1,11 +1,15 @@
+
 import org.gradle.api.artifacts.VersionCatalog
 import java.io.File
 import java.util.zip.CRC32
 
 object Utils {
 
-    fun hash(file: File): Long {
+    fun hash(file: File, vararg inputs: Any): Long {
         val crc32 = CRC32()
+        inputs.forEach {
+            crc32.update(it.toString().toByteArray())
+        }
         file.inputStream().use { input ->
             val buffer = ByteArray(8192)
             var bytesRead: Int

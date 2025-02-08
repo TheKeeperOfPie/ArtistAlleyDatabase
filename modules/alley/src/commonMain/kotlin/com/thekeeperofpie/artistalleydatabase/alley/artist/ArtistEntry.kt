@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 
 data class ArtistEntry(
+    val year: DataYear,
     val id: String,
     val booth: String?,
     val name: String,

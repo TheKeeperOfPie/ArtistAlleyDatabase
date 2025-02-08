@@ -44,6 +44,7 @@ class StampRallyDetailsViewModel(
             val userEntry = stampRallyWithUserData.userEntry
             val artists = entryWithArtists.artists
             val catalogImages = AlleyDataUtils.getImages(
+                year = stampRally.year,
                 folder = AlleyDataUtils.Folder.RALLIES,
                 file = stampRally.id.replace("-", " - "),
             )

@@ -46,6 +46,7 @@ class ArtistDetailsViewModel(
             val stampRallies = entryWithStampRallies.stampRallies
 
             val catalogImages = AlleyDataUtils.getImages(
+                year = artist.year,
                 folder = AlleyDataUtils.Folder.CATALOGS,
                 file = artist.booth,
             )

@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
@@ -19,10 +20,36 @@ import kotlinx.serialization.json.Json
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
 
-fun SqlCursor.toStampRallyWithUserData(): StampRallyWithUserData {
+fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
         stampRally = StampRallyEntry(
+            year = DataYear.YEAR_2024,
+            id = stampRallyId,
+            fandom = getString(1)!!,
+            hostTable = getString(2)!!,
+            tables = getString(3)!!.let(Json::decodeFromString),
+            links = getString(4)!!.let(Json::decodeFromString),
+            tableMin = getLong(5),
+            totalCost = getLong(6),
+            prizeLimit = getLong(7),
+            notes = getString(8),
+            counter = getLong(9)!!,
+        ),
+        userEntry = StampRallyUserEntry(
+            stampRallyId = stampRallyId,
+            favorite = getBoolean(10) == true,
+            ignored = getBoolean(11) == true,
+            notes = getString(12),
+        )
+    )
+}
+
+fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
+    val stampRallyId = getString(0)!!
+    return StampRallyWithUserData(
+        stampRally = StampRallyEntry(
+            year = DataYear.YEAR_2025,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
@@ -45,6 +72,7 @@ fun SqlCursor.toStampRallyWithUserData(): StampRallyWithUserData {
 
 private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyEntry(
+        year = DataYear.YEAR_2024,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
@@ -66,6 +94,7 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
 
 private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyEntry(
+        year = DataYear.YEAR_2025,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
@@ -86,6 +115,7 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
 )
 
 fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
+    year = DataYear.YEAR_2024,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
@@ -99,6 +129,7 @@ fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
 )
 
 fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
+    year = DataYear.YEAR_2025,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
@@ -202,7 +233,11 @@ class StampRallyEntryDao(
                 countStatement = countStatement,
                 statement = statement,
                 tableNames = listOf("${tableName}_fts"),
-                mapper = SqlCursor::toStampRallyWithUserData,
+                mapper = if (activeYearIs2025) {
+                    SqlCursor::toStampRallyWithUserData2025
+                } else {
+                    SqlCursor::toStampRallyWithUserData2024
+                },
             )
         }
 
@@ -255,7 +290,11 @@ class StampRallyEntryDao(
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("${tableName}_fts"),
-            mapper = SqlCursor::toStampRallyWithUserData,
+            mapper = if (activeYearIs2025) {
+                SqlCursor::toStampRallyWithUserData2025
+            } else {
+                SqlCursor::toStampRallyWithUserData2024
+            },
         )
     }
 }

@@ -64,8 +64,14 @@ private var jsFiles: Set<String> = mutableSetOf()
 private var wasmFiles: Set<String> = mutableSetOf()
 
 private val imagesToCache by lazy {
-    ComposeFiles.catalogs.files
+    listOf(
+        ComposeFiles.catalogs2024,
+        ComposeFiles.catalogs2025,
+        ComposeFiles.rallies2024,
+        ComposeFiles.rallies2025,
+    )
         .asSequence()
+        .flatMap { it.files.asSequence() }
         .filterIsInstance<ComposeFile.Folder>()
         .flatMap { folder ->
             folder.files.filterIsInstance<ComposeFile.Image>()
@@ -178,7 +184,11 @@ private suspend fun fetchCacheFirst(request: Request, path: String): Response {
     }
 }
 
-private suspend fun fetchCacheFirstAndSave(request: Request, path: String, cacheName: CacheName): Response {
+private suspend fun fetchCacheFirstAndSave(
+    request: Request,
+    path: String,
+    cacheName: CacheName,
+): Response {
     val cached = self.caches.match(request).await()
     return if (cached is Response) {
         console.log("Cache hit", path)

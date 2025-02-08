@@ -33,6 +33,7 @@ class StampRallyEntryGridModel(
             stampRally = entry.stampRally,
             userEntry = entry.userEntry,
             images = AlleyDataUtils.getImages(
+                year = entry.stampRally.year,
                 folder = AlleyDataUtils.Folder.RALLIES,
                 file = entry.stampRally.id.replace("-", " - "),
             ),

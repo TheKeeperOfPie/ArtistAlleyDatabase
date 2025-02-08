@@ -75,6 +75,7 @@ class MapViewModel(
                 val booth = it.booth ?: return@mapNotNull null
                 val tableNumber = it.booth.filter { it.isDigit() }.toInt()
                 val images = AlleyDataUtils.getImages(
+                    year = it.year,
                     folder = AlleyDataUtils.Folder.CATALOGS,
                     file = it.booth,
                 )
