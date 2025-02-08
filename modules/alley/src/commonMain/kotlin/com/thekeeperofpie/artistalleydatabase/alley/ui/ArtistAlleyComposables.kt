@@ -574,6 +574,7 @@ internal fun currentWindowSizeClass(): WindowSizeClass {
 @Composable
 fun Tooltip(
     text: String,
+    popupAlignment: Alignment = Alignment.BottomCenter,
     content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -590,7 +591,7 @@ fun Tooltip(
         val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
         if (contentIsHovered || popupIsHovered) {
             Popup(
-                alignment = Alignment.BottomCenter,
+                alignment = popupAlignment,
                 offset = IntOffset(0, -size.height),
             ) {
                 Text(

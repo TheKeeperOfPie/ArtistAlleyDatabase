@@ -57,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -334,36 +335,38 @@ object ArtistDetailsScreen {
     private fun LinkRow(link: LinkModel, isLast: Boolean) {
         val uriHandler = LocalUriHandler.current
         val bottomPadding = if (isLast) 12.dp else 8.dp
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .conditionallyNonNull(link.link) { clickable { uriHandler.openUri(it) } }
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 8.dp,
-                    bottom = bottomPadding,
-                )
-                .fillMaxWidth()
-        ) {
-            if (link.logo?.icon != null) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.height(20.dp)
-                        .widthIn(min = 20.dp)
-                ) {
-                    Icon(
-                        imageVector = link.logo.icon,
-                        contentDescription = null,
-                        modifier = Modifier.height(16.dp)
+        Tooltip(link.link, Alignment.BottomEnd) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .conditionallyNonNull(link.link) { clickable { uriHandler.openUri(it) } }
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = bottomPadding,
                     )
+                    .fillMaxWidth()
+            ) {
+                if (link.logo?.icon != null) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.height(20.dp)
+                            .widthIn(min = 20.dp)
+                    ) {
+                        Icon(
+                            imageVector = link.logo.icon,
+                            contentDescription = null,
+                            modifier = Modifier.height(16.dp)
+                        )
+                    }
                 }
-            }
 
-            Text(
-                text = link.title,
-                style = MaterialTheme.typography.bodyMedium,
-            )
+                Text(
+                    text = link.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }

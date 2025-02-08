@@ -58,10 +58,9 @@ object TwoWayGrid {
             modifier = modifier.width(width)
         ) {
             stickyHeader {
-                Column(Modifier.padding(top = topOffset)) {
+                Column(Modifier.padding(top = topOffset).horizontalScroll(horizontalScrollState)) {
                     Row(
                         Modifier.height(IntrinsicSize.Min)
-                            .horizontalScroll(horizontalScrollState)
                             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
                     ) {
                         columns.forEachIndexed { columnIndex, column ->
@@ -71,15 +70,12 @@ object TwoWayGrid {
                             }
                         }
                     }
-                    HorizontalDivider()
                 }
+                HorizontalDivider()
             }
             items(rows.itemCount) { index ->
-                Column {
-                    Row(
-                        Modifier.height(IntrinsicSize.Min)
-                            .horizontalScroll(horizontalScrollState)
-                    ) {
+                Column(Modifier.horizontalScroll(horizontalScrollState)) {
+                    Row(Modifier.height(IntrinsicSize.Min)) {
                         columns.forEachIndexed { columnIndex, column ->
                             Box(Modifier.requiredWidth(column.size)) {
                                 tableCell(rows[index], column)
@@ -89,10 +85,10 @@ object TwoWayGrid {
                             }
                         }
                     }
+                }
 
-                    if (index != rows.itemCount - 1) {
-                        HorizontalDivider()
-                    }
+                if (index != rows.itemCount - 1) {
+                    HorizontalDivider()
                 }
             }
         }
