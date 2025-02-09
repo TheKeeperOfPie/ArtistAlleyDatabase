@@ -12,7 +12,7 @@ sealed interface Destinations : NavDestination {
 
     companion object {
         val typeMap: Map<KType, NavType<*>> = mapOf(
-            typeOf<DataYear>() to CustomNavTypes.NullableEnumType(DataYear::valueOf)
+            typeOf<DataYear>() to CustomNavTypes.SerializableType<DataYear>()
         )
     }
 

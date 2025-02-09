@@ -8,6 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
     id("com.android.library")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 kotlin {
@@ -32,6 +33,7 @@ kotlin {
             dependencies {
                 implementation(compose.components.resources)
                 implementation(compose.runtime)
+                implementation(libs.kotlinx.serialization.json)
                 implementation(libs.uri.kmp)
             }
         }
