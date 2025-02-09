@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map.favorites
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -31,15 +32,18 @@ object FavoritesMapScreen {
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
     ) {
         BottomSheetScaffold(
-            sheetPeekHeight = 80.dp,
+            sheetPeekHeight = 120.dp,
             sheetDragHandle = {
-                Box(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    BottomSheetDefaults.DragHandle()
                     ZoomSlider(
                         transformState = mapTransformState,
                         modifier = Modifier
                             .heightIn(max = 64.dp)
                             .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .align(Alignment.Center)
                     )
                 }
             },

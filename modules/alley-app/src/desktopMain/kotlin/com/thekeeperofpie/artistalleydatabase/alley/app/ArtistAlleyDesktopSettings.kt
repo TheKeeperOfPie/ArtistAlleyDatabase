@@ -21,5 +21,5 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val showOnlyHasCommissions = MutableStateFlow(false)
     override val showOnlyFavorites = MutableStateFlow(false)
     override val forceOneDisplayColumn = MutableStateFlow(false)
-    override val activeYearIs2025 = MutableStateFlow(true)
+    override val activeYearIs2025 = MutableStateFlow(false)
 }

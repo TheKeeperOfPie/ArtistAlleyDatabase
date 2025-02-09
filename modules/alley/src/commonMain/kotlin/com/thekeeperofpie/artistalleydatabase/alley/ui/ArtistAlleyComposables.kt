@@ -5,6 +5,8 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,11 +21,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -55,6 +57,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -74,12 +77,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
@@ -270,6 +274,13 @@ private fun <EntryModel : SearchEntryModel> rememberPagerState(
     )
 }
 
+private class WrappedViewConfiguration(
+    viewConfiguration: ViewConfiguration,
+    val overrideTouchSlop: Float,
+) : ViewConfiguration by viewConfiguration {
+    override val touchSlop = overrideTouchSlop
+}
+
 @Composable
 fun ImagePager(
     images: List<CatalogImage>,
@@ -281,89 +292,99 @@ fun ImagePager(
     clipCorners: Boolean = true,
     imageContentScale: ContentScale = ContentScale.FillWidth,
 ) {
-    val isFillWidth = imageContentScale == ContentScale.FillWidth
     val zoomPanState = rememberZoomPanState()
     val scope = rememberCoroutineScope()
     Box(Modifier.conditionallyNonNull(onClickOutside) { clickable(onClick = it) }) {
-        var minHeight by remember { mutableIntStateOf(0) }
-        val density = LocalDensity.current
-        HorizontalPager(
-            state = pagerState,
-            pageSpacing = 16.dp,
-            userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
-            modifier = Modifier
-                .heightIn(min = density.run { minHeight.toDp() })
-                .then(modifier)
-                .onSizeChanged {
-                    if (it.height > minHeight) {
-                        minHeight = it.height
-                    }
-                }
-                .conditionally(clipCorners) {
-                    clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                }
-                .sharedElement("imageContainer", sharedElementId)
-                .clipToBounds()
-        ) {
-            if (it == 0 && images.size > 1) {
-                SmallImageGrid(
-                    targetHeight = minHeight.coerceAtLeast(
-                        density.run { 320.dp.roundToPx() }
-                    ),
-                    images = images,
-                    onImageClick = { index, _ ->
-                        scope.launch {
-                            pagerState.animateScrollToPage(index + 1)
+        val existingViewConfiguration = LocalViewConfiguration.current
+        val newViewConfiguration = remember(existingViewConfiguration) {
+            WrappedViewConfiguration(
+                viewConfiguration = existingViewConfiguration,
+                overrideTouchSlop = existingViewConfiguration.touchSlop * 2,
+            )
+        }
+        CompositionLocalProvider(LocalViewConfiguration provides newViewConfiguration) {
+            var minHeight by remember { mutableIntStateOf(0) }
+            val density = LocalDensity.current
+            HorizontalPager(
+                state = pagerState,
+                pageSpacing = 16.dp,
+                userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
+                modifier = Modifier
+                    .heightIn(min = density.run { minHeight.toDp() })
+                    .then(modifier)
+                    .onSizeChanged {
+                        if (it.height > minHeight) {
+                            minHeight = it.height
                         }
                     }
-                )
-            } else {
-                ZoomPanBox(state = zoomPanState, onClick = onClickOutside) {
-                    val image = images[(it - 1).coerceAtLeast(0)]
-                    val width = image.width
-                    val height = image.height
-                    AsyncImage(
-                        model = image.uri,
-                        contentScale = imageContentScale,
-                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                        modifier = Modifier
-                            .pointerInput(zoomPanState) {
-                                detectTapGestures(
-                                    onTap = if (onClickPage == null) {
-                                        null
-                                    } else {
-                                        { onClickPage(pagerState.settledPage) }
-                                    },
-                                    onDoubleTap = {
-                                        scope.launch {
-                                            zoomPanState.toggleZoom(it, size)
-                                        }
+                    .conditionally(clipCorners) {
+                        clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    }
+                    .sharedElement("imageContainer", sharedElementId)
+                    .clipToBounds()
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    if (it == 0 && images.size > 1) {
+                        SmallImageGrid(
+                            targetHeight = minHeight.coerceAtLeast(
+                                density.run { 320.dp.roundToPx() }
+                            ),
+                            images = images,
+                            onImageClick = { index, _ ->
+                                scope.launch {
+                                    pagerState.animateScrollToPage(index + 1)
+                                }
+                            }
+                        )
+                    } else {
+                        ZoomPanBox(state = zoomPanState, onClick = onClickOutside) {
+                            val image = images[(it - 1).coerceAtLeast(0)]
+                            val width = image.width
+                            val height = image.height
+                            val isFillWidth = imageContentScale == ContentScale.FillWidth
+                            AsyncImage(
+                                model = image.uri,
+                                contentScale = imageContentScale,
+                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                                modifier = Modifier
+                                    .pointerInput(zoomPanState) {
+                                        detectTapGestures(
+                                            onTap = if (onClickPage == null) {
+                                                null
+                                            } else {
+                                                { onClickPage(pagerState.settledPage) }
+                                            },
+                                            onDoubleTap = {
+                                                scope.launch {
+                                                    zoomPanState.toggleZoom(it, size)
+                                                }
+                                            }
+                                        )
                                     }
-                                )
-                            }
-                            // This breaks page scrolling
-//                        .sharedElement("image", sharedElementId)
-                            .conditionally(isFillWidth) {
-                                fillMaxWidth()
-                            }
-                            .conditionally(isFillWidth && width != null && height != null) {
-                                aspectRatio(width!! / height!!.toFloat())
-                            }
-                            .conditionally(!isFillWidth) {
-                                fillMaxHeight()
-                            }
-                            .conditionally(clipCorners && LocalSharedTransitionScope.current.isTransitionActive) {
-                                clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                            }
-                            .align(Alignment.Center)
-                            .sharedElement("image", image.uri)
-                    )
+                                    .conditionally(isFillWidth) {
+                                        fillMaxWidth()
+                                    }
+                                    .conditionally(isFillWidth && width != null && height != null) {
+                                        aspectRatio(width!! / height!!.toFloat())
+                                    }
+                                    .conditionally(!isFillWidth) {
+                                        fillMaxHeight()
+                                    }
+                                    .conditionally(clipCorners && LocalSharedTransitionScope.current.isTransitionActive) {
+                                        clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                                    }
+                                    .align(Alignment.Center)
+                                // Causes page buttons to render underneath
+                                // .sharedElement("image", image.uri)
+                            )
+                        }
+                    }
                 }
             }
         }
 
-        androidx.compose.animation.AnimatedVisibility(
+        AnimatedVisibility(
             visible = images.size > 1 && zoomPanState.canPanExternal(),
             enter = fadeIn(),
             exit = fadeOut(),
@@ -377,7 +398,7 @@ fun ImagePager(
             )
         }
 
-        androidx.compose.animation.AnimatedVisibility(
+        AnimatedVisibility(
             visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
             enter = fadeIn(),
             exit = fadeOut(),
@@ -401,7 +422,7 @@ fun ImagePager(
         }
 
         val previousPageInteractionSource = remember { MutableInteractionSource() }
-        androidx.compose.animation.AnimatedVisibility(
+        AnimatedVisibility(
             visible = pagerState.pageCount > 1 && pagerState.currentPage != 0,
             enter = fadeIn(),
             exit = fadeOut(),
@@ -439,7 +460,7 @@ fun ImagePager(
             }
         }
 
-        androidx.compose.animation.AnimatedVisibility(
+        AnimatedVisibility(
             visible = pagerState.currentPage < pagerState.pageCount - 1,
             enter = fadeIn(),
             exit = fadeOut(),
@@ -470,13 +491,17 @@ fun ImagePager(
 }
 
 @Composable
-fun Modifier.sharedElement(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modifier {
+fun Modifier.sharedElement(
+    vararg keys: Any?,
+    zIndexInOverlay: Float = 0f,
+    animatedVisibilityScope: AnimatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+): Modifier {
     if (keys.contains(null)) return this
     if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
     return with(LocalSharedTransitionScope.current) {
         sharedElement(
             rememberSharedContentState(key = keys.toList()),
-            animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+            animatedVisibilityScope = animatedVisibilityScope,
             zIndexInOverlay = zIndexInOverlay,
         )
     }
@@ -522,6 +547,7 @@ internal fun SmallImageGrid(
     targetHeight: Int? = null,
     images: List<CatalogImage>,
     onImageClick: (index: Int, image: Uri) -> Unit = { _, _ -> },
+    modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
     LazyVerticalStaggeredGrid(
@@ -529,31 +555,30 @@ internal fun SmallImageGrid(
         contentPadding = PaddingValues(8.dp),
         verticalItemSpacing = 8.dp,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.let {
-            if (targetHeight == null) {
-                it
-            } else if (targetHeight > 0) {
-                it.height(density.run { targetHeight.toDp() })
-            } else {
-                it.heightIn(max = 320.dp)
+        modifier = modifier
+            .let {
+                if (targetHeight == null) {
+                    it
+                } else if (targetHeight > 0) {
+                    it.height(density.run { targetHeight.toDp() })
+                } else {
+                    it.heightIn(max = 320.dp)
+                }
             }
-        }
     ) {
         itemsIndexed(images) { index, image ->
-            BoxWithConstraints {
-                AsyncImage(
-                    model = image.uri,
-                    contentScale = ContentScale.FillWidth,
-                    contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                    modifier = Modifier
-                        .clickable { onImageClick(index, image.uri) }
-                        .sharedElement("gridImage", image.uri)
-                        .fillMaxWidth()
-                        .conditionally(image.width != null && image.height != null) {
-                            heightIn(min = (image.height!! / image.width!!.toFloat()) * maxWidth)
-                        }
-                )
-            }
+            AsyncImage(
+                model = image.uri,
+                contentScale = ContentScale.FillWidth,
+                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                modifier = Modifier
+                    .clickable { onImageClick(index, image.uri) }
+                    .sharedElement("gridImage", image.uri)
+                    .fillMaxWidth()
+                    .conditionally(image.width != null && image.height != null) {
+                        aspectRatio(image.height!!.toFloat() / image.width!!)
+                    }
+            )
         }
     }
 }

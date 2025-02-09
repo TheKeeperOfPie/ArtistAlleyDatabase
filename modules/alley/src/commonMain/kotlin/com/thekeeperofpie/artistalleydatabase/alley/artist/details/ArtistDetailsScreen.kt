@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,7 +89,6 @@ object ArtistDetailsScreen {
             return
         }
 
-        var showFullImagesIndex by rememberSaveable { mutableStateOf<Int?>(null) }
         val artist = entry.artist
         DetailsScreen(
             title = { ArtistTitle(artist) },
@@ -125,7 +123,7 @@ object ArtistDetailsScreen {
             val onClickOpenUri: (String) -> Unit = {
                 try {
                     uriHandler.openUri(it)
-                } catch (ignored: Throwable) {
+                } catch (_: Throwable) {
                 }
             }
 

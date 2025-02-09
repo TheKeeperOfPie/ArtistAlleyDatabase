@@ -12,6 +12,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -112,12 +113,13 @@ fun rememberZoomPanState() = rememberSaveable(LocalDensity.current, saver = Zoom
 
 @Composable
 fun ZoomPanBox(
+    modifier: Modifier = Modifier,
     state: ZoomPanState = rememberZoomPanState(),
     onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .onSizeChanged {
                 state.maxTranslationX = it.width / 2f

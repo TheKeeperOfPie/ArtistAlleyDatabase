@@ -382,7 +382,8 @@ object DetailsScreen {
                                     scope.launch {
                                         pagerState.animateScrollToPage(index + 1)
                                     }
-                                }
+                                },
+                                modifier = Modifier.align(Alignment.Center)
                             )
                         } else {
                             ZoomPanBox(
@@ -420,7 +421,11 @@ object DetailsScreen {
                                         contentScale = ContentScale.Fit,
                                         contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                                         modifier = Modifier
-                                            .sharedElement("image", image.uri)
+                                            .sharedElement(
+                                                "image",
+                                                image.uri,
+                                                animatedVisibilityScope = this@AnimatedVisibility,
+                                            )
                                             .height(IMAGE_HEIGHT)
                                     )
                                 }
