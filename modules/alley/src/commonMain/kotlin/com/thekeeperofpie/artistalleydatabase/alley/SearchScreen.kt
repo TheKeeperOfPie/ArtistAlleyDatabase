@@ -179,7 +179,7 @@ object SearchScreen {
                     }
             ) {
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
-                    var topBarWidth by remember { mutableStateOf(0) }
+                    var topBarHeight by remember { mutableStateOf(0) }
                     Scaffold(
                         topBar = {
                             TopBar(
@@ -189,7 +189,7 @@ object SearchScreen {
                                 displayType = displayType,
                                 onDisplayTypeToggle = onDisplayTypeToggle,
                                 onClickBack = onClickBack,
-                                onHeightChanged = { topBarWidth = it },
+                                onHeightChanged = { topBarHeight = it },
                                 title = title,
                                 actions = actions,
                             )
@@ -200,11 +200,11 @@ object SearchScreen {
                             }
                     ) {
                         val density = LocalDensity.current
-                        val topBarPadding = if (scrollBehavior == null) {
-                            LocalDensity.current.run { topBarWidth.toDp() }
-                        } else {
-                            remember {
-                                derivedStateOf {
+                        val topBarPadding by remember(density) {
+                            derivedStateOf {
+                                if (scrollBehavior == null){
+                                    density.run { topBarHeight.toDp() }.coerceAtLeast(0.dp)
+                                } else {
                                     // Force a snapshot read so that this recomposes
                                     // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
                                     scrollBehavior.state.heightOffset
@@ -213,7 +213,7 @@ object SearchScreen {
                                         ?.let { density.run { -it.toDp() } }
                                         ?: 0.dp
                                 }
-                            }.value
+                            }
                         }
 
                         if (displayType() == DisplayType.TABLE) {
@@ -229,11 +229,12 @@ object SearchScreen {
                         } else {
                             val topOffset by remember {
                                 derivedStateOf {
-                                    topBarPadding + density.run {
+                                    (topBarPadding + density.run {
                                         scrollBehavior?.state?.heightOffset?.toDp() ?: 0.dp
-                                    }
+                                    }).coerceAtLeast(0.dp)
                                 }
                             }
+
                             VerticalGrid(
                                 entries = entries,
                                 showGridByDefault = showGridByDefault,
