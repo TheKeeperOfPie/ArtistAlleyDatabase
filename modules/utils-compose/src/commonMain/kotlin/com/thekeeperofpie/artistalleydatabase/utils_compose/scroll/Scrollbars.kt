@@ -3,11 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.scroll
 import androidx.compose.animation.core.AnimationConstants.DefaultDurationMillis
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
@@ -33,12 +35,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.scrollbar_handle_content_description
+import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -72,22 +76,25 @@ fun VerticalScrollbar(
 @Composable
 fun VerticalScrollbar(
     state: LazyListState,
+    alwaysVisible: Boolean = false,
     modifier: Modifier = Modifier,
 ) = VerticalScrollbar(
     firstVisibleItemIndex = { firstVisibleItemIndex },
     totalItemsCount = { layoutInfo.totalItemsCount },
     lastVisibleIndex = { layoutInfo.visibleItemsInfo.lastOrNull()?.index },
     scrollToItem = { scrollToItem(it) },
+    alwaysVisible = alwaysVisible,
     state = state,
     modifier = modifier,
 )
 
 @Composable
-fun <State: ScrollableState> VerticalScrollbar(
+fun <State : ScrollableState> VerticalScrollbar(
     firstVisibleItemIndex: State.() -> Int,
     totalItemsCount: State.() -> Int,
     lastVisibleIndex: State.() -> Int?,
     scrollToItem: suspend State.(index: Int) -> Unit,
+    alwaysVisible: Boolean = false,
     state: State,
     modifier: Modifier = Modifier,
 ) {
@@ -121,18 +128,22 @@ fun <State: ScrollableState> VerticalScrollbar(
             }
         }
         val handleVisible = fillsViewPort && (state.isScrollInProgress || dragging)
-        val handleAlpha by animateFloatAsState(
-            targetValue = if (handleVisible) 1f else 0f,
-            animationSpec = tween(
-                durationMillis = if (handleVisible) {
-                    DefaultDurationMillis / 2
-                } else {
-                    DefaultDurationMillis
-                },
-                delayMillis = if (handleVisible) 0 else DefaultDurationMillis * 3,
-            ),
-            label = "Scrollbar handle alpha",
-        )
+        val handleAlpha = if (alwaysVisible) {
+            1f
+        } else {
+            animateFloatAsState(
+                targetValue = if (handleVisible) 1f else 0f,
+                animationSpec = tween(
+                    durationMillis = if (handleVisible) {
+                        DefaultDurationMillis / 2
+                    } else {
+                        DefaultDurationMillis
+                    },
+                    delayMillis = if (handleVisible) 0 else DefaultDurationMillis * 3,
+                ),
+                label = "Scrollbar handle alpha",
+            ).value
+        }
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -164,6 +175,72 @@ fun <State: ScrollableState> VerticalScrollbar(
                 imageVector = Icons.Filled.UnfoldMore,
                 contentDescription = stringResource(Res.string.scrollbar_handle_content_description),
                 tint = MaterialTheme.colorScheme.onPrimary,
+            )
+        }
+    }
+}
+
+@Composable
+fun HorizontalScrollbar(
+    state: ScrollState,
+    modifier: Modifier = Modifier,
+) {
+    var width by remember { mutableIntStateOf(1) }
+    val handleSize = LocalDensity.current.run { 40.dp.roundToPx() }
+    val maxOffsetX by remember {
+        derivedStateOf { (width - handleSize).coerceAtLeast(1).toFloat() }
+    }
+    Box(modifier = modifier.onSizeChanged { width = it.width }) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val scope = rememberCoroutineScope()
+        val handleVisible = state.canScrollForward || state.canScrollBackward
+        val handleAlpha by animateFloatAsState(
+            targetValue = if (handleVisible) 1f else 0f,
+            animationSpec = tween(
+                durationMillis = if (handleVisible) {
+                    DefaultDurationMillis / 2
+                } else {
+                    DefaultDurationMillis
+                },
+                delayMillis = if (handleVisible) 0 else DefaultDurationMillis * 3,
+            ),
+            label = "Scrollbar handle alpha",
+        )
+        val scrollbarOffset by remember {
+            derivedStateOf {
+                val raw =
+                    AnimationUtils.lerp(0f, maxOffsetX, state.value.toFloat() / state.maxValue)
+                if (raw.isNaN()) {
+                    0
+                } else {
+                    raw.roundToInt()
+                }
+            }
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .alpha(handleAlpha)
+                .offset { IntOffset(x = scrollbarOffset, y = 0) }
+                .size(width = 40.dp, height = 32.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(topStartPercent = 50, topEndPercent = 50)
+                )
+                .draggable(
+                    state = rememberDraggableState(onDelta = {
+                        val deltaInGridSpace = it / maxOffsetX * state.maxValue
+                        scope.launch { state.scrollBy(deltaInGridSpace) }
+                    }),
+                    orientation = Orientation.Horizontal,
+                    interactionSource = interactionSource,
+                )
+        ) {
+            Icon(
+                imageVector = Icons.Filled.UnfoldMore,
+                contentDescription = stringResource(Res.string.scrollbar_handle_content_description),
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.rotate(90f)
             )
         }
     }

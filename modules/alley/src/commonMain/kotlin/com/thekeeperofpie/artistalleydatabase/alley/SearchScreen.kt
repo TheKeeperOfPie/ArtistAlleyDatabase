@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -28,6 +30,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells.Adaptive
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
@@ -53,6 +56,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -61,6 +65,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -90,10 +95,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -120,7 +127,7 @@ object SearchScreen {
         gridState: LazyStaggeredGridState,
         onFavoriteToggle: (EntryModel, Boolean) -> Unit,
         onIgnoredToggle: (EntryModel, Boolean) -> Unit,
-        onEntryClick: (EntryModel, Int) -> Unit,
+        onEntryClick: (EntryModel, imageIndex: Int) -> Unit,
         shouldShowCount: () -> Boolean,
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
@@ -148,85 +155,114 @@ object SearchScreen {
             }
         }
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+            .takeUnless { PlatformSpecificConfig.scrollbarsAlwaysVisible }
 
-        BottomSheetScaffold(
-            scaffoldState = scaffoldState,
-            sheetPeekHeight = 72.dp,
-            sheetDragHandle = {
-                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
-            },
-            sheetContent = bottomSheet,
-            modifier = Modifier.nestedScroll(
-                NestedScrollSplitter(
-                    primary = scrollBehavior.nestedScrollConnection,
-                    consumeNone = true,
-                )
-            ),
-        ) {
-            Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
-                Scaffold(
-                    topBar = {
-                        TopBar(
-                            viewModel = viewModel,
-                            entries = entries,
-                            scrollBehavior = scrollBehavior,
-                            displayType = displayType,
-                            onDisplayTypeToggle = onDisplayTypeToggle,
-                            onClickBack = onClickBack,
-                            title = title,
-                            actions = actions,
+        Box {
+            var horizontalScrollBarWidth by remember { mutableStateOf(0) }
+            val horizontalScrollState = rememberScrollState()
+            BottomSheetScaffold(
+                scaffoldState = scaffoldState,
+                sheetPeekHeight = 72.dp,
+                sheetDragHandle = {
+                    BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+                },
+                sheetContent = bottomSheet,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .conditionallyNonNull(scrollBehavior) {
+                        nestedScroll(
+                            NestedScrollSplitter(
+                                primary = it.nestedScrollConnection,
+                                consumeNone = true,
+                            )
                         )
-                    },
-                    modifier = Modifier
-                        .conditionally(displayType() != DisplayType.TABLE) {
-                            widthIn(max = 1200.dp)
-                        }
-                ) {
-                    val density = LocalDensity.current
-                    val topBarPadding by remember {
-                        derivedStateOf {
-                            // Force a snapshot read so that this recomposes
-                            // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
-                            scrollBehavior.state.heightOffset
-                            scrollBehavior.state.heightOffsetLimit
-                                .takeUnless { it == -Float.MAX_VALUE }
-                                ?.let { density.run { -it.toDp() } }
-                                ?: 0.dp
-                        }
                     }
-
-                    if (displayType() == DisplayType.TABLE) {
-                        Table(
-                            entries = entries,
-                            columns = columns,
-                            scaffoldPadding = it,
-                            columnHeader = columnHeader,
-                            tableCell = tableCell,
-                        )
-                    } else {
-                        val topOffset by remember {
-                            derivedStateOf {
-                                topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() }
+            ) {
+                Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
+                    var topBarWidth by remember { mutableStateOf(0) }
+                    Scaffold(
+                        topBar = {
+                            TopBar(
+                                viewModel = viewModel,
+                                entries = entries,
+                                scrollBehavior = scrollBehavior,
+                                displayType = displayType,
+                                onDisplayTypeToggle = onDisplayTypeToggle,
+                                onClickBack = onClickBack,
+                                onHeightChanged = { topBarWidth = it },
+                                title = title,
+                                actions = actions,
+                            )
+                        },
+                        modifier = Modifier
+                            .conditionally(displayType() != DisplayType.TABLE) {
+                                widthIn(max = 1200.dp)
                             }
+                    ) {
+                        val density = LocalDensity.current
+                        val topBarPadding = if (scrollBehavior == null) {
+                            LocalDensity.current.run { topBarWidth.toDp() }
+                        } else {
+                            remember {
+                                derivedStateOf {
+                                    // Force a snapshot read so that this recomposes
+                                    // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
+                                    scrollBehavior.state.heightOffset
+                                    scrollBehavior.state.heightOffsetLimit
+                                        .takeUnless { it == -Float.MAX_VALUE }
+                                        ?.let { density.run { -it.toDp() } }
+                                        ?: 0.dp
+                                }
+                            }.value
                         }
-                        VerticalGrid(
-                            entries = entries,
-                            showGridByDefault = showGridByDefault,
-                            showRandomCatalogImage = showRandomCatalogImage,
-                            forceOneDisplayColumn = forceOneDisplayColumn,
-                            displayType = displayType,
-                            gridState = gridState,
-                            onFavoriteToggle = onFavoriteToggle,
-                            onIgnoredToggle = onIgnoredToggle,
-                            onEntryClick = onEntryClick,
-                            shouldShowCount = shouldShowCount,
-                            topOffset = topOffset,
-                            topBarPadding = topBarPadding,
-                            itemToSharedElementId = itemToSharedElementId,
-                            itemRow = itemRow,
-                        )
+
+                        if (displayType() == DisplayType.TABLE) {
+                            Table(
+                                horizontalScrollState = horizontalScrollState,
+                                entries = entries,
+                                columns = columns,
+                                scaffoldPadding = it,
+                                onWidthChanged = { horizontalScrollBarWidth = it },
+                                columnHeader = columnHeader,
+                                tableCell = tableCell,
+                            )
+                        } else {
+                            val topOffset by remember {
+                                derivedStateOf {
+                                    topBarPadding + density.run {
+                                        scrollBehavior?.state?.heightOffset?.toDp() ?: 0.dp
+                                    }
+                                }
+                            }
+                            VerticalGrid(
+                                entries = entries,
+                                showGridByDefault = showGridByDefault,
+                                showRandomCatalogImage = showRandomCatalogImage,
+                                forceOneDisplayColumn = forceOneDisplayColumn,
+                                displayType = displayType,
+                                gridState = gridState,
+                                onFavoriteToggle = onFavoriteToggle,
+                                onIgnoredToggle = onIgnoredToggle,
+                                onEntryClick = onEntryClick,
+                                shouldShowCount = shouldShowCount,
+                                topOffset = topOffset,
+                                topBarPadding = topBarPadding,
+                                itemToSharedElementId = itemToSharedElementId,
+                                itemRow = itemRow,
+                            )
+                        }
                     }
                 }
+            }
+
+            if (PlatformSpecificConfig.scrollbarsAlwaysVisible) {
+                HorizontalScrollbar(
+                    state = horizontalScrollState,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .width(LocalDensity.current.run { horizontalScrollBarWidth.toDp() })
+                        .padding(horizontal = 8.dp)
+                )
             }
         }
     }
@@ -235,14 +271,18 @@ object SearchScreen {
     private fun <SearchQuery, EntryModel : SearchEntryModel> TopBar(
         viewModel: EntrySearchViewModel<SearchQuery, EntryModel>,
         entries: LazyPagingItems<EntryModel>,
-        scrollBehavior: TopAppBarScrollBehavior,
+        scrollBehavior: TopAppBarScrollBehavior?,
         displayType: () -> DisplayType,
         onDisplayTypeToggle: (DisplayType) -> Unit,
-        onClickBack: (() -> Unit)? = null,
-        title: () -> String? = { null },
-        actions: (@Composable RowScope.() -> Unit)? = null,
+        onClickBack: (() -> Unit)?,
+        onHeightChanged: (Int) -> Unit,
+        title: () -> String?,
+        actions: (@Composable RowScope.() -> Unit)?,
     ) {
-        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+        EnterAlwaysTopAppBar(
+            scrollBehavior = scrollBehavior,
+            modifier = Modifier.onSizeChanged { onHeightChanged(it.height) }
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -324,9 +364,11 @@ object SearchScreen {
 
     @Composable
     private fun <EntryModel, ColumnType> Table(
+        horizontalScrollState: ScrollState,
         entries: LazyPagingItems<EntryModel>,
         columns: EnumEntries<ColumnType>,
         scaffoldPadding: PaddingValues,
+        onWidthChanged: (Int) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
@@ -335,25 +377,26 @@ object SearchScreen {
             modifier = Modifier.fillMaxWidth()
                 .padding(scaffoldPadding)
         ) {
-            Box {
-                val listState = rememberLazyListState()
-                TwoWayGrid(
-                    rows = entries,
-                    columns = columns,
-                    listState = listState,
-                    contentPadding = PaddingValues(bottom = 80.dp),
-                    columnHeader = columnHeader,
-                    tableCell = tableCell,
-                )
+            val listState = rememberLazyListState()
+            TwoWayGrid(
+                rows = entries,
+                columns = columns,
+                listState = listState,
+                horizontalScrollState = horizontalScrollState,
+                contentPadding = PaddingValues(bottom = 80.dp),
+                columnHeader = columnHeader,
+                tableCell = tableCell,
+                modifier = Modifier.onSizeChanged { onWidthChanged(it.width) }
+            )
 
-                VerticalScrollbar(
-                    state = listState,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .fillMaxHeight()
-                        .padding(top = 8.dp, bottom = 72.dp)
-                )
-            }
+            VerticalScrollbar(
+                state = listState,
+                alwaysVisible = PlatformSpecificConfig.scrollbarsAlwaysVisible,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .padding(top = 8.dp, bottom = 72.dp)
+            )
         }
     }
 
@@ -367,7 +410,7 @@ object SearchScreen {
         gridState: LazyStaggeredGridState,
         onFavoriteToggle: (EntryModel, Boolean) -> Unit,
         onIgnoredToggle: (EntryModel, Boolean) -> Unit,
-        onEntryClick: (EntryModel, Int) -> Unit,
+        onEntryClick: (EntryModel, imageIndex: Int) -> Unit,
         shouldShowCount: () -> Boolean,
         topOffset: Dp,
         topBarPadding: Dp,

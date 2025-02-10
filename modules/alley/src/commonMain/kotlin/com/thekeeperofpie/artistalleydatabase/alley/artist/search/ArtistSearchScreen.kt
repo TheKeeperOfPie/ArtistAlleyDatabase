@@ -1,17 +1,24 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowOverflow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Link
@@ -39,13 +46,17 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_booth
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_links
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_name
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_series
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
+import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -55,9 +66,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
-import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.modifierDefaultCellPadding
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -72,11 +83,12 @@ object ArtistSearchScreen {
         viewModel: ArtistSearchViewModel,
         sortViewModel: ArtistSortFilterViewModel,
         onClickBack: (() -> Unit)?,
-        onEntryClick: (ArtistEntryGridModel, Int) -> Unit,
+        onEntryClick: (ArtistEntryGridModel, imageIndex: Int) -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
         onClickMap: (() -> Unit)? = null,
         onSeriesClick: (String) -> Unit,
+        onMerchClick: (String) -> Unit,
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
         val sortFilterState = sortViewModel.state
@@ -164,7 +176,7 @@ object ArtistSearchScreen {
                                     }
                                 }
                             }
-                            .then(modifierDefaultCellPadding)
+                            .then(TwoWayGrid.modifierDefaultCellPadding)
                     ) {
                         AutoSizeText(
                             text = stringResource(column.text),
@@ -190,78 +202,140 @@ object ArtistSearchScreen {
                     }
                 },
                 tableCell = { row, column ->
-                    when (column) {
-                        // TODO: Dynamic minimum column size by measuring header text
-                        ArtistColumn.BOOTH -> AutoSizeText(
-                            text = row?.booth.orEmpty(),
-                            modifier = Modifier.requiredSize(column.size)
-                                .then(TwoWayGrid.modifierDefaultCellPadding)
-                        )
-                        ArtistColumn.NAME -> Text(
-                            text = row?.artist?.name.orEmpty(),
-                            modifier = TwoWayGrid.modifierDefaultCellPadding
-                        )
-                        ArtistColumn.SUMMARY -> Text(
-                            text = row?.artist?.summary.orEmpty(),
-                            modifier = TwoWayGrid.modifierDefaultCellPadding
-                        )
-                        ArtistColumn.LINKS -> FlowRow {
-                            val uriHandler = LocalUriHandler.current
-                            row?.artist?.linkModels?.forEach {
-                                IconWithTooltip(
-                                    imageVector = it.logo?.icon ?: Icons.Default.Link,
-                                    tooltipText = it.link,
-                                    onClick = { uriHandler.openUri(it.link) },
-                                )
-                            }
-                        }
-                        ArtistColumn.STORE -> FlowRow {
-                            val uriHandler = LocalUriHandler.current
-                            row?.artist?.storeLinkModels?.forEach {
-                                IconWithTooltip(
-                                    imageVector = it.logo?.icon ?: Icons.Default.Link,
-                                    tooltipText = it.link,
-                                    onClick = { uriHandler.openUri(it.link) },
-                                )
-                            }
-                        }
-                        ArtistColumn.COMMISSIONS -> FlowRow {
-                            val uriHandler = LocalUriHandler.current
-                            row?.artist?.commissionModels?.forEach {
-                                when (it) {
-                                    is CommissionModel.Link -> IconWithTooltip(
-                                        imageVector = it.icon,
-                                        tooltipText = it.link,
-                                        onClick = { uriHandler.openUri(it.link) },
-                                    )
-                                    CommissionModel.OnSite -> Tooltip(
-                                        text = stringResource(Res.string.alley_artist_commission_on_site_tooltip)
-                                    ) {
-                                        CommissionChip(
-                                            model = it,
-                                            label = {
-                                                Text(stringResource(Res.string.alley_artist_commission_on_site))
-                                            },
-                                        )
-                                    }
-                                    CommissionModel.Online -> Tooltip(
-                                        text = stringResource(Res.string.alley_artist_commission_online_tooltip)
-                                    ) {
-                                        CommissionChip(
-                                            model = it,
-                                            label = {
-                                                Text(stringResource(Res.string.alley_artist_commission_online))
-                                            },
-                                        )
-                                    }
-                                    is CommissionModel.Unknown ->
-                                        CommissionChip(model = it, label = { Text(it.host) })
-                                }
-                            }
-                        }
-                    }
+                    TableCell(
+                        row = row,
+                        column = column,
+                        onEntryClick = onEntryClick,
+                        onSeriesClick = onSeriesClick,
+                        onMerchClick = onMerchClick,
+                    )
                 },
             )
+        }
+    }
+
+    @Composable
+    fun TableCell(
+        row: ArtistEntryGridModel?, column: ArtistColumn,
+        onEntryClick: (ArtistEntryGridModel, imageIndex: Int) -> Unit,
+        onSeriesClick: (String) -> Unit,
+        onMerchClick: (String) -> Unit,
+    ) {
+        val clickableCellModifier = Modifier.fillMaxSize()
+            .width(IntrinsicSize.Min)
+            .height(IntrinsicSize.Min)
+            .conditionallyNonNull(row) { clickable { onEntryClick(it, 1) } }
+            .then(TwoWayGrid.modifierDefaultCellPadding)
+        when (column) {
+            // TODO: Dynamic minimum column size by measuring header text
+            ArtistColumn.BOOTH -> Box(clickableCellModifier) {
+                AutoSizeText(text = row?.booth.orEmpty())
+            }
+            ArtistColumn.NAME -> Box(clickableCellModifier) {
+                Text(text = row?.artist?.name.orEmpty())
+            }
+            ArtistColumn.SUMMARY -> Box(clickableCellModifier) {
+                Text(text = row?.artist?.summary.orEmpty())
+            }
+            ArtistColumn.SERIES -> TagsFlowRow(
+                column = column,
+                tags = row?.series,
+                contentDescription = Res.string.alley_expand_series,
+                onEntryClick = { if (row != null) onEntryClick(row, 1) },
+                onTagClick = onSeriesClick,
+            )
+            ArtistColumn.MERCH -> TagsFlowRow(
+                column = column,
+                tags = row?.merch,
+                contentDescription = Res.string.alley_expand_merch,
+                onEntryClick = { if (row != null) onEntryClick(row, 1) },
+                onTagClick = onMerchClick,
+            )
+            ArtistColumn.LINKS -> FlowRow {
+                val uriHandler = LocalUriHandler.current
+                row?.artist?.linkModels?.forEach {
+                    IconWithTooltip(
+                        imageVector = it.logo?.icon ?: Icons.Default.Link,
+                        tooltipText = it.link,
+                        onClick = { uriHandler.openUri(it.link) },
+                    )
+                }
+            }
+            ArtistColumn.STORE -> FlowRow {
+                val uriHandler = LocalUriHandler.current
+                row?.artist?.storeLinkModels?.forEach {
+                    IconWithTooltip(
+                        imageVector = it.logo?.icon ?: Icons.Default.Link,
+                        tooltipText = it.link,
+                        onClick = { uriHandler.openUri(it.link) },
+                    )
+                }
+            }
+            ArtistColumn.COMMISSIONS -> FlowRow {
+                val uriHandler = LocalUriHandler.current
+                row?.artist?.commissionModels?.forEach {
+                    when (it) {
+                        is CommissionModel.Link -> IconWithTooltip(
+                            imageVector = it.icon,
+                            tooltipText = it.link,
+                            onClick = { uriHandler.openUri(it.link) },
+                        )
+                        CommissionModel.OnSite -> Tooltip(
+                            text = stringResource(Res.string.alley_artist_commission_on_site_tooltip)
+                        ) {
+                            CommissionChip(
+                                model = it,
+                                label = {
+                                    Text(stringResource(Res.string.alley_artist_commission_on_site))
+                                },
+                            )
+                        }
+                        CommissionModel.Online -> Tooltip(
+                            text = stringResource(Res.string.alley_artist_commission_online_tooltip)
+                        ) {
+                            CommissionChip(
+                                model = it,
+                                label = {
+                                    Text(stringResource(Res.string.alley_artist_commission_online))
+                                },
+                            )
+                        }
+                        is CommissionModel.Unknown ->
+                            CommissionChip(model = it, label = { Text(it.host) })
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun TagsFlowRow(
+        column: ArtistColumn,
+        tags: List<String>?,
+        contentDescription: StringResource,
+        onEntryClick: () -> Unit,
+        onTagClick: (String) -> Unit,
+    ) {
+        FlowRow(
+            maxLines = 6,
+            overflow = FlowRowOverflow.expandIndicator {
+                IconButton(onClick = onEntryClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.OpenInNew,
+                        contentDescription = stringResource(contentDescription),
+                    )
+                }
+            },
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            tags?.forEach {
+                SuggestionChip(
+                    onClick = { onTagClick(it) },
+                    label = { Text(text = it, modifier = Modifier.padding(vertical = 4.dp)) },
+                    modifier = Modifier.widthIn(max = column.size - 16.dp)
+                )
+            }
         }
     }
 
@@ -289,8 +363,10 @@ object ArtistSearchScreen {
         BOOTH(120.dp, Res.string.alley_artist_column_booth),
         NAME(160.dp, Res.string.alley_artist_column_name),
         SUMMARY(400.dp, Res.string.alley_artist_column_summary),
-        LINKS(200.dp, Res.string.alley_artist_column_links),
-        STORE(200.dp, Res.string.alley_artist_column_store),
-        COMMISSIONS(200.dp, Res.string.alley_artist_column_commissions),
+        SERIES(288.dp, Res.string.alley_artist_column_series),
+        MERCH(144.dp, Res.string.alley_artist_column_merch),
+        LINKS(144.dp, Res.string.alley_artist_column_links),
+        STORE(96.dp, Res.string.alley_artist_column_store),
+        COMMISSIONS(144.dp, Res.string.alley_artist_column_commissions),
     }
 }

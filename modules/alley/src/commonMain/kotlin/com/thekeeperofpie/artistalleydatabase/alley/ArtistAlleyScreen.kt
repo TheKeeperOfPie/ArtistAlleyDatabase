@@ -62,7 +62,7 @@ object ArtistAlleyScreen {
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
         onSeriesClick: (String) -> Unit,
-        onMerchClick: (MerchEntry) -> Unit,
+        onMerchClick: (String) -> Unit,
         onActiveYearIs2025Change: (Boolean) -> Unit,
     ) {
         val updateNotice = stringResource(Res.string.alley_update_notice)
@@ -109,6 +109,7 @@ object ArtistAlleyScreen {
                                 scrollPositions,
                             ),
                             onSeriesClick = onSeriesClick,
+                            onMerchClick = onMerchClick,
                         )
                     }
                     Destination.BROWSE -> {
@@ -116,7 +117,7 @@ object ArtistAlleyScreen {
                         BrowseScreen(
                             tagsViewModel = tagsViewModel,
                             onSeriesClick = { onSeriesClick(it.name) },
-                            onMerchClick = onMerchClick,
+                            onMerchClick = { onMerchClick(it.name) },
                         )
                     }
                     Destination.MAP -> {

@@ -10,8 +10,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -35,15 +37,16 @@ object ArtistMapScreen {
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
     ) {
+        val artist by viewModel.artist.collectAsStateWithLifecycle()
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { viewModel.artist?.let { ArtistTitle(it.artist) } },
+                    title = { artist?.let { ArtistTitle(it.artist) } },
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
                     actions = {
                         IconButton(
                             onClick = {
-                                viewModel.artist?.let {
+                                artist?.let {
                                     val newFavorite = !it.favorite
                                     it.favorite = newFavorite
                                     viewModel.onFavoriteToggle(it, newFavorite)
@@ -56,7 +59,7 @@ object ArtistMapScreen {
                             )
                         ) {
                             Icon(
-                                imageVector = if (viewModel.artist?.favorite == true) {
+                                imageVector = if (artist?.favorite == true) {
                                     Icons.Filled.Favorite
                                 } else {
                                     Icons.Filled.FavoriteBorder
@@ -73,7 +76,7 @@ object ArtistMapScreen {
                 )
             }
         ) {
-            val artist = viewModel.artist?.artist ?: return@Scaffold
+            val artist = artist?.artist ?: return@Scaffold
             val gridData = mapViewModel.gridData.result ?: return@Scaffold
             val targetTable = gridData.tables.find { it.booth == artist.booth }
             val transformState = MapScreen.rememberTransformState()

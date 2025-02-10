@@ -115,7 +115,11 @@ class MapViewModel(
     }
 
     suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.year, table.id)?.let {
-        ArtistEntryGridModel.buildFromEntry(randomSeed, it)
+        ArtistEntryGridModel.buildFromEntry(
+            randomSeed = randomSeed,
+            showOnlyConfirmedTags = false, // This shouldn't matter here
+            entry = it
+        )
     }
 
     data class GridData(

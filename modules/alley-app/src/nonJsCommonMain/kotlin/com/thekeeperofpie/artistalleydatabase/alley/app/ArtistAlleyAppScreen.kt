@@ -86,9 +86,7 @@ object ArtistAlleyAppScreen {
                                         navController.navigate(Destinations.Series(it))
                                     },
                                     onMerchClick = {
-                                        navController.navigate(
-                                            Destinations.Merch(it.name)
-                                        )
+                                        navController.navigate(Destinations.Merch(it))
                                     },
                                     onActiveYearIs2025Change = {
                                         component.settings.activeYearIs2025.value = it
@@ -224,6 +222,9 @@ object ArtistAlleyAppScreen {
                                     onSeriesClick = {
                                         navController.navigate(Destinations.Series(it))
                                     },
+                                    onMerchClick = {
+                                        navController.navigate(Destinations.Merch(it))
+                                    },
                                 )
                             }
 
@@ -255,6 +256,9 @@ object ArtistAlleyAppScreen {
                                     },
                                     onSeriesClick = {
                                         navController.navigate(Destinations.Series(it))
+                                    },
+                                    onMerchClick = {
+                                        navController.navigate(Destinations.Merch(it))
                                     },
                                 )
                             }

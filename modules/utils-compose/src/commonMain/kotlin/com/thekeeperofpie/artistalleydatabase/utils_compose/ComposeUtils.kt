@@ -32,8 +32,11 @@ fun <T : Any> Flow<LoadingResult<T>>.stateInForCompose() =
 
 context(ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
-fun <T : Any> Flow<T>.stateInForCompose(initial: T) =
+fun <T> Flow<T>.stateInForCompose(initial: T) =
     stateIn(viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, initial)
+
+fun <T> Flow<T>.stateInForCompose(viewModel: ViewModel, initial: T) =
+    stateIn(viewModel.viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, initial)
 
 @Composable
 fun <T> MutableStateFlow<T>.collectAsMutableStateWithLifecycle(

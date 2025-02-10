@@ -173,12 +173,14 @@ fun Modifier.optionalClickable(
 )
 
 @Composable
-fun Modifier.conditionally(apply: Boolean, block: @Composable Modifier.() -> Modifier) =
+inline fun Modifier.conditionally(apply: Boolean, block: @Composable Modifier.() -> Modifier) =
     if (apply) block() else this
 
 @Composable
-fun <T> Modifier.conditionallyNonNull(target: T?, block: @Composable Modifier.(T) -> Modifier) =
-    if (target != null) block(target) else this
+inline fun <T> Modifier.conditionallyNonNull(
+    target: T?,
+    block: @Composable Modifier.(T) -> Modifier,
+) = if (target != null) block(target) else this
 
 fun Modifier.topBorder(color: Color, width: Dp = Dp.Hairline): Modifier = border(
     width,

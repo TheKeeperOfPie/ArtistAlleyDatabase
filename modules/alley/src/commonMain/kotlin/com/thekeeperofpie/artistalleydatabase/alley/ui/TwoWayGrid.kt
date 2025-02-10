@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -22,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -42,53 +45,58 @@ object TwoWayGrid {
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
         listState: LazyListState = rememberLazyListState(),
+        horizontalScrollState: ScrollState = rememberScrollState(),
         topOffset: Dp = 0.dp,
         contentPadding: PaddingValues = PaddingValues(0.dp),
         modifier: Modifier = Modifier,
     ) where T : Any, ColumnType : Enum<ColumnType>, ColumnType : Column {
-        val horizontalScrollState = rememberScrollState()
         val width = remember(columns) {
             val dividerCount = columns.size - 1
             columns.fold(0.dp) { width, column -> width + column.size } +
                     (DividerDefaults.Thickness * dividerCount)
         }
-        LazyColumn(
-            state = listState,
-            contentPadding = contentPadding,
-            modifier = modifier.width(width)
-        ) {
-            stickyHeader {
-                Column(Modifier.padding(top = topOffset).horizontalScroll(horizontalScrollState)) {
-                    Row(
-                        Modifier.height(IntrinsicSize.Min)
-                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
-                    ) {
-                        columns.forEachIndexed { columnIndex, column ->
-                            columnHeader(column)
-                            if (columnIndex != columns.lastIndex) {
-                                VerticalDivider()
-                            }
-                        }
-                    }
-                }
-                HorizontalDivider()
-            }
-            items(rows.itemCount) { index ->
-                Column(Modifier.horizontalScroll(horizontalScrollState)) {
-                    Row(Modifier.height(IntrinsicSize.Min)) {
-                        columns.forEachIndexed { columnIndex, column ->
-                            Box(Modifier.requiredWidth(column.size)) {
-                                tableCell(rows[index], column)
-                            }
-                            if (columnIndex != columns.lastIndex) {
-                                VerticalDivider()
-                            }
-                        }
-                    }
-                }
 
-                if (index != rows.itemCount - 1) {
+        CompositionLocalProvider(LocalOverscrollFactory provides null) {
+            LazyColumn(
+                state = listState,
+                contentPadding = contentPadding,
+                modifier = modifier.width(width)
+            ) {
+                stickyHeader {
+                    Column(
+                        Modifier.padding(top = topOffset).horizontalScroll(horizontalScrollState)
+                    ) {
+                        Row(
+                            Modifier.height(IntrinsicSize.Min)
+                                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
+                        ) {
+                            columns.forEachIndexed { columnIndex, column ->
+                                columnHeader(column)
+                                if (columnIndex != columns.lastIndex) {
+                                    VerticalDivider()
+                                }
+                            }
+                        }
+                    }
                     HorizontalDivider()
+                }
+                items(rows.itemCount) { index ->
+                    Column(Modifier.horizontalScroll(horizontalScrollState)) {
+                        Row(Modifier.height(IntrinsicSize.Min)) {
+                            columns.forEachIndexed { columnIndex, column ->
+                                Box(Modifier.requiredWidth(column.size)) {
+                                    tableCell(rows[index], column)
+                                }
+                                if (columnIndex != columns.lastIndex) {
+                                    VerticalDivider()
+                                }
+                            }
+                        }
+                    }
+
+                    if (index != rows.itemCount - 1) {
+                        HorizontalDivider()
+                    }
                 }
             }
         }

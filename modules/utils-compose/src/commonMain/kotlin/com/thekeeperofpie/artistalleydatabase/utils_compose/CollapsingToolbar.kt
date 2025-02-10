@@ -85,14 +85,16 @@ fun CollapsingToolbar(
 
 @Composable
 fun EnterAlwaysTopAppBar(
-    scrollBehavior: TopAppBarScrollBehavior,
+    scrollBehavior: TopAppBarScrollBehavior?,
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     content: @Composable BoxScope.() -> Unit,
 ) {
     var heightOffsetLimit by rememberSaveable { mutableFloatStateOf(0f) }
-    LaunchedEffect(heightOffsetLimit) {
-        scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
+    LaunchedEffect(scrollBehavior, heightOffsetLimit) {
+        if (scrollBehavior != null) {
+            scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
+        }
     }
 
     Box(modifier = modifier) {
@@ -105,8 +107,10 @@ fun EnterAlwaysTopAppBar(
                         heightOffsetLimit = -it.height.toFloat()
                     }
                 }
-                .offset {
-                    IntOffset(x = 0, y = scrollBehavior.state.heightOffset.toInt())
+                .conditionallyNonNull(scrollBehavior) {
+                    offset {
+                        IntOffset(x = 0, y = it.state.heightOffset.toInt())
+                    }
                 },
             content = content,
         )

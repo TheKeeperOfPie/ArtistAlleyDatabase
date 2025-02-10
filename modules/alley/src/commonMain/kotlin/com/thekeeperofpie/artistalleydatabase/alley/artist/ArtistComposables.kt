@@ -123,8 +123,8 @@ fun ArtistListRow(
             }
         }
 
-        if (entry.tags.isNotEmpty()) {
-            TagRow(entry.tags, onTagClick = onSeriesClick)
+        if (entry.series.isNotEmpty()) {
+            TagRow(entry.series, onTagClick = onSeriesClick)
         }
     }
 }

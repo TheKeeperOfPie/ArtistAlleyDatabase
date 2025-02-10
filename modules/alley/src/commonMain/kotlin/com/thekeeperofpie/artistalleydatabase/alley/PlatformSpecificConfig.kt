@@ -4,6 +4,7 @@ expect object PlatformSpecificConfig {
     val type: PlatformType
     val defaultPageSize: Int
     val showPagingButtons: Boolean
+    val scrollbarsAlwaysVisible: Boolean
 }
 
 enum class PlatformType {

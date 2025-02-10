@@ -12,7 +12,8 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlin.random.Random
 
 class ArtistEntryGridModel(
-    val randomSeed: Int,
+    private val randomSeed: Int,
+    private val showOnlyConfirmedTags: Boolean,
     val artist: ArtistEntry,
     val userEntry: ArtistUserEntry,
     override val images: List<CatalogImage>,
@@ -30,23 +31,40 @@ class ArtistEntryGridModel(
 
     override val booth get() = artist.booth
 
-    val tags by lazy {
+    val series by lazy {
         val random = Random(randomSeed)
-        (artist.seriesConfirmed.shuffled(random) + artist.seriesInferred.shuffled(random)).distinct()
+        val list = artist.seriesConfirmed.shuffled(random).toMutableList()
+        if (!showOnlyConfirmedTags) {
+            list += artist.seriesInferred.shuffled(random)
+        }
+        list.distinct()
+    }
+
+    val merch by lazy {
+        val random = Random(randomSeed)
+        val list = artist.merchConfirmed.shuffled(random).toMutableList()
+        if (!showOnlyConfirmedTags) {
+            list += artist.merchInferred.shuffled(random)
+        }
+        list.distinct()
     }
 
     companion object {
-        fun buildFromEntry(randomSeed: Int, entry: ArtistWithUserData) =
-            ArtistEntryGridModel(
-                randomSeed = randomSeed,
-                artist = entry.artist,
-                userEntry = entry.userEntry,
-                images = AlleyDataUtils.getImages(
-                    year = entry.artist.year,
-                    folder = AlleyDataUtils.Folder.CATALOGS,
-                    file = entry.artist.booth,
-                ),
-                placeholderText = entry.artist.booth ?: entry.artist.name,
-            )
+        fun buildFromEntry(
+            randomSeed: Int,
+            showOnlyConfirmedTags: Boolean,
+            entry: ArtistWithUserData,
+        ) = ArtistEntryGridModel(
+            randomSeed = randomSeed,
+            showOnlyConfirmedTags = showOnlyConfirmedTags,
+            artist = entry.artist,
+            userEntry = entry.userEntry,
+            images = AlleyDataUtils.getImages(
+                year = entry.artist.year,
+                folder = AlleyDataUtils.Folder.CATALOGS,
+                file = entry.artist.booth,
+            ),
+            placeholderText = entry.artist.booth ?: entry.artist.name,
+        )
     }
 }

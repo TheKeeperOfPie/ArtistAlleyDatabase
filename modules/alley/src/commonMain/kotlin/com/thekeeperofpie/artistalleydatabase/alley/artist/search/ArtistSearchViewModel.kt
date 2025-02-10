@@ -25,6 +25,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -86,14 +87,26 @@ class ArtistSearchViewModel(
     override fun mapQuery(
         query: String,
         options: ArtistSearchQuery,
-    ) = settings.activeYearIs2025
-        .flatMapLatest {
+    ) = combine(settings.activeYearIs2025, settings.showOnlyConfirmedTags, ::Pair)
+        .flatMapLatest { (activeYearIs2025, showOnlyConfirmedTags) ->
             createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                artistEntryDao.search(activeYearIs2025 = it, query = query, searchQuery = options)
+                artistEntryDao.search(
+                    activeYearIs2025 = activeYearIs2025,
+                    query = query,
+                    searchQuery = options
+                )
             }.flow
+                .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
+                .map {
+                    it.map {
+                        ArtistEntryGridModel.buildFromEntry(
+                            randomSeed = randomSeed,
+                            showOnlyConfirmedTags = showOnlyConfirmedTags,
+                            entry = it,
+                        )
+                    }
+                }
         }
-        .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
-        .map { it.map { ArtistEntryGridModel.buildFromEntry(randomSeed, it) } }
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 
