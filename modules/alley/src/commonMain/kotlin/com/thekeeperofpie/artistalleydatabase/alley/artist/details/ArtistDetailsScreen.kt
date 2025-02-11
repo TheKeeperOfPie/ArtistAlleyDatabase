@@ -63,7 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -336,11 +335,10 @@ object ArtistDetailsScreen {
     private fun LinkRow(link: LinkModel, isLast: Boolean) {
         val uriHandler = LocalUriHandler.current
         val bottomPadding = if (isLast) 12.dp else 8.dp
-        Tooltip(link.link, Alignment.BottomEnd) {
+        Tooltip(link.link, Alignment.BottomEnd, onClick = { uriHandler.openUri(link.link) }) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .conditionallyNonNull(link.link) { clickable { uriHandler.openUri(it) } }
                     .padding(
                         start = 16.dp,
                         end = 16.dp,

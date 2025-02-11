@@ -1,6 +1,6 @@
 @file:OptIn(
     ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class
 )
 
 package com.thekeeperofpie.artistalleydatabase.alley.ui
@@ -50,10 +50,12 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
@@ -600,12 +602,28 @@ internal fun currentWindowSizeClass(): WindowSizeClass {
 fun Tooltip(
     text: String,
     popupAlignment: Alignment = Alignment.BottomCenter,
+    onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     val contentInteractionSource = remember { MutableInteractionSource() }
+    var popupLongPressVisible by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
+            .let {
+                if (onClick == null) {
+                    it.pointerInput(Unit) {
+                        detectTapGestures(onLongPress = {
+                            popupLongPressVisible = true
+                        })
+                    }
+                } else {
+                    it.combinedClickable(
+                        onClick = onClick,
+                        onLongClick = { popupLongPressVisible = true },
+                    )
+                }
+            }
             .hoverable(contentInteractionSource)
             .onGloballyPositioned { size = it.size }
     ) {
@@ -614,10 +632,11 @@ fun Tooltip(
         val popupInteractionSource = remember { MutableInteractionSource() }
         val contentIsHovered by contentInteractionSource.collectIsHoveredAsState()
         val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
-        if (contentIsHovered || popupIsHovered) {
+        if (contentIsHovered || popupIsHovered || popupLongPressVisible) {
             Popup(
                 alignment = popupAlignment,
                 offset = IntOffset(0, -size.height),
+                onDismissRequest = { popupLongPressVisible = false },
             ) {
                 Text(
                     text = text,
@@ -647,8 +666,8 @@ fun IconWithTooltip(
     onClick: () -> Unit,
     contentDescription: String? = null,
 ) {
-    Tooltip(text = tooltipText) {
-        IconButton(onClick = onClick) {
+    Tooltip(text = tooltipText, onClick = onClick) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.minimumInteractiveComponentSize()) {
             Icon(
                 imageVector = imageVector,
                 contentDescription = contentDescription,
