@@ -114,4 +114,38 @@
 
     <string name="alley_zoom_in">Zoom in</string>
     <string name="alley_zoom_out">Zoom out</string>
+
+    <string name="alley_link_label_art_station">ArtStation</string>
+    <string name="alley_link_label_big_cartel">Big Cartel</string>
+    <string name="alley_link_label_bluesky">Bluesky</string>
+    <string name="alley_link_label_carrd">Carrd</string>
+    <string name="alley_link_label_deviant_art">DeviantArt</string>
+    <string name="alley_link_label_discord">Discord</string>
+    <string name="alley_link_label_etsy">Etsy</string>
+    <string name="alley_link_label_facebook">Facebook</string>
+    <string name="alley_link_label_faire">Faire</string>
+    <string name="alley_link_label_gallery_nucleus">Gallery Nucleus</string>
+    <string name="alley_link_label_game_jolt">Game Jolt</string>
+    <string name="alley_link_label_gumroad">Gumroad</string>
+    <string name="alley_link_label_inprnt">INPRNT</string>
+    <string name="alley_link_label_instagram">Instagram</string>
+    <string name="alley_link_label_itch_io">itch.io</string>
+    <string name="alley_link_label_kickstarter">Kickstarter</string>
+    <string name="alley_link_label_ko_fi">Ko-fi</string>
+    <string name="alley_link_label_linktree">Linktree</string>
+    <string name="alley_link_label_patreon">Patreon</string>
+    <string name="alley_link_label_pixiv">Pixiv</string>
+    <string name="alley_link_label_redbubble">Redbubble</string>
+    <string name="alley_link_label_shopify">Shopify</string>
+    <string name="alley_link_label_storenvy">Storenvy</string>
+    <string name="alley_link_label_substack">Substack</string>
+    <string name="alley_link_label_threadless">Threadless</string>
+    <string name="alley_link_label_threads">Threads</string>
+    <string name="alley_link_label_tik_tok">TikTok</string>
+    <string name="alley_link_label_tumblr">Tumblr</string>
+    <string name="alley_link_label_twitch">Twitch</string>
+    <string name="alley_link_label_vgen">VGen</string>
+    <string name="alley_link_label_weebly">Weebly</string>
+    <string name="alley_link_label_x">X</string>
+    <string name="alley_link_label_you_tube">YouTube</string>
 </resources>

@@ -32,6 +32,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -360,8 +363,23 @@ object ArtistDetailsScreen {
                     }
                 }
 
+                val outlineVariant = MaterialTheme.colorScheme.outline
+                val label = link.logo?.label?.let { stringResource(it) }
+                val text = remember(link, label, outlineVariant) {
+                    buildAnnotatedString {
+                        // TODO: This doesn't support localization
+                        if (label != null) {
+                            withStyle(SpanStyle(color = outlineVariant)) {
+                                append(label)
+                                append(" - ")
+                            }
+                        }
+                        append(link.title)
+                    }
+                }
+
                 Text(
-                    text = link.title,
+                    text = text,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }

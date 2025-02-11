@@ -10,10 +10,49 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
+import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_art_station
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_big_cartel
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_bluesky
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_carrd
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_deviant_art
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_discord
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_etsy
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_facebook
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_faire
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_gallery_nucleus
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_game_jolt
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_gumroad
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_inprnt
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_instagram
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_itch_io
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_kickstarter
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ko_fi
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_linktree
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_patreon
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_pixiv
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_redbubble
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_shopify
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_storenvy
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_substack
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_threadless
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_threads
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tik_tok
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tumblr
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_twitch
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_vgen
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_weebly
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_x
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_you_tube
+import org.jetbrains.compose.resources.StringResource
 
-enum class Logo(val icon: ImageVector) {
+enum class Logo(
+    val label: StringResource,
+    val icon: ImageVector,
+) {
     // https://www.artstation.com/about/logo
     ART_STATION(
+        label = Res.string.alley_link_label_art_station,
         ImageVector.Builder(
             name = "ArtStation",
             defaultWidth = 16.dp,
@@ -71,6 +110,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted using Inkscape from https://www.bigcartel.com/resources/help/article/brand-guide
     BIG_CARTEL(
+        label = Res.string.alley_link_label_big_cartel,
         ImageVector.Builder(
             name = "Big Cartel",
             defaultWidth = 16.dp,
@@ -117,6 +157,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://nucleoapp.com/social-media-icons
     BLUESKY(
+        label = Res.string.alley_link_label_bluesky,
         ImageVector.Builder(
             name = "Bluesky",
             defaultWidth = 16.dp,
@@ -151,6 +192,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://carrd.co/docs/general/brand-assets
     CARRD(
+        label = Res.string.alley_link_label_carrd,
         ImageVector.Builder(
             name = "Carrd",
             defaultWidth = 16.dp,
@@ -347,6 +389,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://nucleoapp.com/social-media-icons
     DEVIANT_ART(
+        label = Res.string.alley_link_label_deviant_art,
         ImageVector.Builder(
             name = "DeviantArt",
             defaultWidth = 16.dp,
@@ -386,6 +429,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/discord.svg
     DISCORD(
+        label = Res.string.alley_link_label_discord,
         ImageVector.Builder(
             name = "Discord",
             defaultWidth = 16.dp,
@@ -616,6 +660,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted using Inkscape from https://www.etsy.com/press
     ETSY(
+        label = Res.string.alley_link_label_etsy,
         ImageVector.Builder(
             name = "Etsy",
             defaultWidth = (605.17 / 286.099 * 16).dp,
@@ -802,8 +847,77 @@ enum class Logo(val icon: ImageVector) {
         }.build()
     ),
 
+    // Manually converted using Inkscape from https://about.meta.com/brand/resources/facebook/logo/
+    FACEBOOK(
+        label = Res.string.alley_link_label_facebook,
+        ImageVector.Builder(
+            name = "Facebook",
+            defaultWidth = 16.dp,
+            defaultHeight = (664.362 / 666.743 * 16).dp,
+            viewportWidth = 176.409f,
+            viewportHeight = 175.779f,
+        ).apply {
+            group(
+                translationX = -20.643f,
+                translationY = -41.78f,
+            ) {
+                materialPath(
+                    fillAlpha = 1.0f,
+                    strokeAlpha = 1.0f,
+                    pathFillType = PathFillType.NonZero,
+                ) {
+                    moveTo(87.482f, 215.613f)
+                    verticalLineToRelative(-58.59f)
+                    horizontalLineTo(69.363f)
+                    verticalLineToRelative(-27.008f)
+                    horizontalLineToRelative(18.119f)
+                    curveToRelative(00f, -15.3720f, -0.9870f, -33.0640f, 10.6710f, -44.9570f)
+                    curveToRelative(9.9320f, -10.1320f, 25.5630f, -11.1860f, 38.8590f, -10.2540f)
+                    curveToRelative(3.1750f, 0.2230f, 6.3410f, 0.6480f, 9.4830f, 1.1720f)
+                    curveToRelative(0.7920f, 0.1330f, 1.590f, 0.2840f, 2.370f, 0.4760f)
+                    curveToRelative(0.2630f, 0.0650f, 0.680f, 0.10f, 0.8450f, 0.3440f)
+                    curveToRelative(0.2690f, 0.3970f, 0.0870f, 1.3590f, 0.0870f, 1.8260f)
+                    verticalLineToRelative(22.521f)
+                    curveToRelative(-1.9240f, -0.1520f, -3.830f, -0.1730f, -5.7580f, -0.2570f)
+                    curveToRelative(-7.3870f, -0.3240f, -17.1870f, -0.4720f, -21.670f, 6.6070f)
+                    curveToRelative(-2.6140f, 4.1270f, -2.7980f, 9.2430f, -2.7980f, 13.970f)
+                    verticalLineToRelative(8.552f)
+                    horizontalLineToRelative(28.786f)
+                    curveToRelative(-1.2640f, 6.7090f, -2.5330f, 13.4240f, -3.7040f, 20.150f)
+                    curveToRelative(-0.290f, 1.6680f, -0.6160f, 3.330f, -0.9170f, 4.9960f)
+                    curveToRelative(-0.080f, 0.4430f, -0.0740f, 1.510f, -0.4840f, 1.7750f)
+                    curveToRelative(-0.4140f, 0.2670f, -1.3580f, 0.0870f, -1.8370f, 0.0870f)
+                    horizontalLineTo(119.57f)
+                    verticalLineToRelative(60.537f)
+                    curveToRelative(2.4060f, -0.020f, 4.930f, -0.6810f, 7.280f, -1.1520f)
+                    curveToRelative(6.8440f, -1.3690f, 13.3990f, -3.7050f, 19.7280f, -6.6110f)
+                    curveToRelative(22.0660f, -10.1320f, 39.2950f, -30.2460f, 46.480f, -53.3670f)
+                    curveToRelative(4.2220f, -13.5850f, 5.1130f, -28.1730f, 2.590f, -42.1640f)
+                    curveToRelative(-4.9070f, -27.2180f, -23.0140f, -51.4030f, -47.970f, -63.4780f)
+                    curveToRelative(-10.6310f, -5.1440f, -22.0220f, -8.0140f, -33.7810f, -8.820f)
+                    curveToRelative(-25.4270f, -1.740f, -51.7120f, 8.6950f, -69.080f, 27.340f)
+                    curveToRelative(-10.1540f, 10.90f, -17.5620f, 24.0170f, -21.3540f, 38.440f)
+                    curveToRelative(-7.0260f, 26.7220f, -0.7190f, 56.0250f, 16.5880f, 77.5540f)
+                    arcToRelative(
+                        88.804f,
+                        88.804f,
+                        0f,
+                        isMoreThanHalf = false,
+                        isPositiveArc = false,
+                        21.183f,
+                        19.024f
+                    )
+                    curveToRelative(5.930f, 3.8120f, 12.3570f, 6.9670f, 19.050f, 9.1980f)
+                    curveToRelative(2.3140f, 0.7710f, 4.770f, 1.7620f, 7.1970f, 2.0890f)
+                    close()
+                }
+            }
+        }.build()
+    ),
+
     // https://news.faire.com/company-info/
     FAIRE(
+        label = Res.string.alley_link_label_faire,
         ImageVector.Builder(
             name = "Faire",
             defaultWidth = (256 / 32 * 8).dp,
@@ -1135,6 +1249,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Manually converted using Inkscape from official logo
     GALLERY_NUCLEUS(
+        label = Res.string.alley_link_label_gallery_nucleus,
         ImageVector.Builder(
             name = "Gallery Nucleus",
             defaultWidth = 16.dp,
@@ -1200,6 +1315,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://gamejolt.com/about
     GAME_JOLT(
+        label = Res.string.alley_link_label_game_jolt,
         ImageVector.Builder(
             name = "Game Jolt",
             defaultWidth = 16.dp,
@@ -1440,6 +1556,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Manually converted using Inkscape from official logo
     GUMROAD(
+        label = Res.string.alley_link_label_gumroad,
         ImageVector.Builder(
             name = "Gumroad",
             defaultWidth = 16.dp,
@@ -1548,6 +1665,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted with Inkscape from https://help.inprnt.com/article/72-is-there-a-high-res-version-of-the-inprnt-logo
     INPRNT(
+        label = Res.string.alley_link_label_inprnt,
         ImageVector.Builder(
             name = "Inprnt",
             defaultWidth = (158.72078 / 65.269485 * 16).dp,
@@ -1812,6 +1930,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/instagram.svg
     INSTAGRAM(
+        label = Res.string.alley_link_label_instagram,
         ImageVector.Builder(
             name = "Instagram",
             defaultWidth = 16.dp,
@@ -1988,6 +2107,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://itch.io/press-kit
     ITCH_IO(
+        label = Res.string.alley_link_label_itch_io,
         ImageVector.Builder(
             name = "itch.io",
             defaultWidth = 16.dp,
@@ -2175,8 +2295,42 @@ enum class Logo(val icon: ImageVector) {
         }.build()
     ),
 
+    // Manually converted using Inkscape from https://www.kickstarter.com/help/brand_assets
+    KICKSTARTER(
+        label = Res.string.alley_link_label_kickstarter,
+        ImageVector.Builder(
+            name = "Kickstarter",
+            defaultWidth = 16.dp,
+            defaultHeight = (288.313 / 256.288 * 16).dp,
+            viewportWidth = 67.81f,
+            viewportHeight = 76.283f,
+        ).apply {
+            materialPath(
+                fillAlpha = 1.0f,
+                strokeAlpha = 1.0f,
+                pathFillType = PathFillType.NonZero,
+            ) {
+                moveTo(52.995f, 82.115f)
+                horizontalLineToRelative(0.264f)
+                curveToRelative(9.8550f, 13.990f, 32.1890f, 7.880f, 33.8220f, -8.9960f)
+                curveToRelative(0.8320f, -8.60f, -5.760f, -16.4960f, -12.390f, -21.1660f)
+                verticalLineToRelative(-0.265f)
+                curveToRelative(6.6370f, -4.6760f, 13.2240f, -12.5540f, 12.390f, -21.1670f)
+                curveTo(85.450f, 13.6610f, 63.1050f, 7.550f, 53.260f, 21.5250f)
+                curveToRelative(-2.4460f, -2.6550f, -4.7780f, -5.1060f, -8.2020f, -6.4940f)
+                curveToRelative(-8.6530f, -3.5090f, -19.540f, -0.0680f, -23.6840f, 8.6110f)
+                curveToRelative(-2.410f, 5.050f, -1.980f, 10.4350f, -1.980f, 15.8750f)
+                verticalLineTo(63.86f)
+                curveToRelative(00f, 5.3520f, -0.5220f, 10.8860f, 1.8230f, 15.8750f)
+                curveToRelative(5.7240f, 12.1760f, 24.450f, 14.0970f, 31.7790f, 2.3810f)
+                close()
+            }
+        }.build()
+    ),
+
     // https://more.ko-fi.com/brand-assets
     KO_FI(
+        label = Res.string.alley_link_label_ko_fi,
         ImageVector.Builder(
             name = "Ko-Fi",
             defaultWidth = 16.dp,
@@ -2255,6 +2409,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://uxwing.com/linktree-logo-icon/
     LINKTREE(
+        label = Res.string.alley_link_label_linktree,
         ImageVector.Builder(
             name = "Linktree",
             defaultWidth = 16.dp,
@@ -2302,6 +2457,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://www.patreon.com/brand
     PATREON(
+        label = Res.string.alley_link_label_patreon,
         ImageVector.Builder(
             name = "Patreon",
             defaultWidth = 16.dp,
@@ -2327,8 +2483,88 @@ enum class Logo(val icon: ImageVector) {
         }.build()
     ),
 
+    // Converted with Inkscape from https://www.pixiv.co.jp/news/press-kit/
+    PIXIV(
+        label = Res.string.alley_link_label_pixiv,
+        ImageVector.Builder(
+            name = "Pixiv",
+            defaultWidth = 16.dp,
+            defaultHeight = (683.222 / 682.813 * 16).dp,
+            viewportWidth = 180.661f,
+            viewportHeight = 180.769f
+        ).apply {
+            group(
+                translationX = -17.035f,
+                translationY = -56.898f,
+            ) {
+                materialPath(
+                    fillAlpha = 1.0f,
+                    strokeAlpha = 1.0f,
+                    pathFillType = PathFillType.NonZero,
+                ) {
+                    moveTo(52.4f, 57.023f)
+                    curveToRelative(-1.6650f, 0.2190f, -3.330f, 0.2920f, -4.9940f, 0.5920f)
+                    curveToRelative(-3.0520f, 0.550f, -5.980f, 1.5720f, -8.8060f, 2.8310f)
+                    curveToRelative(-3.1040f, 1.3840f, -6.0960f, 3.350f, -8.6360f, 5.6040f)
+                    curveTo(24.160f, 71.2020f, 19.90f, 77.9330f, 18.1010f, 85.520f)
+                    curveToRelative(-1.1090f, 4.6760f, -1.0060f, 9.3670f, -1.0060f, 14.1390f)
+                    verticalLineToRelative(92.456f)
+                    curveToRelative(00f, 4.2980f, -0.2530f, 8.6850f, 0.2780f, 12.9540f)
+                    curveToRelative(0.7830f, 6.2960f, 3.2580f, 12.340f, 7.0160f, 17.4410f)
+                    curveToRelative(5.8630f, 7.960f, 14.8660f, 13.2710f, 24.6250f, 14.710f)
+                    curveToRelative(4.8310f, 0.710f, 9.8570f, 0.360f, 14.7320f, 0.360f)
+                    horizontalLineToRelative(88.816f)
+                    curveToRelative(4.4030f, 00f, 8.930f, 0.3030f, 13.2920f, -0.3740f)
+                    curveToRelative(13.340f, -2.0690f, 24.7330f, -11.1660f, 29.5130f, -23.840f)
+                    curveToRelative(2.2930f, -6.080f, 2.3220f, -12.230f, 2.3220f, -18.6270f)
+                    verticalLineTo(98.05f)
+                    curveToRelative(00f, -2.8570f, 0.0750f, -5.7120f, -0.2780f, -8.5510f)
+                    curveToRelative(-0.7840f, -6.2970f, -3.2580f, -12.340f, -7.0170f, -17.4420f)
+                    curveToRelative(-5.8620f, -7.9590f, -14.8660f, -13.2710f, -24.6240f, -14.7090f)
+                    curveToRelative(-4.8860f, -0.720f, -9.9720f, -0.3610f, -14.9020f, -0.3610f)
+                    horizontalLineTo(56.126f)
+                    curveToRelative(-1.220f, 00f, -2.5150f, -0.1230f, -3.7250f, 0.0360f)
+                    moveTo(87.114f, 184.24f)
+                    verticalLineToRelative(12.192f)
+                    curveToRelative(00f, 1.5120f, 0.3950f, 3.5980f, -0.730f, 4.8010f)
+                    curveToRelative(-1.1940f, 1.2790f, -3.2770f, 0.8710f, -4.8580f, 0.8710f)
+                    horizontalLineTo(69.334f)
+                    curveToRelative(-1.7070f, 00f, -3.6380f, 0.130f, -4.2870f, -1.8620f)
+                    curveToRelative(-0.2540f, -0.7770f, -0.1150f, -1.730f, -0.1150f, -2.540f)
+                    verticalLineToRelative(-92.54f)
+                    curveToRelative(00f, -1.8580f, -0.650f, -5.0690f, 0.9320f, -6.4080f)
+                    curveToRelative(0.8190f, -0.6930f, 1.790f, -0.620f, 2.7930f, -0.620f)
+                    horizontalLineToRelative(4.91f)
+                    curveToRelative(0.8950f, 00f, 1.7730f, -0.0730f, 2.540f, 0.4770f)
+                    curveToRelative(1.3550f, 0.9710f, 2.1970f, 3.0620f, 3.1050f, 4.4330f)
+                    curveToRelative(0.8340f, 1.260f, 1.6290f, 2.5460f, 2.4540f, 3.810f)
+                    curveToRelative(0.1880f, 0.2870f, 0.540f, 1.1680f, 0.9640f, 1.0980f)
+                    curveToRelative(0.5050f, -0.0820f, 1.1120f, -0.7660f, 1.520f, -1.0620f)
+                    curveToRelative(1.1480f, -0.8280f, 2.330f, -1.630f, 3.5570f, -2.3340f)
+                    curveToRelative(3.7780f, -2.170f, 7.730f, -3.8320f, 11.9380f, -4.970f)
+                    curveToRelative(18.9190f, -5.1180f, 39.4220f, 3.0380f, 50.3470f, 19.1220f)
+                    curveToRelative(12.5660f, 18.4970f, 9.5060f, 44.550f, -6.8280f, 59.7670f)
+                    curveToRelative(-4.5660f, 4.2530f, -9.9710f, 7.5980f, -15.8330f, 9.740f)
+                    curveToRelative(-9.6970f, 3.5430f, -20.4870f, 3.7060f, -30.310f, 0.5680f)
+                    curveToRelative(-3.5150f, -1.1230f, -6.6690f, -2.820f, -9.9070f, -4.5430f)
+                    moveToRelative(22.945f, -63.888f)
+                    curveToRelative(-1.480f, 0.1950f, -2.940f, 0.2850f, -4.4030f, 0.6320f)
+                    curveToRelative(-4.30f, 1.020f, -8.4060f, 3.2970f, -11.5130f, 6.4450f)
+                    curveToRelative(-9.6450f, 9.770f, -9.1560f, 26.0070f, 1.0150f, 35.2060f)
+                    curveToRelative(2.8650f, 2.5920f, 6.2950f, 4.3230f, 9.990f, 5.3730f)
+                    curveToRelative(2.9310f, 0.8330f, 6.1330f, 0.9940f, 9.1440f, 0.6290f)
+                    curveToRelative(11.9990f, -1.4540f, 21.1970f, -11.8950f, 21.3360f, -23.9370f)
+                    curveToRelative(0.1270f, -11.0240f, -7.7260f, -20.9920f, -18.3720f, -23.6530f)
+                    curveToRelative(-2.2580f, -0.5640f, -4.8680f, -10f, -7.1970f, -0.6950f)
+                    close()
+                }
+            }
+        }.build()
+    ),
+
     // Converted using Inkscape from https://redbubble.design/brand/logo
     REDBUBBLE(
+        label = Res.string.alley_link_label_redbubble,
         ImageVector.Builder(
             name = "Redbubble",
             defaultWidth = 16.dp,
@@ -2454,6 +2690,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted using Inkscape from https://www.shopify.com/brand-assets
     SHOPIFY(
+        label = Res.string.alley_link_label_shopify,
         ImageVector.Builder(
             name = "Shopify",
             defaultWidth = 16.dp,
@@ -2622,6 +2859,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Manually converted using Inkscape from the official logo
     STORENVY(
+        label = Res.string.alley_link_label_storenvy,
         ImageVector.Builder(
             name = "Storenvy",
             defaultWidth = 16.dp,
@@ -2881,6 +3119,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted using Inkscape from https://substack.com/brand
     SUBSTACK(
+        label = Res.string.alley_link_label_substack,
         ImageVector.Builder(
             name = "Substack",
             defaultWidth = 16.dp,
@@ -2940,6 +3179,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted using Inkscape from https://www.threadless.com/about-us/
     THREADLESS(
+        label = Res.string.alley_link_label_threadless,
         ImageVector.Builder(
             name = "Threadless",
             defaultWidth = (759.655 / 245.638 * 16).dp,
@@ -3351,6 +3591,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://github.com/twbs/icons/blob/main/icons/threads.svg
     THREADS(
+        label = Res.string.alley_link_label_threads,
         ImageVector.Builder(
             name = "Threads",
             defaultWidth = 16.dp,
@@ -3406,6 +3647,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/tiktok.svg
     TIK_TOK(
+        label = Res.string.alley_link_label_tik_tok,
         ImageVector.Builder(
             name = "TikTok",
             defaultWidth = 16.dp,
@@ -3435,6 +3677,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://uxwing.com/tumblr-icon/
     TUMBLR(
+        label = Res.string.alley_link_label_tumblr,
         ImageVector.Builder(
             name = "Tumblr",
             defaultWidth = 16.dp,
@@ -3470,6 +3713,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/twitch.svg
     TWITCH(
+        label = Res.string.alley_link_label_twitch,
         ImageVector.Builder(
             name = "Twitch",
             defaultWidth = 16.dp,
@@ -3523,6 +3767,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted using Inkscape from https://help.vgen.co/hc/en-us/articles/12884824880663-VGen-Brand-Assets
     VGEN(
+        label = Res.string.alley_link_label_vgen,
         ImageVector.Builder(
             name = "VGen",
             defaultWidth = 16.dp,
@@ -3541,22 +3786,64 @@ enum class Logo(val icon: ImageVector) {
                 ) {
                     moveTo(93.318546f, 49.109463f)
                     curveToRelative(-2.3620f, -2.46970f, -4.05870f, -5.44360f, -7.40830f, -6.71880f)
-                    curveToRelative(-6.28070f, -2.39120f, -13.34240f, 2.42160f, -13.34240f, 9.18830f)
+                    curveToRelative(
+                        -6.28070f,
+                        -2.39120f,
+                        -13.34240f,
+                        2.42160f,
+                        -13.34240f,
+                        9.18830f
+                    )
                     curveToRelative(00f, 5.88570f, 5.97290f, 11.32620f, 9.81460f, 15.16940f)
                     curveToRelative(5.25230f, 5.25430f, 11.34330f, 10.46110f, 19.050f, 11.22870f)
-                    curveToRelative(10.26670f, 1.02260f, 18.72430f, -7.69030f, 24.38250f, -15.10930f)
+                    curveToRelative(
+                        10.26670f,
+                        1.02260f,
+                        18.72430f,
+                        -7.69030f,
+                        24.38250f,
+                        -15.10930f
+                    )
                     curveToRelative(2.00710f, -2.63170f, 4.4950f, -5.5560f, 5.33520f, -8.81940f)
                     curveToRelative(1.17170f, -4.5510f, -0.9070f, -9.41660f, -3.52260f, -13.05280f)
-                    curveToRelative(-7.93080f, -11.02530f, -24.71450f, -12.25070f, -32.02850f, 0.35280f)
+                    curveToRelative(
+                        -7.93080f,
+                        -11.02530f,
+                        -24.71450f,
+                        -12.25070f,
+                        -32.02850f,
+                        0.35280f
+                    )
                     curveToRelative(-1.36620f, 2.35420f, -2.16370f, 5.04780f, -2.28050f, 7.76110f)
                     moveToRelative(11.994444f, 12.69999f)
-                    curveToRelative(-3.49750f, -3.50720f, -6.98640f, -7.12780f, -7.19850f, -12.34720f)
-                    curveToRelative(-0.32970f, -8.1130f, 7.55810f, -14.06570f, 15.31240f, -12.07880f)
+                    curveToRelative(
+                        -3.49750f,
+                        -3.50720f,
+                        -6.98640f,
+                        -7.12780f,
+                        -7.19850f,
+                        -12.34720f
+                    )
+                    curveToRelative(
+                        -0.32970f,
+                        -8.1130f,
+                        7.55810f,
+                        -14.06570f,
+                        15.31240f,
+                        -12.07880f
+                    )
                     curveToRelative(4.13570f, 1.05970f, 7.37120f, 4.46240f, 9.23920f, 8.19830f)
                     curveToRelative(2.67290f, 5.34590f, -0.56120f, 8.88290f, -3.82830f, 13.05280f)
                     curveToRelative(-1.94270f, 2.47950f, -4.05580f, 4.86730f, -6.46920f, 6.90070f)
                     curveToRelative(-11.16080f, 9.40330f, -21.7080f, 1.8790f, -29.8350f, -7.60620f)
-                    curveToRelative(-1.87260f, -2.18560f, -9.01410f, -10.25860f, -1.9150f, -11.19420f)
+                    curveToRelative(
+                        -1.87260f,
+                        -2.18560f,
+                        -9.01410f,
+                        -10.25860f,
+                        -1.9150f,
+                        -11.19420f
+                    )
                     curveToRelative(3.11450f, -0.41040f, 5.14840f, 3.54890f, 6.85360f, 5.54970f)
                     curveToRelative(4.56080f, 5.35150f, 10.38520f, 12.62410f, 17.84090f, 9.5250f)
                     moveToRelative(3.52778f, -17.4369f)
@@ -3571,6 +3858,7 @@ enum class Logo(val icon: ImageVector) {
 
     // Converted using Inkscape from https://www.weebly.com/press/press-kit
     WEEBLY(
+        label = Res.string.alley_link_label_weebly,
         ImageVector.Builder(
             name = "Weebly",
             defaultWidth = 16.dp,
@@ -3642,6 +3930,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/twitter-x.svg
     X(
+        label = Res.string.alley_link_label_x,
         ImageVector.Builder(
             name = "X",
             defaultWidth = 16.dp,
@@ -3680,6 +3969,7 @@ enum class Logo(val icon: ImageVector) {
 
     // https://github.com/twbs/icons/blob/7ea4d7c9dc85433310fecc399f65a8fa3af5162f/icons/youtube.svg
     YOU_TUBE(
+        label = Res.string.alley_link_label_you_tube,
         ImageVector.Builder(
             name = "YouTube",
             defaultWidth = 16.dp,

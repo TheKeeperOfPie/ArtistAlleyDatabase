@@ -20,15 +20,18 @@ data class LinkModel(
                 "artstation.com" -> Logo.ART_STATION to path
                 "bsky.app" -> Logo.BLUESKY to path.substringAfter("profile/")
                 "deviantart.com" -> Logo.DEVIANT_ART to path
-                "discord.com", "discord.gg" -> Logo.DISCORD to "Discord"
+                "discord.com", "discord.gg" -> Logo.DISCORD to path.substringAfter("invite/")
                 "etsy.com" -> Logo.ETSY to path.substringAfter("shop/")
+                "facebook.com" -> Logo.FACEBOOK to path
                 "gallerynucleus.com" -> Logo.GALLERY_NUCLEUS to path.substringAfter("artists/")
                 "gamejolt.com" -> Logo.GAME_JOLT to path
                 "inprnt.com" -> Logo.INPRNT to path.substringAfter("gallery/")
                 "instagram.com" -> Logo.INSTAGRAM to path
+                "kickstarter.com" -> Logo.KO_FI to path.substringAfter("profile/")
                 "ko-fi.com" -> Logo.KO_FI to path
                 "linktr.ee" -> Logo.LINKTREE to path
                 "patreon.com" -> Logo.PATREON to path
+                "pixiv.me" -> Logo.PIXIV to path
                 "redbubble.com" -> Logo.REDBUBBLE to path.substringAfter("people/")
                 "threads.net" -> Logo.THREADS to path
                 "tiktok.com" -> Logo.TIK_TOK to path
@@ -36,6 +39,7 @@ data class LinkModel(
                 "twitch.tv" -> Logo.TWITCH to path
                 "x.com", "twitter.com" -> Logo.X to path
                 "youtube.com" -> Logo.YOU_TUBE to (path.takeUnless { it.startsWith("channel/") }
+                    ?.substringAfter("c/")
                     ?: "YouTube")
                 else -> when {
                     host.contains("bigcartel.com") ->
@@ -54,6 +58,8 @@ data class LinkModel(
                         Logo.ITCH_IO to host.substringBefore(".itch.io")
                     host.contains("myshopify.com") ->
                         Logo.SHOPIFY to host.substringBefore(".myshopify.com")
+                    host.contains("pixiv.net") ->
+                        Logo.PIXIV to host.substringAfter("users/").substringBefore("/")
                     host.contains("storenvy.com") ->
                         Logo.STORENVY to host.substringBefore(".storenvy.com")
                     host.contains("substack.com") ->
