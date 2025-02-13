@@ -251,57 +251,63 @@ object ArtistSearchScreen {
                 onEntryClick = { if (row != null) onEntryClick(row, 1) },
                 onTagClick = onMerchClick,
             )
-            ArtistColumn.LINKS -> FlowRow {
-                val uriHandler = LocalUriHandler.current
-                row?.artist?.linkModels?.forEach {
-                    IconWithTooltip(
-                        imageVector = it.logo?.icon ?: Icons.Default.Link,
-                        tooltipText = it.link,
-                        onClick = { uriHandler.openUri(it.link) },
-                    )
-                }
-            }
-            ArtistColumn.STORE -> FlowRow {
-                val uriHandler = LocalUriHandler.current
-                row?.artist?.storeLinkModels?.forEach {
-                    IconWithTooltip(
-                        imageVector = it.logo?.icon ?: Icons.Default.Link,
-                        tooltipText = it.link,
-                        onClick = { uriHandler.openUri(it.link) },
-                    )
-                }
-            }
-            ArtistColumn.COMMISSIONS -> FlowRow {
-                val uriHandler = LocalUriHandler.current
-                row?.artist?.commissionModels?.forEach {
-                    when (it) {
-                        is CommissionModel.Link -> IconWithTooltip(
-                            imageVector = it.icon,
+            ArtistColumn.LINKS -> row?.artist?.linkModels?.let {
+                FlowRow {
+                    val uriHandler = LocalUriHandler.current
+                    it.forEach {
+                        IconWithTooltip(
+                            imageVector = it.logo?.icon ?: Icons.Default.Link,
                             tooltipText = it.link,
                             onClick = { uriHandler.openUri(it.link) },
                         )
-                        CommissionModel.OnSite -> Tooltip(
-                            text = stringResource(Res.string.alley_artist_commission_on_site_tooltip)
-                        ) {
-                            CommissionChip(
-                                model = it,
-                                label = {
-                                    Text(stringResource(Res.string.alley_artist_commission_on_site))
-                                },
+                    }
+                }
+            }
+            ArtistColumn.STORE -> row?.artist?.storeLinkModels?.let {
+                FlowRow {
+                    val uriHandler = LocalUriHandler.current
+                    it.forEach {
+                        IconWithTooltip(
+                            imageVector = it.logo?.icon ?: Icons.Default.Link,
+                            tooltipText = it.link,
+                            onClick = { uriHandler.openUri(it.link) },
+                        )
+                    }
+                }
+            }
+            ArtistColumn.COMMISSIONS -> row?.artist?.commissionModels?.let {
+                FlowRow {
+                    val uriHandler = LocalUriHandler.current
+                    it.forEach {
+                        when (it) {
+                            is CommissionModel.Link -> IconWithTooltip(
+                                imageVector = it.icon,
+                                tooltipText = it.link,
+                                onClick = { uriHandler.openUri(it.link) },
                             )
+                            CommissionModel.OnSite -> Tooltip(
+                                text = stringResource(Res.string.alley_artist_commission_on_site_tooltip)
+                            ) {
+                                CommissionChip(
+                                    model = it,
+                                    label = {
+                                        Text(stringResource(Res.string.alley_artist_commission_on_site))
+                                    },
+                                )
+                            }
+                            CommissionModel.Online -> Tooltip(
+                                text = stringResource(Res.string.alley_artist_commission_online_tooltip)
+                            ) {
+                                CommissionChip(
+                                    model = it,
+                                    label = {
+                                        Text(stringResource(Res.string.alley_artist_commission_online))
+                                    },
+                                )
+                            }
+                            is CommissionModel.Unknown ->
+                                CommissionChip(model = it, label = { Text(it.host) })
                         }
-                        CommissionModel.Online -> Tooltip(
-                            text = stringResource(Res.string.alley_artist_commission_online_tooltip)
-                        ) {
-                            CommissionChip(
-                                model = it,
-                                label = {
-                                    Text(stringResource(Res.string.alley_artist_commission_online))
-                                },
-                            )
-                        }
-                        is CommissionModel.Unknown ->
-                            CommissionChip(model = it, label = { Text(it.host) })
                     }
                 }
             }
@@ -316,6 +322,7 @@ object ArtistSearchScreen {
         onEntryClick: () -> Unit,
         onTagClick: (String) -> Unit,
     ) {
+        if (tags.isNullOrEmpty()) return
         FlowRow(
             maxLines = 6,
             overflow = FlowRowOverflow.expandIndicator {
@@ -329,7 +336,7 @@ object ArtistSearchScreen {
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
-            tags?.forEach {
+            tags.forEach {
                 SuggestionChip(
                     onClick = { onTagClick(it) },
                     label = { Text(text = it, modifier = Modifier.padding(vertical = 4.dp)) },

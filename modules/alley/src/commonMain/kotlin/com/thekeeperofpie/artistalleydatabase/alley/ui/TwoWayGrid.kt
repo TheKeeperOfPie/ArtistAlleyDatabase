@@ -6,7 +6,6 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -63,14 +62,15 @@ object TwoWayGrid {
                 modifier = modifier.width(width)
             ) {
                 stickyHeader {
-                    Column(
-                        Modifier.padding(top = topOffset).horizontalScroll(horizontalScrollState)
+                    Row(
+                        Modifier.height(IntrinsicSize.Min)
+                            .padding(top = topOffset)
+                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
                     ) {
-                        Row(
-                            Modifier.height(IntrinsicSize.Min)
-                                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
-                        ) {
-                            columns.forEachIndexed { columnIndex, column ->
+                        columns.firstOrNull()?.let { columnHeader(it) }
+                        VerticalDivider()
+                        Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
+                            columns.drop(1).forEachIndexed { columnIndex, column ->
                                 columnHeader(column)
                                 if (columnIndex != columns.lastIndex) {
                                     VerticalDivider()
@@ -81,9 +81,15 @@ object TwoWayGrid {
                     HorizontalDivider()
                 }
                 items(rows.itemCount) { index ->
-                    Column(Modifier.horizontalScroll(horizontalScrollState)) {
-                        Row(Modifier.height(IntrinsicSize.Min)) {
-                            columns.forEachIndexed { columnIndex, column ->
+                    Row(Modifier.height(IntrinsicSize.Min)) {
+                        columns.firstOrNull()?.let {
+                            Box(Modifier.requiredWidth(it.size)) {
+                                tableCell(rows[index], it)
+                            }
+                        }
+                        VerticalDivider()
+                        Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
+                            columns.drop(1).forEachIndexed { columnIndex, column ->
                                 Box(Modifier.requiredWidth(column.size)) {
                                     tableCell(rows[index], column)
                                 }
