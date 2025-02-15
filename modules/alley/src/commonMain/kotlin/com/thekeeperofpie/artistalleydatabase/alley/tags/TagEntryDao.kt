@@ -2,29 +2,29 @@ package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import app.cash.paging.PagingSource
 import app.cash.sqldelight.async.coroutines.awaitAsList
-import app.cash.sqldelight.async.coroutines.awaitAsOne
-import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.TagEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapLatest
 
 fun SqlCursor.toSeriesEntry() = SeriesEntry(
     getString(0)!!,
     getString(1),
+    getBoolean(2)!!,
+    getBoolean(3)!!,
 )
 
 fun SqlCursor.toMerchEntry() = MerchEntry(
     getString(0)!!,
     getString(1),
+    getBoolean(2)!!,
+    getBoolean(3)!!,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,9 +33,9 @@ class TagEntryDao(
     private val database: suspend () -> AlleySqlDatabase,
     private val dao: suspend () -> TagEntryQueries = { database().tagEntryQueries },
 ) {
-    fun getSeries(): PagingSource<Int, SeriesEntry> {
-        val countStatement = "SELECT COUNT(*) FROM seriesEntry ORDER BY name COLLATE NOCASE"
-        val statement = "SELECT * FROM seriesEntry ORDER BY name COLLATE NOCASE"
+    fun getSeries(year: DataYear): PagingSource<Int, SeriesEntry> {
+        val countStatement = "SELECT COUNT(*) FROM seriesEntry WHERE has${year.year} = 1"
+        val statement = "SELECT * FROM seriesEntry WHERE has${year.year} = 1 ORDER BY name COLLATE NOCASE"
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
@@ -46,14 +46,9 @@ class TagEntryDao(
         )
     }
 
-    fun getSeriesSize() =
-        flowFromSuspend { dao() }
-            .flatMapLatest { it.getSeriesSize().asFlow() }
-            .mapLatest { it.awaitAsOne().toInt() }
-
-    fun getMerch(): PagingSource<Int, MerchEntry> {
-        val countStatement = "SELECT COUNT(*) FROM merchEntry ORDER BY name COLLATE NOCASE"
-        val statement = "SELECT * FROM merchEntry ORDER BY name COLLATE NOCASE"
+    fun getMerch(year: DataYear): PagingSource<Int, MerchEntry> {
+        val countStatement = "SELECT COUNT(*) FROM merchEntry WHERE has${year.year} = 1"
+        val statement = "SELECT * FROM merchEntry WHERE has${year.year} = 1 ORDER BY name COLLATE NOCASE"
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
@@ -63,11 +58,6 @@ class TagEntryDao(
             mapper = SqlCursor::toMerchEntry,
         )
     }
-
-    fun getMerchSize() =
-        flowFromSuspend { dao() }
-            .flatMapLatest { it.getMerchSize().asFlow() }
-            .mapLatest { it.awaitAsOne().toInt() }
 
     fun searchSeries(query: String): PagingSource<Int, SeriesEntry> {
         val queries = query.split(Regex("\\s+"))
@@ -131,48 +121,44 @@ class TagEntryDao(
         )
     }
 
-    suspend fun getBooths(activeYearIs2025: Boolean, tagMapQuery: TagMapQuery): Set<String> =
+    suspend fun getBooths(year: DataYear, tagMapQuery: TagMapQuery): Set<String> =
         dao().run {
             val seriesId = tagMapQuery.series
             if (seriesId != null) {
                 if (tagMapQuery.showOnlyConfirmedTags) {
-                    if (activeYearIs2025) {
-                        getBoothsBySeriesIdConfirmed2025(seriesId)
+                    when (year) {
+                        DataYear.YEAR_2024 -> getBoothsBySeriesIdConfirmed2024(seriesId)
+                            .awaitAsList()
+                        DataYear.YEAR_2025 -> getBoothsBySeriesIdConfirmed2025(seriesId)
                             .awaitAsList()
                             .map { it.booth }
-                    } else {
-                        getBoothsBySeriesIdConfirmed2024(seriesId)
-                            .awaitAsList()
                     }
                 } else {
-                    if (activeYearIs2025) {
-                        getBoothsBySeriesId2025(seriesId)
+                    when (year) {
+                        DataYear.YEAR_2024 -> getBoothsBySeriesId2024(seriesId)
+                            .awaitAsList()
+                        DataYear.YEAR_2025 -> getBoothsBySeriesId2025(seriesId)
                             .awaitAsList()
                             .map { it.booth }
-                    } else {
-                        getBoothsBySeriesId2024(seriesId)
-                            .awaitAsList()
                     }
                 }
             } else {
                 val merchId = tagMapQuery.merch!!
                 if (tagMapQuery.showOnlyConfirmedTags) {
-                    if (activeYearIs2025) {
-                        getBoothsByMerchIdConfirmed2025(merchId)
+                    when (year) {
+                        DataYear.YEAR_2024 -> getBoothsByMerchIdConfirmed2024(merchId)
+                            .awaitAsList()
+                        DataYear.YEAR_2025 -> getBoothsByMerchIdConfirmed2025(merchId)
                             .awaitAsList()
                             .map { it.booth }
-                    } else {
-                        getBoothsByMerchIdConfirmed2024(merchId)
-                            .awaitAsList()
                     }
                 } else {
-                    if (activeYearIs2025) {
-                        getBoothsByMerchId2025(merchId)
+                    when (year) {
+                        DataYear.YEAR_2024 -> getBoothsByMerchId2024(merchId)
+                            .awaitAsList()
+                        DataYear.YEAR_2025 -> getBoothsByMerchId2025(merchId)
                             .awaitAsList()
                             .map { it.booth }
-                    } else {
-                        getBoothsByMerchId2024(merchId)
-                            .awaitAsList()
                     }
                 }
             }

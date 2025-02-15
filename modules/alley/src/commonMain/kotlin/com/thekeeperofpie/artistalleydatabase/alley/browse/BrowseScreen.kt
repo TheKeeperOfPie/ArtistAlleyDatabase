@@ -89,6 +89,8 @@ object BrowseScreen {
                 }
             }
             val scrollPositions = ScrollStateSaver.scrollPositions()
+            val series = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle()
+            val merch = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle()
             AnimatedContent(
                 targetState = Tab.entries[selectedTabIndex],
                 transitionSpec = { fadeIn().togetherWith(fadeOut()) },
@@ -99,8 +101,8 @@ object BrowseScreen {
                     Tab.SERIES -> TabScreen(
                         query = { tagsViewModel.seriesQuery },
                         onQueryChange = { tagsViewModel.seriesQuery = it },
-                        entriesSize = { tagsViewModel.seriesSize },
-                        values = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle(),
+                        entriesSize = { series.itemCount },
+                        values = series,
                         itemKey = { it.name },
                         itemToText = { it.name },
                         onItemClick = onSeriesClick,
@@ -109,8 +111,8 @@ object BrowseScreen {
                     Tab.MERCH -> TabScreen(
                         query = { tagsViewModel.merchQuery },
                         onQueryChange = { tagsViewModel.merchQuery = it },
-                        entriesSize = { tagsViewModel.merchSize },
-                        values = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle(),
+                        entriesSize = { merch.itemCount },
+                        values = merch,
                         itemKey = { it.name },
                         itemToText = { it.name },
                         onItemClick = onMerchClick,

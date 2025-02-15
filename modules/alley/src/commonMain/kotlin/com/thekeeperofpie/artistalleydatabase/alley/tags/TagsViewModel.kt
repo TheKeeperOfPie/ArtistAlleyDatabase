@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -11,6 +10,7 @@ import app.cash.paging.PagingData
 import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
@@ -19,31 +19,31 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUnique
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
-class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
+class TagsViewModel(
+    tagsEntryDao: TagEntryDao,
+    settings: ArtistAlleySettings,
+) : ViewModel() {
 
     val series = MutableStateFlow<PagingData<SeriesEntry>>(PagingData.empty())
     val merch = MutableStateFlow<PagingData<MerchEntry>>(PagingData.empty())
 
     var seriesQuery by mutableStateOf("")
-    var seriesSize by mutableIntStateOf(0)
-
     var merchQuery by mutableStateOf("")
-    var merchSize by mutableIntStateOf(0)
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { seriesQuery }
-                .flatMapLatest { query ->
+            combine(settings.dataYear, snapshotFlow { seriesQuery }, ::Pair)
+                .flatMapLatest { (year, query) ->
                     createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         if (query.isBlank()) {
-                            tagsEntryDao.getSeries()
+                            tagsEntryDao.getSeries(year)
                         } else {
                             tagsEntryDao.searchSeries(query)
                         }
@@ -54,18 +54,13 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
                 .cachedIn(viewModelScope)
                 .collectLatest(series::emit)
         }
-        viewModelScope.launch(CustomDispatchers.Main) {
-            tagsEntryDao.getSeriesSize()
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { seriesSize = it }
-        }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { merchQuery }
-                .flatMapLatest { query ->
+            combine(settings.dataYear, snapshotFlow { merchQuery }, ::Pair)
+                .flatMapLatest { (year, query) ->
                     createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         if (query.isBlank()) {
-                            tagsEntryDao.getMerch()
+                            tagsEntryDao.getMerch(year)
                         } else {
                             tagsEntryDao.searchMerch(query)
                         }
@@ -75,11 +70,6 @@ class TagsViewModel(tagsEntryDao: TagEntryDao) : ViewModel() {
                 .enforceUniqueIds { it.name }
                 .cachedIn(viewModelScope)
                 .collectLatest(merch::emit)
-        }
-        viewModelScope.launch(CustomDispatchers.Main) {
-            tagsEntryDao.getMerchSize()
-                .flowOn(CustomDispatchers.IO)
-                .collectLatest { merchSize = it }
         }
     }
 }

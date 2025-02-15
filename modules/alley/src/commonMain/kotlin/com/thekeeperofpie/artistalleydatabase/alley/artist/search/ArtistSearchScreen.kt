@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -58,10 +59,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_commis
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
@@ -106,9 +109,21 @@ object ArtistSearchScreen {
             val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
             var sortOption by sortViewModel.sortOption.collectAsMutableStateWithLifecycle()
             var sortAscending by sortViewModel.sortAscending.collectAsMutableStateWithLifecycle()
+
+            val year by viewModel.year.collectAsState(DataYear.YEAR_2025)
+            val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
             SearchScreen<ArtistSearchQuery, ArtistEntryGridModel, ArtistColumn>(
                 viewModel = viewModel,
-                title = { viewModel.lockedSeries ?: viewModel.lockedMerch },
+                title = {
+                    val tagTitle = viewModel.lockedSeries ?: viewModel.lockedMerch
+                    if (tagTitle == null) {
+                        null
+                    } else if (isCurrentYear) {
+                        tagTitle
+                    } else {
+                        "${year.year} - $tagTitle"
+                    }
+                },
                 actions = if (onClickMap == null) {
                     null
                 } else {

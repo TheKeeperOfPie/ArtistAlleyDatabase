@@ -1,4 +1,3 @@
-
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
@@ -117,8 +116,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 ),
             )
 
-            parseArtists(database)
-            parseTags(database)
+            val (seriesConnections, merchConnections) = parseArtists(database)
+            parseTags(database, seriesConnections, merchConnections)
             parseStampRallies(database)
 
             val ftsTables = listOf(
@@ -151,7 +150,36 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun parseArtists(database: BuildLogicDatabase) {
+    private fun parseArtists(database: BuildLogicDatabase): Pair<MutableMap<Pair<String, String>, ArtistSeriesConnection>, MutableMap<Pair<String, String>, ArtistMerchConnection>> {
+        val seriesConnections = mutableMapOf<Pair<String, String>, ArtistSeriesConnection>()
+        val merchConnections = mutableMapOf<Pair<String, String>, ArtistMerchConnection>()
+
+        fun addSeriesConnection(seriesConnection: ArtistSeriesConnection) {
+            val idPair = seriesConnection.let { it.artistId to it.seriesId }
+            val existing = seriesConnections[idPair]
+            if (existing == null) {
+                seriesConnections[idPair] = seriesConnection
+            } else {
+                seriesConnections[idPair] = existing.copy(
+                    has2024 = existing.has2024 || seriesConnection.has2024,
+                    has2025 = existing.has2025 || seriesConnection.has2025,
+                )
+            }
+        }
+
+        fun addMerchConnection(merchConnection: ArtistMerchConnection) {
+            val idPair = merchConnection.let { it.artistId to it.merchId }
+            val existing = merchConnections[idPair]
+            if (existing == null) {
+                merchConnections[idPair] = merchConnection
+            } else {
+                merchConnections[idPair] = existing.copy(
+                    has2024 = existing.has2024 || merchConnection.has2024,
+                    has2025 = existing.has2025 || merchConnection.has2025,
+                )
+            }
+        }
+
         open(artistsCsv2024).use {
             var counter = 1L
             read(it)
@@ -207,9 +235,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         (seriesInferred - seriesConfirmed.toSet())
                             .map {
                                 ArtistSeriesConnection(
-                                    artistId = booth,
+                                    artistId = id,
                                     seriesId = it,
-                                    confirmed = false
+                                    confirmed = false,
+                                    has2024 = true,
+                                    has2025 = false,
                                 )
                             }
                     val seriesConnectionsConfirmed = seriesConfirmed
@@ -217,18 +247,20 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistSeriesConnection(
                                 artistId = id,
                                 seriesId = it,
-                                confirmed = true
+                                confirmed = true,
+                                has2024 = true,
+                                has2025 = false,
                             )
                         }
-                    val seriesConnections =
-                        seriesConnectionsInferred + seriesConnectionsConfirmed
 
                     val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
                         .map {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = false
+                                confirmed = false,
+                                has2024 = true,
+                                has2025 = false,
                             )
                         }
                     val merchConnectionsConfirmed = merchConfirmed
@@ -236,25 +268,27 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = true
+                                confirmed = true,
+                                has2024 = true,
+                                has2025 = false,
                             )
                         }
-                    val merchConnections =
-                        merchConnectionsInferred + merchConnectionsConfirmed
 
-                    Triple(artistEntry, seriesConnections, merchConnections)
+                    Triple(
+                        artistEntry,
+                        seriesConnectionsInferred + seriesConnectionsConfirmed,
+                        merchConnectionsInferred + merchConnectionsConfirmed,
+                    )
                 }
                 .chunked(100)
                 .forEach {
                     val artists = it.map { it.first }
-                    val seriesConnections = it.flatMap { it.second }
-                    val merchConnections = it.flatMap { it.third }
                     val mutationQueries = database.mutationQueries
                     mutationQueries.transaction {
                         artists.forEach(mutationQueries::insertArtist2024)
-                        seriesConnections.forEach(mutationQueries::insertSeriesConnection)
-                        merchConnections.forEach(mutationQueries::insertMerchConnection)
                     }
+                    it.flatMap { it.second }.forEach(::addSeriesConnection)
+                    it.flatMap { it.third }.forEach(::addMerchConnection)
                 }
         }
 
@@ -320,7 +354,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 ArtistSeriesConnection(
                                     artistId = id,
                                     seriesId = it,
-                                    confirmed = false
+                                    confirmed = false,
+                                    has2024 = false,
+                                    has2025 = true,
                                 )
                             }
                     val seriesConnectionsConfirmed = seriesConfirmed
@@ -328,18 +364,20 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistSeriesConnection(
                                 artistId = id,
                                 seriesId = it,
-                                confirmed = true
+                                confirmed = true,
+                                has2024 = false,
+                                has2025 = true,
                             )
                         }
-                    val seriesConnections =
-                        seriesConnectionsInferred + seriesConnectionsConfirmed
 
                     val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
                         .map {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = false
+                                confirmed = false,
+                                has2024 = false,
+                                has2025 = true,
                             )
                         }
                     val merchConnectionsConfirmed = merchConfirmed
@@ -347,30 +385,41 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = true
+                                confirmed = true,
+                                has2024 = false,
+                                has2025 = true,
                             )
                         }
-                    val merchConnections =
-                        merchConnectionsInferred + merchConnectionsConfirmed
 
-                    Triple(artistEntry, seriesConnections, merchConnections)
+                    Triple(
+                        artistEntry,
+                        seriesConnectionsInferred + seriesConnectionsConfirmed,
+                        merchConnectionsInferred + merchConnectionsConfirmed,
+                    )
                 }
                 .chunked(100)
                 .forEach {
                     val artists = it.map { it.first }
-                    val seriesConnections = it.flatMap { it.second }
-                    val merchConnections = it.flatMap { it.third }
                     val mutationQueries = database.mutationQueries
                     mutationQueries.transaction {
                         artists.forEach(mutationQueries::insertArtist2025)
-                        seriesConnections.forEach(mutationQueries::insertSeriesConnection)
-                        merchConnections.forEach(mutationQueries::insertMerchConnection)
                     }
+                    it.flatMap { it.second }.forEach(::addSeriesConnection)
+                    it.flatMap { it.third }.forEach(::addMerchConnection)
                 }
         }
+        val mutationQueries = database.mutationQueries
+        seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
+        merchConnections.values.forEach(mutationQueries::insertMerchConnection)
+
+        return seriesConnections to merchConnections
     }
 
-    private fun parseTags(database: BuildLogicDatabase) {
+    private fun parseTags(
+        database: BuildLogicDatabase,
+        seriesConnections: MutableMap<Pair<String, String>, ArtistSeriesConnection>,
+        merchConnections: MutableMap<Pair<String, String>, ArtistMerchConnection>,
+    ) {
         val mutationQueries = database.mutationQueries
         open(seriesCsv).use {
             read(it)
@@ -378,7 +427,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     // Series, Notes
                     val name = it["Series"]!!
                     val notes = it["Notes"]
-                    SeriesEntry(name = name, notes = notes)
+                    SeriesEntry(
+                        name = name,
+                        notes = notes,
+                        has2024 = seriesConnections.any { it.value.seriesId == name && it.value.has2024 },
+                        has2025 = seriesConnections.any { it.value.seriesId == name && it.value.has2025 },
+                    )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
@@ -393,7 +447,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     // Merch, Notes
                     val name = it["Merch"]!!
                     val notes = it["Notes"]
-                    MerchEntry(name = name, notes = notes)
+                    MerchEntry(
+                        name = name,
+                        notes = notes,
+                        has2024 = merchConnections.any { it.value.merchId == name && it.value.has2024 },
+                        has2025 = merchConnections.any { it.value.merchId == name && it.value.has2025 },
+                    )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {

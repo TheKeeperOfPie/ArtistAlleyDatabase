@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.tatarka.inject.annotations.Inject
@@ -21,5 +22,5 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val showOnlyHasCommissions = MutableStateFlow(false)
     override val showOnlyFavorites = MutableStateFlow(false)
     override val forceOneDisplayColumn = MutableStateFlow(false)
-    override val activeYearIs2025 = MutableStateFlow(false)
+    override val dataYear = MutableStateFlow(DataYear.YEAR_2025)
 }

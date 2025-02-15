@@ -3,7 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.app
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -36,7 +38,14 @@ class ArtistAlleyAppSettings(
     override val showOnlyFavorites = boolean("showOnlyFavorites", false)
     override val showOnlyHasCommissions = boolean("showOnlyHasCommissions", false)
     override val forceOneDisplayColumn = boolean("forceOneDisplayColumn", false)
-    override val activeYearIs2025 = boolean("activeYearIs2024", false)
+    override val dataYear = initialize(
+        key = "dataYear",
+        initialValue = {
+            getString(it, null)?.toIntOrNull()
+                ?.let { year -> DataYear.entries.find { it.year == year } } ?: DataYear.YEAR_2025
+        },
+        setValue = { key, value -> putString(key, value.year.toString()) },
+    )
 
     private fun long(key: String, default: Long = -1L) = initialize(
         key,
@@ -64,7 +73,7 @@ class ArtistAlleyAppSettings(
         val flow = MutableStateFlow(sharedPrefs.initialValue(key))
         appScope.launch(CustomDispatchers.IO) {
             flow.drop(1).collectLatest {
-                sharedPrefs.edit().setValue(key, it).apply()
+                sharedPrefs.edit { setValue(key, it) }
             }
         }
         return flow

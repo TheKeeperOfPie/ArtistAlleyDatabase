@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -50,11 +52,20 @@ class ArtistSearchViewModel(
 
     @Serializable
     data class InternalRoute(
+        val year: DataYear? = null,
         val series: String? = null,
         val merch: String? = null,
     )
 
     private val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
+
+    val year = if (route.year == null) {
+        settings.dataYear
+    } else {
+        flowOf(route.year)
+    }
+
+    val lockedYear = route.year
     val lockedSeries = route.series
     val lockedMerch = route.merch
 
@@ -87,11 +98,11 @@ class ArtistSearchViewModel(
     override fun mapQuery(
         query: String,
         options: ArtistSearchQuery,
-    ) = combine(settings.activeYearIs2025, settings.showOnlyConfirmedTags, ::Pair)
-        .flatMapLatest { (activeYearIs2025, showOnlyConfirmedTags) ->
+    ) = combine(year, settings.showOnlyConfirmedTags, ::Pair)
+        .flatMapLatest { (year, showOnlyConfirmedTags) ->
             createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 artistEntryDao.search(
-                    activeYearIs2025 = activeYearIs2025,
+                    year = year,
                     query = query,
                     searchQuery = options
                 )

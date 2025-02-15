@@ -29,15 +29,14 @@ class UserEntryDao(
     private val settings: ArtistAlleySettings,
     private val dao: suspend () -> UserEntryQueries = { database().userEntryQueries },
 ) {
-    fun getBoothsWithFavorites() = settings.activeYearIs2025
+    fun getBoothsWithFavorites() = settings.dataYear
         .flatMapLatest {
-            if (it) {
-                dao().getBoothsWithFavorites2025()
+            when (it) {
+                DataYear.YEAR_2024 -> dao().getBoothsWithFavorites2024()
                     .asFlow()
                     .mapToList(PlatformDispatchers.IO)
                     .map { it.map { it.toBoothWithFavorite() } }
-            } else {
-                dao().getBoothsWithFavorites2024()
+                DataYear.YEAR_2025 -> dao().getBoothsWithFavorites2025()
                     .asFlow()
                     .mapToList(PlatformDispatchers.IO)
                     .map { it.map { it.toBoothWithFavorite() } }

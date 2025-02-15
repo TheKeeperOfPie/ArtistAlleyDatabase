@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -14,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -32,6 +34,7 @@ class TagMapViewModel(
 
     @Serializable
     data class InternalRoute(
+        val year: DataYear? = null,
         val series: String? = null,
         val merch: String? = null,
     )
@@ -41,12 +44,18 @@ class TagMapViewModel(
     var booths by mutableStateOf(emptySet<String>())
         private set
 
+    private val year = if (route.year == null) {
+        settings.dataYear
+    } else {
+        flowOf(route.year)
+    }
+
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            combine(settings.showOnlyConfirmedTags, settings.activeYearIs2025, ::Pair)
-                .mapLatest { (showOnlyConfirmedTags, activeYearIs2025) ->
+            combine(settings.showOnlyConfirmedTags, year, ::Pair)
+                .mapLatest { (showOnlyConfirmedTags, year) ->
                     tagEntryDao.getBooths(
-                        activeYearIs2025 = activeYearIs2025,
+                        year = year,
                         TagMapQuery(
                             series = route.series,
                             merch = route.merch,

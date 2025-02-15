@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import kotlinx.browser.localStorage
@@ -45,7 +46,13 @@ class ArtistAlleyWasmJsSettings(
     override val showOnlyHasCommissions by registerBoolean(false)
     override val showOnlyFavorites by registerBoolean(false)
     override val forceOneDisplayColumn by registerBoolean(false)
-    override val activeYearIs2025 by registerBoolean(true)
+    override val dataYear by register(
+        serialize = { it.year.toString() },
+        deserialize = {
+            it?.toIntOrNull()?.let { year -> DataYear.entries.find { it.year == year } }
+                ?: DataYear.YEAR_2025
+        },
+    )
 
     private fun <T> register(serialize: (T) -> String, deserialize: (String?) -> T) =
         object : ReadOnlyProperty<Any?, MutableStateFlow<T>> {

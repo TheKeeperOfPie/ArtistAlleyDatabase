@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface ArtistAlleySettings {
@@ -17,6 +18,5 @@ interface ArtistAlleySettings {
     val showOnlyHasCommissions: MutableStateFlow<Boolean>
     val showOnlyFavorites: MutableStateFlow<Boolean>
     val forceOneDisplayColumn: MutableStateFlow<Boolean>
-
-    val activeYearIs2025: MutableStateFlow<Boolean>
+    val dataYear: MutableStateFlow<DataYear>
 }

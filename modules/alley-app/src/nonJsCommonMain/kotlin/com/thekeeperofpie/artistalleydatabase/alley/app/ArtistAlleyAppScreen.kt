@@ -83,14 +83,12 @@ object ArtistAlleyAppScreen {
                                         )
                                     },
                                     onSeriesClick = {
-                                        navController.navigate(Destinations.Series(it))
+                                        navController.navigate(Destinations.Series(null, it))
                                     },
                                     onMerchClick = {
-                                        navController.navigate(Destinations.Merch(it))
+                                        navController.navigate(Destinations.Merch(null, it))
                                     },
-                                    onActiveYearIs2025Change = {
-                                        component.settings.activeYearIs2025.value = it
-                                    },
+                                    onDataYearChange = { component.settings.dataYear.value = it },
                                 )
                             }
 
@@ -106,12 +104,12 @@ object ArtistAlleyAppScreen {
                                     onClickBack = navController::navigateUp,
                                     onSeriesClick = {
                                         navController.navigate(
-                                            Destinations.Series(it)
+                                            Destinations.Series(route.year, it)
                                         )
                                     },
                                     onMerchClick = {
                                         navController.navigate(
-                                            Destinations.Merch(it)
+                                            Destinations.Merch(route.year, it)
                                         )
                                     },
                                     onStampRallyClick = {
@@ -221,14 +219,21 @@ object ArtistAlleyAppScreen {
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
                                         navController.navigate(
-                                            Destinations.SeriesMap(route.series)
+                                            Destinations.SeriesMap(
+                                                viewModel.lockedYear,
+                                                route.series
+                                            )
                                         )
                                     },
                                     onSeriesClick = {
-                                        navController.navigate(Destinations.Series(it))
+                                        navController.navigate(
+                                            Destinations.Series(viewModel.lockedYear, it)
+                                        )
                                     },
                                     onMerchClick = {
-                                        navController.navigate(Destinations.Merch(it))
+                                        navController.navigate(
+                                            Destinations.Merch(viewModel.lockedYear, it)
+                                        )
                                     },
                                 )
                             }
@@ -256,14 +261,18 @@ object ArtistAlleyAppScreen {
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
                                         navController.navigate(
-                                            Destinations.MerchMap(route.merch)
+                                            Destinations.MerchMap(viewModel.lockedYear, route.merch)
                                         )
                                     },
                                     onSeriesClick = {
-                                        navController.navigate(Destinations.Series(it))
+                                        navController.navigate(
+                                            Destinations.Series(viewModel.lockedYear, it)
+                                        )
                                     },
                                     onMerchClick = {
-                                        navController.navigate(Destinations.Merch(it))
+                                        navController.navigate(
+                                            Destinations.Merch(viewModel.lockedYear, it)
+                                        )
                                     },
                                 )
                             }

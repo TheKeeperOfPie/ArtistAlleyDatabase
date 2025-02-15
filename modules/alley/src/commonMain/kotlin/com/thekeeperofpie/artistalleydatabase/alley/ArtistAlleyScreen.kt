@@ -38,11 +38,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_map
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_open_update
 import artistalleydatabase.modules.alley.generated.resources.alley_update_notice
-import artistalleydatabase.modules.alley.generated.resources.alley_year_2024
-import artistalleydatabase.modules.alley.generated.resources.alley_year_2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
@@ -63,7 +62,7 @@ object ArtistAlleyScreen {
         onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
         onSeriesClick: (String) -> Unit,
         onMerchClick: (String) -> Unit,
-        onActiveYearIs2025Change: (Boolean) -> Unit,
+        onDataYearChange: (DataYear) -> Unit,
     ) {
         val updateNotice = stringResource(Res.string.alley_update_notice)
         val updateOpenUpdate = stringResource(Res.string.alley_open_update)
@@ -161,21 +160,15 @@ object ArtistAlleyScreen {
                                 it.icon,
                                 contentDescription = stringResource(it.textRes)
                             )
-                            if (it == Destination.ARTISTS) {
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }) {
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                            ) {
+                                DataYear.entries.forEach {
                                     DropdownMenuItem(
-                                        text = { Text(stringResource(Res.string.alley_year_2024)) },
+                                        text = { Text(it.year.toString()) },
                                         onClick = {
-                                            onActiveYearIs2025Change(false)
-                                            expanded = false
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(Res.string.alley_year_2025)) },
-                                        onClick = {
-                                            onActiveYearIs2025Change(true)
+                                            onDataYearChange(it)
                                             expanded = false
                                         }
                                     )

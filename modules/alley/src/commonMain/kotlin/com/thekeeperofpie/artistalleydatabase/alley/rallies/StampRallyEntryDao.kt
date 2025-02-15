@@ -184,11 +184,11 @@ class StampRallyEntryDao(
         }
 
     fun search(
-        activeYearIs2025: Boolean,
+        year: DataYear,
         query: String,
         searchQuery: StampRallySearchQuery,
     ): PagingSource<Int, StampRallyWithUserData> {
-        val tableName = if (activeYearIs2025) "stampRallyEntry2025" else "stampRallyEntry2024"
+        val tableName = "stampRallyEntry${year.year}"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (filterParams.showOnlyFavorites) this += "stampRallyUserEntry.favorite = 1"
@@ -248,10 +248,9 @@ class StampRallyEntryDao(
                 countStatement = countStatement,
                 statement = statement,
                 tableNames = listOf("${tableName}_fts"),
-                mapper = if (activeYearIs2025) {
-                    SqlCursor::toStampRallyWithUserData2025
-                } else {
-                    SqlCursor::toStampRallyWithUserData2024
+                mapper = when (year) {
+                    DataYear.YEAR_2024 -> SqlCursor::toStampRallyWithUserData2024
+                    DataYear.YEAR_2025 -> SqlCursor::toStampRallyWithUserData2025
                 },
             )
         }
@@ -305,10 +304,9 @@ class StampRallyEntryDao(
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("${tableName}_fts"),
-            mapper = if (activeYearIs2025) {
-                SqlCursor::toStampRallyWithUserData2025
-            } else {
-                SqlCursor::toStampRallyWithUserData2024
+            mapper = when (year) {
+                DataYear.YEAR_2024 -> SqlCursor::toStampRallyWithUserData2024
+                DataYear.YEAR_2025 -> SqlCursor::toStampRallyWithUserData2025
             },
         )
     }

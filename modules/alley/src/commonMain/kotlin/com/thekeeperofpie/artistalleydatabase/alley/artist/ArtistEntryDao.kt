@@ -198,16 +198,15 @@ class ArtistEntryDao(
                 ?.toArtistWithUserData()
         }
 
-    fun getEntryFlow(id: String) = settings.activeYearIs2025
+    fun getEntryFlow(id: String) = settings.dataYear
         .flatMapLatest {
-            if (it) {
-                dao2025()
+            when (it) {
+                DataYear.YEAR_2024 -> dao2024()
                     .getEntry(id)
                     .asFlow()
                     .mapToOne(PlatformDispatchers.IO)
                     .mapLatest { it.toArtistWithUserData() }
-            } else {
-                dao2024()
+                DataYear.YEAR_2025 -> dao2025()
                     .getEntry(id)
                     .asFlow()
                     .mapToOne(PlatformDispatchers.IO)
@@ -236,11 +235,11 @@ class ArtistEntryDao(
         }
 
     fun search(
-        activeYearIs2025: Boolean,
+        year: DataYear,
         query: String,
         searchQuery: ArtistSearchQuery,
     ): PagingSource<Int, ArtistWithUserData> {
-        val tableName = if (activeYearIs2025) "artistEntry2025" else "artistEntry2024"
+        val tableName = "artistEntry${year.year}"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (filterParams.showOnlyFavorites) this += "artistUserEntry.favorite = 1"
@@ -249,19 +248,19 @@ class ArtistEntryDao(
             // not empty would require a separate query template
             if (filterParams.showOnlyWithCatalog) this += "$tableName.driveLink LIKE 'http%'"
 
-            if (activeYearIs2025) {
+            if (year == DataYear.YEAR_2025) {
                 if (filterParams.showOnlyHasCommissions) this += "$tableName.commissions != '[]'"
             }
 
             if (searchQuery.lockedSeries != null) {
                 this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
                         (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed IS 1 AND" else "") +
-                        " artistSeriesConnection.seriesId == " +
+                        " artistSeriesConnection.seriesId = " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
             } else if (searchQuery.lockedMerch != null) {
                 this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
                         (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed IS 1 AND" else "") +
-                        "artistMerchConnection.merchId == " +
+                        "artistMerchConnection.merchId = " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
             }
         }
@@ -331,10 +330,9 @@ class ArtistEntryDao(
                 countStatement = countStatement,
                 statement = statement,
                 tableNames = listOf("${tableName}_fts", "artistUserEntry"),
-                mapper = if (activeYearIs2025) {
-                    SqlCursor::toArtistWithUserData2025
-                } else {
-                    SqlCursor::toArtistWithUserData2024
+                mapper = when (year) {
+                    DataYear.YEAR_2024 -> SqlCursor::toArtistWithUserData2024
+                    DataYear.YEAR_2025 -> SqlCursor::toArtistWithUserData2025
                 },
             )
         }
@@ -393,10 +391,9 @@ class ArtistEntryDao(
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("${tableName}_fts", "artistUserEntry"),
-            mapper = if (activeYearIs2025) {
-                SqlCursor::toArtistWithUserData2025
-            } else {
-                SqlCursor::toArtistWithUserData2024
+            mapper = when (year) {
+                DataYear.YEAR_2024 -> SqlCursor::toArtistWithUserData2024
+                DataYear.YEAR_2025 -> SqlCursor::toArtistWithUserData2025
             },
         )
     }

@@ -78,6 +78,8 @@ CREATE TABLE
         `artistId` TEXT NOT NULL,
         `seriesId` TEXT NOT NULL,
         `confirmed` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (`artistId`, `seriesId`)
     );
 
@@ -86,6 +88,8 @@ CREATE TABLE
         `artistId` TEXT NOT NULL,
         `merchId` TEXT NOT NULL,
         `confirmed` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (`artistId`, `merchId`)
     );
 
@@ -150,6 +154,8 @@ CREATE TABLE
     IF NOT EXISTS `seriesEntry` (
         `name` TEXT NOT NULL COLLATE NOCASE,
         `notes` TEXT,
+        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (`name`)
     );
 
@@ -163,6 +169,8 @@ CREATE TABLE
     IF NOT EXISTS `merchEntry` (
         `name` TEXT NOT NULL,
         `notes` TEXT,
+        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
+        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (`name`)
     );
 

@@ -12,7 +12,8 @@ sealed interface Destinations : NavDestination {
 
     companion object {
         val typeMap: Map<KType, NavType<*>> = mapOf(
-            typeOf<DataYear>() to CustomNavTypes.SerializableType<DataYear>()
+            typeOf<DataYear>() to CustomNavTypes.SerializableType<DataYear>(),
+            typeOf<DataYear?>() to CustomNavTypes.SerializableType<DataYear>(),
         )
     }
 
@@ -30,16 +31,16 @@ sealed interface Destinations : NavDestination {
     data class ArtistMap(val id: String) : Destinations
 
     @Serializable
-    data class Series(val series: String) : Destinations
+    data class Series(val year: DataYear?, val series: String) : Destinations
 
     @Serializable
-    data class SeriesMap(val series: String) : Destinations
+    data class SeriesMap(val year: DataYear?, val series: String) : Destinations
 
     @Serializable
-    data class Merch(val merch: String) : Destinations
+    data class Merch(val year: DataYear?, val merch: String) : Destinations
 
     @Serializable
-    data class MerchMap(val merch: String) : Destinations
+    data class MerchMap(val year: DataYear?, val merch: String) : Destinations
 
     @Serializable
     data class StampRallyDetails(

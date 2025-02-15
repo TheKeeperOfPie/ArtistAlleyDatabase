@@ -29,23 +29,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ArtistTitle(artist: ArtistEntry) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        val isCurrentYear = remember {
-            Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year ==
-                    artist.year.year
-        }
-
+        val isCurrentYear = remember(artist) { AlleyUtils.isCurrentYear(artist.year) }
         if (!isCurrentYear) {
             Text(text = "${artist.year.year} - ")
         }

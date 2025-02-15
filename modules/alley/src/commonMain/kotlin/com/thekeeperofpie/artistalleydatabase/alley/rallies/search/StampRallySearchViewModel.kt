@@ -66,14 +66,10 @@ class StampRallySearchViewModel(
     override fun mapQuery(
         query: String,
         options: StampRallySearchQuery,
-    ) = settings.activeYearIs2025
+    ) = settings.dataYear
         .flatMapLatest {
             createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                stampRallyEntryDao.search(
-                    activeYearIs2025 = it,
-                    query = query,
-                    searchQuery = options,
-                )
+                stampRallyEntryDao.search(year = it, query = query, searchQuery = options)
             }.flow
         }
         .flowOn(CustomDispatchers.IO)
