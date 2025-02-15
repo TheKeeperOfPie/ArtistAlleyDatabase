@@ -123,7 +123,12 @@ object ArtistAlleyAppScreen {
                                         navController.navigate(
                                             Destinations.ArtistMap(route.id)
                                         )
-                                    }
+                                    },
+                                    onArtistOtherYearClick = {
+                                        navController.navigate(
+                                            Destinations.ArtistDetails(year = it, id = route.id)
+                                        )
+                                    },
                                 )
                             }
 

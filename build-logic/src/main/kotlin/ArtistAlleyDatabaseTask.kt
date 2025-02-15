@@ -159,6 +159,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     // Booth,Artist,Summary,Links,Store,Catalog / table,
                     // Series - Inferred,Merch - Inferred,Notes,Series - Confirmed,
                     // Merch - Confirmed,Drive,Catalog images
+                    val id = it["UUID"]!!
                     val booth = it["Booth"].orEmpty()
                     val artist = it["Artist"].orEmpty()
                     val summary = it["Summary"]
@@ -186,7 +187,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val notes = it["Notes"]
 
                     val artistEntry = ArtistEntry2024(
-                        id = booth,
+                        id = id,
                         booth = booth,
                         name = artist,
                         summary = summary,
@@ -214,7 +215,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val seriesConnectionsConfirmed = seriesConfirmed
                         .map {
                             ArtistSeriesConnection(
-                                artistId = booth,
+                                artistId = id,
                                 seriesId = it,
                                 confirmed = true
                             )
@@ -225,7 +226,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
                         .map {
                             ArtistMerchConnection(
-                                artistId = booth,
+                                artistId = id,
                                 merchId = it,
                                 confirmed = false
                             )
@@ -233,7 +234,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val merchConnectionsConfirmed = merchConfirmed
                         .map {
                             ArtistMerchConnection(
-                                artistId = booth,
+                                artistId = id,
                                 merchId = it,
                                 confirmed = true
                             )

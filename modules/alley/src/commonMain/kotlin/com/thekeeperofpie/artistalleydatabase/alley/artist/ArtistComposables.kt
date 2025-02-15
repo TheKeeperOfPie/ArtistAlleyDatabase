@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -32,11 +33,23 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ArtistTitle(artist: ArtistEntry) {
     Row(verticalAlignment = Alignment.CenterVertically) {
+        val isCurrentYear = remember {
+            Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year ==
+                    artist.year.year
+        }
+
+        if (!isCurrentYear) {
+            Text(text = "${artist.year.year} - ")
+        }
+
         if (artist.booth != null) {
             Text(
                 text = artist.booth,
@@ -48,7 +61,6 @@ fun ArtistTitle(artist: ArtistEntry) {
                     zIndexInOverlay = 1f,
                 )
             )
-
             Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
         }
 

@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -55,8 +57,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
+import artistalleydatabase.modules.alley.generated.resources.alley_open_year
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
@@ -67,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoTe
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalLayoutApi::class)
 object ArtistDetailsScreen {
 
     @Composable
@@ -77,6 +82,7 @@ object ArtistDetailsScreen {
         onMerchClick: (String) -> Unit,
         onStampRallyClick: (StampRallyEntry) -> Unit,
         onArtistMapClick: () -> Unit,
+        onArtistOtherYearClick: (DataYear) -> Unit,
     ) {
         val entry = viewModel.entry
         if (entry == null) {
@@ -204,21 +210,33 @@ object ArtistDetailsScreen {
                 onClick = onMerchClick,
             )
 
-            FilledTonalButton(
-                onClick = onArtistMapClick,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(horizontal = 16.dp)
+            FlowRow(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                FilledTonalButton(
+                    onClick = onArtistMapClick,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Map,
-                        contentDescription = stringResource(Res.string.alley_open_in_map),
-                    )
-                    Text(stringResource(Res.string.alley_open_in_map))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.Default.Map,
+                            contentDescription = stringResource(Res.string.alley_open_in_map),
+                        )
+                        Text(stringResource(Res.string.alley_open_in_map))
+                    }
+                }
+
+                viewModel.otherYears.forEach {
+                    FilledTonalButton(
+                        onClick = { onArtistOtherYearClick(it) },
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Text(stringResource(Res.string.alley_open_year, it.year))
+                    }
                 }
             }
         }
