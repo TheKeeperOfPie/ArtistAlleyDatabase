@@ -149,4 +149,9 @@
     <string name="alley_link_label_weebly">Weebly</string>
     <string name="alley_link_label_x">X</string>
     <string name="alley_link_label_you_tube">YouTube</string>
+
+    <string name="alley_display_type_card">Card</string>
+    <string name="alley_display_type_image">Image</string>
+    <string name="alley_display_type_list">List</string>
+    <string name="alley_display_type_table">Table</string>
 </resources>

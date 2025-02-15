@@ -42,10 +42,13 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -70,7 +73,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_display_type_card
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_display_type_image
+import artistalleydatabase.modules.alley.generated.resources.alley_display_type_list
+import artistalleydatabase.modules.alley.generated.resources.alley_display_type_table
 import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
 import artistalleydatabase.modules.entry.generated.resources.entry_results_one
 import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
@@ -103,6 +110,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
@@ -202,7 +210,7 @@ object SearchScreen {
                         val density = LocalDensity.current
                         val topBarPadding by remember(density) {
                             derivedStateOf {
-                                if (scrollBehavior == null){
+                                if (scrollBehavior == null) {
                                     density.run { topBarHeight.toDp() }.coerceAtLeast(0.dp)
                                 } else {
                                     // Force a snapshot read so that this recomposes
@@ -334,21 +342,34 @@ object SearchScreen {
                                     )
                                 }
                             }
-
-                            @Suppress("NAME_SHADOWING")
-                            val displayType = displayType()
-                            val entries = DisplayType.entries
-                            val nextDisplayType =
-                                entries[(entries.indexOf(displayType) + 1) % entries.size]
-                            IconButton(onClick = {
-                                onDisplayTypeToggle(nextDisplayType)
-                            }) {
-                                Icon(
-                                    imageVector = nextDisplayType.icon,
-                                    contentDescription = stringResource(
-                                        Res.string.alley_display_type_icon_content_description,
-                                    ),
-                                )
+                            Box {
+                                val displayType = displayType()
+                                var expanded by remember { mutableStateOf(false) }
+                                IconButton(onClick = { expanded = true }) {
+                                    Icon(
+                                        imageVector = displayType.icon,
+                                        contentDescription = stringResource(
+                                            Res.string.alley_display_type_icon_content_description,
+                                        ),
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                ) {
+                                    DisplayType.entries.forEach {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(it.label)) },
+                                            leadingIcon = {
+                                                RadioButton(
+                                                    selected = displayType == it,
+                                                    onClick = { onDisplayTypeToggle(it) },
+                                                )
+                                            },
+                                            onClick = { onDisplayTypeToggle(it) },
+                                        )
+                                    }
+                                }
                             }
 
                             actions?.invoke(this)
@@ -616,11 +637,11 @@ object SearchScreen {
         var ignored: Boolean
     }
 
-    enum class DisplayType(val icon: ImageVector) {
-        TABLE(Icons.Default.TableChart),
-        LIST(Icons.AutoMirrored.Filled.ViewList),
-        CARD(Icons.Filled.ViewAgenda),
-        IMAGE(Icons.Filled.Image),
+    enum class DisplayType(val label: StringResource, val icon: ImageVector) {
+        CARD(Res.string.alley_display_type_card, Icons.Filled.ViewAgenda),
+        IMAGE(Res.string.alley_display_type_image, Icons.Filled.Image),
+        LIST(Res.string.alley_display_type_list, Icons.AutoMirrored.Filled.ViewList),
+        TABLE(Res.string.alley_display_type_table, Icons.Default.TableChart),
         ;
 
         companion object {

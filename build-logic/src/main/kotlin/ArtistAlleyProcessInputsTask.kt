@@ -76,7 +76,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val rallies2024 = "rallies2024" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2024/rallies",
-                    transformName = { it.substringBefore(" -") },
+                    transformName = { it.replace(" - ", "").replace("'", "_") },
                 )
                 val catalogs2025 = "catalogs2025" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -86,7 +86,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val rallies2025 = "rallies2025" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2025/rallies",
-                    transformName = { it.substringBefore(" -") },
+                    transformName = { it.replace(" - ", "").replace("'", "_") },
                 )
 
                 buildComposeFiles(catalogs2024, rallies2024, catalogs2025, rallies2025)

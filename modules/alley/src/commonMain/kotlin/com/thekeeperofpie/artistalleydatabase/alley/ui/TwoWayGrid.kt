@@ -72,7 +72,7 @@ object TwoWayGrid {
                         Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
                             columns.drop(1).forEachIndexed { columnIndex, column ->
                                 columnHeader(column)
-                                if (columnIndex != columns.lastIndex) {
+                                if (columnIndex != columns.lastIndex - 1) {
                                     VerticalDivider()
                                 }
                             }
@@ -93,7 +93,7 @@ object TwoWayGrid {
                                 Box(Modifier.requiredWidth(column.size)) {
                                     tableCell(rows[index], column)
                                 }
-                                if (columnIndex != columns.lastIndex) {
+                                if (columnIndex != columns.lastIndex - 1) {
                                     VerticalDivider()
                                 }
                             }
