@@ -31,6 +31,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        mavenLocal {
+            content {
+                includeGroup("io.coil-kt.coil3")
+            }
+        }
         maven("https://jitpack.io/")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
@@ -112,7 +117,7 @@ apply(rootProject.projectDir.resolve("versions.gradle.kts"))
 
 plugins {
     id("com.autonomousapps.build-health").version("2.5.0")
-    id("com.android.application").version("8.10.0-alpha02").apply(false)
+    id("com.android.application").version("8.10.0-alpha04").apply(false)
     id("org.jetbrains.kotlin.android").version("2.1.20-Beta1").apply(false)
     id("org.jetbrains.kotlin.jvm").version("2.1.20-Beta1").apply(false)
 }

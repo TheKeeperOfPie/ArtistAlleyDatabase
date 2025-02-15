@@ -21,6 +21,8 @@ kotlin {
         }
         freeCompilerArgs.add("-Xcontext-receivers")
         freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.add("-Xjspecify-annotations=strict")
+        freeCompilerArgs.add("-Xtype-enhancement-improvements-strict-mode")
     }
 
     sourceSets {
