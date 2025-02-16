@@ -25,6 +25,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
@@ -312,7 +314,7 @@ object ArtistAlleyAppScreen {
                     }
                 }
 
-                if (BuildVariant.isDebug()) {
+                if (BuildVariant.isDebug() && PlatformSpecificConfig.type != PlatformType.WASM) {
                     Box(
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.primary)
