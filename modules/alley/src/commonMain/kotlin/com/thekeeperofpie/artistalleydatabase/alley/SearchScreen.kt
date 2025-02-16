@@ -231,6 +231,7 @@ object SearchScreen {
                         if (displayType() == DisplayType.TABLE) {
                             Table(
                                 horizontalScrollState = horizontalScrollState,
+                                dataYearHeaderState = dataYearHeaderState,
                                 entries = entries,
                                 columns = columns,
                                 scaffoldPadding = it,
@@ -392,6 +393,7 @@ object SearchScreen {
     @Composable
     private fun <EntryModel, ColumnType> Table(
         horizontalScrollState: ScrollState,
+        dataYearHeaderState: DataYearHeaderState,
         entries: LazyPagingItems<EntryModel>,
         columns: EnumEntries<ColumnType>,
         scaffoldPadding: PaddingValues,
@@ -406,6 +408,7 @@ object SearchScreen {
         ) {
             val listState = rememberLazyListState()
             TwoWayGrid(
+                dataYearHeaderState = dataYearHeaderState,
                 rows = entries,
                 columns = columns,
                 listState = listState,

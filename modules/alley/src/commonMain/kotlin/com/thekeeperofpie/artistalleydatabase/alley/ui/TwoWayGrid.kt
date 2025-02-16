@@ -39,6 +39,7 @@ object TwoWayGrid {
 
     @Composable
     operator fun <T, ColumnType> invoke(
+        dataYearHeaderState: DataYearHeaderState,
         rows: LazyPagingItems<T>,
         columns: EnumEntries<ColumnType>,
         columnHeader: @Composable (column: ColumnType) -> Unit,
@@ -61,6 +62,10 @@ object TwoWayGrid {
                 contentPadding = contentPadding,
                 modifier = modifier.width(width)
             ) {
+                item(key = "dataYearHeader") {
+                    DataYearHeader(dataYearHeaderState)
+                }
+
                 stickyHeader {
                     Row(
                         Modifier.height(IntrinsicSize.Min)
@@ -80,6 +85,7 @@ object TwoWayGrid {
                     }
                     HorizontalDivider()
                 }
+
                 items(rows.itemCount) { index ->
                     Row(Modifier.height(IntrinsicSize.Min)) {
                         columns.firstOrNull()?.let {
