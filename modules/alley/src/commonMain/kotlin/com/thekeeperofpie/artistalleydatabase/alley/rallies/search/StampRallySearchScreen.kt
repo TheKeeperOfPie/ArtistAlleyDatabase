@@ -38,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
+import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
@@ -69,6 +70,7 @@ object StampRallySearchScreen {
             val displayType = SearchScreen.DisplayType.fromSerializedValue(
                 viewModel.displayType.collectAsState().value
             )
+            val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, null)
             val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
             SearchScreen<StampRallySearchQuery, StampRallyEntryGridModel, StampRallyColumn>(
                 viewModel = viewModel,
@@ -85,6 +87,7 @@ object StampRallySearchScreen {
                 showGridByDefault = { showGridByDefault },
                 showRandomCatalogImage = { showRandomCatalogImage },
                 forceOneDisplayColumn = { forceOneDisplayColumn },
+                dataYearHeaderState = dataYearHeaderState,
                 displayType = { displayType },
                 onDisplayTypeToggle = viewModel::onDisplayTypeToggle,
                 gridState = gridState,

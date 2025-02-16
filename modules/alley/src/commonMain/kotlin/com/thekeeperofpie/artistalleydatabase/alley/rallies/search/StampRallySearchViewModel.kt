@@ -46,6 +46,8 @@ class StampRallySearchViewModel(
     val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 
+    val dataYear = settings.dataYear
+
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             mutationUpdates.collectLatest {

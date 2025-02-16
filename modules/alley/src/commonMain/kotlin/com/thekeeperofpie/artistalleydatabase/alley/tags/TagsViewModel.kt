@@ -37,6 +37,8 @@ class TagsViewModel(
     var seriesQuery by mutableStateOf("")
     var merchQuery by mutableStateOf("")
 
+    val dataYear = settings.dataYear
+
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(settings.dataYear, snapshotFlow { seriesQuery }, ::Pair)

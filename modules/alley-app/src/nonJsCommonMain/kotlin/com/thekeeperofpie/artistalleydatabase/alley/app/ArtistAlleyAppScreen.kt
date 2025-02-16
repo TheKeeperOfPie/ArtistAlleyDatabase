@@ -88,7 +88,6 @@ object ArtistAlleyAppScreen {
                                     onMerchClick = {
                                         navController.navigate(Destinations.Merch(null, it))
                                     },
-                                    onDataYearChange = { component.settings.dataYear.value = it },
                                 )
                             }
 

@@ -48,18 +48,24 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -93,20 +99,26 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon
 import artistalleydatabase.modules.alley.generated.resources.alley_next_page
 import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year
 import coil3.compose.AsyncImage
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
@@ -667,7 +679,10 @@ fun IconWithTooltip(
     contentDescription: String? = null,
 ) {
     Tooltip(text = tooltipText, onClick = onClick) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.minimumInteractiveComponentSize()) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.minimumInteractiveComponentSize()
+        ) {
             Icon(
                 imageVector = imageVector,
                 contentDescription = contentDescription,
@@ -677,3 +692,93 @@ fun IconWithTooltip(
     }
 }
 
+@Composable
+fun rememberDataYearHeaderState(
+    dataYear: MutableStateFlow<DataYear>,
+    lockedYear: DataYear?,
+): DataYearHeaderState {
+    var year by dataYear.collectAsMutableStateWithLifecycle()
+    return remember(dataYear, lockedYear) {
+        DataYearHeaderState(
+            dataYear = { year },
+            onYearChange = {
+                if (lockedYear == null) {
+                    year = it
+                }
+            },
+            lockedYear = lockedYear != null,
+        )
+    }
+}
+
+@Stable
+class DataYearHeaderState(
+    private val dataYear: () -> DataYear,
+    val onYearChange: (DataYear) -> Unit,
+    val lockedYear: Boolean,
+) {
+    var year
+        get() = dataYear()
+        set(value) { onYearChange(value) }
+}
+
+@Composable
+fun DataYearHeader(state: DataYearHeaderState) {
+    if (state.lockedYear) {
+        Text(
+            text = stringResource(state.year.fullName),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    } else {
+        var expanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+            ) {
+                Text(
+                    text = stringResource(state.year.fullName),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.minimumInteractiveComponentSize()
+                ) {
+                    TrailingDropdownIcon(
+                        expanded = expanded,
+                        contentDescription = stringResource(Res.string.alley_switch_data_year),
+                    )
+                }
+            }
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                DataYear.entries.forEach {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(it.fullName)) },
+                        leadingIcon = {
+                            RadioButton(
+                                selected = state.year == it,
+                                onClick = { state.year = it },
+                            )
+                        },
+                        onClick = {
+                            state.year = it
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
+    }
+}

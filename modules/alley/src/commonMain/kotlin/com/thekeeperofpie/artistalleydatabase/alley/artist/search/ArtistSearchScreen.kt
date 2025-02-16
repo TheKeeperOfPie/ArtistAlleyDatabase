@@ -64,11 +64,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
+import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
@@ -110,8 +111,11 @@ object ArtistSearchScreen {
             var sortOption by sortViewModel.sortOption.collectAsMutableStateWithLifecycle()
             var sortAscending by sortViewModel.sortAscending.collectAsMutableStateWithLifecycle()
 
-            val year by viewModel.year.collectAsState(DataYear.YEAR_2025)
+            val year by viewModel.year.collectAsState()
+            val yearShortName = stringResource(year.shortName)
             val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
+            val dataYearHeaderState =
+                rememberDataYearHeaderState(viewModel.dataYear, viewModel.lockedYear)
             SearchScreen<ArtistSearchQuery, ArtistEntryGridModel, ArtistColumn>(
                 viewModel = viewModel,
                 title = {
@@ -121,7 +125,7 @@ object ArtistSearchScreen {
                     } else if (isCurrentYear) {
                         tagTitle
                     } else {
-                        "${year.year} - $tagTitle"
+                        "$yearShortName - $tagTitle"
                     }
                 },
                 actions = if (onClickMap == null) {
@@ -151,6 +155,7 @@ object ArtistSearchScreen {
                 showGridByDefault = { showGridByDefault },
                 showRandomCatalogImage = { showRandomCatalogImage },
                 forceOneDisplayColumn = { forceOneDisplayColumn },
+                dataYearHeaderState = dataYearHeaderState,
                 displayType = { displayType },
                 onDisplayTypeToggle = viewModel::onDisplayTypeToggle,
                 gridState = gridState,

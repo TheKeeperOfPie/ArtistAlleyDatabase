@@ -9,8 +9,6 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -22,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,11 +38,11 @@ import artistalleydatabase.modules.alley.generated.resources.alley_update_notice
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -62,7 +59,6 @@ object ArtistAlleyScreen {
         onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
         onSeriesClick: (String) -> Unit,
         onMerchClick: (String) -> Unit,
-        onDataYearChange: (DataYear) -> Unit,
     ) {
         val updateNotice = stringResource(Res.string.alley_update_notice)
         val updateOpenUpdate = stringResource(Res.string.alley_open_update)
@@ -112,9 +108,12 @@ object ArtistAlleyScreen {
                         )
                     }
                     Destination.BROWSE -> {
-                        val tagsViewModel = viewModel { component.tagsViewModel() }
+                        val viewModel = viewModel { component.tagsViewModel() }
+                        val dataYearHeaderState =
+                            rememberDataYearHeaderState(viewModel.dataYear, null)
                         BrowseScreen(
-                            tagsViewModel = tagsViewModel,
+                            dataYearHeaderState = dataYearHeaderState,
+                            tagsViewModel = viewModel,
                             onSeriesClick = { onSeriesClick(it.name) },
                             onMerchClick = { onMerchClick(it.name) },
                         )
@@ -153,44 +152,23 @@ object ArtistAlleyScreen {
             }
             NavigationBar(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 Destination.entries.forEach {
-                    var expanded by remember { mutableStateOf(false) }
                     NavigationBarItem(
                         icon = {
                             Icon(
                                 it.icon,
                                 contentDescription = stringResource(it.textRes)
                             )
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                            ) {
-                                DataYear.entries.forEach {
-                                    DropdownMenuItem(
-                                        text = { Text(it.year.toString()) },
-                                        onClick = {
-                                            onDataYearChange(it)
-                                            expanded = false
-                                        }
-                                    )
-                                }
-                            }
                         },
                         label = { Text(stringResource(it.textRes)) },
                         selected = it == currentDestination,
-                        onClick = {
-                            if (currentDestination == it) {
-                                expanded = true
-                            } else {
-                                currentDestination = it
-                            }
-                        },
+                        onClick = { currentDestination = it },
                     )
                 }
             }
         }
         // TODO: Doesn't work on wasmJs, might be due to version mismatch
 //        NavigationSuiteScaffold(
-//            navigationSuiteItems = {c
+//            navigationSuiteItems = {
 //                    item(
 //                        icon = {
 //                            Icon(

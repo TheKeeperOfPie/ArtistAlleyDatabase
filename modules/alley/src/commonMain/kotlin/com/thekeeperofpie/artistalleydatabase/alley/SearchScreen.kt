@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells.Adaptive
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -85,6 +86,8 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
@@ -130,6 +133,7 @@ object SearchScreen {
         showGridByDefault: () -> Boolean,
         showRandomCatalogImage: () -> Boolean,
         forceOneDisplayColumn: () -> Boolean,
+        dataYearHeaderState: DataYearHeaderState,
         displayType: () -> DisplayType,
         onDisplayTypeToggle: (DisplayType) -> Unit,
         gridState: LazyStaggeredGridState,
@@ -248,6 +252,7 @@ object SearchScreen {
                                 showGridByDefault = showGridByDefault,
                                 showRandomCatalogImage = showRandomCatalogImage,
                                 forceOneDisplayColumn = forceOneDisplayColumn,
+                                dataYearHeaderState = dataYearHeaderState,
                                 displayType = displayType,
                                 gridState = gridState,
                                 onFavoriteToggle = onFavoriteToggle,
@@ -428,6 +433,7 @@ object SearchScreen {
         showGridByDefault: () -> Boolean,
         showRandomCatalogImage: () -> Boolean,
         forceOneDisplayColumn: () -> Boolean,
+        dataYearHeaderState: DataYearHeaderState,
         displayType: () -> DisplayType,
         gridState: LazyStaggeredGridState,
         onFavoriteToggle: (EntryModel, Boolean) -> Unit,
@@ -503,6 +509,10 @@ object SearchScreen {
                 }.let(Arrangement::spacedBy),
                 modifier = Modifier.fillMaxSize()
             ) {
+                item(key = "dataYearHeader", span = StaggeredGridItemSpan.FullLine) {
+                    DataYearHeader(dataYearHeaderState)
+                }
+
                 items(
                     count = entries.itemCount,
                     key = entries.itemKey { it.id.scopedId },
@@ -645,9 +655,8 @@ object SearchScreen {
         ;
 
         companion object {
-            fun fromSerializedValue(value: String) =
-                SearchScreen.DisplayType.entries.find { it.name == value }
-                    ?: SearchScreen.DisplayType.CARD
+            fun fromSerializedValue(value: String) = DisplayType.entries.find { it.name == value }
+                ?: DisplayType.CARD
         }
     }
 }

@@ -48,6 +48,8 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_w
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BackHandler
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
@@ -68,56 +70,61 @@ object BrowseScreen {
     @Composable
     operator fun invoke(
         tagsViewModel: TagsViewModel,
+        dataYearHeaderState: DataYearHeaderState,
         onSeriesClick: (SeriesEntry) -> Unit,
         onMerchClick: (MerchEntry) -> Unit,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-            TabRow(
-                selectedTabIndex = selectedTabIndex,
-                modifier = Modifier.fillMaxWidth()
+        Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.widthIn(max = 1200.dp)
             ) {
-                Tab.entries.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(stringResource(tab.textRes)) },
-                    )
+                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Tab.entries.forEachIndexed { index, tab ->
+                        Tab(
+                            selected = selectedTabIndex == index,
+                            onClick = { selectedTabIndex = index },
+                            text = { Text(stringResource(tab.textRes)) },
+                        )
+                    }
                 }
-            }
-            val scrollPositions = ScrollStateSaver.scrollPositions()
-            val series = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle()
-            val merch = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle()
-            AnimatedContent(
-                targetState = Tab.entries[selectedTabIndex],
-                transitionSpec = { fadeIn().togetherWith(fadeOut()) },
-                label = "Tag screen",
-            ) {
-                val scrollStateSaver = ScrollStateSaver.fromMap(it.name, scrollPositions)
-                when (it) {
-                    Tab.SERIES -> TabScreen(
-                        query = { tagsViewModel.seriesQuery },
-                        onQueryChange = { tagsViewModel.seriesQuery = it },
-                        entriesSize = { series.itemCount },
-                        values = series,
-                        itemKey = { it.name },
-                        itemToText = { it.name },
-                        onItemClick = onSeriesClick,
-                        scrollStateSaver = scrollStateSaver
-                    )
-                    Tab.MERCH -> TabScreen(
-                        query = { tagsViewModel.merchQuery },
-                        onQueryChange = { tagsViewModel.merchQuery = it },
-                        entriesSize = { merch.itemCount },
-                        values = merch,
-                        itemKey = { it.name },
-                        itemToText = { it.name },
-                        onItemClick = onMerchClick,
-                        scrollStateSaver = scrollStateSaver
-                    )
+                val scrollPositions = ScrollStateSaver.scrollPositions()
+                val series = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle()
+                val merch = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle()
+                AnimatedContent(
+                    targetState = Tab.entries[selectedTabIndex],
+                    transitionSpec = { fadeIn().togetherWith(fadeOut()) },
+                    label = "Tag screen",
+                ) {
+                    val scrollStateSaver = ScrollStateSaver.fromMap(it.name, scrollPositions)
+                    when (it) {
+                        Tab.SERIES -> TabScreen(
+                            dataYearHeaderState = dataYearHeaderState,
+                            query = { tagsViewModel.seriesQuery },
+                            onQueryChange = { tagsViewModel.seriesQuery = it },
+                            entriesSize = { series.itemCount },
+                            values = series,
+                            itemKey = { it.name },
+                            itemToText = { it.name },
+                            onItemClick = onSeriesClick,
+                            scrollStateSaver = scrollStateSaver
+                        )
+                        Tab.MERCH -> TabScreen(
+                            dataYearHeaderState = dataYearHeaderState,
+                            query = { tagsViewModel.merchQuery },
+                            onQueryChange = { tagsViewModel.merchQuery = it },
+                            entriesSize = { merch.itemCount },
+                            values = merch,
+                            itemKey = { it.name },
+                            itemToText = { it.name },
+                            onItemClick = onMerchClick,
+                            scrollStateSaver = scrollStateSaver
+                        )
+                    }
                 }
             }
         }
@@ -125,6 +132,7 @@ object BrowseScreen {
 
     @Composable
     private fun <T : Any> TabScreen(
+        dataYearHeaderState: DataYearHeaderState,
         query: () -> String,
         onQueryChange: (String) -> Unit,
         entriesSize: () -> Int,
@@ -203,6 +211,10 @@ object BrowseScreen {
                         .widthIn(max = 400.dp)
                         .align(Alignment.TopCenter)
                 ) {
+                    item(key = "dataYearHeader") {
+                        DataYearHeader(dataYearHeaderState)
+                    }
+
                     items(
                         count = values.itemCount,
                         key = values.itemKey(itemKey),
