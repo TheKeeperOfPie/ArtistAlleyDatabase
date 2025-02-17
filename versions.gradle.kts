@@ -34,7 +34,7 @@ object Versions {
     const val accompanist = "0.36.0"
 
     object android {
-        const val gradle = "8.10.0-alpha04"
+        const val gradle = "8.10.0-alpha05"
     }
 
     object androidx {
@@ -108,7 +108,7 @@ object Versions {
     }
 
     const val graphQlJava = "22.3"
-    const val htmlConverter = "1.0.2"
+    const val htmlConverter = "1.0.3"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.11.0"
     const val jackson = "2.18.2"
@@ -131,7 +131,7 @@ object Versions {
     const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
     const val ktor = "3.1.0"
-    const val ksoup = "0.2.1"
+    const val ksoup = "0.2.2"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.55"
     const val markwon = "4.6.2"
