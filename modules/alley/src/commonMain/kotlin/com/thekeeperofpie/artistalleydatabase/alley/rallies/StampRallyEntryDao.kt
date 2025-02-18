@@ -197,14 +197,14 @@ class StampRallyEntryDao(
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
             StampRallySearchSortOption.MAIN_TABLE ->
-                "ORDER BY ${tableName}_fts.hostTable COLLATE NOCASE $ascending"
+                "ORDER BY $tableName.hostTable COLLATE NOCASE $ascending"
             StampRallySearchSortOption.FANDOM ->
-                "ORDER BY ${tableName}_fts.fandom COLLATE NOCASE $ascending"
+                "ORDER BY $tableName.fandom COLLATE NOCASE $ascending"
             StampRallySearchSortOption.RANDOM -> "ORDER BY orderIndex $ascending"
             StampRallySearchSortOption.PRIZE_LIMIT ->
-                "ORDER BY ${tableName}_fts.prizeLimit $ascending NULLS LAST"
+                "ORDER BY $tableName.prizeLimit $ascending NULLS LAST"
             StampRallySearchSortOption.TOTAL_COST ->
-                "ORDER BY ${tableName}_fts.totalCost $ascending NULLS LAST"
+                "ORDER BY $tableName.totalCost $ascending NULLS LAST"
         }
         val randomSortSelectSuffix =
             (", substr(${tableName}_fts.counter * 0.${searchQuery.randomSeed}," +

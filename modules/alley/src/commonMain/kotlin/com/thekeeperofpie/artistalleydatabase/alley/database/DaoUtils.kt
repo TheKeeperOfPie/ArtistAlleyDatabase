@@ -124,7 +124,7 @@ object DaoUtils {
         val randomOrderIndex = randomSeed?.let {
             (", substr($ftsTableName.counter * 0.$randomSeed," +
                     " length($ftsTableName.counter) + 2) as orderIndex")
-        }
+        }.orEmpty()
         return """
             SELECT $select FROM (
                 SELECT * FROM(

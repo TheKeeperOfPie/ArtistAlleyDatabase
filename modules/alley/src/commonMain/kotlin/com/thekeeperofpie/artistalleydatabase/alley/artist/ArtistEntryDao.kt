@@ -267,8 +267,8 @@ class ArtistEntryDao(
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (filterParams.sortOption) {
-            ArtistSearchSortOption.BOOTH -> "ORDER BY ${tableName}_fts.booth COLLATE NOCASE"
-            ArtistSearchSortOption.ARTIST -> "ORDER BY ${tableName}_fts.name COLLATE NOCASE"
+            ArtistSearchSortOption.BOOTH -> "ORDER BY $tableName.booth COLLATE NOCASE"
+            ArtistSearchSortOption.ARTIST -> "ORDER BY $tableName.name COLLATE NOCASE"
             ArtistSearchSortOption.RANDOM -> "ORDER BY orderIndex"
         } + " $ascending" + " NULLS LAST"
         val randomSortSelectSuffix =
