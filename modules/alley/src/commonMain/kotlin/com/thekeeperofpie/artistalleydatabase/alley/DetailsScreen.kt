@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +42,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -69,9 +71,12 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.size.Dimension
+import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen.FullscreenImagesState
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ImagePager
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
@@ -82,9 +87,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,11 +104,9 @@ object DetailsScreen {
         title: @Composable () -> Unit,
         sharedElementId: Any,
         favorite: () -> Boolean,
-        onFavoriteToggle: (Boolean) -> Unit,
         images: () -> List<CatalogImage>,
-        onClickBack: () -> Unit,
-        onClickOpenInMap: () -> Unit,
         initialImageIndex: Int,
+        eventSink: (Event) -> Unit,
         content: @Composable ColumnScope.() -> Unit,
     ) {
         val fullscreenImagesState = remember { FullscreenImagesState() }
@@ -111,15 +116,15 @@ object DetailsScreen {
                     sharedElementId = sharedElementId,
                     title = title,
                     favorite = favorite,
-                    onFavoriteToggle = onFavoriteToggle,
+                    onFavoriteToggle = { eventSink(Event.FavoriteToggle(it)) },
                     onClickBack = {
                         if (fullscreenImagesState.index != null) {
                             fullscreenImagesState.index = null
                         } else {
-                            onClickBack()
+                            eventSink(Event.NavigateBack)
                         }
                     },
-                    onClickOpenInMap = onClickOpenInMap,
+                    onClickOpenInMap = { eventSink(Event.OpenMap) },
                 )
             },
             modifier = Modifier.sharedBounds("itemContainer", sharedElementId)
@@ -190,6 +195,9 @@ object DetailsScreen {
                                 }
                                 .sharedElement("image", image.uri)
                                 .fillMaxWidth()
+                                .conditionally(image.width != null && image.height != null) {
+                                    aspectRatio(image.width!!.toFloat() / image.height!!)
+                                }
                         )
                     }
                 }
@@ -293,7 +301,7 @@ object DetailsScreen {
     }
 
     @Composable
-    private fun rememberImagePagerState(
+    fun rememberImagePagerState(
         images: () -> List<CatalogImage>,
         initialImageIndex: Int,
     ): PagerState {
@@ -344,7 +352,7 @@ object DetailsScreen {
     }
 
     @Composable
-    private fun ImagePager(
+    fun ImagePager(
         sharedElementId: Any,
         pagerState: PagerState,
         images: List<CatalogImage>,
@@ -542,4 +550,46 @@ object DetailsScreen {
     class FullscreenImagesState {
         var index by mutableStateOf<Int?>(null)
     }
+
+    sealed interface Event {
+        data class FavoriteToggle(val favorite: Boolean) : Event
+        data object NavigateBack : Event
+        data object OpenMap: Event
+    }
+}
+
+@Preview
+@Composable
+private fun DetailsScreen() = PreviewDark {
+    val images = CatalogImagePreviewProvider.values.take(4).toList()
+    DetailsScreen(
+        title = { Text("Details title") },
+        sharedElementId = "sharedElementId",
+        favorite = { true },
+        images = { images },
+        initialImageIndex = 1,
+        eventSink = {},
+    ) {
+        Box(
+            Modifier.fillMaxSize()
+                .padding(16.dp)
+                .height(400.dp)
+                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ImagePagerGrid() = PreviewDark {
+    val images = CatalogImagePreviewProvider.values.take(4).toList()
+    DetailsScreen.ImagePager(
+        sharedElementId = "sharedElementId",
+        pagerState = DetailsScreen.rememberImagePagerState(
+            images = { images },
+            initialImageIndex = 0,
+        ),
+        images = images,
+        fullscreenImagesState = remember { FullscreenImagesState() },
+    )
 }

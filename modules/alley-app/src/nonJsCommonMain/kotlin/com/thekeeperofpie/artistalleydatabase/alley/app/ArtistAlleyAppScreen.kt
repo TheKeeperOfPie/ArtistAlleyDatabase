@@ -25,6 +25,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
+import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -101,32 +106,47 @@ object ArtistAlleyAppScreen {
                                     component.artistDetailsViewModel(createSavedStateHandle())
                                 }
                                 ArtistDetailsScreen(
-                                    viewModel = viewModel,
-                                    onClickBack = navController::navigateUp,
-                                    onSeriesClick = {
-                                        navController.navigate(
-                                            Destinations.Series(route.year, it)
-                                        )
-                                    },
-                                    onMerchClick = {
-                                        navController.navigate(
-                                            Destinations.Merch(route.year, it)
-                                        )
-                                    },
-                                    onStampRallyClick = {
-                                        navController.navigate(
-                                            Destinations.StampRallyDetails(it.year, it.id)
-                                        )
-                                    },
-                                    onArtistMapClick = {
-                                        navController.navigate(
-                                            Destinations.ArtistMap(route.id)
-                                        )
-                                    },
-                                    onArtistOtherYearClick = {
-                                        navController.navigate(
-                                            Destinations.ArtistDetails(year = it, id = route.id)
-                                        )
+                                    entry = viewModel.entry,
+                                    initialImageIndex = viewModel.initialImageIndex,
+                                    images = viewModel::images,
+                                    otherYears = viewModel::otherYears,
+                                    eventSink = {
+                                        when (it) {
+                                            is ArtistDetailsScreen.Event.OpenMerch ->
+                                                navController.navigate(
+                                                    Merch(route.year, it.merch)
+                                                )
+                                            is ArtistDetailsScreen.Event.OpenSeries ->
+                                                navController.navigate(
+                                                    Series(route.year, it.series)
+                                                )
+                                            is ArtistDetailsScreen.Event.OpenStampRally ->
+                                                navController.navigate(
+                                                    StampRallyDetails(
+                                                        year = it.entry.year,
+                                                        id = it.entry.id,
+                                                    )
+                                                )
+                                            is ArtistDetailsScreen.Event.OpenOtherYear ->
+                                                navController.navigate(
+                                                    ArtistDetails(
+                                                        year = it.year,
+                                                        id = route.id,
+                                                    )
+                                                )
+                                            is ArtistDetailsScreen.Event.DetailsEvent ->
+                                                when (val event = it.event) {
+                                                    is DetailsScreen.Event.FavoriteToggle ->
+                                                        viewModel.onFavoriteToggle(event.favorite)
+                                                    DetailsScreen.Event.NavigateBack ->
+                                                        navController.navigateUp()
+                                                    DetailsScreen.Event.OpenMap ->
+                                                        navController.navigate(
+                                                            Destinations.ArtistMap(route.id)
+                                                        )
+
+                                                }
+                                        }
                                     },
                                 )
                             }
@@ -157,18 +177,34 @@ object ArtistAlleyAppScreen {
                                     )
                                 }
                                 StampRallyDetailsScreen(
-                                    viewModel = viewModel,
-                                    onClickBack = navController::navigateUp,
-                                    onArtistClick = {
-                                        navController.navigate(
-                                            Destinations.ArtistDetails(it.year, it.id)
-                                        )
+                                    entry = viewModel.entry,
+                                    initialImageIndex = viewModel.initialImageIndex,
+                                    images = viewModel::images,
+                                    eventSink = {
+                                        when (it) {
+                                            is StampRallyDetailsScreen.Event.DetailsEvent ->
+                                                when (val event = it.event) {
+                                                    is DetailsScreen.Event.FavoriteToggle ->
+                                                        viewModel.onFavoriteToggle(event.favorite)
+                                                    DetailsScreen.Event.NavigateBack ->
+                                                        navController.navigateUp()
+                                                    DetailsScreen.Event.OpenMap ->
+                                                        navController.navigate(
+                                                            Destinations.StampRallyMap(
+                                                                year = route.year,
+                                                                id = route.id,
+                                                            )
+                                                        )
+                                                }
+                                            is StampRallyDetailsScreen.Event.OpenArtist ->
+                                                navController.navigate(
+                                                    Destinations.ArtistDetails(
+                                                        year = it.artist.year,
+                                                        id = it.artist.id,
+                                                    )
+                                                )
+                                        }
                                     },
-                                    onStampRallyMapClick = {
-                                        navController.navigate(
-                                            Destinations.StampRallyMap(route.year, route.id)
-                                        )
-                                    }
                                 )
                             }
 

@@ -60,9 +60,13 @@ import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_year
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
@@ -70,21 +74,19 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
 object ArtistDetailsScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ArtistDetailsViewModel,
-        onClickBack: () -> Unit,
-        onSeriesClick: (String) -> Unit,
-        onMerchClick: (String) -> Unit,
-        onStampRallyClick: (StampRallyEntry) -> Unit,
-        onArtistMapClick: () -> Unit,
-        onArtistOtherYearClick: (DataYear) -> Unit,
+        entry: ArtistDetailsViewModel.Entry?,
+        initialImageIndex: Int,
+        images: () -> List<CatalogImage>,
+        otherYears: () -> List<DataYear>,
+        eventSink: (Event) -> Unit,
     ) {
-        val entry = viewModel.entry
         if (entry == null) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -102,11 +104,9 @@ object ArtistDetailsScreen {
             title = { ArtistTitle(artist) },
             sharedElementId = artist.id,
             favorite = { entry.favorite },
-            onFavoriteToggle = viewModel::onFavoriteToggle,
-            images = viewModel::images,
-            onClickBack = onClickBack,
-            initialImageIndex = viewModel.initialImageIndex,
-            onClickOpenInMap = onArtistMapClick,
+            images = images,
+            initialImageIndex = initialImageIndex,
+            eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
             ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(
@@ -181,7 +181,7 @@ object ArtistDetailsScreen {
                         contentDescriptionTextRes = null,
                         values = entry.stampRallies,
                         valueToText = { it.fandom },
-                        onClick = onStampRallyClick,
+                        onClick = { eventSink(Event.OpenStampRally(it))},
                         allowExpand = false,
                         showDividerAbove = false,
                     )
@@ -196,7 +196,7 @@ object ArtistDetailsScreen {
                 unconfirmedIconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
                 expandTextRes = Res.string.alley_artist_details_series_unconfirmed_expand,
                 itemToText = { it },
-                onClick = onSeriesClick,
+                onClick = { eventSink(Event.OpenSeries(it)) },
             )
 
             ConfirmedAndInferred(
@@ -207,7 +207,7 @@ object ArtistDetailsScreen {
                 unconfirmedIconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
                 expandTextRes = Res.string.alley_artist_details_merch_unconfirmed_expand,
                 itemToText = { it },
-                onClick = onMerchClick,
+                onClick = { eventSink(Event.OpenMerch(it)) },
             )
 
             FlowRow(
@@ -215,7 +215,7 @@ object ArtistDetailsScreen {
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 FilledTonalButton(
-                    onClick = onArtistMapClick,
+                    onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     Row(
@@ -230,9 +230,9 @@ object ArtistDetailsScreen {
                     }
                 }
 
-                viewModel.otherYears.forEach {
+                otherYears().forEach {
                     FilledTonalButton(
-                        onClick = { onArtistOtherYearClick(it) },
+                        onClick = { eventSink(Event.OpenOtherYear(it)) },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
                         Text(stringResource(Res.string.alley_open_year, it.year))
@@ -400,5 +400,35 @@ object ArtistDetailsScreen {
                 )
             }
         }
+    }
+
+    sealed interface Event {
+        data class DetailsEvent(val event: DetailsScreen.Event): Event
+        data class OpenMerch(val merch: String): Event
+        data class OpenOtherYear(val year: DataYear): Event
+        data class OpenSeries(val series: String): Event
+        data class OpenStampRally(val entry: StampRallyEntry): Event
+    }
+}
+
+@Preview
+@Composable
+private fun PhoneLayout() {
+    val artist = ArtistWithUserDataProvider.values.first()
+    val images = CatalogImagePreviewProvider.values.take(4).toList()
+    PreviewDark {
+        ArtistDetailsScreen(
+            entry = ArtistDetailsViewModel.Entry(
+                artist = artist.artist,
+                userEntry = artist.userEntry,
+                seriesInferred = artist.artist.seriesInferred - artist.artist.seriesConfirmed,
+                seriesConfirmed = artist.artist.seriesConfirmed,
+                stampRallies = emptyList(),
+            ),
+            initialImageIndex = 1,
+            eventSink = {},
+            images = { images },
+            otherYears = { listOf(DataYear.YEAR_2024) },
+        )
     }
 }

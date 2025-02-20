@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -78,7 +79,8 @@ class StampRallyDetailsViewModel(
         }
     }
 
-    data class Entry(
+    @Stable
+    class Entry(
         val stampRally: StampRallyEntry,
         val userEntry: StampRallyUserEntry,
         val artists: List<ArtistEntry>,

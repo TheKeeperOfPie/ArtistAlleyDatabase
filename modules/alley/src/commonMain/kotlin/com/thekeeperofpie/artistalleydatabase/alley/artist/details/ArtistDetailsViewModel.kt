@@ -1,8 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
@@ -94,7 +93,8 @@ class ArtistDetailsViewModel(
         }
     }
 
-    data class Entry(
+    @Stable
+    class Entry(
         val artist: ArtistEntry,
         val userEntry: ArtistUserEntry,
         val seriesInferred: List<String>,

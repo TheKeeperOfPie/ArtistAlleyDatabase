@@ -77,10 +77,9 @@ fun main() {
                 }
                 .memoryCache {
                     MemoryCache.Builder()
-                        .maxSizeBytes(1024 * 1024)
+                        .maxSizeBytes(1000 * 1024 * 1024)
                         .build()
                 }
-                .diskCache(null) // TODO
                 .crossfade(true)
                 .build()
         }

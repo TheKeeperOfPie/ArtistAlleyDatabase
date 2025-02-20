@@ -85,6 +85,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.Dp
@@ -508,14 +509,16 @@ fun ImagePager(
 fun Modifier.sharedElement(
     vararg keys: Any?,
     zIndexInOverlay: Float = 0f,
-    animatedVisibilityScope: AnimatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
 ): Modifier {
     if (keys.contains(null)) return this
     if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
-    return with(LocalSharedTransitionScope.current) {
+    // TODO: Replace with SharedTransitionKey variant
+    return if (LocalInspectionMode.current) this else with(LocalSharedTransitionScope.current) {
         sharedElement(
             rememberSharedContentState(key = keys.toList()),
-            animatedVisibilityScope = animatedVisibilityScope,
+            animatedVisibilityScope = animatedVisibilityScope
+                ?: LocalAnimatedVisibilityScope.current,
             zIndexInOverlay = zIndexInOverlay,
         )
     }
@@ -526,7 +529,8 @@ fun Modifier.sharedBounds(vararg keys: Any?, zIndexInOverlay: Float = 0f): Modif
     if (keys.contains(null)) return this
     if (keys.any { it is SharedTransitionKey && (it.key == "null" || it.key.isEmpty()) }) return this
     // TODO: sharedBounds causes bugs with scrolling?
-    return with(LocalSharedTransitionScope.current) {
+    // TODO: Replace with SharedTransitionKey variant
+    return if (LocalInspectionMode.current) this else with(LocalSharedTransitionScope.current) {
         sharedBounds(
             rememberSharedContentState(key = keys.toList()),
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,

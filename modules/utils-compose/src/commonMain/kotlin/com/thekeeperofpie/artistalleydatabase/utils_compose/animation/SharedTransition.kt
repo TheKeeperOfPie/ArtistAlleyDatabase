@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
@@ -49,13 +50,18 @@ fun NavGraphBuilder.sharedElementComposable(
 }
 
 @Composable
+private fun Modifier.withSharedTransitionScopeOrDoNothingInPreview(
+    block: @Composable SharedTransitionScope.() -> Modifier
+) = if (LocalInspectionMode.current) this else with(LocalSharedTransitionScope.current) { block() }
+
+@Composable
 fun Modifier.sharedElement(
     key: SharedTransitionKey?,
     identifier: String,
     zIndexInOverlay: Float = 0f,
 ): Modifier {
     if (key?.key.isNullOrEmpty()) return this
-    return with(LocalSharedTransitionScope.current) {
+    return withSharedTransitionScopeOrDoNothingInPreview {
         sharedElement(
             sharedContentState = rememberSharedContentState(listOf(key, identifier)),
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
@@ -73,7 +79,7 @@ fun Modifier.sharedBounds(
     if (key?.key.isNullOrEmpty()) return this
     // TODO: sharedBounds broken
     if (true) return this
-    return with(LocalSharedTransitionScope.current) {
+    return withSharedTransitionScopeOrDoNothingInPreview {
         sharedBounds(
             sharedContentState = rememberSharedContentState(arrayOf(key, identifier)),
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
@@ -88,7 +94,7 @@ fun Modifier.sharedElement(
     zIndexInOverlay: Float = 0f,
 ): Modifier {
     state ?: return this
-    return with(LocalSharedTransitionScope.current) {
+    return withSharedTransitionScopeOrDoNothingInPreview {
         sharedElement(
             sharedContentState = state,
             animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
@@ -103,13 +109,17 @@ fun rememberSharedContentState(
     identifier: String,
 ): SharedTransitionScope.SharedContentState? {
     sharedTransitionKey ?: return null
-    return with(LocalSharedTransitionScope.current) {
-        rememberSharedContentState(key = listOf(sharedTransitionKey, identifier))
+    return if (LocalInspectionMode.current) {
+        null
+    } else {
+        with(LocalSharedTransitionScope.current) {
+            rememberSharedContentState(key = listOf(sharedTransitionKey, identifier))
+        }
     }
 }
 
 @Composable
-fun Modifier.skipToLookaheadSize() = with(LocalSharedTransitionScope.current) {
+fun Modifier.skipToLookaheadSize() = withSharedTransitionScopeOrDoNothingInPreview {
     skipToLookaheadSize()
 }
 
@@ -117,7 +127,7 @@ fun Modifier.skipToLookaheadSize() = with(LocalSharedTransitionScope.current) {
 fun Modifier.renderInSharedTransitionScopeOverlay(
     zIndexInOverlay: Float = 0f,
     renderInOverlay: (() -> Boolean)? = null,
-) = with(LocalSharedTransitionScope.current) {
+) = withSharedTransitionScopeOrDoNothingInPreview {
     renderInSharedTransitionScopeOverlay(
         renderInOverlay = renderInOverlay ?: { isTransitionActive },
         zIndexInOverlay = zIndexInOverlay,
@@ -133,7 +143,7 @@ fun Modifier.animateSharedTransitionWithOtherState(
     disableAnimateEnterExit: Boolean = false,
 ): Modifier {
     sharedContentState ?: return this
-    return with(LocalSharedTransitionScope.current) {
+    return withSharedTransitionScopeOrDoNothingInPreview {
         renderInSharedTransitionScopeOverlay(
             renderInOverlay = { isTransitionActive && sharedContentState.isMatchFound },
             zIndexInOverlay = zIndexInOverlay,
@@ -148,6 +158,6 @@ fun Modifier.animateSharedTransitionWithOtherState(
 fun Modifier.animateEnterExit(
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
-) = with(LocalAnimatedVisibilityScope.current) {
+) = if (LocalInspectionMode.current) this else with(LocalAnimatedVisibilityScope.current) {
     animateEnterExit(enter, exit)
 }

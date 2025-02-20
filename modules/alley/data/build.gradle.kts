@@ -32,6 +32,7 @@ kotlin {
             kotlin.srcDir(project.layout.buildDirectory.dir("generated/source"))
             dependencies {
                 implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
                 implementation(compose.runtime)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.uri.kmp)
