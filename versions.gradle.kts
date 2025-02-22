@@ -150,6 +150,7 @@ object Versions {
     const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.1.0-wasm.2"
+    const val sqldelightAndroidXDriver = "0.0.4"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.0"
     const val unityAds = "4.13.1"
@@ -386,7 +387,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 prefix("sqldelight") {
                     withVersion(Versions.sqldelight) {
-                        library("app.cash.sqldelight:android-driver")
                         library("app.cash.sqldelight:coroutines-extensions")
                         library("app.cash.sqldelight:sqlite-driver")
                         library("app.cash.sqldelight:web-worker-driver-wasm-js")
@@ -410,6 +410,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
                 library("com.benasher44:uuid:${Versions.benasher44Uuid}")
                 library("com.eygraber:compose-placeholder-material3:${Versions.placeholder}")
+                library("com.eygraber:sqldelight-androidx-driver:${Versions.sqldelightAndroidXDriver}")
                 library("com.eygraber:uri-kmp:${Versions.uriKmp}")
                 library("com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}")
                 library("com.fleeksoft.ksoup:ksoup:${Versions.ksoup}")

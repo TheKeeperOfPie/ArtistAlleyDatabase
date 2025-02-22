@@ -40,7 +40,8 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.sqlite)
-            implementation(libs.sqldelight.android.driver)
+            implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.sqldelight.androidx.driver)
         }
         val desktopMain by getting {
             dependencies {

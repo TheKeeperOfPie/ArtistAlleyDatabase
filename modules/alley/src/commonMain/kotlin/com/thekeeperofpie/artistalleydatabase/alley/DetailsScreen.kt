@@ -57,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -184,10 +185,14 @@ object DetailsScreen {
                     modifier = Modifier.fillMaxHeight().weight(1f)
                 ) {
                     itemsIndexed(images) { index, image ->
+                        val loadingColor = MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
+                        val placeholderPainter =
+                            remember(MaterialTheme.colorScheme) { ColorPainter(loadingColor) }
                         AsyncImage(
                             model = image.uri,
                             contentScale = ContentScale.FillWidth,
                             contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                            placeholder = placeholderPainter,
                             modifier = Modifier
                                 .clickable {
                                     fullscreenImagesState.index =
@@ -554,7 +559,7 @@ object DetailsScreen {
     sealed interface Event {
         data class FavoriteToggle(val favorite: Boolean) : Event
         data object NavigateBack : Event
-        data object OpenMap: Event
+        data object OpenMap : Event
     }
 }
 
