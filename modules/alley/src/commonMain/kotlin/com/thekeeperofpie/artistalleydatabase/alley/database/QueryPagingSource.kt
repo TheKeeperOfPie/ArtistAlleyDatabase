@@ -14,9 +14,15 @@ import app.cash.sqldelight.SuspendingTransacter
 import app.cash.sqldelight.TransactionCallbacks
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
+
+private val globalDatabaseMutex = Mutex()
 
 // Copied out from androidx-paging3-extensions since it doesn't publish a wasmJs target
 class OffsetQueryPagingSource<RowType : Any>(
@@ -58,7 +64,17 @@ class OffsetQueryPagingSource<RowType : Any>(
                 itemsAfter = maxOf(0, count - nextPosToLoad),
             )
         }
-        val loadResult = transacter().transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
+
+        // TODO: Multi-threading not safe with parallel transactions. This doesn't block other
+        //  database accesses, and is a really bad hack.
+        //  https://github.com/eygraber/sqldelight-androidx-driver/issues/25
+        val loadResult = if (PlatformSpecificConfig.type == PlatformType.ANDROID) {
+            globalDatabaseMutex.withLock {
+                transacter().transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
+            }
+        } else {
+            transacter().transactionWithResult(bodyWithReturn = getPagingSourceLoadResult)
+        }
         @Suppress("USELESS_CAST")
         (if (invalid) PagingSourceLoadResultInvalid<Int, RowType>() else loadResult) as PagingSourceLoadResult<Int, RowType>
     }

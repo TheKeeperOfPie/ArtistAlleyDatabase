@@ -1,7 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import android.app.Application
+import androidx.sqlite.SQLiteDriver
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import androidx.sqlite.driver.bundled.SQLITE_OPEN_CREATE
+import androidx.sqlite.driver.bundled.SQLITE_OPEN_FULLMUTEX
+import androidx.sqlite.driver.bundled.SQLITE_OPEN_READWRITE
 import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.db.AfterVersion
 import app.cash.sqldelight.db.QueryResult
@@ -9,6 +13,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteDatabaseType
 import com.eygraber.sqldelight.androidx.driver.AndroidxSqliteDriver
+import kotlinx.coroutines.runBlocking
 import me.tatarka.inject.annotations.Inject
 
 @Inject
@@ -21,14 +26,30 @@ actual class DriverFactory(private val application: Application) {
                 .copyTo(output)
         }
         val userPath = application.getDatabasePath("alleyUser")
+        val driver = BundledSQLiteDriver()
         return AndroidxSqliteDriver(
-            driver = BundledSQLiteDriver(),
+            driver = object : SQLiteDriver {
+                override fun open(fileName: String) =
+                    driver.open(
+                        fileName,
+                        SQLITE_OPEN_READWRITE or SQLITE_OPEN_CREATE or SQLITE_OPEN_FULLMUTEX,
+                    )
+            },
             databaseType = AndroidxSqliteDatabaseType.File(userPath.path),
-            schema = Schema(application).synchronous(),
+            schema = Schema.synchronous(),
         )
+            .also {
+                runBlocking {
+                    it.execute(
+                        null, """
+                    |ATTACH DATABASE '$readOnlyPath' AS readOnly
+                    """.trimMargin(), 0
+                    ).await()
+                }
+            }
     }
 
-    class Schema(private val application: Application) : SqlSchema<QueryResult.AsyncValue<Unit>> {
+    object Schema : SqlSchema<QueryResult.AsyncValue<Unit>> {
         override val version: Long
             get() = 1
 
@@ -54,13 +75,6 @@ actual class DriverFactory(private val application: Application) {
                     |    `notes` TEXT,
                     |    PRIMARY KEY (`stampRallyId`)
                     |)
-                    """.trimMargin(), 0
-                ).await()
-
-                val readOnlyPath = application.getDatabasePath("alley")
-                driver.execute(
-                    null, """
-                    |ATTACH DATABASE '$readOnlyPath' AS readOnly
                     """.trimMargin(), 0
                 ).await()
             }
