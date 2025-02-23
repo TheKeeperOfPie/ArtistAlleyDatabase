@@ -84,7 +84,7 @@ object Versions {
 
     object composeMultiplatform {
         object androidx {
-            const val navigation = "2.8.0-SNAPSHOT+pull-1739"
+            const val navigation = "2.8.0+dev2112"
         }
 
         const val plugin = "1.8.0-alpha02"

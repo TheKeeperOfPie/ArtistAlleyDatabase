@@ -120,7 +120,7 @@ class AnimeSearchViewModel<MediaPreviewEntry : Any, MediaWithListStatusEntry, Ch
         serialize = MediaViewOption::name,
     )
     val viewer = aniListApi.authedUser
-    val query = savedStateHandle.getMutableStateFlow<String>("query") { "" }
+    val query = savedStateHandle.getMutableStateFlow("query", "")
     var content = MutableStateFlow(PagingUtils.loading<AnimeSearchEntry>())
 
     private val refresh = RefreshFlow()

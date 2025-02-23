@@ -108,7 +108,7 @@ open class AnimeSortFilterViewModel<SortType>(
             deserialize = json::decodeFromString,
         )
     protected val airingDateIsAdvanced =
-        savedStateHandle.getMutableStateFlow<Boolean>("airingDateIsAdvanced") { false }
+        savedStateHandle.getMutableStateFlow("airingDateIsAdvanced", false)
     private val airingDateShown = savedStateHandle.getMutableStateFlow<String, Boolean?>(
         key = "airingDateShown",
         initialValue = { null },

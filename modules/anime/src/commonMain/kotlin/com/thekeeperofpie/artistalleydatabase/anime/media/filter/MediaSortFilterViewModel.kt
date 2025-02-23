@@ -222,13 +222,12 @@ abstract class MediaSortFilterViewModel<SortType>(
             deserialize = { it.toSet() },
         )
     private val tagIdsLockedIn = setOfNotNull(initialParams.tagId)
-    private val tagRank = savedStateHandle.getMutableStateFlow<String>("tagRank") {
-        if (initialParams.tagId == null) "0" else "60"
-    }
-    private val tagSearchQuery =
-        savedStateHandle.getMutableStateFlow<String>("tagSearchQuery") { "" }
-    val tagShowWhenSpoiler =
-        savedStateHandle.getMutableStateFlow<Boolean>("tagShowWhenSpoiler") { false }
+    private val tagRank = savedStateHandle.getMutableStateFlow(
+        "tagRank",
+        if (initialParams.tagId == null) "0" else "60",
+    )
+    private val tagSearchQuery = savedStateHandle.getMutableStateFlow("tagSearchQuery", "")
+    val tagShowWhenSpoiler = savedStateHandle.getMutableStateFlow("tagShowWhenSpoiler", false)
     protected val tagSection = object : SortFilterSectionState.Custom("tag") {
         override fun clear() {
             tagIdIn.value = tagIdsLockedIn

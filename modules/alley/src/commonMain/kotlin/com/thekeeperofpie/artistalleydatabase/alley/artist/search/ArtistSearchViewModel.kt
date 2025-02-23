@@ -19,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -55,17 +54,17 @@ class ArtistSearchViewModel(
         val year: DataYear? = null,
         val series: String? = null,
         val merch: String? = null,
+        val isRoot: Boolean = false,
     )
 
     private val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
 
-    val year = if (route.year == null) {
+    val year = if (route.isRoot) {
         settings.dataYear
     } else {
-        ReadOnlyStateFlow(route.year)
+        savedStateHandle.getMutableStateFlow("year", route.year ?: settings.dataYear.value)
     }
 
-    val dataYear = settings.dataYear
     val lockedYear = route.year
     val lockedSeries = route.series
     val lockedMerch = route.merch

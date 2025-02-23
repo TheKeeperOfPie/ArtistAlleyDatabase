@@ -115,7 +115,7 @@ object ArtistSearchScreen {
             val yearShortName = stringResource(year.shortName)
             val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
             val dataYearHeaderState =
-                rememberDataYearHeaderState(viewModel.dataYear, viewModel.lockedYear)
+                rememberDataYearHeaderState(viewModel.year, viewModel.lockedYear)
             SearchScreen<ArtistSearchQuery, ArtistEntryGridModel, ArtistColumn>(
                 viewModel = viewModel,
                 title = {

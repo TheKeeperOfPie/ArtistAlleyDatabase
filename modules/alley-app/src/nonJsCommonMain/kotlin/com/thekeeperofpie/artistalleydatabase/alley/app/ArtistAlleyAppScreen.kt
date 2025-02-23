@@ -25,10 +25,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
@@ -114,22 +110,22 @@ object ArtistAlleyAppScreen {
                                         when (it) {
                                             is ArtistDetailsScreen.Event.OpenMerch ->
                                                 navController.navigate(
-                                                    Merch(route.year, it.merch)
+                                                    Destinations.Merch(route.year, it.merch)
                                                 )
                                             is ArtistDetailsScreen.Event.OpenSeries ->
                                                 navController.navigate(
-                                                    Series(route.year, it.series)
+                                                    Destinations.Series(route.year, it.series)
                                                 )
                                             is ArtistDetailsScreen.Event.OpenStampRally ->
                                                 navController.navigate(
-                                                    StampRallyDetails(
+                                                    Destinations.StampRallyDetails(
                                                         year = it.entry.year,
                                                         id = it.entry.id,
                                                     )
                                                 )
                                             is ArtistDetailsScreen.Event.OpenOtherYear ->
                                                 navController.navigate(
-                                                    ArtistDetails(
+                                                    Destinations.ArtistDetails(
                                                         year = it.year,
                                                         id = route.id,
                                                     )

@@ -31,16 +31,16 @@ sealed interface Destinations : NavDestination {
     data class ArtistMap(val id: String) : Destinations
 
     @Serializable
-    data class Series(val year: DataYear?, val series: String) : Destinations
+    data class Series(val year: DataYear? = null, val series: String) : Destinations
 
     @Serializable
-    data class SeriesMap(val year: DataYear?, val series: String) : Destinations
+    data class SeriesMap(val year: DataYear? = null, val series: String) : Destinations
 
     @Serializable
-    data class Merch(val year: DataYear?, val merch: String) : Destinations
+    data class Merch(val year: DataYear? = null, val merch: String) : Destinations
 
     @Serializable
-    data class MerchMap(val year: DataYear?, val merch: String) : Destinations
+    data class MerchMap(val year: DataYear? = null, val merch: String) : Destinations
 
     @Serializable
     data class StampRallyDetails(

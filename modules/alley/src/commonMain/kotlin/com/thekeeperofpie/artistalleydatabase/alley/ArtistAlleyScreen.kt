@@ -89,7 +89,7 @@ object ArtistAlleyScreen {
                             viewModel { component.artistSortFilterViewModel(createSavedStateHandle()) }
                         val viewModel = viewModel {
                             component.artistSearchViewModel(
-                                createSavedStateHandle(),
+                                createSavedStateHandle().apply { this["isRoot"] = true },
                                 sortViewModel.state.filterParams,
                             )
                         }
