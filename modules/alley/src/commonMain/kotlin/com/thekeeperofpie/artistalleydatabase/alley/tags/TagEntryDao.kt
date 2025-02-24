@@ -127,6 +127,7 @@ class TagEntryDao(
             if (seriesId != null) {
                 if (tagMapQuery.showOnlyConfirmedTags) {
                     when (year) {
+                        DataYear.YEAR_2023 -> emptyList()
                         DataYear.YEAR_2024 -> getBoothsBySeriesIdConfirmed2024(seriesId)
                             .awaitAsList()
                         DataYear.YEAR_2025 -> getBoothsBySeriesIdConfirmed2025(seriesId)
@@ -135,6 +136,7 @@ class TagEntryDao(
                     }
                 } else {
                     when (year) {
+                        DataYear.YEAR_2023 -> emptyList()
                         DataYear.YEAR_2024 -> getBoothsBySeriesId2024(seriesId)
                             .awaitAsList()
                         DataYear.YEAR_2025 -> getBoothsBySeriesId2025(seriesId)
@@ -146,6 +148,7 @@ class TagEntryDao(
                 val merchId = tagMapQuery.merch!!
                 if (tagMapQuery.showOnlyConfirmedTags) {
                     when (year) {
+                        DataYear.YEAR_2023 -> emptyList()
                         DataYear.YEAR_2024 -> getBoothsByMerchIdConfirmed2024(merchId)
                             .awaitAsList()
                         DataYear.YEAR_2025 -> getBoothsByMerchIdConfirmed2025(merchId)
@@ -154,6 +157,7 @@ class TagEntryDao(
                     }
                 } else {
                     when (year) {
+                        DataYear.YEAR_2023 -> emptyList()
                         DataYear.YEAR_2024 -> getBoothsByMerchId2024(merchId)
                             .awaitAsList()
                         DataYear.YEAR_2025 -> getBoothsByMerchId2025(merchId)

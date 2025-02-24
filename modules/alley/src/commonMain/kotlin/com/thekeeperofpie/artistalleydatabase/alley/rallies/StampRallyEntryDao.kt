@@ -6,6 +6,8 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
@@ -17,8 +19,34 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import kotlinx.serialization.json.Json
+import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
+
+fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
+    val stampRallyId = getString(0)!!
+    return StampRallyWithUserData(
+        stampRally = StampRallyEntry(
+            year = DataYear.YEAR_2023,
+            id = stampRallyId,
+            fandom = getString(1)!!,
+            hostTable = getString(2)!!,
+            tables = getString(3)!!.let(Json::decodeFromString),
+            links = getString(4)!!.let(Json::decodeFromString),
+            tableMin = null,
+            totalCost = null,
+            prizeLimit = null,
+            notes = null,
+            counter = getLong(5)!!,
+        ),
+        userEntry = StampRallyUserEntry(
+            stampRallyId = stampRallyId,
+            favorite = getBoolean(6) == true,
+            ignored = getBoolean(7) == true,
+            notes = getString(8),
+        )
+    )
+}
 
 fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
@@ -70,6 +98,28 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
     )
 }
 
+private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
+    stampRally = StampRallyEntry(
+        year = DataYear.YEAR_2023,
+        id = id,
+        fandom = fandom,
+        hostTable = hostTable,
+        tables = tables,
+        links = links,
+        tableMin = null,
+        totalCost = null,
+        prizeLimit = null,
+        notes = null,
+        counter = counter,
+    ),
+    userEntry = StampRallyUserEntry(
+        stampRallyId = id,
+        favorite = favorite == true,
+        ignored = ignored == true,
+        notes = userNotes,
+    )
+)
+
 private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyEntry(
         year = DataYear.YEAR_2024,
@@ -114,6 +164,20 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
     )
 )
 
+fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
+    year = DataYear.YEAR_2023,
+    id = id,
+    fandom = fandom,
+    hostTable = hostTable,
+    tables = tables,
+    links = links,
+    tableMin = null,
+    totalCost = null,
+    prizeLimit = null,
+    notes = null,
+    counter = counter,
+)
+
 fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
     year = DataYear.YEAR_2024,
     id = id,
@@ -145,11 +209,16 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
 class StampRallyEntryDao(
     private val driver: SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
+    private val dao2023: suspend () -> StampRallyEntry2023Queries = { database().stampRallyEntry2023Queries },
     private val dao2024: suspend () -> StampRallyEntry2024Queries = { database().stampRallyEntry2024Queries },
     private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
 ) {
     suspend fun getEntry(year: DataYear, stampRallyId: String) =
         when (year) {
+            DataYear.YEAR_2023 -> dao2023()
+                .getEntry(stampRallyId)
+                .awaitAsOneOrNull()
+                ?.toStampRallyWithUserData()
             DataYear.YEAR_2024 -> dao2024()
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
@@ -162,6 +231,15 @@ class StampRallyEntryDao(
 
     suspend fun getEntryWithArtists(year: DataYear, stampRallyId: String) =
         when (year) {
+            DataYear.YEAR_2023 -> {
+                dao2023().transactionWithResult {
+                    val stampRally =
+                        getEntry(year, stampRallyId) ?: return@transactionWithResult null
+                    val artists = dao2023().getArtistEntries(stampRallyId).awaitAsList()
+                        .map { it.toArtistEntry() }
+                    StampRallyWithArtistsEntry(stampRally, artists)
+                }
+            }
             DataYear.YEAR_2024 -> {
                 dao2024().transactionWithResult {
                     val stampRally =
@@ -249,6 +327,7 @@ class StampRallyEntryDao(
                 statement = statement,
                 tableNames = listOf("${tableName}_fts"),
                 mapper = when (year) {
+                    DataYear.YEAR_2023 -> SqlCursor::toStampRallyWithUserData2023
                     DataYear.YEAR_2024 -> SqlCursor::toStampRallyWithUserData2024
                     DataYear.YEAR_2025 -> SqlCursor::toStampRallyWithUserData2025
                 },
@@ -305,6 +384,7 @@ class StampRallyEntryDao(
             statement = statement,
             tableNames = listOf("${tableName}_fts"),
             mapper = when (year) {
+                DataYear.YEAR_2023 -> SqlCursor::toStampRallyWithUserData2023
                 DataYear.YEAR_2024 -> SqlCursor::toStampRallyWithUserData2024
                 DataYear.YEAR_2025 -> SqlCursor::toStampRallyWithUserData2025
             },

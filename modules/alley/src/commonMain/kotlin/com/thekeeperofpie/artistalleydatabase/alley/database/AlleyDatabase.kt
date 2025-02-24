@@ -3,9 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 import app.cash.sqldelight.ColumnAdapter
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.DriverFactory
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -55,6 +57,11 @@ class ArtistAlleyDatabase(
                 """.trimMargin(), 0).await()
             databaseState.value = AlleySqlDatabase(
                 driver = driver,
+                artistEntry2023Adapter = ArtistEntry2023.Adapter(
+                    artistNamesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
+                    catalogLinksAdapter = listStringAdapter,
+                ),
                 artistEntry2024Adapter = ArtistEntry2024.Adapter(
                     linksAdapter = listStringAdapter,
                     storeLinksAdapter = listStringAdapter,
@@ -73,6 +80,10 @@ class ArtistAlleyDatabase(
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
                     commissionsAdapter = listStringAdapter,
+                ),
+                stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
+                    tablesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
                 ),
                 stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
                     tablesAdapter = listStringAdapter,

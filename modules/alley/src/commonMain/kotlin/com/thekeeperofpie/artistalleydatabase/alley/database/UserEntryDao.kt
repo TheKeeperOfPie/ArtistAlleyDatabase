@@ -6,6 +6,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
@@ -16,6 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+
+private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
+    BoothWithFavorite(year = DataYear.YEAR_2023, id = id, booth = booth, favorite = favorite)
 
 private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
     BoothWithFavorite(year = DataYear.YEAR_2024, id = id, booth = booth, favorite = favorite)
@@ -32,6 +36,10 @@ class UserEntryDao(
     fun getBoothsWithFavorites() = settings.dataYear
         .flatMapLatest {
             when (it) {
+                DataYear.YEAR_2023 -> dao().getBoothsWithFavorites2023()
+                    .asFlow()
+                    .mapToList(PlatformDispatchers.IO)
+                    .map { it.map { it.toBoothWithFavorite() } }
                 DataYear.YEAR_2024 -> dao().getBoothsWithFavorites2024()
                     .asFlow()
                     .mapToList(PlatformDispatchers.IO)

@@ -1,5 +1,6 @@
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistMerchConnection
@@ -7,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyArtistConnection
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
@@ -20,12 +22,16 @@ import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.file.RegularFile
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import javax.inject.Inject
 
+@CacheableTask
 abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
     companion object {
@@ -39,34 +45,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     @get:Inject
     abstract val layout: ProjectLayout
 
-    @get:InputFile
-    abstract val artistsCsv2024: RegularFileProperty
-
-    @get:InputFile
-    abstract val artistsCsv2025: RegularFileProperty
-
-    @get:InputFile
-    abstract val stampRalliesCsv2024: RegularFileProperty
-
-    @get:InputFile
-    abstract val stampRalliesCsv2025: RegularFileProperty
-
-    @get:InputFile
-    abstract val seriesCsv: RegularFileProperty
-
-    @get:InputFile
-    abstract val merchCsv: RegularFileProperty
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputsDirectory: DirectoryProperty
 
     @get:OutputDirectory
     abstract val outputResources: DirectoryProperty
 
     init {
-        artistsCsv2024.convention(layout.projectDirectory.file("inputs/2024/$ARTISTS_CSV_NAME"))
-        artistsCsv2025.convention(layout.projectDirectory.file("inputs/2025/$ARTISTS_CSV_NAME"))
-        stampRalliesCsv2024.convention(layout.projectDirectory.file("inputs/2024/$STAMP_RALLIES_CSV_NAME"))
-        stampRalliesCsv2025.convention(layout.projectDirectory.file("inputs/2025/$STAMP_RALLIES_CSV_NAME"))
-        seriesCsv.convention(layout.projectDirectory.file("inputs/$SERIES_CSV_NAME"))
-        merchCsv.convention(layout.projectDirectory.file("inputs/$MERCH_CSV_NAME"))
+        inputsDirectory.convention(layout.projectDirectory.dir("inputs"))
         outputResources.convention(layout.buildDirectory.dir("generated/composeResources"))
     }
 
@@ -81,12 +68,19 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     fun process() {
         val dbFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
         if (dbFile.exists() && !dbFile.delete()) {
-            println("Failed to delete $dbFile, manually delete to re-process inputs")
+            throw IllegalStateException(
+                "Failed to delete $dbFile, manually delete to re-process inputs"
+            )
         } else {
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
             BuildLogicDatabase.Schema.create(driver)
             val database = BuildLogicDatabase(
                 driver = driver,
+                artistEntry2023Adapter = ArtistEntry2023.Adapter(
+                    artistNamesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
+                    catalogLinksAdapter = listStringAdapter,
+                ),
                 artistEntry2024Adapter = ArtistEntry2024.Adapter(
                     linksAdapter = listStringAdapter,
                     storeLinksAdapter = listStringAdapter,
@@ -106,6 +100,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     merchConfirmedAdapter = listStringAdapter,
                     commissionsAdapter = listStringAdapter,
                 ),
+                stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
+                    tablesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
+                ),
                 stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
                     tablesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
@@ -116,9 +114,27 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 ),
             )
 
-            val (seriesConnections, merchConnections) = parseArtists(database)
+            val seriesConnections = mutableMapOf<Pair<String, String>, ArtistSeriesConnection>()
+            val merchConnections = mutableMapOf<Pair<String, String>, ArtistMerchConnection>()
+
+            val artists2023 = parseArtists2023(database)
+
+            val (artists2024, seriesConnections2024, merchConnections2024) =
+                parseArtists2024(database)
+            seriesConnections2024.forEach { seriesConnections.addSeriesConnection(it) }
+            merchConnections2024.forEach { merchConnections.addMerchConnection(it) }
+
+            val (artists2025, seriesConnections2025, merchConnections2025) =
+                parseArtists2025(database)
+            seriesConnections2025.forEach { seriesConnections.addSeriesConnection(it) }
+            merchConnections2025.forEach { merchConnections.addMerchConnection(it) }
+
+            val mutationQueries = database.mutationQueries
+            seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
+            merchConnections.values.forEach(mutationQueries::insertMerchConnection)
+
             parseTags(database, seriesConnections, merchConnections)
-            parseStampRallies(database)
+            parseStampRallies(artists2023, artists2024, artists2025, database)
 
             val ftsTables = listOf(
                 "artistEntry2024_fts",
@@ -150,37 +166,75 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun parseArtists(database: BuildLogicDatabase): Pair<MutableMap<Pair<String, String>, ArtistSeriesConnection>, MutableMap<Pair<String, String>, ArtistMerchConnection>> {
-        val seriesConnections = mutableMapOf<Pair<String, String>, ArtistSeriesConnection>()
-        val merchConnections = mutableMapOf<Pair<String, String>, ArtistMerchConnection>()
+    private fun parseArtists2023(database: BuildLogicDatabase): List<ArtistEntry2023> {
+        val artistsCsv2023 = inputsDirectory.file("2023/$ARTISTS_CSV_NAME").get()
+        return open(artistsCsv2023).use {
+            var counter = 1L
+            read(it)
+                .map {
+                    // "Booth","Table name","Artist names","Region","Summary","Contact","Links",
+                    // "Catalog link","Commissions?","UUIDs","Catalog"
+                    val ids = it["UUIDs"]!!.split("\n")
+                    val booth = it["Booth"].orEmpty()
+                    val tableName = it["Table name"].orEmpty()
+                    val allArtistNames = it["Artist names"].orEmpty()
+                        .split("\n\n")
+                        .map { it.split("\n") }
+                    val summary = it["Summary"]
 
-        fun addSeriesConnection(seriesConnection: ArtistSeriesConnection) {
-            val idPair = seriesConnection.let { it.artistId to it.seriesId }
-            val existing = seriesConnections[idPair]
-            if (existing == null) {
-                seriesConnections[idPair] = seriesConnection
-            } else {
-                seriesConnections[idPair] = existing.copy(
-                    has2024 = existing.has2024 || seriesConnection.has2024,
-                    has2025 = existing.has2025 || seriesConnection.has2025,
-                )
-            }
+                    val contactLinks = it["Contact"].orEmpty().split("\n\n")
+                        .map { it.split("\n").filter(String::isNotBlank) }
+                    val links = it["Links"].orEmpty().split("\n\n")
+                        .map { it.split("\n").filter(String::isNotBlank) }
+                    val catalogLinks = it["Catalog link"].orEmpty().split("\n\n")
+                        .map { it.split("\n").filter(String::isNotBlank) }
+
+                    val driveLink = it["Drive"]
+
+                    ids.mapIndexed { index, artistId ->
+                        val artistNames = allArtistNames.getOrElse(index) { emptyList() }
+                        val firstArtistName = artistNames.firstOrNull()
+                        val name = if (allArtistNames.any {
+                                it.any { tableName.contains(it) || it.contains(tableName) }
+                            }) {
+                            firstArtistName ?: tableName
+                        } else if (firstArtistName != null && name != firstArtistName) {
+                            "$tableName - $firstArtistName"
+                        } else {
+                            tableName
+                        }
+                        ArtistEntry2023(
+                            id = artistId,
+                            booth = booth,
+                            name = name,
+                            artistNames = artistNames,
+                            summary = summary,
+                            links = contactLinks.getOrElse(index) { emptyList() } +
+                                    links.getOrElse(index) { emptyList() },
+                            catalogLinks = catalogLinks.getOrElse(index) { emptyList() },
+                            driveLink = driveLink,
+                            counter = counter++,
+                        )
+                    }
+                }
+                .flatten()
+                .chunked(100)
+                .onEach {
+                    val mutationQueries = database.mutationQueries
+                    mutationQueries.transaction {
+                        it.forEach(mutationQueries::insertArtist2023)
+                    }
+                }
+                .flatten()
+                .toList()
         }
+    }
 
-        fun addMerchConnection(merchConnection: ArtistMerchConnection) {
-            val idPair = merchConnection.let { it.artistId to it.merchId }
-            val existing = merchConnections[idPair]
-            if (existing == null) {
-                merchConnections[idPair] = merchConnection
-            } else {
-                merchConnections[idPair] = existing.copy(
-                    has2024 = existing.has2024 || merchConnection.has2024,
-                    has2025 = existing.has2025 || merchConnection.has2025,
-                )
-            }
-        }
-
-        open(artistsCsv2024).use {
+    private fun parseArtists2024(database: BuildLogicDatabase): Triple<List<ArtistEntry2024>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
+        val seriesConnections = mutableListOf<ArtistSeriesConnection>()
+        val merchConnections = mutableListOf<ArtistMerchConnection>()
+        val artistsCsv2024 = inputsDirectory.file("2024/$ARTISTS_CSV_NAME").get()
+        val artists2024 = open(artistsCsv2024).use {
             var counter = 1L
             read(it)
                 .map {
@@ -281,18 +335,27 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 }
                 .chunked(100)
-                .forEach {
+                .onEach {
                     val artists = it.map { it.first }
                     val mutationQueries = database.mutationQueries
                     mutationQueries.transaction {
                         artists.forEach(mutationQueries::insertArtist2024)
                     }
-                    it.flatMap { it.second }.forEach(::addSeriesConnection)
-                    it.flatMap { it.third }.forEach(::addMerchConnection)
+                    it.flatMap { it.second }.forEach(seriesConnections::add)
+                    it.flatMap { it.third }.forEach(merchConnections::add)
                 }
+                .map { it.map { it.first } }
+                .flatten()
+                .toList()
         }
+        return Triple(artists2024, seriesConnections, merchConnections)
+    }
 
-        open(artistsCsv2025).use {
+    private fun parseArtists2025(database: BuildLogicDatabase): Triple<List<ArtistEntry2025>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
+        val seriesConnections = mutableListOf<ArtistSeriesConnection>()
+        val merchConnections = mutableListOf<ArtistMerchConnection>()
+        val artistsCsv2025 = inputsDirectory.file("2025/$ARTISTS_CSV_NAME").get()
+        val artists2025 = open(artistsCsv2025).use {
             var counter = 1L
             read(it)
                 .mapNotNull {
@@ -398,21 +461,20 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 }
                 .chunked(100)
-                .forEach {
+                .onEach {
                     val artists = it.map { it.first }
                     val mutationQueries = database.mutationQueries
                     mutationQueries.transaction {
                         artists.forEach(mutationQueries::insertArtist2025)
                     }
-                    it.flatMap { it.second }.forEach(::addSeriesConnection)
-                    it.flatMap { it.third }.forEach(::addMerchConnection)
+                    it.flatMap { it.second }.forEach(seriesConnections::add)
+                    it.flatMap { it.third }.forEach(merchConnections::add)
                 }
+                .map { it.map { it.first } }
+                .flatten()
+                .toList()
         }
-        val mutationQueries = database.mutationQueries
-        seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
-        merchConnections.values.forEach(mutationQueries::insertMerchConnection)
-
-        return seriesConnections to merchConnections
+        return Triple(artists2025, seriesConnections, merchConnections)
     }
 
     private fun parseTags(
@@ -421,6 +483,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         merchConnections: MutableMap<Pair<String, String>, ArtistMerchConnection>,
     ) {
         val mutationQueries = database.mutationQueries
+        val seriesCsv = inputsDirectory.file(SERIES_CSV_NAME).get()
+        val merchCsv = inputsDirectory.file(MERCH_CSV_NAME).get()
         open(seriesCsv).use {
             read(it)
                 .map {
@@ -463,8 +527,77 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun parseStampRallies(database: BuildLogicDatabase) {
+    private fun parseStampRallies(
+        artists2023: List<ArtistEntry2023>,
+        artists2024: List<ArtistEntry2024>,
+        artists2025: List<ArtistEntry2025>,
+        database: BuildLogicDatabase,
+    ) {
         val mutationQueries = database.mutationQueries
+//        val stampRalliesCsv2025 = inputsDirectory.file("2025/$STAMP_RALLIES_CSV_NAME").get()
+        val stampRalliesCsv2024 = inputsDirectory.file("2024/$STAMP_RALLIES_CSV_NAME").get()
+        val stampRalliesCsv2023 = inputsDirectory.file("2023/$STAMP_RALLIES_CSV_NAME").get()
+
+        val boothToArtist2023 = artists2023.associate { it.booth to it }
+        val boothToArtist2024 = artists2024.associate { it.booth to it }
+//        val boothToArtist2025 = artists2025.associate { it.booth to it }
+
+        open(stampRalliesCsv2023).use {
+            var counter = 1L
+            read(it)
+                .mapNotNull {
+                    // Theme,Image,Free?,Link,Tables
+                    val theme = it["Theme"] ?: return@mapNotNull null
+                    val links = it["Link"]!!.split("\n")
+                        .filter(String::isNotBlank)
+                    val hostTable = it["Tables"]!!.split("\n")
+                        .firstOrNull { it.contains("-") }
+                        ?.substringBefore("-")
+                        ?.trim() ?: return@mapNotNull null
+
+                    val stampRallyId = "2023-$hostTable-$theme"
+
+                    data class Table(
+                        val booth: String,
+                        val names: List<String>,
+                    )
+
+                    val tables = it["Tables"]!!.split("\n")
+                        .filter(String::isNotBlank)
+                        .map {
+                            val parts = it.split("-").filter { !it.startsWith("http") }
+                            val table =
+                                parts.find { it.length == 3 } ?: it.substringAfter("Exhibit Hall ")
+                            val names = parts.filter { it.length != 3 }.map { it.removePrefix("@") }
+                            Table(table, names)
+                        }
+
+                    // TODO: Shouldn't include artists that share the table
+                    val connections = tables.mapNotNull { boothToArtist2023[it.booth] }
+                        .map { StampRallyArtistConnection(stampRallyId, it.id) }
+
+                    StampRallyEntry2023(
+                        id = stampRallyId,
+                        fandom = theme,
+                        tables = tables.map {
+                            "${it.booth} - ${it.names.joinToString(separator = ", ")}"
+                        },
+                        hostTable = hostTable,
+                        links = links,
+                        counter = counter++,
+                    ) to connections
+                }
+                .chunked(DATABASE_CHUNK_SIZE)
+                .forEach {
+                    val stampRallies = it.map { it.first }
+                    val artistConnections = it.flatMap { it.second }
+                    mutationQueries.transaction {
+                        stampRallies.forEach(mutationQueries::insertStampRally2023)
+                        artistConnections.forEach(mutationQueries::insertArtistConnection)
+                    }
+                }
+        }
+
         open(stampRalliesCsv2024).use {
             var counter = 1L
             read(it)
@@ -489,12 +622,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
                     val notes = it["Notes"]
 
-                    val stampRallyId = "$hostTable-$theme"
+                    val stampRallyId = "2024-$hostTable-$theme"
                     val connections = tables
                         .filter { it.contains("-") }
                         .map { it.substringBefore("-") }
                         .map(String::trim)
-                        .map { StampRallyArtistConnection(stampRallyId, it) }
+                        .filter { it.length == 3 }
+                        .map { boothToArtist2024[it]!! }
+                        .map { StampRallyArtistConnection(stampRallyId, it.id) }
 
                     StampRallyEntry2024(
                         id = stampRallyId,
@@ -519,65 +654,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                 }
         }
-
-        open(stampRalliesCsv2025).use {
-            var counter = 1L
-            read(it)
-                .mapNotNull {
-                    // Theme,Link,Tables,Table Min, Total, Notes,Images
-                    val theme = it["Theme"]!!
-                    val links = it["Link"]!!.split("\n")
-                        .filter(String::isNotBlank)
-                    val tables = it["Tables"]!!.split("\n")
-                        .filter(String::isNotBlank)
-                    val hostTable = tables.firstOrNull { it.contains("-") }
-                        ?.substringBefore("-")
-                        ?.trim() ?: return@mapNotNull null
-                    val tableMin = it["Table Min"]!!.let {
-                        when {
-                            it.equals("Free", ignoreCase = true) -> 0
-                            it.equals("Any", ignoreCase = true) -> 1
-                            else -> it.removePrefix("$").toIntOrNull()
-                        }
-                    }
-                    val totalCost = it["Total"]?.removePrefix("$")?.toIntOrNull()
-                    val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
-                    val notes = it["Notes"]
-
-                    val stampRallyId = "$hostTable-$theme"
-                    val connections = tables
-                        .filter { it.contains("-") }
-                        .map { it.substringBefore("-") }
-                        .map(String::trim)
-                        .map { StampRallyArtistConnection(stampRallyId, it) }
-
-                    StampRallyEntry2025(
-                        id = stampRallyId,
-                        fandom = theme,
-                        tables = tables,
-                        hostTable = hostTable,
-                        links = links,
-                        tableMin = tableMin?.toLong(),
-                        totalCost = (if (tableMin == 0) 0 else totalCost)?.toLong(),
-                        prizeLimit = prizeLimit?.toLong(),
-                        notes = notes,
-                        counter = counter++,
-                    ) to connections
-                }
-                .chunked(DATABASE_CHUNK_SIZE)
-                .forEach {
-                    val stampRallies = it.map { it.first }
-                    val artistConnections = it.flatMap { it.second }
-                    mutationQueries.transaction {
-                        stampRallies.forEach(mutationQueries::insertStampRally2025)
-                        artistConnections.forEach(mutationQueries::insertArtistConnection)
-                    }
-                }
-        }
     }
 
-    private fun open(file: RegularFileProperty) =
-        file.get().asFile.inputStream().asSource().buffered()
+    private fun open(file: RegularFile) = file.asFile.inputStream().asSource().buffered()
 
     private fun read(source: Source): Sequence<Map<String, String>> {
         val header = source.readLine()!!
@@ -614,6 +693,34 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
 
             buffer.close()
+        }
+    }
+
+    fun MutableMap<Pair<String, String>, ArtistSeriesConnection>.addSeriesConnection(
+        seriesConnection: ArtistSeriesConnection,
+    ) {
+        val idPair = seriesConnection.let { it.artistId to it.seriesId }
+        val existing = this[idPair]
+        if (existing == null) {
+            this[idPair] = seriesConnection
+        } else {
+            this[idPair] = existing.copy(
+                has2024 = existing.has2024 || seriesConnection.has2024,
+                has2025 = existing.has2025 || seriesConnection.has2025,
+            )
+        }
+    }
+
+    fun MutableMap<Pair<String, String>, ArtistMerchConnection>.addMerchConnection(merchConnection: ArtistMerchConnection) {
+        val idPair = merchConnection.let { it.artistId to it.merchId }
+        val existing = this[idPair]
+        if (existing == null) {
+            this[idPair] = merchConnection
+        } else {
+            this[idPair] = existing.copy(
+                has2024 = existing.has2024 || merchConnection.has2024,
+                has2025 = existing.has2025 || merchConnection.has2025,
+            )
         }
     }
 }

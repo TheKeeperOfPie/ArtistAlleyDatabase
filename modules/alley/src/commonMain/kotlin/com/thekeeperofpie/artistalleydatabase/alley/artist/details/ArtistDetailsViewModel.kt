@@ -71,16 +71,8 @@ class ArtistDetailsViewModel(
             }
         }
         viewModelScope.launch(CustomDispatchers.Main) {
-            withContext(CustomDispatchers.IO) {
-                val otherYear = when (year) {
-                    DataYear.YEAR_2024 -> DataYear.YEAR_2025
-                    DataYear.YEAR_2025 -> DataYear.YEAR_2024
-                }
-
-                val otherEntry = artistEntryDao.getEntry(otherYear, id)
-                if (otherEntry != null) {
-                    otherYears = listOf(otherYear)
-                }
+            otherYears = withContext(CustomDispatchers.IO) {
+                (DataYear.entries - year).filter { artistEntryDao.getEntry(it, id) != null }
             }
         }
     }

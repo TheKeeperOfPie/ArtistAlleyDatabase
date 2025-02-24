@@ -1,3 +1,7 @@
+insertArtist2023:
+INSERT OR REPLACE INTO artistEntry2023
+VALUES ?;
+
 insertArtist2024:
 INSERT OR REPLACE INTO artistEntry2024
 VALUES ?;
@@ -12,6 +16,10 @@ VALUES ?;
 
 insertMerchConnection:
 INSERT OR REPLACE INTO artistMerchConnection
+VALUES ?;
+
+insertStampRally2023:
+INSERT OR REPLACE INTO stampRallyEntry2023
 VALUES ?;
 
 insertStampRally2024:

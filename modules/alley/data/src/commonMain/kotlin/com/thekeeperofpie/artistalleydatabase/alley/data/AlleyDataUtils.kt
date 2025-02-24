@@ -17,6 +17,10 @@ object AlleyDataUtils {
         file ?: return emptyList()
         val targetName = file.replace(" - ", "").replace("'", "_")
         val targetFolder = when (year) {
+            DataYear.YEAR_2023 -> when (folder) {
+                Folder.CATALOGS -> ComposeFiles.catalogs2023
+                Folder.RALLIES -> ComposeFiles.rallies2023
+            }
             DataYear.YEAR_2024 -> when (folder) {
                 Folder.CATALOGS -> ComposeFiles.catalogs2024
                 Folder.RALLIES -> ComposeFiles.rallies2024

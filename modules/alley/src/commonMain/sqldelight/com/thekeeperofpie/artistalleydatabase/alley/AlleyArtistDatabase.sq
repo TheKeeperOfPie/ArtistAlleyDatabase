@@ -3,6 +3,32 @@ import kotlin.String;
 import kotlin.collections.List;
 
 CREATE TABLE
+    IF NOT EXISTS `artistEntry2023` (
+        `id` TEXT NOT NULL,
+        `booth` TEXT NOT NULL COLLATE NOCASE,
+        `name` TEXT NOT NULL COLLATE NOCASE,
+        `artistNames` TEXT AS List<String> NOT NULL COLLATE NOCASE,
+        `summary` TEXT,
+        `links` TEXT AS List<String> NOT NULL,
+        `catalogLinks` TEXT AS List<String> NOT NULL,
+        `driveLink` TEXT,
+        `counter` INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (`id`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry2023_fts` USING FTS5 (
+    `id`,
+    `booth`,
+    `name`,
+    `artistNames`,
+    `summary`,
+    `driveLink`,
+    `counter`,
+    content=`artistEntry2023`,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE TABLE
     IF NOT EXISTS `artistEntry2024` (
         `id` TEXT NOT NULL,
         `booth` TEXT NOT NULL COLLATE NOCASE,
@@ -92,6 +118,26 @@ CREATE TABLE
         `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (`artistId`, `merchId`)
     );
+
+CREATE TABLE
+    IF NOT EXISTS `stampRallyEntry2023` (
+        `id` TEXT NOT NULL,
+        `fandom` TEXT NOT NULL COLLATE NOCASE,
+        `hostTable` TEXT NOT NULL COLLATE NOCASE,
+        `tables` TEXT AS List<String> NOT NULL,
+        `links` TEXT AS List<String> NOT NULL,
+        `counter` INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (`id`)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry2023_fts` USING FTS5 (
+    `id`,
+    `fandom`,
+    `tables`,
+    `counter`,
+    content=`stampRallyEntry2023`,
+    tokenize="unicode61 remove_diacritics 2"
+);
 
 CREATE TABLE
     IF NOT EXISTS `stampRallyEntry2024` (

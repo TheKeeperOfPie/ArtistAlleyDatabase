@@ -10,6 +10,11 @@ getArtistUserEntry:
 SELECT * FROM artistUserEntry
 WHERE artistId = :artistId;
 
+getBoothsWithFavorites2023:
+SELECT artistEntry2023.id, artistEntry2023.booth, artistUserEntry.favorite FROM artistEntry2023
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2023.id = artistUserEntry.artistId;
+
 getBoothsWithFavorites2024:
 SELECT artistEntry2024.id, artistEntry2024.booth, artistUserEntry.favorite FROM artistEntry2024
 LEFT OUTER JOIN artistUserEntry

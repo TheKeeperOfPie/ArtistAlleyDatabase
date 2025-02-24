@@ -9,6 +9,8 @@ import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
@@ -26,8 +28,38 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
+import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2025.GetEntry as GetEntry2025
+
+private fun SqlCursor.toArtistWithUserData2023(): ArtistWithUserData {
+    val artistId = getString(0)!!
+    return ArtistWithUserData(
+        artist = ArtistEntry(
+            year = DataYear.YEAR_2023,
+            id = artistId,
+            booth = getString(1),
+            name = getString(2)!!,
+            summary = getString(4),
+            links = getString(5)!!.let(Json::decodeFromString),
+            storeLinks = emptyList(),
+            catalogLinks = getString(6)!!.let(Json::decodeFromString),
+            driveLink = getString(7),
+            notes = null,
+            seriesInferred = emptyList(),
+            seriesConfirmed = emptyList(),
+            merchInferred = emptyList(),
+            merchConfirmed = emptyList(),
+            counter = getLong(8)!!,
+        ),
+        userEntry = ArtistUserEntry(
+            artistId = artistId,
+            favorite = getBoolean(9) == true,
+            ignored = getBoolean(10) == true,
+            notes = getString(11),
+        )
+    )
+}
 
 private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
     val artistId = getString(0)!!
@@ -88,6 +120,32 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
     )
 }
 
+private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        year = DataYear.YEAR_2023,
+        id = id,
+        booth = booth,
+        name = name,
+        summary = summary,
+        links = links,
+        storeLinks = emptyList(),
+        catalogLinks = catalogLinks,
+        driveLink = driveLink,
+        notes = null,
+        seriesInferred = emptyList(),
+        seriesConfirmed = emptyList(),
+        merchInferred = emptyList(),
+        merchConfirmed = emptyList(),
+        counter = counter,
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        favorite = favorite == true,
+        ignored = ignored == true,
+        notes = userNotes,
+    )
+)
+
 private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
         year = DataYear.YEAR_2024,
@@ -141,6 +199,24 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
     )
 )
 
+fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
+    year = DataYear.YEAR_2023,
+    id = id,
+    booth = booth,
+    name = name,
+    summary = summary,
+    links = links,
+    storeLinks = emptyList(),
+    catalogLinks = catalogLinks,
+    driveLink = driveLink,
+    notes = null,
+    seriesInferred = emptyList(),
+    seriesConfirmed = emptyList(),
+    merchInferred = emptyList(),
+    merchConfirmed = emptyList(),
+    counter = counter,
+)
+
 fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
     year = DataYear.YEAR_2024,
     id = id,
@@ -183,11 +259,16 @@ class ArtistEntryDao(
     private val driver: SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val settings: ArtistAlleySettings,
+    private val dao2023: suspend () -> ArtistEntry2023Queries = { database().artistEntry2023Queries },
     private val dao2024: suspend () -> ArtistEntry2024Queries = { database().artistEntry2024Queries },
     private val dao2025: suspend () -> ArtistEntry2025Queries = { database().artistEntry2025Queries },
 ) {
     suspend fun getEntry(year: DataYear, id: String) =
         when (year) {
+            DataYear.YEAR_2023 -> dao2023()
+                .getEntry(id)
+                .awaitAsOneOrNull()
+                ?.toArtistWithUserData()
             DataYear.YEAR_2024 -> dao2024()
                 .getEntry(id)
                 .awaitAsOneOrNull()
@@ -201,6 +282,11 @@ class ArtistEntryDao(
     fun getEntryFlow(id: String) = settings.dataYear
         .flatMapLatest {
             when (it) {
+                DataYear.YEAR_2023 -> dao2023()
+                    .getEntry(id)
+                    .asFlow()
+                    .mapToOne(PlatformDispatchers.IO)
+                    .mapLatest { it.toArtistWithUserData() }
                 DataYear.YEAR_2024 -> dao2024()
                     .getEntry(id)
                     .asFlow()
@@ -216,6 +302,14 @@ class ArtistEntryDao(
 
     suspend fun getEntryWithStampRallies(dataYear: DataYear, artistId: String) =
         when (dataYear) {
+            DataYear.YEAR_2023 -> {
+                dao2023().transactionWithResult {
+                    val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
+                    val stampRallies = dao2023().getStampRallyEntries(artistId).awaitAsList()
+                        .map { it.toStampRallyEntry() }
+                    ArtistWithStampRalliesEntry(artist, stampRallies)
+                }
+            }
             DataYear.YEAR_2024 -> {
                 dao2024().transactionWithResult {
                     val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
@@ -289,18 +383,20 @@ class ArtistEntryDao(
         filterParams.summary.takeUnless(String?::isNullOrBlank)?.let {
             matchOptions += "(summary : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
         }
-        filterParams.series.takeUnless { it.isEmpty() }?.let {
-            if (filterParams.showOnlyConfirmedTags) {
-                "(seriesConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
-            } else {
-                "({seriesInferred seriesConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
+        if (year != DataYear.YEAR_2023) {
+            filterParams.series.takeUnless { it.isEmpty() }?.let {
+                if (filterParams.showOnlyConfirmedTags) {
+                    "(seriesConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
+                } else {
+                    "({seriesInferred seriesConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
+                }
             }
-        }
-        filterParams.merch.takeUnless { it.isEmpty() }?.let {
-            if (filterParams.showOnlyConfirmedTags) {
-                "(merchConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
-            } else {
-                "({merchInferred merchConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
+            filterParams.merch.takeUnless { it.isEmpty() }?.let {
+                if (filterParams.showOnlyConfirmedTags) {
+                    "(merchConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
+                } else {
+                    "({merchInferred merchConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
+                }
             }
         }
 
@@ -331,6 +427,7 @@ class ArtistEntryDao(
                 statement = statement,
                 tableNames = listOf("${tableName}_fts", "artistUserEntry"),
                 mapper = when (year) {
+                    DataYear.YEAR_2023 -> SqlCursor::toArtistWithUserData2023
                     DataYear.YEAR_2024 -> SqlCursor::toArtistWithUserData2024
                     DataYear.YEAR_2025 -> SqlCursor::toArtistWithUserData2025
                 },
@@ -343,11 +440,18 @@ class ArtistEntryDao(
             "booth",
             "name",
             "summary",
-            "seriesInferred".takeUnless { filterParams.showOnlyConfirmedTags },
-            "seriesConfirmed",
-            "merchInferred".takeUnless { filterParams.showOnlyConfirmedTags },
-            "merchConfirmed",
-        )
+        ).let {
+            if (year == DataYear.YEAR_2023) {
+                it
+            } else {
+                it + listOfNotNull(
+                    "seriesInferred".takeUnless { filterParams.showOnlyConfirmedTags },
+                    "seriesConfirmed",
+                    "merchInferred".takeUnless { filterParams.showOnlyConfirmedTags },
+                    "merchConfirmed",
+                )
+            }
+        }
         val matchQuery = buildString {
             append("'")
             append(matchOptions.joinToString(separator = " ", postfix = " "))
@@ -392,6 +496,7 @@ class ArtistEntryDao(
             statement = statement,
             tableNames = listOf("${tableName}_fts", "artistUserEntry"),
             mapper = when (year) {
+                DataYear.YEAR_2023 -> SqlCursor::toArtistWithUserData2023
                 DataYear.YEAR_2024 -> SqlCursor::toArtistWithUserData2024
                 DataYear.YEAR_2025 -> SqlCursor::toArtistWithUserData2025
             },

@@ -16,8 +16,11 @@ import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.extensions.stdlib.capitalized
 import java.io.File
@@ -27,6 +30,7 @@ import javax.imageio.ImageIO
 import javax.imageio.stream.FileCacheImageInputStream
 import javax.inject.Inject
 
+@CacheableTask
 abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     companion object {
@@ -42,6 +46,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     abstract val layout: ProjectLayout
 
     @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputFolder: DirectoryProperty
 
     @get:OutputDirectory
@@ -68,6 +73,19 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
             val dispatcher = it.asCoroutineDispatcher()
             runBlocking(dispatcher) {
+                val catalogs2023 = "catalogs2023" to processFolder(
+                    imageCacheDir = imageCacheDir,
+                    path = "2023/catalogs",
+                    transformName = { it.substringBefore(" -") },
+                )
+                val rallies2023 = "rallies2023" to processFolder(
+                    imageCacheDir = imageCacheDir,
+                    path = "2023/rallies",
+                    transformName = {
+                        val parts = it.split("-")
+                        "${parts[1]}_${parts[0]}_${parts[2]}"
+                    },
+                )
                 val catalogs2024 = "catalogs2024" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2024/catalogs",
@@ -89,7 +107,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     transformName = { it.replace(" - ", "").replace("'", "_") },
                 )
 
-                buildComposeFiles(catalogs2024, rallies2024, catalogs2025, rallies2025)
+                buildComposeFiles(
+                    catalogs2023,
+                    rallies2023,
+                    catalogs2024,
+                    rallies2024,
+                    catalogs2025,
+                    rallies2025,
+                )
             }
         }
 
