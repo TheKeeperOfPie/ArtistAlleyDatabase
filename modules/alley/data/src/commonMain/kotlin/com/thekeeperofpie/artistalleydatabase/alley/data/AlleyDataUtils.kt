@@ -15,7 +15,7 @@ object AlleyDataUtils {
 
     fun getImages(year: DataYear, folder: Folder, file: String?): List<CatalogImage> {
         file ?: return emptyList()
-        val targetName = file.replace(" - ", "").replace("'", "_")
+        val targetName = file.replace("'", "_")
         val targetFolder = when (year) {
             DataYear.YEAR_2023 -> when (folder) {
                 Folder.CATALOGS -> ComposeFiles.catalogs2023

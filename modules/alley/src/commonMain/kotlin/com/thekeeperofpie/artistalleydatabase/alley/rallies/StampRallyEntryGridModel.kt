@@ -35,7 +35,7 @@ class StampRallyEntryGridModel(
             images = AlleyDataUtils.getImages(
                 year = entry.stampRally.year,
                 folder = AlleyDataUtils.Folder.RALLIES,
-                file = entry.stampRally.id.replace("-", " - "),
+                file = entry.stampRally.let { "${it.hostTable}${it.fandom}" },
             ),
             placeholderText = entry.stampRally.fandom,
         )

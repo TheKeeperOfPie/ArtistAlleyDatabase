@@ -137,8 +137,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             parseStampRallies(artists2023, artists2024, artists2025, database)
 
             val ftsTables = listOf(
+                "artistEntry2023_fts",
                 "artistEntry2024_fts",
                 "artistEntry2025_fts",
+                "stampRallyEntry2023_fts",
                 "stampRallyEntry2024_fts",
                 "stampRallyEntry2025_fts",
                 "seriesEntry_fts",
@@ -550,12 +552,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val theme = it["Theme"] ?: return@mapNotNull null
                     val links = it["Link"]!!.split("\n")
                         .filter(String::isNotBlank)
-                    val hostTable = it["Tables"]!!.split("\n")
-                        .firstOrNull { it.contains("-") }
-                        ?.substringBefore("-")
-                        ?.trim() ?: return@mapNotNull null
-
-                    val stampRallyId = "2023-$hostTable-$theme"
 
                     data class Table(
                         val booth: String,
@@ -565,12 +561,24 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val tables = it["Tables"]!!.split("\n")
                         .filter(String::isNotBlank)
                         .map {
-                            val parts = it.split("-").filter { !it.startsWith("http") }
-                            val table =
-                                parts.find { it.length == 3 } ?: it.substringAfter("Exhibit Hall ")
-                            val names = parts.filter { it.length != 3 }.map { it.removePrefix("@") }
-                            Table(table, names)
+                            val parts = it.split(" ").map { it.trim() }
+                                .filter { !it.startsWith("http") }
+                            val booth = parts.find { it.length == 3 } ?: parts.last()
+                            val names = if (booth.length == 3) {
+                                parts.filter { it.length != 3 }.map { it.removePrefix("@") }
+                            } else {
+                                listOf(
+                                    it.substringBefore("Exhibit Hall")
+                                        .substringBefore("Annex")
+                                        .trim()
+                                )
+                            }
+                            Table(booth, names)
                         }
+
+                    val hostTable = tables.first { it.booth.length == 3 }.booth
+
+                    val stampRallyId = "2023-$hostTable-$theme"
 
                     // TODO: Shouldn't include artists that share the table
                     val connections = tables.mapNotNull { boothToArtist2023[it.booth] }

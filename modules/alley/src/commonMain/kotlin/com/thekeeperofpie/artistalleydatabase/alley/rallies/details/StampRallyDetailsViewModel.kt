@@ -48,7 +48,7 @@ class StampRallyDetailsViewModel(
             val catalogImages = AlleyDataUtils.getImages(
                 year = stampRally.year,
                 folder = AlleyDataUtils.Folder.RALLIES,
-                file = stampRally.id.replace("-", " - "),
+                file = stampRally.let { "${it.hostTable}${it.fandom}" },
             )
 
             // Some stamp rallies have artists in non-AA regions, try and show those

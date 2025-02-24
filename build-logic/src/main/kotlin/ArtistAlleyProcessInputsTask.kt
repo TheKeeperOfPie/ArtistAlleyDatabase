@@ -82,8 +82,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     imageCacheDir = imageCacheDir,
                     path = "2023/rallies",
                     transformName = {
-                        val parts = it.split("-")
-                        "${parts[1]}_${parts[0]}_${parts[2]}"
+                        val parts = it.split("-").map { it.trim() }
+                        "${parts[1]}${parts[0]}${parts[2]}"
                     },
                 )
                 val catalogs2024 = "catalogs2024" to processFolder(
