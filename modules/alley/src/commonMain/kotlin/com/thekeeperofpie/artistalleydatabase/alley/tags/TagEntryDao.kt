@@ -122,49 +122,53 @@ class TagEntryDao(
     }
 
     suspend fun getBooths(year: DataYear, tagMapQuery: TagMapQuery): Set<String> =
-        dao().run {
-            val seriesId = tagMapQuery.series
-            if (seriesId != null) {
-                if (tagMapQuery.showOnlyConfirmedTags) {
-                    when (year) {
-                        DataYear.YEAR_2023 -> emptyList()
-                        DataYear.YEAR_2024 -> getBoothsBySeriesIdConfirmed2024(seriesId)
-                            .awaitAsList()
-                        DataYear.YEAR_2025 -> getBoothsBySeriesIdConfirmed2025(seriesId)
-                            .awaitAsList()
-                            .map { it.booth }
+        if (year == DataYear.YEAR_2023) {
+            emptySet()
+        } else {
+            dao().run {
+                val seriesId = tagMapQuery.series
+                if (seriesId != null) {
+                    if (tagMapQuery.showOnlyConfirmedTags) {
+                        when (year) {
+                            DataYear.YEAR_2023 -> emptyList()
+                            DataYear.YEAR_2024 -> getBoothsBySeriesIdConfirmed2024(seriesId)
+                                .awaitAsList()
+                            DataYear.YEAR_2025 -> getBoothsBySeriesIdConfirmed2025(seriesId)
+                                .awaitAsList()
+                                .map { it.booth }
+                        }
+                    } else {
+                        when (year) {
+                            DataYear.YEAR_2023 -> emptyList()
+                            DataYear.YEAR_2024 -> getBoothsBySeriesId2024(seriesId)
+                                .awaitAsList()
+                            DataYear.YEAR_2025 -> getBoothsBySeriesId2025(seriesId)
+                                .awaitAsList()
+                                .map { it.booth }
+                        }
                     }
                 } else {
-                    when (year) {
-                        DataYear.YEAR_2023 -> emptyList()
-                        DataYear.YEAR_2024 -> getBoothsBySeriesId2024(seriesId)
-                            .awaitAsList()
-                        DataYear.YEAR_2025 -> getBoothsBySeriesId2025(seriesId)
-                            .awaitAsList()
-                            .map { it.booth }
+                    val merchId = tagMapQuery.merch!!
+                    if (tagMapQuery.showOnlyConfirmedTags) {
+                        when (year) {
+                            DataYear.YEAR_2023 -> emptyList()
+                            DataYear.YEAR_2024 -> getBoothsByMerchIdConfirmed2024(merchId)
+                                .awaitAsList()
+                            DataYear.YEAR_2025 -> getBoothsByMerchIdConfirmed2025(merchId)
+                                .awaitAsList()
+                                .map { it.booth }
+                        }
+                    } else {
+                        when (year) {
+                            DataYear.YEAR_2023 -> emptyList()
+                            DataYear.YEAR_2024 -> getBoothsByMerchId2024(merchId)
+                                .awaitAsList()
+                            DataYear.YEAR_2025 -> getBoothsByMerchId2025(merchId)
+                                .awaitAsList()
+                                .map { it.booth }
+                        }
                     }
                 }
-            } else {
-                val merchId = tagMapQuery.merch!!
-                if (tagMapQuery.showOnlyConfirmedTags) {
-                    when (year) {
-                        DataYear.YEAR_2023 -> emptyList()
-                        DataYear.YEAR_2024 -> getBoothsByMerchIdConfirmed2024(merchId)
-                            .awaitAsList()
-                        DataYear.YEAR_2025 -> getBoothsByMerchIdConfirmed2025(merchId)
-                            .awaitAsList()
-                            .map { it.booth }
-                    }
-                } else {
-                    when (year) {
-                        DataYear.YEAR_2023 -> emptyList()
-                        DataYear.YEAR_2024 -> getBoothsByMerchId2024(merchId)
-                            .awaitAsList()
-                        DataYear.YEAR_2025 -> getBoothsByMerchId2025(merchId)
-                            .awaitAsList()
-                            .map { it.booth }
-                    }
-                }
-            }
-        }.filterNotNull().toSet()
+            }.filterNotNull().toSet()
+        }
 }

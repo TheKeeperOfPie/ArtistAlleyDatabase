@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Inject
 
@@ -43,14 +45,18 @@ class TagsViewModel(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(settings.dataYear, snapshotFlow { seriesQuery }, ::Pair)
                 .flatMapLatest { (year, query) ->
-                    createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                        if (query.isBlank()) {
-                            tagsEntryDao.getSeries(year)
-                        } else {
-                            tagsEntryDao.searchSeries(query)
+                    if (year == DataYear.YEAR_2023) {
+                        flowOf(PagingData.empty())
+                    } else {
+                        createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                            if (query.isBlank()) {
+                                tagsEntryDao.getSeries(year)
+                            } else {
+                                tagsEntryDao.searchSeries(query)
+                            }
                         }
+                            .flow
                     }
-                        .flow
                 }
                 .enforceUniqueIds { it.name }
                 .cachedIn(viewModelScope)
@@ -60,14 +66,18 @@ class TagsViewModel(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(settings.dataYear, snapshotFlow { merchQuery }, ::Pair)
                 .flatMapLatest { (year, query) ->
-                    createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                        if (query.isBlank()) {
-                            tagsEntryDao.getMerch(year)
-                        } else {
-                            tagsEntryDao.searchMerch(query)
+                    if (year == DataYear.YEAR_2023) {
+                        flowOf(PagingData.empty())
+                    } else {
+                        createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                            if (query.isBlank()) {
+                                tagsEntryDao.getMerch(year)
+                            } else {
+                                tagsEntryDao.searchMerch(query)
+                            }
                         }
+                            .flow
                     }
-                        .flow
                 }
                 .enforceUniqueIds { it.name }
                 .cachedIn(viewModelScope)
