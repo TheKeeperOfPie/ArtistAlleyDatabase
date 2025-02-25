@@ -79,6 +79,7 @@ fun ArtistListRow(
     Column(modifier = modifier.fillMaxWidth()) {
         val artist = entry.artist
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.sharedBounds("container", artist.id, zIndexInOverlay = 1f)
         ) {
@@ -110,11 +111,13 @@ fun ArtistListRow(
             val favorite = entry.favorite
             IconButton(
                 onClick = { onFavoriteToggle(!favorite) },
-                modifier = Modifier.sharedElement(
-                    "favorite",
-                    artist.id,
-                    zIndexInOverlay = 1f,
-                )
+                modifier = Modifier
+                    .align(Alignment.Top)
+                    .sharedElement(
+                        "favorite",
+                        artist.id,
+                        zIndexInOverlay = 1f,
+                    )
             ) {
                 Icon(
                     imageVector = if (favorite) {

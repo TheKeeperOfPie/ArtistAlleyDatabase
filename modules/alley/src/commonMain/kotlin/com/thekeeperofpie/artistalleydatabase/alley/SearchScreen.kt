@@ -541,7 +541,8 @@ object SearchScreen {
                             val ignored = entry.ignored
                             val lane by remember(index) {
                                 derivedStateOf {
-                                    gridState.layoutInfo.visibleItemsInfo.find { it.index == index }
+                                    gridState.layoutInfo.visibleItemsInfo
+                                        .find { it.index - 1 == index }
                                         ?.lane
                                 }
                             }
