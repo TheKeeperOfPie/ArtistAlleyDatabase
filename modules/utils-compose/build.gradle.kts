@@ -34,8 +34,6 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.modules.utils)
 
-            // SavedStateHandle.getMutableStateFlow
-            api("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.0+dev2112")
             api(libs.pagingMultiplatform.paging.common)
             api(compose.components.resources)
             implementation(libs.coil3.coil.compose)

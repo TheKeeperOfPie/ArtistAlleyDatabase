@@ -1,9 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 
+import androidx.core.bundle.Bundle
 import androidx.navigation.NavType
-import androidx.savedstate.SavedState
-import androidx.savedstate.read
-import androidx.savedstate.write
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import kotlinx.serialization.InternalSerializationApi
@@ -29,15 +27,14 @@ object CustomNavTypes {
     object NullableBooleanType : NavType<Boolean?>(true) {
         override val name = "nullableBoolean"
 
-        override fun put(bundle: SavedState, key: String, value: Boolean?) {
+        override fun put(bundle: Bundle, key: String, value: Boolean?) {
             if (value != null) {
-                bundle.write { putBoolean(key, value) }
+                bundle.putBoolean(key, value)
             }
         }
 
-        override fun get(bundle: SavedState, key: String) = bundle.read {
-            if (contains(key)) getBoolean(key) else null
-        }
+        override fun get(bundle: Bundle, key: String) =
+            if (bundle.containsKey(key)) bundle.getBoolean(key) else null
 
         override fun parseValue(value: String) =
             if (value == "null") null else value.toBooleanStrictOrNull()
@@ -46,15 +43,14 @@ object CustomNavTypes {
     object NullableFloatType : NavType<Float?>(true) {
         override val name = "nullableFloat"
 
-        override fun put(bundle: SavedState, key: String, value: Float?) {
+        override fun put(bundle: Bundle, key: String, value: Float?) {
             if (value != null) {
-                bundle.write { putFloat(key, value) }
+                bundle.putFloat(key, value)
             }
         }
 
-        override fun get(bundle: SavedState, key: String) = bundle.read {
-            if (contains(key)) getFloat(key) else null
-        }
+        override fun get(bundle: Bundle, key: String) =
+            if (bundle.containsKey(key)) bundle.getFloat(key) else null
 
         override fun parseValue(value: String) =
             if (value == "null") null else value.toFloatOrNull()
@@ -63,15 +59,14 @@ object CustomNavTypes {
     object NullableIntType : NavType<Int?>(true) {
         override val name = "nullableInt"
 
-        override fun put(bundle: SavedState, key: String, value: Int?) {
+        override fun put(bundle: Bundle, key: String, value: Int?) {
             if (value != null) {
-                bundle.write { putInt(key, value) }
+                bundle.putInt(key, value)
             }
         }
 
-        override fun get(bundle: SavedState, key: String) = bundle.read {
-            if (contains(key)) getInt(key) else null
-        }
+        override fun get(bundle: Bundle, key: String) =
+            if (bundle.containsKey(key)) bundle.getInt(key) else null
 
         override fun parseValue(value: String) = if (value == "null") null else value.toIntOrNull()
     }
@@ -79,14 +74,11 @@ object CustomNavTypes {
     class NullableEnumType<EnumType : Enum<*>>(
         private val fromName: (String) -> EnumType?,
     ) : NavType<EnumType?>(true) {
-        override fun get(bundle: SavedState, key: String) = bundle.read {
-            if (contains(key)) fromName(getString(key)) else null
-        }
+        override fun get(bundle: Bundle, key: String) =
+            bundle.getString(key)?.let(fromName)
 
-        override fun put(bundle: SavedState, key: String, value: EnumType?) {
-            value?.name?.let {
-                bundle.write { putString(key, it) }
-            }
+        override fun put(bundle: Bundle, key: String, value: EnumType?) {
+            bundle.putString(key, value?.name)
         }
 
         override fun parseValue(value: String) = if (value == "null") {
@@ -109,14 +101,12 @@ object CustomNavTypes {
 
         private val serializer by lazy { type.serializer() }
 
-        override fun put(bundle: SavedState, key: String, value: Type?) {
-            value?.let { Json.encodeToString(serializer, it) }?.let {
-                bundle.write { putString(key, it) }
-            }
+        override fun put(bundle: Bundle, key: String, value: Type?) {
+            bundle.putString(key, value?.let { Json.encodeToString(serializer, it) })
         }
 
-        override fun get(bundle: SavedState, key: String) = bundle.read {
-            if (contains(key)) Json.decodeFromString(serializer, getString(key)) else null
+        override fun get(bundle: Bundle, key: String) = bundle.getString(key)?.let {
+            Json.decodeFromString(serializer, it)
         }
 
         override fun parseValue(value: String) = if (value == "null") {
@@ -146,15 +136,11 @@ object CustomNavTypes {
 
         override val name: String = type.simpleName!!
 
-        override fun put(bundle: SavedState, key: String, value: Type?) {
-            value?.let(toString)?.let {
-                bundle.write { putString(key, it) }
-            }
+        override fun put(bundle: Bundle, key: String, value: Type?) {
+            bundle.putString(key, value?.let(toString))
         }
 
-        override fun get(bundle: SavedState, key: String) = bundle.read {
-            if (contains(key)) fromString(getString(key)) else null
-        }
+        override fun get(bundle: Bundle, key: String) = bundle.getString(key)?.let(fromString)
 
         override fun parseValue(value: String) = if (value == "null") null else fromString(value)
 
