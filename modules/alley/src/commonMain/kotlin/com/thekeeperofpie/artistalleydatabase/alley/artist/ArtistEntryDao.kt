@@ -105,7 +105,9 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
             driveLink = getString(7),
             notes = getString(8),
             commissions = getString(9)!!.let(Json::decodeFromString),
-            seriesInferred = getString(10)!!.let(Json::decodeFromString),
+            seriesInferred = getString(10)!!.let { Json.decodeFromString<List<String>>(it) } +
+                    getString(18)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty() +
+                    getString(19)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty(),
             seriesConfirmed = getString(11)!!.let(Json::decodeFromString),
             merchInferred = getString(12)!!.let(Json::decodeFromString),
             merchConfirmed = getString(13)!!.let(Json::decodeFromString),
@@ -273,10 +275,31 @@ class ArtistEntryDao(
                 .getEntry(id)
                 .awaitAsOneOrNull()
                 ?.toArtistWithUserData()
-            DataYear.YEAR_2025 -> dao2025()
-                .getEntry(id)
-                .awaitAsOneOrNull()
-                ?.toArtistWithUserData()
+            DataYear.YEAR_2025 -> {
+                val entry2025 = dao2025()
+                    .getEntry(id)
+                    .awaitAsOneOrNull()
+                    ?.toArtistWithUserData()
+                    ?: return null
+
+                val entry2024 = dao2024()
+                    .getEntry(id)
+                    .awaitAsOneOrNull()
+                    ?.toArtistWithUserData()
+
+                // Flow tags upwards to fill any untagged artists with data
+                if (entry2024 != null) {
+                    entry2025.copy(
+                        artist = entry2025.artist.copy(
+                            seriesInferred = entry2025.artist.seriesInferred +
+                                    entry2024.artist.seriesInferred +
+                                    entry2024.artist.seriesConfirmed
+                        ),
+                    )
+                } else {
+                    entry2025
+                }
+            }
         }
 
     fun getEntryFlow(id: String) = settings.dataYear
@@ -370,8 +393,11 @@ class ArtistEntryDao(
                     " length(${tableName}_fts.counter) + 2) as orderIndex")
                 .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
                 .orEmpty()
-        val selectSuffix =
+        var selectSuffix =
             ", artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.notes"
+        if (year == DataYear.YEAR_2025) {
+            selectSuffix += ", artistEntry2024.seriesInferred, artistEntry2024.seriesConfirmed"
+        }
 
         val matchOptions = mutableListOf<String>()
         filterParams.artist.takeUnless(String?::isNullOrBlank)?.let {
@@ -404,18 +430,29 @@ class ArtistEntryDao(
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
                 ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
                 .orEmpty()
+
+            var joinStatement = """
+                LEFT OUTER JOIN artistUserEntry
+                ON $tableName.id = artistUserEntry.artistId
+            """.trimIndent()
+
+            if (year == DataYear.YEAR_2025) {
+                joinStatement += """${"\n"}
+                    LEFT OUTER JOIN artistEntry2024
+                    ON $tableName.id = artistEntry2024.id
+                """.trimIndent()
+            }
+
             val countStatement = """
                 SELECT COUNT(*)
                 FROM $tableName
-                LEFT OUTER JOIN artistUserEntry
-                ON $tableName.id = artistUserEntry.artistId
+                $joinStatement
                 $andStatement
             """.trimIndent()
             val statement = """
                 SELECT $tableName.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
                 FROM $tableName
-                LEFT OUTER JOIN artistUserEntry
-                ON $tableName.id = artistUserEntry.artistId
+                $joinStatement
                 $andStatement
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
@@ -471,6 +508,19 @@ class ArtistEntryDao(
             matchQuery = matchQuery,
             likeStatement = likeStatement,
         )
+
+        var joinStatement = """
+                LEFT OUTER JOIN artistUserEntry
+                ON idAsKey = artistUserEntry.artistId
+            """.trimIndent()
+
+        if (year == DataYear.YEAR_2025) {
+            joinStatement += """${"\n"}
+                    LEFT OUTER JOIN artistEntry2024
+                    ON idAsKey = artistEntry2024.id
+                """.trimIndent()
+        }
+
         val statement = DaoUtils.buildSearchStatement(
             tableName = tableName,
             ftsTableName = "${tableName}_fts",
@@ -479,10 +529,7 @@ class ArtistEntryDao(
             likeOrderBy = "",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
-            additionalJoinStatement = """
-                LEFT OUTER JOIN artistUserEntry
-                ON idAsKey = artistUserEntry.artistId
-                """.trimIndent(),
+            additionalJoinStatement = joinStatement,
             orderBy = sortSuffix,
             randomSeed = searchQuery.randomSeed
                 .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM },
