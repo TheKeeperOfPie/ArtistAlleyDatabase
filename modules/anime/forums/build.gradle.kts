@@ -17,7 +17,7 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.stately.concurrent.collections)
         }
     }

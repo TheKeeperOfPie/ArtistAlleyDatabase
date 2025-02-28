@@ -17,7 +17,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.modules.utils)
             api(projects.modules.utilsCompose)
-            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
         }
     }
 }

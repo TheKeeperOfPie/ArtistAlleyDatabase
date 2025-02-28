@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.art
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.art.generated.resources.Res
 import artistalleydatabase.modules.art.generated.resources.art_template_saved
-import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -35,7 +34,10 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Inject
 class ArtEntryDetailsViewModel(
     appFileSystem: AppFileSystem,
@@ -218,7 +220,7 @@ class ArtEntryDetailsViewModel(
         val allEntryIds = if (entryIds.isEmpty() && saveImagesResult.isEmpty()) {
             // TODO: There must be a better way to propagate no image saves
             // If no images provided, mock an empty save result
-            setOf(EntryId(scopedIdType, Uuid.randomUUID().toString()))
+            setOf(EntryId(scopedIdType, Uuid.random().toString()))
         } else {
             (entryIds + saveImagesResult.keys).toSet()
         }

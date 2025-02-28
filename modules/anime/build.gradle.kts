@@ -45,7 +45,7 @@ kotlin {
             implementation(libs.fluid.i18n)
             implementation(libs.htmlconverter)
             implementation(libs.human.readable)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.stately.concurrent.collections)
         }

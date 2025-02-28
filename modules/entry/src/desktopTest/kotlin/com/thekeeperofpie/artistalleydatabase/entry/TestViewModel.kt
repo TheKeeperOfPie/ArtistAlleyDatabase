@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -8,7 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Inject
 internal class TestViewModel(
     private val hasError: Boolean = false,
@@ -41,7 +43,7 @@ internal class TestViewModel(
         skipIgnoreableErrors: Boolean,
     ) = if (hasError && !skipIgnoreableErrors) false else {
         if (entryIds.isEmpty()) {
-            val id = Uuid.randomUUID().toString()
+            val id = Uuid.random().toString()
             entries.update { it + (id to TestEntry(id, model!!.data, skipIgnoreableErrors)) }
         } else {
             entries.update {

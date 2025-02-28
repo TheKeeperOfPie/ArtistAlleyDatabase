@@ -41,9 +41,6 @@ android {
 
             // Unknown
             pickFirsts += "META-INF/licenses/ASM"
-
-            // Mockito inline
-            pickFirsts += "mockito-extensions/org.mockito.plugins.MockMaker"
         }
     }
 }

@@ -20,11 +20,10 @@ kotlin {
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.flowExt)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlin.multiplatform.diff)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.uri.kmp)
-            implementation(libs.uuid)
         }
     }
 }

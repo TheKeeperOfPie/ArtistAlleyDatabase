@@ -14,7 +14,7 @@ kotlin {
 
             implementation(libs.apollo.runtime)
             implementation(libs.graphql.java)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.jsontree)
         }
     }

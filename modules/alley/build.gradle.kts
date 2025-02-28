@@ -35,7 +35,7 @@ kotlin {
             implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.8.0-alpha02")
             implementation("org.jetbrains.compose.material3:material3-window-size-class:1.8.0-alpha02")
             implementation(libs.coil3.coil.compose)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.sqldelight.coroutines.extensions)
         }
         androidMain.dependencies {

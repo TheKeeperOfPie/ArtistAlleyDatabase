@@ -17,7 +17,7 @@ kotlin {
             implementation(projects.modules.utilsCompose)
 
             implementation(libs.coil3.coil.compose)
-            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
             implementation(libs.molecule.runtime)
         }
     }

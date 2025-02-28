@@ -17,8 +17,8 @@ kotlin {
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
             implementation(libs.human.readable)
-            implementation(libs.jetBrainsCompose.navigation.compose)
-            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
             implementation(libs.stately.concurrent.collections)
         }
     }

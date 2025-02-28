@@ -15,7 +15,7 @@ kotlin {
             api(projects.modules.anime.ui)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
         }
     }
 }

@@ -12,7 +12,7 @@ kotlin {
             api(libs.truth)
             implementation(projects.modules.utilsCompose)
             implementation(libs.turbine)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlinx.coroutines.test)
         }
     }

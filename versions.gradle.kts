@@ -1,38 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
-import Versions_gradle.Versions.androidx.activity
-import Versions_gradle.Versions.androidx.annotation
-import Versions_gradle.Versions.androidx.browser
-import Versions_gradle.Versions.androidx.lifecycle
-import Versions_gradle.Versions.androidx.media3
-import Versions_gradle.Versions.androidx.navigation
-import Versions_gradle.Versions.androidx.paging
-import Versions_gradle.Versions.androidx.palette
-import Versions_gradle.Versions.androidx.room
-import Versions_gradle.Versions.androidx.securityCrypto
-import Versions_gradle.Versions.androidx.tracing
-import Versions_gradle.Versions.androidx.work
-import Versions_gradle.Versions.apache.commonsCompress
-import Versions_gradle.Versions.apache.commonsCsv
-import Versions_gradle.Versions.composeMultiplatform.runtime
-import Versions_gradle.Versions.google.appUpdate
-import Versions_gradle.Versions.google.billing
-import Versions_gradle.Versions.google.cronetOkHttp
-import Versions_gradle.Versions.google.playServicesAds
-import Versions_gradle.Versions.google.playServicesCronet
-import Versions_gradle.Versions.google.truth
-import Versions_gradle.Versions.google.userMessagingPlatform
-import Versions_gradle.Versions.kotlin.coroutines
-import Versions_gradle.Versions.kotlin.datetime
-import Versions_gradle.Versions.kotlin.io
-import Versions_gradle.Versions.kotlin.ksp
-import Versions_gradle.Versions.kotlin.serialization
 import org.gradle.api.initialization.dsl.VersionCatalogBuilder
 import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
-    const val accompanist = "0.36.0"
-
     object android {
         const val gradle = "8.10.0-alpha05"
     }
@@ -42,9 +13,7 @@ object Versions {
         const val annotation = "1.9.1"
         const val browser = "1.9.0-alpha01"
         const val core = "1.16.0-alpha02"
-        const val lifecycle = "2.9.0-alpha10"
         const val media3 = "1.6.0-alpha03"
-        const val navigation = "2.8.1"
         const val paging = "3.3.6"
         const val palette = "1.0.0"
         const val room = "2.7.0-beta01"
@@ -66,8 +35,6 @@ object Versions {
 
     const val apollo = "4.0.0-beta.7"
     const val awaitility = "4.2.2"
-    const val barfuinTaskInfo = "2.2.0"
-    const val benasher44Uuid = "0.8.4"
     const val benManesVersions = "0.52.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.15.2"
@@ -77,22 +44,7 @@ object Versions {
     const val coil = "3.2.0-SNAPSHOTLOCAL"
     const val colormath = "3.6.1"
 
-    object compose {
-        const val core = "1.7.2"
-        const val materialIcons = "1.7.2"
-    }
-
-    object composeMultiplatform {
-        object androidx {
-            const val navigation = "2.8.0-alpha11"
-        }
-
-        const val plugin = "1.8.0-alpha02"
-        const val runtime = "1.8.0-alpha02"
-    }
-
     const val cronetEmbedded = "119.6045.31"
-    const val dexmakerInline = "2.28.4"
     const val diffUtils = "0.7.0"
     const val flowExt = "1.0.0"
     const val fluidI18n = "0.13.0"
@@ -113,6 +65,19 @@ object Versions {
     const val humanReadable = "1.11.0"
     const val jackson = "2.18.2"
     const val javaPoet = "1.13.0"
+
+    object jetBrains {
+        object androidX {
+            const val lifecycle = "2.9.0-alpha03"
+            const val navigation = "2.8.0-alpha11"
+        }
+
+        object composeMultiplatform {
+            const val plugin = "1.8.0-alpha02"
+            const val runtime = "1.8.0-alpha02"
+        }
+    }
+
     const val jimfs = "1.3.0"
     const val jsonTree = "2.4.1"
 
@@ -135,9 +100,6 @@ object Versions {
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.55"
     const val markwon = "4.6.2"
-    const val material3 = "1.3.0"
-    const val mockito = "5.13.0"
-    const val mockitoKotlin = "5.4.0"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
     const val multiplatformMarkdown = "0.31.0-rc01"
@@ -147,7 +109,6 @@ object Versions {
     const val okio = "3.10.2"
     const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
     const val placeholder = "1.0.9"
-    const val sekret = "2.0.0-alpha-07"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.1.0-wasm.2"
     const val sqldelightAndroidXDriver = "0.0.4"
@@ -183,7 +144,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
                 plugin("dev.iurysouza.modulegraph").version(Versions.moduleGraph)
                 plugin("io.ktor.plugin").version(Versions.ktor)
-                plugin("org.jetbrains.compose").version(Versions.composeMultiplatform.plugin)
+                plugin("org.jetbrains.compose").version(Versions.jetBrains.composeMultiplatform.plugin)
                 plugin("org.jetbrains.kotlin.android").version(Versions.kotlin.core)
                 plugin("org.jetbrains.kotlin.plugin.serialization").version(Versions.kotlin.core)
 
@@ -205,13 +166,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("androidx.browser:browser:$browser", prefix = "androidx")
                     library("androidx.core:core-ktx:$core", prefix = "androidx")
 
-                    withVersion(lifecycle) {
-                        library("androidx.lifecycle:lifecycle-livedata-ktx")
-                        library("androidx.lifecycle:lifecycle-viewmodel-compose")
-                        library("androidx.lifecycle:lifecycle-viewmodel-savedstate")
-                        library("androidx.lifecycle:lifecycle-runtime-ktx")
-                    }
-
                     withVersion(media3) {
                         library("androidx.media3:media3-datasource-okhttp")
                         library("androidx.media3:media3-exoplayer")
@@ -220,8 +174,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("androidx.media3:media3-exoplayer-rtsp")
                         library("androidx.media3:media3-ui")
                     }
-
-                    library("androidx.navigation:navigation-compose:$navigation")
 
                     withVersion(paging) {
                         library("androidx.paging:paging-common")
@@ -258,22 +210,12 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                 }
 
-                withVersion(Versions.material3) {
-                    library("androidx.compose.material3:material3")
-                    library("androidx.compose.material3:material3-adaptive-navigation-suite")
-                }
-
                 withVersion(Versions.apollo) {
                     library("com.apollographql.apollo3:apollo-compiler")
                     library("com.apollographql.apollo3:apollo-runtime")
                     library("com.apollographql.apollo3:apollo-normalized-cache")
                     library("com.apollographql.apollo3:apollo-normalized-cache-sqlite")
                     library("com.apollographql.apollo3:apollo-engine-ktor")
-                }
-
-                withVersion(Versions.accompanist) {
-                    library("com.google.accompanist:accompanist-navigation-animation")
-                    library("com.google.accompanist:accompanist-pager-indicators")
                 }
 
                 with(Versions.google) {
@@ -350,21 +292,17 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json-io:$serialization")
                 }
 
-
-                withVersion(Versions.mockito) {
-                    library("org.mockito:mockito-android")
-                    library("org.mockito:mockito-core")
-                }
-
-                // TODO: Add a way to build debug/internal with higher versions of Android Compose
                 prefix("jetBrainsCompose") {
-                    with(Versions.composeMultiplatform) {
+                    with(Versions.jetBrains.composeMultiplatform) {
                         library("org.jetbrains.compose:compose-gradle-plugin:$plugin")
                         library("org.jetbrains.compose.runtime:runtime:$runtime")
+                    }
+                }
 
-                        with(Versions.composeMultiplatform.androidx) {
-                            library("org.jetbrains.androidx.navigation:navigation-compose:$navigation")
-                        }
+                prefix("jetBrainsAndroidX") {
+                    with(Versions.jetBrains.androidX) {
+                        library("org.jetbrains.androidx.navigation:navigation-compose:$navigation")
+                        library("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle")
                     }
                 }
 
@@ -408,7 +346,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("co.touchlab:kermit:${Versions.kermit}")
                 library("co.touchlab:stately-concurrent-collections:${Versions.statelyConcurrentCollections}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
-                library("com.benasher44:uuid:${Versions.benasher44Uuid}")
                 library("com.eygraber:compose-placeholder-material3:${Versions.placeholder}")
                 library("com.eygraber:sqldelight-androidx-driver:${Versions.sqldelightAndroidXDriver}")
                 library("com.eygraber:uri-kmp:${Versions.uriKmp}")
@@ -420,7 +357,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.kmpalette:kmpalette-core:${Versions.kmpalette}")
-                library("com.linkedin.dexmaker:dexmaker-mockito-inline-extended:${Versions.dexmakerInline}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:${Versions.androidyoutubeplayer}",
@@ -441,7 +377,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("nl.jacobras:Human-Readable:${Versions.humanReadable}")
                 library("org.awaitility:awaitility:${Versions.awaitility}")
                 library("org.chromium.net:cronet-embedded:${Versions.cronetEmbedded}")
-                library("org.mockito.kotlin:mockito-kotlin:${Versions.mockitoKotlin}")
                 library("systems.manifold:manifold-graphql-rt:${Versions.manifoldGraphql}")
             }
         }

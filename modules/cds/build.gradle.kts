@@ -18,7 +18,7 @@ kotlin {
             implementation(projects.modules.utilsRoom)
             api(projects.modules.vgmdb)
 
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.coil3.coil.compose)
         }
     }

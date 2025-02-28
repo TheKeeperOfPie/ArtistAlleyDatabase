@@ -23,7 +23,7 @@ kotlin {
             implementation(projects.modules.anime.news)
 
             implementation(libs.coil3.coil.compose)
-            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
         }
     }
 }

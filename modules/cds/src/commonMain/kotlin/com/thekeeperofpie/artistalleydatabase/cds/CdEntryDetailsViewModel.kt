@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
 import androidx.lifecycle.viewModelScope
-import com.benasher44.uuid.Uuid
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -40,7 +39,10 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Inject
 class CdEntryDetailsViewModel(
     appFileSystem: AppFileSystem,
@@ -168,7 +170,7 @@ class CdEntryDetailsViewModel(
         val allEntryIds = (entryIds + saveImagesResult.keys).toMutableSet()
         if (allEntryIds.isEmpty()) {
             // If there are no images and no existing edits, this will be empty, add a new ID
-            allEntryIds += EntryId(scopedIdType, Uuid.randomUUID().toString())
+            allEntryIds += EntryId(scopedIdType, Uuid.random().toString())
         }
 
         val entryImages = entryImageController.images.groupBy { it.entryId }

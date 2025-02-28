@@ -14,7 +14,7 @@ kotlin {
             api(projects.modules.utilsCompose)
             implementation(projects.modules.utils)
             implementation(libs.compose.placeholder.material3)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
         }
     }
 }

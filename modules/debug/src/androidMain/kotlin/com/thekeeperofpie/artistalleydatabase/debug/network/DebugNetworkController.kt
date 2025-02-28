@@ -6,7 +6,6 @@ import com.apollographql.apollo3.api.http.HttpRequest
 import com.apollographql.apollo3.api.http.HttpResponse
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
-import com.benasher44.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -21,13 +20,15 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import me.tatarka.inject.annotations.Inject
 import okio.Buffer
 import java.nio.charset.Charset
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @SingletonScope
 @Inject
 class DebugNetworkController(scope: ApplicationScope) {
@@ -45,7 +46,7 @@ class DebugNetworkController(scope: ApplicationScope) {
             chain: HttpInterceptorChain,
         ): HttpResponse {
             val requestTimestamp = Clock.System.now()
-            val id = Uuid.randomUUID().toString()
+            val id = Uuid.random().toString()
             graphQlRequests.trySend(
                 GraphQlRequest(
                     id = id,

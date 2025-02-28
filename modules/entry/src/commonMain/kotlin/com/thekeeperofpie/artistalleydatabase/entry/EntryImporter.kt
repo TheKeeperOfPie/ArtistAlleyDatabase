@@ -1,14 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import com.benasher44.uuid.uuidFrom
 import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import kotlinx.io.Source
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemPathSeparator
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class, ExperimentalUuidApi::class)
 abstract class EntryImporter(
     private val appFileSystem: AppFileSystem,
 ) : Importer {
@@ -22,7 +23,7 @@ abstract class EntryImporter(
             try {
                 // Try to resolve the name directly as a UUID,
                 // and if success, consider it a legacy name
-                uuidFrom(entryName)
+                Uuid.parse(entryName)
 
                 val outputFolder = EntryUtils.getEntryImageFolder(
                     appFileSystem,

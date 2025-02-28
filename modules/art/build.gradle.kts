@@ -16,7 +16,7 @@ kotlin {
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsRoom)
 
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.coil3.coil.compose)
         }
     }

@@ -115,9 +115,6 @@ android {
 
             // Unknown
             pickFirsts += "META-INF/licenses/ASM"
-
-            // Mockito inline
-            pickFirsts += "mockito-extensions/org.mockito.plugins.MockMaker"
         }
     }
 
@@ -177,7 +174,7 @@ kotlin {
             implementation(compose.ui)
 
             implementation(libs.coil3.coil.compose)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kermit)
             implementation(libs.kotlin.inject.runtime.kmp)
         }
@@ -223,8 +220,7 @@ kotlin {
             implementation(libs.coil3.coil.network.okhttp)
             implementation(libs.commons.compress)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.lifecycle.livedata.ktx)
-            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
             implementation(libs.room.paging)
             implementation(libs.work.runtime)
             implementation(libs.work.runtime.ktx)

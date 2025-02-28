@@ -14,7 +14,7 @@ kotlin {
             implementation(projects.modules.media)
             implementation(projects.modules.utils)
             implementation(libs.coil3.coil.compose)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
         }
     }
 }

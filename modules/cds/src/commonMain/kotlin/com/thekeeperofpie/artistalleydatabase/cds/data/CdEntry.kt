@@ -6,7 +6,6 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.benasher44.uuid.Uuid
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
@@ -17,12 +16,15 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Serializable
 @Entity(tableName = "cd_entries")
 data class CdEntry(
     @PrimaryKey
-    val id: String = Uuid.randomUUID().toString(),
+    val id: String = Uuid.random().toString(),
     val catalogId: String? = null,
     val titles: List<String> = emptyList(),
     val performers: List<String> = emptyList(),

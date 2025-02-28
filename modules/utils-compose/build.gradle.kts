@@ -38,7 +38,7 @@ kotlin {
             api(compose.components.resources)
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
-            implementation(libs.jetBrainsCompose.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.molecule.runtime)
         }
         desktopMain.dependencies {

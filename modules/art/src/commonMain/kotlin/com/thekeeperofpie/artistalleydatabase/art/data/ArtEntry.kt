@@ -7,7 +7,6 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.benasher44.uuid.Uuid
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
@@ -17,13 +16,15 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.BigDeci
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.uuid.Uuid
 
+@kotlin.OptIn(kotlin.uuid.ExperimentalUuidApi::class)
 @Serializable
 @Entity(tableName = "art_entries")
 data class ArtEntry(
     @Discouraged("Prefer entryId")
     @PrimaryKey
-    val id: String = Uuid.randomUUID().toString(),
+    val id: String = Uuid.random().toString(),
     val artists: List<String> = emptyList(),
     val sourceType: String? = null,
     val sourceValue: String? = null,
