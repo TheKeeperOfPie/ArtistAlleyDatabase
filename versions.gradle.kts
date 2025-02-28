@@ -5,20 +5,20 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.10.0-alpha05"
+        const val gradle = "8.10.0-alpha07"
     }
 
     object androidx {
-        const val activity = "1.10.0"
+        const val activity = "1.10.1"
         const val annotation = "1.9.1"
         const val browser = "1.9.0-alpha01"
         const val core = "1.16.0-alpha02"
-        const val media3 = "1.6.0-alpha03"
+        const val media3 = "1.6.0-beta01"
         const val paging = "3.3.6"
         const val palette = "1.0.0"
-        const val room = "2.7.0-beta01"
+        const val room = "2.7.0-rc01"
         const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-beta01"
+        const val sqlite = "2.5.0-rc01"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -37,7 +37,7 @@ object Versions {
     const val awaitility = "4.2.2"
     const val benManesVersions = "0.52.0"
     const val bigNum = "0.3.10"
-    const val buildKonfig = "0.15.2"
+    const val buildKonfig = "0.17.0"
     const val burst = "2.4.0"
 
     // https://github.com/coil-kt/coil/issues/2771#issuecomment-2607839662
@@ -79,7 +79,7 @@ object Versions {
     }
 
     const val jimfs = "1.3.0"
-    const val jsonTree = "2.4.1"
+    const val jsonTree = "2.5.0"
 
     const val kermit = "2.0.5"
     const val kmpalette = "3.1.0"
@@ -88,21 +88,21 @@ object Versions {
         const val core = "2.1.20-Beta1"
         const val coroutines = "1.10.1"
         const val datetime = "0.6.2"
-        const val io = "0.6.0"
+        const val io = "0.7.0"
         const val ksp = "2.1.20-Beta1-1.0.29"
         const val serialization = "1.8.0"
     }
 
     const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
-    const val ktor = "3.1.0"
+    const val ktor = "3.1.1"
     const val ksoup = "0.2.2"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2024.1.55"
     const val markwon = "4.6.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.31.0-rc01"
+    const val multiplatformMarkdown = "0.32.0-b01"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
@@ -111,10 +111,10 @@ object Versions {
     const val placeholder = "1.0.9"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.1.0-wasm.2"
-    const val sqldelightAndroidXDriver = "0.0.4"
+    const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.0"
-    const val unityAds = "4.13.1"
+    const val unityAds = "4.13.2"
     const val uriKmp = "0.0.19"
     const val webpImageIo = "0.9.0"
     const val xmlUtil = "0.90.3"
