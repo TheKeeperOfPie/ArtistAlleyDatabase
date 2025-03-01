@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import java.util.zip.CRC32
 
 plugins {
     id("com.android.application")
@@ -123,7 +124,8 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
-                devServer = devServer ?: KotlinWebpackConfig.DevServer()
+                devServer = null
+                mode = KotlinWebpackConfig.Mode.PRODUCTION
             }
         }
         binaries.executable()
@@ -218,51 +220,6 @@ dependencies {
     add("kspWasmJs", kspProcessors.kotlin.inject.compiler.ksp)
 }
 
-tasks.register("installAll") {
-    dependsOn("installDebug", "installRelease")
-}
-
-fun Exec.launchActivity(
-    packageName: String,
-    activityName: String = "com.thekeeperofpie.artistalley.MainActivity"
-) {
-    commandLine(
-        "adb", "shell", "am", "start-activity",
-        "-a", "\"android.intent.action.MAIN\"",
-        "-c", "\"android.intent.category.LAUNCHER\"",
-        "-n", "\"$packageName/$activityName\"",
-    )
-}
-
-tasks.register("launchRelease") {
-    dependsOn("installRelease")
-    finalizedBy("compileAndLaunchRelease", "installDebug")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("launchDebug") {
-    dependsOn("installDebug")
-    launchActivity("com.thekeeperofpie.artistalley.debug")
-    finalizedBy("installRelease")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("compileAndLaunchRelease") {
-    commandLine(
-        "adb", "shell", "pm", "compile", "-f",
-        "-m", "everything",
-        "--check-prof", "false",
-        "com.thekeeperofpie.artistalley",
-    )
-    finalizedBy("launchReleaseMainActivity")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("launchReleaseMainActivity") {
-    launchActivity("com.thekeeperofpie.artistalley")
-    outputs.upToDateWhen { false }
-}
-
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
 
 tasks.named { "wasmJsProcessResources" in it }.configureEach {
@@ -278,5 +235,61 @@ configurations.all {
         }
         // com.eygraber:uri-kmp:0.0.19 bumps this to 0.3, which breaks CMP
         force("org.jetbrains.kotlinx:kotlinx-browser:0.1")
+    }
+}
+
+// Replicates Workbox InjectManifest since configuring that doesn't seem to work
+tasks.register("webRelease") {
+    outputs.upToDateWhen { false }
+    dependsOn("wasmJsBrowserDistribution")
+
+    val distDir = project.layout.buildDirectory.dir("dist/wasmJs/productionExecutable")
+    doLast {
+        val folder = distDir.get().asFile
+        folder.listFiles()
+            .filter { it.extension == "map" }
+            .forEach { it.delete() }
+        val serviceWorker = folder.resolve("serviceWorker.js")
+        val rootFiles = folder.listFiles()
+            .filter { it.isFile }
+            .filter { it.name != "serviceWorker.js" }
+            .filter { it.name != "_headers" }
+
+        val icons = folder.resolve("icons")
+            .listFiles()
+
+        val resourceFiles = listOf(
+            "composeResources/artistalleydatabase.modules.alley.generated.resources/values/strings.commonMain.cvr",
+            "composeResources/artistalleydatabase.modules.entry.generated.resources/values/strings.commonMain.cvr",
+            "composeResources/artistalleydatabase.modules.image.generated.resources/values/strings.commonMain.cvr",
+            "composeResources/artistalleydatabase.modules.utils_compose.generated.resources/values/strings.commonMain.cvr",
+            "composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/database.sqlite",
+            "composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/databaseHash.txt",
+        ).map {
+            folder.resolve(it)
+        }
+
+        val filesToCache = rootFiles + icons + resourceFiles
+
+        fun hash(file: File): Long {
+            val crc32 = CRC32()
+            file.inputStream().use { input ->
+                val buffer = ByteArray(8192)
+                var bytesRead: Int
+                while (input.read(buffer).also { bytesRead = it } != -1) {
+                    crc32.update(buffer, 0, bytesRead)
+                }
+            }
+            return crc32.value
+        }
+
+        val fileNamesAndHashes = filesToCache
+            .joinToString(separator = "\\n") {
+                val relativePath = it.relativeTo(folder).path.replace(File.separatorChar, '/')
+                "$relativePath-${hash(it)}"
+            }
+        val serviceWorkerEdited = serviceWorker.readText()
+            .replace("CACHE_INPUT", fileNamesAndHashes)
+        serviceWorker.writeText(serviceWorkerEdited)
     }
 }
