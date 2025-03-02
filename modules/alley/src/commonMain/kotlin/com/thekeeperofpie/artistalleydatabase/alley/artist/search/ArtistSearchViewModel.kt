@@ -19,12 +19,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -63,7 +63,8 @@ class ArtistSearchViewModel(
     val year = if (route.isRoot) {
         settings.dataYear
     } else {
-        savedStateHandle.getMutableStateFlow("year", route.year ?: settings.dataYear.value)
+        // TODO: Connect to SavedStateHandle
+        MutableStateFlow(settings.dataYear.value)
     }
 
     val lockedYear = route.year
