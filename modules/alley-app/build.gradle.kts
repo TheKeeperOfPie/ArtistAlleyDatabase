@@ -258,16 +258,10 @@ tasks.register("webRelease") {
         val icons = folder.resolve("icons")
             .listFiles()
 
-        val resourceFiles = listOf(
-            "composeResources/artistalleydatabase.modules.alley.generated.resources/values/strings.commonMain.cvr",
-            "composeResources/artistalleydatabase.modules.entry.generated.resources/values/strings.commonMain.cvr",
-            "composeResources/artistalleydatabase.modules.image.generated.resources/values/strings.commonMain.cvr",
-            "composeResources/artistalleydatabase.modules.utils_compose.generated.resources/values/strings.commonMain.cvr",
-            "composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/database.sqlite",
-            "composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/databaseHash.txt",
-        ).map {
-            folder.resolve(it)
-        }
+        val resourceFiles = folder.resolve("composeResources")
+            .walkBottomUp()
+            .filter { it.isFile }
+            .filter { it.extension == "cvr" || it.name.contains("database") }
 
         val filesToCache = rootFiles + icons + resourceFiles
 
