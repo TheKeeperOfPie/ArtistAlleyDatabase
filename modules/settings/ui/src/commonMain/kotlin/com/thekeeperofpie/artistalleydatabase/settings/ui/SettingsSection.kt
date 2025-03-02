@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.settings
+package com.thekeeperofpie.artistalleydatabase.settings.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

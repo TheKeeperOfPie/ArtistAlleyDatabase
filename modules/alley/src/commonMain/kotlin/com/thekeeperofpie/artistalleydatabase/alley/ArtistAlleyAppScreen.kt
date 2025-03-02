@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.app
+package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -21,19 +21,14 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyScreen
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
-import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
@@ -46,8 +41,8 @@ object ArtistAlleyAppScreen {
 
     @Composable
     operator fun invoke(
-        component: ArtistAlleyAppComponent,
-        navController: NavHostController = rememberNavController(),
+        component: ArtistAlleyComponent,
+        navController: NavHostController,
     ) {
         Surface {
             val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
@@ -161,6 +156,13 @@ object ArtistAlleyAppScreen {
                                     onClickBack = navController::navigateUp,
                                     onArtistClick = onArtistClick,
                                 )
+                            }
+
+                            sharedElementComposable<Destinations.Settings>(
+                                navigationTypeMap = navigationTypeMap,
+                            ) {
+                                val viewModel = viewModel { component.settingsViewModel() }
+                                SettingsScreen(sections = viewModel.sections)
                             }
 
                             sharedElementComposable<Destinations.StampRallyDetails>(

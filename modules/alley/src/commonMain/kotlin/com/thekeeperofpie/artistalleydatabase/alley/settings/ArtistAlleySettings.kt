@@ -1,10 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.settings
 
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface ArtistAlleySettings {
 
+    val appTheme: MutableStateFlow<AppThemeSetting>
     val lastKnownArtistsCsvSize: MutableStateFlow<Long>
     val lastKnownStampRalliesCsvSize: MutableStateFlow<Long>
     val displayType: MutableStateFlow<String>

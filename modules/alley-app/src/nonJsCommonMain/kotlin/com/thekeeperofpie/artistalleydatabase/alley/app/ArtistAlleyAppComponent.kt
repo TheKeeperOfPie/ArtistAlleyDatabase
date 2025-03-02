@@ -12,7 +12,6 @@ import kotlin.reflect.KType
 
 @SingletonScope
 interface ArtistAlleyAppComponent : ArtistAlleyComponent {
-    val navigationTypeMap: NavigationTypeMap
 
     @SingletonScope
     @Provides

@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,10 +100,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_next_page
 import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
+import artistalleydatabase.modules.alley.generated.resources.alley_settings
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year
 import coil3.compose.AsyncImage
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
@@ -118,6 +121,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -735,53 +739,65 @@ fun DataYearHeader(state: DataYearHeaderState) {
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     } else {
-        var expanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+        Row {
+            var expanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text(
-                    text = stringResource(state.year.fullName),
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.minimumInteractiveComponentSize()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 ) {
-                    TrailingDropdownIcon(
-                        expanded = expanded,
-                        contentDescription = stringResource(Res.string.alley_switch_data_year),
+                    Text(
+                        text = stringResource(state.year.fullName),
+                        style = MaterialTheme.typography.headlineSmall,
                     )
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.minimumInteractiveComponentSize()
+                    ) {
+                        TrailingDropdownIcon(
+                            expanded = expanded,
+                            contentDescription = stringResource(Res.string.alley_switch_data_year),
+                        )
+                    }
+                }
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    DataYear.entries.forEach {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(it.fullName)) },
+                            leadingIcon = {
+                                RadioButton(
+                                    selected = state.year == it,
+                                    onClick = { state.year = it },
+                                )
+                            },
+                            onClick = {
+                                state.year = it
+                                expanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+                    }
                 }
             }
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
-                DataYear.entries.forEach {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(it.fullName)) },
-                        leadingIcon = {
-                            RadioButton(
-                                selected = state.year == it,
-                                onClick = { state.year = it },
-                            )
-                        },
-                        onClick = {
-                            state.year = it
-                            expanded = false
-                        },
-                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                    )
-                }
+
+            val navigationController = LocalNavigationController.current
+            IconButton(onClick = { navigationController.navigate(Destinations.Settings) }) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = stringResource(Res.string.alley_settings),
+                )
             }
         }
     }

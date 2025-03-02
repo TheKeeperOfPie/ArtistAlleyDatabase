@@ -23,7 +23,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_header
 import artistalleydatabase.modules.alley.generated.resources.alley_series_header_one
 import artistalleydatabase.modules.alley.generated.resources.alley_series_header_zero
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates

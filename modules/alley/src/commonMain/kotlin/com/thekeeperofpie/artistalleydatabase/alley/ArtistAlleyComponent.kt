@@ -16,16 +16,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDe
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import kotlinx.coroutines.flow.StateFlow
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
 import kotlin.reflect.KType
 
-interface ArtistAlleyComponent{
+interface ArtistAlleyComponent {
 
     val appUpdateViewModel: () -> AppUpdateViewModel
     val artistDetailsViewModel: (SavedStateHandle) -> ArtistDetailsViewModel
@@ -34,6 +37,7 @@ interface ArtistAlleyComponent{
     val tagsViewModel: () -> TagsViewModel
     val artistMapViewModel: (SavedStateHandle) -> ArtistMapViewModel
     val mapViewModel: (SavedStateHandle) -> MapViewModel
+    val settingsViewModel: () -> SettingsViewModel
     val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
     val stampRallySortFilterViewModel: (SavedStateHandle) -> StampRallySortFilterViewModel
     val stampRallySearchViewModel: (StateFlow<StampRallySortFilterViewModel.FilterParams>) -> StampRallySearchViewModel
@@ -52,6 +56,9 @@ interface ArtistAlleyComponent{
 
     val ArtistAlleyDatabase.bindUserEntryDao: UserEntryDao
         @Provides get() = this.userEntryDao
+
+    val navigationTypeMap: NavigationTypeMap
+    val settings: ArtistAlleySettings
 
     @SingletonScope
     @Provides

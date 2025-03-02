@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.desktop
+package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -6,16 +6,12 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 
 @Composable
-fun DesktopTheme(settings: DesktopSettingsProvider, content: @Composable () -> Unit) {
-    val appTheme by settings.appTheme.collectAsState()
+actual fun AppTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit) {
     val systemInDarkTheme = isSystemInDarkTheme()
+    val appTheme = appTheme()
     val colorScheme = when (appTheme) {
         AppThemeSetting.AUTO -> if (systemInDarkTheme) darkColorScheme() else lightColorScheme()
         AppThemeSetting.DARK -> darkColorScheme()
@@ -33,13 +29,7 @@ fun DesktopTheme(settings: DesktopSettingsProvider, content: @Composable () -> U
             surfaceDim = Color.Black,
         )
     }
-    val isDarkTheme = appTheme == AppThemeSetting.DARK
-            || appTheme == AppThemeSetting.BLACK
-            || (appTheme == AppThemeSetting.AUTO && systemInDarkTheme)
-
-    CompositionLocalProvider(
-        LocalAppTheme provides appTheme,
-    ) {
+    CompositionLocalProvider(LocalAppTheme provides appTheme) {
         MaterialTheme(
             colorScheme = colorScheme,
             content = content

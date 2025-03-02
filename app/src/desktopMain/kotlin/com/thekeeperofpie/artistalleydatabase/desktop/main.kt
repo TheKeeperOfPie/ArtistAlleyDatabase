@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import artistalleydatabase.modules.utils_compose.generated.resources.app_name
@@ -41,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogCon
 import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
@@ -192,7 +194,8 @@ private fun ThemeAndSingletons(
     content: @Composable () -> Unit,
 ) {
     val settings = desktopComponent.settingsProvider
-    DesktopTheme(settings) {
+    val appTheme by settings.appTheme.collectAsStateWithLifecycle()
+    AppTheme(appTheme = { appTheme }) {
         SharedInfra(desktopComponent) {
             CompositionLocalProvider(
                 LocalAnimeComponent provides desktopComponent,

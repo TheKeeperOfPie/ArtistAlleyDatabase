@@ -43,6 +43,9 @@ sealed interface Destinations : NavDestination {
     data class MerchMap(val year: DataYear? = null, val merch: String) : Destinations
 
     @Serializable
+    data object Settings : Destinations
+
+    @Serializable
     data class StampRallyDetails(
         val year: DataYear,
         val id: String,

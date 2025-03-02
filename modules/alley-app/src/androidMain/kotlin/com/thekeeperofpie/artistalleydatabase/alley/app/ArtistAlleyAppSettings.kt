@@ -4,11 +4,12 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
@@ -25,6 +26,15 @@ class ArtistAlleyAppSettings(
     private val sharedPrefs =
         application.getSharedPreferences("shared_prefs", Context.MODE_PRIVATE)
 
+    override val appTheme = initialize(
+        key = "appTheme",
+        initialValue = {
+            getString(it, null)
+                ?.let { theme -> AppThemeSetting.entries.find { it.name == theme } }
+                ?: AppThemeSetting.AUTO
+        },
+        setValue = { key, value -> putString(key, value.name) },
+    )
     override val lastKnownArtistsCsvSize = long("lastKnownArtistsCsvSize")
     override val lastKnownStampRalliesCsvSize = long("lastKnownStampRalliesCsvSize")
     override val displayType = string("displayType")

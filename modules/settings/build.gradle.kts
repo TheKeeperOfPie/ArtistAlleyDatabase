@@ -21,6 +21,7 @@ kotlin {
             implementation(projects.modules.anime.ignore.data)
             implementation(projects.modules.anime.media.data)
             implementation(projects.modules.anime.news)
+            implementation(projects.modules.settings.ui)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)

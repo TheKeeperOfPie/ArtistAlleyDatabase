@@ -1,14 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.tatarka.inject.annotations.Inject
 
 @SingletonScope
 @Inject
 class ArtistAlleyDesktopSettings : ArtistAlleySettings {
+    override val appTheme = MutableStateFlow(AppThemeSetting.AUTO)
     override val lastKnownArtistsCsvSize = MutableStateFlow(-1L)
     override val lastKnownStampRalliesCsvSize = MutableStateFlow(-1L)
     override val displayType = MutableStateFlow("")

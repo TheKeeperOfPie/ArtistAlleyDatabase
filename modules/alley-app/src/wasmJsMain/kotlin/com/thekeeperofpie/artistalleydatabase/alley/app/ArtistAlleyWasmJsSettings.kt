@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.browser.localStorage
 import kotlinx.browser.window
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,6 +34,13 @@ class ArtistAlleyWasmJsSettings(
         }
     }
 
+    override val appTheme by register(
+        serialize = { it.name },
+        deserialize = {
+            it?.let { theme -> AppThemeSetting.entries.find { it.name == theme } }
+                ?: AppThemeSetting.AUTO
+        },
+    )
     override val lastKnownArtistsCsvSize by registerLong(-1L)
     override val lastKnownStampRalliesCsvSize by registerLong(-1L)
     override val displayType by registerString("")
