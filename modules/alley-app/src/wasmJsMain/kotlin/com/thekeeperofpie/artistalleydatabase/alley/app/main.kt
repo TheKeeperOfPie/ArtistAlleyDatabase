@@ -1,17 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.ComposeViewport
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.ExperimentalBrowserHistoryApi
 import androidx.navigation.bindToNavigation
 import androidx.navigation.compose.rememberNavController
@@ -27,6 +25,8 @@ import coil3.memory.MemoryCache
 import coil3.request.Options
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -84,8 +84,8 @@ fun main() {
                 .build()
         }
 
-        val colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
-        MaterialTheme(colorScheme = colorScheme) {
+        val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
+        AppTheme(appTheme = { appTheme }) {
             val windowSize = LocalWindowInfo.current.containerSize
             val density = LocalDensity.current
             val windowConfiguration = remember(windowSize, density) {
@@ -101,10 +101,9 @@ fun main() {
                 LocalWindowConfiguration provides windowConfiguration,
                 LocalNavigationController provides navigationController,
             ) {
-                val navController = rememberNavController()
-                ArtistAlleyAppScreen(component, navController)
-                LaunchedEffect(navController) {
-                    window.bindToNavigation(navController)
+                ArtistAlleyAppScreen(component, navHostController)
+                LaunchedEffect(navHostController) {
+                    window.bindToNavigation(navHostController)
                 }
             }
         }

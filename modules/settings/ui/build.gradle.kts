@@ -3,6 +3,7 @@ plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
+    id("library-web")
 }
 
 kotlin {
