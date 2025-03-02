@@ -11,6 +11,7 @@ abstract class ArtistAlleyWasmJsComponent(
     @get:Provides val scope: ApplicationScope,
 ) : ArtistAlleyAppComponent {
     abstract val appFileSystem: AppFileSystem
+    abstract val artistImageCache: ArtistImageCache
 
     val ArtistAlleyWasmJsSettings.bindArtistAlleySettings: ArtistAlleySettings
         @Provides get() = this

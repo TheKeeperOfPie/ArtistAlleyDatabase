@@ -28,3 +28,7 @@ ON artistEntry2025.id = artistUserEntry.artistId;
 getStampRallyUserEntry:
 SELECT * FROM stampRallyUserEntry
 WHERE stampRallyId = :stampRallyId;
+
+getArtistFavorites:
+SELECT artistId, favorite FROM artistUserEntry
+WHERE favorite = 1;

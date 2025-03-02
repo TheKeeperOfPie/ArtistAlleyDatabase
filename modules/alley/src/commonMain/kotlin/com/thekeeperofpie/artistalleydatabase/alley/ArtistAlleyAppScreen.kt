@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 
@@ -42,11 +43,12 @@ object ArtistAlleyAppScreen {
     @Composable
     operator fun invoke(
         component: ArtistAlleyComponent,
-        navController: NavHostController,
+        navHostController: NavHostController,
     ) {
         Surface {
+            val navigationController = LocalNavigationController.current
             val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
-                navController.navigate(
+                navigationController.navigate(
                     Destinations.ArtistDetails(
                         year = entry.artist.year,
                         id = entry.id.valueId,
@@ -57,7 +59,7 @@ object ArtistAlleyAppScreen {
             Column(modifier = Modifier.fillMaxSize()) {
                 SharedTransitionLayout(modifier = Modifier.weight(1f)) {
                     CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                        NavHost(navController, Destinations.Home) {
+                        NavHost(navHostController, Destinations.Home) {
                             val navigationTypeMap = component.navigationTypeMap
                             sharedElementComposable<Destinations.Home>(
                                 navigationTypeMap = navigationTypeMap,
@@ -72,7 +74,7 @@ object ArtistAlleyAppScreen {
                                     updateAppUrl = { appUpdateViewModel.updateAppUrl },
                                     onArtistClick = onArtistClick,
                                     onStampRallyClick = { entry, imageIndex ->
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.StampRallyDetails(
                                                 year = entry.stampRally.year,
                                                 id = entry.stampRally.id,
@@ -81,10 +83,10 @@ object ArtistAlleyAppScreen {
                                         )
                                     },
                                     onSeriesClick = {
-                                        navController.navigate(Destinations.Series(null, it))
+                                        navigationController.navigate(Destinations.Series(null, it))
                                     },
                                     onMerchClick = {
-                                        navController.navigate(Destinations.Merch(null, it))
+                                        navigationController.navigate(Destinations.Merch(null, it))
                                     },
                                 )
                             }
@@ -104,22 +106,22 @@ object ArtistAlleyAppScreen {
                                     eventSink = {
                                         when (it) {
                                             is ArtistDetailsScreen.Event.OpenMerch ->
-                                                navController.navigate(
+                                                navigationController.navigate(
                                                     Destinations.Merch(route.year, it.merch)
                                                 )
                                             is ArtistDetailsScreen.Event.OpenSeries ->
-                                                navController.navigate(
+                                                navigationController.navigate(
                                                     Destinations.Series(route.year, it.series)
                                                 )
                                             is ArtistDetailsScreen.Event.OpenStampRally ->
-                                                navController.navigate(
+                                                navigationController.navigate(
                                                     Destinations.StampRallyDetails(
                                                         year = it.entry.year,
                                                         id = it.entry.id,
                                                     )
                                                 )
                                             is ArtistDetailsScreen.Event.OpenOtherYear ->
-                                                navController.navigate(
+                                                navigationController.navigate(
                                                     Destinations.ArtistDetails(
                                                         year = it.year,
                                                         id = route.id,
@@ -130,9 +132,9 @@ object ArtistAlleyAppScreen {
                                                     is DetailsScreen.Event.FavoriteToggle ->
                                                         viewModel.onFavoriteToggle(event.favorite)
                                                     DetailsScreen.Event.NavigateBack ->
-                                                        navController.navigateUp()
+                                                        navigationController.navigateUp()
                                                     DetailsScreen.Event.OpenMap ->
-                                                        navController.navigate(
+                                                        navigationController.navigate(
                                                             Destinations.ArtistMap(route.id)
                                                         )
 
@@ -153,7 +155,7 @@ object ArtistAlleyAppScreen {
                                 ArtistMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navController::navigateUp,
+                                    onClickBack = navigationController::navigateUp,
                                     onArtistClick = onArtistClick,
                                 )
                             }
@@ -185,9 +187,9 @@ object ArtistAlleyAppScreen {
                                                     is DetailsScreen.Event.FavoriteToggle ->
                                                         viewModel.onFavoriteToggle(event.favorite)
                                                     DetailsScreen.Event.NavigateBack ->
-                                                        navController.navigateUp()
+                                                        navigationController.navigateUp()
                                                     DetailsScreen.Event.OpenMap ->
-                                                        navController.navigate(
+                                                        navigationController.navigate(
                                                             Destinations.StampRallyMap(
                                                                 year = route.year,
                                                                 id = route.id,
@@ -195,7 +197,7 @@ object ArtistAlleyAppScreen {
                                                         )
                                                 }
                                             is StampRallyDetailsScreen.Event.OpenArtist ->
-                                                navController.navigate(
+                                                navigationController.navigate(
                                                     Destinations.ArtistDetails(
                                                         year = it.artist.year,
                                                         id = it.artist.id,
@@ -217,9 +219,9 @@ object ArtistAlleyAppScreen {
                                 StampRallyMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navController::navigateUp,
+                                    onClickBack = navigationController::navigateUp,
                                     onArtistClick = { entry, imageIndex ->
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.ArtistDetails(
                                                 year = entry.artist.year,
                                                 id = entry.artist.id,
@@ -249,11 +251,11 @@ object ArtistAlleyAppScreen {
                                 ArtistSearchScreen(
                                     viewModel = viewModel,
                                     sortViewModel = sortViewModel,
-                                    onClickBack = navController::navigateUp,
+                                    onClickBack = navigationController::navigateUp,
                                     onEntryClick = onArtistClick,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.SeriesMap(
                                                 viewModel.lockedYear,
                                                 route.series
@@ -261,12 +263,12 @@ object ArtistAlleyAppScreen {
                                         )
                                     },
                                     onSeriesClick = {
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.Series(viewModel.lockedYear, it)
                                         )
                                     },
                                     onMerchClick = {
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.Merch(viewModel.lockedYear, it)
                                         )
                                     },
@@ -291,21 +293,21 @@ object ArtistAlleyAppScreen {
                                 ArtistSearchScreen(
                                     viewModel = viewModel,
                                     sortViewModel = sortViewModel,
-                                    onClickBack = navController::navigateUp,
+                                    onClickBack = navigationController::navigateUp,
                                     onEntryClick = onArtistClick,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.MerchMap(viewModel.lockedYear, route.merch)
                                         )
                                     },
                                     onSeriesClick = {
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.Series(viewModel.lockedYear, it)
                                         )
                                     },
                                     onMerchClick = {
-                                        navController.navigate(
+                                        navigationController.navigate(
                                             Destinations.Merch(viewModel.lockedYear, it)
                                         )
                                     },
@@ -324,7 +326,7 @@ object ArtistAlleyAppScreen {
                                 TagMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navController::navigateUp,
+                                    onClickBack = navigationController::navigateUp,
                                     onArtistClick = onArtistClick,
                                 )
                             }
@@ -340,7 +342,7 @@ object ArtistAlleyAppScreen {
                                 TagMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navController::navigateUp,
+                                    onClickBack = navigationController::navigateUp,
                                     onArtistClick = onArtistClick,
                                 )
                             }

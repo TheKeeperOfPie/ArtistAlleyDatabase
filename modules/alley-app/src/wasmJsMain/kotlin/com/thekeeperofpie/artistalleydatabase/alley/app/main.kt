@@ -39,11 +39,14 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 private val fakeFileSystem = FakeFileSystem()
 
+private lateinit var artistImageCache: ArtistImageCache
+
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalBrowserHistoryApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
         val scope = rememberCoroutineScope()
         val component = ArtistAlleyWasmJsComponent::class.create(scope)
+        artistImageCache = component.artistImageCache
 
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
