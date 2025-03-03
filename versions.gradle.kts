@@ -296,6 +296,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     with(Versions.jetBrains.composeMultiplatform) {
                         library("org.jetbrains.compose:compose-gradle-plugin:$plugin")
                         library("org.jetbrains.compose.runtime:runtime:$runtime")
+                        library("org.jetbrains.compose.ui:ui-backhandler:$runtime")
                     }
                 }
 

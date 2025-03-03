@@ -36,6 +36,7 @@ kotlin {
 
             api(libs.pagingMultiplatform.paging.common)
             api(compose.components.resources)
+            api(libs.jetBrainsCompose.ui.backhandler)
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)

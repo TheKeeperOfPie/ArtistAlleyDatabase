@@ -103,21 +103,20 @@ fun main() {
         }
         val navigationTypeMap = desktopComponent.navigationTypeMap
 
-        ThemeAndSingletons(desktopComponent) {
-            val windowState = rememberWindowState()
-            Window(
-                onCloseRequest = ::exitApplication,
-                title = runBlocking { getString(UtilsStrings.app_name) },
-                state = windowState,
-            ) {
-                val windowSize = windowState.size
-                val windowConfiguration = remember(windowSize) {
-                    WindowConfiguration(
-                        screenWidthDp = windowSize.width.takeOrElse { 600.dp },
-                        screenHeightDp = windowSize.height.takeOrElse { 800.dp },
-                    )
-                }
-
+        val windowState = rememberWindowState()
+        Window(
+            onCloseRequest = ::exitApplication,
+            title = runBlocking { getString(UtilsStrings.app_name) },
+            state = windowState,
+        ) {
+            val windowSize = windowState.size
+            val windowConfiguration = remember(windowSize) {
+                WindowConfiguration(
+                    screenWidthDp = windowSize.width.takeOrElse { 600.dp },
+                    screenHeightDp = windowSize.height.takeOrElse { 800.dp },
+                )
+            }
+            ThemeAndSingletons(desktopComponent) {
                 val cdEntryNavigator = desktopComponent.cdEntryNavigator
                 val navHostController = rememberNavController()
 
