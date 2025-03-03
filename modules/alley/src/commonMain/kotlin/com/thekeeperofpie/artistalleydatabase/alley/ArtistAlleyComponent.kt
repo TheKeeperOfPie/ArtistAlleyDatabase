@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.navigation.NavType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
@@ -24,9 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import kotlinx.coroutines.flow.StateFlow
-import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
-import kotlin.reflect.KType
 
 interface ArtistAlleyComponent {
 
@@ -62,6 +59,5 @@ interface ArtistAlleyComponent {
 
     @SingletonScope
     @Provides
-    @IntoSet
-    fun provideNavTypeMap() : Map<KType, NavType<*>> = Destinations.typeMap
+    fun provideNavigationTypeMap() = NavigationTypeMap(Destinations.typeMap)
 }

@@ -81,6 +81,7 @@
             <option value="$PROJECT_DIR$/modules/secrets" />
             <option value="$PROJECT_DIR$/modules/server" />
             <option value="$PROJECT_DIR$/modules/settings" />
+            <option value="$PROJECT_DIR$/modules/settings/ui" />
             <option value="$PROJECT_DIR$/modules/test-utils" />
             <option value="$PROJECT_DIR$/modules/utils" />
             <option value="$PROJECT_DIR$/modules/utils-compose" />

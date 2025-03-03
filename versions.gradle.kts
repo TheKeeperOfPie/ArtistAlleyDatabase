@@ -41,7 +41,7 @@ object Versions {
     const val burst = "2.4.0"
 
     // https://github.com/coil-kt/coil/issues/2771#issuecomment-2607839662
-    const val coil = "3.2.0-SNAPSHOTLOCAL"
+    const val coil = "3.2.1-SNAPSHOTLOCAL"
     const val colormath = "3.6.1"
 
     const val cronetEmbedded = "119.6045.31"
@@ -69,12 +69,12 @@ object Versions {
     object jetBrains {
         object androidX {
             const val lifecycle = "2.9.0-alpha03"
-            const val navigation = "2.8.0-alpha11"
+            const val navigation = "2.8.0-alpha13"
         }
 
         object composeMultiplatform {
-            const val plugin = "1.8.0-alpha02"
-            const val runtime = "1.8.0-alpha02"
+            const val plugin = "1.8.0-alpha03"
+            const val runtime = "1.8.0-alpha03"
         }
     }
 
