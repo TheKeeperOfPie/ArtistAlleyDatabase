@@ -78,7 +78,7 @@ object AlleyDataUtils {
             .find { it.name == name }
             ?: return false
 
-        val imageFile = fileFolder.files.find { (it as? ComposeFile.File)?.name == imageName }
+        val imageFile = fileFolder.files.find { (it as? ComposeFile.Image)?.name == imageName }
         return imageFile != null
     }
 }

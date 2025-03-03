@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.GetArtistFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
@@ -120,7 +121,8 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                         val path = request.url
                             .let(Uri::parseOrNull)
                             ?.path
-                        if (path  == null || !AlleyDataUtils.exists(path)) {
+                        if (path == null || !AlleyDataUtils.exists(path)) {
+                            ConsoleLogger.log("Remove stale image = $path")
                             stale += request
                         }
                     }
