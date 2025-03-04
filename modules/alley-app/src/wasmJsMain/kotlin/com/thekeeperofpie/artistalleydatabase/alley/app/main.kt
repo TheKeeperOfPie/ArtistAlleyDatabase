@@ -16,18 +16,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.ExperimentalBrowserHistoryApi
 import androidx.navigation.bindToNavigation
 import androidx.navigation.compose.rememberNavController
-import artistalleydatabase.modules.alley.data.generated.resources.Res
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
-import coil3.decode.DataSource
-import coil3.decode.ImageSource
-import coil3.fetch.FetchResult
-import coil3.fetch.Fetcher
-import coil3.fetch.SourceFetchResult
+import coil3.map.Mapper
 import coil3.memory.MemoryCache
-import coil3.request.Options
 import coil3.request.crossfade
-import com.eygraber.uri.Uri
+import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -39,13 +33,8 @@ import kotlinx.browser.window
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
-import okio.Buffer
-import okio.fakefilesystem.FakeFileSystem
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
-
-private val fakeFileSystem = FakeFileSystem()
 
 private lateinit var artistImageCache: ArtistImageCache
 
@@ -74,30 +63,8 @@ fun main() {
             ImageLoader.Builder(context)
                 .crossfade(false)
                 .components {
-                    add(object : Fetcher.Factory<Uri> {
-                        @OptIn(ExperimentalResourceApi::class)
-                        override fun create(
-                            data: Uri,
-                            options: Options,
-                            imageLoader: ImageLoader,
-                        ): Fetcher? {
-                            val filePath = data.path?.substringAfter(
-                                "artistalleydatabase.modules.alley.data.generated.resources/",
-                                "",
-                            )
-                            if (filePath.isNullOrBlank()) return null
-                            return object : Fetcher {
-                                override suspend fun fetch(): FetchResult? {
-                                    val buffer = Buffer()
-                                    buffer.write(Res.readBytes(filePath))
-                                    return SourceFetchResult(
-                                        source = ImageSource(buffer, fakeFileSystem),
-                                        mimeType = null,
-                                        dataSource = DataSource.DISK,
-                                    )
-                                }
-                            }
-                        }
+                    add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
+                        data.toString().toUri()
                     })
                 }
                 .memoryCache {
@@ -145,7 +112,7 @@ fun main() {
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
-private class WasmJsBackGestureDispatcher: BackGestureDispatcher() {
+private class WasmJsBackGestureDispatcher : BackGestureDispatcher() {
     fun onKeyboardEvent(event: KeyboardEvent) {
         if (event.key == "Escape") {
             onBack()

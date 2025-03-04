@@ -195,13 +195,12 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
-                implementation(libs.coil3.coil.network.ktor3)
                 implementation(libs.kotlinx.coroutines.swing)
             }
         }
         val wasmJsMain by getting {
             dependencies {
-                implementation(libs.okio.fakefilesystem)
+                implementation(libs.coil3.coil.network.ktor3)
             }
             resources.srcDirs(layout.buildDirectory.dir("dist/serviceWorker/productionExecutable"))
         }
