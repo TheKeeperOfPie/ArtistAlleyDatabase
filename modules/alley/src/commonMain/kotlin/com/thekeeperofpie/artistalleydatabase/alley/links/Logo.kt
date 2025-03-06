@@ -22,6 +22,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_fa
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_faire
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_gallery_nucleus
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_game_jolt
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_github
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_gumroad
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_inprnt
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_instagram
@@ -55,8 +56,8 @@ enum class Logo(
         label = Res.string.alley_link_label_art_station,
         ImageVector.Builder(
             name = "ArtStation",
-            defaultWidth = 16.dp,
-            defaultHeight = (93.099998 / 105.8 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (93.099998 / 105.8 * 24).dp,
             viewportWidth = 105.8f,
             viewportHeight = 93.100001f
         ).apply {
@@ -113,8 +114,8 @@ enum class Logo(
         label = Res.string.alley_link_label_big_cartel,
         ImageVector.Builder(
             name = "Big Cartel",
-            defaultWidth = 16.dp,
-            defaultHeight = (190.228 / 149.995 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (190.228 / 149.995 * 24).dp,
             viewportWidth = 39.686f,
             viewportHeight = 50.331f
         ).apply {
@@ -160,8 +161,8 @@ enum class Logo(
         label = Res.string.alley_link_label_bluesky,
         ImageVector.Builder(
             name = "Bluesky",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 32f,
             viewportHeight = 32f
         ).apply {
@@ -195,8 +196,8 @@ enum class Logo(
         label = Res.string.alley_link_label_carrd,
         ImageVector.Builder(
             name = "Carrd",
-            defaultWidth = 16.dp,
-            defaultHeight = (75.631973 / 60.271461 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (75.631973 / 60.271461 * 24).dp,
             viewportWidth = 60.271461f,
             viewportHeight = 75.631973f
         ).apply {
@@ -392,8 +393,8 @@ enum class Logo(
         label = Res.string.alley_link_label_deviant_art,
         ImageVector.Builder(
             name = "DeviantArt",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 32f,
             viewportHeight = 32f
         ).apply {
@@ -432,8 +433,8 @@ enum class Logo(
         label = Res.string.alley_link_label_discord,
         ImageVector.Builder(
             name = "Discord",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 16f,
             viewportHeight = 16f
         ).apply {
@@ -663,8 +664,8 @@ enum class Logo(
         label = Res.string.alley_link_label_etsy,
         ImageVector.Builder(
             name = "Etsy",
-            defaultWidth = (605.17 / 286.099 * 16).dp,
-            defaultHeight = 16.dp,
+            defaultWidth = (605.17 / 286.099 * 24).dp,
+            defaultHeight = 24.dp,
             viewportWidth = 180.118f,
             viewportHeight = 75.697f
         ).apply {
@@ -852,8 +853,8 @@ enum class Logo(
         label = Res.string.alley_link_label_facebook,
         ImageVector.Builder(
             name = "Facebook",
-            defaultWidth = 16.dp,
-            defaultHeight = (664.362 / 666.743 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (664.362 / 666.743 * 24).dp,
             viewportWidth = 176.409f,
             viewportHeight = 175.779f,
         ).apply {
@@ -1252,8 +1253,8 @@ enum class Logo(
         label = Res.string.alley_link_label_gallery_nucleus,
         ImageVector.Builder(
             name = "Gallery Nucleus",
-            defaultWidth = 16.dp,
-            defaultHeight = (67.435997 / 70.028999 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (67.435997 / 70.028999 * 24).dp,
             viewportWidth = 70.028999f,
             viewportHeight = 67.435997f
         ).apply {
@@ -1318,8 +1319,8 @@ enum class Logo(
         label = Res.string.alley_link_label_game_jolt,
         ImageVector.Builder(
             name = "Game Jolt",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 64f,
             viewportHeight = 64f
         ).apply {
@@ -1554,13 +1555,88 @@ enum class Logo(
         }.build()
     ),
 
+    GITHUB(
+        label = Res.string.alley_link_label_github,
+        ImageVector.Builder(
+            name = "GitHub",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 16.933332f,
+            viewportHeight = 16.933332f
+        ).apply {
+            group(
+                translationX = -96.614418f,
+                translationY = -140.03334f,
+            ) {
+                materialPath(
+                    fillAlpha = 1.0f,
+                    strokeAlpha = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    moveTo(101.98299f, 156.15525f)
+                    curveToRelative(-0.88770f, -0.36560f, -1.71240f, -0.91170f, -2.47840f, -1.6410f)
+                    curveToRelative(-0.78450f, -0.74690f, -1.2730f, -1.41470f, -1.72420f, -2.35730f)
+                    curveToRelative(-1.05870f, -2.21150f, -1.06010f, -4.74650f, -0.00380f, -6.95330f)
+                    curveToRelative(0.42150f, -0.88060f, 0.80110f, -1.42620f, 1.47810f, -2.12470f)
+                    curveToRelative(1.56410f, -1.61360f, 3.27830f, -2.37870f, 5.50880f, -2.45890f)
+                    curveToRelative(1.66050f, -0.05970f, 2.99650f, 0.2540f, 4.30040f, 1.00990f)
+                    curveToRelative(2.32320f, 1.34660f, 3.78230f, 3.58440f, 4.07060f, 6.2430f)
+                    curveToRelative(0.20220f, 1.86410f, -0.31860f, 3.85820f, -1.4260f, 5.46020f)
+                    curveToRelative(-0.87560f, 1.26660f, -2.5050f, 2.51580f, -3.86070f, 2.95990f)
+                    curveToRelative(-0.34050f, 0.11150f, -0.38760f, 0.11250f, -0.54190f, 0.01140f)
+                    curveToRelative(-0.16880f, -0.11060f, -0.16910f, -0.11330f, -0.19150f, -1.68220f)
+                    lineToRelative(-0.0225f, -1.57142f)
+                    lineToRelative(-0.22991f, -0.40569f)
+                    lineToRelative(-0.22991f, -0.4057f)
+                    horizontalLineToRelative(0.16571f)
+                    curveToRelative(0.280f, 00f, 1.21760f, -0.26440f, 1.63070f, -0.45980f)
+                    curveToRelative(0.52930f, -0.25040f, 1.09820f, -0.78620f, 1.3620f, -1.28270f)
+                    curveToRelative(0.33890f, -0.63780f, 0.4640f, -1.21180f, 0.46610f, -2.1380f)
+                    curveToRelative(0.0020f, -0.91330f, -0.11490f, -1.32740f, -0.55560f, -1.96810f)
+                    curveToRelative(-0.21240f, -0.30870f, -0.23160f, -0.37410f, -0.17180f, -0.58280f)
+                    curveToRelative(0.10160f, -0.35420f, 0.08110f, -1.1170f, -0.04120f, -1.52850f)
+                    curveToRelative(-0.10640f, -0.35820f, -0.1140f, -0.36560f, -0.380f, -0.36560f)
+                    curveToRelative(-0.38520f, 00f, -0.9240f, 0.18980f, -1.50360f, 0.52950f)
+                    lineToRelative(-0.49985f, 0.29302f)
+                    lineToRelative(-0.42971f, -0.10869f)
+                    curveToRelative(-0.59590f, -0.15070f, -2.59280f, -0.15050f, -3.18950f, 0.00040f)
+                    curveToRelative(-0.37710f, 0.09540f, -0.44820f, 0.09620f, -0.56440f, 0.0070f)
+                    curveToRelative(-0.33680f, -0.25850f, -1.30f, -0.66130f, -1.67340f, -0.69980f)
+                    curveToRelative(-0.38640f, -0.03990f, -0.39780f, -0.0360f, -0.47430f, 0.16280f)
+                    curveToRelative(-0.17480f, 0.45470f, -0.22870f, 1.02420f, -0.14260f, 1.50650f)
+                    lineToRelative(0.084f, 0.47017f)
+                    lineToRelative(-0.24981f, 0.37122f)
+                    curveToRelative(-0.35790f, 0.53180f, -0.53470f, 1.16270f, -0.53320f, 1.90260f)
+                    curveToRelative(0.00430f, 2.13340f, 1.01320f, 3.40970f, 3.00660f, 3.80320f)
+                    lineToRelative(0.64424f, 0.12718f)
+                    lineToRelative(-0.16548f, 0.20752f)
+                    curveToRelative(-0.0910f, 0.11410f, -0.20350f, 0.35570f, -0.24990f, 0.53690f)
+                    curveToRelative(-0.07490f, 0.29230f, -0.11380f, 0.33820f, -0.34580f, 0.40770f)
+                    curveToRelative(-0.41250f, 0.12360f, -1.02550f, 0.09690f, -1.32870f, -0.05770f)
+                    curveToRelative(-0.14670f, -0.07480f, -0.37560f, -0.26530f, -0.50870f, -0.42340f)
+                    curveToRelative(-0.13310f, -0.1580f, -0.35320f, -0.41930f, -0.4890f, -0.58060f)
+                    curveToRelative(-0.39390f, -0.46770f, -1.00120f, -0.67860f, -1.3080f, -0.45430f)
+                    curveToRelative(-0.13020f, 0.09520f, -0.12620f, 0.1070f, 0.10220f, 0.29990f)
+                    curveToRelative(0.50670f, 0.42790f, 0.69880f, 0.66450f, 0.9830f, 1.21060f)
+                    curveToRelative(0.1620f, 0.31130f, 0.39160f, 0.64770f, 0.51030f, 0.74760f)
+                    curveToRelative(0.33730f, 0.28380f, 0.90080f, 0.41560f, 1.62820f, 0.38090f)
+                    lineToRelative(0.62429f, -0.0298f)
+                    verticalLineToRelative(0.82911f)
+                    curveToRelative(00f, 0.77680f, -0.010f, 0.8360f, -0.15680f, 0.93890f)
+                    curveToRelative(-0.20760f, 0.14540f, -0.210f, 0.14510f, -0.89520f, -0.13710f)
+                    close()
+                }
+            }
+        }.build()
+    ),
+
     // Manually converted using Inkscape from official logo
     GUMROAD(
         label = Res.string.alley_link_label_gumroad,
         ImageVector.Builder(
             name = "Gumroad",
-            defaultWidth = 16.dp,
-            defaultHeight = (80.186 / 80.777 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (80.186 / 80.777 * 24).dp,
             viewportWidth = 21.372f,
             viewportHeight = 21.216f
         ).apply {
@@ -1668,8 +1744,8 @@ enum class Logo(
         label = Res.string.alley_link_label_inprnt,
         ImageVector.Builder(
             name = "Inprnt",
-            defaultWidth = (158.72078 / 65.269485 * 16).dp,
-            defaultHeight = 16.dp,
+            defaultWidth = (158.72078 / 65.269485 * 24).dp,
+            defaultHeight = 24.dp,
             viewportWidth = 158.72078f,
             viewportHeight = 65.269485f
         ).apply {
@@ -1933,8 +2009,8 @@ enum class Logo(
         label = Res.string.alley_link_label_instagram,
         ImageVector.Builder(
             name = "Instagram",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 16f,
             viewportHeight = 16f
         ).apply {
@@ -2110,8 +2186,8 @@ enum class Logo(
         label = Res.string.alley_link_label_itch_io,
         ImageVector.Builder(
             name = "itch.io",
-            defaultWidth = 16.dp,
-            defaultHeight = (235.452 / 261.728 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (235.452 / 261.728 * 24).dp,
             viewportWidth = 245.371f,
             viewportHeight = 220.736f
         ).apply {
@@ -2300,8 +2376,8 @@ enum class Logo(
         label = Res.string.alley_link_label_kickstarter,
         ImageVector.Builder(
             name = "Kickstarter",
-            defaultWidth = 16.dp,
-            defaultHeight = (288.313 / 256.288 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (288.313 / 256.288 * 24).dp,
             viewportWidth = 67.81f,
             viewportHeight = 76.283f,
         ).apply {
@@ -2333,8 +2409,8 @@ enum class Logo(
         label = Res.string.alley_link_label_ko_fi,
         ImageVector.Builder(
             name = "Ko-Fi",
-            defaultWidth = 16.dp,
-            defaultHeight = (194f / 241 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (194f / 241 * 24).dp,
             viewportWidth = 241f,
             viewportHeight = 194f
         ).apply {
@@ -2412,8 +2488,8 @@ enum class Logo(
         label = Res.string.alley_link_label_linktree,
         ImageVector.Builder(
             name = "Linktree",
-            defaultWidth = 16.dp,
-            defaultHeight = (512.238 / 417 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (512.238 / 417 * 24).dp,
             viewportWidth = 417f,
             viewportHeight = 512.238f
         ).apply {
@@ -2460,8 +2536,8 @@ enum class Logo(
         label = Res.string.alley_link_label_patreon,
         ImageVector.Builder(
             name = "Patreon",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 1080f,
             viewportHeight = 1080f
         ).apply {
@@ -2488,8 +2564,8 @@ enum class Logo(
         label = Res.string.alley_link_label_pixiv,
         ImageVector.Builder(
             name = "Pixiv",
-            defaultWidth = 16.dp,
-            defaultHeight = (683.222 / 682.813 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (683.222 / 682.813 * 24).dp,
             viewportWidth = 180.661f,
             viewportHeight = 180.769f
         ).apply {
@@ -2567,8 +2643,8 @@ enum class Logo(
         label = Res.string.alley_link_label_redbubble,
         ImageVector.Builder(
             name = "Redbubble",
-            defaultWidth = 16.dp,
-            defaultHeight = (189.25365 / 189.2473 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (189.25365 / 189.2473 * 24).dp,
             viewportWidth = 189.2473f,
             viewportHeight = 189.25365f
         ).apply {
@@ -2693,8 +2769,8 @@ enum class Logo(
         label = Res.string.alley_link_label_shopify,
         ImageVector.Builder(
             name = "Shopify",
-            defaultWidth = 16.dp,
-            defaultHeight = (165.276 / 145.797 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (165.276 / 145.797 * 24).dp,
             viewportWidth = 38.576f,
             viewportHeight = 43.729f
         ).apply {
@@ -2862,8 +2938,8 @@ enum class Logo(
         label = Res.string.alley_link_label_storenvy,
         ImageVector.Builder(
             name = "Storenvy",
-            defaultWidth = 16.dp,
-            defaultHeight = (141.25276 / 160.19859 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (141.25276 / 160.19859 * 24).dp,
             viewportWidth = 160.19859f,
             viewportHeight = 141.25276f
         ).apply {
@@ -3122,8 +3198,8 @@ enum class Logo(
         label = Res.string.alley_link_label_substack,
         ImageVector.Builder(
             name = "Substack",
-            defaultWidth = 16.dp,
-            defaultHeight = (211.66664 / 185.91388 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (211.66664 / 185.91388 * 24).dp,
             viewportWidth = 185.91388f,
             viewportHeight = 211.66664f
         ).apply {
@@ -3182,8 +3258,8 @@ enum class Logo(
         label = Res.string.alley_link_label_threadless,
         ImageVector.Builder(
             name = "Threadless",
-            defaultWidth = (759.655 / 245.638 * 16).dp,
-            defaultHeight = 16.dp,
+            defaultWidth = (759.655 / 245.638 * 24).dp,
+            defaultHeight = 24.dp,
             viewportWidth = 200.992f,
             viewportHeight = 64.992f
         ).apply {
@@ -3594,8 +3670,8 @@ enum class Logo(
         label = Res.string.alley_link_label_threads,
         ImageVector.Builder(
             name = "Threads",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 16f,
             viewportHeight = 16f
         ).apply {
@@ -3650,8 +3726,8 @@ enum class Logo(
         label = Res.string.alley_link_label_tik_tok,
         ImageVector.Builder(
             name = "TikTok",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 16f,
             viewportHeight = 16f
         ).apply {
@@ -3680,8 +3756,8 @@ enum class Logo(
         label = Res.string.alley_link_label_tumblr,
         ImageVector.Builder(
             name = "Tumblr",
-            defaultWidth = 16.dp,
-            defaultHeight = (512.184 / 289.999 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (512.184 / 289.999 * 24).dp,
             viewportWidth = 289.999f,
             viewportHeight = 512.184f
         ).apply {
@@ -3716,8 +3792,8 @@ enum class Logo(
         label = Res.string.alley_link_label_twitch,
         ImageVector.Builder(
             name = "Twitch",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 16f,
             viewportHeight = 16f
         ).apply {
@@ -3770,8 +3846,8 @@ enum class Logo(
         label = Res.string.alley_link_label_vgen,
         ImageVector.Builder(
             name = "VGen",
-            defaultWidth = 16.dp,
-            defaultHeight = (45.751148 / 58.917126 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (45.751148 / 58.917126 * 24).dp,
             viewportWidth = 58.917126f,
             viewportHeight = 45.751148f
         ).apply {
@@ -3861,8 +3937,8 @@ enum class Logo(
         label = Res.string.alley_link_label_weebly,
         ImageVector.Builder(
             name = "Weebly",
-            defaultWidth = 16.dp,
-            defaultHeight = (171.805 / 226.014 * 16).dp,
+            defaultWidth = 24.dp,
+            defaultHeight = (171.805 / 226.014 * 24).dp,
             viewportWidth = 59.799f,
             viewportHeight = 45.457f
         ).apply {
@@ -3933,8 +4009,8 @@ enum class Logo(
         label = Res.string.alley_link_label_x,
         ImageVector.Builder(
             name = "X",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 16f,
             viewportHeight = 16f
         ).apply {
@@ -3972,8 +4048,8 @@ enum class Logo(
         label = Res.string.alley_link_label_you_tube,
         ImageVector.Builder(
             name = "YouTube",
-            defaultWidth = 16.dp,
-            defaultHeight = 16.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 16f,
             viewportHeight = 16f
         ).apply {

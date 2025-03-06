@@ -694,7 +694,7 @@ fun IconWithTooltip(
             Icon(
                 imageVector = imageVector,
                 contentDescription = contentDescription,
-                modifier = Modifier.height(20.dp)
+                modifier = Modifier.height(24.dp)
             )
         }
     }

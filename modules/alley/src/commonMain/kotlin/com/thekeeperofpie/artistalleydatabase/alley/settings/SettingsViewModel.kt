@@ -18,5 +18,7 @@ class SettingsViewModel(settings: ArtistAlleySettings) : ViewModel() {
         property = settings.appTheme,
     )
 
-    val sections = listOf(themeSection)
+    private val aboutSection = SettingsSection.Placeholder("header")
+
+    val sections = listOf(aboutSection, themeSection)
 }

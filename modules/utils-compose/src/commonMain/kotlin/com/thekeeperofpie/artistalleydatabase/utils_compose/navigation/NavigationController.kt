@@ -13,17 +13,24 @@ val LocalNavigationController =
     staticCompositionLocalOf<NavigationController> { throw IllegalStateException("No NavigationController provided") }
 
 @Composable
-fun rememberNavigationController(navHostController: NavHostController) =
-    remember(navHostController) { NavigationController(navHostController) }
+fun rememberNavigationController(navHostController: NavHostController): NavigationController =
+    remember(navHostController) { NavigationControllerImpl(navHostController) }
 
-class NavigationController(private val navHostController: NavHostController) {
+interface NavigationController {
+    fun navigateUp(): Boolean
+    fun navigate(navDestination: NavDestination)
+}
+
+class NavigationControllerImpl(
+    private val navHostController: NavHostController,
+) : NavigationController {
 
     private var lastNavDestination: Any? = null
     private var lastNavTime = Instant.DISTANT_PAST
 
-    fun navigateUp() = navHostController.navigateUp()
+    override fun navigateUp() = navHostController.navigateUp()
 
-    fun navigate(navDestination: NavDestination) {
+    override fun navigate(navDestination: NavDestination) {
         val navTime = Clock.System.now()
         val timeDifference = (navTime - lastNavTime).absoluteValue
         val blockNavigation = if (lastNavDestination == navDestination) {

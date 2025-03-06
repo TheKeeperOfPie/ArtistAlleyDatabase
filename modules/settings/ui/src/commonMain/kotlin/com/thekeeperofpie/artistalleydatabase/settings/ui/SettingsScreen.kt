@@ -31,7 +31,7 @@ object SettingsScreen {
         sections: List<SettingsSection>,
         upIconOption: UpIconOption?,
         modifier: Modifier = Modifier,
-        customSection: @Composable (SettingsSection) -> Unit = {},
+        customSection: @Composable (SettingsSection.Placeholder) -> Unit = {},
     ) {
         var currentSubsectionId by rememberSaveable { mutableStateOf<String?>(null) }
         val currentSubsection = remember(currentSubsectionId) {

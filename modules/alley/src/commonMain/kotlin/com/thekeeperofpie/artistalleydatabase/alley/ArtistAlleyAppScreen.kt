@@ -66,12 +66,8 @@ object ArtistAlleyAppScreen {
                                 enterTransition = null,
                                 exitTransition = null,
                             ) {
-                                val appUpdateViewModel = viewModel {
-                                    component.appUpdateViewModel()
-                                }
                                 ArtistAlleyScreen(
                                     component = component,
-                                    updateAppUrl = { appUpdateViewModel.updateAppUrl },
                                     onArtistClick = onArtistClick,
                                     onStampRallyClick = { entry, imageIndex ->
                                         navigationController.navigate(

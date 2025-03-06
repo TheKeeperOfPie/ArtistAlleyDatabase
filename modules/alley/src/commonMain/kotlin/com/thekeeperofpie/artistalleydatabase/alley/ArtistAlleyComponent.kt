@@ -27,7 +27,6 @@ import me.tatarka.inject.annotations.Provides
 
 interface ArtistAlleyComponent {
 
-    val appUpdateViewModel: () -> AppUpdateViewModel
     val artistDetailsViewModel: (SavedStateHandle) -> ArtistDetailsViewModel
     val artistSearchViewModel: (SavedStateHandle, StateFlow<ArtistSortFilterViewModel.FilterParams>) -> ArtistSearchViewModel
     val artistSortFilterViewModel: (SavedStateHandle) -> ArtistSortFilterViewModel
