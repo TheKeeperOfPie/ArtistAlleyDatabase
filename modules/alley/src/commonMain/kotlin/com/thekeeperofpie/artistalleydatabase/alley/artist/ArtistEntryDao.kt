@@ -8,20 +8,20 @@ import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025Queries
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,9 +54,9 @@ private fun SqlCursor.toArtistWithUserData2023(): ArtistWithUserData {
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
+            dataYear = DataYear.YEAR_2023,
             favorite = getBoolean(9) == true,
             ignored = getBoolean(10) == true,
-            notes = getString(11),
         )
     )
 }
@@ -83,9 +83,9 @@ private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
+            dataYear = DataYear.YEAR_2024,
             favorite = getBoolean(14) == true,
             ignored = getBoolean(15) == true,
-            notes = getString(16),
         )
     )
 }
@@ -106,8 +106,8 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
             notes = getString(8),
             commissions = getString(9)!!.let(Json::decodeFromString),
             seriesInferred = getString(10)!!.let { Json.decodeFromString<List<String>>(it) } +
-                    getString(18)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty() +
-                    getString(19)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty(),
+                    getString(17)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty() +
+                    getString(18)?.let { Json.decodeFromString<List<String>>(it) }.orEmpty(),
             seriesConfirmed = getString(11)!!.let(Json::decodeFromString),
             merchInferred = getString(12)!!.let(Json::decodeFromString),
             merchConfirmed = getString(13)!!.let(Json::decodeFromString),
@@ -115,9 +115,9 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
+            dataYear = DataYear.YEAR_2025,
             favorite = getBoolean(15) == true,
             ignored = getBoolean(16) == true,
-            notes = getString(17),
         )
     )
 }
@@ -142,9 +142,9 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
     ),
     userEntry = ArtistUserEntry(
         artistId = id,
+        dataYear = DataYear.YEAR_2023,
         favorite = favorite == true,
         ignored = ignored == true,
-        notes = userNotes,
     )
 )
 
@@ -168,9 +168,9 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
     ),
     userEntry = ArtistUserEntry(
         artistId = id,
+        dataYear = DataYear.YEAR_2024,
         favorite = favorite == true,
         ignored = ignored == true,
-        notes = userNotes,
     )
 )
 
@@ -195,9 +195,9 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
     ),
     userEntry = ArtistUserEntry(
         artistId = id,
+        dataYear = DataYear.YEAR_2025,
         favorite = favorite == true,
         ignored = ignored == true,
-        notes = userNotes,
     )
 )
 
@@ -258,7 +258,7 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ArtistEntryDao(
-    private val driver: SqlDriver,
+    private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val settings: ArtistAlleySettings,
     private val dao2023: suspend () -> ArtistEntry2023Queries = { database().artistEntry2023Queries },
@@ -393,8 +393,7 @@ class ArtistEntryDao(
                     " length(${tableName}_fts.counter) + 2) as orderIndex")
                 .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM }
                 .orEmpty()
-        var selectSuffix =
-            ", artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.notes"
+        var selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored"
         if (year == DataYear.YEAR_2025) {
             selectSuffix += ", artistEntry2024.seriesInferred, artistEntry2024.seriesConfirmed"
         }
@@ -434,12 +433,14 @@ class ArtistEntryDao(
             var joinStatement = """
                 LEFT OUTER JOIN artistUserEntry
                 ON $tableName.id = artistUserEntry.artistId
+                AND '${year.serializedName}' = artistUserEntry.dataYear
             """.trimIndent()
 
             if (year == DataYear.YEAR_2025) {
                 joinStatement += """${"\n"}
                     LEFT OUTER JOIN artistEntry2024
                     ON $tableName.id = artistEntry2024.id
+                    AND '${DataYear.YEAR_2024.serializedName}' = artistUserEntry.dataYear
                 """.trimIndent()
             }
 
@@ -512,12 +513,14 @@ class ArtistEntryDao(
         var joinStatement = """
                 LEFT OUTER JOIN artistUserEntry
                 ON idAsKey = artistUserEntry.artistId
+                AND '${year.serializedName}' = artistUserEntry.dataYear
             """.trimIndent()
 
         if (year == DataYear.YEAR_2025) {
             joinStatement += """${"\n"}
                     LEFT OUTER JOIN artistEntry2024
                     ON idAsKey = artistEntry2024.id
+                    AND '${DataYear.YEAR_2024.serializedName}' = artistUserEntry.dataYear
                 """.trimIndent()
         }
 

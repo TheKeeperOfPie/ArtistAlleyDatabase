@@ -11,7 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
+import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
 import kotlinx.io.Source
 import kotlinx.io.asSource
@@ -64,6 +68,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         override fun encode(value: List<String>) = Json.encodeToString(value)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
+    private val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
+        override fun decode(databaseValue: String) =
+            DataYear.entries.first { it.serializedName == databaseValue }
+
+        override fun encode(value: DataYear) = value.serializedName
+    }
+
     @TaskAction
     fun process() {
         val dbFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
@@ -112,6 +124,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     tablesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
                 ),
+                artistNotesAdapter = ArtistNotes.Adapter(
+                    dataYearAdapter = dataYearAdapter,
+                ),
+                artistUserEntryAdapter = ArtistUserEntry.Adapter(
+                    dataYearAdapter = dataYearAdapter,
+                ),
             )
 
             val seriesConnections = mutableMapOf<Pair<String, String>, ArtistSeriesConnection>()
@@ -136,23 +154,36 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             parseTags(database, seriesConnections, merchConnections)
             parseStampRallies(artists2023, artists2024, artists2025, database)
 
-            val ftsTables = listOf(
-                "artistEntry2023_fts",
-                "artistEntry2024_fts",
-                "artistEntry2025_fts",
-                "stampRallyEntry2023_fts",
-                "stampRallyEntry2024_fts",
-                "stampRallyEntry2025_fts",
-                "seriesEntry_fts",
-                "merchEntry_fts",
-            )
+            runBlocking {
+                // Don't retain user tables (merged from depending on :modules:alley:user)
+                listOf(
+                    "artistUserEntry",
+                    "stampRallyUserEntry",
+                    "artistNotes",
+                    "stampRallyNotes",
+                ).forEach {
+                    driver.execute(null, "DROP TABLE $it;", 0, null).await()
+                }
 
-            ftsTables.forEach {
-                driver.execute(null, "INSERT INTO $it($it) VALUES('rebuild');", 0, null)
-                driver.execute(null, "INSERT INTO $it($it) VALUES('optimize');", 0, null)
+                val ftsTables = listOf(
+                    "artistEntry2023_fts",
+                    "artistEntry2024_fts",
+                    "artistEntry2025_fts",
+                    "stampRallyEntry2023_fts",
+                    "stampRallyEntry2024_fts",
+                    "stampRallyEntry2025_fts",
+                    "seriesEntry_fts",
+                    "merchEntry_fts",
+                )
+
+                ftsTables.forEach {
+                    driver.execute(null, "INSERT INTO $it($it) VALUES('rebuild');", 0, null).await()
+                    driver.execute(null, "INSERT INTO $it($it) VALUES('optimize');", 0, null).await()
+                }
+
+                driver.execute(null, "VACUUM;", 0, null).await()
             }
 
-            driver.execute(null, "VACUUM;", 0, null)
             driver.closeConnection(driver.getConnection())
             driver.close()
 

@@ -26,6 +26,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.alley.data)
+            api(projects.modules.alley.user)
             api(projects.modules.entry)
             implementation(projects.modules.settings.ui)
             implementation(projects.modules.utils)
@@ -56,11 +57,10 @@ kotlin {
         }
         val wasmJsMain by getting {
             dependencies {
-                implementation(libs.okio.fakefilesystem)
                 implementation(libs.sqldelight.web.worker.driver.wasm.js)
                 implementation(devNpm("copy-webpack-plugin", "9.1.0"))
                 implementation(npm("@thekeeperofpie/alley-sqldelight-worker", file("./sqldelight-worker")))
-                implementation(npm("@sqlite.org/sqlite-wasm", "3.47.2-build1"))
+                implementation(npm("@sqlite.org/sqlite-wasm", "3.49.1-build2"))
             }
         }
     }
@@ -84,16 +84,13 @@ buildkonfig {
     }
 }
 
-dependencies {
-    add("kspAndroid", kspProcessors.room.compiler)
-    add("kspDesktop", kspProcessors.room.compiler)
-}
-
 sqldelight {
     databases {
         create("AlleySqlDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.0.2")
             generateAsync = true
+            dependency(project(":modules:alley:user"))
         }
     }
 }

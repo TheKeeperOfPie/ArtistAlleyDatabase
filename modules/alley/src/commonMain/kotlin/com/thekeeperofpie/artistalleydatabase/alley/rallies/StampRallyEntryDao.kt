@@ -12,12 +12,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import kotlinx.serialization.json.Json
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
@@ -43,7 +43,6 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
             stampRallyId = stampRallyId,
             favorite = getBoolean(6) == true,
             ignored = getBoolean(7) == true,
-            notes = getString(8),
         )
     )
 }
@@ -68,7 +67,6 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
             stampRallyId = stampRallyId,
             favorite = getBoolean(10) == true,
             ignored = getBoolean(11) == true,
-            notes = getString(12),
         )
     )
 }
@@ -93,7 +91,6 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             stampRallyId = stampRallyId,
             favorite = getBoolean(10) == true,
             ignored = getBoolean(11) == true,
-            notes = getString(12),
         )
     )
 }
@@ -116,7 +113,6 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
         stampRallyId = id,
         favorite = favorite == true,
         ignored = ignored == true,
-        notes = userNotes,
     )
 )
 
@@ -138,7 +134,6 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
         stampRallyId = id,
         favorite = favorite == true,
         ignored = ignored == true,
-        notes = userNotes,
     )
 )
 
@@ -160,7 +155,6 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
         stampRallyId = id,
         favorite = favorite == true,
         ignored = ignored == true,
-        notes = userNotes,
     )
 )
 
@@ -207,7 +201,7 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
 )
 
 class StampRallyEntryDao(
-    private val driver: SqlDriver,
+    private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val dao2023: suspend () -> StampRallyEntry2023Queries = { database().stampRallyEntry2023Queries },
     private val dao2024: suspend () -> StampRallyEntry2024Queries = { database().stampRallyEntry2024Queries },
@@ -289,8 +283,7 @@ class StampRallyEntryDao(
                     " length(${tableName}_fts.counter) + 2) as orderIndex")
                 .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
                 .orEmpty()
-        val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, " +
-                "stampRallyUserEntry.notes"
+        val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
 
         val matchOptions = mutableListOf<String>()
         filterParams.fandom.takeUnless(String?::isNullOrBlank)?.let {

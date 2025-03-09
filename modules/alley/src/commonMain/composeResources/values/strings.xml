@@ -166,4 +166,8 @@
     <string name="alley_author_link">GitHub link</string>
     <string name="alley_server_link">Discord link</string>
     <string name="alley_sheet_link">Spreadsheet link</string>
+
+    <string name="alley_details_notes">Notes</string>
+    <string name="alley_undo">Undo</string>
+    <string name="alley_redo">Redo</string>
 </resources>

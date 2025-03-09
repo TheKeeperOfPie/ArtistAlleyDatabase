@@ -5,9 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 class StampRallyEntryGridModel(

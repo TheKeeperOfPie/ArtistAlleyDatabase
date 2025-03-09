@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData> {
@@ -27,9 +27,9 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
             ),
             userEntry = ArtistUserEntry(
                 artistId = "artistId",
+                dataYear = DataYear.YEAR_2025,
                 favorite = false,
                 ignored = false,
-                notes = null,
             ),
         )
         yield(artist)

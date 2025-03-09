@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithUserData> {
@@ -24,7 +24,6 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 stampRallyId = "stampRallyId",
                 favorite = false,
                 ignored = false,
-                notes = null,
             ),
         )
     )

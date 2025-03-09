@@ -4,15 +4,15 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
@@ -60,11 +60,10 @@ class UserEntryDao(
 
     suspend fun insertArtistUserEntry(entry: ArtistUserEntry) = dao().run {
         transaction {
-            val existing = getArtistUserEntry(entry.artistId).awaitAsOneOrNull() ?: entry
+            val existing = getArtistUserEntry(entry.artistId, entry.dataYear).awaitAsOneOrNull() ?: entry
             val newEntry = existing.copy(
                 favorite = entry.favorite,
                 ignored = entry.ignored,
-                notes = entry.notes,
             )
             insertArtistUserEntry(newEntry)
         }
@@ -77,7 +76,6 @@ class UserEntryDao(
             val newEntry = existing.copy(
                 favorite = entry.favorite,
                 ignored = entry.ignored,
-                notes = entry.notes,
             )
             insertStampRallyUserEntry(newEntry)
         }

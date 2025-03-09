@@ -29,7 +29,7 @@ fun SqlCursor.toMerchEntry() = MerchEntry(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TagEntryDao(
-    private val driver: SqlDriver,
+    private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val dao: suspend () -> TagEntryQueries = { database().tagEntryQueries },
 ) {

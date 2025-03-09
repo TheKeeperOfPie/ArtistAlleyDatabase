@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -772,7 +773,7 @@ fun <T> expandableListInfoText(
 ): Boolean {
     if (values.isEmpty()) return false
 
-    var expanded by remember { mutableStateOf(!allowExpand) }
+    var expanded by rememberSaveable(labelTextRes, values) { mutableStateOf(!allowExpand) }
     val showExpand = allowExpand && values.size > 3
 
     Box {

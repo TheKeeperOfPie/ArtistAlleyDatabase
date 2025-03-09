@@ -8,22 +8,22 @@ VALUES ?;
 
 getArtistUserEntry:
 SELECT * FROM artistUserEntry
-WHERE artistId = :artistId;
+WHERE artistId = :artistId AND dataYear = :dataYear;
 
 getBoothsWithFavorites2023:
 SELECT artistEntry2023.id, artistEntry2023.booth, artistUserEntry.favorite FROM artistEntry2023
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2023.id = artistUserEntry.artistId;
+ON artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear;
 
 getBoothsWithFavorites2024:
 SELECT artistEntry2024.id, artistEntry2024.booth, artistUserEntry.favorite FROM artistEntry2024
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2024.id = artistUserEntry.artistId;
+ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear;
 
 getBoothsWithFavorites2025:
 SELECT artistEntry2025.id, artistEntry2025.booth, artistUserEntry.favorite FROM artistEntry2025
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2025.id = artistUserEntry.artistId;
+ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
 
 getStampRallyUserEntry:
 SELECT * FROM stampRallyUserEntry

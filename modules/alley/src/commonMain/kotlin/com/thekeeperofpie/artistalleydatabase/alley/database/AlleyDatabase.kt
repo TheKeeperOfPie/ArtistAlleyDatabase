@@ -1,18 +1,22 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import app.cash.sqldelight.ColumnAdapter
+import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.DriverFactory
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -27,36 +31,19 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class ArtistAlleyDatabase(
     applicationScope: ApplicationScope,
-    driverFactory: DriverFactory,
     settings: ArtistAlleySettings,
+    userDatabase: AlleyUserDatabase,
 ) {
     private val databaseState = MutableStateFlow<AlleySqlDatabase?>(null)
     private val database = suspend { databaseState.filterNotNull().first() }
-    private val driver = driverFactory.createDriver()
+    private val driverState = MutableStateFlow<SqlDriver?>(null)
+    private val driver = suspend { driverState.filterNotNull().first() }
 
     init {
         applicationScope.launch(PlatformDispatchers.IO) {
-            // SQLDelight doesn't support splitting this from the other tables
-            driver.execute(null, """
-                |CREATE TABLE IF NOT EXISTS `artistUserEntry` (
-                |    `artistId` TEXT NOT NULL,
-                |    `favorite`  INTEGER NOT NULL DEFAULT 0,
-                |    `ignored`  INTEGER NOT NULL DEFAULT 0,
-                |    `notes` TEXT,
-                |    PRIMARY KEY (`artistId`)
-                |)
-                """.trimMargin(), 0).await()
-            driver.execute(null, """
-                |CREATE TABLE IF NOT EXISTS `stampRallyUserEntry` (
-                |    `stampRallyId` TEXT NOT NULL,
-                |    `favorite`  INTEGER NOT NULL DEFAULT 0,
-                |    `ignored`  INTEGER NOT NULL DEFAULT 0,
-                |    `notes` TEXT,
-                |    PRIMARY KEY (`stampRallyId`)
-                |)
-                """.trimMargin(), 0).await()
+            driverState.value = userDatabase.createDriver()
             databaseState.value = AlleySqlDatabase(
-                driver = driver,
+                driver = driver(),
                 artistEntry2023Adapter = ArtistEntry2023.Adapter(
                     artistNamesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
@@ -93,6 +80,12 @@ class ArtistAlleyDatabase(
                     tablesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
                 ),
+                artistNotesAdapter = ArtistNotes.Adapter(
+                    dataYearAdapter = dataYearAdapter,
+                ),
+                artistUserEntryAdapter = ArtistUserEntry.Adapter(
+                    dataYearAdapter = dataYearAdapter,
+                ),
             )
 
             // TODO: Retain only valid IDs
@@ -101,6 +94,7 @@ class ArtistAlleyDatabase(
 
     internal val artistEntryDao = ArtistEntryDao(driver, database, settings)
     internal val stampRallyEntryDao = StampRallyEntryDao(driver, database)
+    internal val notesDao = NotesDao(database)
     internal val tagEntryDao = TagEntryDao(driver, database)
     internal val userEntryDao = UserEntryDao(database, settings)
 }
@@ -108,4 +102,11 @@ class ArtistAlleyDatabase(
 private val listStringAdapter = object : ColumnAdapter<List<String>, String> {
     override fun decode(databaseValue: String) = Json.decodeFromString<List<String>>(databaseValue)
     override fun encode(value: List<String>) = Json.encodeToString(value)
+}
+
+private val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
+    override fun decode(databaseValue: String) =
+        DataYear.entries.first { it.serializedName == databaseValue }
+
+    override fun encode(value: DataYear) = value.serializedName
 }

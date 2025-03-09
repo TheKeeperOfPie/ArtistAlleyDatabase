@@ -1,0 +1,32 @@
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear;
+import kotlin.Boolean;
+
+CREATE TABLE IF NOT EXISTS artistUserEntry (
+    artistId TEXT NOT NULL,
+    dataYear TEXT AS DataYear NOT NULL DEFAULT 'AX2025',
+    favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    ignored INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (artistId, dataYear)
+);
+
+CREATE TABLE IF NOT EXISTS `stampRallyUserEntry` (
+    `stampRallyId` TEXT NOT NULL,
+    `favorite`  INTEGER AS Boolean NOT NULL DEFAULT 0,
+    `ignored`  INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (`stampRallyId`)
+);
+
+CREATE TABLE IF NOT EXISTS artistNotes (
+    artistId TEXT NOT NULL,
+    dataYear TEXT AS DataYear NOT NULL,
+    notes TEXT,
+    PRIMARY KEY (artistId, dataYear)
+);
+
+-- Stamp rally IDs are formatted as "year-hostTable-fandom", without splitting into
+-- separate columns since they're generally not associated year to year like artists
+CREATE TABLE IF NOT EXISTS stampRallyNotes (
+    stampRallyId TEXT NOT NULL,
+    notes TEXT,
+    PRIMARY KEY (stampRallyId)
+);

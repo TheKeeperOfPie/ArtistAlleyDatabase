@@ -13,7 +13,7 @@ object DaoUtils {
     private val countReplaceRegex = Regex("(\\QSELECT\\E )(.*?)(,|\\n|\\Q FROM\\E)")
 
     fun <T : Any> queryPagingSource(
-        driver: SqlDriver,
+        driver: suspend () -> SqlDriver,
         database: suspend () -> SuspendingTransacter,
         countStatement: String,
         statement: String,
@@ -21,18 +21,19 @@ object DaoUtils {
         parameters: List<String> = emptyList(),
         mapper: (SqlCursor) -> T,
     ): PagingSource<Int, T> {
-        val countQuery = makeQuery(
-            driver = driver,
-            statement = countStatement,
-            tableNames = tableNames,
-            mapper = { it.getLong(0)!!.toInt() },
-        )
         return OffsetQueryPagingSource(
             queryProvider = { limit, offset ->
                 val statement = "$statement LIMIT $limit OFFSET $offset"
-                makeQuery(driver, statement, tableNames, parameters, mapper)
+                makeQuery(driver(), statement, tableNames, parameters, mapper)
             },
-            countQuery = countQuery,
+            countQuery = {
+                makeQuery(
+                    driver = driver(),
+                    statement = countStatement,
+                    tableNames = tableNames,
+                    mapper = { it.getLong(0)!!.toInt() },
+                )
+            },
             transacter = database,
             context = PlatformDispatchers.IO,
             initialOffset = 0,

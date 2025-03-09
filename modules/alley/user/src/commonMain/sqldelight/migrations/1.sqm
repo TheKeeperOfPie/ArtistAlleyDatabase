@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS artistUserEntry_temp (
+    artistId TEXT NOT NULL,
+    dataYear TEXT NOT NULL DEFAULT 'AX2025',
+    favorite INTEGER NOT NULL DEFAULT 0,
+    ignored INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (artistId, dataYear)
+);
+
+INSERT INTO artistUserEntry_temp (artistId, favorite, ignored)
+SELECT artistId, favorite, ignored FROM artistUserEntry;
+
+DROP TABLE artistUserEntry;
+ALTER TABLE artistUserEntry_temp RENAME TO artistUserEntry;
+
+ALTER TABLE stampRallyUserEntry DROP COLUMN notes;
+
+CREATE TABLE IF NOT EXISTS artistNotes (
+    artistId TEXT NOT NULL,
+    dataYear TEXT NOT NULL,
+    notes TEXT,
+    PRIMARY KEY (artistId, dataYear)
+);
+
+CREATE TABLE IF NOT EXISTS stampRallyNotes (
+    stampRallyId TEXT NOT NULL,
+    notes TEXT,
+    PRIMARY KEY (stampRallyId)
+);

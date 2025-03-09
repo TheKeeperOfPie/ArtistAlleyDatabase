@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 repositories {
     google()
     gradlePluginPortal()
@@ -9,13 +12,24 @@ plugins {
     alias(libs.plugins.app.cash.sqldelight).version("2.0.2")
 }
 
+// Enable Enum.entries support
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        apiVersion = KotlinVersion.KOTLIN_1_9
+        languageVersion = KotlinVersion.KOTLIN_1_9
+    }
+}
+
 sqldelight {
     databases {
         create("BuildLogicDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.build_logic")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.0.2")
             srcDirs(
                 project.layout.projectDirectory
                     .dir("../modules/alley/src/commonMain/sqldelight"),
+                project.layout.projectDirectory
+                    .dir("../modules/alley/user/src/commonMain/sqldelight"),
                 project.layout.projectDirectory
                     .dir("src/main/sqldelight"),
             )

@@ -26,8 +26,8 @@ private val globalDatabaseMutex = Mutex()
 
 // Copied out from androidx-paging3-extensions since it doesn't publish a wasmJs target
 class OffsetQueryPagingSource<RowType : Any>(
-    private val queryProvider: (limit: Int, offset: Int) -> Query<RowType>,
-    private val countQuery: Query<Int>,
+    private val queryProvider: suspend (limit: Int, offset: Int) -> Query<RowType>,
+    private val countQuery: suspend () -> Query<Int>,
     private val transacter: suspend () -> SuspendingTransacter,
     private val context: CoroutineContext,
     private val initialOffset: Int,
@@ -44,7 +44,7 @@ class OffsetQueryPagingSource<RowType : Any>(
             else -> params.loadSize
         }
         val getPagingSourceLoadResult: suspend TransactionCallbacks.() -> PagingSourceLoadResultPage<Int, RowType> = {
-            val count = countQuery.awaitAsOne()
+            val count = countQuery().awaitAsOne()
             @Suppress("REDUNDANT_ELSE_IN_WHEN")
             val offset = when (params) {
                 is PagingSourceLoadParamsPrepend<*> -> maxOf(0, key - params.loadSize)

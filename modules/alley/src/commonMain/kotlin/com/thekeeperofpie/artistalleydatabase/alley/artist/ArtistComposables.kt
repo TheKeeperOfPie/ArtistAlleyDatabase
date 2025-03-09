@@ -79,7 +79,6 @@ fun ArtistListRow(
     Column(modifier = modifier.fillMaxWidth()) {
         val artist = entry.artist
         Row(
-            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.sharedBounds("container", artist.id, zIndexInOverlay = 1f)
         ) {

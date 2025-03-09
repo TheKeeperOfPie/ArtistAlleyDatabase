@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
@@ -65,12 +65,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -82,6 +81,7 @@ object ArtistDetailsScreen {
     @Composable
     operator fun invoke(
         entry: ArtistDetailsViewModel.Entry?,
+        notesState: TextFieldState,
         initialImageIndex: Int,
         images: () -> List<CatalogImage>,
         otherYears: () -> List<DataYear>,
@@ -210,6 +210,8 @@ object ArtistDetailsScreen {
                 onClick = { eventSink(Event.OpenMerch(it)) },
             )
 
+            NotesText(state = notesState, modifier = Modifier.padding(horizontal = 16.dp))
+
             FlowRow(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -261,7 +263,7 @@ object ArtistDetailsScreen {
                     values = confirmed,
                     valueToText = itemToText,
                     onClick = onClick,
-                    allowExpand = false,
+                    allowExpand = true,
                     showDividerAbove = false,
                 )
             }
@@ -269,82 +271,60 @@ object ArtistDetailsScreen {
 
         if (inferred.isNotEmpty()) {
             ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                val expandedByDefault = confirmed.isEmpty()
-                var expanded by remember { mutableStateOf(expandedByDefault) }
                 var showPopup by remember { mutableStateOf(false) }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .conditionally(!expandedByDefault) {
-                            clickable { expanded = !expanded }
-                        }
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .height(IntrinsicSize.Min)
-                            .clickable(interactionSource = null, indication = null) {
-                                showPopup = !showPopup
-                            }
-                    ) {
-                        Text(
-                            text = stringResource(headerTextResUnconfirmed),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.surfaceTint,
+                expandableListInfoText(
+                    labelTextRes = headerTextResUnconfirmed,
+                    contentDescriptionTextRes = null,
+                    values = inferred,
+                    valueToText = itemToText,
+                    onClick = onClick,
+                    allowExpand = true,
+                    showDividerAbove = false,
+                    header = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)
-                        )
-
-                        Box {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = stringResource(
-                                    unconfirmedIconContentDescriptionTextRes
-                                ),
+                                .height(IntrinsicSize.Min)
+                                .clickable(interactionSource = null, indication = null) {
+                                    showPopup = !showPopup
+                                }
+                        ) {
+                            Text(
+                                text = stringResource(headerTextResUnconfirmed),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.surfaceTint,
                                 modifier = Modifier
-                                    .fillMaxHeight()
-                                    .heightIn(max = 20.dp)
-                                    .padding(top = 6.dp)
+                                    .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)
                             )
 
-                            if (showPopup) {
-                                Popup(onDismissRequest = { showPopup = false }) {
-                                    Text(
-                                        text = stringResource(Res.string.alley_artist_details_tags_unconfirmed_explanation),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                                            .widthIn(max = 200.dp)
-                                    )
+                            Box {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = stringResource(
+                                        unconfirmedIconContentDescriptionTextRes
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .heightIn(max = 20.dp)
+                                        .padding(top = 6.dp)
+                                )
+
+                                if (showPopup) {
+                                    Popup(onDismissRequest = { showPopup = false }) {
+                                        Text(
+                                            text = stringResource(Res.string.alley_artist_details_tags_unconfirmed_explanation),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier
+                                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                                .widthIn(max = 200.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    if (!expandedByDefault) {
-                        TrailingDropdownIconButton(
-                            expanded = expanded,
-                            contentDescription = stringResource(expandTextRes),
-                            onClick = { expanded = !expanded },
-                        )
-                    }
-                }
-                if (expanded) {
-                    expandableListInfoText(
-                        labelTextRes = headerTextResUnconfirmed,
-                        contentDescriptionTextRes = null,
-                        values = inferred,
-                        valueToText = itemToText,
-                        onClick = onClick,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                        header = null,
-                    )
-                }
+                    },
+                )
             }
         }
     }
@@ -425,6 +405,7 @@ private fun PhoneLayout() {
                 seriesConfirmed = artist.artist.seriesConfirmed,
                 stampRallies = emptyList(),
             ),
+            notesState = remember { TextFieldState() },
             initialImageIndex = 1,
             eventSink = {},
             images = { images },

@@ -1,31 +1,45 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
+@OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @Inject
 class StampRallyDetailsViewModel(
     private val stampRallyEntryDao: StampRallyEntryDao,
+    private val notesDao: NotesDao,
     private val userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -37,6 +51,8 @@ class StampRallyDetailsViewModel(
 
     var entry by mutableStateOf<Entry?>(null)
     var images by mutableStateOf<List<CatalogImage>>(emptyList())
+
+    val notesState by savedStateHandle.saveable(saver = TextFieldState.Saver) { TextFieldState() }
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -68,6 +84,16 @@ class StampRallyDetailsViewModel(
                 )
                 images = catalogImages
             }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            notesDao.getStampRallyNotes(id)?.notes?.let(notesState::setTextAndPlaceCursorAtEnd)
+            snapshotFlow { notesState.text }
+                .drop(1)
+                .debounce(500.milliseconds)
+                .collectLatest {
+                    notesDao.updateStampRallyNotes(id, it.toString())
+                }
         }
     }
 

@@ -1,0 +1,19 @@
+getArtistNotes:
+SELECT * FROM artistNotes
+WHERE artistId = :artistId AND dataYear = :dataYear;
+
+getStampRallyNotes:
+SELECT * FROM stampRallyNotes
+WHERE stampRallyId = :stampRallyId;
+
+updateArtistNotes:
+INSERT INTO artistNotes(artistId, dataYear, notes)
+VALUES(:artistId, :dataYear, :notes)
+ON CONFLICT(artistId, dataYear)
+DO UPDATE SET notes = excluded.notes;
+
+updateStampRallyNotes:
+INSERT INTO stampRallyNotes(stampRallyId, notes)
+VALUES(:stampRallyId, :notes)
+ON CONFLICT(stampRallyId)
+DO UPDATE SET notes = excluded.notes;

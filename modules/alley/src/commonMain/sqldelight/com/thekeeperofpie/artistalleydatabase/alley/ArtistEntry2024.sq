@@ -1,7 +1,7 @@
 getEntry:
-SELECT artistEntry2024.*, artistUserEntry.favorite, artistUserEntry.ignored, artistUserEntry.notes AS userNotes FROM artistEntry2024
+SELECT artistEntry2024.*, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2024
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2024.id = artistUserEntry.artistId
+ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear
 WHERE id = :id;
 
 getEntriesRandom:

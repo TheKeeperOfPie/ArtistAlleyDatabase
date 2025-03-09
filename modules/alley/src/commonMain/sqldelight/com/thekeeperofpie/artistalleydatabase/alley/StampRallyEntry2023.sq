@@ -1,5 +1,5 @@
 getEntry:
-SELECT stampRallyEntry2023.*, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyUserEntry.notes AS userNotes FROM stampRallyEntry2023
+SELECT stampRallyEntry2023.*, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2023
 LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId
 WHERE id = :id;

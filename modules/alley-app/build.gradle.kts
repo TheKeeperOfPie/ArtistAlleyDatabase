@@ -240,7 +240,7 @@ configurations.all {
 // Replicates Workbox InjectManifest since configuring that doesn't seem to work
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
-    dependsOn("wasmJsBrowserDistribution")
+    dependsOn(":modules:alley:user:verifySqlDelightMigration", "wasmJsBrowserDistribution")
 
     val distDir = project.layout.buildDirectory.dir("dist/wasmJs/productionExecutable")
     doLast {
