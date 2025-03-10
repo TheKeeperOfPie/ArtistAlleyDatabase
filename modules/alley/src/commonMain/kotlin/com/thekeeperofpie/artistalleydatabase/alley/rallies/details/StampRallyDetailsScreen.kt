@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -49,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
@@ -99,7 +99,7 @@ object StampRallyDetailsScreen {
         eventSink: (Event) -> Unit,
     ) {
         val stampRally = entry.stampRally
-        ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
             InfoText(
                 stringResource(Res.string.alley_stamp_rally_details_fandom),
                 stampRally.fandom,
@@ -116,7 +116,7 @@ object StampRallyDetailsScreen {
         }
 
         if (stampRally.links.isNotEmpty()) {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 expandableListInfoText(
                     labelTextRes = Res.string.alley_stamp_rally_details_links,
                     contentDescriptionTextRes = null,
@@ -129,7 +129,7 @@ object StampRallyDetailsScreen {
             }
         }
 
-        ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
             val tableMin = stampRally.tableMin
             val totalCost = stampRally.totalCost
             val tableCount = stampRally.tables.count()
@@ -165,7 +165,7 @@ object StampRallyDetailsScreen {
         }
 
         if (entry.artists.isNotEmpty()) {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 expandableListInfoText(
                     labelTextRes = Res.string.alley_stamp_rally_details_artists,
                     contentDescriptionTextRes = null,
@@ -189,7 +189,7 @@ object StampRallyDetailsScreen {
         }
 
         if (entry.otherTables.isNotEmpty()) {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 expandableListInfoText(
                     labelTextRes = Res.string.alley_stamp_rally_details_other_tables,
                     contentDescriptionTextRes = null,

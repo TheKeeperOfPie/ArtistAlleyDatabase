@@ -50,7 +50,6 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -112,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -153,13 +153,10 @@ fun <EntryModel : SearchEntryModel> ItemCard(
     )
 
     val ignored = entry.ignored
-    ElevatedCard(
-        modifier = modifier
-            .combinedClickable(
-                onClick = { onClick(entry, pagerState.settledPage) },
-                onLongClick = { onIgnoredToggle(!ignored) }
-            )
-            .alpha(if (entry.ignored) 0.38f else 1f)
+    ThemeAwareElevatedCard(
+        onClick = { onClick(entry, pagerState.settledPage) },
+        onLongClick = { onIgnoredToggle(!ignored) },
+        modifier = modifier.alpha(if (entry.ignored) 0.38f else 1f)
     ) {
         if (images.isNotEmpty()) {
             ImagePager(

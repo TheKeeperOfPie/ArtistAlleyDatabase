@@ -15,8 +15,8 @@ actual class DriverFactory {
         file.deleteOnExit()
         file.writeBytes(Res.readBytes("files/database.sqlite"))
         return JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also {
-            AlleySqlDatabase.Schema.create(it)
-            it.execute(null, "ATTACH DATABASE '${file.absolutePath}' AS readOnly;", 0)
+            AlleySqlDatabase.Schema.create(it).await()
+            it.execute(null, "ATTACH DATABASE '${file.absolutePath}' AS readOnly;", 0).await()
         }
     }
 }

@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -69,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -108,7 +108,7 @@ object ArtistDetailsScreen {
             initialImageIndex = initialImageIndex,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(
                     stringResource(Res.string.alley_artist_details_artist_name),
                     artist.name,
@@ -118,7 +118,7 @@ object ArtistDetailsScreen {
 
             val summary = artist.summary
             if (!summary.isNullOrBlank()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     InfoText(
                         label = stringResource(Res.string.alley_artist_details_description),
                         body = summary,
@@ -136,7 +136,7 @@ object ArtistDetailsScreen {
             }
 
             if (artist.linkModels.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_artist_details_links,
                         contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
@@ -148,7 +148,7 @@ object ArtistDetailsScreen {
                 }
             }
             if (artist.storeLinkModels.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_artist_details_store,
                         contentDescriptionTextRes = null,
@@ -161,7 +161,7 @@ object ArtistDetailsScreen {
             }
 
             if (artist.catalogLinks.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_artist_details_catalog,
                         contentDescriptionTextRes = null,
@@ -175,7 +175,7 @@ object ArtistDetailsScreen {
             }
 
             if (entry.stampRallies.isNotEmpty()) {
-                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_artist_details_stamp_rallies,
                         contentDescriptionTextRes = null,
@@ -260,7 +260,7 @@ object ArtistDetailsScreen {
         onClick: (T) -> Unit,
     ) {
         if (confirmed.isNotEmpty()) {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 expandableListInfoText(
                     labelTextRes = headerTextRes,
                     contentDescriptionTextRes = null,
@@ -274,7 +274,7 @@ object ArtistDetailsScreen {
         }
 
         if (inferred.isNotEmpty()) {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 var showPopup by remember { mutableStateOf(false) }
                 expandableListInfoText(
                     labelTextRes = headerTextResUnconfirmed,
