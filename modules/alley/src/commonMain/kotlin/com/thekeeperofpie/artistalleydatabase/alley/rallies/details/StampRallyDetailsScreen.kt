@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.CircularProgressIndicator
@@ -15,7 +14,10 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -58,7 +60,8 @@ object StampRallyDetailsScreen {
     @Composable
     operator fun invoke(
         entry: StampRallyDetailsViewModel.Entry?,
-        notesState: TextFieldState,
+        notes: () -> String,
+        onNotesChange: (String) -> Unit,
         initialImageIndex: Int,
         images: () -> List<CatalogImage>,
         eventSink: (Event) -> Unit,
@@ -84,14 +87,15 @@ object StampRallyDetailsScreen {
             initialImageIndex = initialImageIndex,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {
-            DetailsContent(entry, notesState, eventSink)
+            DetailsContent(entry, notes, onNotesChange, eventSink)
         }
     }
 
     @Composable
     private fun ColumnScope.DetailsContent(
         entry: StampRallyDetailsViewModel.Entry,
-        notesState: TextFieldState,
+        notes: () -> String,
+        onNotesChange: (String) -> Unit,
         eventSink: (Event) -> Unit,
     ) {
         val stampRally = entry.stampRally
@@ -198,7 +202,11 @@ object StampRallyDetailsScreen {
             }
         }
 
-        NotesText(state = notesState, modifier = Modifier.padding(horizontal = 16.dp))
+        NotesText(
+            text = notes,
+            onTextChange = onNotesChange,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
 
         FilledTonalButton(
             onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
@@ -259,6 +267,7 @@ private fun PhoneLayout() {
     val artists = ArtistWithUserDataProvider.values.take(3).map { it.artist }.toList()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     PreviewDark {
+        var notes by remember { mutableStateOf("") }
         StampRallyDetailsScreen(
             entry = StampRallyDetailsViewModel.Entry(
                 stampRally = stampRally.stampRally,
@@ -266,7 +275,8 @@ private fun PhoneLayout() {
                 artists = artists,
                 otherTables = listOf("ANX-101"),
             ),
-            notesState = remember { TextFieldState() },
+            notes = { notes },
+            onNotesChange = { notes = it },
             initialImageIndex = 1,
             images = { images },
             eventSink = {},

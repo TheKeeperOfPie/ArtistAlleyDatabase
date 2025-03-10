@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
-import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +31,6 @@ import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @Inject
@@ -52,7 +49,7 @@ class StampRallyDetailsViewModel(
     var entry by mutableStateOf<Entry?>(null)
     var images by mutableStateOf<List<CatalogImage>>(emptyList())
 
-    val notesState by savedStateHandle.saveable(saver = TextFieldState.Saver) { TextFieldState() }
+    var notes by savedStateHandle.saveable { mutableStateOf("") }
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -87,8 +84,8 @@ class StampRallyDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            notesDao.getStampRallyNotes(id)?.notes?.let(notesState::setTextAndPlaceCursorAtEnd)
-            snapshotFlow { notesState.text }
+            notesDao.getStampRallyNotes(id)?.notes?.let { notes = it }
+            snapshotFlow { notes }
                 .drop(1)
                 .debounce(500.milliseconds)
                 .collectLatest {

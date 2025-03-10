@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
@@ -81,7 +80,8 @@ object ArtistDetailsScreen {
     @Composable
     operator fun invoke(
         entry: ArtistDetailsViewModel.Entry?,
-        notesState: TextFieldState,
+        notes: () -> String,
+        onNotesChange: (String) -> Unit,
         initialImageIndex: Int,
         images: () -> List<CatalogImage>,
         otherYears: () -> List<DataYear>,
@@ -181,7 +181,7 @@ object ArtistDetailsScreen {
                         contentDescriptionTextRes = null,
                         values = entry.stampRallies,
                         valueToText = { it.fandom },
-                        onClick = { eventSink(Event.OpenStampRally(it))},
+                        onClick = { eventSink(Event.OpenStampRally(it)) },
                         allowExpand = false,
                         showDividerAbove = false,
                     )
@@ -210,7 +210,11 @@ object ArtistDetailsScreen {
                 onClick = { eventSink(Event.OpenMerch(it)) },
             )
 
-            NotesText(state = notesState, modifier = Modifier.padding(horizontal = 16.dp))
+            NotesText(
+                text = notes,
+                onTextChange = onNotesChange,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
 
             FlowRow(
                 horizontalArrangement = Arrangement.Center,
@@ -383,11 +387,11 @@ object ArtistDetailsScreen {
     }
 
     sealed interface Event {
-        data class DetailsEvent(val event: DetailsScreen.Event): Event
-        data class OpenMerch(val merch: String): Event
-        data class OpenOtherYear(val year: DataYear): Event
-        data class OpenSeries(val series: String): Event
-        data class OpenStampRally(val entry: StampRallyEntry): Event
+        data class DetailsEvent(val event: DetailsScreen.Event) : Event
+        data class OpenMerch(val merch: String) : Event
+        data class OpenOtherYear(val year: DataYear) : Event
+        data class OpenSeries(val series: String) : Event
+        data class OpenStampRally(val entry: StampRallyEntry) : Event
     }
 }
 
@@ -397,6 +401,7 @@ private fun PhoneLayout() {
     val artist = ArtistWithUserDataProvider.values.first()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     PreviewDark {
+        var notes by remember { mutableStateOf("") }
         ArtistDetailsScreen(
             entry = ArtistDetailsViewModel.Entry(
                 artist = artist.artist,
@@ -405,7 +410,8 @@ private fun PhoneLayout() {
                 seriesConfirmed = artist.artist.seriesConfirmed,
                 stampRallies = emptyList(),
             ),
-            notesState = remember { TextFieldState() },
+            notes = { notes },
+            onNotesChange = { notes = it },
             initialImageIndex = 1,
             eventSink = {},
             images = { images },
