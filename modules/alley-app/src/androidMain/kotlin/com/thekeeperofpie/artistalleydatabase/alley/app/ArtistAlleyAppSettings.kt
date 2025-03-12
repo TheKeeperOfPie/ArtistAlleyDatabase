@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
@@ -37,7 +38,15 @@ class ArtistAlleyAppSettings(
     )
     override val lastKnownArtistsCsvSize = long("lastKnownArtistsCsvSize")
     override val lastKnownStampRalliesCsvSize = long("lastKnownStampRalliesCsvSize")
-    override val displayType = string("displayType")
+    override val displayType = initialize(
+        key = "displayType",
+        initialValue = {
+            getString(it, null)
+                ?.let { value -> SearchScreen.DisplayType.entries.find { it.name == value } }
+                ?: SearchScreen.DisplayType.CARD
+        },
+        setValue = { key, value -> putString(key, value.name) },
+    )
     override val artistsSortOption = string("artistsSortOption")
     override val artistsSortAscending = boolean("artistsSortAscending", true)
     override val stampRalliesSortOption = string("stampRalliesSortOption")

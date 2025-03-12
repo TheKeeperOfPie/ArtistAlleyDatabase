@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -39,7 +40,7 @@ object TwoWayGrid {
 
     @Composable
     operator fun <T, ColumnType> invoke(
-        dataYearHeaderState: DataYearHeaderState,
+        header: LazyListScope.() -> Unit,
         rows: LazyPagingItems<T>,
         columns: EnumEntries<ColumnType>,
         columnHeader: @Composable (column: ColumnType) -> Unit,
@@ -62,11 +63,9 @@ object TwoWayGrid {
                 contentPadding = contentPadding,
                 modifier = modifier.width(width)
             ) {
-                item(key = "dataYearHeader") {
-                    DataYearHeader(dataYearHeaderState)
-                }
+                header()
 
-                stickyHeader {
+                stickyHeader("tableHeaders") {
                     Row(
                         Modifier.height(IntrinsicSize.Min)
                             .padding(top = topOffset)

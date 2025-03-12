@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
+import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
@@ -13,7 +14,7 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val appTheme = MutableStateFlow(AppThemeSetting.AUTO)
     override val lastKnownArtistsCsvSize = MutableStateFlow(-1L)
     override val lastKnownStampRalliesCsvSize = MutableStateFlow(-1L)
-    override val displayType = MutableStateFlow("")
+    override val displayType = MutableStateFlow(SearchScreen.DisplayType.CARD)
     override val artistsSortOption = MutableStateFlow("")
     override val artistsSortAscending = MutableStateFlow(true)
     override val stampRalliesSortOption = MutableStateFlow("")

@@ -34,7 +34,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -49,7 +48,6 @@ object ArtistAlleyScreen {
         // TODO: Remove components/ViewModels from UI layer
         component: ArtistAlleyComponent,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
-        onStampRallyClick: (StampRallyEntryGridModel, Int) -> Unit,
         onSeriesClick: (String) -> Unit,
         onMerchClick: (String) -> Unit,
     ) {
@@ -73,14 +71,11 @@ object ArtistAlleyScreen {
                             viewModel = viewModel,
                             sortViewModel = sortViewModel,
                             onClickBack = null,
-                            onEntryClick = onArtistClick,
                             scaffoldState = artistsScaffoldState,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 Destination.ARTISTS.name,
                                 scrollPositions,
                             ),
-                            onSeriesClick = onSeriesClick,
-                            onMerchClick = onMerchClick,
                         )
                     }
                     Destination.BROWSE -> {
@@ -117,7 +112,6 @@ object ArtistAlleyScreen {
                         StampRallySearchScreen(
                             viewModel = viewModel,
                             sortViewModel = sortViewModel,
-                            onEntryClick = onStampRallyClick,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 Destination.STAMP_RALLIES.name,
                                 scrollPositions,

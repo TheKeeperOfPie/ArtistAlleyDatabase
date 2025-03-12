@@ -69,15 +69,6 @@ object ArtistAlleyAppScreen {
                                 ArtistAlleyScreen(
                                     component = component,
                                     onArtistClick = onArtistClick,
-                                    onStampRallyClick = { entry, imageIndex ->
-                                        navigationController.navigate(
-                                            Destinations.StampRallyDetails(
-                                                year = entry.stampRally.year,
-                                                id = entry.stampRally.id,
-                                                imageIndex = imageIndex.toString(),
-                                            )
-                                        )
-                                    },
                                     onSeriesClick = {
                                         navigationController.navigate(Destinations.Series(null, it))
                                     },
@@ -252,7 +243,6 @@ object ArtistAlleyAppScreen {
                                     viewModel = viewModel,
                                     sortViewModel = sortViewModel,
                                     onClickBack = navigationController::navigateUp,
-                                    onEntryClick = onArtistClick,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
                                         navigationController.navigate(
@@ -260,16 +250,6 @@ object ArtistAlleyAppScreen {
                                                 viewModel.lockedYear,
                                                 route.series
                                             )
-                                        )
-                                    },
-                                    onSeriesClick = {
-                                        navigationController.navigate(
-                                            Destinations.Series(viewModel.lockedYear, it)
-                                        )
-                                    },
-                                    onMerchClick = {
-                                        navigationController.navigate(
-                                            Destinations.Merch(viewModel.lockedYear, it)
                                         )
                                     },
                                 )
@@ -294,21 +274,10 @@ object ArtistAlleyAppScreen {
                                     viewModel = viewModel,
                                     sortViewModel = sortViewModel,
                                     onClickBack = navigationController::navigateUp,
-                                    onEntryClick = onArtistClick,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
                                         navigationController.navigate(
                                             Destinations.MerchMap(viewModel.lockedYear, route.merch)
-                                        )
-                                    },
-                                    onSeriesClick = {
-                                        navigationController.navigate(
-                                            Destinations.Series(viewModel.lockedYear, it)
-                                        )
-                                    },
-                                    onMerchClick = {
-                                        navigationController.navigate(
-                                            Destinations.Merch(viewModel.lockedYear, it)
                                         )
                                     },
                                 )

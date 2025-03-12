@@ -7,6 +7,7 @@ import app.cash.paging.createPagingConfig
 import app.cash.paging.filter
 import app.cash.paging.map
 import com.hoc081098.flowext.defer
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -17,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,6 +49,14 @@ class StampRallySearchViewModel(
     private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 
     val dataYear = settings.dataYear
+
+    val searchState = SearchScreen.State(
+        columns = StampRallySearchScreen.StampRallyColumn.entries,
+        displayType = settings.displayType,
+        showGridByDefault = settings.showGridByDefault,
+        showRandomCatalogImage = settings.showRandomCatalogImage,
+        forceOneDisplayColumn = settings.forceOneDisplayColumn,
+    )
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -87,7 +97,20 @@ class StampRallySearchViewModel(
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
-    fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {
-        settings.displayType.value = displayType.name
+    fun onEvent(navigationController: NavigationController, event: StampRallySearchScreen.Event) = when (event) {
+        is StampRallySearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
+            is SearchScreen.Event.FavoriteToggle<StampRallyEntryGridModel> ->
+                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
+            is SearchScreen.Event.IgnoreToggle<StampRallyEntryGridModel> ->
+                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
+            is SearchScreen.Event.OpenEntry<StampRallyEntryGridModel> ->
+                navigationController.navigate(
+                    Destinations.StampRallyDetails(
+                        year = searchEvent.entry.stampRally.year,
+                        id = searchEvent.entry.stampRally.id,
+                        imageIndex = searchEvent.imageIndex.toString(),
+                    )
+                )
+        }
     }
 }

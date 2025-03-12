@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
+import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
@@ -43,7 +44,13 @@ class ArtistAlleyWasmJsSettings(
     )
     override val lastKnownArtistsCsvSize by registerLong(-1L)
     override val lastKnownStampRalliesCsvSize by registerLong(-1L)
-    override val displayType by registerString("")
+    override val displayType by register(
+        serialize = { it.name },
+        deserialize = { value ->
+            SearchScreen.DisplayType.entries.find { it.name == value }
+                ?: SearchScreen.DisplayType.CARD
+        },
+    )
     override val artistsSortOption by registerString("")
     override val artistsSortAscending by registerBoolean(true)
     override val stampRalliesSortOption by registerString("")

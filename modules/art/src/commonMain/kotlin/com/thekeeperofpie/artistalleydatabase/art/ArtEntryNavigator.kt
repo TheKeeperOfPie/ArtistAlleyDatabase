@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import me.tatarka.inject.annotations.Inject
@@ -45,10 +46,11 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
     ) {
         navGraphBuilder.sharedElementComposable(ArtNavDestinations.HOME.id) {
             val viewModel = viewModel { artEntryComponent.artSearchViewModel() }
+            var query by viewModel.query.collectAsMutableStateWithLifecycle()
             EntryHomeScreen(
                 onClickNav = onClickNav,
-                query = { viewModel.query },
-                onQueryChange = viewModel::onQuery,
+                query = { query },
+                onQueryChange = { query = it },
                 sections = viewModel.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },

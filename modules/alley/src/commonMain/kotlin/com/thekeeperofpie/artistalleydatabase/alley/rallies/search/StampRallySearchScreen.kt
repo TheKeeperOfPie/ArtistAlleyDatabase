@@ -18,8 +18,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -43,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
@@ -55,7 +57,6 @@ object StampRallySearchScreen {
     operator fun invoke(
         viewModel: StampRallySearchViewModel,
         sortViewModel: StampRallySortFilterViewModel,
-        onEntryClick: (StampRallyEntryGridModel, Int) -> Unit,
         scrollStateSaver: ScrollStateSaver,
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
@@ -63,17 +64,30 @@ object StampRallySearchScreen {
         sortFilterState.ImmediateScrollResetEffect(gridState)
 
         CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
-            val showGridByDefault by sortViewModel.settings.showGridByDefault.collectAsStateWithLifecycle()
-            val showRandomCatalogImage by sortViewModel.settings.showRandomCatalogImage.collectAsStateWithLifecycle()
-            val forceOneDisplayColumn by sortViewModel.settings.forceOneDisplayColumn.collectAsStateWithLifecycle()
-            val showOnlyFavorites by sortViewModel.settings.showOnlyFavorites.collectAsStateWithLifecycle()
-            val displayType = SearchScreen.DisplayType.fromSerializedValue(
-                viewModel.displayType.collectAsState().value
-            )
             val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, null)
             val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
-            SearchScreen<StampRallySearchQuery, StampRallyEntryGridModel, StampRallyColumn>(
-                viewModel = viewModel,
+            val settings = sortViewModel.settings
+            val state = remember(viewModel, settings) {
+                SearchScreen.State(
+                    columns = StampRallyColumn.entries,
+                    displayType = viewModel.displayType,
+                    showGridByDefault = settings.showGridByDefault,
+                    showRandomCatalogImage = settings.showRandomCatalogImage,
+                    forceOneDisplayColumn = settings.forceOneDisplayColumn,
+                )
+            }
+            val query by viewModel.query.collectAsStateWithLifecycle()
+            val showOnlyFavorites by settings.showOnlyFavorites.collectAsStateWithLifecycle()
+            val shouldShowCount by remember {
+                derivedStateOf { query.isNotEmpty() || showOnlyFavorites }
+            }
+            val navigationController = LocalNavigationController.current
+            SearchScreen<StampRallyEntryGridModel, StampRallyColumn>(
+                state = state,
+                eventSink = {
+                    viewModel.onEvent(navigationController, Event.SearchEvent(it))
+                },
+                query = viewModel.query,
                 entries = entries,
                 bottomSheet = {
                     SortFilterOptionsPanel(
@@ -84,22 +98,13 @@ object StampRallySearchScreen {
                             .heightIn(min = 320.dp)
                     )
                 },
-                showGridByDefault = { showGridByDefault },
-                showRandomCatalogImage = { showRandomCatalogImage },
-                forceOneDisplayColumn = { forceOneDisplayColumn },
                 dataYearHeaderState = dataYearHeaderState,
-                displayType = { displayType },
-                onDisplayTypeToggle = viewModel::onDisplayTypeToggle,
                 gridState = gridState,
-                onFavoriteToggle = viewModel::onFavoriteToggle,
-                onIgnoredToggle = viewModel::onIgnoredToggle,
-                onEntryClick = onEntryClick,
-                shouldShowCount = { viewModel.query.isNotEmpty() || showOnlyFavorites },
+                shouldShowCount = { shouldShowCount },
                 itemToSharedElementId = { it.stampRally.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     StampRallyListRow(entry, onFavoriteToggle, modifier)
                 },
-                columns = StampRallyColumn.entries,
                 tableCell = { row, column ->
                     when (column) {
                         StampRallyColumn.BOOTH -> AutoSizeText(
@@ -207,5 +212,9 @@ object StampRallySearchScreen {
     ) : TwoWayGrid.Column {
         BOOTH(64.dp, Res.string.alley_stamp_rally_column_booth),
         FANDOM(160.dp, Res.string.alley_stamp_rally_column_fandom),
+    }
+
+    sealed interface Event {
+        data class SearchEvent(val event: SearchScreen.Event<StampRallyEntryGridModel>) : Event
     }
 }

@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -57,6 +59,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -75,6 +78,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_card
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
@@ -97,7 +101,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.Column
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.modifierDefaultCellPadding
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
@@ -105,6 +108,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.border
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -113,6 +117,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentTy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -126,21 +131,15 @@ import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 object SearchScreen {
 
     @Composable
-    operator fun <SearchQuery, EntryModel, ColumnType> invoke(
-        viewModel: EntrySearchViewModel<SearchQuery, EntryModel>,
+    operator fun <EntryModel, ColumnType> invoke(
+        state: State<ColumnType>,
+        eventSink: (Event<EntryModel>) -> Unit,
+        query: MutableStateFlow<String>,
         entries: LazyPagingItems<EntryModel>,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         bottomSheet: @Composable ColumnScope.() -> Unit,
-        showGridByDefault: () -> Boolean,
-        showRandomCatalogImage: () -> Boolean,
-        forceOneDisplayColumn: () -> Boolean,
         dataYearHeaderState: DataYearHeaderState,
-        displayType: () -> DisplayType,
-        onDisplayTypeToggle: (DisplayType) -> Unit,
         gridState: LazyStaggeredGridState,
-        onFavoriteToggle: (EntryModel, Boolean) -> Unit,
-        onIgnoredToggle: (EntryModel, Boolean) -> Unit,
-        onEntryClick: (EntryModel, imageIndex: Int) -> Unit,
         shouldShowCount: () -> Boolean,
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
@@ -151,7 +150,6 @@ object SearchScreen {
             onFavoriteToggle: (Boolean) -> Unit,
             modifier: Modifier,
         ) -> Unit,
-        columns: EnumEntries<ColumnType>,
         columnHeader: @Composable (column: ColumnType) -> Unit = {
             AutoSizeText(
                 text = stringResource(it.text),
@@ -193,14 +191,14 @@ object SearchScreen {
             ) {
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
                     var topBarHeight by remember { mutableStateOf(0) }
+                    val displayType by state.displayType.collectAsStateWithLifecycle()
                     Scaffold(
                         topBar = {
                             TopBar(
-                                viewModel = viewModel,
+                                state = state,
+                                query = query,
                                 entries = entries,
                                 scrollBehavior = scrollBehavior,
-                                displayType = displayType,
-                                onDisplayTypeToggle = onDisplayTypeToggle,
                                 onClickBack = onClickBack,
                                 onHeightChanged = { topBarHeight = it },
                                 title = title,
@@ -208,65 +206,27 @@ object SearchScreen {
                             )
                         },
                         modifier = Modifier
-                            .conditionally(displayType() != DisplayType.TABLE) {
+                            .conditionally(displayType != DisplayType.TABLE) {
                                 widthIn(max = 1200.dp)
                             }
                     ) {
-                        val density = LocalDensity.current
-                        val topBarPadding by remember(density) {
-                            derivedStateOf {
-                                if (scrollBehavior == null) {
-                                    density.run { topBarHeight.toDp() }.coerceAtLeast(0.dp)
-                                } else {
-                                    // Force a snapshot read so that this recomposes
-                                    // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
-                                    scrollBehavior.state.heightOffset
-                                    scrollBehavior.state.heightOffsetLimit
-                                        .takeUnless { it == -Float.MAX_VALUE }
-                                        ?.let { density.run { -it.toDp() } }
-                                        ?: 0.dp
-                                }
-                            }
-                        }
-
-                        if (displayType() == DisplayType.TABLE) {
-                            Table(
-                                horizontalScrollState = horizontalScrollState,
-                                dataYearHeaderState = dataYearHeaderState,
-                                entries = entries,
-                                columns = columns,
-                                scaffoldPadding = it,
-                                onWidthChanged = { horizontalScrollBarWidth = it },
-                                columnHeader = columnHeader,
-                                tableCell = tableCell,
-                            )
-                        } else {
-                            val topOffset by remember {
-                                derivedStateOf {
-                                    (topBarPadding + density.run {
-                                        scrollBehavior?.state?.heightOffset?.toDp() ?: 0.dp
-                                    }).coerceAtLeast(0.dp)
-                                }
-                            }
-
-                            VerticalGrid(
-                                entries = entries,
-                                showGridByDefault = showGridByDefault,
-                                showRandomCatalogImage = showRandomCatalogImage,
-                                forceOneDisplayColumn = forceOneDisplayColumn,
-                                dataYearHeaderState = dataYearHeaderState,
-                                displayType = displayType,
-                                gridState = gridState,
-                                onFavoriteToggle = onFavoriteToggle,
-                                onIgnoredToggle = onIgnoredToggle,
-                                onEntryClick = onEntryClick,
-                                shouldShowCount = shouldShowCount,
-                                topOffset = topOffset,
-                                topBarPadding = topBarPadding,
-                                itemToSharedElementId = itemToSharedElementId,
-                                itemRow = itemRow,
-                            )
-                        }
+                        Content(
+                            state = state,
+                            eventSink = eventSink,
+                            entries = entries,
+                            scrollBehavior = scrollBehavior,
+                            horizontalScrollState = horizontalScrollState,
+                            dataYearHeaderState = dataYearHeaderState,
+                            gridState = gridState,
+                            scaffoldPadding = it,
+                            topBarHeight = { topBarHeight },
+                            onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
+                            shouldShowCount = shouldShowCount,
+                            itemToSharedElementId = itemToSharedElementId,
+                            itemRow = itemRow,
+                            columnHeader = columnHeader,
+                            tableCell = tableCell,
+                        )
                     }
                 }
             }
@@ -284,12 +244,11 @@ object SearchScreen {
     }
 
     @Composable
-    private fun <SearchQuery, EntryModel : SearchEntryModel> TopBar(
-        viewModel: EntrySearchViewModel<SearchQuery, EntryModel>,
+    private fun <EntryModel : SearchEntryModel> TopBar(
+        state: State<*>,
+        query: MutableStateFlow<String>,
         entries: LazyPagingItems<EntryModel>,
         scrollBehavior: TopAppBarScrollBehavior?,
-        displayType: () -> DisplayType,
-        onDisplayTypeToggle: (DisplayType) -> Unit,
         onClickBack: (() -> Unit)?,
         onHeightChanged: (Int) -> Unit,
         title: () -> String?,
@@ -305,19 +264,18 @@ object SearchScreen {
                     .wrapContentWidth()
                     .padding(bottom = 8.dp)
             ) {
-                val isNotEmpty by remember {
-                    derivedStateOf { viewModel.query.isNotEmpty() }
-                }
+                var query by query.collectAsMutableStateWithLifecycle()
+                val isNotEmpty by remember { derivedStateOf { query.isNotEmpty() } }
                 BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
-                    viewModel.onQuery("")
+                    query = ""
                 }
 
                 StaticSearchBar(
                     leadingIcon = if (onClickBack != null) {
                         { ArrowBackIconButton(onClickBack) }
                     } else null,
-                    query = viewModel.query,
-                    onQueryChange = viewModel::onQuery,
+                    query = query,
+                    onQueryChange = { query = it },
                     placeholder = {
                         @Suppress("NAME_SHADOWING")
                         val title = title()
@@ -340,7 +298,7 @@ object SearchScreen {
                     trailingIcon = {
                         Row {
                             AnimatedVisibility(isNotEmpty) {
-                                IconButton(onClick = { viewModel.onQuery("") }) {
+                                IconButton(onClick = { query = "" }) {
                                     Icon(
                                         imageVector = Icons.Filled.Clear,
                                         contentDescription = stringResource(
@@ -350,7 +308,8 @@ object SearchScreen {
                                 }
                             }
                             Box {
-                                val displayType = displayType()
+                                var displayType by state.displayType
+                                    .collectAsMutableStateWithLifecycle()
                                 var expanded by remember { mutableStateOf(false) }
                                 IconButton(onClick = { expanded = true }) {
                                     Icon(
@@ -370,10 +329,10 @@ object SearchScreen {
                                             leadingIcon = {
                                                 RadioButton(
                                                     selected = displayType == it,
-                                                    onClick = { onDisplayTypeToggle(it) },
+                                                    onClick = { displayType = it },
                                                 )
                                             },
-                                            onClick = { onDisplayTypeToggle(it) },
+                                            onClick = { displayType = it },
                                         )
                                     }
                                 }
@@ -392,9 +351,98 @@ object SearchScreen {
     }
 
     @Composable
-    private fun <EntryModel, ColumnType> Table(
+    private fun <EntryModel, ColumnType> Content(
+        state: State<ColumnType>,
+        eventSink: (Event<EntryModel>) -> Unit,
+        entries: LazyPagingItems<EntryModel>,
+        scrollBehavior: TopAppBarScrollBehavior?,
         horizontalScrollState: ScrollState,
         dataYearHeaderState: DataYearHeaderState,
+        gridState: LazyStaggeredGridState,
+        scaffoldPadding: PaddingValues,
+        topBarHeight: () -> Int,
+        onHorizontalScrollBarWidth: (Int) -> Unit,
+        shouldShowCount: () -> Boolean,
+        itemToSharedElementId: (EntryModel) -> Any,
+        itemRow: @Composable (
+            entry: EntryModel,
+            onFavoriteToggle: (Boolean) -> Unit,
+            modifier: Modifier,
+        ) -> Unit,
+        columnHeader: @Composable (column: ColumnType) -> Unit = {
+            AutoSizeText(
+                text = stringResource(it.text),
+                modifier = Modifier.requiredWidth(it.size)
+                    .then(modifierDefaultCellPadding)
+            )
+        },
+        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
+        val density = LocalDensity.current
+        val topBarPadding by remember(density) {
+            derivedStateOf {
+                if (scrollBehavior == null) {
+                    density.run { topBarHeight().toDp() }.coerceAtLeast(0.dp)
+                } else {
+                    // Force a snapshot read so that this recomposes
+                    // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
+                    scrollBehavior.state.heightOffset
+                    scrollBehavior.state.heightOffsetLimit
+                        .takeUnless { it == -Float.MAX_VALUE }
+                        ?.let { density.run { -it.toDp() } }
+                        ?: 0.dp
+                }
+            }
+        }
+
+        val displayType by state.displayType.collectAsStateWithLifecycle()
+        if (displayType == DisplayType.TABLE) {
+            Table(
+                horizontalScrollState = horizontalScrollState,
+                header = {
+                    item(key = "dataYearHeader") {
+                        DataYearHeader(dataYearHeaderState)
+                    }
+                },
+                entries = entries,
+                columns = state.columns,
+                scaffoldPadding = scaffoldPadding,
+                onWidthChanged = onHorizontalScrollBarWidth,
+                columnHeader = columnHeader,
+                tableCell = tableCell,
+            )
+        } else {
+            val topOffset by remember {
+                derivedStateOf {
+                    (topBarPadding + density.run {
+                        scrollBehavior?.state?.heightOffset?.toDp() ?: 0.dp
+                    }).coerceAtLeast(0.dp)
+                }
+            }
+
+            VerticalGrid(
+                state = state,
+                eventSink = eventSink,
+                header = {
+                    item(key = "dataYearHeader", span = StaggeredGridItemSpan.FullLine) {
+                        DataYearHeader(dataYearHeaderState)
+                    }
+                },
+                entries = entries,
+                gridState = gridState,
+                shouldShowCount = shouldShowCount,
+                topOffset = topOffset,
+                topBarPadding = topBarPadding,
+                itemToSharedElementId = itemToSharedElementId,
+                itemRow = itemRow,
+            )
+        }
+    }
+
+    @Composable
+    private fun <EntryModel, ColumnType> Table(
+        horizontalScrollState: ScrollState,
+        header: LazyListScope.() -> Unit,
         entries: LazyPagingItems<EntryModel>,
         columns: EnumEntries<ColumnType>,
         scaffoldPadding: PaddingValues,
@@ -409,7 +457,7 @@ object SearchScreen {
         ) {
             val listState = rememberLazyListState()
             TwoWayGrid(
-                dataYearHeaderState = dataYearHeaderState,
+                header = header,
                 rows = entries,
                 columns = columns,
                 listState = listState,
@@ -433,16 +481,11 @@ object SearchScreen {
 
     @Composable
     private fun <EntryModel : SearchEntryModel> VerticalGrid(
+        state: State<*>,
+        eventSink: (Event<EntryModel>) -> Unit,
+        header: LazyStaggeredGridScope.() -> Unit,
         entries: LazyPagingItems<EntryModel>,
-        showGridByDefault: () -> Boolean,
-        showRandomCatalogImage: () -> Boolean,
-        forceOneDisplayColumn: () -> Boolean,
-        dataYearHeaderState: DataYearHeaderState,
-        displayType: () -> DisplayType,
         gridState: LazyStaggeredGridState,
-        onFavoriteToggle: (EntryModel, Boolean) -> Unit,
-        onIgnoredToggle: (EntryModel, Boolean) -> Unit,
-        onEntryClick: (EntryModel, imageIndex: Int) -> Unit,
         shouldShowCount: () -> Boolean,
         topOffset: Dp,
         topBarPadding: Dp,
@@ -456,17 +499,17 @@ object SearchScreen {
         Box {
             val coroutineScope = rememberCoroutineScope()
 
-            @Suppress("NAME_SHADOWING")
-            val displayType = displayType()
+            var displayType by state.displayType.collectAsMutableStateWithLifecycle()
+            val showGridByDefault by state.showGridByDefault
+                .collectAsMutableStateWithLifecycle()
+            val showRandomCatalogImage by state.showRandomCatalogImage
+                .collectAsMutableStateWithLifecycle()
+            val forceOneDisplayColumn by state.forceOneDisplayColumn
+                .collectAsMutableStateWithLifecycle()
 
-            @Suppress("NAME_SHADOWING")
-            val showGridByDefault = showGridByDefault()
-
-            @Suppress("NAME_SHADOWING")
-            val showRandomCatalogImage = showRandomCatalogImage()
             var maxLane by remember { mutableIntStateOf(0) }
             LazyVerticalStaggeredGrid(
-                columns = if (forceOneDisplayColumn()) {
+                columns = if (forceOneDisplayColumn) {
                     StaggeredGridCells.Fixed(1)
                 } else {
                     when (displayType) {
@@ -513,9 +556,7 @@ object SearchScreen {
                 }.let(Arrangement::spacedBy),
                 modifier = Modifier.fillMaxSize()
             ) {
-                item(key = "dataYearHeader", span = StaggeredGridItemSpan.FullLine) {
-                    DataYearHeader(dataYearHeaderState)
-                }
+                header()
 
                 items(
                     count = entries.itemCount,
@@ -527,13 +568,13 @@ object SearchScreen {
                     @Suppress("NAME_SHADOWING")
                     val onFavoriteToggle: (Boolean) -> Unit = {
                         entry.favorite = it
-                        onFavoriteToggle(entry, it)
+                        eventSink(Event.FavoriteToggle(entry, it))
                     }
 
                     @Suppress("NAME_SHADOWING")
                     val onIgnoredToggle: (Boolean) -> Unit = {
                         entry.ignored = it
-                        onIgnoredToggle(entry, it)
+                        eventSink(Event.IgnoreToggle(entry, it))
                     }
 
                     val sharedElementId = itemToSharedElementId(entry)
@@ -557,7 +598,7 @@ object SearchScreen {
                                 Modifier
                                     .sharedBounds("itemContainer", sharedElementId)
                                     .combinedClickable(
-                                        onClick = { onEntryClick(entry, 1) },
+                                        onClick = { eventSink(Event.OpenEntry(entry, 1)) },
                                         onLongClick = { onIgnoredToggle(!ignored) }
                                     )
                                     .alpha(if (entry.ignored) 0.38f else 1f)
@@ -576,7 +617,9 @@ object SearchScreen {
                             showRandomCatalogImage = showRandomCatalogImage,
                             onFavoriteToggle = onFavoriteToggle,
                             onIgnoredToggle = onIgnoredToggle,
-                            onClick = onEntryClick,
+                            onClick = { entry, imageIndex ->
+                                eventSink(Event.OpenEntry(entry, imageIndex))
+                            },
                             itemRow = itemRow,
                             modifier = Modifier.sharedBounds(
                                 "itemContainer",
@@ -590,7 +633,9 @@ object SearchScreen {
                             showRandomCatalogImage = showRandomCatalogImage,
                             onFavoriteToggle = onFavoriteToggle,
                             onIgnoredToggle = onIgnoredToggle,
-                            onClick = onEntryClick,
+                            onClick = { entry, imageIndex ->
+                                eventSink(Event.OpenEntry(entry, imageIndex))
+                            },
                             itemRow = itemRow,
                             modifier = Modifier.sharedBounds(
                                 "itemContainer",
@@ -657,11 +702,31 @@ object SearchScreen {
         IMAGE(Res.string.alley_display_type_image, Icons.Filled.Image),
         LIST(Res.string.alley_display_type_list, Icons.AutoMirrored.Filled.ViewList),
         TABLE(Res.string.alley_display_type_table, Icons.Default.TableChart),
-        ;
+    }
 
-        companion object {
-            fun fromSerializedValue(value: String) = DisplayType.entries.find { it.name == value }
-                ?: DisplayType.CARD
-        }
+    @Stable
+    class State<ColumnType>(
+        val columns: EnumEntries<ColumnType>,
+        val displayType: MutableStateFlow<DisplayType>,
+        val showGridByDefault: MutableStateFlow<Boolean>,
+        val showRandomCatalogImage: MutableStateFlow<Boolean>,
+        val forceOneDisplayColumn: MutableStateFlow<Boolean>,
+    ) where ColumnType : Enum<ColumnType>, ColumnType : Column
+
+    sealed interface Event<EntryModel : SearchEntryModel> {
+        data class FavoriteToggle<EntryModel : SearchEntryModel>(
+            val entry: EntryModel,
+            val favorite: Boolean,
+        ) : Event<EntryModel>
+
+        data class IgnoreToggle<EntryModel : SearchEntryModel>(
+            val entry: EntryModel,
+            val ignored: Boolean,
+        ) : Event<EntryModel>
+
+        data class OpenEntry<EntryModel : SearchEntryModel>(
+            val entry: EntryModel,
+            val imageIndex: Int,
+        ) : Event<EntryModel>
     }
 }

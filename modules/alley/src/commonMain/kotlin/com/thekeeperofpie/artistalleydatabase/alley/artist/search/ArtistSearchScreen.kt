@@ -34,7 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,6 +45,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.cash.paging.PagingData
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_booth
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_commissions
@@ -62,11 +65,15 @@ import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -74,10 +81,15 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object ArtistSearchScreen {
@@ -87,39 +99,78 @@ object ArtistSearchScreen {
         viewModel: ArtistSearchViewModel,
         sortViewModel: ArtistSortFilterViewModel,
         onClickBack: (() -> Unit)?,
-        onEntryClick: (ArtistEntryGridModel, imageIndex: Int) -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
         onClickMap: (() -> Unit)? = null,
-        onSeriesClick: (String) -> Unit,
-        onMerchClick: (String) -> Unit,
+    ) {
+        val navigationController = LocalNavigationController.current
+        ArtistSearchScreen(
+            remember(viewModel, sortViewModel) {
+                State(
+                    lockedSeries = viewModel.lockedSeries,
+                    lockedMerch = viewModel.lockedMerch,
+                    lockedYear = viewModel.lockedYear,
+                    randomSeed = viewModel.randomSeed,
+                    year = viewModel.year,
+                    query = viewModel.query,
+                    results = viewModel.results,
+                    showOnlyFavorites = viewModel.settings.showOnlyFavorites,
+                    onlyCatalogImages = sortViewModel.onlyCatalogImages,
+                    sortOption = sortViewModel.sortOption,
+                    sortAscending = sortViewModel.sortAscending,
+                    searchState = viewModel.searchState,
+                )
+            },
+            sortFilterState = sortViewModel.state,
+            eventSink = { viewModel.onEvent(navigationController, it) },
+            onClickBack,
+            scaffoldState,
+            scrollStateSaver,
+            onClickMap,
+        )
+    }
+
+    @Composable
+    operator fun invoke(
+        state: State,
+        sortFilterState: SortFilterState<*>,
+        eventSink: (Event) -> Unit,
+        onClickBack: (() -> Unit)?,
+        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+        scrollStateSaver: ScrollStateSaver,
+        onClickMap: (() -> Unit)? = null,
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
-        val sortFilterState = sortViewModel.state
         sortFilterState.ImmediateScrollResetEffect(gridState)
 
-        CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
-            val showGridByDefault by sortViewModel.settings.showGridByDefault.collectAsStateWithLifecycle()
-            val showRandomCatalogImage by sortViewModel.settings.showRandomCatalogImage.collectAsStateWithLifecycle()
-            val forceOneDisplayColumn by sortViewModel.settings.forceOneDisplayColumn.collectAsStateWithLifecycle()
-            val showOnlyFavorites by sortViewModel.settings.showOnlyFavorites.collectAsStateWithLifecycle()
-            val showOnlyCatalogImages by sortViewModel.onlyCatalogImages.collectAsStateWithLifecycle()
-            val displayType = SearchScreen.DisplayType.fromSerializedValue(
-                viewModel.displayType.collectAsState().value
-            )
-            val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
-            var sortOption by sortViewModel.sortOption.collectAsMutableStateWithLifecycle()
-            var sortAscending by sortViewModel.sortAscending.collectAsMutableStateWithLifecycle()
+        CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
+            val showOnlyFavorites by state.showOnlyFavorites.collectAsStateWithLifecycle()
+            val showOnlyCatalogImages by state.onlyCatalogImages.collectAsStateWithLifecycle()
+            val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
+            val query by state.query.collectAsStateWithLifecycle()
+            val shouldShowCount by remember {
+                derivedStateOf {
+                    query.isNotEmpty()
+                            || showOnlyFavorites
+                            || showOnlyCatalogImages
+                            || state.lockedSeries != null
+                            || state.lockedMerch != null
 
-            val year by viewModel.year.collectAsState()
+                }
+            }
+
+            val year by state.year.collectAsState()
             val yearShortName = stringResource(year.shortName)
             val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
-            val dataYearHeaderState =
-                rememberDataYearHeaderState(viewModel.year, viewModel.lockedYear)
-            SearchScreen<ArtistSearchQuery, ArtistEntryGridModel, ArtistColumn>(
-                viewModel = viewModel,
+            val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+            SearchScreen<ArtistEntryGridModel, ArtistColumn>(
+                state = state.searchState,
+                eventSink = {
+                    eventSink(Event.SearchEvent(it))
+                },
+                query = state.query,
                 title = {
-                    val tagTitle = viewModel.lockedSeries ?: viewModel.lockedMerch
+                    val tagTitle = state.lockedSeries ?: state.lockedMerch
                     if (tagTitle == null) {
                         null
                     } else if (isCurrentYear) {
@@ -152,39 +203,26 @@ object ArtistSearchScreen {
                             .heightIn(min = 320.dp)
                     )
                 },
-                showGridByDefault = { showGridByDefault },
-                showRandomCatalogImage = { showRandomCatalogImage },
-                forceOneDisplayColumn = { forceOneDisplayColumn },
                 dataYearHeaderState = dataYearHeaderState,
-                displayType = { displayType },
-                onDisplayTypeToggle = viewModel::onDisplayTypeToggle,
                 gridState = gridState,
-                onFavoriteToggle = viewModel::onFavoriteToggle,
-                onIgnoredToggle = viewModel::onIgnoredToggle,
-                onEntryClick = onEntryClick,
-                shouldShowCount = {
-                    viewModel.query.isNotEmpty()
-                            || showOnlyFavorites
-                            || showOnlyCatalogImages
-                            || viewModel.lockedSeries != null
-                            || viewModel.lockedMerch != null
-                },
+                shouldShowCount = { shouldShowCount },
                 itemToSharedElementId = { it.artist.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(
                         entry = entry,
                         onFavoriteToggle = onFavoriteToggle,
-                        onSeriesClick = onSeriesClick,
+                        onSeriesClick = { eventSink(Event.OpenSeries(it)) },
                         modifier = modifier
                     )
                 },
-                columns = ArtistColumn.entries,
                 columnHeader = { column ->
                     val columnSortOption = when (column) {
                         ArtistColumn.BOOTH -> ArtistSearchSortOption.BOOTH
                         ArtistColumn.NAME -> ArtistSearchSortOption.ARTIST
                         else -> null
                     }
+                    var sortOption by state.sortOption.collectAsMutableStateWithLifecycle()
+                    var sortAscending by state.sortAscending.collectAsMutableStateWithLifecycle()
                     Row(
                         modifier = Modifier.requiredWidth(column.size)
                             .clickable(enabled = columnSortOption != null) {
@@ -225,9 +263,13 @@ object ArtistSearchScreen {
                     TableCell(
                         row = row,
                         column = column,
-                        onEntryClick = onEntryClick,
-                        onSeriesClick = onSeriesClick,
-                        onMerchClick = onMerchClick,
+                        onEntryClick = { entry, imageIndex ->
+                            eventSink(
+                                Event.SearchEvent(SearchScreen.Event.OpenEntry(entry, imageIndex))
+                            )
+                        },
+                        onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                        onMerchClick = { eventSink(Event.OpenMerch(it)) },
                     )
                 },
             )
@@ -395,5 +437,67 @@ object ArtistSearchScreen {
         LINKS(144.dp, Res.string.alley_artist_column_links),
         STORE(96.dp, Res.string.alley_artist_column_store),
         COMMISSIONS(144.dp, Res.string.alley_artist_column_commissions),
+    }
+
+    @Stable
+    class State(
+        val lockedSeries: String?,
+        val lockedMerch: String?,
+        val lockedYear: DataYear?,
+        val randomSeed: Int,
+        val year: MutableStateFlow<DataYear>,
+        val query: MutableStateFlow<String>,
+        val results: StateFlow<PagingData<ArtistEntryGridModel>>,
+        val showOnlyFavorites: StateFlow<Boolean>,
+        val onlyCatalogImages: StateFlow<Boolean>,
+        val sortOption: MutableStateFlow<ArtistSearchSortOption>,
+        val sortAscending: MutableStateFlow<Boolean>,
+        val searchState: SearchScreen.State<ArtistColumn>,
+    )
+
+    sealed interface Event {
+        data class SearchEvent(val event: SearchScreen.Event<ArtistEntryGridModel>) : Event
+        data class OpenSeries(val series: String) : Event
+        data class OpenMerch(val merch: String) : Event
+    }
+
+    @Preview
+    @Composable
+    private fun Preview() = PreviewDark {
+        val results = ArtistWithUserDataProvider.values.take(5)
+            .map { ArtistEntryGridModel.buildFromEntry(1, false, it) }
+            .toList()
+        val state = State(
+            lockedSeries = null,
+            lockedMerch = null,
+            lockedYear = null,
+            randomSeed = 1,
+            year = MutableStateFlow(DataYear.YEAR_2025),
+            query = MutableStateFlow(""),
+            results = MutableStateFlow(PagingData.from(results)),
+            showOnlyFavorites = MutableStateFlow(false),
+            onlyCatalogImages = MutableStateFlow(false),
+            sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
+            sortAscending = MutableStateFlow(false),
+            searchState = SearchScreen.State<ArtistColumn>(
+                columns = ArtistColumn.entries,
+                displayType = MutableStateFlow(DisplayType.CARD),
+                showGridByDefault = MutableStateFlow(false),
+                showRandomCatalogImage = MutableStateFlow(false),
+                forceOneDisplayColumn = MutableStateFlow(false),
+            ),
+        )
+
+        ArtistSearchScreen(
+            state = state,
+            sortFilterState = SortFilterState(
+                emptyList(),
+                MutableStateFlow(Unit),
+                MutableStateFlow(false)
+            ),
+            eventSink = {},
+            onClickBack = {},
+            scrollStateSaver = ScrollStateSaver.STUB,
+        )
     }
 }

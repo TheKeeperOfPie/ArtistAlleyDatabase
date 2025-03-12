@@ -9,6 +9,8 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.withResumed
@@ -20,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.ui.theme.AndroidTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,9 +61,10 @@ class ChooserActivity : ComponentActivity() {
                                 sharedElementComposable(NavDestinations.HOME) {
                                     val viewModel =
                                         viewModel { applicationComponent.chooserViewModel() }
+                                    var query by viewModel.query.collectAsMutableStateWithLifecycle()
                                     ChooserScreen(
-                                        query = { viewModel.query.orEmpty() },
-                                        onQueryChange = viewModel::onQuery,
+                                        query = { query },
+                                        onQueryChange = { query = it },
                                         // TODO: Migrate to section search
                                         options = { emptyList() },
                                         onOptionChange = {},

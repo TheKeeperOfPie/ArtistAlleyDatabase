@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import me.tatarka.inject.annotations.Inject
@@ -45,10 +46,11 @@ class CdEntryNavigator : BrowseSelectionNavigator {
     ) {
         navGraphBuilder.sharedElementComposable(CdNavDestinations.HOME.id) {
             val viewModel = viewModel { cdEntryComponent.cdSearchViewModel() }
+            var query by viewModel.query.collectAsMutableStateWithLifecycle()
             EntryHomeScreen(
                 onClickNav = onClickNav,
-                query = { viewModel.query },
-                onQueryChange = viewModel::onQuery,
+                query = { query },
+                onQueryChange = { query = it },
                 sections = viewModel.sections,
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },

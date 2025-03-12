@@ -8,6 +8,8 @@ import app.cash.paging.createPagingConfig
 import app.cash.paging.filter
 import app.cash.paging.map
 import com.hoc081098.flowext.defer
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -20,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,7 +47,7 @@ import kotlin.random.Random
 class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
     private val userEntryDao: UserEntryDao,
-    private val settings: ArtistAlleySettings,
+    val settings: ArtistAlleySettings,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
     @Assisted private val filterParams: StateFlow<ArtistSortFilterViewModel.FilterParams>,
@@ -70,6 +73,14 @@ class ArtistSearchViewModel(
     val lockedYear = route.year
     val lockedSeries = route.series
     val lockedMerch = route.merch
+
+    val searchState = SearchScreen.State(
+        columns = ArtistSearchScreen.ArtistColumn.entries,
+        displayType = settings.displayType,
+        showGridByDefault = settings.showGridByDefault,
+        showRandomCatalogImage = settings.showRandomCatalogImage,
+        forceOneDisplayColumn = settings.forceOneDisplayColumn,
+    )
 
     override val sections = emptyList<EntrySection>()
 
@@ -123,15 +134,24 @@ class ArtistSearchViewModel(
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 
-    fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
-    }
-
-    fun onIgnoredToggle(entry: ArtistEntryGridModel, ignored: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
-    }
-
-    fun onDisplayTypeToggle(displayType: SearchScreen.DisplayType) {
-        settings.displayType.value = displayType.name
+    fun onEvent(navigationController: NavigationController, event: ArtistSearchScreen.Event) = when (event) {
+        is ArtistSearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
+            is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
+                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
+            is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
+                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
+            is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
+                navigationController.navigate(
+                    ArtistDetails(
+                        year = searchEvent.entry.artist.year,
+                        id = searchEvent.entry.id.valueId,
+                        imageIndex = searchEvent.imageIndex.toString(),
+                    )
+                )
+        }
+        is ArtistSearchScreen.Event.OpenMerch ->
+            navigationController.navigate(Destinations.Merch(lockedYear, event.merch))
+        is ArtistSearchScreen.Event.OpenSeries ->
+            navigationController.navigate(Destinations.Series(lockedYear, event.series))
     }
 }
