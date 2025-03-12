@@ -5,7 +5,7 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.10.0-alpha07"
+        const val gradle = "8.10.0-alpha08"
     }
 
     object androidx {
@@ -63,7 +63,7 @@ object Versions {
     const val htmlConverter = "1.0.3"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.11.0"
-    const val jackson = "2.18.2"
+    const val jackson = "2.18.3"
     const val javaPoet = "1.13.0"
 
     object jetBrains {
@@ -85,11 +85,11 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.1.20-Beta1"
+        const val core = "2.1.20-RC2"
         const val coroutines = "1.10.1"
         const val datetime = "0.6.2"
         const val io = "0.7.0"
-        const val ksp = "2.1.20-Beta1-1.0.29"
+        const val ksp = "2.1.20-RC2-1.0.31"
         const val serialization = "1.8.0"
     }
 
@@ -98,26 +98,26 @@ object Versions {
     const val ktor = "3.1.1"
     const val ksoup = "0.2.2"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2024.1.55"
+    const val manifoldGraphql = "2025.1.2"
     const val markwon = "4.6.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.32.0-b01"
+    const val multiplatformMarkdown = "0.32.0-b02"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
     const val okio = "3.10.2"
     const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
-    const val placeholder = "1.0.9"
+    const val placeholder = "1.0.10"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.1.0-wasm.2"
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.0"
-    const val unityAds = "4.13.2"
+    const val unityAds = "4.14.0"
     const val uriKmp = "0.0.19"
     const val webpImageIo = "0.9.0"
-    const val xmlUtil = "0.90.3"
+    const val xmlUtil = "0.91.0-RC1"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
