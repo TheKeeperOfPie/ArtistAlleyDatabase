@@ -336,7 +336,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     withVersion(Versions.xmlUtil) {
                         library("io.github.pdvrieze.xmlutil:serialization")
                         library("io.github.pdvrieze.xmlutil:serialization-jvm")
-                        library("io.github.pdvrieze.xmlutil:serialization-android")
                     }
                 }
 

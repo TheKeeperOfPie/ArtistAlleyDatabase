@@ -9,7 +9,6 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.ktor.client.okhttp)
-            implementation(libs.xmlutil.serialization.android)
         }
         commonMain.dependencies {
             api(libs.kotlinx.io.core)
