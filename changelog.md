@@ -1,6 +1,7 @@
 # Changelog
 
 ### Next (18)
+- Fix a media stats crash
 
 ### 0.52 (17)
 - Fix subscription crash

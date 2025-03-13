@@ -327,7 +327,13 @@ private fun <Value> FixedBarChart(
                 .padding(bottom = 1.5.dp) // Offset the other portion's border width
         ) {
             AutoWidthText(
-                text = formatWholePercentage(firstPortion / total),
+                text = formatWholePercentage(
+                    if (total == 0f) {
+                        0f
+                    } else {
+                        firstPortion / total
+                    }
+                ),
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 modifier = Modifier
@@ -359,7 +365,13 @@ private fun <Value> FixedBarChart(
                 .bottomBorder(MaterialTheme.colorScheme.surfaceTint, width = 2.dp)
         ) {
             AutoWidthText(
-                text = formatWholePercentage(secondPortion / total),
+                text = formatWholePercentage(
+                    if (total == 0f) {
+                        0f
+                    } else {
+                        secondPortion / total
+                    }
+                ),
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 modifier = Modifier
