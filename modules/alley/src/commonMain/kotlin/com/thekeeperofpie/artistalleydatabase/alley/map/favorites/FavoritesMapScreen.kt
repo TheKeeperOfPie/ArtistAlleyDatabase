@@ -54,7 +54,7 @@ object FavoritesMapScreen {
                 )
             },
         ) {
-            val showOnlyFavorites by viewModel.settings.showOnlyFavorites.collectAsStateWithLifecycle()
+            val showOnlyFavorites by viewModel.showOnlyFavorites.collectAsStateWithLifecycle()
             MapScreen(
                 viewModel = mapViewModel,
                 transformState = mapTransformState,

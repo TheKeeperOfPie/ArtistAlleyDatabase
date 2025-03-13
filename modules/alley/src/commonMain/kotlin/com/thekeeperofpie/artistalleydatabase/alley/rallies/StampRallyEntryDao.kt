@@ -259,11 +259,12 @@ class StampRallyEntryDao(
         year: DataYear,
         query: String,
         searchQuery: StampRallySearchQuery,
+        onlyFavorites: Boolean = false,
     ): PagingSource<Int, StampRallyWithUserData> {
         val tableName = "stampRallyEntry${year.year}"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
-            if (filterParams.showOnlyFavorites) this += "stampRallyUserEntry.favorite = 1"
+            if (onlyFavorites) this += "stampRallyUserEntry.favorite = 1"
         }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"

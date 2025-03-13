@@ -80,7 +80,6 @@
             <option value="$PROJECT_DIR$/modules/musical-artists" />
             <option value="$PROJECT_DIR$/modules/play" />
             <option value="$PROJECT_DIR$/modules/secrets" />
-            <option value="$PROJECT_DIR$/modules/server" />
             <option value="$PROJECT_DIR$/modules/settings" />
             <option value="$PROJECT_DIR$/modules/settings/ui" />
             <option value="$PROJECT_DIR$/modules/test-utils" />

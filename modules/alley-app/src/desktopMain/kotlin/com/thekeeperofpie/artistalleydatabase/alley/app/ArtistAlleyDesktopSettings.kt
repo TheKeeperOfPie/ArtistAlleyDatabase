@@ -23,7 +23,6 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val showRandomCatalogImage = MutableStateFlow(false)
     override val showOnlyConfirmedTags = MutableStateFlow(false)
     override val showOnlyHasCommissions = MutableStateFlow(false)
-    override val showOnlyFavorites = MutableStateFlow(false)
     override val forceOneDisplayColumn = MutableStateFlow(false)
     override val dataYear = MutableStateFlow(DataYear.YEAR_2025)
 }

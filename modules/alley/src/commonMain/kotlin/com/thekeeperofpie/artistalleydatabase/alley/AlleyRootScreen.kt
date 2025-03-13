@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.Brush
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,11 +28,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_browse
+import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_favorites
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_map
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -41,7 +44,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
-object ArtistAlleyScreen {
+object AlleyRootScreen {
 
     @Composable
     operator fun invoke(
@@ -89,9 +92,35 @@ object ArtistAlleyScreen {
                             onMerchClick = { onMerchClick(it.name) },
                         )
                     }
+                    Destination.FAVORITES -> {
+                        val artistSortViewModel =
+                            viewModel { component.artistSortFilterViewModel(createSavedStateHandle()) }
+                        val stampRallySortViewModel =
+                            viewModel {
+                                component.stampRallySortFilterViewModel(
+                                    createSavedStateHandle()
+                                )
+                            }
+                        val favoritesViewModel = viewModel {
+                            component.favoritesViewModel(
+                                createSavedStateHandle(),
+                                artistSortViewModel.state.filterParams,
+                                stampRallySortViewModel.state.filterParams,
+                            )
+                        }
+                        FavoritesScreen(
+                            favoritesViewModel = favoritesViewModel,
+                            artistSortViewModel = artistSortViewModel,
+                            stampRallySortViewModel = stampRallySortViewModel,
+                            scrollStateSaver = ScrollStateSaver.fromMap(
+                                Destination.FAVORITES.name,
+                                scrollPositions,
+                            ),
+                        )
+                    }
                     Destination.MAP -> {
                         val viewModel = viewModel {
-                            component.favoritesSortFilterViewModel()
+                            component.favoritesSortFilterViewModel(createSavedStateHandle())
                         }
                         val mapViewModel =
                             viewModel { component.mapViewModel(createSavedStateHandle()) }
@@ -158,6 +187,7 @@ object ArtistAlleyScreen {
     enum class Destination(val icon: ImageVector, val textRes: StringResource) {
         ARTISTS(Icons.Default.Brush, Res.string.alley_nav_bar_artists),
         BROWSE(Icons.AutoMirrored.Default.List, Res.string.alley_nav_bar_browse),
+        FAVORITES(Icons.Default.Favorite, Res.string.alley_nav_bar_favorites),
         MAP(Icons.Default.Map, Res.string.alley_nav_bar_map),
         STAMP_RALLIES(Icons.Default.Approval, Res.string.alley_nav_bar_stamp_rallies),
     }

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.map.favorites
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_favorites
@@ -9,14 +10,22 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
-class FavoritesSortFilterViewModel(val settings: ArtistAlleySettings) : ViewModel() {
+class FavoritesSortFilterViewModel(
+    val settings: ArtistAlleySettings,
+    @Assisted savedStateHandle: SavedStateHandle,
+) : ViewModel() {
 
-    val onlyFavoritesSection = SortFilterSectionState.SwitchBySetting(
+    val showOnlyFavorites =
+        savedStateHandle.getMutableStateFlow("showOnlyFavorites") { false }
+    val onlyFavoritesSection = SortFilterSectionState.Switch(
         Res.string.alley_filter_favorites,
-        settings.showOnlyFavorites,
+        defaultEnabled = false,
+        enabled = showOnlyFavorites,
     )
 
     val randomCatalogImageSection = SortFilterSectionState.SwitchBySetting(
@@ -30,7 +39,7 @@ class FavoritesSortFilterViewModel(val settings: ArtistAlleySettings) : ViewMode
     )
 
     private val filterParams =
-        combineStates(settings.showOnlyFavorites, settings.showRandomCatalogImage) {
+        combineStates(showOnlyFavorites, settings.showRandomCatalogImage) {
             FilterParams(
                 showOnlyFavorites = it[0] as Boolean,
                 showRandomCatalogImage = it[1] as Boolean,

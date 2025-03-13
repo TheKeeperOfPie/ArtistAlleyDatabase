@@ -66,7 +66,7 @@ object ArtistAlleyAppScreen {
                                 enterTransition = null,
                                 exitTransition = null,
                             ) {
-                                ArtistAlleyScreen(
+                                AlleyRootScreen(
                                     component = component,
                                     onArtistClick = onArtistClick,
                                     onSeriesClick = {

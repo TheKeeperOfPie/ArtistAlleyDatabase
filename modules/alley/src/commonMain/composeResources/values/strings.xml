@@ -58,8 +58,9 @@
 
     <string name="alley_nav_bar_artists">Artists</string>
     <string name="alley_nav_bar_map">Map</string>
+    <string name="alley_nav_bar_favorites">Favorites</string>
     <string name="alley_nav_bar_browse">Browse</string>
-    <string name="alley_nav_bar_stamp_rallies">Stamp rallies</string>
+    <string name="alley_nav_bar_stamp_rallies">Rallies</string>
 
     <string name="alley_stamp_rally_details_fandom">Fandom</string>
     <string name="alley_stamp_rally_details_links">Links</string>

@@ -150,13 +150,7 @@ object SearchScreen {
             onFavoriteToggle: (Boolean) -> Unit,
             modifier: Modifier,
         ) -> Unit,
-        columnHeader: @Composable (column: ColumnType) -> Unit = {
-            AutoSizeText(
-                text = stringResource(it.text),
-                modifier = Modifier.requiredWidth(it.size)
-                    .then(modifierDefaultCellPadding)
-            )
-        },
+        columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         val scope = rememberCoroutineScope()
@@ -195,8 +189,8 @@ object SearchScreen {
                     Scaffold(
                         topBar = {
                             TopBar(
-                                state = state,
                                 query = query,
+                                displayType = state.displayType,
                                 entries = entries,
                                 scrollBehavior = scrollBehavior,
                                 onClickBack = onClickBack,
@@ -216,13 +210,13 @@ object SearchScreen {
                             entries = entries,
                             scrollBehavior = scrollBehavior,
                             horizontalScrollState = horizontalScrollState,
-                            dataYearHeaderState = dataYearHeaderState,
                             gridState = gridState,
                             scaffoldPadding = it,
                             topBarHeight = { topBarHeight },
                             onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
                             shouldShowCount = shouldShowCount,
                             itemToSharedElementId = itemToSharedElementId,
+                            header = { DataYearHeader(dataYearHeaderState) },
                             itemRow = itemRow,
                             columnHeader = columnHeader,
                             tableCell = tableCell,
@@ -244,9 +238,9 @@ object SearchScreen {
     }
 
     @Composable
-    private fun <EntryModel : SearchEntryModel> TopBar(
-        state: State<*>,
+    fun <EntryModel : SearchEntryModel> TopBar(
         query: MutableStateFlow<String>,
+        displayType: MutableStateFlow<DisplayType>,
         entries: LazyPagingItems<EntryModel>,
         scrollBehavior: TopAppBarScrollBehavior?,
         onClickBack: (() -> Unit)?,
@@ -308,7 +302,7 @@ object SearchScreen {
                                 }
                             }
                             Box {
-                                var displayType by state.displayType
+                                var displayType by displayType
                                     .collectAsMutableStateWithLifecycle()
                                 var expanded by remember { mutableStateOf(false) }
                                 IconButton(onClick = { expanded = true }) {
@@ -351,19 +345,19 @@ object SearchScreen {
     }
 
     @Composable
-    private fun <EntryModel, ColumnType> Content(
+    fun <EntryModel, ColumnType> Content(
         state: State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
         scrollBehavior: TopAppBarScrollBehavior?,
         horizontalScrollState: ScrollState,
-        dataYearHeaderState: DataYearHeaderState,
         gridState: LazyStaggeredGridState,
         scaffoldPadding: PaddingValues,
         topBarHeight: () -> Int,
         onHorizontalScrollBarWidth: (Int) -> Unit,
         shouldShowCount: () -> Boolean,
         itemToSharedElementId: (EntryModel) -> Any,
+        header: @Composable () -> Unit,
         itemRow: @Composable (
             entry: EntryModel,
             onFavoriteToggle: (Boolean) -> Unit,
@@ -400,8 +394,8 @@ object SearchScreen {
             Table(
                 horizontalScrollState = horizontalScrollState,
                 header = {
-                    item(key = "dataYearHeader") {
-                        DataYearHeader(dataYearHeaderState)
+                    item(key = "header") {
+                        header()
                     }
                 },
                 entries = entries,
@@ -424,8 +418,8 @@ object SearchScreen {
                 state = state,
                 eventSink = eventSink,
                 header = {
-                    item(key = "dataYearHeader", span = StaggeredGridItemSpan.FullLine) {
-                        DataYearHeader(dataYearHeaderState)
+                    item(key = "header", span = StaggeredGridItemSpan.FullLine) {
+                        header()
                     }
                 },
                 entries = entries,

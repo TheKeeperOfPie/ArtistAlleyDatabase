@@ -89,14 +89,6 @@ class StampRallySearchViewModel(
         .map { it.map { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
-    fun onFavoriteToggle(entry: StampRallyEntryGridModel, favorite: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
-    }
-
-    fun onIgnoredToggle(entry: StampRallyEntryGridModel, ignored: Boolean) {
-        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
-    }
-
     fun onEvent(navigationController: NavigationController, event: StampRallySearchScreen.Event) = when (event) {
         is StampRallySearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
             is SearchScreen.Event.FavoriteToggle<StampRallyEntryGridModel> ->

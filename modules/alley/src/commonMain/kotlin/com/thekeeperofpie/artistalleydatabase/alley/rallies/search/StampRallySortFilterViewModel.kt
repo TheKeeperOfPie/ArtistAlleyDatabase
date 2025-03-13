@@ -5,7 +5,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_favorites
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_ignored
@@ -41,25 +40,21 @@ class StampRallySortFilterViewModel(
     // TODO: Artists not wired up
     val artistsSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_artist)
 
-    private val sortOption = settings.stampRalliesSortOption
+    val sortOption = settings.stampRalliesSortOption
         .mapMutableState(
             viewModelScope,
             deserialize = {
                 StampRallySearchSortOption.entries.find { option -> option.name == it }
                     ?: StampRallySearchSortOption.RANDOM
             },
-            serialize = { it.name.orEmpty() },
+            serialize = { it.name },
         )
+    val sortAscending = settings.stampRalliesSortAscending
     private val sortSection = SortFilterSectionState.Sort(
         headerText = Res.string.alley_sort_label,
         defaultSort = StampRallySearchSortOption.RANDOM,
         sortOption = sortOption,
-        sortAscending = settings.stampRalliesSortAscending,
-    )
-
-    private val onlyFavoritesSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_favorites,
-        settings.showOnlyFavorites,
+        sortAscending = sortAscending,
     )
 
     private val gridByDefaultSection = SortFilterSectionState.SwitchBySetting(
@@ -85,7 +80,6 @@ class StampRallySortFilterViewModel(
 
     private val sections = listOf(
         sortSection,
-        onlyFavoritesSection,
         gridByDefaultSection,
         randomCatalogImageSection,
         showIgnoredSection,
@@ -101,7 +95,6 @@ class StampRallySortFilterViewModel(
         }.stateIn(viewModelScope, SharingStarted.Eagerly, SnapshotState()),
         sortOption,
         settings.stampRalliesSortAscending,
-        settings.showOnlyFavorites,
         showIgnored,
     ) {
         val snapshotState = it[0] as SnapshotState
@@ -110,8 +103,7 @@ class StampRallySortFilterViewModel(
             tables = snapshotState.tables,
             sortOption = it[1] as StampRallySearchSortOption,
             sortAscending = it[2] as Boolean,
-            showOnlyFavorites = it[3] as Boolean,
-            showIgnored = it[4] as Boolean,
+            showIgnored = it[3] as Boolean,
         )
     }
 
@@ -131,7 +123,6 @@ class StampRallySortFilterViewModel(
         val tables: String?,
         val sortOption: StampRallySearchSortOption,
         val sortAscending: Boolean,
-        val showOnlyFavorites: Boolean,
         val showIgnored: Boolean,
     )
 }

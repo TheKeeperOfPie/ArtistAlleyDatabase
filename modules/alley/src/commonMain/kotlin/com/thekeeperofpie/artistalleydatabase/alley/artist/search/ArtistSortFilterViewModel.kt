@@ -5,7 +5,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_favorites
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
@@ -75,10 +74,6 @@ class ArtistSortFilterViewModel(
         sortOption = sortOption,
         sortAscending = sortAscending,
     )
-    private val onlyFavoritesSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_favorites,
-        settings.showOnlyFavorites,
-    )
 
     val onlyCatalogImages = savedStateHandle.getMutableStateFlow("onlyCatalogImages", false)
     private val onlyCatalogImagesSection = SortFilterSectionState.Switch(
@@ -121,7 +116,6 @@ class ArtistSortFilterViewModel(
 
     private val sections = listOf(
         sortSection,
-        onlyFavoritesSection,
         onlyCatalogImagesSection,
         gridByDefaultSection,
         randomCatalogImageSection,
@@ -145,7 +139,6 @@ class ArtistSortFilterViewModel(
         }.stateIn(viewModelScope, SharingStarted.Eagerly, SnapshotState()),
         sortOption,
         settings.artistsSortAscending,
-        settings.showOnlyFavorites,
         onlyCatalogImages,
         settings.showOnlyConfirmedTags,
         settings.showOnlyHasCommissions,
@@ -160,11 +153,10 @@ class ArtistSortFilterViewModel(
             merch = snapshotState.merch,
             sortOption = it[1] as ArtistSearchSortOption,
             sortAscending = it[2] as Boolean,
-            showOnlyFavorites = it[3] as Boolean,
-            showOnlyWithCatalog = it[4] as Boolean,
-            showOnlyConfirmedTags = it[5] as Boolean,
-            showOnlyHasCommissions = it[6] as Boolean,
-            showIgnored = it[7] as Boolean,
+            showOnlyWithCatalog = it[3] as Boolean,
+            showOnlyConfirmedTags = it[4] as Boolean,
+            showOnlyHasCommissions = it[5] as Boolean,
+            showIgnored = it[6] as Boolean,
         )
     }
 
@@ -190,7 +182,6 @@ class ArtistSortFilterViewModel(
         val merch: List<String>,
         val sortOption: ArtistSearchSortOption,
         val sortAscending: Boolean,
-        val showOnlyFavorites: Boolean,
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
         val showOnlyHasCommissions: Boolean,

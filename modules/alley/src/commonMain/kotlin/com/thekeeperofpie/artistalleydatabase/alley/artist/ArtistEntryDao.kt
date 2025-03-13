@@ -355,11 +355,12 @@ class ArtistEntryDao(
         year: DataYear,
         query: String,
         searchQuery: ArtistSearchQuery,
+        onlyFavorites: Boolean = false,
     ): PagingSource<Int, ArtistWithUserData> {
         val tableName = "artistEntry${year.year}"
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
-            if (filterParams.showOnlyFavorites) this += "artistUserEntry.favorite = 1"
+            if (onlyFavorites) this += "artistUserEntry.favorite = 1"
 
             // Search for "http" as a simplification of logic, since checking
             // not empty would require a separate query template

@@ -114,7 +114,6 @@ object ArtistSearchScreen {
                     year = viewModel.year,
                     query = viewModel.query,
                     results = viewModel.results,
-                    showOnlyFavorites = viewModel.settings.showOnlyFavorites,
                     onlyCatalogImages = sortViewModel.onlyCatalogImages,
                     sortOption = sortViewModel.sortOption,
                     sortAscending = sortViewModel.sortAscending,
@@ -144,14 +143,12 @@ object ArtistSearchScreen {
         sortFilterState.ImmediateScrollResetEffect(gridState)
 
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-            val showOnlyFavorites by state.showOnlyFavorites.collectAsStateWithLifecycle()
             val showOnlyCatalogImages by state.onlyCatalogImages.collectAsStateWithLifecycle()
             val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
             val query by state.query.collectAsStateWithLifecycle()
             val shouldShowCount by remember {
                 derivedStateOf {
                     query.isNotEmpty()
-                            || showOnlyFavorites
                             || showOnlyCatalogImages
                             || state.lockedSeries != null
                             || state.lockedMerch != null
@@ -215,50 +212,7 @@ object ArtistSearchScreen {
                         modifier = modifier
                     )
                 },
-                columnHeader = { column ->
-                    val columnSortOption = when (column) {
-                        ArtistColumn.BOOTH -> ArtistSearchSortOption.BOOTH
-                        ArtistColumn.NAME -> ArtistSearchSortOption.ARTIST
-                        else -> null
-                    }
-                    var sortOption by state.sortOption.collectAsMutableStateWithLifecycle()
-                    var sortAscending by state.sortAscending.collectAsMutableStateWithLifecycle()
-                    Row(
-                        modifier = Modifier.requiredWidth(column.size)
-                            .clickable(enabled = columnSortOption != null) {
-                                if (columnSortOption != null) {
-                                    if (sortOption == columnSortOption) {
-                                        sortAscending = !sortAscending
-                                    } else {
-                                        sortOption = columnSortOption
-                                    }
-                                }
-                            }
-                            .then(TwoWayGrid.modifierDefaultCellPadding)
-                    ) {
-                        AutoSizeText(
-                            text = stringResource(column.text),
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        if (sortOption == columnSortOption) {
-                            Icon(
-                                imageVector = if (sortAscending) {
-                                    Icons.Default.ArrowDropUp
-                                } else {
-                                    Icons.Default.ArrowDropDown
-                                },
-                                contentDescription = null,
-                            )
-                        } else if (columnSortOption != null) {
-                            Icon(
-                                imageVector = Icons.Default.UnfoldMore,
-                                contentDescription = null,
-                                tint = IconButtonDefaults.iconButtonColors().disabledContentColor,
-                            )
-                        }
-                    }
-                },
+                columnHeader = { ColumnHeader(it, state.sortOption, state.sortAscending) },
                 tableCell = { row, column ->
                     TableCell(
                         row = row,
@@ -273,6 +227,56 @@ object ArtistSearchScreen {
                     )
                 },
             )
+        }
+    }
+
+    @Composable
+    fun ColumnHeader(
+        column: ArtistColumn,
+        sortOption: MutableStateFlow<ArtistSearchSortOption>,
+        sortAscending: MutableStateFlow<Boolean>,
+    ) {
+        val columnSortOption = when (column) {
+            ArtistColumn.BOOTH -> ArtistSearchSortOption.BOOTH
+            ArtistColumn.NAME -> ArtistSearchSortOption.ARTIST
+            else -> null
+        }
+        var sortOption by sortOption.collectAsMutableStateWithLifecycle()
+        var sortAscending by sortAscending.collectAsMutableStateWithLifecycle()
+        Row(
+            modifier = Modifier.requiredWidth(column.size)
+                .clickable(enabled = columnSortOption != null) {
+                    if (columnSortOption != null) {
+                        if (sortOption == columnSortOption) {
+                            sortAscending = !sortAscending
+                        } else {
+                            sortOption = columnSortOption
+                        }
+                    }
+                }
+                .then(TwoWayGrid.modifierDefaultCellPadding)
+        ) {
+            AutoSizeText(
+                text = stringResource(column.text),
+                modifier = Modifier.weight(1f)
+            )
+
+            if (sortOption == columnSortOption) {
+                Icon(
+                    imageVector = if (sortAscending) {
+                        Icons.Default.ArrowDropUp
+                    } else {
+                        Icons.Default.ArrowDropDown
+                    },
+                    contentDescription = null,
+                )
+            } else if (columnSortOption != null) {
+                Icon(
+                    imageVector = Icons.Default.UnfoldMore,
+                    contentDescription = null,
+                    tint = IconButtonDefaults.iconButtonColors().disabledContentColor,
+                )
+            }
         }
     }
 
@@ -448,7 +452,6 @@ object ArtistSearchScreen {
         val year: MutableStateFlow<DataYear>,
         val query: MutableStateFlow<String>,
         val results: StateFlow<PagingData<ArtistEntryGridModel>>,
-        val showOnlyFavorites: StateFlow<Boolean>,
         val onlyCatalogImages: StateFlow<Boolean>,
         val sortOption: MutableStateFlow<ArtistSearchSortOption>,
         val sortAscending: MutableStateFlow<Boolean>,
@@ -475,7 +478,6 @@ object ArtistSearchScreen {
             year = MutableStateFlow(DataYear.YEAR_2025),
             query = MutableStateFlow(""),
             results = MutableStateFlow(PagingData.from(results)),
-            showOnlyFavorites = MutableStateFlow(false),
             onlyCatalogImages = MutableStateFlow(false),
             sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
             sortAscending = MutableStateFlow(false),
