@@ -1,6 +1,8 @@
 # Changelog
 
-### Next (18)
+### Next (19)
+
+### 0.53 (18)
 - Fix a media stats crash
 
 ### 0.52 (17)
