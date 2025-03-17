@@ -1,0 +1,53 @@
+insertArtist2023:
+INSERT OR REPLACE INTO artistEntry2023
+VALUES ?;
+
+insertArtist2024:
+INSERT OR REPLACE INTO artistEntry2024
+VALUES ?;
+
+insertArtist2025:
+INSERT OR REPLACE INTO artistEntry2025
+VALUES ?;
+
+insertStampRally2023:
+INSERT OR REPLACE INTO stampRallyEntry2023
+VALUES ?;
+
+insertStampRally2024:
+INSERT OR REPLACE INTO stampRallyEntry2024
+VALUES ?;
+
+insertStampRally2025:
+INSERT OR REPLACE INTO stampRallyEntry2025
+VALUES ?;
+
+getArtistUserData2023:
+SELECT artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2023
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear;
+
+getArtistUserData2024:
+SELECT artistEntry2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2024
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear;
+
+getArtistUserData2025:
+SELECT artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2025
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
+
+getStampRallyUserData2023:
+SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2023
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId;
+
+getStampRallyUserData2024:
+SELECT stampRallyEntry2024.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2024
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId;
+
+getStampRallyUserData2025:
+SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2025
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId;

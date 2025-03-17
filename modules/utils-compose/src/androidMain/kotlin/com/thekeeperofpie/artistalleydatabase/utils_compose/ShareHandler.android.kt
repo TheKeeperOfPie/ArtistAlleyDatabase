@@ -96,4 +96,15 @@ actual class ShareHandler(
             .let { Intent.createChooser(it, null) }
         activity.startActivity(shareIntent)
     }
+
+    actual fun shareText(text: String) {
+        val shareIntent = Intent()
+            .apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, text)
+            }
+            .let { Intent.createChooser(it, null) }
+        activity.startActivity(shareIntent)
+    }
 }

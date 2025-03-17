@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
-import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
@@ -10,7 +9,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
@@ -24,7 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 
 @SingletonScope
@@ -45,46 +42,46 @@ class ArtistAlleyDatabase(
             databaseState.value = AlleySqlDatabase(
                 driver = driver(),
                 artistEntry2023Adapter = ArtistEntry2023.Adapter(
-                    artistNamesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
+                    artistNamesAdapter = DaoUtils.listStringAdapter,
+                    linksAdapter = DaoUtils.listStringAdapter,
+                    catalogLinksAdapter = DaoUtils.listStringAdapter,
                 ),
                 artistEntry2024Adapter = ArtistEntry2024.Adapter(
-                    linksAdapter = listStringAdapter,
-                    storeLinksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    seriesInferredAdapter = listStringAdapter,
-                    seriesConfirmedAdapter = listStringAdapter,
-                    merchInferredAdapter = listStringAdapter,
-                    merchConfirmedAdapter = listStringAdapter,
+                    linksAdapter = DaoUtils.listStringAdapter,
+                    storeLinksAdapter = DaoUtils.listStringAdapter,
+                    catalogLinksAdapter = DaoUtils.listStringAdapter,
+                    seriesInferredAdapter = DaoUtils.listStringAdapter,
+                    seriesConfirmedAdapter = DaoUtils.listStringAdapter,
+                    merchInferredAdapter = DaoUtils.listStringAdapter,
+                    merchConfirmedAdapter = DaoUtils.listStringAdapter,
                 ),
                 artistEntry2025Adapter = ArtistEntry2025.Adapter(
-                    linksAdapter = listStringAdapter,
-                    storeLinksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    seriesInferredAdapter = listStringAdapter,
-                    seriesConfirmedAdapter = listStringAdapter,
-                    merchInferredAdapter = listStringAdapter,
-                    merchConfirmedAdapter = listStringAdapter,
-                    commissionsAdapter = listStringAdapter,
+                    linksAdapter = DaoUtils.listStringAdapter,
+                    storeLinksAdapter = DaoUtils.listStringAdapter,
+                    catalogLinksAdapter = DaoUtils.listStringAdapter,
+                    seriesInferredAdapter = DaoUtils.listStringAdapter,
+                    seriesConfirmedAdapter = DaoUtils.listStringAdapter,
+                    merchInferredAdapter = DaoUtils.listStringAdapter,
+                    merchConfirmedAdapter = DaoUtils.listStringAdapter,
+                    commissionsAdapter = DaoUtils.listStringAdapter,
                 ),
                 stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
-                    tablesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
+                    tablesAdapter = DaoUtils.listStringAdapter,
+                    linksAdapter = DaoUtils.listStringAdapter,
                 ),
                 stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
-                    tablesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
+                    tablesAdapter = DaoUtils.listStringAdapter,
+                    linksAdapter = DaoUtils.listStringAdapter,
                 ),
                 stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
-                    tablesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
+                    tablesAdapter = DaoUtils.listStringAdapter,
+                    linksAdapter = DaoUtils.listStringAdapter,
                 ),
                 artistNotesAdapter = ArtistNotes.Adapter(
-                    dataYearAdapter = dataYearAdapter,
+                    dataYearAdapter = DaoUtils.dataYearAdapter,
                 ),
                 artistUserEntryAdapter = ArtistUserEntry.Adapter(
-                    dataYearAdapter = dataYearAdapter,
+                    dataYearAdapter = DaoUtils.dataYearAdapter,
                 ),
             )
 
@@ -94,19 +91,8 @@ class ArtistAlleyDatabase(
 
     internal val artistEntryDao = ArtistEntryDao(driver, database, settings)
     internal val stampRallyEntryDao = StampRallyEntryDao(driver, database)
+    internal val importExportDao = ImportExportDao(database)
     internal val notesDao = NotesDao(database)
     internal val tagEntryDao = TagEntryDao(driver, database)
     internal val userEntryDao = UserEntryDao(database, settings)
-}
-
-private val listStringAdapter = object : ColumnAdapter<List<String>, String> {
-    override fun decode(databaseValue: String) = Json.decodeFromString<List<String>>(databaseValue)
-    override fun encode(value: List<String>) = Json.encodeToString(value)
-}
-
-private val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
-    override fun decode(databaseValue: String) =
-        DataYear.entries.first { it.serializedName == databaseValue }
-
-    override fun encode(value: DataYear) = value.serializedName
 }

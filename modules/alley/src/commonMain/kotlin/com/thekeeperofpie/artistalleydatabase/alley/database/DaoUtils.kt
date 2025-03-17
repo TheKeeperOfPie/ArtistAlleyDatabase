@@ -1,14 +1,29 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import app.cash.paging.PagingSource
+import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.SuspendingTransacter
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import kotlinx.serialization.json.Json
 
 object DaoUtils {
+
+    val listStringAdapter = object : ColumnAdapter<List<String>, String> {
+        override fun decode(databaseValue: String) = Json.decodeFromString<List<String>>(databaseValue)
+        override fun encode(value: List<String>) = Json.encodeToString(value)
+    }
+
+    val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
+        override fun decode(databaseValue: String) =
+            DataYear.entries.first { it.serializedName == databaseValue }
+
+        override fun encode(value: DataYear) = value.serializedName
+    }
 
     private val countReplaceRegex = Regex("(\\QSELECT\\E )(.*?)(,|\\n|\\Q FROM\\E)")
 

@@ -1,0 +1,45 @@
+importArtistUserEntry:
+INSERT OR REPLACE INTO artistUserEntry(artistId, dataYear, favorite, ignored)
+VALUES(:artistId, :dataYear, :favorite, :ignored);
+
+importArtistUserNotes:
+INSERT OR REPLACE INTO artistNotes(artistId, dataYear, notes)
+VALUES(:artistId, :dataYear, :notes);
+
+importStampRallyUserEntry:
+INSERT OR REPLACE INTO stampRallyUserEntry(stampRallyId, favorite, ignored)
+VALUES(:stampRallyId, :favorite, :ignored);
+
+importStampRallyNotes:
+INSERT OR REPLACE INTO stampRallyNotes(stampRallyId, notes)
+VALUES(:stampRallyId, :notes);
+
+getExportDataArtists2023:
+SELECT artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2023
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear;
+
+getExportDataArtists2024:
+SELECT artistEntry2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2024
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear;
+
+getExportDataArtists2025:
+SELECT artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2025
+LEFT OUTER JOIN artistUserEntry
+ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
+
+getExportDataStampRallies2023:
+SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2023
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId;
+
+getExportDataStampRallies2024:
+SELECT stampRallyEntry2024.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2024
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId;
+
+getExportDataStampRallies2025:
+SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2025
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId;

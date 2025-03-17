@@ -28,7 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.settings.SettingsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
@@ -152,8 +152,11 @@ object ArtistAlleyAppScreen {
                             sharedElementComposable<Destinations.Settings>(
                                 navigationTypeMap = navigationTypeMap,
                             ) {
-                                val viewModel = viewModel { component.settingsViewModel() }
-                                SettingsScreen(sections = viewModel.sections)
+                                val viewModel = viewModel { component.alleySettingsViewModel() }
+                                AlleySettingsScreen(
+                                    state = viewModel.state,
+                                    eventSink = viewModel::onEvent,
+                                )
                             }
 
                             sharedElementComposable<Destinations.StampRallyDetails>(

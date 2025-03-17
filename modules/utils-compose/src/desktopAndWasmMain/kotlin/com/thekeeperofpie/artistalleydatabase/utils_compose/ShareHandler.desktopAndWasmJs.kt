@@ -7,4 +7,5 @@ import kotlinx.io.files.Path
 actual class ShareHandler {
     actual fun shareUrl(title: String?, url: String) = Unit
     actual fun shareImage(path: Path?, uri: Uri?) = Unit
+    actual fun shareText(text: String) = Unit
 }

@@ -7,6 +7,7 @@ import kotlinx.io.files.Path
 expect class ShareHandler {
     fun shareUrl(title: String?, url: String)
     fun shareImage(path: Path?, uri: Uri?)
+    fun shareText(text: String)
 }
 
 val LocalShareHandler = compositionLocalOf<ShareHandler?> { null }

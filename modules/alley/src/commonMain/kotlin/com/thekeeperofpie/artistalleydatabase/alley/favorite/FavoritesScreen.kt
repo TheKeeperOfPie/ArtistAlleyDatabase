@@ -211,8 +211,8 @@ object FavoritesScreen {
                                 onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
                                 shouldShowCount = { query.isNotEmpty() },
                                 itemToSharedElementId = {
-                                    (it as? ArtistEntryGridModel)?.id
-                                        ?: (it as? StampRallyEntryGridModel)?.id
+                                    (it as? ArtistEntryGridModel)?.id?.scopedId
+                                        ?: (it as? StampRallyEntryGridModel)?.id?.scopedId
                                         ?: Unit
                                 },
                                 header = {

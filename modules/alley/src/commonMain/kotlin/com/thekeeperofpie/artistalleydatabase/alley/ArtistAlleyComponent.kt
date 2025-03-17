@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewMode
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
@@ -17,8 +18,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDe
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
@@ -40,7 +41,7 @@ interface ArtistAlleyComponent {
     ) -> FavoritesViewModel
     val favoritesSortFilterViewModel: (SavedStateHandle) -> FavoritesSortFilterViewModel
     val mapViewModel: (SavedStateHandle) -> MapViewModel
-    val settingsViewModel: () -> SettingsViewModel
+    val alleySettingsViewModel: () -> AlleySettingsViewModel
     val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
     val stampRallyMapViewModel: (SavedStateHandle) -> StampRallyMapViewModel
     val stampRallySearchViewModel: (StateFlow<StampRallySortFilterViewModel.FilterParams>) -> StampRallySearchViewModel
@@ -53,6 +54,9 @@ interface ArtistAlleyComponent {
 
     val ArtistAlleyDatabase.bindStampRallyEntryDao: StampRallyEntryDao
         @Provides get() = this.stampRallyEntryDao
+
+    val ArtistAlleyDatabase.bindImportExportDao: ImportExportDao
+        @Provides get() = this.importExportDao
 
     val ArtistAlleyDatabase.bindNotesDao: NotesDao
         @Provides get() = this.notesDao
