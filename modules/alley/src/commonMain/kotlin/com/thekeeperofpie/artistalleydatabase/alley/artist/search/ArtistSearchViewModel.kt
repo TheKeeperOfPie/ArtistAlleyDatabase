@@ -9,7 +9,6 @@ import app.cash.paging.filter
 import app.cash.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
@@ -142,7 +141,7 @@ class ArtistSearchViewModel(
                 mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
             is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
                 navigationController.navigate(
-                    ArtistDetails(
+                    Destinations.ArtistDetails(
                         year = searchEvent.entry.artist.year,
                         id = searchEvent.entry.id.valueId,
                         imageIndex = searchEvent.imageIndex.toString(),

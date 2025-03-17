@@ -181,4 +181,9 @@
     <string name="alley_details_notes">Notes</string>
     <string name="alley_undo">Undo</string>
     <string name="alley_redo">Redo</string>
+
+    <string name="alley_favorites_search">Search favorites…</string>
+    <string name="alley_unfavorite_dialog_text">Remove %1$s from favorites?</string>
+    <string name="alley_unfavorite_dialog_yes">Yes</string>
+    <string name="alley_unfavorite_dialog_no">No</string>
 </resources>

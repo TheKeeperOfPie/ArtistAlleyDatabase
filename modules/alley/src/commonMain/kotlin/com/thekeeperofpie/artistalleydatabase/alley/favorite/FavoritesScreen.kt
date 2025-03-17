@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,6 +19,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
@@ -39,8 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.cash.paging.PagingData
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
+import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_no
+import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text
+import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_yes
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -63,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -81,34 +88,31 @@ object FavoritesScreen {
         artistSortViewModel: ArtistSortFilterViewModel,
         stampRallySortViewModel: StampRallySortFilterViewModel,
         scrollStateSaver: ScrollStateSaver,
-    ) = FavoritesScreen(
-        state = remember(favoritesViewModel) {
-            State(
-                randomSeed = favoritesViewModel.randomSeed,
-                query = favoritesViewModel.query,
-                displayType = favoritesViewModel.displayType,
-                year = favoritesViewModel.year,
-                artistsEntries = favoritesViewModel.artistEntries,
-                artistsSearchState = favoritesViewModel.artistSearchState,
-                artistsSortOption = artistSortViewModel.sortOption,
-                artistsSortAscending = artistSortViewModel.sortAscending,
-                ralliesEntries = favoritesViewModel.stampRallyEntries,
-                ralliesSearchState = favoritesViewModel.stampRallySearchState,
-                ralliesSortOption = stampRallySortViewModel.sortOption,
-                ralliesSortAscending = stampRallySortViewModel.sortAscending,
-            )
-        },
-        artistSortViewModel.state,
-        stampRallySortViewModel.state,
-        scrollStateSaver = scrollStateSaver,
-        eventSink = {
-            when (it) {
-                is Event.OpenMerch -> TODO()
-                is Event.OpenSeries -> TODO()
-                is Event.SearchEvent -> TODO()
-            }
-        },
-    )
+    ) {
+        val navigationController = LocalNavigationController.current
+        FavoritesScreen(
+            state = remember(favoritesViewModel) {
+                State(
+                    randomSeed = favoritesViewModel.randomSeed,
+                    query = favoritesViewModel.query,
+                    displayType = favoritesViewModel.displayType,
+                    year = favoritesViewModel.year,
+                    artistsEntries = favoritesViewModel.artistEntries,
+                    artistsSearchState = favoritesViewModel.artistSearchState,
+                    artistsSortOption = artistSortViewModel.sortOption,
+                    artistsSortAscending = artistSortViewModel.sortAscending,
+                    ralliesEntries = favoritesViewModel.stampRallyEntries,
+                    ralliesSearchState = favoritesViewModel.stampRallySearchState,
+                    ralliesSortOption = stampRallySortViewModel.sortOption,
+                    ralliesSortAscending = stampRallySortViewModel.sortAscending,
+                )
+            },
+            artistSortViewModel.state,
+            stampRallySortViewModel.state,
+            scrollStateSaver = scrollStateSaver,
+            eventSink = { favoritesViewModel.onEvent(navigationController, it) },
+        )
+    }
 
     @Composable
     operator fun invoke(
@@ -182,6 +186,7 @@ object FavoritesScreen {
                         val displayType by state.displayType.collectAsStateWithLifecycle()
                         Scaffold(
                             topBar = {
+                                val title = stringResource(Res.string.alley_favorites_search)
                                 SearchScreen.TopBar(
                                     query = state.query,
                                     displayType = state.displayType,
@@ -189,7 +194,7 @@ object FavoritesScreen {
                                     scrollBehavior = scrollBehavior,
                                     onClickBack = null,
                                     onHeightChanged = { topBarHeight = it },
-                                    title = { "TODO" },
+                                    title = { title },
                                     actions = null,
                                 )
                             },
@@ -198,6 +203,9 @@ object FavoritesScreen {
                                     widthIn(max = 1200.dp)
                                 }
                         ) {
+                            var unfavoriteDialogEntry by remember {
+                                mutableStateOf<SearchScreen.SearchEntryModel?>(null)
+                            }
                             val query by state.query.collectAsStateWithLifecycle()
                             SearchScreen.Content(
                                 state = searchState,
@@ -233,7 +241,13 @@ object FavoritesScreen {
                                     if (entry is ArtistEntryGridModel) {
                                         ArtistListRow(
                                             entry = entry,
-                                            onFavoriteToggle = onFavoriteToggle,
+                                            onFavoriteToggle = {
+                                                if (it) {
+                                                    onFavoriteToggle(it)
+                                                } else {
+                                                    unfavoriteDialogEntry = entry
+                                                }
+                                            },
                                             onSeriesClick = { eventSink(Event.OpenSeries(it)) },
                                             modifier = modifier
                                         )
@@ -279,6 +293,21 @@ object FavoritesScreen {
                                     }
                                 },
                             )
+
+                            UnfavoriteDialog(
+                                entry = { unfavoriteDialogEntry },
+                                onClearEntry = { unfavoriteDialogEntry = null },
+                                onRemoveFavorite = {
+                                    eventSink(
+                                        Event.SearchEvent(
+                                            SearchScreen.Event.FavoriteToggle<SearchScreen.SearchEntryModel>(
+                                                entry = it,
+                                                favorite = false
+                                            )
+                                        )
+                                    )
+                                },
+                            )
                         }
                     }
                 }
@@ -293,6 +322,44 @@ object FavoritesScreen {
                     )
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun UnfavoriteDialog(
+        entry: () -> SearchScreen.SearchEntryModel?,
+        onClearEntry: () -> Unit,
+        onRemoveFavorite: (SearchScreen.SearchEntryModel) -> Unit,
+    ) {
+        val entry = entry()
+        if (entry != null) {
+            val name = when (entry) {
+                is ArtistEntryGridModel -> entry.artist.name
+                is StampRallyEntryGridModel ->
+                    "${entry.stampRally.hostTable}-${entry.stampRally.fandom}"
+                else -> throw IllegalArgumentException()
+            }
+            AlertDialog(
+                onDismissRequest = onClearEntry,
+                text = {
+                    Text(text = stringResource(Res.string.alley_unfavorite_dialog_text, name))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            onRemoveFavorite(entry)
+                            onClearEntry()
+                        },
+                    ) {
+                        Text(stringResource(Res.string.alley_unfavorite_dialog_yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = onClearEntry) {
+                        Text(stringResource(Res.string.alley_unfavorite_dialog_no))
+                    }
+                },
+            )
         }
     }
 
