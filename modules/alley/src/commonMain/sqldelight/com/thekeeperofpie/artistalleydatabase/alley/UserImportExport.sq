@@ -2,7 +2,7 @@ importArtistUserEntry:
 INSERT OR REPLACE INTO artistUserEntry(artistId, dataYear, favorite, ignored)
 VALUES(:artistId, :dataYear, :favorite, :ignored);
 
-importArtistUserNotes:
+importArtistNotes:
 INSERT OR REPLACE INTO artistNotes(artistId, dataYear, notes)
 VALUES(:artistId, :dataYear, :notes);
 
@@ -28,6 +28,7 @@ getExportDataArtists2025:
 SELECT artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2025
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
+VALUES(:stampRallyId, :notes);
 
 getExportDataStampRallies2023:
 SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2023
@@ -43,3 +44,13 @@ getExportDataStampRallies2025:
 SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2025
 LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId;
+
+getExportArtistNotes:
+SELECT artistNotes.* FROM artistNotes
+WHERE artistNotes.dataYear = :dataYear
+LIMIT :limit OFFSET :offset;
+
+getExportStampRallyNotes:
+SELECT stampRallyNotes.* FROM stampRallyNotes
+ORDER BY stampRallyNotes.stampRallyId
+LIMIT :limit OFFSET :offset;

@@ -164,7 +164,7 @@
     <string name="alley_settings">Settings</string>
     <string name="alley_settings_theme">Theme</string>
     <string name="alley_settings_export">Export</string>
-    <string name="alley_settings_export_summary">Transfer the data from this device to another. Partial export does not export notes field, Full export is not supported yet</string>
+    <string name="alley_settings_export_summary">Transfer the data from this device to another. Partial export does not export notes field</string>
     <string name="alley_settings_export_partial">Partial</string>
     <string name="alley_settings_export_full">Full</string>
     <string name="alley_settings_export_copy_instructions">Copy the following into the Import section on another device</string>

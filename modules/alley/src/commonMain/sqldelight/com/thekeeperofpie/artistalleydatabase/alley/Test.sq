@@ -51,3 +51,11 @@ getStampRallyUserData2025:
 SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2025
 LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId;
+
+getArtistNotes:
+SELECT artistNotes.* FROM artistNotes
+ORDER BY artistNotes.artistId, artistNotes.dataYear;
+
+getStampRallyNotes:
+SELECT stampRallyNotes.* FROM stampRallyNotes
+ORDER BY stampRallyNotes.stampRallyId;

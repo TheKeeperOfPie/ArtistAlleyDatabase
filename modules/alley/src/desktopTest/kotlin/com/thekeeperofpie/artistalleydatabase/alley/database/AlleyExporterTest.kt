@@ -21,7 +21,12 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.io.Buffer
 import kotlinx.io.Sink
 import kotlinx.io.Source
+import kotlinx.io.asSink
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.io.readString
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.random.Random
 import kotlin.test.Test
@@ -36,10 +41,13 @@ private const val TEST_COUNT_RALLIES = 150
 @OptIn(ExperimentalUuidApi::class, ExperimentalEncodingApi::class)
 class AlleyExporterTest {
 
+    @get:Rule
+    val temporaryFolder = TemporaryFolder()
+
     @Test
-    fun export() = runTest {
+    fun exportPartial() = runTest {
         val buffer = Buffer()
-        export(buffer)
+        exportPartial(buffer)
 
         val output = buffer.copy().readString()
         println("Export length ${output.length}: $output")
@@ -50,6 +58,29 @@ class AlleyExporterTest {
         assertTrue(importResult.success, importResult.error?.message?.leftOrNull())
 
         val database = importResult.result!!
+        assertDataPartial(database)
+    }
+
+    @Test
+    fun exportFull() = runTest {
+        val tempFile = temporaryFolder.newFile()
+        tempFile.outputStream().use {
+            it.asSink().buffered().use { exportFull(it) }
+        }
+
+        println("Export size ${tempFile.length()} at ${tempFile.absolutePath}:")
+
+        val importResult = tempFile.inputStream().use {
+            it.asSource().buffered().use { import(it) }
+        }
+        assertTrue(importResult.success, importResult.error?.message?.leftOrNull())
+
+        val database = importResult.result!!
+        assertDataPartial(database)
+        assertNotes(database)
+    }
+
+    private suspend fun assertDataPartial(database: AlleySqlDatabase) {
         assertData(
             database = database,
             values = artists2023().take(TEST_COUNT_ARTISTS).toList(),
@@ -133,7 +164,63 @@ class AlleyExporterTest {
         assertEquals(expectedIgnored, actualIgnored)
     }
 
-    private suspend fun export(sink: Sink) {
+    private suspend fun assertNotes(database: AlleySqlDatabase) {
+        assertArtistNotes(database)
+        assertStampRallyNotes(database)
+    }
+
+    private suspend fun assertArtistNotes(database: AlleySqlDatabase) {
+        val artists2023 = artists2023()
+            .take(TEST_COUNT_ARTISTS)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { Triple(it.id, DataYear.YEAR_2023, "notes${it.id.hashCode()}") }
+        val artists2024 = artists2024()
+            .take(TEST_COUNT_ARTISTS)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { Triple(it.id, DataYear.YEAR_2024, "notes${it.id.hashCode()}") }
+        val artists2025 = artists2025()
+            .take(TEST_COUNT_ARTISTS)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { Triple(it.id, DataYear.YEAR_2025, "notes${it.id.hashCode()}") }
+
+        val expected = (artists2023 + artists2024 + artists2025)
+            .sortedWith(compareBy({ it.first }, { it.second }))
+            .toList()
+
+        val actual = database.testQueries
+            .getArtistNotes()
+            .awaitAsList()
+            .map { Triple(it.artistId, it.dataYear, it.notes) }
+
+        assertEquals(expected, actual)
+    }
+
+    private suspend fun assertStampRallyNotes(database: AlleySqlDatabase) {
+        val rallies2023 = rallies2023()
+            .take(TEST_COUNT_RALLIES)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { it.id to "notes${it.id.hashCode()}" }
+        val rallies2024 = rallies2024()
+            .take(TEST_COUNT_RALLIES)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { it.id to "notes${it.id.hashCode()}" }
+        val rallies2025 = rallies2025()
+            .take(TEST_COUNT_RALLIES)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { it.id to "notes${it.id.hashCode()}" }
+        val expected = (rallies2023 + rallies2024 + rallies2025)
+            .sortedBy { it.first }
+            .toList()
+
+        val actual = database.testQueries
+            .getStampRallyNotes()
+            .awaitAsList()
+            .map { it.stampRallyId to it.notes }
+
+        assertEquals(expected, actual)
+    }
+
+    private suspend fun exportPartial(sink: Sink) {
         val driver = makeDriver()
         val database = makeDatabase(driver)
         addData(database, insertUserData = true)
@@ -141,6 +228,16 @@ class AlleyExporterTest {
         val importExportDao = ImportExportDao { database }
         val exporter = AlleyExporter(importExportDao)
         exporter.exportPartial(sink)
+    }
+
+    private suspend fun exportFull(sink: Sink) {
+        val driver = makeDriver()
+        val database = makeDatabase(driver)
+        addData(database, insertUserData = true)
+
+        val importExportDao = ImportExportDao { database }
+        val exporter = AlleyExporter(importExportDao)
+        exporter.exportFull(sink)
     }
 
     private suspend fun import(source: Source): LoadingResult<AlleySqlDatabase> {
@@ -273,7 +370,17 @@ class AlleyExporterTest {
                     favorite = index % 3 == 0,
                     ignored = index % 3 == 1,
                 )
-            }.forEach { database.userEntryQueries.insertArtistUserEntry(it) }
+            }
+                .filter { it.favorite || it.ignored }
+                .forEach { database.userEntryQueries.insertArtistUserEntry(it) }
+            values.filterIndexed { index, _ -> index % 3 == 2 }
+                .forEach {
+                    database.notesQueries.updateArtistNotes(
+                        artistId = id(it),
+                        dataYear = dataYear,
+                        notes = "notes${id(it).hashCode()}",
+                    )
+                }
         }
     }
 
@@ -293,7 +400,13 @@ class AlleyExporterTest {
                     favorite = index % 3 == 0,
                     ignored = index % 3 == 1,
                 )
-            }.forEach { database.userEntryQueries.insertStampRallyUserEntry(it) }
+            }
+                .filter { it.favorite || it.ignored }
+                .forEach { database.userEntryQueries.insertStampRallyUserEntry(it) }
+            values.filterIndexed { index, _ -> index % 3 == 2 }
+                .forEach {
+                    database.notesQueries.updateStampRallyNotes(id(it), "notes${id(it).hashCode()}")
+                }
         }
     }
 

@@ -80,6 +80,7 @@ object AlleySettingsScreen {
 
     sealed interface Event {
         data object ExportPartial : Event
+        data object ExportFull : Event
         data class Import(val data: String) : Event
     }
 }
@@ -101,6 +102,9 @@ internal fun AlleySettingsScreen(
                         exportPartialText = { state.exportPartialText },
                         onClickExportPartial = {
                             eventSink(AlleySettingsScreen.Event.ExportPartial)
+                        },
+                        onClickExportFull = {
+                            eventSink(AlleySettingsScreen.Event.ExportFull)
                         },
                     )
                     "import" -> ImportSection(
@@ -174,6 +178,7 @@ private fun Header() {
 private fun ExportSection(
     exportPartialText: () -> String?,
     onClickExportPartial: () -> Unit,
+    onClickExportFull: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -198,7 +203,7 @@ private fun ExportSection(
                 Text(text = stringResource(Res.string.alley_settings_export_partial))
             }
 
-            Button(enabled = false, onClick = { /*TODO*/ }) {
+            Button(onClickExportFull) {
                 Text(text = stringResource(Res.string.alley_settings_export_full))
             }
         }
@@ -331,7 +336,8 @@ private fun ExportPreview() = PreviewDark {
     var exportPartialText by remember { mutableStateOf<String?>(null) }
     ExportSection(
         exportPartialText = { exportPartialText },
-        onClickExportPartial = { exportPartialText = "Preview export" },
+        onClickExportPartial = { exportPartialText = "Preview partial export" },
+        onClickExportFull = { exportPartialText = "Preview full export" },
     )
 }
 

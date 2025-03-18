@@ -50,6 +50,13 @@ class AlleySettingsViewModel(
                 state.exportPartialText = it.readString()
             }
         }
+        AlleySettingsScreen.Event.ExportFull -> viewModelScope.launch(dispatchers.io) {
+            Buffer().use {
+                // TODO: Export to a user chosen file instead
+                exporter.exportFull(it)
+                state.exportPartialText = it.readString()
+            }
+        }
         is AlleySettingsScreen.Event.Import -> {
             val previousJob = importJob
             previousJob?.cancel()
