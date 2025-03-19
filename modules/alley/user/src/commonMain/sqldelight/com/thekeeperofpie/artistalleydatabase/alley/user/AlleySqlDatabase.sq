@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS artistUserEntry (
     PRIMARY KEY (artistId, dataYear)
 );
 
-CREATE TABLE IF NOT EXISTS `stampRallyUserEntry` (
-    `stampRallyId` TEXT NOT NULL,
-    `favorite`  INTEGER AS Boolean NOT NULL DEFAULT 0,
-    `ignored`  INTEGER AS Boolean NOT NULL DEFAULT 0,
-    PRIMARY KEY (`stampRallyId`)
+CREATE TABLE IF NOT EXISTS stampRallyUserEntry (
+    stampRallyId TEXT NOT NULL,
+    favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    ignored INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (stampRallyId)
 );
 
 CREATE TABLE IF NOT EXISTS artistNotes (
