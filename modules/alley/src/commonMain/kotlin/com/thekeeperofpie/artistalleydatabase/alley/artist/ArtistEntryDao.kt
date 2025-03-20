@@ -291,9 +291,12 @@ class ArtistEntryDao(
                 if (entry2024 != null) {
                     entry2025.copy(
                         artist = entry2025.artist.copy(
-                            seriesInferred = entry2025.artist.seriesInferred +
+                            seriesInferred = (entry2025.artist.seriesInferred +
                                     entry2024.artist.seriesInferred +
-                                    entry2024.artist.seriesConfirmed
+                                    entry2024.artist.seriesConfirmed).distinct(),
+                            merchInferred = (entry2025.artist.merchInferred +
+                                    entry2024.artist.merchInferred +
+                                    entry2024.artist.merchConfirmed).distinct(),
                         ),
                     )
                 } else {
