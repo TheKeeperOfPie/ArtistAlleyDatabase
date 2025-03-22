@@ -1,6 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
-import artistalleydatabase.modules.alley.data.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_import_chunk_size_mismatch
+import artistalleydatabase.modules.alley.generated.resources.alley_import_database_hash_mismatch
+import artistalleydatabase.modules.alley.generated.resources.alley_import_failed
+import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_parse_chunk
+import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_database_hash
+import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_schema_version
+import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_user_data
+import artistalleydatabase.modules.alley.generated.resources.alley_import_schema_version_mismatch
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.CHARACTERS
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.SEPARATOR
@@ -25,6 +33,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.encodeToSink
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
 
 /**
  * Export data format:
@@ -74,7 +83,7 @@ class AlleyExporter(
     }
 
     suspend fun exportPartial(sink: Sink) {
-        val databaseHash = Res.readBytes("files/databaseHash.txt")
+        val databaseHash = AlleyDataRes.readBytes("files/databaseHash.txt")
             .decodeToString()
         sink.writeString(databaseHash)
         sink.writeString(SEPARATOR)
@@ -176,63 +185,68 @@ class AlleyExporter(
 
     // TODO: Remove usages of indexOf(ByteString) as it doesn't have a maximum read length
     suspend fun import(source: Source): LoadingResult<*> {
-        return if (source.peek().readCodePointValue() == '{'.code.toInt()) {
-            val partialKeyTarget = "partial\":".encodeToByteString()
-            val partialKeyIndex = source.indexOf(partialKeyTarget)
-            if (partialKeyIndex < 0) {
-                return LoadingResult.error<Unit>("Failed to read user data")
-            }
-            source.skip(partialKeyIndex + partialKeyTarget.size)
-            val partialStartIndex = source.indexOf('"'.code.toByte())
-            if (partialStartIndex < 0) {
-                return LoadingResult.error<Unit>("Failed to read user data")
-            }
-            source.skip(1)
-            val partialEndIndex = source.indexOf('"'.code.toByte())
-            if (partialEndIndex < 0) {
-                return LoadingResult.error<Unit>("Failed to read user data")
-            }
-            Buffer().use {
-                source.readAtMostTo(it, partialEndIndex)
-                importPartial(it)
-            }
+        return try {
+            if (source.peek().readCodePointValue() == '{'.code.toInt()) {
+                val partialKeyTarget = "partial\":".encodeToByteString()
+                val partialKeyIndex = source.indexOf(partialKeyTarget)
+                if (partialKeyIndex < 0) {
+                    return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_user_data)
+                }
+                source.skip(partialKeyIndex + partialKeyTarget.size)
+                val partialStartIndex = source.indexOf('"'.code.toByte())
+                if (partialStartIndex < 0) {
+                    return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_user_data)
+                }
+                source.skip(1)
+                val partialEndIndex = source.indexOf('"'.code.toByte())
+                if (partialEndIndex < 0) {
+                    return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_user_data)
+                }
+                val partialResult = Buffer().use {
+                    source.readAtMostTo(it, partialEndIndex)
+                    importPartial(it)
+                }
+                if (!partialResult.success) return partialResult
 
-            DataYear.entries
-                .sortedBy { it.year }
-                .forEach { year ->
-                    val result = importTarget(source, year.serializedName) {
-                        json.decodeSequenceIgnoreEndOfFile<ArtistNotesWrapper>(it)
-                            .chunked(10)
-                            .forEach {
-                                it.forEach {
-                                    if (it.notes != null) {
-                                        importExportDao.importArtistNotes(
-                                            artistId = it.artistId,
-                                            dataYear = year,
-                                            notes = it.notes,
-                                        )
+                DataYear.entries
+                    .sortedBy { it.year }
+                    .forEach { year ->
+                        val result = importTarget(source, year.serializedName) {
+                            json.decodeSequenceIgnoreEndOfFile<ArtistNotesWrapper>(it)
+                                .chunked(10)
+                                .forEach {
+                                    it.forEach {
+                                        if (it.notes != null) {
+                                            importExportDao.importArtistNotes(
+                                                artistId = it.artistId,
+                                                dataYear = year,
+                                                notes = it.notes,
+                                            )
+                                        }
                                     }
                                 }
-                            }
+                        }
+                        if (!result.success) return result
                     }
-                    if (!result.success) return result
-                }
 
-            val result = importTarget(source, "stampRallies") {
-                json.decodeSequenceIgnoreEndOfFile<StampRallyNotesWrapper>(it)
-                    .chunked(10)
-                    .forEach {
-                        it.forEach {
-                            if (it.notes != null) {
-                                importExportDao.importStampRallyNotes(it.stampRallyId, it.notes)
+                val result = importTarget(source, "stampRallies") {
+                    json.decodeSequenceIgnoreEndOfFile<StampRallyNotesWrapper>(it)
+                        .chunked(10)
+                        .forEach {
+                            it.forEach {
+                                if (it.notes != null) {
+                                    importExportDao.importStampRallyNotes(it.stampRallyId, it.notes)
+                                }
                             }
                         }
-                    }
+                }
+                // TODO: Exhaust the rest of the JSON
+                return result
+            } else {
+                importPartial(source)
             }
-            // TODO: Exhaust the rest of the JSON
-            return result
-        } else {
-            importPartial(source)
+        } catch (t: Throwable) {
+            LoadingResult.error<Unit>(Res.string.alley_import_failed, throwable = t)
         }
     }
 
@@ -264,13 +278,21 @@ class AlleyExporter(
         val target = "\"$targetName\":"
         val targetIndex = truncatedSource.indexOf(target.encodeToByteString())
         if (targetIndex < 0) {
-            return LoadingResult.error<Unit>("Failed to read $targetName, ${truncatedSource.peek().readLine()}")
+            return LoadingResult.error<Unit>(
+                "Failed to read $targetName, ${
+                    truncatedSource.peek().readLine()
+                }"
+            )
         }
         truncatedSource.skip(targetIndex)
 
         val arrayIndex = truncatedSource.indexOf("[".encodeToByteString())
         if (arrayIndex < 0) {
-            return LoadingResult.error<Unit>("Failed to read array for $targetName, ${truncatedSource.peek().readLine()}")
+            return LoadingResult.error<Unit>(
+                "Failed to read array for $targetName, ${
+                    truncatedSource.peek().readLine()
+                }"
+            )
         }
         truncatedSource.skip(arrayIndex)
 
@@ -280,24 +302,30 @@ class AlleyExporter(
 
     private suspend fun importPartial(source: Source): LoadingResult<*> {
         val databaseHashSize = source.indexOf('='.code.toByte())
-        if (databaseHashSize < 1) return LoadingResult.error<Unit>("Failed to read database hash")
-        val expectedDatabaseHash = Res.readBytes("files/databaseHash.txt").decodeToString()
+        if (databaseHashSize < 1) {
+            return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_database_hash)
+        }
+        val expectedDatabaseHash = AlleyDataRes.readBytes("files/databaseHash.txt").decodeToString()
         val actualDatabaseHash = source.readString(databaseHashSize)
         if (expectedDatabaseHash != actualDatabaseHash) {
             return LoadingResult.error<Unit>(
-                "Database hash did not match, " +
-                        "expected $expectedDatabaseHash but got $actualDatabaseHash"
+                Res.string.alley_import_database_hash_mismatch,
+                expectedDatabaseHash,
+                actualDatabaseHash,
             )
         }
         source.skip(1)
 
         val schemaVersionSize = source.indexOf('='.code.toByte())
-        if (schemaVersionSize < 1) return LoadingResult.error<Unit>("Failed to read schema version")
+        if (schemaVersionSize < 1) {
+            return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_schema_version)
+        }
         val actualSchemaVersion = source.readString(schemaVersionSize)
         if (SCHEMA_VERSION != actualSchemaVersion) {
             return LoadingResult.error<Unit>(
-                "Schema version did not match, " +
-                        "expected $SCHEMA_VERSION but got $actualSchemaVersion"
+                Res.string.alley_import_schema_version_mismatch,
+                SCHEMA_VERSION,
+                actualSchemaVersion,
             )
         }
         source.skip(1)
@@ -416,7 +444,7 @@ class AlleyExporter(
                 source.skip(1)
                 return@map ""
             } else if (index < 0) {
-                return LoadingResult.error("Failed to parse chunk")
+                return LoadingResult.error(Res.string.alley_import_failed_to_parse_chunk)
             }
 
             val result = source.readString(index)
@@ -426,8 +454,9 @@ class AlleyExporter(
 
         if (expectedChunks != actualChunks.size) {
             return LoadingResult.error(
-                "Chunk size did not match, expected $expectedChunks " +
-                        "but got ${actualChunks.size}"
+                Res.string.alley_import_chunk_size_mismatch,
+                expectedChunks,
+                actualChunks.size
             )
         }
 
@@ -471,12 +500,6 @@ class AlleyExporter(
             artistId = entry.artistId,
             notes = entry.notes,
         )
-
-        fun toDatabaseEntry(dataYear: DataYear) = ArtistNotes(
-            artistId = artistId,
-            dataYear = dataYear,
-            notes = notes,
-        )
     }
 
     /** Wraps for Serialization support. */
@@ -488,11 +511,6 @@ class AlleyExporter(
         constructor(entry: StampRallyNotes) : this(
             stampRallyId = entry.stampRallyId,
             notes = entry.notes,
-        )
-
-        fun toDatabaseEntry() = StampRallyNotes(
-            stampRallyId = stampRallyId,
-            notes = notes,
         )
     }
 }

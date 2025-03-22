@@ -44,7 +44,6 @@ inputs.forEach { (parentName, input) ->
                 if (artistId.isNotBlank() && existingArtist != null) {
                     artists[artistId] =
                         existingArtist.copy(links = existingArtist.links + artist.links)
-                    println("Returning artist ${artist.names}")
                 } else {
                     inferArtist(artist, artistId)
                 }

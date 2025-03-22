@@ -29,8 +29,9 @@ data class LoadingResult<T>(
         fun <T> empty() = LoadingResult<T>()
         fun <T> error(error: String, throwable: Throwable? = null) =
             LoadingResult<T>(error = Error(error, throwable))
-        fun <T> error(error: StringResource, throwable: Throwable? = null) =
-            LoadingResult<T>(error = Error(error, throwable))
+
+        fun <T> error(error: StringResource, vararg args: Any, throwable: Throwable? = null) =
+            LoadingResult<T>(error = Error(error, throwable, args))
 
         fun <T> success(value: T) = LoadingResult(loading = false, success = true, result = value)
 
@@ -63,17 +64,42 @@ data class LoadingResult<T>(
     data class Error(
         val message: Either<String, StringResource>,
         val throwable: Throwable?,
+        var args: Array<out Any>,
     ) {
         constructor(message: String, throwable: Throwable? = null) :
-                this(Either.Left(message), throwable)
+                this(Either.Left(message), throwable, emptyArray())
 
-        constructor(message: StringResource, throwable: Throwable? = null) :
-                this(Either.Right(message), throwable)
+        constructor(message: StringResource, throwable: Throwable? = null, args: Array<out Any>) :
+                this(Either.Right(message), throwable, args)
 
         @Composable
         fun message() = when (message) {
             is Either.Left -> message.value
-            is Either.Right -> stringResource(message.value)
+            is Either.Right -> if (args.isEmpty()) {
+                stringResource(message.value)
+            } else {
+                stringResource(message.value, *args)
+            }
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Error
+
+            if (message != other.message) return false
+            if (throwable != other.throwable) return false
+            if (!args.contentEquals(other.args)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = message.hashCode()
+            result = 31 * result + (throwable?.hashCode() ?: 0)
+            result = 31 * result + args.contentHashCode()
+            return result
         }
     }
 }
@@ -102,7 +128,9 @@ fun <T> flowForRefreshableContent(
                     result = it
                 )
             }
-            .catch { emit(LoadingResult(error = LoadingResult.Error(errorTextRes, it))) }
+            .catch {
+                emit(LoadingResult(error = LoadingResult.Error(errorTextRes, it, emptyArray())))
+            }
             .startWith(
                 LoadingResult(
                     loading = true,
