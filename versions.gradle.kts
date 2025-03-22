@@ -5,20 +5,20 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.10.0-alpha08"
+        const val gradle = "8.11.0-alpha02"
     }
 
     object androidx {
-        const val activity = "1.10.1"
+        const val activity = "1.11.0-alpha01"
         const val annotation = "1.9.1"
         const val browser = "1.9.0-alpha01"
-        const val core = "1.16.0-alpha02"
-        const val media3 = "1.6.0-beta01"
+        const val core = "1.16.0-beta01"
+        const val media3 = "1.6.0-rc02"
         const val paging = "3.3.6"
         const val palette = "1.0.0"
-        const val room = "2.7.0-rc01"
+        const val room = "2.7.0-rc02"
         const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-rc01"
+        const val sqlite = "2.5.0-rc02"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -29,7 +29,7 @@ object Versions {
 
     object apache {
         const val commonsCompress = "1.27.1"
-        const val commonsCsv = "1.13.0"
+        const val commonsCsv = "1.14.0"
         const val commonsIo = "2.18.0"
     }
 
@@ -38,7 +38,7 @@ object Versions {
     const val benManesVersions = "0.52.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.17.0"
-    const val burst = "2.4.0"
+    const val burst = "2.5.0"
 
     // https://github.com/coil-kt/coil/issues/2771#issuecomment-2607839662
     const val coil = "3.2.1-SNAPSHOTLOCAL"
@@ -68,13 +68,13 @@ object Versions {
 
     object jetBrains {
         object androidX {
-            const val lifecycle = "2.9.0-alpha03"
-            const val navigation = "2.8.0-alpha13"
+            const val lifecycle = "2.9.0-alpha05"
+            const val navigation = "2.9.0-alpha15"
         }
 
         object composeMultiplatform {
-            const val plugin = "1.8.0-alpha03"
-            const val runtime = "1.8.0-alpha03"
+            const val plugin = "1.8.0-beta01"
+            const val runtime = "1.8.0-beta01"
         }
     }
 
@@ -85,11 +85,11 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.1.20-RC2"
+        const val core = "2.1.20"
         const val coroutines = "1.10.1"
         const val datetime = "0.6.2"
         const val io = "0.7.0"
-        const val ksp = "2.1.20-RC2-1.0.31"
+        const val ksp = "2.1.20-1.0.31"
         const val serialization = "1.8.0"
     }
 
@@ -102,7 +102,7 @@ object Versions {
     const val markwon = "4.6.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.32.0-b02"
+    const val multiplatformMarkdown = "0.32.0"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"

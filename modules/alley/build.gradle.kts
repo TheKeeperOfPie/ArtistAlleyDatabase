@@ -34,8 +34,8 @@ kotlin {
 
             // TODO: This import doesn't work since 1.8.0-alpha01 isn't published for this artifact
 //            implementation(compose.material3AdaptiveNavigationSuite)
-            implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.8.0-alpha02")
-            implementation("org.jetbrains.compose.material3:material3-window-size-class:1.8.0-alpha02")
+            implementation("org.jetbrains.compose.material3:material3-adaptive-navigation-suite:1.8.0-beta01")
+            implementation("org.jetbrains.compose.material3:material3-window-size-class:1.8.0-beta01")
             implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlinx.serialization.json.io)

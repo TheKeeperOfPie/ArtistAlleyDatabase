@@ -124,8 +124,8 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
-                devServer = null
-                mode = KotlinWebpackConfig.Mode.PRODUCTION
+                devServer = devServer ?: KotlinWebpackConfig.DevServer()
+//                mode = KotlinWebpackConfig.Mode.PRODUCTION
             }
         }
         binaries.executable()
@@ -159,7 +159,7 @@ kotlin {
             }
         }
         freeCompilerArgs.add("-Xcontext-receivers")
-//        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
+        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
     sourceSets {
@@ -228,12 +228,13 @@ tasks.named { "wasmJsProcessResources" in it }.configureEach {
 }
 
 configurations.all {
-    resolutionStrategy{
+    resolutionStrategy {
         capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
             select("com.google.guava:guava:0")
         }
         // com.eygraber:uri-kmp:0.0.19 bumps this to 0.3, which breaks CMP
         force("org.jetbrains.kotlinx:kotlinx-browser:0.1")
+        force("org.jetbrains.compose.material3:material3:1.8.0-alpha03")
     }
 }
 

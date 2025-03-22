@@ -7,7 +7,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath("app.cash.burst:burst-gradle-plugin:2.4.0")
+        classpath("app.cash.burst:burst-gradle-plugin:2.5.0")
     }
 }
 

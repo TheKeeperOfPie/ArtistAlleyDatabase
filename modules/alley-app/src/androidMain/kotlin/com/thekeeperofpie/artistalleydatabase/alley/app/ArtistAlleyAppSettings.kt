@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -47,9 +49,25 @@ class ArtistAlleyAppSettings(
         },
         setValue = { key, value -> putString(key, value.name) },
     )
-    override val artistsSortOption = string("artistsSortOption")
+    override val artistsSortOption = initialize(
+        key = "artistsSortOption",
+        initialValue = {
+            getString(it, null)
+                ?.let { value -> ArtistSearchSortOption.entries.find { it.name == value } }
+                ?: ArtistSearchSortOption.RANDOM
+        },
+        setValue = { key, value -> putString(key, value.name) },
+    )
     override val artistsSortAscending = boolean("artistsSortAscending", true)
-    override val stampRalliesSortOption = string("stampRalliesSortOption")
+    override val stampRalliesSortOption = initialize(
+        key = "stampRalliesSortOption",
+        initialValue = {
+            getString(it, null)
+                ?.let { value -> StampRallySearchSortOption.entries.find { it.name == value } }
+                ?: StampRallySearchSortOption.RANDOM
+        },
+        setValue = { key, value -> putString(key, value.name) },
+    )
     override val stampRalliesSortAscending = boolean("stampRalliesSortAscending", true)
     override val showGridByDefault = boolean("showGridByDefault", false)
     override val showRandomCatalogImage = boolean("showRandomCatalogImage", false)

@@ -17,10 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapMutableState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import me.tatarka.inject.annotations.Assisted
@@ -41,14 +39,6 @@ class StampRallySortFilterViewModel(
     val artistsSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_artist)
 
     val sortOption = settings.stampRalliesSortOption
-        .mapMutableState(
-            viewModelScope,
-            deserialize = {
-                StampRallySearchSortOption.entries.find { option -> option.name == it }
-                    ?: StampRallySearchSortOption.RANDOM
-            },
-            serialize = { it.name },
-        )
     val sortAscending = settings.stampRalliesSortAscending
     private val sortSection = SortFilterSectionState.Sort(
         headerText = Res.string.alley_sort_label,

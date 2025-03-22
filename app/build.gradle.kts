@@ -332,7 +332,10 @@ tasks.named { it.contains("explodeCodeSource") }.configureEach {
 }
 
 configurations.all {
-    resolutionStrategy.capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
-        select("com.google.guava:guava:0")
+    resolutionStrategy {
+        capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
+            select("com.google.guava:guava:0")
+        }
+        force("org.jetbrains.compose.material3:material3:1.8.0-alpha03")
     }
 }

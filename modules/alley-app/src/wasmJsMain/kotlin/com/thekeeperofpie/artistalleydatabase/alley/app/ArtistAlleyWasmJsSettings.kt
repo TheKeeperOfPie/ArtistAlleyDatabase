@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -51,9 +53,21 @@ class ArtistAlleyWasmJsSettings(
                 ?: SearchScreen.DisplayType.CARD
         },
     )
-    override val artistsSortOption by registerString("")
+    override val artistsSortOption by register(
+        serialize = { it.name },
+        deserialize = { value ->
+            ArtistSearchSortOption.entries.find { it.name == value }
+                ?: ArtistSearchSortOption.RANDOM
+        },
+    )
     override val artistsSortAscending by registerBoolean(true)
-    override val stampRalliesSortOption by registerString("")
+    override val stampRalliesSortOption by register(
+        serialize = { it.name },
+        deserialize = { value ->
+            StampRallySearchSortOption.entries.find { it.name == value }
+                ?: StampRallySearchSortOption.RANDOM
+        },
+    )
     override val stampRalliesSortAscending by registerBoolean(true)
     override val showGridByDefault by registerBoolean(false)
     override val showRandomCatalogImage by registerBoolean(false)

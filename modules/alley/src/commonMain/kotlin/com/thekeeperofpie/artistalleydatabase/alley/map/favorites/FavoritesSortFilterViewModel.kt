@@ -10,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
@@ -21,7 +20,7 @@ class FavoritesSortFilterViewModel(
 ) : ViewModel() {
 
     val showOnlyFavorites =
-        savedStateHandle.getMutableStateFlow("showOnlyFavorites") { false }
+        savedStateHandle.getMutableStateFlow("showOnlyFavorites", false)
     val onlyFavoritesSection = SortFilterSectionState.Switch(
         Res.string.alley_filter_favorites,
         defaultEnabled = false,

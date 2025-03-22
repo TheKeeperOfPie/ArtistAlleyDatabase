@@ -117,9 +117,9 @@ apply(rootProject.projectDir.resolve("versions.gradle.kts"))
 
 plugins {
     id("com.autonomousapps.build-health").version("2.5.0")
-    id("com.android.application").version("8.10.0-alpha08").apply(false)
-    id("org.jetbrains.kotlin.android").version("2.1.20-RC2").apply(false)
-    id("org.jetbrains.kotlin.jvm").version("2.1.20-RC2").apply(false)
+    id("com.android.application").version("8.11.0-alpha02").apply(false)
+    id("org.jetbrains.kotlin.android").version("2.1.20").apply(false)
+    id("org.jetbrains.kotlin.jvm").version("2.1.20").apply(false)
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

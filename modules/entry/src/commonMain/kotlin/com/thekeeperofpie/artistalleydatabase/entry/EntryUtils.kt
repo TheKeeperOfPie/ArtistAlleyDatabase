@@ -7,6 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.savedstate.read
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
@@ -161,9 +162,10 @@ object EntryUtils {
             },
         )
     ) {
-        val entryIds = it.arguments?.getStringArray("entry_ids")
-            ?.filterNotNull().orEmpty()
-        val imageCornerDp = it.arguments?.getString("image_corner_dp")?.toIntOrNull()
+        val entryIds = it.arguments?.read { getStringArrayOrNull("entry_ids") }.orEmpty()
+            .toList()
+        val imageCornerDp = it.arguments?.read { getStringOrNull("image_corner_dp") }
+            ?.toIntOrNull()
         block(entryIds, imageCornerDp?.dp)
     }
 
