@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,7 +51,9 @@ class StampRallyDetailsViewModel(
     var entry by mutableStateOf<Entry?>(null)
     var images by mutableStateOf<List<CatalogImage>>(emptyList())
 
-    var notes by savedStateHandle.saveable { mutableStateOf("") }
+    val notes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
+        mutableStateOf(TextFieldState())
+    }
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -84,8 +88,9 @@ class StampRallyDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            notesDao.getStampRallyNotes(id)?.notes?.let { notes = it }
-            snapshotFlow { notes }
+            notesDao.getStampRallyNotes(id)?.notes
+                ?.let(notes::setTextAndPlaceCursorAtEnd)
+            snapshotFlow { notes.text }
                 .drop(1)
                 .debounce(500.milliseconds)
                 .collectLatest {

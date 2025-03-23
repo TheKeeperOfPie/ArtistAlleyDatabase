@@ -52,3 +52,9 @@ composeCompiler {
     )
     includeSourceInformation = true
 }
+
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.compose.material3:material3:1.8.0-alpha03")
+    }
+}

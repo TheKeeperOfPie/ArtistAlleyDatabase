@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,8 +62,7 @@ object StampRallyDetailsScreen {
     @Composable
     operator fun invoke(
         entry: StampRallyDetailsViewModel.Entry?,
-        notes: () -> String,
-        onNotesChange: (String) -> Unit,
+        notesTextState: TextFieldState,
         initialImageIndex: Int,
         images: () -> List<CatalogImage>,
         eventSink: (Event) -> Unit,
@@ -87,15 +88,14 @@ object StampRallyDetailsScreen {
             initialImageIndex = initialImageIndex,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {
-            DetailsContent(entry, notes, onNotesChange, eventSink)
+            DetailsContent(entry, notesTextState, eventSink)
         }
     }
 
     @Composable
     private fun ColumnScope.DetailsContent(
         entry: StampRallyDetailsViewModel.Entry,
-        notes: () -> String,
-        onNotesChange: (String) -> Unit,
+        notesTextState: TextFieldState,
         eventSink: (Event) -> Unit,
     ) {
         val stampRally = entry.stampRally
@@ -203,8 +203,7 @@ object StampRallyDetailsScreen {
         }
 
         NotesText(
-            text = notes,
-            onTextChange = onNotesChange,
+            state = notesTextState,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
@@ -275,8 +274,7 @@ private fun PhoneLayout() {
                 artists = artists,
                 otherTables = listOf("ANX-101"),
             ),
-            notes = { notes },
-            onNotesChange = { notes = it },
+            notesTextState = rememberTextFieldState(),
             initialImageIndex = 1,
             images = { images },
             eventSink = {},

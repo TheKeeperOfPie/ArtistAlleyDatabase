@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
@@ -80,8 +82,7 @@ object ArtistDetailsScreen {
     @Composable
     operator fun invoke(
         entry: ArtistDetailsViewModel.Entry?,
-        notes: () -> String,
-        onNotesChange: (String) -> Unit,
+        notesTextState: TextFieldState,
         initialImageIndex: Int,
         images: () -> List<CatalogImage>,
         otherYears: () -> List<DataYear>,
@@ -211,8 +212,7 @@ object ArtistDetailsScreen {
             )
 
             NotesText(
-                text = notes,
-                onTextChange = onNotesChange,
+                state = notesTextState,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
@@ -410,8 +410,7 @@ private fun PhoneLayout() {
                 seriesConfirmed = artist.artist.seriesConfirmed,
                 stampRallies = emptyList(),
             ),
-            notes = { notes },
-            onNotesChange = { notes = it },
+            notesTextState = rememberTextFieldState(),
             initialImageIndex = 1,
             eventSink = {},
             images = { images },

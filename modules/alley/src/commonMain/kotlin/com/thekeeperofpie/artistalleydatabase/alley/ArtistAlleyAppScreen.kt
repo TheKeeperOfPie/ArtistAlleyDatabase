@@ -87,8 +87,7 @@ object ArtistAlleyAppScreen {
                                 }
                                 ArtistDetailsScreen(
                                     entry = viewModel.entry,
-                                    notes = { viewModel.notes },
-                                    onNotesChange = { viewModel.notes = it },
+                                    notesTextState = viewModel.notes,
                                     initialImageIndex = viewModel.initialImageIndex,
                                     images = viewModel::images,
                                     otherYears = viewModel::otherYears,
@@ -170,8 +169,7 @@ object ArtistAlleyAppScreen {
                                 }
                                 StampRallyDetailsScreen(
                                     entry = viewModel.entry,
-                                    notes = { viewModel.notes },
-                                    onNotesChange = { viewModel.notes = it },
+                                    notesTextState = viewModel.notes,
                                     initialImageIndex = viewModel.initialImageIndex,
                                     images = viewModel::images,
                                     eventSink = {

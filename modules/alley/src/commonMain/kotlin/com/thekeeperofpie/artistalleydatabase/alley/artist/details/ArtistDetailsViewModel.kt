@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.details
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +54,9 @@ class ArtistDetailsViewModel(
     var otherYears by mutableStateOf(listOf<DataYear>())
     var images by mutableStateOf<List<CatalogImage>>(emptyList())
 
-    var notes by savedStateHandle.saveable { mutableStateOf("") }
+    val notes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
+        mutableStateOf(TextFieldState())
+    }
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -91,8 +95,9 @@ class ArtistDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            notesDao.getArtistNotes(id, year)?.notes?.let { notes = it }
-            snapshotFlow { notes }
+            notesDao.getArtistNotes(id, year)?.notes
+                ?.let(notes::setTextAndPlaceCursorAtEnd)
+            snapshotFlow { notes.text }
                 .drop(1)
                 .debounce(500.milliseconds)
                 .collectLatest {
