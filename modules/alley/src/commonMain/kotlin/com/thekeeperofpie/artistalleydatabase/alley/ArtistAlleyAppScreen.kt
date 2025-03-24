@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,7 @@ object ArtistAlleyAppScreen {
     operator fun invoke(
         component: ArtistAlleyComponent,
         navHostController: NavHostController,
+        rootSnackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     ) {
         Surface {
             val navigationController = LocalNavigationController.current
@@ -68,6 +71,7 @@ object ArtistAlleyAppScreen {
                             ) {
                                 AlleyRootScreen(
                                     component = component,
+                                    snackbarHostState = rootSnackbarHostState,
                                     onArtistClick = onArtistClick,
                                     onSeriesClick = {
                                         navigationController.navigate(Destinations.Series(null, it))

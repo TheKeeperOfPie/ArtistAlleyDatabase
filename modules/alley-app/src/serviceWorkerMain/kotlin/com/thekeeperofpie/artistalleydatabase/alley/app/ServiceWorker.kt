@@ -12,6 +12,7 @@ import org.w3c.fetch.Request
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
 import org.w3c.workers.ExtendableEvent
+import org.w3c.workers.ExtendableMessageEvent
 import org.w3c.workers.FetchEvent
 import org.w3c.workers.InstallEvent
 import org.w3c.workers.ServiceWorkerGlobalScope
@@ -64,6 +65,13 @@ fun main() {
                 cleanUpCaches()
             }
         )
+    })
+
+    self.addEventListener("message", { event ->
+        console.log("Message received", event)
+        if (event is ExtendableMessageEvent && event.data == "SKIP_WAITING") {
+            event.waitUntil(self.skipWaiting())
+        }
     })
 
     self.addEventListener("fetch", { event ->

@@ -175,6 +175,7 @@ kotlin {
                 implementation(projects.modules.utilsCompose)
                 implementation(projects.modules.utilsInject)
 
+                implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.foundation)
                 implementation(compose.material3)

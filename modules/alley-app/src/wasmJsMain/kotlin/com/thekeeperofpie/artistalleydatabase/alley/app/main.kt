@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -16,6 +19,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.ExperimentalBrowserHistoryApi
 import androidx.navigation.bindToNavigation
 import androidx.navigation.compose.rememberNavController
+import artistalleydatabase.modules.alley_app.generated.resources.Res
+import artistalleydatabase.modules.alley_app.generated.resources.service_worker_reload
+import artistalleydatabase.modules.alley_app.generated.resources.service_worker_waiting_for_reload
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.map.Mapper
@@ -32,9 +38,12 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import org.jetbrains.compose.resources.stringResource
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
+import kotlin.time.Duration.Companion.seconds
 
 private lateinit var artistImageCache: ArtistImageCache
 
@@ -102,7 +111,32 @@ fun main() {
                 LocalNavigationController provides navigationController,
                 LocalBackGestureDispatcher provides backGestureDispatcher,
             ) {
-                ArtistAlleyAppScreen(component, navHostController)
+                val rootSnackbarHostState = remember { SnackbarHostState() }
+                val waitingMessage = stringResource(Res.string.service_worker_waiting_for_reload)
+                val waitingAction = stringResource(Res.string.service_worker_reload)
+                LaunchedEffect(rootSnackbarHostState, waitingMessage, waitingAction) {
+                    // If showSnackbar is called too early, the message will be dropped
+                    // TODO: Find a better solution
+                    delay(5.seconds)
+                    while (true) {
+                        showWaitingChannel.receive()
+                        val result = rootSnackbarHostState.showSnackbar(
+                            message = waitingMessage,
+                            actionLabel = waitingAction,
+                            duration = SnackbarDuration.Indefinite,
+                        )
+                        when (result) {
+                            SnackbarResult.Dismissed -> Unit
+                            SnackbarResult.ActionPerformed -> globalSkipWaitingBridge.skipWaiting()
+                        }
+                    }
+                }
+
+                LaunchedEffect(Unit) {
+                    globalSkipWaitingBridge.onComposeReady(updateShowWaiting)
+                }
+
+                ArtistAlleyAppScreen(component, navHostController, rootSnackbarHostState)
                 LaunchedEffect(navHostController) {
                     window.bindToNavigation(navHostController)
                 }

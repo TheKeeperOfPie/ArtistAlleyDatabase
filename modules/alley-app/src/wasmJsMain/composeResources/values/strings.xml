@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="service_worker_waiting_for_reload">New version of the site available, update now?</string>
+    <string name="service_worker_reload">Update</string>
+</resources>
