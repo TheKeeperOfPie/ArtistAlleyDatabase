@@ -19,6 +19,7 @@ fun rememberNavigationController(navHostController: NavHostController): Navigati
 interface NavigationController {
     fun navigateUp(): Boolean
     fun navigate(navDestination: NavDestination)
+    fun popBackStack(): Boolean
 }
 
 class NavigationControllerImpl(
@@ -46,4 +47,8 @@ class NavigationControllerImpl(
         lastNavTime = navTime
         navHostController.navigate(navDestination)
     }
+
+    override fun popBackStack() = navigateBack()
 }
+
+expect fun NavigationController.navigateBack(): Boolean

@@ -124,7 +124,7 @@ object ArtistAlleyAppScreen {
                                                     is DetailsScreen.Event.FavoriteToggle ->
                                                         viewModel.onFavoriteToggle(event.favorite)
                                                     DetailsScreen.Event.NavigateBack ->
-                                                        navigationController.navigateUp()
+                                                        navigationController.popBackStack()
                                                     DetailsScreen.Event.OpenMap ->
                                                         navigationController.navigate(
                                                             Destinations.ArtistMap(route.id)
@@ -147,7 +147,7 @@ object ArtistAlleyAppScreen {
                                 ArtistMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navigationController::navigateUp,
+                                    onClickBack = navigationController::popBackStack,
                                     onArtistClick = onArtistClick,
                                 )
                             }
@@ -183,7 +183,7 @@ object ArtistAlleyAppScreen {
                                                     is DetailsScreen.Event.FavoriteToggle ->
                                                         viewModel.onFavoriteToggle(event.favorite)
                                                     DetailsScreen.Event.NavigateBack ->
-                                                        navigationController.navigateUp()
+                                                        navigationController.popBackStack()
                                                     DetailsScreen.Event.OpenMap ->
                                                         navigationController.navigate(
                                                             Destinations.StampRallyMap(
@@ -215,7 +215,7 @@ object ArtistAlleyAppScreen {
                                 StampRallyMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navigationController::navigateUp,
+                                    onClickBack = navigationController::popBackStack,
                                     onArtistClick = { entry, imageIndex ->
                                         navigationController.navigate(
                                             Destinations.ArtistDetails(
@@ -247,7 +247,7 @@ object ArtistAlleyAppScreen {
                                 ArtistSearchScreen(
                                     viewModel = viewModel,
                                     sortViewModel = sortViewModel,
-                                    onClickBack = navigationController::navigateUp,
+                                    onClickBack = navigationController::popBackStack,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
                                         navigationController.navigate(
@@ -278,7 +278,7 @@ object ArtistAlleyAppScreen {
                                 ArtistSearchScreen(
                                     viewModel = viewModel,
                                     sortViewModel = sortViewModel,
-                                    onClickBack = navigationController::navigateUp,
+                                    onClickBack = navigationController::popBackStack,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
                                         navigationController.navigate(
@@ -300,7 +300,7 @@ object ArtistAlleyAppScreen {
                                 TagMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navigationController::navigateUp,
+                                    onClickBack = navigationController::popBackStack,
                                     onArtistClick = onArtistClick,
                                 )
                             }
@@ -316,7 +316,7 @@ object ArtistAlleyAppScreen {
                                 TagMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
-                                    onClickBack = navigationController::navigateUp,
+                                    onClickBack = navigationController::popBackStack,
                                     onArtistClick = onArtistClick,
                                 )
                             }

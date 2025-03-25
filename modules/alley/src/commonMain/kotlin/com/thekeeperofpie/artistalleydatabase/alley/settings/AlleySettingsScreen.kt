@@ -91,9 +91,10 @@ internal fun AlleySettingsScreen(
     eventSink: (AlleySettingsScreen.Event) -> Unit,
 ) {
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
+        val navigationController = LocalNavigationController.current
         SettingsScreen(
             sections = state.sections,
-            upIconOption = UpIconOption.Back(LocalNavigationController.current),
+            upIconOption = UpIconOption.Back(navigationController::popBackStack),
             modifier = Modifier.widthIn(max = 1200.dp),
             customSection = {
                 when (it.id) {

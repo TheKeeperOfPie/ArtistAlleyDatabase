@@ -21,6 +21,7 @@ fun PreviewDark(content: @Composable () -> Unit) {
     val navigationController = object : NavigationController {
         override fun navigateUp() = false
         override fun navigate(navDestination: NavDestination) = Unit
+        override fun popBackStack() = false
     }
 
     CompositionLocalProvider(
