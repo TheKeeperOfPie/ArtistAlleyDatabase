@@ -23,7 +23,7 @@ interface NavigationController {
 }
 
 class NavigationControllerImpl(
-    private val navHostController: NavHostController,
+    internal val navHostController: NavHostController,
 ) : NavigationController {
 
     private var lastNavDestination: Any? = null
@@ -51,4 +51,4 @@ class NavigationControllerImpl(
     override fun popBackStack() = navigateBack()
 }
 
-expect fun NavigationController.navigateBack(): Boolean
+internal expect fun NavigationControllerImpl.navigateBack(): Boolean
