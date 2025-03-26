@@ -37,7 +37,7 @@ class ArtistEntryGridModel(
         if (!showOnlyConfirmedTags) {
             list += artist.seriesInferred.shuffled(random)
         }
-        list.distinct()
+        list
     }
 
     val merch by lazy {
@@ -46,7 +46,7 @@ class ArtistEntryGridModel(
         if (!showOnlyConfirmedTags) {
             list += artist.merchInferred.shuffled(random)
         }
-        list.distinct()
+        list
     }
 
     companion object {

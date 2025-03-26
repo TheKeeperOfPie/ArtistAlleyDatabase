@@ -143,7 +143,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             merchConnections2024.forEach { merchConnections.addMerchConnection(it) }
 
             val (artists2025, seriesConnections2025, merchConnections2025) =
-                parseArtists2025(database)
+                parseArtists2025(database, artists2024)
             seriesConnections2025.forEach { seriesConnections.addSeriesConnection(it) }
             merchConnections2025.forEach { merchConnections.addMerchConnection(it) }
 
@@ -178,7 +178,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                 ftsTables.forEach {
                     driver.execute(null, "INSERT INTO $it($it) VALUES('rebuild');", 0, null).await()
-                    driver.execute(null, "INSERT INTO $it($it) VALUES('optimize');", 0, null).await()
+                    driver.execute(null, "INSERT INTO $it($it) VALUES('optimize');", 0, null)
+                        .await()
                 }
 
                 driver.execute(null, "VACUUM;", 0, null).await()
@@ -289,17 +290,22 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val driveLink = it["Drive"]
 
                     val commaRegex = Regex(",\\s?")
-                    val seriesInferred = it["Series - Inferred"].orEmpty().split(commaRegex)
+                    val seriesInferredRaw = it["Series - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
-                    val merchInferred = it["Merch - Inferred"].orEmpty().split(commaRegex)
+                    val merchInferredRaw = it["Merch - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
 
                     val seriesConfirmed = it["Series - Confirmed"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
+                        .sorted()
                     val merchConfirmed = it["Merch - Confirmed"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
+                        .sorted()
 
                     val notes = it["Notes"]
+
+                    val seriesInferred = (seriesInferredRaw - seriesConfirmed).sorted()
+                    val merchInferred = (merchInferredRaw - merchConfirmed).sorted()
 
                     val artistEntry = ArtistEntry2024(
                         id = id,
@@ -318,17 +324,16 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         counter = counter++,
                     )
 
-                    val seriesConnectionsInferred =
-                        (seriesInferred - seriesConfirmed.toSet())
-                            .map {
-                                ArtistSeriesConnection(
-                                    artistId = id,
-                                    seriesId = it,
-                                    confirmed = false,
-                                    has2024 = true,
-                                    has2025 = false,
-                                )
-                            }
+                    val seriesConnectionsInferred = seriesInferred
+                        .map {
+                            ArtistSeriesConnection(
+                                artistId = id,
+                                seriesId = it,
+                                confirmed = false,
+                                has2024 = true,
+                                has2025 = false,
+                            )
+                        }
                     val seriesConnectionsConfirmed = seriesConfirmed
                         .map {
                             ArtistSeriesConnection(
@@ -340,7 +345,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             )
                         }
 
-                    val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
+                    val merchConnectionsInferred = merchInferred
                         .map {
                             ArtistMerchConnection(
                                 artistId = id,
@@ -384,7 +389,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         return Triple(artists2024, seriesConnections, merchConnections)
     }
 
-    private fun parseArtists2025(database: BuildLogicDatabase): Triple<List<ArtistEntry2025>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
+    private fun parseArtists2025(
+        database: BuildLogicDatabase,
+        artists2024: List<ArtistEntry2024>,
+    ): Triple<List<ArtistEntry2025>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
+        val artists2024ById = artists2024.associateBy { it.id }
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsv2025 = inputsDirectory.file("2025/$ARTISTS_CSV_NAME").get()
@@ -411,20 +420,43 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val driveLink = it["Drive"]
 
                     val commaRegex = Regex(",\\s?")
-                    val seriesInferred = it["Series - Inferred"].orEmpty().split(commaRegex)
+
+                    var seriesInferredRaw = it["Series - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
-                    val merchInferred = it["Merch - Inferred"].orEmpty().split(commaRegex)
+                    if (seriesInferredRaw.isEmpty()) {
+                        val artist2024 = artists2024ById[id]
+                        if (artist2024 != null) {
+                            seriesInferredRaw = artist2024.seriesConfirmed.ifEmpty {
+                                (artist2024.seriesInferred + artist2024.seriesConfirmed).distinct()
+                            }
+                        }
+                    }
+
+                    var merchInferredRaw = it["Merch - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
+                    if (merchInferredRaw.isEmpty()) {
+                        val artist2024 = artists2024ById[id]
+                        if (artist2024 != null) {
+                            merchInferredRaw = artist2024.merchConfirmed.ifEmpty {
+                                (artist2024.merchInferred + artist2024.merchConfirmed).distinct()
+                            }
+                        }
+                    }
 
                     val seriesConfirmed = it["Series - Confirmed"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
+                        .sorted()
                     val merchConfirmed = it["Merch - Confirmed"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
+                        .sorted()
 
                     val notes = it["Notes"]
                     val commissions = it["Commissions"].orEmpty().split(newLineRegex)
                         .filter(String::isNotBlank)
                         .sorted()
+
+                    val seriesInferred = (seriesInferredRaw - seriesConfirmed).sorted()
+                    val merchInferred = (merchInferredRaw - merchConfirmed).sorted()
 
                     val artistEntry = ArtistEntry2025(
                         id = id,
@@ -444,17 +476,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         counter = counter++,
                     )
 
-                    val seriesConnectionsInferred =
-                        (seriesInferred - seriesConfirmed.toSet())
-                            .map {
-                                ArtistSeriesConnection(
-                                    artistId = id,
-                                    seriesId = it,
-                                    confirmed = false,
-                                    has2024 = false,
-                                    has2025 = true,
-                                )
-                            }
+                    val seriesConnectionsInferred = seriesInferred.map {
+                        ArtistSeriesConnection(
+                            artistId = id,
+                            seriesId = it,
+                            confirmed = false,
+                            has2024 = false,
+                            has2025 = true,
+                        )
+                    }
                     val seriesConnectionsConfirmed = seriesConfirmed
                         .map {
                             ArtistSeriesConnection(
@@ -466,7 +496,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             )
                         }
 
-                    val merchConnectionsInferred = (merchInferred - merchConfirmed.toSet())
+                    val merchConnectionsInferred = merchInferred
                         .map {
                             ArtistMerchConnection(
                                 artistId = id,

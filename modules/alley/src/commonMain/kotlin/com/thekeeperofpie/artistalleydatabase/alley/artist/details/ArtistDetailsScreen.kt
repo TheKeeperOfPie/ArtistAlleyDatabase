@@ -47,11 +47,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_links_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed_expand
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series_unconfirmed
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series_unconfirmed_expand
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series_unconfirmed_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
@@ -195,7 +193,6 @@ object ArtistDetailsScreen {
                 headerTextRes = Res.string.alley_artist_details_series,
                 headerTextResUnconfirmed = Res.string.alley_artist_details_series_unconfirmed,
                 unconfirmedIconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
-                expandTextRes = Res.string.alley_artist_details_series_unconfirmed_expand,
                 itemToText = { it },
                 onClick = { eventSink(Event.OpenSeries(it)) },
             )
@@ -206,7 +203,6 @@ object ArtistDetailsScreen {
                 headerTextRes = Res.string.alley_artist_details_merch,
                 headerTextResUnconfirmed = Res.string.alley_artist_details_merch_unconfirmed,
                 unconfirmedIconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
-                expandTextRes = Res.string.alley_artist_details_merch_unconfirmed_expand,
                 itemToText = { it },
                 onClick = { eventSink(Event.OpenMerch(it)) },
             )
@@ -255,7 +251,6 @@ object ArtistDetailsScreen {
         headerTextRes: StringResource,
         headerTextResUnconfirmed: StringResource,
         unconfirmedIconContentDescriptionTextRes: StringResource,
-        expandTextRes: StringResource,
         itemToText: @Composable (T) -> String,
         onClick: (T) -> Unit,
     ) {

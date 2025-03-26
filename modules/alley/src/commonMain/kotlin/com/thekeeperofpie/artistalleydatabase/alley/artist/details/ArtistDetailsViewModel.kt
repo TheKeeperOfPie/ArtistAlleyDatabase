@@ -72,16 +72,12 @@ class ArtistDetailsViewModel(
                 folder = AlleyDataUtils.Folder.CATALOGS,
                 file = artist.booth,
             )
-            val seriesConfirmed = artist.seriesConfirmed
-            val seriesInferred = artist.seriesInferred
-                .toMutableList()
-                .apply { removeAll(seriesConfirmed) }
             withContext(CustomDispatchers.Main) {
                 entry = Entry(
                     artist = artist,
                     userEntry = userEntry,
-                    seriesInferred = seriesInferred,
-                    seriesConfirmed = seriesConfirmed,
+                    seriesInferred = artist.seriesInferred,
+                    seriesConfirmed = artist.seriesConfirmed,
                     stampRallies = stampRallies,
                 )
                 images = catalogImages
