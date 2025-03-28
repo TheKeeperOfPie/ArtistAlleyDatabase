@@ -13,6 +13,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.savedstate.read
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
@@ -99,10 +100,10 @@ class CdEntryNavigator : BrowseSelectionNavigator {
             )
         ) {
             val arguments = it.arguments!!
-            val column = CdEntryColumn.valueOf(arguments.getString("queryType")!!)
-            val title = arguments.getString("title")!!
-            val queryId = arguments.getString("queryId")
-            val queryString = arguments.getString("queryString")
+            val column = CdEntryColumn.valueOf(arguments.read { getString("queryType") })
+            val title = arguments.read { getString("title") }
+            val queryId = arguments.read { getStringOrNull("queryId") }
+            val queryString = arguments.read { getStringOrNull("queryString") }
             val viewModel = viewModel { cdEntryComponent.cdBrowseSelectionViewModel() }
             val query: Either<String, String> = if (queryId != null) {
                 Either.Left(queryId)

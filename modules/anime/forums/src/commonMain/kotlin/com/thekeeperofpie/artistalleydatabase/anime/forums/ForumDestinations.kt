@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
+import androidx.savedstate.read
 import artistalleydatabase.modules.anime.forums.generated.resources.Res
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_root_active_title
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_root_new_title
@@ -196,7 +197,7 @@ object ForumDestinations {
                 refresh = viewModel.refresh,
                 onRefresh = viewModel::refresh,
                 threadId = viewModel.threadId,
-                title = it.arguments?.getString("title"),
+                title = it.arguments?.read { getStringOrNull("title") },
                 state = viewModel.state,
                 comments = viewModel.comments,
                 userRoute = userRoute,
@@ -242,7 +243,7 @@ object ForumDestinations {
                 refresh = viewModel.refresh,
                 onRefresh = viewModel::refresh,
                 threadId = viewModel.threadId,
-                title = it.arguments?.getString("title"),
+                title = it.arguments?.read { getStringOrNull("title") },
                 state = viewModel.state,
                 comments = { viewModel.comments },
                 userRoute = userRoute,

@@ -12,6 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.savedstate.read
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
@@ -30,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -107,10 +109,10 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
             )
         ) {
             val arguments = it.arguments!!
-            val column = ArtEntryColumn.valueOf(arguments.getString("queryType")!!)
-            val title = arguments.getString("title")!!
-            val queryId = arguments.getString("queryId")
-            val queryString = arguments.getString("queryString")
+            val column = ArtEntryColumn.valueOf(arguments.read { getString("queryType") })
+            val title = arguments.read { getString("title") }
+            val queryId = arguments.read { getStringOrNull("queryId") }
+            val queryString = arguments.read { getStringOrNull("queryString") }
             val viewModel = viewModel { artEntryComponent.artBrowseSelectionViewModel() }
             val query: Either<String, String> = if (queryId != null) {
                 Either.Left(queryId)
