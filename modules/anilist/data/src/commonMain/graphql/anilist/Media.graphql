@@ -43,7 +43,7 @@ fragment MediaPreview on Media {
     volumes
     chapters
     genres
-    source
+    source(version: 3)
     tags {
         rank
     }
@@ -220,7 +220,7 @@ query MediaDetails($mediaId: Int!) {
         countryOfOrigin
         duration
         favourites
-        source
+        source(version: 3)
         studios {
             edges {
                 isMain

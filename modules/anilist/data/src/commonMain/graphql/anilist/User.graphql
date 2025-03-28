@@ -436,7 +436,7 @@ fragment UserFavoriteMedia on Media {
     volumes
     chapters
     genres
-    source
+    source(version: 3)
     startDate {
         ...AniListDate
     }
