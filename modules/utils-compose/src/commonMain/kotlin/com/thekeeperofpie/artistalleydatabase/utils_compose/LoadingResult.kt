@@ -69,6 +69,9 @@ data class LoadingResult<T>(
         constructor(message: String, throwable: Throwable? = null) :
                 this(Either.Left(message), throwable, emptyArray())
 
+        constructor(message: StringResource, throwable: Throwable? = null) :
+                this(Either.Right(message), throwable, emptyArray())
+
         constructor(message: StringResource, throwable: Throwable? = null, args: Array<out Any>) :
                 this(Either.Right(message), throwable, args)
 

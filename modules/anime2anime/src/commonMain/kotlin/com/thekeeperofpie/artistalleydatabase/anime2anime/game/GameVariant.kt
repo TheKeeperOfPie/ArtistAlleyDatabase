@@ -162,8 +162,8 @@ abstract class GameVariant<Options>(
         if (media == null) {
             return flowOf(
                 LoadingResult.error(
-                    Res.string.anime2anime_error_loading_media,
-                    response.exceptionOrNull(),
+                    error = Res.string.anime2anime_error_loading_media,
+                    throwable = response.exceptionOrNull(),
                 )
             )
         }
