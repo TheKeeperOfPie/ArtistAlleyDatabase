@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.ui
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -28,6 +29,8 @@ fun PreviewDark(content: @Composable () -> Unit) {
         LocalAsyncImagePreviewHandler provides previewHandler,
         LocalNavigationController provides navigationController,
     ) {
-        MaterialTheme(colorScheme = darkColorScheme(), content = content)
+        MaterialTheme(colorScheme = darkColorScheme()) {
+            Surface(content = content)
+        }
     }
 }

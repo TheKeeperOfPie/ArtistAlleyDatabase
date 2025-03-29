@@ -5,4 +5,6 @@ actual object PlatformSpecificConfig {
     actual val defaultPageSize = 50
     actual val showPagingButtons = true
     actual val scrollbarsAlwaysVisible = true
+    actual val installable = false
+    actual fun requestInstall(): Unit = throw UnsupportedOperationException()
 }

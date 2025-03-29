@@ -38,6 +38,7 @@ class AlleySettingsViewModel(
                 themeSection,
                 SettingsSection.Placeholder("export"),
                 SettingsSection.Placeholder("import"),
+                SettingsSection.Placeholder("faq"),
             )
         )
 

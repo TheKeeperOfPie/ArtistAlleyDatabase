@@ -1,23 +1,30 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -34,13 +41,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_author_link
 import artistalleydatabase.modules.alley.generated.resources.alley_server_link
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export
@@ -53,6 +66,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
@@ -61,7 +75,9 @@ import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -113,6 +129,12 @@ internal fun AlleySettingsScreen(
                         onResetState = { state.importState = LoadingResult.empty<Unit>() },
                         onClickImport = { eventSink(AlleySettingsScreen.Event.Import(it)) }
                     )
+                    "faq" -> FaqSection(
+                        onInstallClick = { PlatformSpecificConfig.requestInstall() },
+                        onExportClick = {
+                            eventSink(AlleySettingsScreen.Event.ExportPartial)
+                        }
+                    )
                     else -> throw IllegalArgumentException()
                 }
             }
@@ -144,10 +166,8 @@ private fun Header() {
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.weight(1f).padding(16.dp)
             )
-
-            Spacer(Modifier.weight(1f))
 
             val uriHandler = LocalUriHandler.current
 
@@ -325,6 +345,183 @@ private fun ImportSection(
     }
 }
 
+@Composable
+private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
+    OutlinedCard(Modifier.padding(16.dp).fillMaxWidth()) {
+        Text(
+            text = "FAQ",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        QuestionAnswer(
+            "What is this?",
+            "This site tracks artist alleys from conventions, offering a way to view " +
+                    "artist catalogs and stamp rallies ahead of time."
+        )
+
+        HorizontalDivider()
+
+        QuestionAnswer(
+            question = "How do I use it?",
+            answer = {
+                appendParagraph("The Artists and Rallies tabs show the entries for the selected con.")
+                appendParagraph("You can change the convention/year by clicking the header on each tab.")
+                append("If you see an artist you're interested in, click the heart ")
+                appendInlineContent("heart")
+                append(" to add them to your favorites, which can be viewed in the center tab. This serves as a shopping list for when you're at con.")
+            },
+            inlineContent = remember {
+                mapOf(
+                    "heart" to InlineTextContent(
+                        Placeholder(
+                            width = 1.em,
+                            height = 1.em,
+                            placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                        )
+                    ) {
+                        Icon(imageVector = Icons.Filled.FavoriteBorder, contentDescription = null)
+                    }
+                )
+            },
+        )
+
+        HorizontalDivider()
+
+        val colorScheme = MaterialTheme.colorScheme
+        if (PlatformSpecificConfig.installable) {
+            QuestionAnswer(
+                "Can I use this offline?",
+                answer = {
+                    append("This site can be ")
+                    withStyle(
+                        SpanStyle(
+                            color = colorScheme.primary,
+                            textDecoration = TextDecoration.Underline,
+                        )
+                    ) {
+                        withLink(
+                            LinkAnnotation.Clickable(
+                                tag = "install",
+                                linkInteractionListener = { onInstallClick() },
+                            )
+                        ) {
+                            append("installed as an offline app")
+                        }
+                    }
+                    appendParagraph(
+                        ", allowing you to browse during a convention without an " +
+                                "internet connection."
+                    )
+                    withStyle(
+                        SpanStyle(
+                            color = colorScheme.primary,
+                            textDecoration = TextDecoration.Underline,
+                        )
+                    ) {
+                        withLink(
+                            LinkAnnotation.Clickable(
+                                tag = "export",
+                                linkInteractionListener = { onExportClick() },
+                            )
+                        ) {
+                            append("Export")
+                        }
+                    }
+                    append(" your favorites to transfer them between desktop and mobile.")
+                }
+            )
+        }
+
+        HorizontalDivider()
+
+        QuestionAnswer(
+            question = "I'm a tabling artist and my info is missing or incorrect",
+            answer = {
+                append("Submit the ")
+                withStyle(
+                    SpanStyle(
+                        color = colorScheme.primary,
+                        textDecoration = TextDecoration.Underline,
+                    )
+                ) {
+                    withLink(LinkAnnotation.Url(BuildKonfig.artistFormLink)) {
+                        append("artist form")
+                    }
+                }
+                append(
+                    " and we'll get your info updated! Thank you for helping making the site " +
+                            "better!"
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun QuestionAnswer(
+    question: String,
+    answer: String,
+    inlineContent: Map<String, InlineTextContent> = emptyMap(),
+    extraContent: @Composable () -> Unit = {},
+) = QuestionAnswer(
+    question = question,
+    answer = { append(answer) },
+    inlineContent = inlineContent,
+    extraContent = extraContent,
+)
+
+@Composable
+private fun QuestionAnswer(
+    question: String,
+    answer: AnnotatedString.Builder.() -> Unit,
+    inlineContent: Map<String, InlineTextContent> = emptyMap(),
+    extraContent: @Composable () -> Unit = {},
+) {
+    Column {
+        var expanded by rememberSaveable { mutableStateOf(false) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+                .clickable { expanded = !expanded }
+        ) {
+            Text(
+                text = question,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+                    .padding(horizontal = 16.dp)
+            )
+
+            TrailingDropdownIconButton(
+                expanded = expanded,
+                contentDescription = stringResource(Res.string.alley_answer_expand_content_description),
+                onClick = { expanded = !expanded },
+            )
+        }
+
+        AnimatedVisibility(expanded, enter = expandVertically(), exit = shrinkVertically()) {
+            if (expanded) {
+                val answerText = remember(answer) {
+                    buildAnnotatedString(answer)
+                }
+                Text(
+                    text = answerText,
+                    inlineContent = inlineContent,
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 12.dp,
+                    )
+                )
+            }
+        }
+
+        extraContent()
+    }
+}
+
 @Preview
 @Composable
 private fun HeaderPreview() = PreviewDark {
@@ -358,4 +555,10 @@ private fun ImportPreview() = PreviewDark {
             }
         },
     )
+}
+
+@Preview
+@Composable
+private fun FaqPreview() = PreviewDark {
+    FaqSection(onInstallClick = {}, onExportClick = {})
 }

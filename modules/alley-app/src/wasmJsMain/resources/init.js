@@ -31,6 +31,10 @@ class SkipWaitingBridge {
 
 const globalSkipWaitingBridge = new SkipWaitingBridge();
 
+window.addEventListener("beforeinstallprompt", event => {
+  window.deferredInstallPrompt = event;
+});
+
 if ("serviceWorker" in navigator) {
     console.log("Registering serviceWorker.js")
     // TODO: Automatically call update()?

@@ -128,54 +128,55 @@ fun <State : ScrollableState> VerticalScrollbar(
             }
         }
         val handleVisible = fillsViewPort && (state.isScrollInProgress || dragging)
-        val handleAlpha = if (alwaysVisible) {
-            1f
-        } else {
-            animateFloatAsState(
-                targetValue = if (handleVisible) 1f else 0f,
-                animationSpec = tween(
-                    durationMillis = if (handleVisible) {
-                        DefaultDurationMillis / 2
-                    } else {
-                        DefaultDurationMillis
-                    },
-                    delayMillis = if (handleVisible) 0 else DefaultDurationMillis * 3,
-                ),
-                label = "Scrollbar handle alpha",
-            ).value
-        }
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .alpha(handleAlpha)
-                .offset { IntOffset(x = 0, y = offsetY.roundToInt()) }
-                .size(width = 32.dp, height = 40.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(topStartPercent = 50, bottomStartPercent = 50)
+        val handleAlpha by animateFloatAsState(
+            targetValue = if (alwaysVisible || handleVisible) 1f else 0f,
+            animationSpec = tween(
+                durationMillis = if (handleVisible) {
+                    DefaultDurationMillis / 2
+                } else {
+                    DefaultDurationMillis
+                },
+                delayMillis = if (handleVisible) 0 else DefaultDurationMillis * 3,
+            ),
+            label = "Scrollbar handle alpha",
+        )
+
+        val draggableState = rememberDraggableState(onDelta = {
+            val newOffset = (offsetY + it).coerceIn(0f, maxOffsetY)
+            if (offsetY == newOffset) return@rememberDraggableState
+            offsetY = newOffset
+            val ratio = offsetY / maxOffsetY
+            val scrollPositionFromOffset =
+                (ratio * state.totalItemsCount().coerceAtLeast(1))
+                    .roundToInt()
+            scope.launch {
+                state.scrollToItem(scrollPositionFromOffset)
+            }
+        })
+        val show by remember { derivedStateOf { handleAlpha > 0f } }
+        if (show) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .alpha(handleAlpha)
+                    .offset { IntOffset(x = 0, y = offsetY.roundToInt()) }
+                    .size(width = 32.dp, height = 40.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(topStartPercent = 50, bottomStartPercent = 50)
+                    )
+                    .draggable(
+                        state = draggableState,
+                        orientation = Orientation.Vertical,
+                        interactionSource = interactionSource,
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.UnfoldMore,
+                    contentDescription = stringResource(Res.string.scrollbar_handle_content_description),
+                    tint = MaterialTheme.colorScheme.onPrimary,
                 )
-                .draggable(
-                    state = rememberDraggableState(onDelta = {
-                        val newOffset = (offsetY + it).coerceIn(0f, maxOffsetY)
-                        if (offsetY == newOffset) return@rememberDraggableState
-                        offsetY = newOffset
-                        val ratio = offsetY / maxOffsetY
-                        val scrollPositionFromOffset =
-                            (ratio * state.totalItemsCount().coerceAtLeast(1))
-                                .roundToInt()
-                        scope.launch {
-                            state.scrollToItem(scrollPositionFromOffset)
-                        }
-                    }),
-                    orientation = Orientation.Vertical,
-                    interactionSource = interactionSource,
-                )
-        ) {
-            Icon(
-                imageVector = Icons.Filled.UnfoldMore,
-                contentDescription = stringResource(Res.string.scrollbar_handle_content_description),
-                tint = MaterialTheme.colorScheme.onPrimary,
-            )
+            }
         }
     }
 }
