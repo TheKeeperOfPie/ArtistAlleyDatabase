@@ -99,6 +99,13 @@ object ArtistDetailsScreen {
         }
 
         val artist = entry.artist
+        val uriHandler = LocalUriHandler.current
+        val onClickOpenUri: (String) -> Unit = {
+            try {
+                uriHandler.openUri(it)
+            } catch (_: Throwable) {
+            }
+        }
         DetailsScreen(
             title = { ArtistTitle(artist) },
             sharedElementId = artist.id,
@@ -107,137 +114,172 @@ object ArtistDetailsScreen {
             initialImageIndex = initialImageIndex,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
-            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                InfoText(
-                    stringResource(Res.string.alley_artist_details_artist_name),
-                    artist.name,
-                    showDividerAbove = false,
-                )
-            }
-
-            val summary = artist.summary
-            if (!summary.isNullOrBlank()) {
+            item("artistName") {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     InfoText(
-                        label = stringResource(Res.string.alley_artist_details_description),
-                        body = summary,
-                        showDividerAbove = false
+                        stringResource(Res.string.alley_artist_details_artist_name),
+                        artist.name,
+                        showDividerAbove = false,
                     )
                 }
             }
 
-            val uriHandler = LocalUriHandler.current
-            val onClickOpenUri: (String) -> Unit = {
-                try {
-                    uriHandler.openUri(it)
-                } catch (_: Throwable) {
+            item("artistDescription") {
+                val summary = artist.summary
+                if (!summary.isNullOrBlank()) {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        InfoText(
+                            label = stringResource(Res.string.alley_artist_details_description),
+                            body = summary,
+                            showDividerAbove = false
+                        )
+                    }
                 }
             }
 
             if (artist.linkModels.isNotEmpty()) {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = Res.string.alley_artist_details_links,
-                        contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
-                        values = artist.linkModels,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                        item = { link, _, isLast -> LinkRow(link, isLast) },
-                    )
+                item("artistLinks") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_artist_details_links,
+                            contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
+                            values = artist.linkModels,
+                            allowExpand = false,
+                            showDividerAbove = false,
+                            item = { link, _, isLast -> LinkRow(link, isLast) },
+                        )
+                    }
                 }
             }
             if (artist.storeLinkModels.isNotEmpty()) {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = Res.string.alley_artist_details_store,
-                        contentDescriptionTextRes = null,
-                        values = artist.storeLinkModels,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                        item = { link, _, isLast -> LinkRow(link, isLast) },
-                    )
+                item("artistStoreLinks") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_artist_details_store,
+                            contentDescriptionTextRes = null,
+                            values = artist.storeLinkModels,
+                            allowExpand = false,
+                            showDividerAbove = false,
+                            item = { link, _, isLast -> LinkRow(link, isLast) },
+                        )
+                    }
                 }
             }
 
             if (artist.catalogLinks.isNotEmpty()) {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = Res.string.alley_artist_details_catalog,
-                        contentDescriptionTextRes = null,
-                        values = artist.catalogLinks,
-                        valueToText = { it },
-                        onClick = onClickOpenUri,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                    )
+                item("artistCatalogLinks") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_artist_details_catalog,
+                            contentDescriptionTextRes = null,
+                            values = artist.catalogLinks,
+                            valueToText = { it },
+                            onClick = onClickOpenUri,
+                            allowExpand = false,
+                            showDividerAbove = false,
+                        )
+                    }
                 }
             }
 
             if (entry.stampRallies.isNotEmpty()) {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = Res.string.alley_artist_details_stamp_rallies,
-                        contentDescriptionTextRes = null,
-                        values = entry.stampRallies,
-                        valueToText = { it.fandom },
-                        onClick = { eventSink(Event.OpenStampRally(it)) },
-                        allowExpand = false,
-                        showDividerAbove = false,
+                item("artistStampRallies") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_artist_details_stamp_rallies,
+                            contentDescriptionTextRes = null,
+                            values = entry.stampRallies,
+                            valueToText = { it.fandom },
+                            onClick = { eventSink(Event.OpenStampRally(it)) },
+                            allowExpand = false,
+                            showDividerAbove = false,
+                        )
+                    }
+                }
+            }
+
+            if (entry.seriesConfirmed.isNotEmpty()) {
+                item("artistSeriesConfirmed") {
+                    Confirmed(
+                        confirmed = entry.seriesConfirmed,
+                        headerTextRes = Res.string.alley_artist_details_series,
+                        itemToText = { it },
+                        onClick = { eventSink(Event.OpenSeries(it)) },
                     )
                 }
             }
 
-            ConfirmedAndInferred(
-                confirmed = entry.seriesConfirmed,
-                inferred = entry.seriesInferred,
-                headerTextRes = Res.string.alley_artist_details_series,
-                headerTextResUnconfirmed = Res.string.alley_artist_details_series_unconfirmed,
-                unconfirmedIconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
-                itemToText = { it },
-                onClick = { eventSink(Event.OpenSeries(it)) },
-            )
-
-            ConfirmedAndInferred(
-                confirmed = entry.artist.merchConfirmed,
-                inferred = entry.artist.merchInferred,
-                headerTextRes = Res.string.alley_artist_details_merch,
-                headerTextResUnconfirmed = Res.string.alley_artist_details_merch_unconfirmed,
-                unconfirmedIconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
-                itemToText = { it },
-                onClick = { eventSink(Event.OpenMerch(it)) },
-            )
-
-            NotesText(
-                state = notesTextState,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            FlowRow(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                FilledTonalButton(
-                    onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            Icons.Default.Map,
-                            contentDescription = stringResource(Res.string.alley_open_in_map),
-                        )
-                        Text(stringResource(Res.string.alley_open_in_map))
-                    }
+            if (entry.seriesInferred.isNotEmpty()) {
+                item("artistSeriesInferred") {
+                    Inferred(
+                        inferred = entry.seriesInferred,
+                        headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
+                        iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
+                        itemToText = { it },
+                        onClick = { eventSink(Event.OpenSeries(it)) },
+                    )
                 }
+            }
 
-                otherYears().forEach {
+            if (entry.artist.merchConfirmed.isNotEmpty()) {
+                item("artistMerchConfirmed") {
+                    Confirmed(
+                        confirmed = entry.artist.merchConfirmed,
+                        headerTextRes = Res.string.alley_artist_details_merch,
+                        itemToText = { it },
+                        onClick = { eventSink(Event.OpenMerch(it)) },
+                    )
+                }
+            }
+
+            if (entry.artist.merchInferred.isNotEmpty()) {
+                item("artistMerchInferred") {
+                    Inferred(
+                        inferred = entry.artist.merchInferred,
+                        headerTextRes = Res.string.alley_artist_details_merch_unconfirmed,
+                        iconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
+                        itemToText = { it },
+                        onClick = { eventSink(Event.OpenMerch(it)) },
+                    )
+                }
+            }
+
+            item("artistNotes") {
+                NotesText(
+                    state = notesTextState,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            item("artistButtons") {
+                FlowRow(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
                     FilledTonalButton(
-                        onClick = { eventSink(Event.OpenOtherYear(it)) },
+                        onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
-                        Text(stringResource(Res.string.alley_open_year, it.year))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                Icons.Default.Map,
+                                contentDescription = stringResource(Res.string.alley_open_in_map),
+                            )
+                            Text(stringResource(Res.string.alley_open_in_map))
+                        }
+                    }
+
+                    otherYears().forEach {
+                        FilledTonalButton(
+                            onClick = { eventSink(Event.OpenOtherYear(it)) },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            Text(stringResource(Res.string.alley_open_year, it.year))
+                        }
                     }
                 }
             }
@@ -245,86 +287,88 @@ object ArtistDetailsScreen {
     }
 
     @Composable
-    private fun <T> ConfirmedAndInferred(
+    private fun <T> Confirmed(
         confirmed: List<T>,
-        inferred: List<T>,
         headerTextRes: StringResource,
-        headerTextResUnconfirmed: StringResource,
-        unconfirmedIconContentDescriptionTextRes: StringResource,
         itemToText: @Composable (T) -> String,
         onClick: (T) -> Unit,
     ) {
-        if (confirmed.isNotEmpty()) {
-            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                expandableListInfoText(
-                    labelTextRes = headerTextRes,
-                    contentDescriptionTextRes = null,
-                    values = confirmed,
-                    valueToText = itemToText,
-                    onClick = onClick,
-                    allowExpand = true,
-                    showDividerAbove = false,
-                )
-            }
+        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            expandableListInfoText(
+                labelTextRes = headerTextRes,
+                contentDescriptionTextRes = null,
+                values = confirmed,
+                valueToText = itemToText,
+                onClick = onClick,
+                allowExpand = true,
+                showDividerAbove = false,
+            )
         }
+    }
 
-        if (inferred.isNotEmpty()) {
-            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                var showPopup by remember { mutableStateOf(false) }
-                expandableListInfoText(
-                    labelTextRes = headerTextResUnconfirmed,
-                    contentDescriptionTextRes = null,
-                    values = inferred,
-                    valueToText = itemToText,
-                    onClick = onClick,
-                    allowExpand = true,
-                    showDividerAbove = false,
-                    header = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+    @Composable
+    private fun <T> Inferred(
+        inferred: List<T>,
+        headerTextRes: StringResource,
+        iconContentDescriptionTextRes: StringResource,
+        itemToText: @Composable (T) -> String,
+        onClick: (T) -> Unit,
+    ) {
+        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+            var showPopup by remember { mutableStateOf(false) }
+            expandableListInfoText(
+                labelTextRes = headerTextRes,
+                contentDescriptionTextRes = null,
+                values = inferred,
+                valueToText = itemToText,
+                onClick = onClick,
+                allowExpand = true,
+                showDividerAbove = false,
+                header = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .clickable(interactionSource = null, indication = null) {
+                                showPopup = !showPopup
+                            }
+                    ) {
+                        Text(
+                            text = stringResource(headerTextRes),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.surfaceTint,
                             modifier = Modifier
-                                .height(IntrinsicSize.Min)
-                                .clickable(interactionSource = null, indication = null) {
-                                    showPopup = !showPopup
-                                }
-                        ) {
-                            Text(
-                                text = stringResource(headerTextResUnconfirmed),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.surfaceTint,
+                                .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)
+                        )
+
+                        Box {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = stringResource(
+                                    iconContentDescriptionTextRes
+                                ),
                                 modifier = Modifier
-                                    .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)
+                                    .fillMaxHeight()
+                                    .heightIn(max = 20.dp)
+                                    .padding(top = 6.dp)
                             )
 
-                            Box {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = stringResource(
-                                        unconfirmedIconContentDescriptionTextRes
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .heightIn(max = 20.dp)
-                                        .padding(top = 6.dp)
-                                )
-
-                                if (showPopup) {
-                                    Popup(onDismissRequest = { showPopup = false }) {
-                                        Text(
-                                            text = stringResource(Res.string.alley_artist_details_tags_unconfirmed_explanation),
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier
-                                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                                .widthIn(max = 200.dp)
-                                        )
-                                    }
+                            if (showPopup) {
+                                Popup(onDismissRequest = { showPopup = false }) {
+                                    Text(
+                                        text = stringResource(Res.string.alley_artist_details_tags_unconfirmed_explanation),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                                            .widthIn(max = 200.dp)
+                                    )
                                 }
                             }
                         }
-                    },
-                )
-            }
+                    }
+                },
+            )
         }
     }
 

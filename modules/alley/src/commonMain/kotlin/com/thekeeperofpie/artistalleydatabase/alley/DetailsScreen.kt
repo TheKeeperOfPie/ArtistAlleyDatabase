@@ -10,11 +10,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,16 +19,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridOn
@@ -67,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_none
+import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
@@ -109,23 +108,18 @@ object DetailsScreen {
         images: () -> List<CatalogImage>,
         initialImageIndex: Int,
         eventSink: (Event) -> Unit,
-        content: @Composable ColumnScope.() -> Unit,
+        content: LazyListScope.() -> Unit,
     ) {
         val fullscreenImagesState = remember { FullscreenImagesState() }
         Scaffold(
             topBar = {
                 TopBar(
                     sharedElementId = sharedElementId,
+                    fullscreenImagesState = fullscreenImagesState,
                     title = title,
                     favorite = favorite,
                     onFavoriteToggle = { eventSink(Event.FavoriteToggle(it)) },
-                    onClickBack = {
-                        if (fullscreenImagesState.index != null) {
-                            fullscreenImagesState.index = null
-                        } else {
-                            eventSink(Event.NavigateBack)
-                        }
-                    },
+                    onClickBack = { eventSink(Event.NavigateBack) },
                     onClickOpenInMap = { eventSink(Event.OpenMap) },
                 )
             },
@@ -158,7 +152,7 @@ object DetailsScreen {
         fullscreenImagesState: FullscreenImagesState,
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
-        content: @Composable ColumnScope.() -> Unit,
+        content: LazyListScope.() -> Unit,
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -166,15 +160,14 @@ object DetailsScreen {
         ) {
             val images = images()
             val hasImages = images.isNotEmpty()
-            Column(
+            LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 32.dp),
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(if (hasImages) 400.dp else 800.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
                 content()
-                Spacer(Modifier.height(32.dp))
             }
 
             if (hasImages) {
@@ -228,25 +221,24 @@ object DetailsScreen {
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
         initialImageIndex: Int,
-        content: @Composable ColumnScope.() -> Unit,
+        content: LazyListScope.() -> Unit,
     ) {
         val headerPagerState = rememberImagePagerState(images, initialImageIndex)
-        Column(
+        LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+            contentPadding = PaddingValues(bottom = 32.dp),
+            modifier = Modifier.fillMaxSize()
         ) {
-            SmallImageHeader(
-                sharedElementId = sharedElementId,
-                images = images,
-                headerPagerState = headerPagerState,
-                fullscreenImagesState = fullscreenImagesState,
-            )
+            item("detailsHeader") {
+                SmallImageHeader(
+                    sharedElementId = sharedElementId,
+                    images = images,
+                    headerPagerState = headerPagerState,
+                    fullscreenImagesState = fullscreenImagesState,
+                )
+            }
 
             content()
-
-            Spacer(Modifier.height(32.dp))
         }
 
         FullscreenImagePager(
@@ -260,6 +252,7 @@ object DetailsScreen {
     @Composable
     private fun TopBar(
         sharedElementId: Any,
+        fullscreenImagesState: FullscreenImagesState,
         title: @Composable () -> Unit,
         favorite: () -> Boolean,
         onFavoriteToggle: (Boolean) -> Unit,
@@ -268,7 +261,18 @@ object DetailsScreen {
     ) {
         TopAppBar(
             title = title,
-            navigationIcon = { ArrowBackIconButton(onClickBack) },
+            navigationIcon = {
+                if (fullscreenImagesState.index != null) {
+                    IconButton(onClick = { fullscreenImagesState.index = null }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(Res.string.alley_details_close_image),
+                        )
+                    }
+                } else {
+                    ArrowBackIconButton(onClickBack)
+                }
+            },
             actions = {
                 IconButton(
                     onClick = onClickOpenInMap,
@@ -576,12 +580,14 @@ private fun DetailsScreen() = PreviewDark {
         initialImageIndex = 1,
         eventSink = {},
     ) {
-        Box(
-            Modifier.fillMaxSize()
-                .padding(16.dp)
-                .height(400.dp)
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
-        )
+        item {
+            Box(
+                Modifier.fillMaxSize()
+                    .padding(16.dp)
+                    .height(400.dp)
+                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
+            )
+        }
     }
 }
 

@@ -160,7 +160,7 @@ object ArtistSearchScreen {
             val yearShortName = stringResource(year.shortName)
             val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
             val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
-            SearchScreen<ArtistEntryGridModel, ArtistColumn>(
+            SearchScreen(
                 state = state.searchState,
                 eventSink = {
                     eventSink(Event.SearchEvent(it))
