@@ -62,7 +62,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_commis
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
@@ -111,7 +110,7 @@ object ArtistSearchScreen {
         ArtistSearchScreen(
             remember(viewModel, sortViewModel) {
                 State(
-                    lockedSeries = viewModel.lockedSeries,
+                    lockedSeriesEntry = viewModel.lockedSeriesEntry,
                     lockedMerch = viewModel.lockedMerch,
                     lockedYear = viewModel.lockedYear,
                     randomSeed = viewModel.randomSeed,
@@ -150,11 +149,12 @@ object ArtistSearchScreen {
             val showOnlyCatalogImages by state.onlyCatalogImages.collectAsStateWithLifecycle()
             val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
             val query by state.query.collectAsStateWithLifecycle()
+            val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
             val shouldShowCount by remember {
                 derivedStateOf {
                     query.isNotEmpty()
                             || showOnlyCatalogImages
-                            || state.lockedSeries != null
+                            || lockedSeriesEntry != null
                             || state.lockedMerch != null
 
                 }
@@ -162,24 +162,16 @@ object ArtistSearchScreen {
 
             val year by state.year.collectAsState()
             val yearShortName = stringResource(year.shortName)
-            val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
             val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+            val languageOption = LocalLanguageOptionMedia.current
+            val seriesTitle = lockedSeriesEntry?.name(languageOption)
             SearchScreen(
                 state = state.searchState,
                 eventSink = {
                     eventSink(Event.SearchEvent(it))
                 },
                 query = state.query,
-                title = {
-                    val tagTitle = state.lockedSeries ?: state.lockedMerch
-                    if (tagTitle == null) {
-                        null
-                    } else if (isCurrentYear) {
-                        tagTitle
-                    } else {
-                        "$yearShortName - $tagTitle"
-                    }
-                },
+                title = { seriesTitle ?: state.lockedMerch },
                 actions = if (onClickMap == null) {
                     null
                 } else {
@@ -458,7 +450,7 @@ object ArtistSearchScreen {
 
     @Stable
     class State(
-        val lockedSeries: String?,
+        val lockedSeriesEntry: StateFlow<SeriesEntry?>,
         val lockedMerch: String?,
         val lockedYear: DataYear?,
         val randomSeed: Int,
@@ -502,7 +494,7 @@ object ArtistSearchScreen {
             }
             .toList()
         val state = State(
-            lockedSeries = null,
+            lockedSeriesEntry = MutableStateFlow(null),
             lockedMerch = null,
             lockedYear = null,
             randomSeed = 1,

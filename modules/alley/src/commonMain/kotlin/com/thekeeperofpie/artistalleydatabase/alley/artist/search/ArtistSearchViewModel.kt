@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,10 +33,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
@@ -82,6 +86,15 @@ class ArtistSearchViewModel(
         showRandomCatalogImage = settings.showRandomCatalogImage,
         forceOneDisplayColumn = settings.forceOneDisplayColumn,
     )
+
+    val lockedSeriesEntry = flowOf(lockedSeries)
+        .mapNotNull {
+            it ?: return@mapNotNull null
+            withContext(CustomDispatchers.IO) {
+                tagEntryDao.getSeriesById(it)
+            }
+        }
+        .stateInForCompose(null)
 
     override val sections = emptyList<EntrySection>()
 
@@ -141,24 +154,25 @@ class ArtistSearchViewModel(
         .flowOn(CustomDispatchers.IO)
         .cachedIn(viewModelScope)
 
-    fun onEvent(navigationController: NavigationController, event: ArtistSearchScreen.Event) = when (event) {
-        is ArtistSearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
-            is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
-                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
-            is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
-                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
-            is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
-                navigationController.navigate(
-                    Destinations.ArtistDetails(
-                        year = searchEvent.entry.artist.year,
-                        id = searchEvent.entry.id.valueId,
-                        imageIndex = searchEvent.imageIndex.toString(),
+    fun onEvent(navigationController: NavigationController, event: ArtistSearchScreen.Event) =
+        when (event) {
+            is ArtistSearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
+                is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
+                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
+                is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
+                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
+                is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
+                    navigationController.navigate(
+                        Destinations.ArtistDetails(
+                            year = searchEvent.entry.artist.year,
+                            id = searchEvent.entry.id.valueId,
+                            imageIndex = searchEvent.imageIndex.toString(),
+                        )
                     )
-                )
+            }
+            is ArtistSearchScreen.Event.OpenMerch ->
+                navigationController.navigate(Destinations.Merch(lockedYear, event.merch))
+            is ArtistSearchScreen.Event.OpenSeries ->
+                navigationController.navigate(Destinations.Series(lockedYear, event.series))
         }
-        is ArtistSearchScreen.Event.OpenMerch ->
-            navigationController.navigate(Destinations.Merch(lockedYear, event.merch))
-        is ArtistSearchScreen.Event.OpenSeries ->
-            navigationController.navigate(Destinations.Series(lockedYear, event.series))
-    }
 }
