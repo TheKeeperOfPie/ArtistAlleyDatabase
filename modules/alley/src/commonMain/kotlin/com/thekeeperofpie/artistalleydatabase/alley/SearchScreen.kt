@@ -169,7 +169,20 @@ object SearchScreen {
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = 72.dp,
                 sheetDragHandle = {
-                    BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = {
+                                if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded) {
+                                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                                } else {
+                                    scope.launch { scaffoldState.bottomSheetState.expand() }
+                                }
+                            })
+                    ) {
+                        BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+                    }
                 },
                 sheetContent = bottomSheet,
                 modifier = Modifier
