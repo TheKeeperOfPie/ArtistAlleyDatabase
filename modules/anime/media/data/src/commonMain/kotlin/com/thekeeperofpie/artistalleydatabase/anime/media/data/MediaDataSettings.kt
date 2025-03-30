@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.data
 
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

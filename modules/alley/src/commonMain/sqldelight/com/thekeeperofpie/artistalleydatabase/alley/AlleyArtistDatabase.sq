@@ -3,225 +3,231 @@ import kotlin.String;
 import kotlin.collections.List;
 
 CREATE TABLE
-    IF NOT EXISTS `artistEntry2023` (
-        `id` TEXT NOT NULL,
-        `booth` TEXT NOT NULL COLLATE NOCASE,
-        `name` TEXT NOT NULL COLLATE NOCASE,
-        `artistNames` TEXT AS List<String> NOT NULL COLLATE NOCASE,
-        `summary` TEXT,
-        `links` TEXT AS List<String> NOT NULL,
-        `catalogLinks` TEXT AS List<String> NOT NULL,
-        `driveLink` TEXT,
-        `counter` INTEGER NOT NULL DEFAULT 1,
-        PRIMARY KEY (`id`)
+    IF NOT EXISTS artistEntry2023 (
+        id TEXT NOT NULL,
+        booth TEXT NOT NULL COLLATE NOCASE,
+        name TEXT NOT NULL COLLATE NOCASE,
+        artistNames TEXT AS List<String> NOT NULL COLLATE NOCASE,
+        summary TEXT,
+        links TEXT AS List<String> NOT NULL,
+        catalogLinks TEXT AS List<String> NOT NULL,
+        driveLink TEXT,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry2023_fts` USING FTS5 (
-    `id`,
-    `booth`,
-    `name`,
-    `artistNames`,
-    `summary`,
-    `driveLink`,
-    `counter`,
-    content=`artistEntry2023`,
+CREATE VIRTUAL TABLE IF NOT EXISTS artistEntry2023_fts USING FTS5 (
+    id,
+    booth,
+    name,
+    artistNames,
+    summary,
+    driveLink,
+    counter,
+    content=artistEntry2023,
     tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TABLE
-    IF NOT EXISTS `artistEntry2024` (
-        `id` TEXT NOT NULL,
-        `booth` TEXT NOT NULL COLLATE NOCASE,
-        `name` TEXT NOT NULL COLLATE NOCASE,
-        `summary` TEXT,
-        `links` TEXT AS List<String> NOT NULL,
-        `storeLinks` TEXT AS List<String> NOT NULL,
-        `catalogLinks` TEXT AS List<String> NOT NULL,
-        `driveLink` TEXT,
-        `notes` TEXT,
-        `seriesInferred` TEXT AS List<String> NOT NULL,
-        `seriesConfirmed` TEXT AS List<String> NOT NULL,
-        `merchInferred` TEXT AS List<String> NOT NULL,
-        `merchConfirmed` TEXT AS List<String> NOT NULL,
-        `counter` INTEGER NOT NULL DEFAULT 1,
-        PRIMARY KEY (`id`)
+    IF NOT EXISTS artistEntry2024 (
+        id TEXT NOT NULL,
+        booth TEXT NOT NULL COLLATE NOCASE,
+        name TEXT NOT NULL COLLATE NOCASE,
+        summary TEXT,
+        links TEXT AS List<String> NOT NULL,
+        storeLinks TEXT AS List<String> NOT NULL,
+        catalogLinks TEXT AS List<String> NOT NULL,
+        driveLink TEXT,
+        notes TEXT,
+        seriesInferred TEXT AS List<String> NOT NULL,
+        seriesConfirmed TEXT AS List<String> NOT NULL,
+        merchInferred TEXT AS List<String> NOT NULL,
+        merchConfirmed TEXT AS List<String> NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry2024_fts` USING FTS5 (
-    `id`,
-    `booth`,
-    `name`,
-    `summary`,
-    `driveLink`,
-    `seriesInferred`,
-    `seriesConfirmed`,
-    `merchInferred`,
-    `merchConfirmed`,
-    `counter`,
-    content=`artistEntry2024`,
+CREATE VIRTUAL TABLE IF NOT EXISTS artistEntry2024_fts USING FTS5 (
+    id,
+    booth,
+    name,
+    summary,
+    driveLink,
+    seriesInferred,
+    seriesConfirmed,
+    merchInferred,
+    merchConfirmed,
+    counter,
+    content=artistEntry2024,
     tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TABLE
-    IF NOT EXISTS `artistEntry2025` (
-        `id` TEXT NOT NULL,
-        `booth` TEXT COLLATE NOCASE,
-        `name` TEXT NOT NULL COLLATE NOCASE,
-        `summary` TEXT,
-        `links` TEXT AS List<String> NOT NULL,
-        `storeLinks` TEXT AS List<String> NOT NULL,
-        `catalogLinks` TEXT AS List<String> NOT NULL,
-        `driveLink` TEXT,
-        `notes` TEXT,
-        `commissions` TEXT AS List<String> NOT NULL,
-        `seriesInferred` TEXT AS List<String> NOT NULL,
-        `seriesConfirmed` TEXT AS List<String> NOT NULL,
-        `merchInferred` TEXT AS List<String> NOT NULL,
-        `merchConfirmed` TEXT AS List<String> NOT NULL,
-        `counter` INTEGER NOT NULL DEFAULT 1,
-        PRIMARY KEY (`id`)
+    IF NOT EXISTS artistEntry2025 (
+        id TEXT NOT NULL,
+        booth TEXT COLLATE NOCASE,
+        name TEXT NOT NULL COLLATE NOCASE,
+        summary TEXT,
+        links TEXT AS List<String> NOT NULL,
+        storeLinks TEXT AS List<String> NOT NULL,
+        catalogLinks TEXT AS List<String> NOT NULL,
+        driveLink TEXT,
+        notes TEXT,
+        commissions TEXT AS List<String> NOT NULL,
+        seriesInferred TEXT AS List<String> NOT NULL,
+        seriesConfirmed TEXT AS List<String> NOT NULL,
+        merchInferred TEXT AS List<String> NOT NULL,
+        merchConfirmed TEXT AS List<String> NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `artistEntry2025_fts` USING FTS5 (
-    `id`,
-    `booth`,
-    `name`,
-    `summary`,
-    `driveLink`,
-    `notes`,
-    `commissions`,
-    `seriesInferred`,
-    `seriesConfirmed`,
-    `merchInferred`,
-    `merchConfirmed`,
-    `counter`,
-    content=`artistEntry2025`,
+CREATE VIRTUAL TABLE IF NOT EXISTS artistEntry2025_fts USING FTS5 (
+    id,
+    booth,
+    name,
+    summary,
+    driveLink,
+    notes,
+    commissions,
+    seriesInferred,
+    seriesConfirmed,
+    merchInferred,
+    merchConfirmed,
+    counter,
+    content=artistEntry2025,
     tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TABLE
-    IF NOT EXISTS `artistSeriesConnection` (
-        `artistId` TEXT NOT NULL,
-        `seriesId` TEXT NOT NULL,
-        `confirmed` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        PRIMARY KEY (`artistId`, `seriesId`)
+    IF NOT EXISTS artistSeriesConnection (
+        artistId TEXT NOT NULL,
+        seriesId TEXT NOT NULL,
+        confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
+        has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (artistId, seriesId)
     );
 
 CREATE TABLE
-    IF NOT EXISTS `artistMerchConnection` (
-        `artistId` TEXT NOT NULL,
-        `merchId` TEXT NOT NULL,
-        `confirmed` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        PRIMARY KEY (`artistId`, `merchId`)
+    IF NOT EXISTS artistMerchConnection (
+        artistId TEXT NOT NULL,
+        merchId TEXT NOT NULL,
+        confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
+        has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (artistId, merchId)
     );
 
 CREATE TABLE
-    IF NOT EXISTS `stampRallyEntry2023` (
-        `id` TEXT NOT NULL,
-        `fandom` TEXT NOT NULL COLLATE NOCASE,
-        `hostTable` TEXT NOT NULL COLLATE NOCASE,
-        `tables` TEXT AS List<String> NOT NULL,
-        `links` TEXT AS List<String> NOT NULL,
-        `counter` INTEGER NOT NULL DEFAULT 1,
-        PRIMARY KEY (`id`)
+    IF NOT EXISTS stampRallyEntry2023 (
+        id TEXT NOT NULL,
+        fandom TEXT NOT NULL COLLATE NOCASE,
+        hostTable TEXT NOT NULL COLLATE NOCASE,
+        tables TEXT AS List<String> NOT NULL,
+        links TEXT AS List<String> NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry2023_fts` USING FTS5 (
-    `id`,
-    `fandom`,
-    `tables`,
-    `counter`,
-    content=`stampRallyEntry2023`,
+CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2023_fts USING FTS5 (
+    id,
+    fandom,
+    tables,
+    counter,
+    content=stampRallyEntry2023,
     tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TABLE
-    IF NOT EXISTS `stampRallyEntry2024` (
-        `id` TEXT NOT NULL,
-        `fandom` TEXT NOT NULL COLLATE NOCASE,
-        `hostTable` TEXT NOT NULL COLLATE NOCASE,
-        `tables` TEXT AS List<String> NOT NULL,
-        `links` TEXT AS List<String> NOT NULL,
-        `tableMin` INTEGER,
-        `totalCost` INTEGER,
-        `prizeLimit` INTEGER,
-        `notes` TEXT,
-        `counter` INTEGER NOT NULL DEFAULT 1,
-        PRIMARY KEY (`id`)
+    IF NOT EXISTS stampRallyEntry2024 (
+        id TEXT NOT NULL,
+        fandom TEXT NOT NULL COLLATE NOCASE,
+        hostTable TEXT NOT NULL COLLATE NOCASE,
+        tables TEXT AS List<String> NOT NULL,
+        links TEXT AS List<String> NOT NULL,
+        tableMin INTEGER,
+        totalCost INTEGER,
+        prizeLimit INTEGER,
+        notes TEXT,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry2024_fts` USING FTS5 (
-    `id`,
-    `fandom`,
-    `tables`,
-    `counter`,
-    content=`stampRallyEntry2024`,
+CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2024_fts USING FTS5 (
+    id,
+    fandom,
+    tables,
+    counter,
+    content=stampRallyEntry2024,
     tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TABLE
-    IF NOT EXISTS `stampRallyEntry2025` (
-        `id` TEXT NOT NULL,
-        `fandom` TEXT NOT NULL COLLATE NOCASE,
-        `hostTable` TEXT NOT NULL COLLATE NOCASE,
-        `tables` TEXT AS List<String> NOT NULL,
-        `links` TEXT AS List<String> NOT NULL,
-        `tableMin` INTEGER,
-        `totalCost` INTEGER,
-        `prizeLimit` INTEGER,
-        `notes` TEXT,
-        `counter` INTEGER NOT NULL DEFAULT 1,
-        PRIMARY KEY (`id`)
+    IF NOT EXISTS stampRallyEntry2025 (
+        id TEXT NOT NULL,
+        fandom TEXT NOT NULL COLLATE NOCASE,
+        hostTable TEXT NOT NULL COLLATE NOCASE,
+        tables TEXT AS List<String> NOT NULL,
+        links TEXT AS List<String> NOT NULL,
+        tableMin INTEGER,
+        totalCost INTEGER,
+        prizeLimit INTEGER,
+        notes TEXT,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `stampRallyEntry2025_fts` USING FTS5 (
-    `id`,
-    `fandom`,
-    `tables`,
-    `counter`,
-    content=`stampRallyEntry2025`,
+CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2025_fts USING FTS5 (
+    id,
+    fandom,
+    tables,
+    counter,
+    content=stampRallyEntry2025,
     tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TABLE
-    IF NOT EXISTS `stampRallyArtistConnection` (
-        `stampRallyId` TEXT NOT NULL,
-        `artistId` TEXT NOT NULL,
-        PRIMARY KEY (`stampRallyId`, `artistId`)
+    IF NOT EXISTS stampRallyArtistConnection (
+        stampRallyId TEXT NOT NULL,
+        artistId TEXT NOT NULL,
+        PRIMARY KEY (stampRallyId, artistId)
     );
 
-CREATE INDEX IF NOT EXISTS `index_stampRallyArtistConnection_artistId` ON `stampRallyArtistConnection` (`artistId`);
+CREATE INDEX IF NOT EXISTS index_stampRallyArtistConnection_artistId ON stampRallyArtistConnection (artistId);
 
 CREATE TABLE
-    IF NOT EXISTS `seriesEntry` (
-        `name` TEXT NOT NULL COLLATE NOCASE,
-        `notes` TEXT,
-        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        PRIMARY KEY (`name`)
+    IF NOT EXISTS seriesEntry (
+        id TEXT NOT NULL COLLATE NOCASE,
+        notes TEXT,
+        titleEnglish TEXT NOT NULL COLLATE NOCASE,
+        titleRomaji TEXT NOT NULL COLLATE NOCASE,
+        titleNative TEXT NOT NULL COLLATE NOCASE,
+        has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (id)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `seriesEntry_fts` USING FTS5 (
-    `name`,
-    content=`seriesEntry`,
+CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
+    id,
+    titleEnglish,
+    titleRomaji,
+    titleNative,
+    content=seriesEntry,
     tokenize="unicode61 remove_diacritics 2"
 );
 
 CREATE TABLE
-    IF NOT EXISTS `merchEntry` (
-        `name` TEXT NOT NULL,
-        `notes` TEXT,
-        `has2024` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        `has2025` INTEGER AS Boolean NOT NULL DEFAULT 0,
-        PRIMARY KEY (`name`)
+    IF NOT EXISTS merchEntry (
+        name TEXT NOT NULL,
+        notes TEXT,
+        has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (name)
     );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS `merchEntry_fts` USING FTS5 (
-    `name`,
-    content=`merchEntry`,
+CREATE VIRTUAL TABLE IF NOT EXISTS merchEntry_fts USING FTS5 (
+    name,
+    content=merchEntry,
     tokenize="unicode61 remove_diacritics 2"
 );

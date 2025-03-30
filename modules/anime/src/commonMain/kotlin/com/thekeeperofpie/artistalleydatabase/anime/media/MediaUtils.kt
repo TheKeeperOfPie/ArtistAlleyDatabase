@@ -84,8 +84,8 @@ import com.anilist.data.type.ScoreFormat
 import com.anilist.data.type.UserTitleLanguage
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.RoundingMode
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.data.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.AiringDate

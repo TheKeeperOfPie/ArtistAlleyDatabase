@@ -27,6 +27,7 @@ kotlin {
         commonMain.dependencies {
             api(projects.modules.alley.data)
             api(projects.modules.alley.user)
+            api(projects.modules.anilist.data)
             api(projects.modules.entry)
             implementation(projects.modules.settings.ui)
             implementation(projects.modules.utils)

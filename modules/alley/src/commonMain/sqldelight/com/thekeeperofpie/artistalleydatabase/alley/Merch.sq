@@ -1,17 +1,6 @@
 /** Generic get is unused, but generates the object and cursor code for easy copy-paste */
-getSeries:
-SELECT * FROM seriesEntry;
-
 getMerch:
 SELECT * FROM merchEntry;
-
-getSeriesSize2024:
-SELECT COUNT(*) FROM seriesEntry
-WHERE has2024 = 1;
-
-getSeriesSize2025:
-SELECT COUNT(*) FROM seriesEntry
-WHERE has2025 = 1;
 
 getMerchSize2024:
 SELECT COUNT(*) FROM merchEntry
@@ -20,17 +9,6 @@ WHERE has2024 = 1;
 getMerchSize2025:
 SELECT COUNT(*) FROM merchEntry
 WHERE has2025 = 1;
-
-getBoothsBySeriesId2024:
-SELECT artistEntry2024.booth FROM artistSeriesConnection
-INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)
-WHERE artistSeriesConnection.seriesId = :seriesId;
-
-getBoothsBySeriesIdConfirmed2024:
-SELECT artistEntry2024.booth FROM artistSeriesConnection
-INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)
-WHERE artistSeriesConnection.seriesId = :seriesId
-AND artistSeriesConnection.confirmed IS 1;
 
 getBoothsByMerchId2024:
 SELECT artistEntry2024.booth FROM artistMerchConnection
@@ -42,17 +20,6 @@ SELECT artistEntry2024.booth FROM artistMerchConnection
 INNER JOIN artistEntry2024 ON (artistMerchConnection.artistId = artistEntry2024.id)
 WHERE artistMerchConnection.merchId = :merchId
 AND artistMerchConnection.confirmed IS 1;
-
-getBoothsBySeriesId2025:
-SELECT artistEntry2025.booth FROM artistSeriesConnection
-INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025.id)
-WHERE artistSeriesConnection.seriesId = :seriesId;
-
-getBoothsBySeriesIdConfirmed2025:
-SELECT artistEntry2025.booth FROM artistSeriesConnection
-INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025.id)
-WHERE artistSeriesConnection.seriesId = :seriesId
-AND artistSeriesConnection.confirmed IS 1;
 
 getBoothsByMerchId2025:
 SELECT artistEntry2025.booth FROM artistMerchConnection

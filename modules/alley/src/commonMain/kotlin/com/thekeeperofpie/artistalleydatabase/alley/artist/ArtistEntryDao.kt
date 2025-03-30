@@ -405,7 +405,7 @@ class ArtistEntryDao(
                 ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
                 .orEmpty()
 
-            var joinStatement = """
+            val joinStatement = """
                 LEFT OUTER JOIN artistUserEntry
                 ON $tableName.id = artistUserEntry.artistId
                 AND '${year.serializedName}' = artistUserEntry.dataYear

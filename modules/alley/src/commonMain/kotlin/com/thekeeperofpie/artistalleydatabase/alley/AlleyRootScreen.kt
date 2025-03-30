@@ -111,7 +111,7 @@ object AlleyRootScreen {
                             BrowseScreen(
                                 dataYearHeaderState = dataYearHeaderState,
                                 tagsViewModel = viewModel,
-                                onSeriesClick = { onSeriesClick(it.name) },
+                                onSeriesClick = { onSeriesClick(it.id) },
                                 onMerchClick = { onMerchClick(it.name) },
                             )
                         }

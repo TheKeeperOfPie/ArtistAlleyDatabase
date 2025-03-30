@@ -151,7 +151,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
             merchConnections.values.forEach(mutationQueries::insertMerchConnection)
 
-            parseTags(database, seriesConnections, merchConnections)
+            parseSeries(database, seriesConnections)
+            parseMerch(database, merchConnections)
+
             parseStampRallies(artists2023, artists2024, artists2025, database)
 
             runBlocking {
@@ -540,25 +542,32 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         return Triple(artists2025, seriesConnections, merchConnections)
     }
 
-    private fun parseTags(
+    private fun parseSeries(
         database: BuildLogicDatabase,
         seriesConnections: MutableMap<Pair<String, String>, ArtistSeriesConnection>,
-        merchConnections: MutableMap<Pair<String, String>, ArtistMerchConnection>,
     ) {
         val mutationQueries = database.mutationQueries
         val seriesCsv = inputsDirectory.file(SERIES_CSV_NAME).get()
-        val merchCsv = inputsDirectory.file(MERCH_CSV_NAME).get()
         open(seriesCsv).use {
             read(it)
                 .map {
-                    // Series, Notes
-                    val name = it["Series"]!!
+                    // Series, Notes, AniList ID, AniList Type, Source Type, English, Romaji,
+                    // Native, External Link,
+                    val id = it["Series"]!!
                     val notes = it["Notes"]
+
+                    val titleRomaji = it["Romaji"]?.ifBlank { null }
+                    val titleEnglish = it["English"]?.ifBlank { null }
+                    val titleNative = it["Native"]?.ifBlank { null }
                     SeriesEntry(
-                        name = name,
+                        id = id,
                         notes = notes,
-                        has2024 = seriesConnections.any { it.value.seriesId == name && it.value.has2024 },
-                        has2025 = seriesConnections.any { it.value.seriesId == name && it.value.has2025 },
+                        // Fallback so that every field has a value so that it can be sorted
+                        titleEnglish = titleEnglish ?: titleRomaji ?: id,
+                        titleRomaji = titleRomaji ?: titleEnglish ?: id,
+                        titleNative = titleNative ?: titleRomaji ?: titleEnglish ?: id,
+                        has2024 = seriesConnections.any { it.value.seriesId == id && it.value.has2024 },
+                        has2025 = seriesConnections.any { it.value.seriesId == id && it.value.has2025 },
                     )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
@@ -568,6 +577,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                 }
         }
+    }
+
+    private fun parseMerch(
+        database: BuildLogicDatabase,
+        merchConnections: MutableMap<Pair<String, String>, ArtistMerchConnection>,
+    ) {
+        val mutationQueries = database.mutationQueries
+        val merchCsv = inputsDirectory.file(MERCH_CSV_NAME).get()
         open(merchCsv).use {
             read(it)
                 .map {

@@ -450,8 +450,7 @@ private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
                     }
                 }
                 append(
-                    " and we'll get your info updated! Thank you for helping making the site " +
-                            "better!"
+                    " and we'll get your info updated! Thank you for helping make the site better!"
                 )
             }
         )

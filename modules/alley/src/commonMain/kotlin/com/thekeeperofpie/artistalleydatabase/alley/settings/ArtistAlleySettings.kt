@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -23,4 +24,5 @@ interface ArtistAlleySettings {
     val showOnlyHasCommissions: MutableStateFlow<Boolean>
     val forceOneDisplayColumn: MutableStateFlow<Boolean>
     val dataYear: MutableStateFlow<DataYear>
+    val languageOption: MutableStateFlow<AniListLanguageOption>
 }

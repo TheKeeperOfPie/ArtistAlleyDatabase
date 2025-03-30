@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -81,6 +82,15 @@ class ArtistAlleyAppSettings(
                 ?.let { year -> DataYear.entries.find { it.year == year } } ?: DataYear.YEAR_2025
         },
         setValue = { key, value -> putString(key, value.year.toString()) },
+    )
+    override val languageOption = initialize(
+        key = "languageOption",
+        initialValue = {
+            getString(it, null)
+                ?.let { option -> AniListLanguageOption.entries.find { it.name == option } }
+                ?: AniListLanguageOption.DEFAULT
+        },
+        setValue = { key, value -> putString(key, value.name) },
     )
 
     private fun long(key: String, default: Long = -1L) = initialize(

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.staff.generated.resources.Res
 import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_characters_filter_setting_name_language
 import artistalleydatabase.modules.anime.staff.generated.resources.anime_staff_characters_filter_sort_label
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel

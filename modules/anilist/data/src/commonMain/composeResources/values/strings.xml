@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aniList_language_option_default">Default</string>
+    <string name="aniList_language_option_english">English</string>
+    <string name="aniList_language_option_native">Native</string>
+    <string name="aniList_language_option_romaji">Romaji</string>
+</resources>

@@ -76,7 +76,7 @@ import artistalleydatabase.modules.settings.generated.resources.settings_subsect
 import artistalleydatabase.modules.settings.generated.resources.settings_unlock_all_features
 import co.touchlab.kermit.Logger
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao

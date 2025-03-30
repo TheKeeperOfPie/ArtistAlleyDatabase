@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionCharacters
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController

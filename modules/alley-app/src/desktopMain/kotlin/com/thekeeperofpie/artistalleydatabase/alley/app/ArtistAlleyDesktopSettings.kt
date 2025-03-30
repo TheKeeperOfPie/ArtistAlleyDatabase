@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,4 +28,5 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val showOnlyHasCommissions = MutableStateFlow(false)
     override val forceOneDisplayColumn = MutableStateFlow(false)
     override val dataYear = MutableStateFlow(DataYear.YEAR_2025)
+    override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
 }

@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
@@ -79,6 +80,13 @@ class ArtistAlleyWasmJsSettings(
         deserialize = {
             it?.toIntOrNull()?.let { year -> DataYear.entries.find { it.year == year } }
                 ?: DataYear.YEAR_2025
+        },
+    )
+    override val languageOption by register(
+        serialize = { it.name },
+        deserialize = { value ->
+            AniListLanguageOption.entries.find { it.name == value }
+                ?: AniListLanguageOption.DEFAULT
         },
     )
 

@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import com.anilist.data.UserByIdQuery
 import com.anilist.data.fragment.UserMediaStatistics
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.staff.data.StaffUtils.subtitleName

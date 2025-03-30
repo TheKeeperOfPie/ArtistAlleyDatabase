@@ -1,7 +1,9 @@
 plugins {
     id("library-android")
-    id("library-kotlin")
+    id("library-compose")
     id("library-desktop")
+    id("library-kotlin")
+    id("library-web")
     alias(libs.plugins.com.apollographql.apollo3.external)
 }
 

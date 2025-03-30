@@ -5,7 +5,7 @@ import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaSeason
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterHeaderParams
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumThreadSortOption

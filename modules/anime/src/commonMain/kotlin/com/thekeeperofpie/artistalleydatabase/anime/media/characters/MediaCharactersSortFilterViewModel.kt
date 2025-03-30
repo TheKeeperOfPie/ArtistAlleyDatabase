@@ -9,7 +9,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_charact
 import artistalleydatabase.modules.anime.generated.resources.anime_media_characters_filter_setting_name_language
 import artistalleydatabase.modules.anime.generated.resources.anime_media_characters_filter_sort_label
 import com.anilist.data.type.CharacterRole
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterSettings
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.toTextRes

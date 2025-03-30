@@ -9,8 +9,8 @@ import artistalleydatabase.modules.anime.characters.data.generated.resources.ani
 import com.anilist.data.fragment.CharacterNameLanguageFragment
 import com.anilist.data.fragment.DetailsCharacterEdge
 import com.anilist.data.type.CharacterRole
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionCharacters
 
 object CharacterUtils {
 

@@ -50,7 +50,7 @@ import artistalleydatabase.modules.anime.media.data.generated.resources.anime_me
 import com.anilist.data.MediaAutocompleteQuery.Data.Page.Medium
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaNavigationDataImpl
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings

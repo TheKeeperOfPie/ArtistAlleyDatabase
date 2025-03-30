@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.desktop
 
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.AppSettings
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination

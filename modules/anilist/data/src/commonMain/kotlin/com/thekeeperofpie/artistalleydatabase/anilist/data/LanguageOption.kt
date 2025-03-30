@@ -1,11 +1,11 @@
-package com.thekeeperofpie.artistalleydatabase.anilist
+package com.thekeeperofpie.artistalleydatabase.anilist.data
 
 import androidx.compose.runtime.compositionLocalOf
-import artistalleydatabase.modules.anilist.generated.resources.Res
-import artistalleydatabase.modules.anilist.generated.resources.aniList_language_option_default
-import artistalleydatabase.modules.anilist.generated.resources.aniList_language_option_english
-import artistalleydatabase.modules.anilist.generated.resources.aniList_language_option_native
-import artistalleydatabase.modules.anilist.generated.resources.aniList_language_option_romaji
+import artistalleydatabase.modules.anilist.data.generated.resources.Res
+import artistalleydatabase.modules.anilist.data.generated.resources.aniList_language_option_default
+import artistalleydatabase.modules.anilist.data.generated.resources.aniList_language_option_english
+import artistalleydatabase.modules.anilist.data.generated.resources.aniList_language_option_native
+import artistalleydatabase.modules.anilist.data.generated.resources.aniList_language_option_romaji
 import org.jetbrains.compose.resources.StringResource
 
 enum class AniListLanguageOption(val textRes: StringResource) {

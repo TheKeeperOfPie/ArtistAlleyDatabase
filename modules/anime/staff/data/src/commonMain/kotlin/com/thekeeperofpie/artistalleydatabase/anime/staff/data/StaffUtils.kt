@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.staff.data
 
 import androidx.compose.runtime.Composable
 import com.anilist.data.fragment.StaffNameLanguageFragment
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
-import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionStaff
 
 object StaffUtils {
 

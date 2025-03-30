@@ -6,7 +6,7 @@ import artistalleydatabase.modules.anime.characters.generated.resources.Res
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_filter_birthday_label
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_filter_setting_name_language
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_media_filter_sort_label
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.filter.CharacterSortFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel

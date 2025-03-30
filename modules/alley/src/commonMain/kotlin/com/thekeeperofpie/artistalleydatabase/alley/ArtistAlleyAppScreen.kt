@@ -15,10 +15,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -32,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDe
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -61,7 +64,12 @@ object ArtistAlleyAppScreen {
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 SharedTransitionLayout(modifier = Modifier.weight(1f)) {
-                    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                    val languageOption by component.settings.languageOption
+                        .collectAsStateWithLifecycle()
+                    CompositionLocalProvider(
+                        LocalSharedTransitionScope provides this,
+                        LocalLanguageOptionMedia provides languageOption,
+                    ) {
                         NavHost(navHostController, Destinations.Home) {
                             val navigationTypeMap = component.navigationTypeMap
                             sharedElementComposable<Destinations.Home>(

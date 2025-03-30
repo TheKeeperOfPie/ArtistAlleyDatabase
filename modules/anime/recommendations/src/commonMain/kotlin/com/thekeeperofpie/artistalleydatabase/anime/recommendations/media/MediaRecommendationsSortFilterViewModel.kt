@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.anime.recommendations.generated.resources.Res
 import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_recommendations_filter_setting_title_language
 import artistalleydatabase.modules.anime.recommendations.generated.resources.anime_media_recommendations_filter_sort_label
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.recommendations.RecommendationSortOption

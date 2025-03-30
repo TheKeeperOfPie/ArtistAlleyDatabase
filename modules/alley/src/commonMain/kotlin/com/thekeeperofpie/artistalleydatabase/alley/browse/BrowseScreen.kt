@@ -50,8 +50,10 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_w
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -105,17 +107,20 @@ object BrowseScreen {
                 ) {
                     val scrollStateSaver = ScrollStateSaver.fromMap(it.name, scrollPositions)
                     when (it) {
-                        Tab.SERIES -> TabScreen(
-                            dataYearHeaderState = dataYearHeaderState,
-                            query = { tagsViewModel.seriesQuery },
-                            onQueryChange = { tagsViewModel.seriesQuery = it },
-                            entriesSize = { series.itemCount },
-                            values = series,
-                            itemKey = { it.name },
-                            itemToText = { it.name },
-                            onItemClick = onSeriesClick,
-                            scrollStateSaver = scrollStateSaver
-                        )
+                        Tab.SERIES -> {
+                            val languageOption = LocalLanguageOptionMedia.current
+                            TabScreen(
+                                dataYearHeaderState = dataYearHeaderState,
+                                query = { tagsViewModel.seriesQuery },
+                                onQueryChange = { tagsViewModel.seriesQuery = it },
+                                entriesSize = { series.itemCount },
+                                values = series,
+                                itemKey = { it.id },
+                                itemToText = { it.name(languageOption) },
+                                onItemClick = onSeriesClick,
+                                scrollStateSaver = scrollStateSaver
+                            )
+                        }
                         Tab.MERCH -> TabScreen(
                             dataYearHeaderState = dataYearHeaderState,
                             query = { tagsViewModel.merchQuery },
