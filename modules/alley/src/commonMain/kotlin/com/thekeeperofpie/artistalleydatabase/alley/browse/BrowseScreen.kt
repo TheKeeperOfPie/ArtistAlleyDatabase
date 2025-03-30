@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -67,7 +68,8 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
     ExperimentalComposeUiApi::class
 )
 object BrowseScreen {
@@ -118,7 +120,13 @@ object BrowseScreen {
                                 itemKey = { it.id },
                                 itemToText = { it.name(languageOption) },
                                 onItemClick = onSeriesClick,
-                                scrollStateSaver = scrollStateSaver
+                                scrollStateSaver = scrollStateSaver,
+                                additionalHeader = {
+                                    item(key = "seriesLanguageOption") {
+                                        tagsViewModel.seriesLanguageSection
+                                            .Content(Modifier.fillMaxWidth())
+                                    }
+                                }
                             )
                         }
                         Tab.MERCH -> TabScreen(
@@ -149,6 +157,7 @@ object BrowseScreen {
         itemToText: (T) -> String,
         onItemClick: (T) -> Unit,
         scrollStateSaver: ScrollStateSaver,
+        additionalHeader: LazyListScope.() -> Unit = {},
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         Scaffold(
@@ -216,12 +225,14 @@ object BrowseScreen {
                     contentPadding = PaddingValues(bottom = 80.dp),
                     modifier = Modifier
                         .fillMaxHeight()
-                        .widthIn(max = 400.dp)
+                        .widthIn(max = 600.dp)
                         .align(Alignment.TopCenter)
                 ) {
                     item(key = "dataYearHeader") {
                         DataYearHeader(dataYearHeaderState)
                     }
+
+                    additionalHeader()
 
                     items(
                         count = values.itemCount,

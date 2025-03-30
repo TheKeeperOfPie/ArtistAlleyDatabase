@@ -425,7 +425,7 @@ class ArtistEntryDao(
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
 
-            return DaoUtils.queryPagingSource<ArtistWithUserData>(
+            return DaoUtils.queryPagingSource(
                 driver = driver,
                 database = database,
                 countStatement = countStatement,
@@ -498,7 +498,7 @@ class ArtistEntryDao(
             andStatement = andStatement,
         )
 
-        return DaoUtils.queryPagingSource<ArtistWithUserData>(
+        return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             countStatement = countStatement,

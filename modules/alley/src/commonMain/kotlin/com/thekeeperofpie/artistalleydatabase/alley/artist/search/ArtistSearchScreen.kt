@@ -66,17 +66,20 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
@@ -90,6 +93,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object ArtistSearchScreen {
@@ -303,13 +307,22 @@ object ArtistSearchScreen {
             ArtistColumn.SUMMARY -> Box(clickableCellModifier) {
                 Text(text = row?.artist?.summary.orEmpty())
             }
-            ArtistColumn.SERIES -> TagsFlowRow(
-                column = column,
-                tags = row?.series,
-                contentDescription = Res.string.alley_expand_series,
-                onEntryClick = { if (row != null) onEntryClick(row, 1) },
-                onTagClick = onSeriesClick,
-            )
+            ArtistColumn.SERIES -> {
+                val series = row?.series
+                val randomSeed = LocalStableRandomSeed.current
+                val languageOption = LocalLanguageOptionMedia.current
+                val shuffledSeries = remember(series, randomSeed, languageOption) {
+                    series?.map { it.name(languageOption) }
+                        ?.shuffled(Random(randomSeed))
+                }
+                TagsFlowRow(
+                    column = column,
+                    tags = shuffledSeries,
+                    contentDescription = Res.string.alley_expand_series,
+                    onEntryClick = { if (row != null) onEntryClick(row, 1) },
+                    onTagClick = onSeriesClick,
+                )
+            }
             ArtistColumn.MERCH -> TagsFlowRow(
                 column = column,
                 tags = row?.merch,
@@ -468,7 +481,25 @@ object ArtistSearchScreen {
     @Composable
     private fun Preview() = PreviewDark {
         val results = ArtistWithUserDataProvider.values.take(5)
-            .map { ArtistEntryGridModel.buildFromEntry(1, false, it) }
+            .map {
+                ArtistEntryGridModel.buildFromEntry(
+                    randomSeed = 1,
+                    showOnlyConfirmedTags = false,
+                    entry = it,
+                    series = it.artist.seriesInferred.map {
+                        SeriesEntry(
+                            id = it,
+                            notes = null,
+                            titlePreferred = it,
+                            titleEnglish = it,
+                            titleRomaji = it,
+                            titleNative = it,
+                            has2024 = true,
+                            has2025 = true,
+                        )
+                    }
+                )
+            }
             .toList()
         val state = State(
             lockedSeries = null,

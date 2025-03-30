@@ -200,6 +200,7 @@ CREATE TABLE
     IF NOT EXISTS seriesEntry (
         id TEXT NOT NULL COLLATE NOCASE,
         notes TEXT,
+        titlePreferred TEXT NOT NULL COLLATE NOCASE,
         titleEnglish TEXT NOT NULL COLLATE NOCASE,
         titleRomaji TEXT NOT NULL COLLATE NOCASE,
         titleNative TEXT NOT NULL COLLATE NOCASE,
@@ -210,6 +211,7 @@ CREATE TABLE
 
 CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     id,
+    titlePreferred,
     titleEnglish,
     titleRomaji,
     titleNative,

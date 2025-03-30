@@ -6,6 +6,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_theme
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter
+import com.thekeeperofpie.artistalleydatabase.alley.tags.textWithExplanation
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -36,7 +37,7 @@ class AlleySettingsViewModel(
     private val seriesLanguageSection = SettingsSection.Dropdown(
         labelTextRes = Res.string.alley_settings_series_language,
         options = AniListLanguageOption.entries,
-        optionToText = { stringResource(it.textRes) },
+        optionToText = { stringResource(it.textWithExplanation) },
         property = settings.languageOption,
     )
 

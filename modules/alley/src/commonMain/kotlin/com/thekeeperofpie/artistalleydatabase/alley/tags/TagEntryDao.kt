@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import app.cash.paging.PagingSource
 import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
@@ -18,11 +19,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 fun SqlCursor.toSeriesEntry() = SeriesEntry(
     id = getString(0)!!,
     notes = getString(1),
-    titleEnglish = getString(2)!!,
-    titleRomaji = getString(3)!!,
-    titleNative = getString(4)!!,
-    has2024 = getBoolean(5)!!,
-    has2025 = getBoolean(6)!!,
+    titlePreferred = getString(2)!!,
+    titleEnglish = getString(3)!!,
+    titleRomaji = getString(4)!!,
+    titleNative = getString(5)!!,
+    has2024 = getBoolean(6)!!,
+    has2025 = getBoolean(7)!!,
 )
 
 fun SqlCursor.toMerchEntry() = MerchEntry(
@@ -39,13 +41,31 @@ class TagEntryDao(
     private val seriesDao: suspend () -> SeriesQueries = { database().seriesQueries },
     private val merchDao: suspend () -> MerchQueries = { database().merchQueries },
 ) {
-    fun getSeries(languageOption: AniListLanguageOption, year: DataYear): PagingSource<Int, SeriesEntry> {
+    suspend fun getSeriesById(id: String): SeriesEntry =
+        seriesDao().getSeriesById(id).awaitAsOneOrNull()
+            // Some tags were adjusted between years, and the most recent list may not have all
+            // of the prior tags. In those cases, mock a response.
+            ?: SeriesEntry(
+                id = id,
+                notes = null,
+                titlePreferred = id,
+                titleEnglish = id,
+                titleRomaji = id,
+                titleNative = id,
+                has2024 = false,
+                has2025 = false,
+            )
+
+    fun getSeries(
+        languageOption: AniListLanguageOption,
+        year: DataYear,
+    ): PagingSource<Int, SeriesEntry> {
         val countStatement = "SELECT COUNT(*) FROM seriesEntry WHERE has${year.year} = 1"
         val orderBy = when (languageOption) {
-            AniListLanguageOption.DEFAULT,
-            AniListLanguageOption.ROMAJI -> "titleRomaji"
+            AniListLanguageOption.DEFAULT -> "titlePreferred"
             AniListLanguageOption.ENGLISH -> "titleEnglish"
             AniListLanguageOption.NATIVE -> "titleNative"
+            AniListLanguageOption.ROMAJI -> "titleRomaji"
         }
         val statement =
             "SELECT * FROM seriesEntry WHERE has${year.year} = 1 ORDER BY $orderBy COLLATE NOCASE"
@@ -73,7 +93,10 @@ class TagEntryDao(
         )
     }
 
-    fun searchSeries(languageOption: AniListLanguageOption, query: String): PagingSource<Int, SeriesEntry> {
+    fun searchSeries(
+        languageOption: AniListLanguageOption,
+        query: String,
+    ): PagingSource<Int, SeriesEntry> {
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
         val targetColumns = listOfNotNull(
@@ -96,10 +119,10 @@ class TagEntryDao(
             likeStatement = likeStatement,
         )
         val orderBy = when (languageOption) {
-            AniListLanguageOption.DEFAULT,
-            AniListLanguageOption.ROMAJI -> "titleRomaji"
+            AniListLanguageOption.DEFAULT -> "titlePreferred"
             AniListLanguageOption.ENGLISH -> "titleEnglish"
             AniListLanguageOption.NATIVE -> "titleNative"
+            AniListLanguageOption.ROMAJI -> "titleRomaji"
         }
         val statement = DaoUtils.buildSearchStatement(
             tableName = "seriesEntry",

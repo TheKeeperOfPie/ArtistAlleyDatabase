@@ -2,6 +2,7 @@ plugins {
     id("library-android")
     id("library-desktop")
     id("library-inject")
+    id("library-web")
 }
 
 kotlin {

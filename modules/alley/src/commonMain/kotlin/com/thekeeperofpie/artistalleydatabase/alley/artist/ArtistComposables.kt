@@ -30,11 +30,16 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import org.jetbrains.compose.resources.stringResource
+import kotlin.random.Random
 
 @Composable
 fun ArtistTitle(artist: ArtistEntry) {
@@ -132,22 +137,27 @@ fun ArtistListRow(
         }
 
         if (entry.series.isNotEmpty()) {
-            TagRow(entry.series, onTagClick = onSeriesClick)
+            SeriesRow(series = entry.series, onSeriesClick = onSeriesClick)
         }
     }
 }
 
 @Composable
-private fun TagRow(
-    tags: List<String>,
-    onTagClick: (String) -> Unit,
+private fun SeriesRow(
+    series: List<SeriesEntry>,
+    onSeriesClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (tags.isEmpty()) return
+    if (series.isEmpty()) return
     val listState = rememberLazyListState()
-    LaunchedEffect(tags) {
+    LaunchedEffect(series) {
         listState.scrollToItem(0, 0)
     }
+    val randomSeed = LocalStableRandomSeed.current
+    val shuffledSeries = remember(series, randomSeed) {
+        series.shuffled(Random(randomSeed))
+    }
+    val languageOption = LocalLanguageOptionMedia.current
     LazyRow(
         state = listState,
         contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
@@ -162,14 +172,14 @@ private fun TagRow(
             )
             .then(modifier)
     ) {
-        items(items = tags, key = { it }) {
+        items(items = shuffledSeries, key = { it }) {
             AssistChip(
                 colors = AssistChipDefaults.assistChipColors(
                     labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 ),
                 border = AssistChipDefaults.assistChipBorder(false),
-                onClick = { onTagClick(it) },
-                label = { Text(text = it) },
+                onClick = { onSeriesClick(it.id) },
+                label = { Text(text = it.name(languageOption)) },
                 modifier = Modifier.height(24.dp)
             )
         }

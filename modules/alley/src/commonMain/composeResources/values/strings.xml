@@ -199,4 +199,8 @@
     <string name="alley_import_failed">Failed to import</string>
 
     <string name="alley_answer_expand_content_description">Expand answer</string>
+    <string name="alley_language_option_default">Default - display romaji, except for entries which are better known by their English name (Yuanshen PROJECT -> Genshin Impact)</string>
+    <string name="alley_language_option_english">English - always show the English market name for the closest anime/manga</string>
+    <string name="alley_language_option_romaji">Romaji - display the romanized name for the closest anime/manga</string>
+    <string name="alley_language_option_native">Native - display the native title (can be CJK) of the closest anime/manga</string>
 </resources>

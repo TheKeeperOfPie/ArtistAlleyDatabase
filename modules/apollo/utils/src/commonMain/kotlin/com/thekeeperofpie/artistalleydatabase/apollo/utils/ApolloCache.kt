@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
-import kotlinx.coroutines.Dispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -50,7 +50,7 @@ class ApolloCache(
     }
 
     init {
-        scope.launch(Dispatchers.IO) {
+        scope.launch(PlatformDispatchers.IO) {
             try {
                 val list = appFileSystem.list(cacheDir)
                     .sortedBy { appFileSystem.lastModifiedTime(it) }

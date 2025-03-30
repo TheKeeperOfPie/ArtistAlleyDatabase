@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -48,6 +49,7 @@ import kotlin.random.Random
 class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
+    tagEntryDao: TagEntryDao,
     userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
@@ -92,10 +94,16 @@ class FavoritesViewModel(
         }
             .map {
                 it.map {
+                    val series = ArtistEntryGridModel.getSeries(
+                        showOnlyConfirmedTags = showOnlyConfirmedTags,
+                        entry = it,
+                        tagEntryDao = tagEntryDao,
+                    )
                     ArtistEntryGridModel.buildFromEntry(
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
+                        series = series,
                     )
                 }
             }

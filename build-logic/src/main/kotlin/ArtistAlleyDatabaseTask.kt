@@ -551,21 +551,24 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         open(seriesCsv).use {
             read(it)
                 .map {
-                    // Series, Notes, AniList ID, AniList Type, Source Type, English, Romaji,
-                    // Native, External Link,
+                    // Validated, Series, Notes, AniList ID, AniList Type, Source Type, English,
+                    // Romaji, Native, Preferred, External Link,
                     val id = it["Series"]!!
                     val notes = it["Notes"]
+                    val validated = it["Validated"] == "DONE"
 
-                    val titleRomaji = it["Romaji"]?.ifBlank { null }
-                    val titleEnglish = it["English"]?.ifBlank { null }
-                    val titleNative = it["Native"]?.ifBlank { null }
+                    val titleRomaji = it["Romaji"]?.ifBlank { null }?.takeIf { validated }
+                    val titleEnglish = it["English"]?.ifBlank { null }?.takeIf { validated }
+                    val titleNative = it["Native"]?.ifBlank { null }?.takeIf { validated }
+                    val titlePreferred = it["Preferred"]?.ifBlank { null }
                     SeriesEntry(
                         id = id,
                         notes = notes,
                         // Fallback so that every field has a value so that it can be sorted
-                        titleEnglish = titleEnglish ?: titleRomaji ?: id,
-                        titleRomaji = titleRomaji ?: titleEnglish ?: id,
-                        titleNative = titleNative ?: titleRomaji ?: titleEnglish ?: id,
+                        titlePreferred = titlePreferred ?: titleRomaji ?: titleEnglish ?: id,
+                        titleEnglish = titleEnglish ?: titlePreferred ?: titleRomaji ?: id,
+                        titleRomaji = titleRomaji ?: titlePreferred ?: titleEnglish ?: id,
+                        titleNative = titleNative ?: titleRomaji ?: titlePreferred ?: titleEnglish ?: id,
                         has2024 = seriesConnections.any { it.value.seriesId == id && it.value.has2024 },
                         has2025 = seriesConnections.any { it.value.seriesId == id && it.value.has2025 },
                     )

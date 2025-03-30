@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
@@ -45,6 +46,7 @@ import kotlin.random.Random
 @Inject
 class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
+    private val tagEntryDao: TagEntryDao,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     navigationTypeMap: NavigationTypeMap,
@@ -122,10 +124,16 @@ class ArtistSearchViewModel(
                 .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
                 .map {
                     it.map {
+                        val series = ArtistEntryGridModel.getSeries(
+                            showOnlyConfirmedTags = showOnlyConfirmedTags,
+                            entry = it,
+                            tagEntryDao = tagEntryDao,
+                        )
                         ArtistEntryGridModel.buildFromEntry(
                             randomSeed = randomSeed,
                             showOnlyConfirmedTags = showOnlyConfirmedTags,
                             entry = it,
+                            series = series,
                         )
                     }
                 }

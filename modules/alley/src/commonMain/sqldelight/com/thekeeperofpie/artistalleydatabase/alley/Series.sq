@@ -2,6 +2,10 @@
 getSeries:
 SELECT * FROM seriesEntry;
 
+getSeriesById:
+SELECT * FROM seriesEntry
+WHERE id = :id;
+
 getSeriesSize2024:
 SELECT COUNT(*) FROM seriesEntry
 WHERE has2024 = 1;

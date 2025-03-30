@@ -5,17 +5,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlin.random.Random
 
 class ArtistEntryGridModel(
     private val randomSeed: Int,
+    // TODO: Shove tag filter into UI layer
     private val showOnlyConfirmedTags: Boolean,
     val artist: ArtistEntry,
     val userEntry: ArtistUserEntry,
+    val series: List<SeriesEntry>,
     override val images: List<CatalogImage>,
     override val placeholderText: String,
 ) : SearchScreen.SearchEntryModel {
@@ -31,15 +35,6 @@ class ArtistEntryGridModel(
 
     override val booth get() = artist.booth
 
-    val series by lazy {
-        val random = Random(randomSeed)
-        val list = artist.seriesConfirmed.shuffled(random).toMutableList()
-        if (!showOnlyConfirmedTags) {
-            list += artist.seriesInferred.shuffled(random)
-        }
-        list
-    }
-
     val merch by lazy {
         val random = Random(randomSeed)
         val list = artist.merchConfirmed.shuffled(random).toMutableList()
@@ -50,21 +45,37 @@ class ArtistEntryGridModel(
     }
 
     companion object {
+        suspend fun getSeries(
+            showOnlyConfirmedTags: Boolean,
+            entry: ArtistWithUserData,
+            tagEntryDao: TagEntryDao,
+        ): List<SeriesEntry> {
+            val seriesIds = entry.artist.seriesConfirmed.toMutableList()
+            if (!showOnlyConfirmedTags) {
+                seriesIds += entry.artist.seriesInferred
+            }
+            return seriesIds.map { tagEntryDao.getSeriesById(it) }
+        }
+
         fun buildFromEntry(
             randomSeed: Int,
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
-        ) = ArtistEntryGridModel(
-            randomSeed = randomSeed,
-            showOnlyConfirmedTags = showOnlyConfirmedTags,
-            artist = entry.artist,
-            userEntry = entry.userEntry,
-            images = AlleyDataUtils.getImages(
-                year = entry.artist.year,
-                folder = AlleyDataUtils.Folder.CATALOGS,
-                file = entry.artist.booth,
-            ),
-            placeholderText = entry.artist.booth ?: entry.artist.name,
-        )
+            series: List<SeriesEntry>,
+        ): ArtistEntryGridModel {
+            return ArtistEntryGridModel(
+                randomSeed = randomSeed,
+                showOnlyConfirmedTags = showOnlyConfirmedTags,
+                artist = entry.artist,
+                userEntry = entry.userEntry,
+                series = series,
+                images = AlleyDataUtils.getImages(
+                    year = entry.artist.year,
+                    folder = AlleyDataUtils.Folder.CATALOGS,
+                    file = entry.artist.booth,
+                ),
+                placeholderText = entry.artist.booth ?: entry.artist.name,
+            )
+        }
     }
 }
