@@ -17,18 +17,20 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 fun SqlCursor.toSeriesEntry(): SeriesEntry {
-    val source = getString(3)
+    val source = getString(4)
     return SeriesEntry(
         id = getString(0)!!,
         notes = getString(1),
-        aniListType = getString(2),
+        aniListId = getLong(2),
+        aniListType = getString(3),
         source = SeriesSource.entries.find { it.name == source },
-        titlePreferred = getString(4)!!,
-        titleEnglish = getString(5)!!,
-        titleRomaji = getString(6)!!,
-        titleNative = getString(7)!!,
-        has2024 = getBoolean(8)!!,
-        has2025 = getBoolean(9)!!,
+        titlePreferred = getString(5)!!,
+        titleEnglish = getString(6)!!,
+        titleRomaji = getString(7)!!,
+        titleNative = getString(8)!!,
+        link = getString(9),
+        has2024 = getBoolean(10)!!,
+        has2025 = getBoolean(11)!!,
     )
 }
 
@@ -53,12 +55,14 @@ class TagEntryDao(
             ?: SeriesEntry(
                 id = id,
                 notes = null,
+                aniListId = null,
                 aniListType = null,
                 source = SeriesSource.NONE,
                 titlePreferred = id,
                 titleEnglish = id,
                 titleRomaji = id,
                 titleNative = id,
+                link = null,
                 has2024 = false,
                 has2025 = false,
             )

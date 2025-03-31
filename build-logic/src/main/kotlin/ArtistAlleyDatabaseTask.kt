@@ -566,7 +566,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val validated = it["Validated"] == "DONE"
                     val id = it["Series"]!!
                     val notes = it["Notes"]
+                    val aniListId = it["AniList ID"]?.toLongOrNull()
                     val aniListType = it["AniList Type"]
+                    val link = it["External Link"]?.ifBlank { null }
                     val source = it["Source Type"]?.let { value ->
                         if (value.isBlank()) {
                             SeriesSource.NONE
@@ -582,6 +584,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     SeriesEntry(
                         id = id,
                         notes = notes,
+                        aniListId = aniListId,
                         aniListType = aniListType,
                         source = source,
                         // Fallback so that every field has a value so that it can be sorted
@@ -589,6 +592,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         titleEnglish = titleEnglish ?: titlePreferred ?: titleRomaji ?: id,
                         titleRomaji = titleRomaji ?: titlePreferred ?: titleEnglish ?: id,
                         titleNative = titleNative ?: titleRomaji ?: titlePreferred ?: titleEnglish ?: id,
+                        link = link,
                         has2024 = seriesConnections.any { it.value.seriesId == id && it.value.has2024 },
                         has2025 = seriesConnections.any { it.value.seriesId == id && it.value.has2025 },
                     )

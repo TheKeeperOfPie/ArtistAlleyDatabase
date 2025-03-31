@@ -5,11 +5,11 @@ import co.touchlab.kermit.Logger
 import com.anilist.data.fragment.AniListCharacter
 import com.anilist.data.fragment.AniListMedia
 import com.anilist.data.type.MediaSeason
-import com.anilist.data.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.network.http.LoggingInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
@@ -29,38 +29,28 @@ object AniListUtils {
 
     const val GRAPHQL_API_HOST = "graphql.anilist.co"
     const val GRAPHQL_API_URL = "https://$GRAPHQL_API_HOST/"
-    const val ANILIST_BASE_URL = "https://anilist.co"
 
     const val COVER_IMAGE_WIDTH_TO_HEIGHT_RATIO = 0.707f
 
-    fun characterUrl(id: String) = "$ANILIST_BASE_URL/character/$id"
+    fun characterUrl(id: String) = "${AniListDataUtils.ANILIST_BASE_URL}/character/$id"
 
-    fun staffUrl(id: String) = "$ANILIST_BASE_URL/staff/$id"
-
-    fun mediaUrl(type: MediaType, id: String) = when (type) {
-        MediaType.ANIME -> animeUrl(id)
-        MediaType.MANGA -> mangaUrl(id)
-        MediaType.UNKNOWN__ -> animeUrl(id)
-    }
+    fun staffUrl(id: String) = "${AniListDataUtils.ANILIST_BASE_URL}/staff/$id"
 
     fun mediaUrl(type: MediaEntry.Type?, id: String) = when (type) {
-        MediaEntry.Type.ANIME -> animeUrl(id)
-        MediaEntry.Type.MANGA -> mangaUrl(id)
+        MediaEntry.Type.ANIME -> AniListDataUtils.animeUrl(id)
+        MediaEntry.Type.MANGA -> AniListDataUtils.mangaUrl(id)
         else -> null
     }
 
-    fun animeUrl(id: String) = "$ANILIST_BASE_URL/anime/$id"
-    fun mangaUrl(id: String) = "$ANILIST_BASE_URL/manga/$id"
+    fun studioUrl(id: String) = "${AniListDataUtils.ANILIST_BASE_URL}/studio/$id"
 
-    fun studioUrl(id: String) = "$ANILIST_BASE_URL/studio/$id"
+    fun reviewUrl(id: String) = "${AniListDataUtils.ANILIST_BASE_URL}/review/$id"
 
-    fun reviewUrl(id: String) = "$ANILIST_BASE_URL/review/$id"
+    fun activityUrl(id: String) = "${AniListDataUtils.ANILIST_BASE_URL}/activity/$id"
 
-    fun activityUrl(id: String) = "$ANILIST_BASE_URL/activity/$id"
-
-    fun forumThreadUrl(id: String) = "$ANILIST_BASE_URL/forum/thread/$id"
+    fun forumThreadUrl(id: String) = "${AniListDataUtils.ANILIST_BASE_URL}/forum/thread/$id"
     fun forumThreadCommentUrl(threadId: String, commentId: String) =
-        "$ANILIST_BASE_URL/forum/thread/$threadId/comment/$commentId"
+        "${AniListDataUtils.ANILIST_BASE_URL}/forum/thread/$threadId/comment/$commentId"
 
     fun mediaId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
         is AniListMedia -> value.id.toString()

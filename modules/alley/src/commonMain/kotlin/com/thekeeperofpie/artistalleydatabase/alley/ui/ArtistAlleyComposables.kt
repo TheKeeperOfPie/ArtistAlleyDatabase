@@ -620,6 +620,7 @@ fun Tooltip(
     text: String,
     popupAlignment: Alignment = Alignment.BottomCenter,
     onClick: (() -> Unit)? = null,
+    allowPopupHover: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -649,7 +650,7 @@ fun Tooltip(
         val popupInteractionSource = remember { MutableInteractionSource() }
         val contentIsHovered by contentInteractionSource.collectIsHoveredAsState()
         val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
-        if (contentIsHovered || popupIsHovered || popupLongPressVisible) {
+        if (contentIsHovered || (popupIsHovered && allowPopupHover) || popupLongPressVisible) {
             Popup(
                 alignment = popupAlignment,
                 offset = IntOffset(0, -size.height),
@@ -682,8 +683,9 @@ fun IconWithTooltip(
     tooltipText: String,
     onClick: () -> Unit,
     contentDescription: String? = null,
+    allowPopupHover: Boolean = true,
 ) {
-    Tooltip(text = tooltipText, onClick = onClick) {
+    Tooltip(text = tooltipText, onClick = onClick, allowPopupHover = allowPopupHover) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.minimumInteractiveComponentSize()

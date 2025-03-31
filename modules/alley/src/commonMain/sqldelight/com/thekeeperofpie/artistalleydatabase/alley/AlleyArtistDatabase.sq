@@ -201,12 +201,14 @@ CREATE TABLE
     IF NOT EXISTS seriesEntry (
         id TEXT NOT NULL COLLATE NOCASE,
         notes TEXT,
+        aniListId INTEGER,
         aniListType TEXT,
         source TEXT AS SeriesSource,
         titlePreferred TEXT NOT NULL COLLATE NOCASE,
         titleEnglish TEXT NOT NULL COLLATE NOCASE,
         titleRomaji TEXT NOT NULL COLLATE NOCASE,
         titleNative TEXT NOT NULL COLLATE NOCASE,
+        link TEXT,
         has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
         has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)

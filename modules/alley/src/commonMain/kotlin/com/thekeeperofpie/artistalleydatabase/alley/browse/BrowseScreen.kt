@@ -28,6 +28,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -54,8 +55,8 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_w
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesFilterOption
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -124,8 +125,14 @@ object BrowseScreen {
                                 entriesSize = { series.itemCount },
                                 values = series,
                                 itemKey = { it.id },
-                                itemToText = { it.name(languageOption) },
-                                onItemClick = onSeriesClick,
+                                item = {
+                                    SeriesRow(
+                                        series = it,
+                                        textStyle = LocalTextStyle.current,
+                                        expanded = true,
+                                        onClick = { it?.let { onSeriesClick(it) } },
+                                    )
+                                },
                                 scrollStateSaver = scrollStateSaver,
                                 additionalHeader = {
                                     item(key = "seriesLanguageOption") {
@@ -134,6 +141,7 @@ object BrowseScreen {
                                     }
                                     item(key = "seriesFilters") {
                                         SeriesFilters(seriesFiltersState(), onSeriesFilterClick)
+                                        HorizontalDivider()
                                     }
                                 }
                             )
@@ -145,8 +153,15 @@ object BrowseScreen {
                             entriesSize = { merch.itemCount },
                             values = merch,
                             itemKey = { it.name },
-                            itemToText = { it.name },
-                            onItemClick = onMerchClick,
+                            item = {
+                                Text(
+                                    text = it?.name.orEmpty(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { it?.let { onMerchClick(it) } }
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
+                            },
                             scrollStateSaver = scrollStateSaver
                         )
                     }
@@ -163,8 +178,7 @@ object BrowseScreen {
         entriesSize: () -> Int,
         values: LazyPagingItems<T>,
         itemKey: (T) -> Any,
-        itemToText: (T) -> String,
-        onItemClick: (T) -> Unit,
+        item: @Composable (T?) -> Unit,
         scrollStateSaver: ScrollStateSaver,
         additionalHeader: LazyListScope.() -> Unit = {},
     ) {
@@ -249,16 +263,10 @@ object BrowseScreen {
                         contentType = values.itemContentType { "tag_entry" },
                     ) { index ->
                         val value = values[index]
-                        val text = value?.let(itemToText).orEmpty()
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { value?.let(onItemClick) }
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = text,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
+                            item(value)
                             HorizontalDivider()
                         }
                     }

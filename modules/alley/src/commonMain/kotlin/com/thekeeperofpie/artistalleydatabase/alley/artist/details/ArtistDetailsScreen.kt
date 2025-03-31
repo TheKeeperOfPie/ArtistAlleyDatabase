@@ -65,6 +65,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
@@ -210,8 +212,12 @@ object ArtistDetailsScreen {
                     Confirmed(
                         confirmed = sorted,
                         headerTextRes = Res.string.alley_artist_details_series,
-                        itemToText = { it.name(languageOption) },
-                        onClick = { eventSink(Event.OpenSeries(it.id)) },
+                        item = { value, expanded, _ ->
+                            SeriesRow(
+                                value,
+                                expanded = expanded,
+                                onClick = { eventSink(Event.OpenSeries(value.id)) })
+                        },
                     )
                 }
             }
@@ -226,8 +232,12 @@ object ArtistDetailsScreen {
                         inferred = sorted,
                         headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
                         iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
-                        itemToText = { it.name(languageOption) },
-                        onClick = { eventSink(Event.OpenSeries(it.id)) },
+                        item = { value, expanded, _ ->
+                            SeriesRow(
+                                value,
+                                expanded = expanded,
+                                onClick = { eventSink(Event.OpenSeries(value.id)) })
+                        },
                     )
                 }
             }
@@ -237,8 +247,15 @@ object ArtistDetailsScreen {
                     Confirmed(
                         confirmed = entry.artist.merchConfirmed,
                         headerTextRes = Res.string.alley_artist_details_merch,
-                        itemToText = { it },
-                        onClick = { eventSink(Event.OpenMerch(it)) },
+                        item = { value, expanded, isLast ->
+                            MerchRow(
+                                merch = value,
+                                expanded = expanded,
+                                totalCount = entry.artist.merchConfirmed.size,
+                                isLast = isLast,
+                                onClick = { eventSink(Event.OpenMerch(value)) },
+                            )
+                        }
                     )
                 }
             }
@@ -249,8 +266,15 @@ object ArtistDetailsScreen {
                         inferred = entry.artist.merchInferred,
                         headerTextRes = Res.string.alley_artist_details_merch_unconfirmed,
                         iconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
-                        itemToText = { it },
-                        onClick = { eventSink(Event.OpenMerch(it)) },
+                        item = { value, expanded, isLast ->
+                            MerchRow(
+                                merch = value,
+                                expanded = expanded,
+                                totalCount = entry.artist.merchConfirmed.size,
+                                isLast = isLast,
+                                onClick = { eventSink(Event.OpenMerch(value)) },
+                            )
+                        }
                     )
                 }
             }
@@ -301,18 +325,16 @@ object ArtistDetailsScreen {
     private fun <T> Confirmed(
         confirmed: List<T>,
         headerTextRes: StringResource,
-        itemToText: @Composable (T) -> String,
-        onClick: (T) -> Unit,
+        item: @Composable (T, expanded: Boolean, isLast: Boolean) -> Unit,
     ) {
         ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
             expandableListInfoText(
                 labelTextRes = headerTextRes,
                 contentDescriptionTextRes = null,
                 values = confirmed,
-                valueToText = itemToText,
-                onClick = onClick,
                 allowExpand = true,
                 showDividerAbove = false,
+                item = item,
             )
         }
     }
@@ -322,8 +344,7 @@ object ArtistDetailsScreen {
         inferred: List<T>,
         headerTextRes: StringResource,
         iconContentDescriptionTextRes: StringResource,
-        itemToText: @Composable (T) -> String,
-        onClick: (T) -> Unit,
+        item: @Composable (T, expanded: Boolean, isLast: Boolean) -> Unit,
     ) {
         ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
             var showPopup by remember { mutableStateOf(false) }
@@ -331,8 +352,6 @@ object ArtistDetailsScreen {
                 labelTextRes = headerTextRes,
                 contentDescriptionTextRes = null,
                 values = inferred,
-                valueToText = itemToText,
-                onClick = onClick,
                 allowExpand = true,
                 showDividerAbove = false,
                 header = {
@@ -379,6 +398,7 @@ object ArtistDetailsScreen {
                         }
                     }
                 },
+                item = item,
             )
         }
     }
@@ -451,7 +471,6 @@ private fun PhoneLayout() {
     val artist = ArtistWithUserDataProvider.values.first()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     PreviewDark {
-        var notes by remember { mutableStateOf("") }
         ArtistDetailsScreen(
             entry = ArtistDetailsViewModel.Entry(
                 artist = artist.artist,

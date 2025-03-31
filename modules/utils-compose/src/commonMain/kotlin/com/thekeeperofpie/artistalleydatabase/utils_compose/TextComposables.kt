@@ -798,7 +798,7 @@ fun <T> expandableListInfoText(
                 }
 
                 val isLast = index == values.size - 1
-                item(value, expanded, isLast)
+                item(value, expanded || !showExpand, isLast)
             }
         }
 

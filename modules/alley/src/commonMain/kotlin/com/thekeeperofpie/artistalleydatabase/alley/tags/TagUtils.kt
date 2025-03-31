@@ -32,12 +32,14 @@ fun previewSeriesEntry(id: String): SeriesEntry {
     return SeriesEntry(
         id = id,
         notes = null,
+        aniListId = null,
         aniListType = null,
         source = null,
         titlePreferred = id,
         titleEnglish = id,
         titleRomaji = id,
         titleNative = id,
+        link = null,
         has2024 = false,
         has2025 = false,
     )
