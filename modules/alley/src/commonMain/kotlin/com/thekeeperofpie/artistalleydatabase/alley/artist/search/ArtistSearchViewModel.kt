@@ -94,7 +94,7 @@ class ArtistSearchViewModel(
                 tagEntryDao.getSeriesById(it)
             }
         }
-        .stateInForCompose(null)
+        .stateInForCompose(this, null)
 
     override val sections = emptyList<EntrySection>()
 
