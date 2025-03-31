@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalInspectionMode
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_default
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_english
@@ -23,3 +25,20 @@ val AniListLanguageOption.textWithExplanation: StringResource
         AniListLanguageOption.NATIVE -> Res.string.alley_language_option_native
         AniListLanguageOption.ROMAJI -> Res.string.alley_language_option_romaji
     }
+
+@Composable
+fun previewSeriesEntry(id: String): SeriesEntry {
+    if (!LocalInspectionMode.current) throw IllegalStateException("Must be in preview")
+    return SeriesEntry(
+        id = id,
+        notes = null,
+        aniListType = null,
+        source = null,
+        titlePreferred = id,
+        titleEnglish = id,
+        titleRomaji = id,
+        titleNative = id,
+        has2024 = false,
+        has2025 = false,
+    )
+}

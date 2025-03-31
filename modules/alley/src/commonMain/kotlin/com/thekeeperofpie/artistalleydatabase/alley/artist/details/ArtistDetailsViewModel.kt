@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
@@ -21,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -40,6 +42,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class ArtistDetailsViewModel(
     private val artistEntryDao: ArtistEntryDao,
     private val notesDao: NotesDao,
+    private val tagEntryDao: TagEntryDao,
     private val userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -72,12 +75,14 @@ class ArtistDetailsViewModel(
                 folder = AlleyDataUtils.Folder.CATALOGS,
                 file = artist.booth,
             )
+            val seriesInferred = artist.seriesInferred.map { tagEntryDao.getSeriesById(it) }
+            val seriesConfirmed = artist.seriesConfirmed.map { tagEntryDao.getSeriesById(it) }
             withContext(CustomDispatchers.Main) {
                 entry = Entry(
                     artist = artist,
                     userEntry = userEntry,
-                    seriesInferred = artist.seriesInferred,
-                    seriesConfirmed = artist.seriesConfirmed,
+                    seriesInferred = seriesInferred,
+                    seriesConfirmed = seriesConfirmed,
                     stampRallies = stampRallies,
                 )
                 images = catalogImages
@@ -114,8 +119,8 @@ class ArtistDetailsViewModel(
     class Entry(
         val artist: ArtistEntry,
         val userEntry: ArtistUserEntry,
-        val seriesInferred: List<String>,
-        val seriesConfirmed: List<String>,
+        val seriesInferred: List<SeriesEntry>,
+        val seriesConfirmed: List<SeriesEntry>,
         val stampRallies: List<StampRallyEntry>,
     ) {
         var favorite by mutableStateOf(userEntry.favorite)

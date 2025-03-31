@@ -73,6 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
+import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
@@ -473,28 +474,15 @@ object ArtistSearchScreen {
     @Composable
     private fun Preview() = PreviewDark {
         val results = ArtistWithUserDataProvider.values.take(5)
+            .toList()
             .map {
                 ArtistEntryGridModel.buildFromEntry(
                     randomSeed = 1,
                     showOnlyConfirmedTags = false,
                     entry = it,
-                    series = it.artist.seriesInferred.map {
-                        SeriesEntry(
-                            id = it,
-                            notes = null,
-                            aniListType = null,
-                            source = null,
-                            titlePreferred = it,
-                            titleEnglish = it,
-                            titleRomaji = it,
-                            titleNative = it,
-                            has2024 = true,
-                            has2025 = true,
-                        )
-                    }
+                    series = it.artist.seriesInferred.map { previewSeriesEntry(it) }
                 )
             }
-            .toList()
         val state = State(
             lockedSeriesEntry = MutableStateFlow(null),
             lockedMerch = null,

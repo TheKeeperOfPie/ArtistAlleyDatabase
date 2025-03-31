@@ -65,8 +65,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.name
+import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
@@ -200,23 +203,31 @@ object ArtistDetailsScreen {
 
             if (entry.seriesConfirmed.isNotEmpty()) {
                 item("artistSeriesConfirmed") {
+                    val languageOption = LocalLanguageOptionMedia.current
+                    val sorted = remember(entry.seriesConfirmed, languageOption) {
+                        entry.seriesConfirmed.sortedBy { it.name(languageOption) }
+                    }
                     Confirmed(
-                        confirmed = entry.seriesConfirmed,
+                        confirmed = sorted,
                         headerTextRes = Res.string.alley_artist_details_series,
-                        itemToText = { it },
-                        onClick = { eventSink(Event.OpenSeries(it)) },
+                        itemToText = { it.name(languageOption) },
+                        onClick = { eventSink(Event.OpenSeries(it.id)) },
                     )
                 }
             }
 
             if (entry.seriesInferred.isNotEmpty()) {
                 item("artistSeriesInferred") {
+                    val languageOption = LocalLanguageOptionMedia.current
+                    val sorted = remember(entry.seriesInferred, languageOption) {
+                        entry.seriesInferred.sortedBy { it.name(languageOption) }
+                    }
                     Inferred(
-                        inferred = entry.seriesInferred,
+                        inferred = sorted,
                         headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
                         iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
-                        itemToText = { it },
-                        onClick = { eventSink(Event.OpenSeries(it)) },
+                        itemToText = { it.name(languageOption) },
+                        onClick = { eventSink(Event.OpenSeries(it.id)) },
                     )
                 }
             }
@@ -445,8 +456,9 @@ private fun PhoneLayout() {
             entry = ArtistDetailsViewModel.Entry(
                 artist = artist.artist,
                 userEntry = artist.userEntry,
-                seriesInferred = artist.artist.seriesInferred - artist.artist.seriesConfirmed,
-                seriesConfirmed = artist.artist.seriesConfirmed,
+                seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed)
+                    .map { previewSeriesEntry(it) },
+                seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesEntry(it) },
                 stampRallies = emptyList(),
             ),
             notesTextState = rememberTextFieldState(),
