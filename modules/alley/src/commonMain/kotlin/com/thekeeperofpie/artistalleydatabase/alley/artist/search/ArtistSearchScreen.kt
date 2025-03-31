@@ -482,6 +482,8 @@ object ArtistSearchScreen {
                         SeriesEntry(
                             id = it,
                             notes = null,
+                            aniListType = null,
+                            source = null,
                             titlePreferred = it,
                             titleEnglish = it,
                             titleRomaji = it,

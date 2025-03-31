@@ -16,16 +16,21 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-fun SqlCursor.toSeriesEntry() = SeriesEntry(
-    id = getString(0)!!,
-    notes = getString(1),
-    titlePreferred = getString(2)!!,
-    titleEnglish = getString(3)!!,
-    titleRomaji = getString(4)!!,
-    titleNative = getString(5)!!,
-    has2024 = getBoolean(6)!!,
-    has2025 = getBoolean(7)!!,
-)
+fun SqlCursor.toSeriesEntry(): SeriesEntry {
+    val source = getString(3)
+    return SeriesEntry(
+        id = getString(0)!!,
+        notes = getString(1),
+        aniListType = getString(2),
+        source = SeriesSource.entries.find { it.name == source },
+        titlePreferred = getString(4)!!,
+        titleEnglish = getString(5)!!,
+        titleRomaji = getString(6)!!,
+        titleNative = getString(7)!!,
+        has2024 = getBoolean(8)!!,
+        has2025 = getBoolean(9)!!,
+    )
+}
 
 fun SqlCursor.toMerchEntry() = MerchEntry(
     getString(0)!!,
@@ -43,11 +48,13 @@ class TagEntryDao(
 ) {
     suspend fun getSeriesById(id: String): SeriesEntry =
         seriesDao().getSeriesById(id).awaitAsOneOrNull()
-            // Some tags were adjusted between years, and the most recent list may not have all
-            // of the prior tags. In those cases, mock a response.
+        // Some tags were adjusted between years, and the most recent list may not have all
+        // of the prior tags. In those cases, mock a response.
             ?: SeriesEntry(
                 id = id,
                 notes = null,
+                aniListType = null,
+                source = SeriesSource.NONE,
                 titlePreferred = id,
                 titleEnglish = id,
                 titleRomaji = id,
@@ -59,8 +66,55 @@ class TagEntryDao(
     fun getSeries(
         languageOption: AniListLanguageOption,
         year: DataYear,
+        seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
     ): PagingSource<Int, SeriesEntry> {
-        val countStatement = "SELECT COUNT(*) FROM seriesEntry WHERE has${year.year} = 1"
+        val filteredSources = seriesFilterState
+            .filter { (_, enabled) -> enabled }
+            .flatMap { (option) ->
+                when (option) {
+                    SeriesFilterOption.ALL -> SeriesSource.entries
+                    SeriesFilterOption.ANIME_MANGA -> listOf(
+                        SeriesSource.ANIME,
+                        SeriesSource.MANGA,
+                    )
+                    SeriesFilterOption.GAMES -> listOf(SeriesSource.GAME, SeriesSource.VIDEO_GAME)
+                    SeriesFilterOption.TV -> listOf(SeriesSource.TV)
+                    SeriesFilterOption.MOVIES -> listOf(SeriesSource.MOVIE)
+                    SeriesFilterOption.BOOKS -> listOf(
+                        SeriesSource.BOOK,
+                        SeriesSource.LIGHT_NOVEL,
+                        SeriesSource.NOVEL
+                    )
+                    SeriesFilterOption.WEB_SERIES -> listOf(
+                        SeriesSource.WEB_NOVEL,
+                        SeriesSource.WEB_SERIES,
+                        SeriesSource.WEBTOON,
+                    )
+                    SeriesFilterOption.VISUAL_NOVELS -> listOf(SeriesSource.VISUAL_NOVEL)
+                    SeriesFilterOption.MUSIC -> listOf(SeriesSource.MUSIC)
+                    SeriesFilterOption.MULTIMEDIA -> listOf(SeriesSource.MULTIMEDIA_PROJECT)
+                    SeriesFilterOption.OTHER -> listOf(SeriesSource.COMIC, SeriesSource.OTHER)
+                }
+            }
+        var where = "WHERE has${year.year} = 1"
+        if (filteredSources.isNotEmpty()) {
+            where += " AND ("
+            filteredSources.forEachIndexed { index, source ->
+                if (index != 0) {
+                    where += " OR "
+                }
+                where += "source = '${source.name}'"
+            }
+            if (filteredSources.contains(SeriesSource.ANIME)) {
+                where += " OR aniListType = 'ANIME'"
+            }
+            if (filteredSources.contains(SeriesSource.MANGA)) {
+                where += " OR aniListType = 'MANGA'"
+            }
+            where += ")"
+        }
+
+        val countStatement = "SELECT COUNT(*) FROM seriesEntry $where"
         val orderBy = when (languageOption) {
             AniListLanguageOption.DEFAULT -> "titlePreferred"
             AniListLanguageOption.ENGLISH -> "titleEnglish"
@@ -68,7 +122,7 @@ class TagEntryDao(
             AniListLanguageOption.ROMAJI -> "titleRomaji"
         }
         val statement =
-            "SELECT * FROM seriesEntry WHERE has${year.year} = 1 ORDER BY $orderBy COLLATE NOCASE"
+            "SELECT * FROM seriesEntry $where ORDER BY $orderBy COLLATE NOCASE"
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,

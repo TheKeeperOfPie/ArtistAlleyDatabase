@@ -105,12 +105,16 @@ object AlleyRootScreen {
                             )
                         }
                         Destination.BROWSE -> {
-                            val viewModel = viewModel { component.tagsViewModel() }
+                            val viewModel = viewModel {
+                                component.tagsViewModel(createSavedStateHandle())
+                            }
                             val dataYearHeaderState =
                                 rememberDataYearHeaderState(viewModel.dataYear, null)
                             BrowseScreen(
                                 dataYearHeaderState = dataYearHeaderState,
                                 tagsViewModel = viewModel,
+                                seriesFiltersState = { viewModel.seriesFiltersState },
+                                onSeriesFilterClick = viewModel::onSeriesFilterClick,
                                 onSeriesClick = { onSeriesClick(it.id) },
                                 onMerchClick = { onMerchClick(it.name) },
                             )

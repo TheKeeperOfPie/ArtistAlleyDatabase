@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
@@ -130,6 +131,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 artistUserEntryAdapter = ArtistUserEntry.Adapter(
                     dataYearAdapter = dataYearAdapter,
                 ),
+                seriesEntryAdapter = SeriesEntry.Adapter(
+                    sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
+                        override fun decode(databaseValue: String) =
+                            SeriesSource.entries.find { it.name == databaseValue }
+                                ?: SeriesSource.NONE
+
+                        override fun encode(value: SeriesSource) = value.name
+                    },
+                )
             )
 
             val seriesConnections = mutableMapOf<Pair<String, String>, ArtistSeriesConnection>()
@@ -553,9 +563,17 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .map {
                     // Validated, Series, Notes, AniList ID, AniList Type, Source Type, English,
                     // Romaji, Native, Preferred, External Link,
+                    val validated = it["Validated"] == "DONE"
                     val id = it["Series"]!!
                     val notes = it["Notes"]
-                    val validated = it["Validated"] == "DONE"
+                    val aniListType = it["AniList Type"]
+                    val source = it["Source Type"]?.let { value ->
+                        if (value.isBlank()) {
+                            SeriesSource.NONE
+                        } else {
+                            SeriesSource.valueOf(value)
+                        }
+                    }
 
                     val titleRomaji = it["Romaji"]?.ifBlank { null }?.takeIf { validated }
                     val titleEnglish = it["English"]?.ifBlank { null }?.takeIf { validated }
@@ -564,6 +582,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     SeriesEntry(
                         id = id,
                         notes = notes,
+                        aniListType = aniListType,
+                        source = source,
                         // Fallback so that every field has a value so that it can be sorted
                         titlePreferred = titlePreferred ?: titleRomaji ?: titleEnglish ?: id,
                         titleEnglish = titleEnglish ?: titlePreferred ?: titleRomaji ?: id,

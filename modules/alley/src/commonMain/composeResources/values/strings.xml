@@ -51,9 +51,6 @@
     <string name="alley_filter_show_ignored">Show ignored (long press)</string>
     <string name="alley_filter_force_one_display_column">Force one display column</string>
     <string name="alley_search_option_ignored">Ignored</string>
-    <string name="alley_series_header_zero">Series</string>
-    <string name="alley_series_header_one">Series</string>
-    <string name="alley_series_header_many">Series</string>
 
     <string name="alley_nav_bar_artists">Artists</string>
     <string name="alley_nav_bar_map">Map</string>
@@ -203,4 +200,19 @@
     <string name="alley_language_option_english">English - always show the English market name for the closest anime/manga</string>
     <string name="alley_language_option_romaji">Romaji - display the romanized name for the closest anime/manga</string>
     <string name="alley_language_option_native">Native - display the native title (can be CJK) of the closest anime/manga</string>
+
+    <string name="alley_series_header_zero">Series</string>
+    <string name="alley_series_header_one">Series</string>
+    <string name="alley_series_header_many">Series</string>
+    <string name="alley_series_filter_all">All</string>
+    <string name="alley_series_filter_anime_manga">Anime/manga</string>
+    <string name="alley_series_filter_games">Games</string>
+    <string name="alley_series_filter_tv">TV shows</string>
+    <string name="alley_series_filter_movies">Movies</string>
+    <string name="alley_series_filter_books">Books</string>
+    <string name="alley_series_filter_web_series">Webtoons/series</string>
+    <string name="alley_series_filter_visual_novels">Visual novels</string>
+    <string name="alley_series_filter_music">Music</string>
+    <string name="alley_series_filter_multimedia">Multimedia</string>
+    <string name="alley_series_filter_other">Other</string>
 </resources>

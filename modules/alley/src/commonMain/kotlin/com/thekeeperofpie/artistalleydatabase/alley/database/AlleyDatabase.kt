@@ -1,16 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
+import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
@@ -83,6 +86,15 @@ class ArtistAlleyDatabase(
                 artistUserEntryAdapter = ArtistUserEntry.Adapter(
                     dataYearAdapter = DaoUtils.dataYearAdapter,
                 ),
+                seriesEntryAdapter = SeriesEntry.Adapter(
+                    sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
+                        override fun decode(databaseValue: String) =
+                            SeriesSource.entries.find { it.name == databaseValue }
+                                ?: SeriesSource.NONE
+
+                        override fun encode(value: SeriesSource) = value.name
+                    },
+                )
             )
 
             // TODO: Retain only valid IDs

@@ -6,9 +6,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +53,7 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
@@ -78,6 +82,8 @@ object BrowseScreen {
     operator fun invoke(
         tagsViewModel: TagsViewModel,
         dataYearHeaderState: DataYearHeaderState,
+        seriesFiltersState: () -> List<Pair<SeriesFilterOption, Boolean>>,
+        onSeriesFilterClick: (SeriesFilterOption) -> Unit,
         onSeriesClick: (SeriesEntry) -> Unit,
         onMerchClick: (MerchEntry) -> Unit,
     ) {
@@ -125,6 +131,9 @@ object BrowseScreen {
                                     item(key = "seriesLanguageOption") {
                                         tagsViewModel.seriesLanguageSection
                                             .Content(Modifier.fillMaxWidth())
+                                    }
+                                    item(key = "seriesFilters") {
+                                        SeriesFilters(seriesFiltersState(), onSeriesFilterClick)
                                     }
                                 }
                             )
@@ -261,6 +270,25 @@ object BrowseScreen {
                         .align(Alignment.CenterEnd)
                         .fillMaxHeight()
                         .padding(bottom = 72.dp)
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun SeriesFilters(
+        seriesFiltersState: List<Pair<SeriesFilterOption, Boolean>>,
+        onSeriesFilterClick: (SeriesFilterOption) -> Unit,
+    ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            seriesFiltersState.forEach { (option, selected) ->
+                FilterChip(
+                    selected = selected,
+                    label = { Text(stringResource(option.title)) },
+                    onClick = { onSeriesFilterClick(option) },
                 )
             }
         }

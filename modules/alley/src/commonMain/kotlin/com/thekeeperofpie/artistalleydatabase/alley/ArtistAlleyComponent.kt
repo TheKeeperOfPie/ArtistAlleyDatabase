@@ -47,7 +47,7 @@ interface ArtistAlleyComponent {
     val stampRallySearchViewModel: (StateFlow<StampRallySortFilterViewModel.FilterParams>) -> StampRallySearchViewModel
     val stampRallySortFilterViewModel: (SavedStateHandle) -> StampRallySortFilterViewModel
     val tagMapViewModel: (SavedStateHandle) -> TagMapViewModel
-    val tagsViewModel: () -> TagsViewModel
+    val tagsViewModel: (SavedStateHandle) -> TagsViewModel
 
     val ArtistAlleyDatabase.bindArtistEntryDao: ArtistEntryDao
         @Provides get() = this.artistEntryDao

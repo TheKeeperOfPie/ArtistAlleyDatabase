@@ -1,6 +1,7 @@
 import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesSource;
 
 CREATE TABLE
     IF NOT EXISTS artistEntry2023 (
@@ -200,6 +201,8 @@ CREATE TABLE
     IF NOT EXISTS seriesEntry (
         id TEXT NOT NULL COLLATE NOCASE,
         notes TEXT,
+        aniListType TEXT,
+        source TEXT AS SeriesSource,
         titlePreferred TEXT NOT NULL COLLATE NOCASE,
         titleEnglish TEXT NOT NULL COLLATE NOCASE,
         titleRomaji TEXT NOT NULL COLLATE NOCASE,
