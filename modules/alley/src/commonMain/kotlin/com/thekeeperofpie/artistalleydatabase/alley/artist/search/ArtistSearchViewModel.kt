@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
-import app.cash.paging.filter
-import app.cash.paging.map
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
@@ -25,6 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -134,9 +134,9 @@ class ArtistSearchViewModel(
                     searchQuery = options
                 )
             }.flow
-                .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
+                .map { it.filterOnIO { !it.userEntry.ignored || options.filterParams.showIgnored } }
                 .map {
-                    it.map {
+                    it.mapOnIO {
                         val series = ArtistEntryGridModel.getSeries(
                             showOnlyConfirmedTags = showOnlyConfirmedTags,
                             entry = it,

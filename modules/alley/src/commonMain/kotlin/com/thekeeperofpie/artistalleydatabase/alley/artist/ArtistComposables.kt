@@ -1,18 +1,20 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FormatPaint
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
@@ -28,6 +30,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_icon_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_has_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
@@ -37,6 +41,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
+import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -93,12 +98,12 @@ fun ArtistListRow(
     entry: ArtistEntryGridModel,
     onFavoriteToggle: (Boolean) -> Unit,
     onSeriesClick: (String) -> Unit,
+    onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         val artist = entry.artist
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.sharedBounds("container", artist.id, zIndexInOverlay = 1f)
         ) {
             if (artist.booth != null) {
@@ -110,6 +115,7 @@ fun ArtistListRow(
                         .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
                         .sharedElement("booth", artist.id, zIndexInOverlay = 1f)
                 )
+                Spacer(Modifier.width(16.dp))
             }
 
             Text(
@@ -125,6 +131,19 @@ fun ArtistListRow(
                         bottom = 12.dp,
                     )
             )
+            Spacer(Modifier.width(16.dp))
+
+            if (entry.artist.commissionModels.isNotEmpty()) {
+                IconWithTooltip(
+                    imageVector = Icons.Default.FormatPaint,
+                    tooltipText = stringResource(Res.string.alley_artist_has_commissions),
+                    contentDescription = stringResource(
+                        Res.string.alley_artist_commission_icon_content_description
+                    ),
+                    modifier = Modifier.padding(top = 16.dp)
+                        .size(16.dp)
+                )
+            }
 
             val favorite = entry.favorite
             IconButton(
@@ -151,30 +170,35 @@ fun ArtistListRow(
         }
 
         if (entry.series.isNotEmpty()) {
-            SeriesRow(series = entry.series, onSeriesClick = onSeriesClick)
+            SeriesRow(
+                series = entry.series,
+                onSeriesClick = onSeriesClick,
+                onMoreClick = onMoreClick,
+            )
         }
     }
 }
+
+private val chipHeightModifier = Modifier.height(24.dp)
 
 @Composable
 private fun SeriesRow(
     series: List<SeriesEntry>,
     onSeriesClick: (String) -> Unit,
+    onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (series.isEmpty()) return
-    val listState = rememberLazyListState()
+    val scrollState = rememberScrollState()
     LaunchedEffect(series) {
-        listState.scrollToItem(0, 0)
+        scrollState.scrollTo(0)
     }
     val randomSeed = LocalStableRandomSeed.current
     val shuffledSeries = remember(series, randomSeed) {
         series.shuffled(Random(randomSeed))
     }
     val languageOption = LocalLanguageOptionMedia.current
-    LazyRow(
-        state = listState,
-        contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
+    Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .padding(bottom = 8.dp)
@@ -185,17 +209,31 @@ private fun SeriesRow(
                 endTransparent = 16.dp,
             )
             .then(modifier)
+            .horizontalScroll(scrollState)
     ) {
-        items(items = shuffledSeries, key = { it }) {
+        Spacer(Modifier.width(12.dp))
+        val colors = AssistChipDefaults.assistChipColors(
+            labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+        )
+        val border = AssistChipDefaults.assistChipBorder(false)
+        shuffledSeries.take(5).forEach {
             AssistChip(
-                colors = AssistChipDefaults.assistChipColors(
-                    labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                ),
-                border = AssistChipDefaults.assistChipBorder(false),
+                colors = colors,
+                border = border,
                 onClick = { onSeriesClick(it.id) },
                 label = { Text(text = it.name(languageOption)) },
-                modifier = Modifier.height(24.dp)
+                modifier = chipHeightModifier
             )
         }
+        if (shuffledSeries.size > 5) {
+            AssistChip(
+                colors = colors,
+                border = border,
+                onClick = { onMoreClick() },
+                label = { Text("...") },
+                modifier = chipHeightModifier
+            )
+        }
+        Spacer(Modifier.width(32.dp))
     }
 }

@@ -683,6 +683,23 @@ fun Tooltip(
 fun IconWithTooltip(
     imageVector: ImageVector,
     tooltipText: String,
+    contentDescription: String? = null,
+    allowPopupHover: Boolean = false,
+    modifier: Modifier,
+) {
+    Tooltip(text = tooltipText, allowPopupHover = allowPopupHover) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            modifier = modifier.height(24.dp)
+        )
+    }
+}
+
+@Composable
+fun IconButtonWithTooltip(
+    imageVector: ImageVector,
+    tooltipText: String,
     onClick: () -> Unit,
     contentDescription: String? = null,
     allowPopupHover: Boolean = true,

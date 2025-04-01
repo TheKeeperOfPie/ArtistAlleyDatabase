@@ -31,6 +31,7 @@
     <string name="alley_artist_details_merch_unconfirmed_icon_content_description">Unconfirmed merch info</string>
     <string name="alley_artist_details_tags_unconfirmed_explanation">Tags inferred from artist's past work, may not be available at convention</string>
     <string name="alley_artist_details_stamp_rallies">Stamp rallies</string>
+    <string name="alley_artist_details_commissions">Commissions</string>
     <string name="alley_artist_catalog_image_none">No catalog image</string>
     <string name="alley_sort_label">Sort</string>
     <string name="alley_sort_booth">Booth</string>
@@ -98,10 +99,12 @@
     <string name="alley_expand_series">Expand series</string>
     <string name="alley_expand_merch">Expand merch</string>
 
+    <string name="alley_artist_has_commissions">May be doing commissions</string>
     <string name="alley_artist_commission_on_site">On-site</string>
     <string name="alley_artist_commission_on_site_tooltip">Artist may take limited sign ups at their table</string>
     <string name="alley_artist_commission_online">Online</string>
     <string name="alley_artist_commission_online_tooltip">Artist may take online commissions, usually for pickup at con, but has not specified details</string>
+    <string name="alley_artist_commission_icon_content_description">Commissions</string>
 
     <string name="alley_stamp_rally_column_booth">Booth</string>
     <string name="alley_stamp_rally_column_fandom">Fandom</string>

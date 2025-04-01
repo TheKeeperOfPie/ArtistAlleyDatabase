@@ -69,7 +69,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
@@ -171,21 +171,21 @@ private fun Header() {
 
             val uriHandler = LocalUriHandler.current
 
-            IconWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Logo.GITHUB.icon,
                 tooltipText = BuildKonfig.authorUrl,
                 onClick = { uriHandler.openUri(BuildKonfig.authorUrl) },
                 contentDescription = stringResource(Res.string.alley_author_link),
             )
 
-            IconWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Logo.DISCORD.icon,
                 tooltipText = BuildKonfig.serverUrl,
                 onClick = { uriHandler.openUri(BuildKonfig.serverUrl) },
                 contentDescription = stringResource(Res.string.alley_server_link),
             )
 
-            IconWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Default.Description,
                 tooltipText = BuildKonfig.sheetLink,
                 onClick = { uriHandler.openUri(BuildKonfig.sheetLink) },
@@ -245,7 +245,7 @@ private fun ExportSection(
                 // TODO: Support sharing for non-Android platforms
                 val shareHandler = LocalShareHandler.current
                 if (shareHandler != null) {
-                    IconWithTooltip(
+                    IconButtonWithTooltip(
                         imageVector = Icons.Default.Share,
                         tooltipText = stringResource(Res.string.alley_settings_export_copy_share),
                         onClick = { shareHandler.shareText(exportPartialText) },

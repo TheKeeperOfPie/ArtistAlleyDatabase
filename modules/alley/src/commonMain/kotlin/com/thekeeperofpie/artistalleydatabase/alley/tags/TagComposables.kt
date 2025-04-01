@@ -21,7 +21,7 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
@@ -64,7 +64,7 @@ fun SeriesRow(
                 else -> Icons.Default.Monitor
             }
             val aniListUrl = AniListDataUtils.mediaUrl(mediaType, series.aniListId.toString())
-            IconWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = icon,
                 tooltipText = aniListUrl,
                 onClick = { uriHandler.openUri(aniListUrl) },
@@ -73,7 +73,7 @@ fun SeriesRow(
         }
 
         if (series?.link != null) {
-            IconWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Default.Link,
                 tooltipText = series.link,
                 onClick = { uriHandler.openUri(series.link) },

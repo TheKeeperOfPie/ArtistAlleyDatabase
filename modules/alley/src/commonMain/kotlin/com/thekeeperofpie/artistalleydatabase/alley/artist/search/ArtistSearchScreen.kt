@@ -55,10 +55,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_series
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site_tooltip
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
@@ -71,10 +67,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.text
+import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
@@ -206,6 +204,13 @@ object ArtistSearchScreen {
                         entry = entry,
                         onFavoriteToggle = onFavoriteToggle,
                         onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                        onMoreClick = {
+                            eventSink(
+                                Event.SearchEvent(
+                                    SearchScreen.Event.OpenEntry(entry, 1)
+                                )
+                            )
+                        },
                         modifier = modifier
                     )
                 },
@@ -327,7 +332,7 @@ object ArtistSearchScreen {
                 FlowRow {
                     val uriHandler = LocalUriHandler.current
                     it.forEach {
-                        IconWithTooltip(
+                        IconButtonWithTooltip(
                             imageVector = it.logo?.icon ?: Icons.Default.Link,
                             tooltipText = it.link,
                             onClick = { uriHandler.openUri(it.link) },
@@ -339,7 +344,7 @@ object ArtistSearchScreen {
                 FlowRow {
                     val uriHandler = LocalUriHandler.current
                     it.forEach {
-                        IconWithTooltip(
+                        IconButtonWithTooltip(
                             imageVector = it.logo?.icon ?: Icons.Default.Link,
                             tooltipText = it.link,
                             onClick = { uriHandler.openUri(it.link) },
@@ -352,33 +357,25 @@ object ArtistSearchScreen {
                     val uriHandler = LocalUriHandler.current
                     it.forEach {
                         when (it) {
-                            is CommissionModel.Link -> IconWithTooltip(
+                            is CommissionModel.Link -> IconButtonWithTooltip(
                                 imageVector = it.icon,
-                                tooltipText = it.link,
+                                tooltipText = it.tooltip(),
                                 onClick = { uriHandler.openUri(it.link) },
                             )
-                            CommissionModel.OnSite -> Tooltip(
-                                text = stringResource(Res.string.alley_artist_commission_on_site_tooltip)
-                            ) {
+                            CommissionModel.OnSite -> Tooltip(it.tooltip()) {
                                 CommissionChip(
                                     model = it,
-                                    label = {
-                                        Text(stringResource(Res.string.alley_artist_commission_on_site))
-                                    },
+                                    label = { Text(it.text()) },
                                 )
                             }
-                            CommissionModel.Online -> Tooltip(
-                                text = stringResource(Res.string.alley_artist_commission_online_tooltip)
-                            ) {
+                            CommissionModel.Online -> Tooltip(it.tooltip()) {
                                 CommissionChip(
                                     model = it,
-                                    label = {
-                                        Text(stringResource(Res.string.alley_artist_commission_online))
-                                    },
+                                    label = { Text(it.text()) },
                                 )
                             }
                             is CommissionModel.Unknown ->
-                                CommissionChip(model = it, label = { Text(it.host) })
+                                CommissionChip(model = it, label = { Text(it.text()) })
                         }
                     }
                 }

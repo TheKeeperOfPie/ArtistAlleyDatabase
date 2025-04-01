@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -42,6 +43,7 @@ import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_artist_name
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_catalog
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_links_expand_content_description
@@ -66,7 +68,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataPro
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
@@ -173,7 +177,7 @@ object ArtistDetailsScreen {
 
             item("artistStoreLinks") {
                 val storeLinkModels = entry()?.artist?.storeLinkModels
-                if (storeLinkModels?.isNotEmpty() == true) {
+                if (storeLinkModels?.isNotEmpty() != false) {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -194,7 +198,7 @@ object ArtistDetailsScreen {
 
             item("artistCatalogLinks") {
                 val catalogLinks = entry()?.artist?.catalogLinks
-                if (catalogLinks?.isNotEmpty() == true) {
+                if (catalogLinks?.isNotEmpty() != false) {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -314,6 +318,26 @@ object ArtistDetailsScreen {
                                 merch = value,
                                 expanded = expanded,
                                 onClick = { value?.let { eventSink(Event.OpenMerch(it)) } },
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
+            }
+
+
+            item("artistCommissions") {
+                val commissionModels = entry()?.artist?.commissionModels
+                if (commissionModels?.isNotEmpty() != false) {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            expandableListInfoText(
+                                labelTextRes = Res.string.alley_artist_details_commissions,
+                                contentDescriptionTextRes = null,
+                                values = commissionModels,
+                                allowExpand = false,
+                                showDividerAbove = false,
+                                item = { model, _, isLast -> CommissionRow(model, isLast) },
                             )
                         }
                         Spacer(Modifier.height(16.dp))
@@ -511,6 +535,64 @@ object ArtistDetailsScreen {
                         .weight(1f)
                         .placeholder(
                             visible = link == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun CommissionRow(model: CommissionModel?, isLast: Boolean) {
+        val uriHandler = LocalUriHandler.current
+        val bottomPadding = if (isLast) 12.dp else 8.dp
+        val link = (model as? CommissionModel.Link)?.link
+        Tooltip(
+            text = link,
+            popupAlignment = Alignment.BottomEnd,
+            onClick = if (link == null) {
+                null
+            } else {
+                { uriHandler.openUri(link) }
+            }
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = bottomPadding,
+                    )
+                    .fillMaxWidth()
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.height(20.dp)
+                        .widthIn(min = 20.dp)
+                ) {
+                    Icon(
+                        imageVector = model?.icon ?: Icons.Default.Link,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .placeholder(
+                                visible = model == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                    )
+                }
+
+                val text = model?.text()
+                Text(
+                    text = text.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .placeholder(
+                            visible = model == null,
                             highlight = PlaceholderHighlight.shimmer(),
                         )
                 )

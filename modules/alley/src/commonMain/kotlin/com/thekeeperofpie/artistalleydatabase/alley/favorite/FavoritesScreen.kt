@@ -249,6 +249,13 @@ object FavoritesScreen {
                                                 }
                                             },
                                             onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                                            onMoreClick = {
+                                                eventSink(
+                                                    Event.SearchEvent(
+                                                        SearchScreen.Event.OpenEntry(entry, 1)
+                                                    )
+                                                )
+                                            },
                                             modifier = modifier
                                         )
                                     } else if (entry is StampRallyEntryGridModel) {
