@@ -55,11 +55,7 @@ object ArtistAlleyAppScreen {
             val navigationController = LocalNavigationController.current
             val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
                 navigationController.navigate(
-                    Destinations.ArtistDetails(
-                        year = entry.artist.year,
-                        id = entry.id.valueId,
-                        imageIndex = imageIndex.toString(),
-                    )
+                    Destinations.ArtistDetails(entry.artist, imageIndex)
                 )
             }
             Column(modifier = Modifier.fillMaxSize()) {
@@ -98,7 +94,8 @@ object ArtistAlleyAppScreen {
                                     component.artistDetailsViewModel(createSavedStateHandle())
                                 }
                                 ArtistDetailsScreen(
-                                    entry = viewModel.entry,
+                                    route = route,
+                                    entry = { viewModel.entry },
                                     notesTextState = viewModel.notes,
                                     initialImageIndex = viewModel.initialImageIndex,
                                     images = viewModel::images,
@@ -115,18 +112,11 @@ object ArtistAlleyAppScreen {
                                                 )
                                             is ArtistDetailsScreen.Event.OpenStampRally ->
                                                 navigationController.navigate(
-                                                    Destinations.StampRallyDetails(
-                                                        year = it.entry.year,
-                                                        id = it.entry.id,
-                                                    )
+                                                    Destinations.StampRallyDetails(it.entry)
                                                 )
                                             is ArtistDetailsScreen.Event.OpenOtherYear ->
-                                                navigationController.navigate(
-                                                    Destinations.ArtistDetails(
-                                                        year = it.year,
-                                                        id = route.id,
-                                                    )
-                                                )
+                                                navigationController
+                                                    .navigate(route.copy(year = it.year))
                                             is ArtistDetailsScreen.Event.DetailsEvent ->
                                                 when (val event = it.event) {
                                                     is DetailsScreen.Event.FavoriteToggle ->
@@ -180,7 +170,8 @@ object ArtistAlleyAppScreen {
                                     )
                                 }
                                 StampRallyDetailsScreen(
-                                    entry = viewModel.entry,
+                                    route = route,
+                                    entry = { viewModel.entry },
                                     notesTextState = viewModel.notes,
                                     initialImageIndex = viewModel.initialImageIndex,
                                     images = viewModel::images,
@@ -202,10 +193,7 @@ object ArtistAlleyAppScreen {
                                                 }
                                             is StampRallyDetailsScreen.Event.OpenArtist ->
                                                 navigationController.navigate(
-                                                    Destinations.ArtistDetails(
-                                                        year = it.artist.year,
-                                                        id = it.artist.id,
-                                                    )
+                                                    Destinations.ArtistDetails(it.artist)
                                                 )
                                         }
                                     },
@@ -226,11 +214,7 @@ object ArtistAlleyAppScreen {
                                     onClickBack = navigationController::popBackStack,
                                     onArtistClick = { entry, imageIndex ->
                                         navigationController.navigate(
-                                            Destinations.ArtistDetails(
-                                                year = entry.artist.year,
-                                                id = entry.artist.id,
-                                                imageIndex = imageIndex.toString(),
-                                            )
+                                            Destinations.ArtistDetails(entry.artist, imageIndex)
                                         )
                                     },
                                 )

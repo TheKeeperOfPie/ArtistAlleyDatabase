@@ -177,15 +177,13 @@ class FavoritesViewModel(
             is SearchScreen.Event.OpenEntry<*> -> when (searchEvent.entry) {
                 is ArtistEntryGridModel -> navigationController.navigate(
                     Destinations.ArtistDetails(
-                        year = searchEvent.entry.artist.year,
-                        id = searchEvent.entry.id.valueId,
-                        imageIndex = searchEvent.imageIndex.toString(),
+                        searchEvent.entry.artist,
+                        searchEvent.imageIndex,
                     )
                 )
                 is StampRallyEntryGridModel -> navigationController.navigate(
                     Destinations.StampRallyDetails(
-                        year = searchEvent.entry.stampRally.year,
-                        id = searchEvent.entry.stampRally.id,
+                        entry = searchEvent.entry.stampRally,
                         imageIndex = searchEvent.imageIndex.toString(),
                     )
                 )

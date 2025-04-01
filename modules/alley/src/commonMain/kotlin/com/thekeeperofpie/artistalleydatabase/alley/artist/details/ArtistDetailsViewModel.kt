@@ -51,7 +51,7 @@ class ArtistDetailsViewModel(
         savedStateHandle.toDestination<Destinations.ArtistDetails>(navigationTypeMap)
     val year = route.year
     val id = route.id
-    val initialImageIndex = route.imageIndex?.toIntOrNull() ?: 0
+    val initialImageIndex = route.imageIndex ?: 0
 
     var entry by mutableStateOf<Entry?>(null)
     var otherYears by mutableStateOf(listOf<DataYear>())

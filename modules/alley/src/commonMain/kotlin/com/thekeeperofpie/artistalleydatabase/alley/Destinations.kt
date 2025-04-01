@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.navigation.NavType
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import kotlinx.serialization.Serializable
@@ -24,8 +26,18 @@ sealed interface Destinations : NavDestination {
     data class ArtistDetails(
         val year: DataYear,
         val id: String,
-        val imageIndex: String? = null,
-    ) : Destinations
+        val booth: String?,
+        val name: String?,
+        val imageIndex: Int? = null,
+    ) : Destinations {
+        constructor(entry: ArtistEntry, imageIndex: Int? = null) : this(
+            year = entry.year,
+            id = entry.id,
+            booth = entry.booth,
+            name = entry.name,
+            imageIndex = imageIndex,
+        )
+    }
 
     @Serializable
     data class ArtistMap(val id: String) : Destinations
@@ -49,8 +61,18 @@ sealed interface Destinations : NavDestination {
     data class StampRallyDetails(
         val year: DataYear,
         val id: String,
+        val hostTable: String?,
+        val fandom: String?,
         val imageIndex: String? = null,
-    ) : Destinations
+    ) : Destinations {
+        constructor(entry: StampRallyEntry, imageIndex: String? = null) : this(
+            year = entry.year,
+            id = entry.id,
+            hostTable = entry.hostTable,
+            fandom = entry.fandom,
+            imageIndex = imageIndex,
+        )
+    }
 
     @Serializable
     data class StampRallyMap(val year: DataYear, val id: String) : Destinations

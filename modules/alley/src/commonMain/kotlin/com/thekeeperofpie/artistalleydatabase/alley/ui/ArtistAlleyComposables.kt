@@ -617,7 +617,7 @@ internal fun currentWindowSizeClass(): WindowSizeClass {
 // TooltipBox crashes on web
 @Composable
 fun Tooltip(
-    text: String,
+    text: String? = null,
     popupAlignment: Alignment = Alignment.BottomCenter,
     onClick: (() -> Unit)? = null,
     allowPopupHover: Boolean = true,
@@ -647,31 +647,33 @@ fun Tooltip(
     ) {
         content()
 
-        val popupInteractionSource = remember { MutableInteractionSource() }
-        val contentIsHovered by contentInteractionSource.collectIsHoveredAsState()
-        val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
-        if (contentIsHovered || (popupIsHovered && allowPopupHover) || popupLongPressVisible) {
-            Popup(
-                alignment = popupAlignment,
-                offset = IntOffset(0, -size.height),
-                onDismissRequest = { popupLongPressVisible = false },
-            ) {
-                Text(
-                    text = text,
-                    modifier = Modifier
-                        .hoverable(popupInteractionSource)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceDim,
-                            shape = MaterialTheme.shapes.small,
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline,
-                            shape = MaterialTheme.shapes.small,
-                        )
-                        .padding(8.dp)
-                        .widthIn(max = 240.dp)
-                )
+        if (text != null) {
+            val popupInteractionSource = remember { MutableInteractionSource() }
+            val contentIsHovered by contentInteractionSource.collectIsHoveredAsState()
+            val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
+            if (contentIsHovered || (popupIsHovered && allowPopupHover) || popupLongPressVisible) {
+                Popup(
+                    alignment = popupAlignment,
+                    offset = IntOffset(0, -size.height),
+                    onDismissRequest = { popupLongPressVisible = false },
+                ) {
+                    Text(
+                        text = text,
+                        modifier = Modifier
+                            .hoverable(popupInteractionSource)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceDim,
+                                shape = MaterialTheme.shapes.small,
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = MaterialTheme.shapes.small,
+                            )
+                            .padding(8.dp)
+                            .widthIn(max = 240.dp)
+                    )
+                }
             }
         }
     }
@@ -726,7 +728,9 @@ class DataYearHeaderState(
 ) {
     var year
         get() = dataYear()
-        set(value) { onYearChange(value) }
+        set(value) {
+            onYearChange(value)
+        }
 }
 
 @Composable

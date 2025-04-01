@@ -41,7 +41,11 @@ object ArtistMapScreen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { artist?.let { ArtistTitle(it.artist) } },
+                    title = {
+                        artist?.artist?.let {
+                            ArtistTitle(year = it.year, booth = it.booth, name = it.name)
+                        }
+                    },
                     navigationIcon = { ArrowBackIconButton(onClickBack) },
                     actions = {
                         IconButton(

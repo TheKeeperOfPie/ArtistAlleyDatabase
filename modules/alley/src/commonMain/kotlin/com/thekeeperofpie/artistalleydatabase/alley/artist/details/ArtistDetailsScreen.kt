@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -20,8 +20,8 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +56,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_year
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
@@ -84,26 +88,14 @@ object ArtistDetailsScreen {
 
     @Composable
     operator fun invoke(
-        entry: ArtistDetailsViewModel.Entry?,
+        route: Destinations.ArtistDetails,
+        entry: () -> ArtistDetailsViewModel.Entry?,
         notesTextState: TextFieldState,
         initialImageIndex: Int,
         images: () -> List<CatalogImage>,
         otherYears: () -> List<DataYear>,
         eventSink: (Event) -> Unit,
     ) {
-        if (entry == null) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-            ) {
-                CircularProgressIndicator()
-            }
-            return
-        }
-
-        val artist = entry.artist
         val uriHandler = LocalUriHandler.current
         val onClickOpenUri: (String) -> Unit = {
             try {
@@ -112,184 +104,238 @@ object ArtistDetailsScreen {
             }
         }
         DetailsScreen(
-            title = { ArtistTitle(artist) },
-            sharedElementId = artist.id,
-            favorite = { entry.favorite },
+            title = {
+                val artist = entry()?.artist
+                val booth = artist?.booth ?: route.booth
+                val name = artist?.name ?: route.name
+                ArtistTitle(year = route.year, booth = booth, name = name)
+            },
+            sharedElementId = route.id,
+            favorite = { entry()?.favorite },
             images = images,
             initialImageIndex = initialImageIndex,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
             item("artistName") {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    InfoText(
-                        stringResource(Res.string.alley_artist_details_artist_name),
-                        artist.name,
-                        showDividerAbove = false,
-                    )
+                Column(Modifier.animateItem()) {
+                    ThemeAwareElevatedCard(
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        InfoText(
+                            stringResource(Res.string.alley_artist_details_artist_name),
+                            entry()?.artist?.name,
+                            showDividerAbove = false,
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
                 }
             }
 
             item("artistDescription") {
-                val summary = artist.summary
-                if (!summary.isNullOrBlank()) {
-                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        InfoText(
-                            label = stringResource(Res.string.alley_artist_details_description),
-                            body = summary,
-                            showDividerAbove = false
-                        )
+                val artist = entry()?.artist
+                val summary = artist?.summary
+                if (artist == null || !summary.isNullOrBlank()) {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            InfoText(
+                                label = stringResource(Res.string.alley_artist_details_description),
+                                body = summary,
+                                showDividerAbove = false
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
             }
 
-            if (artist.linkModels.isNotEmpty()) {
-                item("artistLinks") {
-                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        expandableListInfoText(
-                            labelTextRes = Res.string.alley_artist_details_links,
-                            contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
-                            values = artist.linkModels,
-                            allowExpand = false,
-                            showDividerAbove = false,
-                            item = { link, _, isLast -> LinkRow(link, isLast) },
-                        )
-                    }
-                }
-            }
-            if (artist.storeLinkModels.isNotEmpty()) {
-                item("artistStoreLinks") {
-                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        expandableListInfoText(
-                            labelTextRes = Res.string.alley_artist_details_store,
-                            contentDescriptionTextRes = null,
-                            values = artist.storeLinkModels,
-                            allowExpand = false,
-                            showDividerAbove = false,
-                            item = { link, _, isLast -> LinkRow(link, isLast) },
-                        )
+            item("artistLinks") {
+                val linkModels = entry()?.artist?.linkModels
+                if (linkModels?.isNotEmpty() != false) {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            expandableListInfoText(
+                                labelTextRes = Res.string.alley_artist_details_links,
+                                contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
+                                values = linkModels,
+                                allowExpand = false,
+                                showDividerAbove = false,
+                                item = { link, _, isLast -> LinkRow(link, isLast) },
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
             }
 
-            if (artist.catalogLinks.isNotEmpty()) {
-                item("artistCatalogLinks") {
-                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        expandableListInfoText(
-                            labelTextRes = Res.string.alley_artist_details_catalog,
-                            contentDescriptionTextRes = null,
-                            values = artist.catalogLinks,
-                            valueToText = { it },
-                            onClick = onClickOpenUri,
-                            allowExpand = false,
-                            showDividerAbove = false,
-                        )
+            item("artistStoreLinks") {
+                val storeLinkModels = entry()?.artist?.storeLinkModels
+                if (storeLinkModels?.isNotEmpty() == true) {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            expandableListInfoText(
+                                labelTextRes = Res.string.alley_artist_details_store,
+                                contentDescriptionTextRes = null,
+                                values = storeLinkModels,
+                                allowExpand = false,
+                                showDividerAbove = false,
+                                item = { link, _, isLast -> LinkRow(link, isLast) },
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
             }
 
-            if (entry.stampRallies.isNotEmpty()) {
-                item("artistStampRallies") {
-                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        expandableListInfoText(
-                            labelTextRes = Res.string.alley_artist_details_stamp_rallies,
-                            contentDescriptionTextRes = null,
-                            values = entry.stampRallies,
-                            valueToText = { it.fandom },
-                            onClick = { eventSink(Event.OpenStampRally(it)) },
-                            allowExpand = false,
-                            showDividerAbove = false,
-                        )
+            item("artistCatalogLinks") {
+                val catalogLinks = entry()?.artist?.catalogLinks
+                if (catalogLinks?.isNotEmpty() == true) {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            expandableListInfoText(
+                                labelTextRes = Res.string.alley_artist_details_catalog,
+                                contentDescriptionTextRes = null,
+                                values = catalogLinks,
+                                valueToText = { it },
+                                onClick = onClickOpenUri,
+                                allowExpand = false,
+                                showDividerAbove = false,
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
             }
 
-            if (entry.seriesConfirmed.isNotEmpty()) {
-                item("artistSeriesConfirmed") {
-                    val languageOption = LocalLanguageOptionMedia.current
-                    val sorted = remember(entry.seriesConfirmed, languageOption) {
-                        entry.seriesConfirmed.sortedBy { it.name(languageOption) }
+            item("artistStampRallies") {
+                val stampRallies = entry()?.stampRallies
+                if (stampRallies?.isNotEmpty() == true) {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            expandableListInfoText(
+                                labelTextRes = Res.string.alley_artist_details_stamp_rallies,
+                                contentDescriptionTextRes = null,
+                                values = stampRallies,
+                                valueToText = { it.fandom },
+                                onClick = { eventSink(Event.OpenStampRally(it)) },
+                                allowExpand = false,
+                                showDividerAbove = false,
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
                     }
-                    Confirmed(
-                        confirmed = sorted,
-                        headerTextRes = Res.string.alley_artist_details_series,
-                        item = { value, expanded, _ ->
+                }
+            }
+
+            item("artistSeriesConfirmed") {
+                val seriesConfirmed = entry()?.seriesConfirmed
+                if (seriesConfirmed?.isNotEmpty() != false) {
+                    Column(Modifier.animateItem()) {
+                        val languageOption = LocalLanguageOptionMedia.current
+                        val sorted = remember(seriesConfirmed, languageOption) {
+                            seriesConfirmed?.sortedBy { it.name(languageOption) }
+                        }
+                        Confirmed(
+                            confirmed = sorted,
+                            headerTextRes = Res.string.alley_artist_details_series,
+                        ) { value, expanded ->
                             SeriesRow(
                                 value,
                                 expanded = expanded,
-                                onClick = { eventSink(Event.OpenSeries(value.id)) })
-                        },
-                    )
+                                onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } })
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
             }
 
-            if (entry.seriesInferred.isNotEmpty()) {
-                item("artistSeriesInferred") {
-                    val languageOption = LocalLanguageOptionMedia.current
-                    val sorted = remember(entry.seriesInferred, languageOption) {
-                        entry.seriesInferred.sortedBy { it.name(languageOption) }
-                    }
-                    Inferred(
-                        inferred = sorted,
-                        headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
-                        iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
-                        item = { value, expanded, _ ->
+            item("artistSeriesInferred") {
+                val seriesInferred = entry()?.seriesInferred
+                if (seriesInferred?.isNotEmpty() != false) {
+                    Column(Modifier.animateItem()) {
+                        val languageOption = LocalLanguageOptionMedia.current
+                        val sorted = remember(seriesInferred, languageOption) {
+                            seriesInferred?.sortedBy { it.name(languageOption) }
+                        }
+                        Inferred(
+                            inferred = sorted,
+                            headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
+                            iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
+                        ) { value, expanded ->
                             SeriesRow(
                                 value,
                                 expanded = expanded,
-                                onClick = { eventSink(Event.OpenSeries(value.id)) })
-                        },
-                    )
+                                onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } },
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
             }
 
-            if (entry.artist.merchConfirmed.isNotEmpty()) {
-                item("artistMerchConfirmed") {
-                    Confirmed(
-                        confirmed = entry.artist.merchConfirmed,
-                        headerTextRes = Res.string.alley_artist_details_merch,
-                        item = { value, expanded, isLast ->
+            item("artistMerchConfirmed") {
+                val merchConfirmed = entry()?.artist?.merchConfirmed
+                if (merchConfirmed?.isNotEmpty() != false) {
+                    Column(Modifier.animateItem()) {
+                        Confirmed(
+                            confirmed = merchConfirmed,
+                            headerTextRes = Res.string.alley_artist_details_merch,
+                        ) { value, expanded ->
                             MerchRow(
                                 merch = value,
                                 expanded = expanded,
-                                totalCount = entry.artist.merchConfirmed.size,
-                                isLast = isLast,
-                                onClick = { eventSink(Event.OpenMerch(value)) },
+                                onClick = { value?.let { eventSink(Event.OpenMerch(it)) } },
                             )
                         }
-                    )
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
             }
 
-            if (entry.artist.merchInferred.isNotEmpty()) {
-                item("artistMerchInferred") {
-                    Inferred(
-                        inferred = entry.artist.merchInferred,
-                        headerTextRes = Res.string.alley_artist_details_merch_unconfirmed,
-                        iconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
-                        item = { value, expanded, isLast ->
+            item("artistMerchInferred") {
+                val merchInferred = entry()?.artist?.merchInferred
+                if (merchInferred?.isNotEmpty() != false) {
+                    Column(Modifier.animateItem()) {
+                        Inferred(
+                            inferred = merchInferred,
+                            headerTextRes = Res.string.alley_artist_details_merch_unconfirmed,
+                            iconContentDescriptionTextRes = Res.string.alley_artist_details_merch_unconfirmed_icon_content_description,
+                        ) { value, expanded ->
                             MerchRow(
                                 merch = value,
                                 expanded = expanded,
-                                totalCount = entry.artist.merchConfirmed.size,
-                                isLast = isLast,
-                                onClick = { eventSink(Event.OpenMerch(value)) },
+                                onClick = { value?.let { eventSink(Event.OpenMerch(it)) } },
                             )
                         }
-                    )
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
             }
 
             item("artistNotes") {
-                NotesText(
-                    state = notesTextState,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                Column(Modifier.animateItem()) {
+                    NotesText(
+                        state = notesTextState,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Spacer(Modifier.height(16.dp))
+                }
             }
 
             item("artistButtons") {
                 FlowRow(
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.animateItem()
+                        .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 ) {
                     FilledTonalButton(
@@ -323,30 +369,32 @@ object ArtistDetailsScreen {
 
     @Composable
     private fun <T> Confirmed(
-        confirmed: List<T>,
+        confirmed: List<T>?,
         headerTextRes: StringResource,
-        item: @Composable (T, expanded: Boolean, isLast: Boolean) -> Unit,
+        modifier: Modifier = Modifier,
+        item: @Composable (T?, expanded: Boolean) -> Unit,
     ) {
-        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+        ThemeAwareElevatedCard(modifier = modifier.padding(horizontal = 16.dp)) {
             expandableListInfoText(
                 labelTextRes = headerTextRes,
                 contentDescriptionTextRes = null,
                 values = confirmed,
                 allowExpand = true,
                 showDividerAbove = false,
-                item = item,
+                item = { value, expanded, _ -> item(value, expanded) },
             )
         }
     }
 
     @Composable
     private fun <T> Inferred(
-        inferred: List<T>,
+        inferred: List<T>?,
         headerTextRes: StringResource,
         iconContentDescriptionTextRes: StringResource,
-        item: @Composable (T, expanded: Boolean, isLast: Boolean) -> Unit,
+        modifier: Modifier = Modifier,
+        item: @Composable (T?, expanded: Boolean) -> Unit,
     ) {
-        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+        ThemeAwareElevatedCard(modifier = modifier.padding(horizontal = 16.dp)) {
             var showPopup by remember { mutableStateOf(false) }
             expandableListInfoText(
                 labelTextRes = headerTextRes,
@@ -398,16 +446,19 @@ object ArtistDetailsScreen {
                         }
                     }
                 },
-                item = item,
+                item = { value, expanded, _ -> item(value, expanded) },
             )
         }
     }
 
     @Composable
-    private fun LinkRow(link: LinkModel, isLast: Boolean) {
+    private fun LinkRow(link: LinkModel?, isLast: Boolean) {
         val uriHandler = LocalUriHandler.current
         val bottomPadding = if (isLast) 12.dp else 8.dp
-        Tooltip(link.link, Alignment.BottomEnd, onClick = { uriHandler.openUri(link.link) }) {
+        Tooltip(
+            link?.link,
+            Alignment.BottomEnd,
+            onClick = { link?.link?.let { uriHandler.openUri(it) } }) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
@@ -419,22 +470,25 @@ object ArtistDetailsScreen {
                     )
                     .fillMaxWidth()
             ) {
-                if (link.logo?.icon != null) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.height(20.dp)
-                            .widthIn(min = 20.dp)
-                    ) {
-                        Icon(
-                            imageVector = link.logo.icon,
-                            contentDescription = null,
-                            modifier = Modifier.height(16.dp)
-                        )
-                    }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.height(20.dp)
+                        .widthIn(min = 20.dp)
+                ) {
+                    Icon(
+                        imageVector = link?.logo?.icon ?: Icons.Default.Link,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .height(16.dp)
+                            .placeholder(
+                                visible = link == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                    )
                 }
 
                 val outlineVariant = MaterialTheme.colorScheme.outline
-                val label = link.logo?.label?.let { stringResource(it) }
+                val label = link?.logo?.label?.let { stringResource(it) }
                 val text = remember(link, label, outlineVariant) {
                     buildAnnotatedString {
                         // TODO: This doesn't support localization
@@ -444,13 +498,21 @@ object ArtistDetailsScreen {
                                 append(" - ")
                             }
                         }
-                        append(link.title)
+                        if (link != null) {
+                            append(link.title)
+                        }
                     }
                 }
 
                 Text(
                     text = text,
                     style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .placeholder(
+                            visible = link == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
                 )
             }
         }
@@ -467,24 +529,24 @@ object ArtistDetailsScreen {
 
 @Preview
 @Composable
-private fun PhoneLayout() {
+private fun PhoneLayout() = PreviewDark {
     val artist = ArtistWithUserDataProvider.values.first()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
-    PreviewDark {
-        ArtistDetailsScreen(
-            entry = ArtistDetailsViewModel.Entry(
-                artist = artist.artist,
-                userEntry = artist.userEntry,
-                seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed)
-                    .map { previewSeriesEntry(it) },
-                seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesEntry(it) },
-                stampRallies = emptyList(),
-            ),
-            notesTextState = rememberTextFieldState(),
-            initialImageIndex = 1,
-            eventSink = {},
-            images = { images },
-            otherYears = { listOf(DataYear.YEAR_2024) },
-        )
-    }
+    val entry = ArtistDetailsViewModel.Entry(
+        artist = artist.artist,
+        userEntry = artist.userEntry,
+        seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed)
+            .map { previewSeriesEntry(it) },
+        seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesEntry(it) },
+        stampRallies = emptyList(),
+    )
+    ArtistDetailsScreen(
+        route = Destinations.ArtistDetails(artist.artist),
+        entry = { entry },
+        notesTextState = rememberTextFieldState(),
+        initialImageIndex = 1,
+        eventSink = {},
+        images = { images },
+        otherYears = { listOf(DataYear.YEAR_2024) },
+    )
 }

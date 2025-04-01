@@ -29,47 +29,61 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry.Different.id
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
 
 @Composable
-fun ArtistTitle(artist: ArtistEntry) {
+fun ArtistTitle(year: DataYear, booth: String?, name: String?) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        val isCurrentYear = remember(artist) { AlleyUtils.isCurrentYear(artist.year) }
+        val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
         if (!isCurrentYear) {
-            Text(text = "${artist.year.year} - ")
+            Text(text = "${year.year} - ")
         }
 
-        if (artist.booth != null) {
+        if (name == null || booth != null) {
             Text(
-                text = artist.booth,
+                text = if (name == null) "" else booth!!,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.sharedElement(
-                    "booth",
-                    artist.id,
-                    zIndexInOverlay = 1f,
-                )
+                modifier = Modifier
+                    .placeholder(
+                        visible = name == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .sharedElement(
+                        "booth",
+                        id,
+                        zIndexInOverlay = 1f,
+                    )
             )
             Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
         }
 
         Text(
-            text = artist.name,
+            text = name.orEmpty(),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .sharedElement("name", artist.id, zIndexInOverlay = 1f)
+                .sharedElement("name", id, zIndexInOverlay = 1f)
                 .weight(1f)
+                .placeholder(
+                    visible = name == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
         )
     }
 }

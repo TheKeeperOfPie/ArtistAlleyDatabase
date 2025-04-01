@@ -81,6 +81,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -697,7 +700,7 @@ fun twoColumnInfoText(
 @Composable
 fun ColumnScope.InfoText(
     label: String,
-    body: String,
+    body: String?,
     showDividerAbove: Boolean = true,
 ) {
     if (showDividerAbove) {
@@ -707,11 +710,15 @@ fun ColumnScope.InfoText(
     DetailsSubsectionHeader(label)
 
     Text(
-        text = body,
+        text = body.orEmpty(),
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
+            .placeholder(
+                visible = body == null,
+                highlight = PlaceholderHighlight.shimmer(),
+            )
     )
 }
 
@@ -722,11 +729,11 @@ fun ColumnScope.InfoText(
 fun <T> expandableListInfoText(
     labelTextRes: StringResource,
     contentDescriptionTextRes: StringResource?,
-    values: List<T>,
+    values: List<T>?,
     valueToText: @Composable (T) -> String,
     onClick: ((T) -> Unit)? = null,
     showDividerAbove: Boolean = true,
-    allowExpand: Boolean = values.size > 3,
+    allowExpand: Boolean = (values?.size ?: 0) > 3,
     header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
 ) = expandableListInfoText(
     labelTextRes,
@@ -737,22 +744,28 @@ fun <T> expandableListInfoText(
     header,
     item = { value, expanded, isLast ->
         val bottomPadding = if (isLast) 12.dp else 8.dp
+        val text = value?.let { valueToText(it) }
         Text(
-            text = valueToText(value),
+            text = text.orEmpty(),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier
                 .fillMaxWidth()
                 .optionalClickable(
                     onClick = onClick
                         ?.takeIf { expanded }
-                        ?.let { { onClick(value) } }
+                        ?.takeIf { value != null }
+                        ?.let { { value?.let { onClick(it) } } }
                 )
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
                     // If only 1 value, mirror InfoText
-                    top = if (values.size == 1) 0.dp else 8.dp,
+                    top = if (values?.size == 1) 0.dp else 8.dp,
                     bottom = bottomPadding,
+                )
+                .placeholder(
+                    visible = text == null,
+                    highlight = PlaceholderHighlight.shimmer(),
                 )
         )
     }
@@ -765,16 +778,16 @@ fun <T> expandableListInfoText(
 fun <T> expandableListInfoText(
     labelTextRes: StringResource,
     contentDescriptionTextRes: StringResource?,
-    values: List<T>,
+    values: List<T>?,
     showDividerAbove: Boolean = true,
-    allowExpand: Boolean = values.size > 3,
+    allowExpand: Boolean = (values?.size ?: 0) > 3,
     header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
-    item: @Composable (T, expanded: Boolean, isLast: Boolean) -> Unit,
+    item: @Composable (T?, expanded: Boolean, isLast: Boolean) -> Unit,
 ): Boolean {
-    if (values.isEmpty()) return false
+    if (values?.isEmpty() == true) return false
 
     var expanded by rememberSaveable(labelTextRes, values) { mutableStateOf(!allowExpand) }
-    val showExpand = allowExpand && values.size > 3
+    val showExpand = allowExpand && (values?.size ?: 0) > 3
 
     Box {
         Column(
@@ -792,13 +805,17 @@ fun <T> expandableListInfoText(
 
             header?.invoke()
 
-            values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
-                if (index != 0) {
-                    HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
-                }
+            if (values == null) {
+                item(null, false, true)
+            } else {
+                values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
+                    if (index != 0) {
+                        HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
+                    }
 
-                val isLast = index == values.size - 1
-                item(value, expanded || !showExpand, isLast)
+                    val isLast = index == values.size - 1
+                    item(value, expanded || !showExpand, isLast)
+                }
             }
         }
 

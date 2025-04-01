@@ -17,6 +17,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.anilist.data.type.MediaType
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
@@ -42,6 +45,10 @@ fun SeriesRow(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .placeholder(
+                    visible = series == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
         )
 
         val uriHandler = LocalUriHandler.current
@@ -78,25 +85,20 @@ fun SeriesRow(
 
 @Composable
 fun MerchRow(
-    merch: String,
+    merch: String?,
     expanded: Boolean,
-    totalCount: Int,
-    isLast: Boolean,
     onClick: () -> Unit,
 ) {
-    val bottomPadding = if (isLast) 12.dp else 8.dp
     Text(
-        text = merch,
+        text = merch.orEmpty(),
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier
             .fillMaxWidth()
             .optionalClickable(onClick = onClick.takeIf { expanded })
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                // If only 1 value, mirror InfoText
-                top = if (totalCount == 1) 0.dp else 8.dp,
-                bottom = bottomPadding,
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .placeholder(
+                visible = merch == null,
+                highlight = PlaceholderHighlight.shimmer(),
             )
     )
 }

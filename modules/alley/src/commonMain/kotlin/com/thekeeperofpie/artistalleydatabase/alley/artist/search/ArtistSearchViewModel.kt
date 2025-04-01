@@ -164,9 +164,8 @@ class ArtistSearchViewModel(
                 is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
                     navigationController.navigate(
                         Destinations.ArtistDetails(
-                            year = searchEvent.entry.artist.year,
-                            id = searchEvent.entry.id.valueId,
-                            imageIndex = searchEvent.imageIndex.toString(),
+                            searchEvent.entry.artist,
+                            searchEvent.imageIndex,
                         )
                     )
             }

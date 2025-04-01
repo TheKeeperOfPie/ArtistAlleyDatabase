@@ -1,17 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -39,13 +38,16 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
@@ -62,30 +64,24 @@ object StampRallyDetailsScreen {
 
     @Composable
     operator fun invoke(
-        entry: StampRallyDetailsViewModel.Entry?,
+        route: Destinations.StampRallyDetails,
+        entry: () -> StampRallyDetailsViewModel.Entry?,
         notesTextState: TextFieldState,
         initialImageIndex: Int,
         images: () -> List<CatalogImage>,
         eventSink: (Event) -> Unit,
     ) {
-        if (entry == null) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-            ) {
-                CircularProgressIndicator()
-            }
-            return
-        }
-
-        val stampRally = entry.stampRally
         val uriHandler = LocalUriHandler.current
         DetailsScreen(
-            title = { StampRallyTitle(stampRally) },
-            sharedElementId = stampRally.id,
-            favorite = { entry.favorite },
+            title = {
+                val id = route.id
+                val stampRally = entry()?.stampRally
+                val hostTable = stampRally?.hostTable ?: route.hostTable
+                val fandom = stampRally?.fandom ?: route.fandom
+                StampRallyTitle(id = id, hostTable = hostTable, fandom = fandom)
+            },
+            sharedElementId = route.id,
+            favorite = { entry()?.favorite },
             images = images,
             initialImageIndex = initialImageIndex,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
@@ -100,82 +96,93 @@ object StampRallyDetailsScreen {
     }
 
     private fun LazyListScope.detailsContent(
-        entry: StampRallyDetailsViewModel.Entry,
+        entry: () -> StampRallyDetailsViewModel.Entry?,
         notesTextState: TextFieldState,
         eventSink: (Event) -> Unit,
         onClickOpenUri: (String) -> Unit,
     ) {
-        val stampRally = entry.stampRally
         item("stampRallyFandom") {
             ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(
                     stringResource(Res.string.alley_stamp_rally_details_fandom),
-                    stampRally.fandom,
+                    entry()?.stampRally?.fandom,
                     showDividerAbove = false,
                 )
             }
+            Spacer(Modifier.height(16.dp))
         }
 
         item("stampRallyLinks") {
-            if (stampRally.links.isNotEmpty()) {
+            val links = entry()?.stampRally?.links
+            if (links?.isNotEmpty() != false) {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_stamp_rally_details_links,
                         contentDescriptionTextRes = null,
-                        values = stampRally.links,
+                        values = links,
                         valueToText = { it },
                         onClick = onClickOpenUri,
                         allowExpand = false,
                         showDividerAbove = false,
                     )
                 }
+                Spacer(Modifier.height(16.dp))
             }
         }
 
         item("stampRallyCostAndPrizes") {
+            val stampRally = entry()?.stampRally
             ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                val tableMin = stampRally.tableMin
-                val totalCost = stampRally.totalCost
-                val tableCount = stampRally.tables.count()
-
-                val body = if (tableMin == null) {
-                    stringResource(Res.string.alley_stamp_rally_cost_unknown)
-                } else if (tableMin == 0L) {
-                    stringResource(Res.string.alley_stamp_rally_cost_free)
-                } else if (tableMin == 1L) {
-                    if (tableCount > 0) {
-                        stringResource(Res.string.alley_stamp_rally_cost_equation_any, tableCount)
-                    } else {
-                        stringResource(Res.string.alley_stamp_rally_cost_any)
-                    }
-                } else if (totalCost != null && tableCount > 0) {
-                    stringResource(
-                        Res.string.alley_stamp_rally_cost_equation_paid,
-                        tableMin,
-                        tableCount,
-                        totalCost
-                    )
+                val body = if (stampRally == null) {
+                    null
                 } else {
-                    stringResource(Res.string.alley_stamp_rally_cost_unknown)
+                    val tableMin = stampRally.tableMin
+                    val totalCost = stampRally.totalCost
+                    val tableCount = stampRally.tables.count()
+                    if (tableMin == null) {
+                        stringResource(Res.string.alley_stamp_rally_cost_unknown)
+                    } else if (tableMin == 0L) {
+                        stringResource(Res.string.alley_stamp_rally_cost_free)
+                    } else if (tableMin == 1L) {
+                        if (tableCount > 0) {
+                            stringResource(
+                                Res.string.alley_stamp_rally_cost_equation_any,
+                                tableCount
+                            )
+                        } else {
+                            stringResource(Res.string.alley_stamp_rally_cost_any)
+                        }
+                    } else if (totalCost != null && tableCount > 0) {
+                        stringResource(
+                            Res.string.alley_stamp_rally_cost_equation_paid,
+                            tableMin,
+                            tableCount,
+                            totalCost
+                        )
+                    } else {
+                        stringResource(Res.string.alley_stamp_rally_cost_unknown)
+                    }
                 }
 
                 twoColumnInfoText(
                     labelOne = stringResource(Res.string.alley_stamp_rally_details_cost),
                     bodyOne = body,
                     labelTwo = stringResource(Res.string.alley_stamp_rally_details_prize_limit),
-                    bodyTwo = stampRally.prizeLimitText(),
+                    bodyTwo = stampRally?.prizeLimitText(),
                     showDividerAbove = false,
                 )
             }
+            Spacer(Modifier.height(16.dp))
         }
 
         item("stampRallyArtists") {
-            if (entry.artists.isNotEmpty()) {
+            val artists = entry()?.artists
+            if (artists?.isNotEmpty() != false) {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_stamp_rally_details_artists,
                         contentDescriptionTextRes = null,
-                        values = entry.artists,
+                        values = artists,
                         valueToText = {
                             if (it.booth == null) {
                                 it.name
@@ -192,22 +199,25 @@ object StampRallyDetailsScreen {
                         showDividerAbove = false,
                     )
                 }
+                Spacer(Modifier.height(16.dp))
             }
         }
 
         item("stampRallyOtherTables") {
-            if (entry.otherTables.isNotEmpty()) {
+            val otherTables = entry()?.otherTables
+            if (otherTables?.isNotEmpty() != false) {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_stamp_rally_details_other_tables,
                         contentDescriptionTextRes = null,
-                        values = entry.otherTables,
+                        values = otherTables,
                         valueToText = { it },
                         onClick = null,
                         allowExpand = false,
                         showDividerAbove = false,
                     )
                 }
+                Spacer(Modifier.height(16.dp))
             }
         }
 
@@ -216,6 +226,7 @@ object StampRallyDetailsScreen {
                 state = notesTextState,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
+            Spacer(Modifier.height(16.dp))
         }
 
         item("stampRallyButtons") {
@@ -239,28 +250,37 @@ object StampRallyDetailsScreen {
     }
 
     @Composable
-    private fun StampRallyTitle(stampRally: StampRallyEntry) {
+    private fun StampRallyTitle(id: String, hostTable: String?, fandom: String?) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stampRally.hostTable,
+                text = hostTable.orEmpty(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.sharedElement(
-                    "hostTable",
-                    stampRally.id,
-                    zIndexInOverlay = 1f,
-                )
+                modifier = Modifier
+                    .placeholder(
+                        visible = hostTable == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .sharedElement(
+                        "hostTable",
+                        id,
+                        zIndexInOverlay = 1f,
+                    )
             )
 
             Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
 
             Text(
-                text = stampRally.fandom,
+                text = fandom.orEmpty(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .weight(1f)
-                    .sharedElement("fandom", stampRally.id, zIndexInOverlay = 1f)
+                    .placeholder(
+                        visible = hostTable == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .sharedElement("fandom", id, zIndexInOverlay = 1f)
             )
         }
     }
@@ -280,12 +300,15 @@ private fun PhoneLayout() {
     PreviewDark {
         var notes by remember { mutableStateOf("") }
         StampRallyDetailsScreen(
-            entry = StampRallyDetailsViewModel.Entry(
-                stampRally = stampRally.stampRally,
-                userEntry = stampRally.userEntry,
-                artists = artists,
-                otherTables = listOf("ANX-101"),
-            ),
+            route = Destinations.StampRallyDetails(stampRally.stampRally),
+            entry = {
+                StampRallyDetailsViewModel.Entry(
+                    stampRally = stampRally.stampRally,
+                    userEntry = stampRally.userEntry,
+                    artists = artists,
+                    otherTables = listOf("ANX-101"),
+                )
+            },
             notesTextState = rememberTextFieldState(),
             initialImageIndex = 1,
             images = { images },

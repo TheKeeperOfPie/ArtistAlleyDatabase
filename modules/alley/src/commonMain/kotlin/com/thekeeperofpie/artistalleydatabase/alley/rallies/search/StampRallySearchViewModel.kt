@@ -98,8 +98,7 @@ class StampRallySearchViewModel(
             is SearchScreen.Event.OpenEntry<StampRallyEntryGridModel> ->
                 navigationController.navigate(
                     Destinations.StampRallyDetails(
-                        year = searchEvent.entry.stampRally.year,
-                        id = searchEvent.entry.stampRally.id,
+                        entry = searchEvent.entry.stampRally,
                         imageIndex = searchEvent.imageIndex.toString(),
                     )
                 )

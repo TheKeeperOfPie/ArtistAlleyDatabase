@@ -104,7 +104,7 @@ object DetailsScreen {
     operator fun invoke(
         title: @Composable () -> Unit,
         sharedElementId: Any,
-        favorite: () -> Boolean,
+        favorite: () -> Boolean?,
         images: () -> List<CatalogImage>,
         initialImageIndex: Int,
         eventSink: (Event) -> Unit,
@@ -161,7 +161,6 @@ object DetailsScreen {
             val images = images()
             val hasImages = images.isNotEmpty()
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(bottom = 32.dp),
                 modifier = Modifier
                     .fillMaxHeight()
@@ -225,7 +224,6 @@ object DetailsScreen {
     ) {
         val headerPagerState = rememberImagePagerState(images, initialImageIndex)
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 32.dp),
             modifier = Modifier.fillMaxSize()
         ) {
@@ -254,7 +252,7 @@ object DetailsScreen {
         sharedElementId: Any,
         fullscreenImagesState: FullscreenImagesState,
         title: @Composable () -> Unit,
-        favorite: () -> Boolean,
+        favorite: () -> Boolean?,
         onFavoriteToggle: (Boolean) -> Unit,
         onClickBack: () -> Unit,
         onClickOpenInMap: () -> Unit,
@@ -284,24 +282,28 @@ object DetailsScreen {
                     )
                 }
 
-                IconButton(
-                    onClick = { onFavoriteToggle(!favorite()) },
-                    modifier = Modifier.sharedElement(
-                        "favorite",
-                        sharedElementId,
-                        zIndexInOverlay = 1f,
-                    )
-                ) {
-                    Icon(
-                        imageVector = if (favorite()) {
-                            Icons.Filled.Favorite
-                        } else {
-                            Icons.Filled.FavoriteBorder
-                        },
-                        contentDescription = stringResource(
-                            Res.string.alley_favorite_icon_content_description
-                        ),
-                    )
+                val favorite = favorite()
+                AnimatedVisibility(favorite != null, enter = fadeIn(), exit = fadeOut()) {
+                    val favoriteNotNull = favorite == true
+                    IconButton(
+                        onClick = { onFavoriteToggle(!favoriteNotNull) },
+                        modifier = Modifier.sharedElement(
+                            "favorite",
+                            sharedElementId,
+                            zIndexInOverlay = 1f,
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (favoriteNotNull) {
+                                Icons.Filled.Favorite
+                            } else {
+                                Icons.Filled.FavoriteBorder
+                            },
+                            contentDescription = stringResource(
+                                Res.string.alley_favorite_icon_content_description
+                            ),
+                        )
+                    }
                 }
             },
             modifier = Modifier
