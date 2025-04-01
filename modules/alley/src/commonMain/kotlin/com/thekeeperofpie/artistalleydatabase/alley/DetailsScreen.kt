@@ -84,6 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
@@ -324,10 +325,16 @@ object DetailsScreen {
             images.size == 1 -> 1
             else -> images.size + 1
         }
-        return rememberPagerState(
-            initialPage = initialImageIndex.coerceAtMost(pageCount - 1),
+        val maxIndex = (pageCount - 1).coerceAtLeast(0)
+        val initialPage = initialImageIndex.coerceAtMost(maxIndex)
+        val pagerState = rememberPagerState(
+            initialPage = initialPage,
             pageCount = { pageCount },
         )
+        OnChangeEffect(images) {
+            pagerState.requestScrollToPage(initialPage)
+        }
+        return pagerState
     }
 
     @Composable
