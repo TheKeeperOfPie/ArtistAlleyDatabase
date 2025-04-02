@@ -260,25 +260,27 @@ object BrowseScreen {
 
                     additionalHeader()
 
-                    if (values.loadState.refresh.isLoading) {
-                        item("loadingIndicator") {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                CircularProgressIndicator()
+                    if (values.itemCount == 0) {
+                        if (values.loadState.refresh.isLoading) {
+                            item("loadingIndicator") {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    CircularProgressIndicator()
+                                }
                             }
-                        }
-                    } else if (values.itemCount == 0) {
-                        item("noResults") {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.alley_search_no_results),
-                                    modifier = Modifier.padding(16.dp)
-                                )
+                        } else {
+                            item("noResults") {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.alley_search_no_results),
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
                             }
                         }
                     } else {

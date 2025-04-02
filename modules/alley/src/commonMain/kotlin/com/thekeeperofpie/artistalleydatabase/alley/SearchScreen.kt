@@ -574,29 +574,31 @@ object SearchScreen {
             ) {
                 header()
 
-                if (entries.loadState.refresh.isLoading) {
-                    item("searchLoadingIndicator", span = StaggeredGridItemSpan.FullLine) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                } else if (entries.itemCount == 0) {
-                    item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
-                        if (noResultsItem == null) {
+                if (entries.itemCount == 0) {
+                    if (entries.loadState.refresh.isLoading) {
+                        item("searchLoadingIndicator", span = StaggeredGridItemSpan.FullLine) {
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(
-                                    text = stringResource(Res.string.alley_search_no_results),
-                                    modifier = Modifier.padding(16.dp)
-                                )
+                                CircularProgressIndicator()
                             }
-                        } else {
-                            noResultsItem()
+                        }
+                    } else {
+                        item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
+                            if (noResultsItem == null) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.alley_search_no_results),
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            } else {
+                                noResultsItem()
+                            }
                         }
                     }
                 } else {
