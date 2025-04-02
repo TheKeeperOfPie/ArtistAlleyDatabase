@@ -31,6 +31,7 @@ object SettingsScreen {
         sections: List<SettingsSection>,
         upIconOption: UpIconOption?,
         modifier: Modifier = Modifier,
+        automaticallyInsertDividers: Boolean = true,
         customSection: @Composable (SettingsSection.Placeholder) -> Unit = {},
     ) {
         var currentSubsectionId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -64,14 +65,15 @@ object SettingsScreen {
                 }
 
                 (currentSubsection?.children ?: sections).forEach { section ->
-                    if (section is SettingsSection.Placeholder) {
-                        customSection(section)
-                    } else if (section is SettingsSection.Subsection) {
-                        section.Content(Modifier.clickable { currentSubsectionId = section.id })
-                    } else {
-                        section.Content(Modifier)
+                    when (section) {
+                        is SettingsSection.Placeholder -> customSection(section)
+                        is SettingsSection.Subsection ->
+                            section.Content(Modifier.clickable { currentSubsectionId = section.id })
+                        else -> section.Content(Modifier)
                     }
-                    HorizontalDivider()
+                    if (automaticallyInsertDividers) {
+                        HorizontalDivider()
+                    }
                 }
             }
         }

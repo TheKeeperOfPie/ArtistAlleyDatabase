@@ -111,40 +111,40 @@ internal fun AlleySettingsScreen(
         SettingsScreen(
             sections = state.sections,
             upIconOption = UpIconOption.Back(navigationController::popBackStack),
+            automaticallyInsertDividers = false,
             modifier = Modifier.widthIn(max = 1200.dp),
-            customSection = {
-                when (it.id) {
-                    "header" -> Header()
-                    "export" -> ExportSection(
-                        exportPartialText = { state.exportPartialText },
-                        onClickExportPartial = {
-                            eventSink(AlleySettingsScreen.Event.ExportPartial)
-                        },
-                        onClickExportFull = {
-                            eventSink(AlleySettingsScreen.Event.ExportFull)
-                        },
-                    )
-                    "import" -> ImportSection(
-                        state = { state.importState },
-                        onResetState = { state.importState = LoadingResult.empty<Unit>() },
-                        onClickImport = { eventSink(AlleySettingsScreen.Event.Import(it)) }
-                    )
-                    "faq" -> FaqSection(
-                        onInstallClick = { PlatformSpecificConfig.requestInstall() },
-                        onExportClick = {
-                            eventSink(AlleySettingsScreen.Event.ExportPartial)
-                        }
-                    )
-                    else -> throw IllegalArgumentException()
-                }
+        ) {
+            when (it.id) {
+                "header" -> Header()
+                "export" -> ExportSection(
+                    exportPartialText = { state.exportPartialText },
+                    onClickExportPartial = {
+                        eventSink(AlleySettingsScreen.Event.ExportPartial)
+                    },
+                    onClickExportFull = {
+                        eventSink(AlleySettingsScreen.Event.ExportFull)
+                    },
+                )
+                "import" -> ImportSection(
+                    state = { state.importState },
+                    onResetState = { state.importState = LoadingResult.empty<Unit>() },
+                    onClickImport = { eventSink(AlleySettingsScreen.Event.Import(it)) }
+                )
+                "faq" -> FaqSection(
+                    onInstallClick = { PlatformSpecificConfig.requestInstall() },
+                    onExportClick = {
+                        eventSink(AlleySettingsScreen.Event.ExportPartial)
+                    }
+                )
+                else -> throw IllegalArgumentException()
             }
-        )
+        }
     }
 }
 
 @Composable
 private fun Header() {
-    OutlinedCard(Modifier.padding(16.dp).fillMaxWidth()) {
+    OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val colorScheme = MaterialTheme.colorScheme
             val text = remember(colorScheme) {
@@ -347,7 +347,7 @@ private fun ImportSection(
 
 @Composable
 private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
-    OutlinedCard(Modifier.padding(16.dp).fillMaxWidth()) {
+    OutlinedCard(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
         Text(
             text = "FAQ",
             style = MaterialTheme.typography.titleMedium,
@@ -454,6 +454,23 @@ private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
                 )
             }
         )
+
+        HorizontalDivider()
+
+        QuestionAnswer(
+            question = "I have questions, comments, concerns, suggestions, or feedback",
+            answer = {
+                append("DM ")
+                append(BuildKonfig.authorUsername)
+                append(" on Discord or visit us in the ")
+                withStyle(SpanStyle(color = colorScheme.primary)) {
+                    withLink(LinkAnnotation.Url(BuildKonfig.serverUrl)) {
+                        append(BuildKonfig.serverChannel)
+                    }
+                }
+                append(" channel.")
+            }
+        )
     }
 }
 
@@ -486,7 +503,7 @@ private fun QuestionAnswer(
         ) {
             Text(
                 text = question,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
                     .padding(horizontal = 16.dp)

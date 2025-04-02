@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -48,8 +49,10 @@ class AlleySettingsViewModel(
                 themeSection,
                 seriesLanguageSection,
                 SettingsSection.Placeholder("export"),
+                SettingsSection.HorizontalDivider("exportDivider", horizontalPadding = 16.dp),
                 SettingsSection.Placeholder("import"),
                 SettingsSection.Placeholder("faq"),
+                SettingsSection.Spacer("bottomSpacer", 80.dp),
             )
         )
 

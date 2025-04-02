@@ -4,12 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -161,6 +164,25 @@ sealed class SettingsSection(open val id: String) {
         @Composable
         override fun Content(modifier: Modifier) {
             throw IllegalStateException("Placeholder should not be invoked")
+        }
+    }
+
+    data class HorizontalDivider(override val id: String, val horizontalPadding: Dp = 0.dp) : SettingsSection(id) {
+        @Composable
+        override fun Content(modifier: Modifier) {
+            if (horizontalPadding == 0.dp) {
+                HorizontalDivider()
+            } else {
+                HorizontalDivider(Modifier.padding(horizontal = horizontalPadding))
+            }
+        }
+    }
+
+    data class Spacer(override val id: String, val height: Dp) :
+        SettingsSection(id) {
+        @Composable
+        override fun Content(modifier: Modifier) {
+            androidx.compose.foundation.layout.Spacer(Modifier.height(height))
         }
     }
 
