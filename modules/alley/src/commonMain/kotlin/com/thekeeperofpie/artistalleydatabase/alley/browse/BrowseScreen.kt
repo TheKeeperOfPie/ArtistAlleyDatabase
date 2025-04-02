@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_series
+import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
@@ -65,6 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -257,17 +260,40 @@ object BrowseScreen {
 
                     additionalHeader()
 
-                    items(
-                        count = values.itemCount,
-                        key = values.itemKey(itemKey),
-                        contentType = values.itemContentType { "tag_entry" },
-                    ) { index ->
-                        val value = values[index]
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            item(value)
-                            HorizontalDivider()
+                    if (values.loadState.refresh.isLoading) {
+                        item("loadingIndicator") {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    } else if (values.itemCount == 0) {
+                        item("noResults") {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.alley_search_no_results),
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        items(
+                            count = values.itemCount,
+                            key = values.itemKey(itemKey),
+                            contentType = values.itemContentType { "tag_entry" },
+                        ) { index ->
+                            val value = values[index]
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                item(value)
+                                HorizontalDivider()
+                            }
                         }
                     }
                 }

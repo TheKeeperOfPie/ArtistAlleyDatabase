@@ -145,6 +145,10 @@ object AlleyRootScreen {
                                     Destination.FAVORITES.name,
                                     scrollPositions,
                                 ),
+                                onNavigateToArtists = { currentDestination = Destination.ARTISTS },
+                                onNavigateToRallies = {
+                                    currentDestination = Destination.STAMP_RALLIES
+                                },
                             )
                         }
                         Destination.MAP -> {

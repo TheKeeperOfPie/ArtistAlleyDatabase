@@ -13,6 +13,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
@@ -41,6 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.cash.paging.PagingData
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_artists
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_go_to_artists
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_go_to_stamp_rallies
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
@@ -88,6 +93,8 @@ object FavoritesScreen {
         artistSortViewModel: ArtistSortFilterViewModel,
         stampRallySortViewModel: StampRallySortFilterViewModel,
         scrollStateSaver: ScrollStateSaver,
+        onNavigateToArtists: () -> Unit,
+        onNavigateToRallies: () -> Unit,
     ) {
         val navigationController = LocalNavigationController.current
         FavoritesScreen(
@@ -110,6 +117,8 @@ object FavoritesScreen {
             artistSortViewModel.state,
             stampRallySortViewModel.state,
             scrollStateSaver = scrollStateSaver,
+            onNavigateToArtists = onNavigateToArtists,
+            onNavigateToRallies = onNavigateToRallies,
             eventSink = { favoritesViewModel.onEvent(navigationController, it) },
         )
     }
@@ -120,6 +129,8 @@ object FavoritesScreen {
         artistSortFilterState: SortFilterState<*>,
         stampRallySortFilterState: SortFilterState<*>,
         scrollStateSaver: ScrollStateSaver,
+        onNavigateToArtists: () -> Unit,
+        onNavigateToRallies: () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
@@ -234,6 +245,33 @@ object FavoritesScreen {
                                                     onClick = { tab = it },
                                                 )
                                             }
+                                        }
+                                    }
+                                },
+                                noResultsItem = {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        val textRes = when (tab) {
+                                            EntryTab.ARTISTS -> Res.string.alley_favorites_empty_artists
+                                            EntryTab.RALLIES -> Res.string.alley_favorites_empty_stamp_rallies
+                                        }
+                                        Text(
+                                            text = stringResource(textRes),
+                                            modifier = Modifier.padding(16.dp)
+                                        )
+                                        FilledTonalButton(onClick = {
+                                            when (tab) {
+                                                EntryTab.ARTISTS -> onNavigateToArtists()
+                                                EntryTab.RALLIES -> onNavigateToRallies()
+                                            }
+                                        }) {
+                                            val buttonTextRes = when (tab) {
+                                                EntryTab.ARTISTS -> Res.string.alley_favorites_empty_go_to_artists
+                                                EntryTab.RALLIES -> Res.string.alley_favorites_empty_go_to_stamp_rallies
+                                            }
+                                            Text(stringResource(buttonTextRes))
                                         }
                                     }
                                 },

@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -85,6 +86,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_display_type_
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_image
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_list
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_table
+import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
 import artistalleydatabase.modules.entry.generated.resources.entry_results_one
 import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
@@ -113,6 +115,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
@@ -384,6 +387,7 @@ object SearchScreen {
             )
         },
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+        noResultsItem: (@Composable () -> Unit)? = null,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         val density = LocalDensity.current
         val topBarPadding by remember(density) {
@@ -417,6 +421,7 @@ object SearchScreen {
                 onWidthChanged = onHorizontalScrollBarWidth,
                 columnHeader = columnHeader,
                 tableCell = tableCell,
+                noResultsItem = noResultsItem,
             )
         } else {
             val topOffset by remember {
@@ -442,6 +447,7 @@ object SearchScreen {
                 topBarPadding = topBarPadding,
                 itemToSharedElementId = itemToSharedElementId,
                 itemRow = itemRow,
+                noResultsItem = noResultsItem,
             )
         }
     }
@@ -456,6 +462,7 @@ object SearchScreen {
         onWidthChanged: (Int) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+        noResultsItem: (@Composable () -> Unit)? = null,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         Box(
             contentAlignment = Alignment.TopCenter,
@@ -472,6 +479,7 @@ object SearchScreen {
                 contentPadding = PaddingValues(bottom = 80.dp),
                 columnHeader = columnHeader,
                 tableCell = tableCell,
+                additionalHeader = noResultsItem,
                 modifier = Modifier.onSizeChanged { onWidthChanged(it.width) }
             )
 
@@ -497,6 +505,7 @@ object SearchScreen {
         topOffset: Dp,
         topBarPadding: Dp,
         itemToSharedElementId: (EntryModel) -> Any,
+        noResultsItem: (@Composable () -> Unit)? = null,
         itemRow: @Composable (
             entry: EntryModel,
             onFavoriteToggle: (Boolean) -> Unit,
@@ -565,91 +574,118 @@ object SearchScreen {
             ) {
                 header()
 
-                items(
-                    count = entries.itemCount,
-                    key = entries.itemKey { it.id.scopedId },
-                    contentType = entries.itemContentType { "search_entry" },
-                ) { index ->
-                    val entry = entries[index] ?: return@items
-
-                    @Suppress("NAME_SHADOWING")
-                    val onFavoriteToggle: (Boolean) -> Unit = {
-                        entry.favorite = it
-                        eventSink(Event.FavoriteToggle(entry, it))
-                    }
-
-                    @Suppress("NAME_SHADOWING")
-                    val onIgnoredToggle: (Boolean) -> Unit = {
-                        entry.ignored = it
-                        eventSink(Event.IgnoreToggle(entry, it))
-                    }
-
-                    val sharedElementId = itemToSharedElementId(entry)
-                    when (displayType) {
-                        DisplayType.LIST -> {
-                            val ignored = entry.ignored
-                            val lane by remember(index) {
-                                derivedStateOf {
-                                    gridState.layoutInfo.visibleItemsInfo
-                                        .find { it.index - 1 == index }
-                                        ?.lane
-                                }
-                            }
-                            val finalLane = lane
-                            if (finalLane != null && maxLane < finalLane) {
-                                maxLane = finalLane
-                            }
-                            itemRow(
-                                entry,
-                                onFavoriteToggle,
-                                Modifier
-                                    .sharedBounds("itemContainer", sharedElementId)
-                                    .combinedClickable(
-                                        onClick = { eventSink(Event.OpenEntry(entry, 1)) },
-                                        onLongClick = { onIgnoredToggle(!ignored) }
-                                    )
-                                    .alpha(if (entry.ignored) 0.38f else 1f)
-                                    .border(
-                                        width = 1.dp,
-                                        color = DividerDefaults.color,
-                                        start = lane != 0,
-                                        bottom = true,
-                                    )
-                            )
+                if (entries.loadState.refresh.isLoading) {
+                    item("searchLoadingIndicator", span = StaggeredGridItemSpan.FullLine) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            CircularProgressIndicator()
                         }
-                        DisplayType.CARD -> ItemCard(
-                            entry = entry,
-                            sharedElementId = itemToSharedElementId(entry),
-                            showGridByDefault = showGridByDefault,
-                            showRandomCatalogImage = showRandomCatalogImage,
-                            onFavoriteToggle = onFavoriteToggle,
-                            onIgnoredToggle = onIgnoredToggle,
-                            onClick = { entry, imageIndex ->
-                                eventSink(Event.OpenEntry(entry, imageIndex))
-                            },
-                            itemRow = itemRow,
-                            modifier = Modifier.sharedBounds(
-                                "itemContainer",
-                                sharedElementId
-                            ),
-                        )
-                        DisplayType.IMAGE -> ItemImage(
-                            entry = entry,
-                            sharedElementId = itemToSharedElementId(entry),
-                            showGridByDefault = showGridByDefault,
-                            showRandomCatalogImage = showRandomCatalogImage,
-                            onFavoriteToggle = onFavoriteToggle,
-                            onIgnoredToggle = onIgnoredToggle,
-                            onClick = { entry, imageIndex ->
-                                eventSink(Event.OpenEntry(entry, imageIndex))
-                            },
-                            itemRow = itemRow,
-                            modifier = Modifier.sharedBounds(
-                                "itemContainer",
-                                sharedElementId
-                            ),
-                        )
-                        DisplayType.TABLE -> throw IllegalArgumentException()
+                    }
+                } else if (entries.itemCount == 0) {
+                    item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
+                        if (noResultsItem == null) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.alley_search_no_results),
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        } else {
+                            noResultsItem()
+                        }
+                    }
+                } else {
+                    items(
+                        count = entries.itemCount,
+                        key = entries.itemKey { it.id.scopedId },
+                        contentType = entries.itemContentType { "search_entry" },
+                    ) { index ->
+                        val entry = entries[index] ?: return@items
+
+                        @Suppress("NAME_SHADOWING")
+                        val onFavoriteToggle: (Boolean) -> Unit = {
+                            entry.favorite = it
+                            eventSink(Event.FavoriteToggle(entry, it))
+                        }
+
+                        @Suppress("NAME_SHADOWING")
+                        val onIgnoredToggle: (Boolean) -> Unit = {
+                            entry.ignored = it
+                            eventSink(Event.IgnoreToggle(entry, it))
+                        }
+
+                        val sharedElementId = itemToSharedElementId(entry)
+                        when (displayType) {
+                            DisplayType.LIST -> {
+                                val ignored = entry.ignored
+                                val lane by remember(index) {
+                                    derivedStateOf {
+                                        gridState.layoutInfo.visibleItemsInfo
+                                            .find { it.index - 1 == index }
+                                            ?.lane
+                                    }
+                                }
+                                val finalLane = lane
+                                if (finalLane != null && maxLane < finalLane) {
+                                    maxLane = finalLane
+                                }
+                                itemRow(
+                                    entry,
+                                    onFavoriteToggle,
+                                    Modifier
+                                        .sharedBounds("itemContainer", sharedElementId)
+                                        .combinedClickable(
+                                            onClick = { eventSink(Event.OpenEntry(entry, 1)) },
+                                            onLongClick = { onIgnoredToggle(!ignored) }
+                                        )
+                                        .alpha(if (entry.ignored) 0.38f else 1f)
+                                        .border(
+                                            width = 1.dp,
+                                            color = DividerDefaults.color,
+                                            start = lane != 0,
+                                            bottom = true,
+                                        )
+                                )
+                            }
+                            DisplayType.CARD -> ItemCard(
+                                entry = entry,
+                                sharedElementId = itemToSharedElementId(entry),
+                                showGridByDefault = showGridByDefault,
+                                showRandomCatalogImage = showRandomCatalogImage,
+                                onFavoriteToggle = onFavoriteToggle,
+                                onIgnoredToggle = onIgnoredToggle,
+                                onClick = { entry, imageIndex ->
+                                    eventSink(Event.OpenEntry(entry, imageIndex))
+                                },
+                                itemRow = itemRow,
+                                modifier = Modifier.sharedBounds(
+                                    "itemContainer",
+                                    sharedElementId
+                                ),
+                            )
+                            DisplayType.IMAGE -> ItemImage(
+                                entry = entry,
+                                sharedElementId = itemToSharedElementId(entry),
+                                showGridByDefault = showGridByDefault,
+                                showRandomCatalogImage = showRandomCatalogImage,
+                                onFavoriteToggle = onFavoriteToggle,
+                                onIgnoredToggle = onIgnoredToggle,
+                                onClick = { entry, imageIndex ->
+                                    eventSink(Event.OpenEntry(entry, imageIndex))
+                                },
+                                itemRow = itemRow,
+                                modifier = Modifier.sharedBounds(
+                                    "itemContainer",
+                                    sharedElementId
+                                ),
+                            )
+                            DisplayType.TABLE -> throw IllegalArgumentException()
+                        }
                     }
                 }
             }
