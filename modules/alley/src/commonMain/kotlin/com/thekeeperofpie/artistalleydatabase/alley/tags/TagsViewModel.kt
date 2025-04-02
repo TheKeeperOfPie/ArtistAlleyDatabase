@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.serialization.saved
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
@@ -45,7 +46,12 @@ class TagsViewModel(
     )
 
     val series =
-        combine(settings.dataYear, settings.languageOption, snapshotFlow { seriesQuery to seriesFiltersState }, ::Triple)
+        combine(
+            settings.dataYear,
+            settings.languageOption,
+            snapshotFlow { seriesQuery to seriesFiltersState },
+            ::Triple
+        )
             .flatMapLatest { (year, languageOption, pair) ->
                 val (query, seriesFilterState) = pair
                 if (year == DataYear.YEAR_2023) {
@@ -92,6 +98,7 @@ class TagsViewModel(
     var seriesFiltersState by savedStateHandle.saveable {
         mutableStateOf(defaultSeriesFiltersState)
     }
+    var previouslyClickedOption by savedStateHandle.saved<SeriesFilterOption> { SeriesFilterOption.ALL }
 
     fun onSeriesFilterClick(option: SeriesFilterOption) {
         val state = if (option == SeriesFilterOption.ALL) {
@@ -99,7 +106,9 @@ class TagsViewModel(
         } else {
             val oldState = seriesFiltersState
             // If re-clicking an already active filter, make it exclusive and disable all others
-            if (oldState.count { it.second } >= 2 && oldState.first { it.first == option }.second) {
+            if (previouslyClickedOption == option &&
+                oldState.count { it.second } >= 2 &&
+                oldState.first { it.first == option }.second) {
                 SeriesFilterOption.entries.map { it to (it == option) }
             } else {
                 oldState.toMutableList().map {
@@ -118,5 +127,6 @@ class TagsViewModel(
 
         seriesFiltersState = state.takeUnless { it.none { it.second } }
             ?: defaultSeriesFiltersState
+        previouslyClickedOption = option
     }
 }

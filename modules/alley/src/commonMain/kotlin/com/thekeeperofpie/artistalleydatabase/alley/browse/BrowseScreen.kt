@@ -316,7 +316,7 @@ object BrowseScreen {
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         ) {
             seriesFiltersState.forEach { (option, selected) ->
                 FilterChip(
