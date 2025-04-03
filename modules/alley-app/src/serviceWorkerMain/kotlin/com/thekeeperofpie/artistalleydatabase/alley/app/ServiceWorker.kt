@@ -80,22 +80,30 @@ fun main() {
         val url = URL(event.request.url)
         val urlPath = url.pathname
         val urlPathWithoutSlash = urlPath.removePrefix("/")
-        event.respondWith(
-            promise {
-                if (urlPath == "/") {
-                    val cachedRevision = filesToCacheAndRevisions["index.html"]
-                    fetchCacheFirst("/index.html?__REVISION__=$cachedRevision", request, urlPath)
-                } else {
-                    val cachedRevision = filesToCacheAndRevisions[urlPathWithoutSlash]
-                    if (cachedRevision != null) {
-                        url.searchParams.set("__REVISION__", cachedRevision)
-                        fetchCacheFirst(url.href, request, urlPath)
+        if (url.host.contains("anilist.co")) {
+            event.respondWith(self.fetch(request))
+        } else {
+            event.respondWith(
+                promise {
+                    if (urlPath == "/") {
+                        val cachedRevision = filesToCacheAndRevisions["index.html"]
+                        fetchCacheFirst(
+                            "/index.html?__REVISION__=$cachedRevision",
+                            request,
+                            urlPath
+                        )
                     } else {
-                        fetchCacheFirst(request, request, urlPath)
+                        val cachedRevision = filesToCacheAndRevisions[urlPathWithoutSlash]
+                        if (cachedRevision != null) {
+                            url.searchParams.set("__REVISION__", cachedRevision)
+                            fetchCacheFirst(url.href, request, urlPath)
+                        } else {
+                            fetchCacheFirst(request, request, urlPath)
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     })
 }
 
