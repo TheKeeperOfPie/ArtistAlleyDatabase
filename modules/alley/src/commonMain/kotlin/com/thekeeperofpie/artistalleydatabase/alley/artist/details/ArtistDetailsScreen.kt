@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -80,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
@@ -96,7 +98,8 @@ object ArtistDetailsScreen {
         entry: () -> ArtistDetailsViewModel.Entry?,
         notesTextState: TextFieldState,
         initialImageIndex: Int,
-        images: () -> List<CatalogImage>,
+        catalogImages: () -> List<CatalogImage>,
+        seriesImages: () -> Map<Int, String>,
         otherYears: () -> List<DataYear>,
         eventSink: (Event) -> Unit,
     ) {
@@ -116,7 +119,7 @@ object ArtistDetailsScreen {
             },
             sharedElementId = route.id,
             favorite = { entry()?.favorite },
-            images = images,
+            images = catalogImages,
             initialImageIndex = initialImageIndex,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
@@ -251,11 +254,18 @@ object ArtistDetailsScreen {
                         Confirmed(
                             confirmed = sorted,
                             headerTextRes = Res.string.alley_artist_details_series,
+                            forSeries = true,
                         ) { value, expanded ->
                             SeriesRow(
                                 value,
+                                image = {
+                                    value?.aniListId?.let {
+                                        seriesImages()[it.toInt()]
+                                    }
+                                },
                                 expanded = expanded,
-                                onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } })
+                                onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } },
+                            )
                         }
                         Spacer(Modifier.height(16.dp))
                     }
@@ -274,9 +284,15 @@ object ArtistDetailsScreen {
                             inferred = sorted,
                             headerTextRes = Res.string.alley_artist_details_series_unconfirmed,
                             iconContentDescriptionTextRes = Res.string.alley_artist_details_series_unconfirmed_icon_content_description,
+                            forSeries = true,
                         ) { value, expanded ->
                             SeriesRow(
                                 value,
+                                image = {
+                                    value?.aniListId?.let {
+                                        seriesImages()[it.toInt()]
+                                    }
+                                },
                                 expanded = expanded,
                                 onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } },
                             )
@@ -396,6 +412,7 @@ object ArtistDetailsScreen {
         confirmed: List<T>?,
         headerTextRes: StringResource,
         modifier: Modifier = Modifier,
+        forSeries: Boolean = false,
         item: @Composable (T?, expanded: Boolean) -> Unit,
     ) {
         ThemeAwareElevatedCard(modifier = modifier.padding(horizontal = 16.dp)) {
@@ -405,6 +422,13 @@ object ArtistDetailsScreen {
                 values = confirmed,
                 allowExpand = true,
                 showDividerAbove = false,
+                dividerPadding = PaddingValues(start = if (forSeries) 0.dp else 16.dp),
+                header = {
+                    DetailsSubsectionHeader(
+                        text = stringResource(headerTextRes),
+                        modifier = Modifier.padding(bottom = if (forSeries) 6.dp else 0.dp)
+                    )
+                },
                 item = { value, expanded, _ -> item(value, expanded) },
             )
         }
@@ -416,6 +440,7 @@ object ArtistDetailsScreen {
         headerTextRes: StringResource,
         iconContentDescriptionTextRes: StringResource,
         modifier: Modifier = Modifier,
+        forSeries: Boolean = false,
         item: @Composable (T?, expanded: Boolean) -> Unit,
     ) {
         ThemeAwareElevatedCard(modifier = modifier.padding(horizontal = 16.dp)) {
@@ -426,6 +451,7 @@ object ArtistDetailsScreen {
                 values = inferred,
                 allowExpand = true,
                 showDividerAbove = false,
+                dividerPadding = PaddingValues(start = if (forSeries) 0.dp else 16.dp),
                 header = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -440,7 +466,12 @@ object ArtistDetailsScreen {
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.surfaceTint,
                             modifier = Modifier
-                                .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 4.dp)
+                                .padding(
+                                    start = 16.dp,
+                                    end = 8.dp,
+                                    top = 10.dp,
+                                    bottom = if (forSeries) 10.dp else 4.dp,
+                                )
                         )
 
                         Box {
@@ -452,7 +483,7 @@ object ArtistDetailsScreen {
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .heightIn(max = 20.dp)
-                                    .padding(top = 6.dp)
+                                    .padding(top = 6.dp, bottom = if (forSeries) 6.dp else 0.dp)
                             )
 
                             if (showPopup) {
@@ -628,7 +659,8 @@ private fun PhoneLayout() = PreviewDark {
         notesTextState = rememberTextFieldState(),
         initialImageIndex = 1,
         eventSink = {},
-        images = { images },
+        catalogImages = { images },
+        seriesImages = { emptyMap() },
         otherYears = { listOf(DataYear.YEAR_2024) },
     )
 }

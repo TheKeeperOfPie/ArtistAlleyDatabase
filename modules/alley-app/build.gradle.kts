@@ -166,6 +166,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.components.resources)
             implementation(compose.runtime)
+            implementation(libs.coil3.coil.network.ktor3)
             implementation(libs.kotlinx.coroutines.core)
         }
         val nonJsCommonMain by getting {
@@ -191,18 +192,17 @@ kotlin {
             }
         }
         androidMain.dependencies {
+            implementation(libs.ktor.client.android)
             runtimeOnly(libs.kotlinx.coroutines.android)
         }
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.ktor.client.java)
             }
         }
         val wasmJsMain by getting {
-            dependencies {
-                implementation(libs.coil3.coil.network.ktor3)
-            }
             resources.srcDirs(layout.buildDirectory.dir("dist/serviceWorker/productionExecutable"))
         }
         val serviceWorkerMain by getting {

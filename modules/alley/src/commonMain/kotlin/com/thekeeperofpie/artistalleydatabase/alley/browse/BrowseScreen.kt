@@ -131,6 +131,7 @@ object BrowseScreen {
                                 item = {
                                     SeriesRow(
                                         series = it,
+                                        image = { null }, // TODO
                                         textStyle = LocalTextStyle.current,
                                         expanded = true,
                                         onClick = { it?.let { onSeriesClick(it) } },

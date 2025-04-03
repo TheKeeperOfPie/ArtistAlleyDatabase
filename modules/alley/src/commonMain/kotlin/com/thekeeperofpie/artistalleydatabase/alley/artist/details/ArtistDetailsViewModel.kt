@@ -7,11 +7,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyAniListApi
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
@@ -40,6 +42,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @Inject
 class ArtistDetailsViewModel(
+    private val aniListApi: AlleyAniListApi,
     private val artistEntryDao: ArtistEntryDao,
     private val notesDao: NotesDao,
     private val tagEntryDao: TagEntryDao,
@@ -54,8 +57,16 @@ class ArtistDetailsViewModel(
     val initialImageIndex = route.imageIndex ?: 0
 
     var entry by mutableStateOf<Entry?>(null)
+        private set
+
     var otherYears by mutableStateOf(listOf<DataYear>())
-    var images by mutableStateOf<List<CatalogImage>>(emptyList())
+        private set
+
+    var catalogImages by mutableStateOf<List<CatalogImage>>(emptyList())
+        private set
+
+    var seriesImages by mutableStateOf<Map<Int, String>>(emptyMap())
+        private set
 
     val notes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
         mutableStateOf(TextFieldState())
@@ -77,16 +88,21 @@ class ArtistDetailsViewModel(
             )
             val seriesInferred = artist.seriesInferred.map { tagEntryDao.getSeriesById(it) }
             val seriesConfirmed = artist.seriesConfirmed.map { tagEntryDao.getSeriesById(it) }
-            withContext(CustomDispatchers.Main) {
-                entry = Entry(
-                    artist = artist,
-                    userEntry = userEntry,
-                    seriesInferred = seriesInferred,
-                    seriesConfirmed = seriesConfirmed,
-                    stampRallies = stampRallies,
-                )
-                images = catalogImages
+
+            val entry = Entry(
+                artist = artist,
+                userEntry = userEntry,
+                seriesInferred = seriesInferred,
+                seriesConfirmed = seriesConfirmed,
+                stampRallies = stampRallies,
+            )
+
+            Snapshot.withMutableSnapshot {
+                this@ArtistDetailsViewModel.entry = entry
+                this@ArtistDetailsViewModel.catalogImages = catalogImages
             }
+
+            seriesImages = aniListApi.getSeriesImages(entry.seriesInferred + entry.seriesConfirmed)
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {

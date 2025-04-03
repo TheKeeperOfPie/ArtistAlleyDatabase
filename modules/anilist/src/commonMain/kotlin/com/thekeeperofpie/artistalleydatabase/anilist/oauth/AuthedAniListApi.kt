@@ -150,6 +150,7 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.apollo.utils.ApolloCache
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -612,7 +613,7 @@ open class AuthedAniListApi(
             return null
         }
         return httpClient.post {
-            url(AniListUtils.GRAPHQL_API_URL)
+            url(AniListDataUtils.GRAPHQL_API_URL)
             header("Authorization", authHeader)
             setBody("""{"query":"mutation{Logout}","variables":{}}""")
         }

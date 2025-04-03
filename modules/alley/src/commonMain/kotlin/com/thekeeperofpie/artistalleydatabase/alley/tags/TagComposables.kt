@@ -1,7 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
@@ -13,9 +18,12 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
@@ -29,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 @Composable
 fun SeriesRow(
     series: SeriesEntry?,
+    image: () -> String?,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     expanded: Boolean,
     onClick: () -> Unit,
@@ -37,14 +46,37 @@ fun SeriesRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .optionalClickable(onClick = onClick.takeIf { expanded })
-            .minimumInteractiveComponentSize()
+            .height(IntrinsicSize.Min)
     ) {
+        AsyncImage(
+            model = image(),
+            null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxHeight()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .aspectRatio(ratio = 2 / 3f, matchHeightConstraintsFirst = true)
+                .layout { measurable, constraints ->
+                    val targetHeight = constraints.minHeight
+                    val targetWidth = targetHeight * 2 / 3
+                    val newConstraints = constraints.copy(
+                        minWidth = targetWidth,
+                        maxWidth = targetWidth,
+                        maxHeight = constraints.minHeight,
+                    )
+                    val placeable = measurable.measure(newConstraints)
+                    layout(placeable.width, placeable.height) {
+                        placeable.placeRelative(0, 0)
+                    }
+                }
+        )
+
         Text(
             text = series?.name(LocalLanguageOptionMedia.current).orEmpty(),
             style = textStyle,
             modifier = Modifier
+                .minimumInteractiveComponentSize()
                 .weight(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
                 .placeholder(
                     visible = series == null,
                     highlight = PlaceholderHighlight.shimmer(),

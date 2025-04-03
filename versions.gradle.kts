@@ -263,7 +263,9 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 withVersion(Versions.ktor) {
+                    library("io.ktor:ktor-client-android")
                     library("io.ktor:ktor-client-core")
+                    library("io.ktor:ktor-client-java")
                     library("io.ktor:ktor-client-okhttp")
                     library("io.ktor:ktor-client-mock")
                     library("io.ktor:ktor-server-core-jvm")

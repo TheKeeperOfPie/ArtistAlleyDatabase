@@ -98,7 +98,8 @@ object ArtistAlleyAppScreen {
                                     entry = { viewModel.entry },
                                     notesTextState = viewModel.notes,
                                     initialImageIndex = viewModel.initialImageIndex,
-                                    images = viewModel::images,
+                                    catalogImages = viewModel::catalogImages,
+                                    seriesImages = viewModel::seriesImages,
                                     otherYears = viewModel::otherYears,
                                     eventSink = {
                                         when (it) {

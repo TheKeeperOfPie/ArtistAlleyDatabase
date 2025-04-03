@@ -736,12 +736,12 @@ fun <T> expandableListInfoText(
     allowExpand: Boolean = (values?.size ?: 0) > 3,
     header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
 ) = expandableListInfoText(
-    labelTextRes,
-    contentDescriptionTextRes,
-    values,
-    showDividerAbove,
-    allowExpand,
-    header,
+    labelTextRes = labelTextRes,
+    contentDescriptionTextRes = contentDescriptionTextRes,
+    values = values,
+    showDividerAbove = showDividerAbove,
+    allowExpand = allowExpand,
+    header = header,
     item = { value, expanded, isLast ->
         val bottomPadding = if (isLast) 12.dp else 8.dp
         val text = value?.let { valueToText(it) }
@@ -780,6 +780,7 @@ fun <T> expandableListInfoText(
     contentDescriptionTextRes: StringResource?,
     values: List<T>?,
     showDividerAbove: Boolean = true,
+    dividerPadding: PaddingValues = PaddingValues(start = 16.dp),
     allowExpand: Boolean = (values?.size ?: 0) > 3,
     header: (@Composable () -> Unit)? = { DetailsSubsectionHeader(stringResource(labelTextRes)) },
     item: @Composable (T?, expanded: Boolean, isLast: Boolean) -> Unit,
@@ -810,7 +811,7 @@ fun <T> expandableListInfoText(
             } else {
                 values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
                     if (index != 0) {
-                        HorizontalDivider(modifier = Modifier.padding(start = 16.dp))
+                        HorizontalDivider(modifier = Modifier.padding(dividerPadding))
                     }
 
                     val isLast = index == values.size - 1

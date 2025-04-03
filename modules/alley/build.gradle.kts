@@ -10,6 +10,7 @@ plugins {
     id("library-web")
     id("app.cash.sqldelight")
     alias(libs.plugins.com.codingfeline.buildkonfig)
+    alias(libs.plugins.com.apollographql.apollo3.external)
 }
 
 kotlin {
@@ -29,6 +30,7 @@ kotlin {
             api(projects.modules.alley.user)
             api(projects.modules.anilist.data)
             api(projects.modules.entry)
+            implementation(projects.modules.apollo.utils)
             implementation(projects.modules.settings.ui)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
@@ -84,6 +86,16 @@ buildkonfig {
         properties.forEach {
             buildConfigField(FieldSpec.Type.STRING, it.key.toString(), it.value.toString())
         }
+    }
+}
+
+apollo {
+    service("aniList") {
+        packageName.set("com.anilist.data")
+        dependsOn(project(":modules:anilist:data"))
+        codegenModels.set("responseBased")
+        decapitalizeFields.set(true)
+        plugin(projects.modules.apollo)
     }
 }
 

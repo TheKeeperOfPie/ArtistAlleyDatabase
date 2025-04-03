@@ -27,9 +27,6 @@ import kotlin.math.absoluteValue
 
 object AniListUtils {
 
-    const val GRAPHQL_API_HOST = "graphql.anilist.co"
-    const val GRAPHQL_API_URL = "https://$GRAPHQL_API_HOST/"
-
     const val COVER_IMAGE_WIDTH_TO_HEIGHT_RATIO = 0.707f
 
     fun characterUrl(id: String) = "${AniListDataUtils.ANILIST_BASE_URL}/character/$id"

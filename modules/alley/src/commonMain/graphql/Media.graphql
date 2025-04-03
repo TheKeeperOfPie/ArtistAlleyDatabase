@@ -1,0 +1,10 @@
+query MediaImages($ids: [Int]!, $page: Int!) {
+    Page(perPage: 25, page: $page) {
+        media(id_in: $ids) {
+            id
+            coverImage {
+                medium
+            }
+        }
+    }
+}
