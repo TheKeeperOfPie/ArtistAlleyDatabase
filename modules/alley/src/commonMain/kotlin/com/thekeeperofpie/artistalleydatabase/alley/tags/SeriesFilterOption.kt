@@ -12,8 +12,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_tv
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_visual_novels
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_web_series
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 
+@Serializable
 enum class SeriesFilterOption(val title: StringResource) {
     ALL(Res.string.alley_series_filter_all),
     ANIME_MANGA(Res.string.alley_series_filter_anime_manga),
