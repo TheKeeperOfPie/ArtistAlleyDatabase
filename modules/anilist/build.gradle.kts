@@ -4,6 +4,7 @@ plugins {
     id("library-desktop")
     id("library-inject")
     id("library-room")
+    alias(libs.plugins.com.apollographql.apollo3.external)
 }
 
 kotlin {
@@ -42,4 +43,14 @@ android {
 
 compose.resources {
     publicResClass = true
+}
+
+apollo {
+    service("aniList") {
+        packageName.set("com.anilist.data")
+        dependsOn(project(":modules:anilist:data"))
+        codegenModels.set("responseBased")
+        decapitalizeFields.set(true)
+        plugin(projects.modules.apollo)
+    }
 }

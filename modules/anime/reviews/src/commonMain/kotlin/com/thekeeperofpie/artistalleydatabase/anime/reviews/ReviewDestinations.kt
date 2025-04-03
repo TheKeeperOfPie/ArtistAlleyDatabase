@@ -14,7 +14,7 @@ import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaHeaderData
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
@@ -130,9 +130,9 @@ object ReviewDestinations {
         navGraphBuilder.sharedElementComposable<ReviewDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/review/{reviewId}" },
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}/.*"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/review/{reviewId}/.*"
                 },
             ),
         ) {

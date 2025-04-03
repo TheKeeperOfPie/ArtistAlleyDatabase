@@ -139,9 +139,3 @@ query UnreadNotificationCount {
         unreadNotificationCount @nonnull
     }
 }
-
-fragment AniListDate on FuzzyDate {
-    year
-    month
-    day
-}

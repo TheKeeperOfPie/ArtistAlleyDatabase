@@ -16,7 +16,7 @@ import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_root_releases_title
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaNavigationData
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.ForumThreadScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentTreeScreen
@@ -136,11 +136,11 @@ object ForumDestinations {
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/recent?category={categoryId}"
+                        "${AniListDataUtils.ANILIST_BASE_URL}/forum/recent?category={categoryId}"
                 },
                 navDeepLink {
                     uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/recent?media={mediaCategoryId}"
+                        "${AniListDataUtils.ANILIST_BASE_URL}/forum/recent?media={mediaCategoryId}"
                 },
             ),
         ) {
@@ -178,10 +178,10 @@ object ForumDestinations {
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/forum/thread/{threadId}"
                 },
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/.*"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/.*"
                 },
             ),
         ) {
@@ -223,11 +223,11 @@ object ForumDestinations {
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}"
+                        "${AniListDataUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}"
                 },
                 navDeepLink {
                     uriPattern =
-                        "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}/.*"
+                        "${AniListDataUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}/.*"
                 },
             ),
         ) {

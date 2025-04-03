@@ -35,6 +35,7 @@ import com.anilist.data.NotificationMediaAndActivityQuery
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activities.ActivityDestinations
@@ -153,7 +154,7 @@ object AnimeNavigator {
     ) {
         navGraphBuilder.sharedElementComposable(
             route = AnimeNavDestinations.HOME.id,
-            deepLinks = listOf(navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/" }),
+            deepLinks = listOf(navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/" }),
         ) {
             val viewModel = viewModel { component.animeRootViewModel() }
             AnimeRootScreen(
@@ -188,10 +189,10 @@ object AnimeNavigator {
         navGraphBuilder.sharedElementComposable<AnimeDestination.MediaDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}" },
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}/.*" },
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}" },
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}/.*" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/anime/{mediaId}" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/anime/{mediaId}/.*" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/manga/{mediaId}" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/manga/{mediaId}/.*" },
             ),
             enterTransition = {
                 val destination = targetState.toRoute<AnimeDestination.MediaDetails>()

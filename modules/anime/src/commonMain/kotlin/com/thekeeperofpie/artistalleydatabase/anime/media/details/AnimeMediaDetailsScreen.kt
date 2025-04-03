@@ -166,6 +166,7 @@ import com.anilist.data.type.MediaRankType
 import com.anilist.data.type.MediaRelation
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
@@ -483,7 +484,7 @@ object AnimeMediaDetailsScreen {
                                         onDismissRequest = { showMenu = false },
                                     ) {
                                         fun url(forceExternal: Boolean = false): String {
-                                            val url = AniListUtils.mediaUrl(
+                                            val url = AniListDataUtils.mediaUrl(
                                                 mediaEntry.result?.media?.type ?: headerValues.type,
                                                 state.mediaId,
                                             )
@@ -1549,7 +1550,7 @@ object AnimeMediaDetailsScreen {
                 Link(
                     id = "AniList",
                     type = ExternalLinkType.INFO,
-                    url = AniListUtils.mediaUrl(it, mediaId) +
+                    url = AniListDataUtils.mediaUrl(it, mediaId) +
                             "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true",
                     site = "AniList",
                 )

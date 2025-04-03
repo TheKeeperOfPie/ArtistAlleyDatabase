@@ -33,9 +33,9 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_open_external_icon_content_description
 import com.anilist.data.MediaAndCharactersQuery
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharacterCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
@@ -132,7 +132,7 @@ object MediaCharactersScreen {
                                         onClick = {
                                             showMenu = false
                                             uriHandler.openUri(
-                                                AniListUtils.mediaUrl(
+                                                AniListDataUtils.mediaUrl(
                                                     // TODO: Better infer media type
                                                     mediaType ?: MediaType.ANIME,
                                                     mediaId

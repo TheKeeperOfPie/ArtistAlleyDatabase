@@ -17,7 +17,7 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaPreview
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.characters.details.CharacterDetailsScreen
@@ -79,10 +79,10 @@ object CharacterDestinations {
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/character/{characterId}"
                 },
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}/.*"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/character/{characterId}/.*"
                 },
             ),
         ) {

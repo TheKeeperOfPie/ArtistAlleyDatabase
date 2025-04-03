@@ -40,7 +40,7 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import coil3.annotation.ExperimentalCoilApi
 import com.anilist.data.type.MediaFormat
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSection
@@ -212,7 +212,7 @@ fun MediaHeader(
                                 onClick = {
                                     showMenu = false
                                     uriHandler.openUri(
-                                        AniListUtils.mediaUrl(
+                                        AniListDataUtils.mediaUrl(
                                             // TODO: Better infer media type
                                             mediaType ?: MediaType.ANIME,
                                             mediaId.toString()

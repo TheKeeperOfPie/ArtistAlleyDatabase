@@ -13,6 +13,7 @@ import androidx.navigation.toRoute
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activities.details.ActivityDetailsScreen
@@ -71,10 +72,10 @@ object ActivityDestinations {
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/activity/{activityId}"
                 },
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}/.*"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/activity/{activityId}/.*"
                 },
             ),
         ) {

@@ -13,7 +13,7 @@ import androidx.navigation.toRoute
 import com.anilist.data.fragment.CharacterWithRoleAndFavorites
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaWithListStatus
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterDetails
 import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterEntryProvider
@@ -136,8 +136,8 @@ object StaffDestinations {
         navGraphBuilder.sharedElementComposable<StaffDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}" },
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/staff/{staffId}" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/staff/{staffId}/.*" },
             ),
         ) {
             val viewModel = viewModel {

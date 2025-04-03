@@ -1,0 +1,5 @@
+fragment AniListDate on FuzzyDate {
+    year
+    month
+    day
+}

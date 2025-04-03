@@ -18,6 +18,7 @@ apollo {
             endpointUrl.set("https://graphql.anilist.co")
             schemaFile.set(aniListSchemaFile)
         }
+        generateApolloMetadata.set(true)
         codegenModels.set("responseBased")
         decapitalizeFields.set(true)
 

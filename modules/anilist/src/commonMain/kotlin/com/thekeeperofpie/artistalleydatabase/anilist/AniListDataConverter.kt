@@ -12,6 +12,7 @@ import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
@@ -42,7 +43,7 @@ class AniListDataConverter(
                 else -> null
             },
             image = media.coverImage?.medium,
-            imageLink = media.type?.let { AniListUtils.mediaUrl(it, media.id.toString()) },
+            imageLink = media.type?.let { AniListDataUtils.mediaUrl(it, media.id.toString()) },
             serializedValue = serializedValue,
             searchableValue = (listOf(
                 media.title?.romaji,

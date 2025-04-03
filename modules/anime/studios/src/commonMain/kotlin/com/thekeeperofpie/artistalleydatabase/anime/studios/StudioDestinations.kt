@@ -11,7 +11,7 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.anilist.data.fragment.MediaNavigationData
 import com.anilist.data.fragment.MediaPreview
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.favorites.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
@@ -57,9 +57,9 @@ object StudioDestinations {
         navGraphBuilder.sharedElementComposable<StudioMedias>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/studio/{studioId}" },
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}/.*"
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/studio/{studioId}/.*"
                 },
             ),
         ) {

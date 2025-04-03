@@ -35,7 +35,7 @@ import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.fragment.StudioListRowFragment
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityEntryProvider
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
@@ -223,8 +223,8 @@ object UserDestinations {
         navGraphBuilder.sharedElementComposable<User>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}" },
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/user/{userId}" },
+                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
             ),
         ) {
             val destination = it.toRoute<User>()
