@@ -43,16 +43,14 @@ fun main() {
         event as InstallEvent
         event.waitUntil(
             promise {
-                val appCache = self.caches.open(APP_CACHE.name).await()
-                filesToCacheAndRevisions.forEach {
+                val urlsToCache = filesToCacheAndRevisions.map {
                     console.log("Cache input ${it.key}-${it.value}")
-                    val url = "/${it.key}?__REVISION__=${it.value}"
-                    try {
-                        appCache.add(url).await()
-                    } catch (t: Throwable) {
-                        console.log("Failed to cache", url)
-                    }
-                }
+                    "/${it.key}?__REVISION__=${it.value}"
+                }.toTypedArray()
+
+                self.caches.open(APP_CACHE.name).await()
+                    .addAll(urlsToCache)
+                    .await()
             }
         )
     })

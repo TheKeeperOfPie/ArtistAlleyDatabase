@@ -9,8 +9,6 @@ const readOnlyDatabaseHashPath = "alleyArtistHash.txt"
 let db = null;
 async function createDatabase() {
     const sqlite3 = await sqlite3InitModule({ print: console.log, printErr: console.error });
-    const response = await fetch(readOnlyInputPath);
-    const fileBuffer = await response.arrayBuffer();
     if (sqlite3.oo1.OpfsDb) {
         const opfsRoot = await navigator.storage.getDirectory();
         const hashFile = await opfsRoot.getFileHandle(readOnlyDatabaseHashPath, { create: true });
@@ -32,6 +30,8 @@ async function createDatabase() {
 
         if (oldHash != newHash) {
             console.log("Importing new database")
+            const response = await fetch(readOnlyInputPath);
+            const fileBuffer = await response.arrayBuffer();
             await sqlite3.oo1.OpfsDb.importDb(readOnlyDatabasePath, fileBuffer);
             const textEncoder = new TextEncoder();
             const encoded = textEncoder.encode(newHash);
