@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
@@ -18,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDe
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
@@ -58,8 +60,14 @@ interface ArtistAlleyComponent {
     val ArtistAlleyDatabase.bindImportExportDao: ImportExportDao
         @Provides get() = this.importExportDao
 
+    val ArtistAlleyDatabase.bindImageEntryDao: ImageEntryDao
+        @Provides get() = this.imageEntryDao
+
     val ArtistAlleyDatabase.bindNotesDao: NotesDao
         @Provides get() = this.notesDao
+
+    val ArtistAlleyDatabase.bindSeriesEntryDao: SeriesEntryDao
+        @Provides get() = this.seriesEntryDao
 
     val ArtistAlleyDatabase.bindTagEntryDao: TagEntryDao
         @Provides get() = this.tagEntryDao

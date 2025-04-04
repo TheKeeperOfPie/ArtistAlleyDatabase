@@ -16,9 +16,8 @@ class AlleyAniListApi {
         .addHttpInterceptor(AniListResponseCodeCoercingInterceptor)
         .build()
 
-    suspend fun getSeriesImages(series: List<SeriesEntry>) =
-        series.mapNotNull { it.aniListId?.toInt() }
-            .distinct()
+    suspend fun getMediaImages(mediaIds: Collection<Int>) =
+        mediaIds
             .chunked(25)
             .mapIndexed { index, mediaIds ->
                 client.query(MediaImagesQuery(mediaIds)).execute().data?.page?.media

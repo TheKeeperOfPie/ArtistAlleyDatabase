@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.tags
+package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_all

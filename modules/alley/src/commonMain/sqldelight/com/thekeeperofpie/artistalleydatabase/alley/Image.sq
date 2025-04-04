@@ -1,0 +1,12 @@
+getImageEntries:
+SELECT imageId, url, createdAtSecondsUtc FROM imageEntry
+WHERE imageId IN :imageIds
+AND type = :type;
+
+insertImageEntry:
+INSERT OR REPLACE INTO imageEntry
+VALUES ?;
+
+queryUrls:
+SELECT url, createdAtSecondsUtc FROM imageEntry
+WHERE url IN :urls;

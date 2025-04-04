@@ -3,11 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.tags
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Link
@@ -53,21 +53,8 @@ fun SeriesRow(
             null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxHeight()
+                .width(40.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .aspectRatio(ratio = 2 / 3f, matchHeightConstraintsFirst = true)
-                .layout { measurable, constraints ->
-                    val targetHeight = constraints.minHeight
-                    val targetWidth = targetHeight * 2 / 3
-                    val newConstraints = constraints.copy(
-                        minWidth = targetWidth,
-                        maxWidth = targetWidth,
-                        maxHeight = constraints.minHeight,
-                    )
-                    val placeable = measurable.measure(newConstraints)
-                    layout(placeable.width, placeable.height) {
-                        placeable.placeRelative(0, 0)
-                    }
-                }
         )
 
         Text(

@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyAniListApi
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
@@ -24,7 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -42,10 +42,10 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @Inject
 class ArtistDetailsViewModel(
-    private val aniListApi: AlleyAniListApi,
     private val artistEntryDao: ArtistEntryDao,
     private val notesDao: NotesDao,
-    private val tagEntryDao: TagEntryDao,
+    private val seriesImagesStore: SeriesImagesStore,
+    private val seriesEntryDao: SeriesEntryDao,
     private val userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -65,7 +65,7 @@ class ArtistDetailsViewModel(
     var catalogImages by mutableStateOf<List<CatalogImage>>(emptyList())
         private set
 
-    var seriesImages by mutableStateOf<Map<Int, String>>(emptyMap())
+    var seriesImages by mutableStateOf<Map<String, String>>(emptyMap())
         private set
 
     val notes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
@@ -86,8 +86,8 @@ class ArtistDetailsViewModel(
                 folder = AlleyDataUtils.Folder.CATALOGS,
                 file = artist.booth,
             )
-            val seriesInferred = artist.seriesInferred.map { tagEntryDao.getSeriesById(it) }
-            val seriesConfirmed = artist.seriesConfirmed.map { tagEntryDao.getSeriesById(it) }
+            val seriesInferred = artist.seriesInferred.map { seriesEntryDao.getSeriesById(it) }
+            val seriesConfirmed = artist.seriesConfirmed.map { seriesEntryDao.getSeriesById(it) }
 
             val entry = Entry(
                 artist = artist,
@@ -102,7 +102,7 @@ class ArtistDetailsViewModel(
                 this@ArtistDetailsViewModel.catalogImages = catalogImages
             }
 
-            seriesImages = aniListApi.getSeriesImages(entry.seriesInferred + entry.seriesConfirmed)
+            seriesImages = seriesImagesStore.getImages(entry.seriesInferred + entry.seriesConfirmed)
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {

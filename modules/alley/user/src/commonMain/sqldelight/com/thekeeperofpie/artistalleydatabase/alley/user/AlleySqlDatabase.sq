@@ -30,3 +30,11 @@ CREATE TABLE IF NOT EXISTS stampRallyNotes (
     notes TEXT,
     PRIMARY KEY (stampRallyId)
 );
+
+CREATE TABLE IF NOT EXISTS imageEntry (
+    imageId TEXT NOT NULL,
+    type TEXT NOT NULL,
+    url TEXT NOT NULL,
+    createdAtSecondsUtc INTEGER NOT NULL,
+    PRIMARY KEY (imageId, type)
+);

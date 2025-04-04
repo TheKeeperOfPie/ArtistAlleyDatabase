@@ -11,8 +11,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -30,7 +30,7 @@ import kotlin.random.Random
 @Inject
 class MapViewModel(
     private val artistEntryDao: ArtistEntryDao,
-    private val tagEntryDao: TagEntryDao,
+    private val seriesEntryDao: SeriesEntryDao,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -120,7 +120,7 @@ class MapViewModel(
         val series = ArtistEntryGridModel.getSeries(
             showOnlyConfirmedTags = false,
             entry = it,
-            tagEntryDao = tagEntryDao,
+            seriesEntryDao = seriesEntryDao,
         )
         ArtistEntryGridModel.buildFromEntry(
             randomSeed = randomSeed,

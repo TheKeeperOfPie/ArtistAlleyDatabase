@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlin.random.Random
@@ -48,13 +48,13 @@ class ArtistEntryGridModel(
         suspend fun getSeries(
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
-            tagEntryDao: TagEntryDao,
+            seriesEntryDao: SeriesEntryDao,
         ): List<SeriesEntry> {
             val seriesIds = entry.artist.seriesConfirmed.toMutableList()
             if (!showOnlyConfirmedTags) {
                 seriesIds += entry.artist.seriesInferred
             }
-            return seriesIds.map { tagEntryDao.getSeriesById(it) }
+            return seriesIds.map { seriesEntryDao.getSeriesById(it) }
         }
 
         fun buildFromEntry(

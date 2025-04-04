@@ -11,9 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.AlleyUserDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
@@ -103,8 +105,10 @@ class ArtistAlleyDatabase(
 
     internal val artistEntryDao = ArtistEntryDao(driver, database, settings)
     internal val stampRallyEntryDao = StampRallyEntryDao(driver, database)
+    internal val imageEntryDao = ImageEntryDao(database)
     internal val importExportDao = ImportExportDao(database)
     internal val notesDao = NotesDao(database)
+    internal val seriesEntryDao = SeriesEntryDao(driver, database)
     internal val tagEntryDao = TagEntryDao(driver, database)
     internal val userEntryDao = UserEntryDao(database, settings)
 }

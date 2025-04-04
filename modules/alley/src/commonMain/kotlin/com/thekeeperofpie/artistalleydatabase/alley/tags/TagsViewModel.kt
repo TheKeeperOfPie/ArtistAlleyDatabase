@@ -18,6 +18,8 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
@@ -33,6 +35,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalCoroutinesApi::class, SavedStateHandleSaveableApi::class)
 @Inject
 class TagsViewModel(
+    seriesEntryDao: SeriesEntryDao,
     tagsEntryDao: TagEntryDao,
     settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -59,9 +62,9 @@ class TagsViewModel(
                 } else {
                     createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         if (query.isBlank()) {
-                            tagsEntryDao.getSeries(languageOption, year, seriesFilterState)
+                            seriesEntryDao.getSeries(languageOption, year, seriesFilterState)
                         } else {
-                            tagsEntryDao.searchSeries(languageOption, query)
+                            seriesEntryDao.searchSeries(languageOption, query)
                         }
                     }
                         .flow

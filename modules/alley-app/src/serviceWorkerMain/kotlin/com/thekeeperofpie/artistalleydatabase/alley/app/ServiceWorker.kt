@@ -22,7 +22,10 @@ external val self: ServiceWorkerGlobalScope
 
 private val APP_CACHE = CacheName("alley-app-v1")
 private val IMAGE_CACHE = CacheName("alley-image-v1")
-private val CACHES = setOf(APP_CACHE, IMAGE_CACHE)
+
+// Must keep in sync with ImageCache.wasmJs.kt
+private val MEDIA_IMAGE_CACHE = CacheName("media-image-v1")
+private val CACHES = setOf(APP_CACHE, IMAGE_CACHE, MEDIA_IMAGE_CACHE)
 
 value class CacheName(val name: String)
 

@@ -99,7 +99,7 @@ object ArtistDetailsScreen {
         notesTextState: TextFieldState,
         initialImageIndex: Int,
         catalogImages: () -> List<CatalogImage>,
-        seriesImages: () -> Map<Int, String>,
+        seriesImages: () -> Map<String, String>,
         otherYears: () -> List<DataYear>,
         eventSink: (Event) -> Unit,
     ) {
@@ -258,11 +258,7 @@ object ArtistDetailsScreen {
                         ) { value, expanded ->
                             SeriesRow(
                                 value,
-                                image = {
-                                    value?.aniListId?.let {
-                                        seriesImages()[it.toInt()]
-                                    }
-                                },
+                                image = { value?.id?.let { seriesImages()[it] } },
                                 expanded = expanded,
                                 onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } },
                             )
@@ -288,11 +284,7 @@ object ArtistDetailsScreen {
                         ) { value, expanded ->
                             SeriesRow(
                                 value,
-                                image = {
-                                    value?.aniListId?.let {
-                                        seriesImages()[it.toInt()]
-                                    }
-                                },
+                                image = { value?.id?.let { seriesImages()[it] } },
                                 expanded = expanded,
                                 onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } },
                             )

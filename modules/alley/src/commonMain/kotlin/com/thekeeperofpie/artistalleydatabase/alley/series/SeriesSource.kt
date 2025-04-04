@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.tags
+package com.thekeeperofpie.artistalleydatabase.alley.series
 
 // All changes must be duplicated in the build-logic variant
 enum class SeriesSource {

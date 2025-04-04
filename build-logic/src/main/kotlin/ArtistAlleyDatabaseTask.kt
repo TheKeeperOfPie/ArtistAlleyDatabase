@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
@@ -173,6 +173,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     "stampRallyUserEntry",
                     "artistNotes",
                     "stampRallyNotes",
+                    "imageEntry",
                 ).forEach {
                     driver.execute(null, "DROP TABLE $it;", 0, null).await()
                 }
