@@ -125,6 +125,7 @@ object ArtistDetailsScreen {
         ) {
             item("artistName") {
                 Column(Modifier.animateItem()) {
+                    Spacer(Modifier.height(16.dp))
                     ThemeAwareElevatedCard(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
@@ -138,10 +139,10 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistDescription") {
-                val artist = entry()?.artist
-                val summary = artist?.summary
-                if (artist == null || !summary.isNullOrBlank()) {
+            val artist = entry()?.artist
+            val summary = artist?.summary
+            if (artist == null || !summary.isNullOrBlank()) {
+                item("artistDescription") {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -157,9 +158,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistLinks") {
-                val linkModels = entry()?.artist?.linkModels
-                if (linkModels?.isNotEmpty() != false) {
+            val linkModels = entry()?.artist?.linkModels
+            if (linkModels?.isNotEmpty() != false) {
+                item("artistLinks") {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -178,9 +179,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistStoreLinks") {
-                val storeLinkModels = entry()?.artist?.storeLinkModels
-                if (storeLinkModels?.isNotEmpty() != false) {
+            val storeLinkModels = entry()?.artist?.storeLinkModels
+            if (storeLinkModels?.isNotEmpty() != false) {
+                item("artistStoreLinks") {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -199,9 +200,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistCatalogLinks") {
-                val catalogLinks = entry()?.artist?.catalogLinks
-                if (catalogLinks?.isNotEmpty() != false) {
+            val catalogLinks = entry()?.artist?.catalogLinks
+            if (catalogLinks?.isNotEmpty() != false) {
+                item("artistCatalogLinks") {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -221,9 +222,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistStampRallies") {
-                val stampRallies = entry()?.stampRallies
-                if (stampRallies?.isNotEmpty() == true) {
+            val stampRallies = entry()?.stampRallies
+            if (stampRallies?.isNotEmpty() == true) {
+                item("artistStampRallies") {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -243,9 +244,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistSeriesConfirmed") {
-                val seriesConfirmed = entry()?.seriesConfirmed
-                if (seriesConfirmed?.isNotEmpty() != false) {
+            val seriesConfirmed = entry()?.seriesConfirmed
+            if (seriesConfirmed?.isNotEmpty() != false) {
+                item("artistSeriesConfirmed") {
                     Column(Modifier.animateItem()) {
                         val languageOption = LocalLanguageOptionMedia.current
                         val sorted = remember(seriesConfirmed, languageOption) {
@@ -268,9 +269,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistSeriesInferred") {
-                val seriesInferred = entry()?.seriesInferred
-                if (seriesInferred?.isNotEmpty() != false) {
+            val seriesInferred = entry()?.seriesInferred
+            if (seriesInferred?.isNotEmpty() != false) {
+                item("artistSeriesInferred") {
                     Column(Modifier.animateItem()) {
                         val languageOption = LocalLanguageOptionMedia.current
                         val sorted = remember(seriesInferred, languageOption) {
@@ -294,9 +295,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistMerchConfirmed") {
-                val merchConfirmed = entry()?.artist?.merchConfirmed
-                if (merchConfirmed?.isNotEmpty() != false) {
+            val merchConfirmed = entry()?.artist?.merchConfirmed
+            if (merchConfirmed?.isNotEmpty() != false) {
+                item("artistMerchConfirmed") {
                     Column(Modifier.animateItem()) {
                         Confirmed(
                             confirmed = merchConfirmed,
@@ -313,9 +314,9 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistMerchInferred") {
-                val merchInferred = entry()?.artist?.merchInferred
-                if (merchInferred?.isNotEmpty() != false) {
+            val merchInferred = entry()?.artist?.merchInferred
+            if (merchInferred?.isNotEmpty() != false) {
+                item("artistMerchInferred") {
                     Column(Modifier.animateItem()) {
                         Inferred(
                             inferred = merchInferred,
@@ -334,9 +335,9 @@ object ArtistDetailsScreen {
             }
 
 
-            item("artistCommissions") {
-                val commissionModels = entry()?.artist?.commissionModels
-                if (commissionModels?.isNotEmpty() != false) {
+            val commissionModels = entry()?.artist?.commissionModels
+            if (commissionModels?.isNotEmpty() != false) {
+                item("artistCommissions") {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                             expandableListInfoText(

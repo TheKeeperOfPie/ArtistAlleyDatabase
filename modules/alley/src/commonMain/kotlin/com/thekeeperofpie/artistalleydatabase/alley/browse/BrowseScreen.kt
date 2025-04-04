@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
@@ -62,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
@@ -91,14 +91,13 @@ object BrowseScreen {
         onMerchClick: (MerchEntry) -> Unit,
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.widthIn(max = 1200.dp)
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
                 TabRow(
                     selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .widthIn(max = 1200.dp)
+                        .fillMaxWidth()
                 ) {
                     Tab.entries.forEachIndexed { index, tab ->
                         Tab(
@@ -189,9 +188,9 @@ object BrowseScreen {
             topBar = {
                 EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
                     Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentWidth()
                             .padding(bottom = 8.dp)
                     ) {
                         val isNotEmpty by remember {
@@ -232,6 +231,7 @@ object BrowseScreen {
                             },
                             onSearch = {},
                             modifier = Modifier
+                                .widthIn(max = 1200.dp)
                                 .fillMaxWidth()
                                 .padding(top = 4.dp),
                         )
@@ -245,12 +245,21 @@ object BrowseScreen {
                     .padding(it)
             ) {
                 val listState = scrollStateSaver.lazyListState()
+                val width = LocalWindowConfiguration.current.screenWidthDp
+                val horizontalContentPadding = if (width > 800.dp) {
+                    (width - 800.dp) / 2
+                } else {
+                    0.dp
+                }
                 LazyColumn(
                     state = listState,
-                    contentPadding = PaddingValues(bottom = 80.dp),
+                    contentPadding = PaddingValues(
+                        start = horizontalContentPadding,
+                        end = horizontalContentPadding,
+                        bottom = 80.dp
+                    ),
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .widthIn(max = 600.dp)
+                        .fillMaxSize()
                         .align(Alignment.TopCenter)
                 ) {
                     item(key = "dataYearHeader") {
@@ -317,7 +326,7 @@ object BrowseScreen {
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
             seriesFiltersState.forEach { (option, selected) ->
                 FilterChip(

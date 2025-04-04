@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
@@ -53,7 +52,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -77,7 +75,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -105,14 +102,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
@@ -162,12 +157,11 @@ object SearchScreen {
                 scaffoldState.bottomSheetState.partialExpand()
             }
         }
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-            .takeUnless { PlatformSpecificConfig.scrollbarsAlwaysVisible }
 
         Box {
             var horizontalScrollBarWidth by remember { mutableStateOf(0) }
             val horizontalScrollState = rememberScrollState()
+            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             BottomSheetScaffold(
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = 72.dp,
@@ -188,57 +182,34 @@ object SearchScreen {
                     }
                 },
                 sheetContent = bottomSheet,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .conditionallyNonNull(scrollBehavior) {
-                        nestedScroll(
-                            NestedScrollSplitter(
-                                primary = it.nestedScrollConnection,
-                                consumeNone = true,
-                            )
-                        )
-                    }
+                topBar = {
+                    TopBar(
+                        query = query,
+                        displayType = state.displayType,
+                        entries = entries,
+                        scrollBehavior = scrollBehavior,
+                        onClickBack = onClickBack,
+                        title = title,
+                        actions = actions,
+                    )
+                },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
-                    var topBarHeight by remember { mutableStateOf(0) }
-                    val displayType by state.displayType.collectAsStateWithLifecycle()
-                    Scaffold(
-                        topBar = {
-                            TopBar(
-                                query = query,
-                                displayType = state.displayType,
-                                entries = entries,
-                                scrollBehavior = scrollBehavior,
-                                onClickBack = onClickBack,
-                                onHeightChanged = { topBarHeight = it },
-                                title = title,
-                                actions = actions,
-                            )
-                        },
-                        modifier = Modifier
-                            .conditionally(displayType != DisplayType.TABLE) {
-                                widthIn(max = 1200.dp)
-                            }
-                    ) {
-                        Content(
-                            state = state,
-                            eventSink = eventSink,
-                            entries = entries,
-                            scrollBehavior = scrollBehavior,
-                            horizontalScrollState = horizontalScrollState,
-                            gridState = gridState,
-                            scaffoldPadding = it,
-                            topBarHeight = { topBarHeight },
-                            onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                            shouldShowCount = shouldShowCount,
-                            itemToSharedElementId = itemToSharedElementId,
-                            header = { DataYearHeader(dataYearHeaderState) },
-                            itemRow = itemRow,
-                            columnHeader = columnHeader,
-                            tableCell = tableCell,
-                        )
-                    }
-                }
+                Content(
+                    state = state,
+                    eventSink = eventSink,
+                    entries = entries,
+                    horizontalScrollState = horizontalScrollState,
+                    gridState = gridState,
+                    scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
+                    onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
+                    shouldShowCount = shouldShowCount,
+                    itemToSharedElementId = itemToSharedElementId,
+                    header = { DataYearHeader(dataYearHeaderState) },
+                    itemRow = itemRow,
+                    columnHeader = columnHeader,
+                    tableCell = tableCell,
+                )
             }
 
             if (PlatformSpecificConfig.scrollbarsAlwaysVisible) {
@@ -257,22 +228,16 @@ object SearchScreen {
     fun <EntryModel : SearchEntryModel> TopBar(
         query: MutableStateFlow<String>,
         displayType: MutableStateFlow<DisplayType>,
+        scrollBehavior: TopAppBarScrollBehavior,
         entries: LazyPagingItems<EntryModel>,
-        scrollBehavior: TopAppBarScrollBehavior?,
         onClickBack: (() -> Unit)?,
-        onHeightChanged: (Int) -> Unit,
         title: () -> String?,
         actions: (@Composable RowScope.() -> Unit)?,
     ) {
-        EnterAlwaysTopAppBar(
-            scrollBehavior = scrollBehavior,
-            modifier = Modifier.onSizeChanged { onHeightChanged(it.height) }
-        ) {
+        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth()
-                    .padding(bottom = 8.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 var query by query.collectAsMutableStateWithLifecycle()
                 val isNotEmpty by remember { derivedStateOf { query.isNotEmpty() } }
@@ -353,6 +318,7 @@ object SearchScreen {
                     },
                     onSearch = {},
                     modifier = Modifier
+                        .widthIn(max = 1200.dp)
                         .fillMaxWidth()
                         .padding(top = 4.dp),
                 )
@@ -365,11 +331,9 @@ object SearchScreen {
         state: State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
-        scrollBehavior: TopAppBarScrollBehavior?,
         horizontalScrollState: ScrollState,
         gridState: LazyStaggeredGridState,
         scaffoldPadding: PaddingValues,
-        topBarHeight: () -> Int,
         onHorizontalScrollBarWidth: (Int) -> Unit,
         shouldShowCount: () -> Boolean,
         itemToSharedElementId: (EntryModel) -> Any,
@@ -389,23 +353,6 @@ object SearchScreen {
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
         noResultsItem: (@Composable () -> Unit)? = null,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
-        val density = LocalDensity.current
-        val topBarPadding by remember(density) {
-            derivedStateOf {
-                if (scrollBehavior == null) {
-                    density.run { topBarHeight().toDp() }.coerceAtLeast(0.dp)
-                } else {
-                    // Force a snapshot read so that this recomposes
-                    // https://android-review.googlesource.com/c/platform/frameworks/support/+/3123371
-                    scrollBehavior.state.heightOffset
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { density.run { -it.toDp() } }
-                        ?: 0.dp
-                }
-            }
-        }
-
         val displayType by state.displayType.collectAsStateWithLifecycle()
         if (displayType == DisplayType.TABLE) {
             Table(
@@ -424,17 +371,10 @@ object SearchScreen {
                 noResultsItem = noResultsItem,
             )
         } else {
-            val topOffset by remember {
-                derivedStateOf {
-                    (topBarPadding + density.run {
-                        scrollBehavior?.state?.heightOffset?.toDp() ?: 0.dp
-                    }).coerceAtLeast(0.dp)
-                }
-            }
-
             VerticalGrid(
                 state = state,
                 eventSink = eventSink,
+                scaffoldPadding = scaffoldPadding,
                 header = {
                     item(key = "header", span = StaggeredGridItemSpan.FullLine) {
                         header()
@@ -443,8 +383,6 @@ object SearchScreen {
                 entries = entries,
                 gridState = gridState,
                 shouldShowCount = shouldShowCount,
-                topOffset = topOffset,
-                topBarPadding = topBarPadding,
                 itemToSharedElementId = itemToSharedElementId,
                 itemRow = itemRow,
                 noResultsItem = noResultsItem,
@@ -498,12 +436,11 @@ object SearchScreen {
     private fun <EntryModel : SearchEntryModel> VerticalGrid(
         state: State<*>,
         eventSink: (Event<EntryModel>) -> Unit,
+        scaffoldPadding: PaddingValues,
         header: LazyStaggeredGridScope.() -> Unit,
         entries: LazyPagingItems<EntryModel>,
         gridState: LazyStaggeredGridState,
         shouldShowCount: () -> Boolean,
-        topOffset: Dp,
-        topBarPadding: Dp,
         itemToSharedElementId: (EntryModel) -> Any,
         noResultsItem: (@Composable () -> Unit)? = null,
         itemRow: @Composable (
@@ -512,7 +449,7 @@ object SearchScreen {
             modifier: Modifier,
         ) -> Unit,
     ) {
-        Box {
+        Box(Modifier.padding(scaffoldPadding)) {
             val coroutineScope = rememberCoroutineScope()
 
             var displayType by state.displayType.collectAsMutableStateWithLifecycle()
@@ -523,6 +460,12 @@ object SearchScreen {
             val forceOneDisplayColumn by state.forceOneDisplayColumn
                 .collectAsMutableStateWithLifecycle()
 
+            val width = LocalWindowConfiguration.current.screenWidthDp
+            val horizontalContentPadding = if (width > 1200.dp) {
+                (width - 1200.dp) / 2
+            } else {
+                0.dp
+            }
             var maxLane by remember { mutableIntStateOf(0) }
             LazyVerticalStaggeredGrid(
                 columns = if (forceOneDisplayColumn) {
@@ -542,14 +485,16 @@ object SearchScreen {
                     DisplayType.LIST,
                     DisplayType.IMAGE,
                         -> PaddingValues(
-                        top = 8.dp + topBarPadding,
+                        top = 8.dp,
+                        start = horizontalContentPadding,
+                        end = horizontalContentPadding,
                         bottom = 80.dp,
                     )
                     DisplayType.CARD,
                         -> PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp + topBarPadding,
+                        start = 16.dp + horizontalContentPadding,
+                        end = 16.dp + horizontalContentPadding,
+                        top = 8.dp,
                         bottom = 80.dp,
                     )
                     DisplayType.TABLE -> throw IllegalArgumentException()
@@ -697,7 +642,7 @@ object SearchScreen {
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .fillMaxHeight()
-                    .padding(top = 8.dp + topBarPadding, bottom = 72.dp)
+                    .padding(top = 8.dp, bottom = 72.dp)
             )
 
             if (shouldShowCount()) {
@@ -714,7 +659,7 @@ object SearchScreen {
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .wrapContentSize()
-                        .padding(top = 8.dp + topOffset)
+                        .padding(top = 8.dp)
                         .background(
                             MaterialTheme.colorScheme.secondary,
                             RoundedCornerShape(8.dp)

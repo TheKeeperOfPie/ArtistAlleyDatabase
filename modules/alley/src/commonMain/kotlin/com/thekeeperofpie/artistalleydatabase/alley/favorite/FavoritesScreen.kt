@@ -2,12 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.favorite
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
@@ -15,7 +14,6 @@ import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -70,7 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -142,7 +139,6 @@ object FavoritesScreen {
                 }
             }
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-                .takeUnless { PlatformSpecificConfig.scrollbarsAlwaysVisible }
             val gridState = scrollStateSaver.lazyStaggeredGridState()
 
             var tab by rememberSaveable { mutableStateOf(EntryTab.ARTISTS) }
@@ -181,6 +177,18 @@ object FavoritesScreen {
                                 .heightIn(min = 320.dp)
                         )
                     },
+                    topBar = {
+                        val title = stringResource(Res.string.alley_favorites_search)
+                        SearchScreen.TopBar(
+                            query = state.query,
+                            displayType = state.displayType,
+                            entries = entries,
+                            scrollBehavior = scrollBehavior,
+                            onClickBack = null,
+                            title = { title },
+                            actions = null,
+                        )
+                    },
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .conditionallyNonNull(scrollBehavior) {
@@ -192,169 +200,143 @@ object FavoritesScreen {
                             )
                         }
                 ) {
-                    Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
-                        var topBarHeight by remember { mutableStateOf(0) }
-                        val displayType by state.displayType.collectAsStateWithLifecycle()
-                        Scaffold(
-                            topBar = {
-                                val title = stringResource(Res.string.alley_favorites_search)
-                                SearchScreen.TopBar(
-                                    query = state.query,
-                                    displayType = state.displayType,
-                                    entries = entries,
-                                    scrollBehavior = scrollBehavior,
-                                    onClickBack = null,
-                                    onHeightChanged = { topBarHeight = it },
-                                    title = { title },
-                                    actions = null,
-                                )
-                            },
-                            modifier = Modifier
-                                .conditionally(displayType != DisplayType.TABLE) {
-                                    widthIn(max = 1200.dp)
+                    var unfavoriteDialogEntry by remember {
+                        mutableStateOf<SearchScreen.SearchEntryModel?>(null)
+                    }
+                    val query by state.query.collectAsStateWithLifecycle()
+                    SearchScreen.Content(
+                        state = searchState,
+                        eventSink = { eventSink(Event.SearchEvent(it)) },
+                        entries = entries,
+                        horizontalScrollState = horizontalScrollState,
+                        gridState = gridState,
+                        scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
+                        onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
+                        shouldShowCount = { query.isNotEmpty() },
+                        itemToSharedElementId = {
+                            (it as? ArtistEntryGridModel)?.id?.scopedId
+                                ?: (it as? StampRallyEntryGridModel)?.id?.scopedId
+                                ?: Unit
+                        },
+                        header = {
+                            Column {
+                                DataYearHeader(dataYearHeaderState)
+                                TabRow(EntryTab.entries.indexOf(tab)) {
+                                    EntryTab.entries.forEach {
+                                        Tab(
+                                            selected = tab == it,
+                                            text = { Text(text = stringResource(it.text)) },
+                                            onClick = { tab = it },
+                                        )
+                                    }
                                 }
-                        ) {
-                            var unfavoriteDialogEntry by remember {
-                                mutableStateOf<SearchScreen.SearchEntryModel?>(null)
                             }
-                            val query by state.query.collectAsStateWithLifecycle()
-                            SearchScreen.Content(
-                                state = searchState,
-                                eventSink = { eventSink(Event.SearchEvent(it)) },
-                                entries = entries,
-                                scrollBehavior = scrollBehavior,
-                                horizontalScrollState = horizontalScrollState,
-                                gridState = gridState,
-                                scaffoldPadding = it,
-                                topBarHeight = { topBarHeight },
-                                onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                                shouldShowCount = { query.isNotEmpty() },
-                                itemToSharedElementId = {
-                                    (it as? ArtistEntryGridModel)?.id?.scopedId
-                                        ?: (it as? StampRallyEntryGridModel)?.id?.scopedId
-                                        ?: Unit
-                                },
-                                header = {
-                                    Column {
-                                        DataYearHeader(dataYearHeaderState)
-                                        TabRow(EntryTab.entries.indexOf(tab)) {
-                                            EntryTab.entries.forEach {
-                                                Tab(
-                                                    selected = tab == it,
-                                                    text = { Text(text = stringResource(it.text)) },
-                                                    onClick = { tab = it },
-                                                )
-                                            }
+                        },
+                        noResultsItem = {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                val textRes = when (tab) {
+                                    EntryTab.ARTISTS -> Res.string.alley_favorites_empty_artists
+                                    EntryTab.RALLIES -> Res.string.alley_favorites_empty_stamp_rallies
+                                }
+                                Text(
+                                    text = stringResource(textRes),
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                                FilledTonalButton(onClick = {
+                                    when (tab) {
+                                        EntryTab.ARTISTS -> onNavigateToArtists()
+                                        EntryTab.RALLIES -> onNavigateToRallies()
+                                    }
+                                }) {
+                                    val buttonTextRes = when (tab) {
+                                        EntryTab.ARTISTS -> Res.string.alley_favorites_empty_go_to_artists
+                                        EntryTab.RALLIES -> Res.string.alley_favorites_empty_go_to_stamp_rallies
+                                    }
+                                    Text(stringResource(buttonTextRes))
+                                }
+                            }
+                        },
+                        itemRow = { entry, onFavoriteToggle, modifier ->
+                            if (entry is ArtistEntryGridModel) {
+                                ArtistListRow(
+                                    entry = entry,
+                                    onFavoriteToggle = {
+                                        if (it) {
+                                            onFavoriteToggle(it)
+                                        } else {
+                                            unfavoriteDialogEntry = entry
                                         }
-                                    }
-                                },
-                                noResultsItem = {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        val textRes = when (tab) {
-                                            EntryTab.ARTISTS -> Res.string.alley_favorites_empty_artists
-                                            EntryTab.RALLIES -> Res.string.alley_favorites_empty_stamp_rallies
-                                        }
-                                        Text(
-                                            text = stringResource(textRes),
-                                            modifier = Modifier.padding(16.dp)
-                                        )
-                                        FilledTonalButton(onClick = {
-                                            when (tab) {
-                                                EntryTab.ARTISTS -> onNavigateToArtists()
-                                                EntryTab.RALLIES -> onNavigateToRallies()
-                                            }
-                                        }) {
-                                            val buttonTextRes = when (tab) {
-                                                EntryTab.ARTISTS -> Res.string.alley_favorites_empty_go_to_artists
-                                                EntryTab.RALLIES -> Res.string.alley_favorites_empty_go_to_stamp_rallies
-                                            }
-                                            Text(stringResource(buttonTextRes))
-                                        }
-                                    }
-                                },
-                                itemRow = { entry, onFavoriteToggle, modifier ->
-                                    if (entry is ArtistEntryGridModel) {
-                                        ArtistListRow(
-                                            entry = entry,
-                                            onFavoriteToggle = {
-                                                if (it) {
-                                                    onFavoriteToggle(it)
-                                                } else {
-                                                    unfavoriteDialogEntry = entry
-                                                }
-                                            },
-                                            onSeriesClick = { eventSink(Event.OpenSeries(it)) },
-                                            onMoreClick = {
-                                                eventSink(
-                                                    Event.SearchEvent(
-                                                        SearchScreen.Event.OpenEntry(entry, 1)
-                                                    )
-                                                )
-                                            },
-                                            modifier = modifier
-                                        )
-                                    } else if (entry is StampRallyEntryGridModel) {
-                                        StampRallyListRow(entry, onFavoriteToggle, modifier)
-                                    }
-                                },
-                                columnHeader = {
-                                    if (it is ArtistSearchScreen.ArtistColumn) {
-                                        ArtistSearchScreen.ColumnHeader(
-                                            column = it,
-                                            sortOption = state.artistsSortOption,
-                                            sortAscending = state.artistsSortAscending,
-                                        )
-                                    } else if (it is StampRallySearchScreen.StampRallyColumn) {
-                                        StampRallySearchScreen.ColumnHeader(it)
-                                    }
-                                },
-                                tableCell = { row, column ->
-                                    if (row is ArtistEntryGridModel &&
-                                        column is ArtistSearchScreen.ArtistColumn
-                                    ) {
-                                        ArtistSearchScreen.TableCell(
-                                            row = row,
-                                            column = column,
-                                            onEntryClick = { entry, imageIndex ->
-                                                eventSink(
-                                                    Event.SearchEvent(
-                                                        SearchScreen.Event.OpenEntry(
-                                                            entry,
-                                                            imageIndex
-                                                        )
-                                                    )
-                                                )
-                                            },
-                                            onSeriesClick = { eventSink(Event.OpenSeries(it)) },
-                                            onMerchClick = { eventSink(Event.OpenMerch(it)) },
-                                        )
-                                    } else if (row is StampRallyEntryGridModel &&
-                                        column is StampRallySearchScreen.StampRallyColumn
-                                    ) {
-                                        StampRallySearchScreen.TableCell(row, column)
-                                    }
-                                },
-                            )
-
-                            UnfavoriteDialog(
-                                entry = { unfavoriteDialogEntry },
-                                onClearEntry = { unfavoriteDialogEntry = null },
-                                onRemoveFavorite = {
-                                    eventSink(
-                                        Event.SearchEvent(
-                                            SearchScreen.Event.FavoriteToggle<SearchScreen.SearchEntryModel>(
-                                                entry = it,
-                                                favorite = false
+                                    },
+                                    onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                                    onMoreClick = {
+                                        eventSink(
+                                            Event.SearchEvent(
+                                                SearchScreen.Event.OpenEntry(entry, 1)
                                             )
                                         )
+                                    },
+                                    modifier = modifier
+                                )
+                            } else if (entry is StampRallyEntryGridModel) {
+                                StampRallyListRow(entry, onFavoriteToggle, modifier)
+                            }
+                        },
+                        columnHeader = {
+                            if (it is ArtistSearchScreen.ArtistColumn) {
+                                ArtistSearchScreen.ColumnHeader(
+                                    column = it,
+                                    sortOption = state.artistsSortOption,
+                                    sortAscending = state.artistsSortAscending,
+                                )
+                            } else if (it is StampRallySearchScreen.StampRallyColumn) {
+                                StampRallySearchScreen.ColumnHeader(it)
+                            }
+                        },
+                        tableCell = { row, column ->
+                            if (row is ArtistEntryGridModel &&
+                                column is ArtistSearchScreen.ArtistColumn
+                            ) {
+                                ArtistSearchScreen.TableCell(
+                                    row = row,
+                                    column = column,
+                                    onEntryClick = { entry, imageIndex ->
+                                        eventSink(
+                                            Event.SearchEvent(
+                                                SearchScreen.Event.OpenEntry(
+                                                    entry,
+                                                    imageIndex
+                                                )
+                                            )
+                                        )
+                                    },
+                                    onSeriesClick = { eventSink(Event.OpenSeries(it)) },
+                                    onMerchClick = { eventSink(Event.OpenMerch(it)) },
+                                )
+                            } else if (row is StampRallyEntryGridModel &&
+                                column is StampRallySearchScreen.StampRallyColumn
+                            ) {
+                                StampRallySearchScreen.TableCell(row, column)
+                            }
+                        },
+                    )
+
+                    UnfavoriteDialog(
+                        entry = { unfavoriteDialogEntry },
+                        onClearEntry = { unfavoriteDialogEntry = null },
+                        onRemoveFavorite = {
+                            eventSink(
+                                Event.SearchEvent(
+                                    SearchScreen.Event.FavoriteToggle<SearchScreen.SearchEntryModel>(
+                                        entry = it,
+                                        favorite = false
                                     )
-                                },
+                                )
                             )
-                        }
-                    }
+                        },
+                    )
                 }
 
                 if (PlatformSpecificConfig.scrollbarsAlwaysVisible) {

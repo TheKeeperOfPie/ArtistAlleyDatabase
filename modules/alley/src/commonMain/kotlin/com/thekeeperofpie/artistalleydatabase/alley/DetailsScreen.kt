@@ -84,6 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -161,11 +162,22 @@ object DetailsScreen {
         ) {
             val images = images()
             val hasImages = images.isNotEmpty()
+            val width = LocalWindowConfiguration.current.screenWidthDp
+            val horizontalContentPadding = if (!hasImages && width > 800.dp) {
+                (width - 800.dp) / 2
+            } else {
+                0.dp
+            }
             LazyColumn(
-                contentPadding = PaddingValues(bottom = 32.dp),
+                contentPadding = PaddingValues(
+                    start = horizontalContentPadding,
+                    end = horizontalContentPadding,
+                    bottom = 32.dp,
+                ),
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(if (hasImages) 400.dp else 800.dp)
+                    .conditionally(hasImages) { width(400.dp) }
+                    .conditionally(!hasImages) { fillMaxWidth() }
             ) {
                 content()
             }

@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,10 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -254,19 +251,12 @@ private fun ExportSection(
                 }
             }
 
-            SelectionContainer {
-                Text(
-                    text = exportPartialText,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                )
-            }
+            OutlinedTextField(
+                value = exportPartialText,
+                onValueChange = {},
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

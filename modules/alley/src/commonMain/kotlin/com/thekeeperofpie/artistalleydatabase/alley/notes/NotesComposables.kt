@@ -43,13 +43,13 @@ fun NotesText(state: TextFieldState, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = { state.undoState.undo() }) {
+            IconButton(enabled = state.undoState.canUndo, onClick = { state.undoState.undo() }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.Undo,
                     contentDescription = stringResource(Res.string.alley_undo),
                 )
             }
-            IconButton(onClick = { state.undoState.redo() }) {
+            IconButton(enabled = state.undoState.canRedo, onClick = { state.undoState.redo() }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.Redo,
                     contentDescription = stringResource(Res.string.alley_redo),

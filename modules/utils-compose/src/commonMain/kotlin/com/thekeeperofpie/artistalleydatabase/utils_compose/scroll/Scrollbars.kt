@@ -10,8 +10,10 @@ import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
@@ -127,7 +129,10 @@ fun <State : ScrollableState> VerticalScrollbar(
                 lastVisibleIndex != null && lastVisibleIndex < (state.totalItemsCount() - 1)
             }
         }
-        val handleVisible = fillsViewPort && (state.isScrollInProgress || dragging)
+        val hovered by interactionSource.collectIsHoveredAsState()
+        val handleVisible by remember {
+            derivedStateOf { fillsViewPort && (state.isScrollInProgress || dragging || hovered) }
+        }
         val handleAlpha by animateFloatAsState(
             targetValue = if (alwaysVisible || handleVisible) 1f else 0f,
             animationSpec = tween(
@@ -136,7 +141,7 @@ fun <State : ScrollableState> VerticalScrollbar(
                 } else {
                     DefaultDurationMillis
                 },
-                delayMillis = if (handleVisible) 0 else DefaultDurationMillis * 3,
+                delayMillis = if (handleVisible) 0 else DefaultDurationMillis * 5,
             ),
             label = "Scrollbar handle alpha",
         )
@@ -170,6 +175,7 @@ fun <State : ScrollableState> VerticalScrollbar(
                         orientation = Orientation.Vertical,
                         interactionSource = interactionSource,
                     )
+                    .hoverable(interactionSource)
             ) {
                 Icon(
                     imageVector = Icons.Filled.UnfoldMore,
