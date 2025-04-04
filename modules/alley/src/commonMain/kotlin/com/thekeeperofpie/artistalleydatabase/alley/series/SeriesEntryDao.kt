@@ -110,6 +110,7 @@ class SeriesEntryDao(
 
     fun searchSeries(
         languageOption: AniListLanguageOption,
+        year: DataYear,
         query: String,
     ): PagingSource<Int, SeriesEntry> {
         val queries = query.split(Regex("\\s+"))
@@ -124,9 +125,15 @@ class SeriesEntryDao(
             append("'{ ${targetColumns.joinToString(separator = " ")} } : $matchOrQuery'")
         }
 
-        val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
-            "(${DaoUtils.makeLikeAndQuery("seriesEntry_fts.$it", queries)})"
+        val yearFilter = when (year) {
+            DataYear.YEAR_2023 -> ""
+            DataYear.YEAR_2024 -> "has2024 IS 1 AND ("
+            DataYear.YEAR_2025 -> "has2025 IS 1 AND ("
         }
+        val yearFilterSuffix = if (yearFilter.isEmpty()) "" else ")"
+        val likeStatement = yearFilter + targetColumns.joinToString(separator = "\nOR ") {
+            "(${DaoUtils.makeLikeAndQuery("seriesEntry_fts.$it", queries)})"
+        } + yearFilterSuffix
         val countStatement = DaoUtils.buildSearchCountStatement(
             ftsTableName = "seriesEntry_fts",
             idField = "id",

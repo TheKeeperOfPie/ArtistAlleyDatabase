@@ -220,6 +220,8 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     titleEnglish,
     titleRomaji,
     titleNative,
+    has2024,
+    has2025,
     content=seriesEntry,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -235,6 +237,8 @@ CREATE TABLE
 
 CREATE VIRTUAL TABLE IF NOT EXISTS merchEntry_fts USING FTS5 (
     name,
+    has2024,
+    has2025,
     content=merchEntry,
     tokenize="unicode61 remove_diacritics 2"
 );

@@ -62,10 +62,17 @@ class TagEntryDao(
         )
     }
 
-    fun searchMerch(query: String): PagingSource<Int, MerchEntry> {
+    fun searchMerch(year: DataYear, query: String): PagingSource<Int, MerchEntry> {
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
-        val likeAndQuery = DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)
+
+        val yearFilter = when (year) {
+            DataYear.YEAR_2023 -> ""
+            DataYear.YEAR_2024 -> "has2024 = 1 AND "
+            DataYear.YEAR_2025 -> "has2025 = 1 AND "
+        }
+        val likeAndQuery = yearFilter +
+                DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)
 
         val matchQuery = "'{ name } : $matchOrQuery'"
         val countStatement = DaoUtils.buildSearchCountStatement(

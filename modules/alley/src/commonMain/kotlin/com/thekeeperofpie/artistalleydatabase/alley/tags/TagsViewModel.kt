@@ -64,7 +64,7 @@ class TagsViewModel(
                         if (query.isBlank()) {
                             seriesEntryDao.getSeries(languageOption, year, seriesFilterState)
                         } else {
-                            seriesEntryDao.searchSeries(languageOption, query)
+                            seriesEntryDao.searchSeries(languageOption, year, query)
                         }
                     }
                         .flow
@@ -82,7 +82,7 @@ class TagsViewModel(
                     if (query.isBlank()) {
                         tagsEntryDao.getMerch(year)
                     } else {
-                        tagsEntryDao.searchMerch(query)
+                        tagsEntryDao.searchMerch(year, query)
                     }
                 }
                     .flow

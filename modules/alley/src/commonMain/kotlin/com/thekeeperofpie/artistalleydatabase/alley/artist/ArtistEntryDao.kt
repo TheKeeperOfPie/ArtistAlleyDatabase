@@ -348,13 +348,26 @@ class ArtistEntryDao(
             }
 
             if (searchQuery.lockedSeries != null) {
+                val yearFilter = when (year) {
+                    DataYear.YEAR_2023 -> ""
+                    DataYear.YEAR_2024 -> "artistSeriesConnection.has2024 = 1 AND "
+                    DataYear.YEAR_2025 -> "artistSeriesConnection.has2025 = 1 AND "
+                }
                 this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
-                        (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed IS 1 AND" else "") +
+                        yearFilter +
+                        (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed = 1 AND " else "") +
                         " artistSeriesConnection.seriesId = " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
             } else if (searchQuery.lockedMerch != null) {
+                val yearFilter = when (year) {
+                    DataYear.YEAR_2023 -> ""
+                    DataYear.YEAR_2024 -> "artistMerchConnection.has2024 = 1 AND "
+                    DataYear.YEAR_2025 -> "artistMerchConnection.has2025 = 1 AND "
+                }
+
                 this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
-                        (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed IS 1 AND" else "") +
+                        yearFilter +
+                        (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed = 1 AND " else "") +
                         "artistMerchConnection.merchId = " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
             }
