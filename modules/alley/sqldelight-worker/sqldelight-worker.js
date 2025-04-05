@@ -47,6 +47,8 @@ async function createDatabase() {
         // TODO: Show warning that persistence is not supported for favorites (or just disable)
         console.log("OPFS not initialized");
         db = new sqlite3.oo1.DB();
+        const response = await fetch(readOnlyInputPath);
+        const fileBuffer = await response.arrayBuffer();
         const data = sqlite3.wasm.allocFromTypedArray(fileBuffer);
         const rc = sqlite3.capi.sqlite3_deserialize(
           db.pointer, 'main', data, fileBuffer.byteLength, fileBuffer.byteLength,
