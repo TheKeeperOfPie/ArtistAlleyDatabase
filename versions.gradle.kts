@@ -5,20 +5,20 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.11.0-alpha02"
+        const val gradle = "8.11.0-alpha04"
     }
 
     object androidx {
-        const val activity = "1.11.0-alpha01"
+        const val activity = "1.11.0-alpha02"
         const val annotation = "1.9.1"
         const val browser = "1.9.0-alpha01"
-        const val core = "1.16.0-beta01"
-        const val media3 = "1.6.0-rc02"
+        const val core = "1.16.0-rc01"
+        const val media3 = "1.6.0"
         const val paging = "3.3.6"
         const val palette = "1.0.0"
-        const val room = "2.7.0-rc02"
+        const val room = "2.7.0-rc03"
         const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-rc02"
+        const val sqlite = "2.5.0-rc03"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -39,11 +39,8 @@ object Versions {
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.17.0"
     const val burst = "2.5.0"
-
-    // https://github.com/coil-kt/coil/issues/2771#issuecomment-2607839662
-    const val coil = "3.2.1-SNAPSHOTLOCAL"
+    const val coil = "3.1.0"
     const val colormath = "3.6.1"
-
     const val cronetEmbedded = "119.6045.31"
     const val diffUtils = "0.7.0"
     const val flowExt = "1.0.0"
@@ -89,20 +86,20 @@ object Versions {
         const val coroutines = "1.10.1"
         const val datetime = "0.6.2"
         const val io = "0.7.0"
-        const val ksp = "2.1.20-1.0.31"
-        const val serialization = "1.8.0"
+        const val ksp = "2.1.20-1.0.32"
+        const val serialization = "1.8.1"
     }
 
     const val kotlinInject = "0.7.2"
     const val kotlinPoet = "1.15.3"
-    const val ktor = "3.1.1"
+    const val ktor = "3.1.2"
     const val ksoup = "0.2.2"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2025.1.2"
     const val markwon = "4.6.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.32.0"
+    const val multiplatformMarkdown = "0.33.0-b05"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"
@@ -114,10 +111,10 @@ object Versions {
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.0"
-    const val unityAds = "4.14.0"
+    const val unityAds = "4.14.1"
     const val uriKmp = "0.0.19"
     const val webpImageIo = "0.9.0"
-    const val xmlUtil = "0.91.0-RC1"
+    const val xmlUtil = "0.91.0"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
