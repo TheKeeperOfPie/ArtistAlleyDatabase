@@ -113,9 +113,10 @@ object ArtistDetailsScreen {
         DetailsScreen(
             title = {
                 val artist = entry()?.artist
+                val id = artist?.id ?: route.id
                 val booth = artist?.booth ?: route.booth
                 val name = artist?.name ?: route.name
-                ArtistTitle(year = route.year, booth = booth, name = name)
+                ArtistTitle(year = route.year, id = id, booth = booth, name = name)
             },
             sharedElementId = route.id,
             favorite = { entry()?.favorite },

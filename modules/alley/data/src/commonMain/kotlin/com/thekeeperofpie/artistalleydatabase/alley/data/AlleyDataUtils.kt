@@ -4,10 +4,12 @@ import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.generated.ComposeFile
 import com.thekeeperofpie.artistalleydatabase.generated.ComposeFiles
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 object AlleyDataUtils {
 
+    @Serializable
     enum class Folder(val folderName: String) {
         CATALOGS("catalogs"),
         RALLIES("rallies"),

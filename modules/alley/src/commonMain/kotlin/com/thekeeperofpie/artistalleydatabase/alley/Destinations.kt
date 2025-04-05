@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.navigation.NavType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
@@ -16,6 +17,8 @@ sealed interface Destinations : NavDestination {
         val typeMap: Map<KType, NavType<*>> = mapOf(
             typeOf<DataYear>() to CustomNavTypes.SerializableType<DataYear>(),
             typeOf<DataYear?>() to CustomNavTypes.SerializableType<DataYear>(),
+            typeOf<AlleyDataUtils.Folder>() to CustomNavTypes.SerializableType<AlleyDataUtils.Folder>(),
+            typeOf<Images.Title>() to CustomNavTypes.SerializableType<Images.Title>(),
         )
     }
 
@@ -41,6 +44,25 @@ sealed interface Destinations : NavDestination {
 
     @Serializable
     data class ArtistMap(val id: String) : Destinations
+
+    @Serializable
+    data class Images(
+        val year: DataYear,
+        val id: String,
+        val folder: AlleyDataUtils.Folder,
+        val file: String,
+        val title: Title,
+        val initialImageIndex: Int?,
+    ) : Destinations {
+
+        @Serializable
+        sealed interface Title {
+            @Serializable
+            data class Artist(val booth: String, val name: String?) : Title
+            @Serializable
+            data class StampRally(val hostTable: String?, val fandom: String?) : Title
+        }
+    }
 
     @Serializable
     data class Series(val year: DataYear? = null, val series: String) : Destinations

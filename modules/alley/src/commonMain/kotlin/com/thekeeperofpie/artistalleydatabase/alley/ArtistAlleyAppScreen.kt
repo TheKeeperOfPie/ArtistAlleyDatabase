@@ -26,10 +26,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.toRoute
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyMap
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
@@ -124,11 +127,28 @@ object ArtistAlleyAppScreen {
                                                         viewModel.onFavoriteToggle(event.favorite)
                                                     DetailsScreen.Event.NavigateBack ->
                                                         navigationController.popBackStack()
+                                                    is DetailsScreen.Event.OpenImage -> {
+                                                        val artist = viewModel.entry?.artist
+                                                        if (artist != null && artist.booth != null) {
+                                                            navigationController.navigate(
+                                                                Destinations.Images(
+                                                                    year = route.year,
+                                                                    id = route.id,
+                                                                    folder = AlleyDataUtils.Folder.CATALOGS,
+                                                                    file = artist.booth,
+                                                                    title = Destinations.Images.Title.Artist(
+                                                                        booth = artist.booth,
+                                                                        name = artist.name,
+                                                                    ),
+                                                                    initialImageIndex = event.imageIndex,
+                                                                )
+                                                            )
+                                                        }
+                                                    }
                                                     DetailsScreen.Event.OpenMap ->
                                                         navigationController.navigate(
                                                             Destinations.ArtistMap(route.id)
                                                         )
-
                                                 }
                                         }
                                     },
@@ -148,6 +168,19 @@ object ArtistAlleyAppScreen {
                                     mapViewModel = mapViewModel,
                                     onClickBack = navigationController::popBackStack,
                                     onArtistClick = onArtistClick,
+                                )
+                            }
+
+                            sharedElementComposable<Destinations.Images>(
+                                navigationTypeMap = navigationTypeMap,
+                            ) {
+                                val viewModel = viewModel {
+                                    component.imagesViewModel(createSavedStateHandle())
+                                }
+                                val route = it.toRoute<Destinations.Images>()
+                                ImagesScreen(
+                                    route = route,
+                                    images = viewModel::images,
                                 )
                             }
 
@@ -184,9 +217,26 @@ object ArtistAlleyAppScreen {
                                                         viewModel.onFavoriteToggle(event.favorite)
                                                     DetailsScreen.Event.NavigateBack ->
                                                         navigationController.popBackStack()
+                                                    is DetailsScreen.Event.OpenImage -> {
+                                                        viewModel.entry?.stampRally?.let {
+                                                            navigationController.navigate(
+                                                                Destinations.Images(
+                                                                    year = route.year,
+                                                                    id = route.id,
+                                                                    folder = AlleyDataUtils.Folder.RALLIES,
+                                                                    file = "${it.hostTable}${it.fandom}",
+                                                                    title = Destinations.Images.Title.StampRally(
+                                                                        hostTable = it.hostTable,
+                                                                        fandom = it.fandom,
+                                                                    ),
+                                                                    initialImageIndex = event.imageIndex,
+                                                                )
+                                                            )
+                                                        }
+                                                    }
                                                     DetailsScreen.Event.OpenMap ->
                                                         navigationController.navigate(
-                                                            Destinations.StampRallyMap(
+                                                            StampRallyMap(
                                                                 year = route.year,
                                                                 id = route.id,
                                                             )

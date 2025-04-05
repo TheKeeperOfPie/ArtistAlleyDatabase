@@ -43,7 +43,12 @@ object ArtistMapScreen {
                 TopAppBar(
                     title = {
                         artist?.artist?.let {
-                            ArtistTitle(year = it.year, booth = it.booth, name = it.name)
+                            ArtistTitle(
+                                year = it.year,
+                                id = it.id,
+                                booth = it.booth,
+                                name = it.name,
+                            )
                         }
                     },
                     navigationIcon = { ArrowBackIconButton(onClickBack) },

@@ -15,14 +15,9 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_booth_and_table_name
@@ -38,9 +33,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
-import com.eygraber.compose.placeholder.PlaceholderHighlight
-import com.eygraber.compose.placeholder.material3.placeholder
-import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
@@ -48,13 +40,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataPro
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
-import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import org.jetbrains.compose.resources.stringResource
@@ -249,42 +240,6 @@ object StampRallyDetailsScreen {
         }
     }
 
-    @Composable
-    private fun StampRallyTitle(id: String, hostTable: String?, fandom: String?) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = hostTable.orEmpty(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .placeholder(
-                        visible = hostTable == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                    .sharedElement(
-                        "hostTable",
-                        id,
-                        zIndexInOverlay = 1f,
-                    )
-            )
-
-            Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
-
-            Text(
-                text = fandom.orEmpty(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .weight(1f)
-                    .placeholder(
-                        visible = hostTable == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                    .sharedElement("fandom", id, zIndexInOverlay = 1f)
-            )
-        }
-    }
-
     sealed interface Event {
         data class DetailsEvent(val event: DetailsScreen.Event) : Event
         data class OpenArtist(val artist: ArtistEntry) : Event
@@ -298,7 +253,6 @@ private fun PhoneLayout() {
     val artists = ArtistWithUserDataProvider.values.take(3).map { it.artist }.toList()
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     PreviewDark {
-        var notes by remember { mutableStateOf("") }
         StampRallyDetailsScreen(
             route = Destinations.StampRallyDetails(stampRally.stampRally),
             entry = {

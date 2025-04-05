@@ -1,8 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -26,10 +24,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridOn
@@ -39,23 +35,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.pointer.pointerInput
@@ -65,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_none
-import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
@@ -73,19 +62,17 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.size.Dimension
-import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen.FullscreenImagesState
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
-import com.thekeeperofpie.artistalleydatabase.alley.ui.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
+import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
@@ -112,12 +99,10 @@ object DetailsScreen {
         eventSink: (Event) -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
-        val fullscreenImagesState = remember { FullscreenImagesState() }
         Scaffold(
             topBar = {
                 TopBar(
                     sharedElementId = sharedElementId,
-                    fullscreenImagesState = fullscreenImagesState,
                     title = title,
                     favorite = favorite,
                     onFavoriteToggle = { eventSink(Event.FavoriteToggle(it)) },
@@ -131,17 +116,17 @@ object DetailsScreen {
                 val windowSizeClass = currentWindowSizeClass()
                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     ExpandedLayout(
-                        fullscreenImagesState = fullscreenImagesState,
                         sharedElementId = sharedElementId,
                         images = images,
+                        onClickImage = { eventSink(Event.OpenImage(it)) },
                         content = content,
                     )
                 } else {
                     CompactLayout(
-                        fullscreenImagesState = fullscreenImagesState,
                         sharedElementId = sharedElementId,
                         images = images,
                         initialImageIndex = initialImageIndex,
+                        onClickImage = { eventSink(Event.OpenImage(it)) },
                         content = content,
                     )
                 }
@@ -151,9 +136,9 @@ object DetailsScreen {
 
     @Composable
     private fun ExpandedLayout(
-        fullscreenImagesState: FullscreenImagesState,
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
+        onClickImage: (imageIndex: Int) -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
         Row(
@@ -200,10 +185,7 @@ object DetailsScreen {
                             contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                             placeholder = placeholderPainter,
                             modifier = Modifier
-                                .clickable {
-                                    fullscreenImagesState.index =
-                                        if (images.size > 1) index + 1 else 0
-                                }
+                                .clickable { onClickImage(if (images.size > 1) index + 1 else 0) }
                                 .sharedElement("image", image.uri)
                                 .fillMaxWidth()
                                 .conditionally(image.width != null && image.height != null) {
@@ -214,25 +196,14 @@ object DetailsScreen {
                 }
             }
         }
-
-        val finalShowFullImagesIndex = fullscreenImagesState.index
-        if (finalShowFullImagesIndex != null) {
-            val pagerState = rememberImagePagerState(images, finalShowFullImagesIndex)
-            FullscreenImagePager(
-                state = fullscreenImagesState,
-                pagerState = pagerState,
-                sharedElementId = sharedElementId,
-                images = images,
-            )
-        }
     }
 
     @Composable
     private fun CompactLayout(
-        fullscreenImagesState: FullscreenImagesState,
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
         initialImageIndex: Int,
+        onClickImage: (imageIndex: Int) -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
         val headerPagerState = rememberImagePagerState(images, initialImageIndex)
@@ -245,25 +216,17 @@ object DetailsScreen {
                     sharedElementId = sharedElementId,
                     images = images,
                     headerPagerState = headerPagerState,
-                    fullscreenImagesState = fullscreenImagesState,
+                    onClickImage = onClickImage,
                 )
             }
 
             content()
         }
-
-        FullscreenImagePager(
-            state = fullscreenImagesState,
-            pagerState = headerPagerState,
-            sharedElementId = sharedElementId,
-            images = images,
-        )
     }
 
     @Composable
     private fun TopBar(
         sharedElementId: Any,
-        fullscreenImagesState: FullscreenImagesState,
         title: @Composable () -> Unit,
         favorite: () -> Boolean?,
         onFavoriteToggle: (Boolean) -> Unit,
@@ -272,18 +235,7 @@ object DetailsScreen {
     ) {
         TopAppBar(
             title = title,
-            navigationIcon = {
-                if (fullscreenImagesState.index != null) {
-                    IconButton(onClick = { fullscreenImagesState.index = null }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(Res.string.alley_details_close_image),
-                        )
-                    }
-                } else {
-                    ArrowBackIconButton(onClickBack)
-                }
-            },
+            navigationIcon = { ArrowBackIconButton(onClickBack) },
             actions = {
                 IconButton(
                     onClick = onClickOpenInMap,
@@ -326,35 +278,11 @@ object DetailsScreen {
     }
 
     @Composable
-    fun rememberImagePagerState(
-        images: () -> List<CatalogImage>,
-        initialImageIndex: Int,
-    ): PagerState {
-        @Suppress("NAME_SHADOWING")
-        val images = images()
-        val pageCount = when {
-            images.isEmpty() -> 0
-            images.size == 1 -> 1
-            else -> images.size + 1
-        }
-        val maxIndex = (pageCount - 1).coerceAtLeast(0)
-        val initialPage = initialImageIndex.coerceAtMost(maxIndex)
-        val pagerState = rememberPagerState(
-            initialPage = initialPage,
-            pageCount = { pageCount },
-        )
-        OnChangeEffect(images) {
-            pagerState.requestScrollToPage(initialPage)
-        }
-        return pagerState
-    }
-
-    @Composable
     private fun SmallImageHeader(
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
         headerPagerState: PagerState,
-        fullscreenImagesState: FullscreenImagesState,
+        onClickImage: (imageIndex: Int) -> Unit,
     ) {
         val images = images()
         if (images.isEmpty()) {
@@ -377,7 +305,7 @@ object DetailsScreen {
                 pagerState = headerPagerState,
                 sharedElementId = sharedElementId,
                 images = images,
-                fullscreenImagesState = fullscreenImagesState,
+                onClickImage = onClickImage,
             )
         }
     }
@@ -387,7 +315,7 @@ object DetailsScreen {
         sharedElementId: Any,
         pagerState: PagerState,
         images: List<CatalogImage>,
-        fullscreenImagesState: FullscreenImagesState,
+        onClickImage: (imageIndex: Int) -> Unit,
     ) {
         val zoomPanState = rememberZoomPanState()
         val scope = rememberCoroutineScope()
@@ -407,76 +335,60 @@ object DetailsScreen {
                     .sharedElement("imageContainer", sharedElementId)
                     .clipToBounds()
             ) { page ->
-                AnimatedVisibility(
-                    visible = fullscreenImagesState.index == null,
-                    enter = EnterTransition.None,
-                    exit = ExitTransition.None,
-                ) {
-                    CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-                        if (page == 0 && images.size > 1) {
-                            SmallImageGrid(
-                                targetHeight = 0,
-                                images = images,
-                                onImageClick = { index, _ ->
-                                    scope.launch {
-                                        pagerState.animateScrollToPage(index + 1)
-                                    }
-                                },
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        } else {
-                            ZoomPanBox(
-                                state = zoomPanState,
-                                onClick = { fullscreenImagesState.index = pagerState.currentPage },
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .height(IMAGE_HEIGHT)
-                                        .fillMaxWidth()
-                                        .pointerInput(zoomPanState, page) {
-                                            detectTapGestures(
-                                                onTap = {
-                                                    fullscreenImagesState.index =
-                                                        pagerState.currentPage
-                                                },
-                                                onDoubleTap = {
-                                                    scope.launch {
-                                                        zoomPanState.toggleZoom(it, size)
-                                                    }
-                                                }
-                                            )
+                if (page == 0 && images.size > 1) {
+                    SmallImageGrid(
+                        targetHeight = 0,
+                        images = images,
+                        onImageClick = { index, _ ->
+                            scope.launch {
+                                pagerState.animateScrollToPage(index + 1)
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    ZoomPanBox(
+                        state = zoomPanState,
+                        onClick = { onClickImage(pagerState.currentPage) },
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .height(IMAGE_HEIGHT)
+                                .fillMaxWidth()
+                                .pointerInput(zoomPanState, page) {
+                                    detectTapGestures(
+                                        onTap = { onClickImage(pagerState.currentPage) },
+                                        onDoubleTap = {
+                                            scope.launch {
+                                                zoomPanState.toggleZoom(it, size)
+                                            }
                                         }
-                                ) {
-                                    val image = images[(page - 1).coerceAtLeast(0)]
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalPlatformContext.current)
-                                            .data(image.uri)
-                                            .size(
-                                                width = Dimension.Undefined,
-                                                targetHeight
-                                            )
-                                            .build(),
-                                        contentScale = ContentScale.Fit,
-                                        contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                                        modifier = Modifier
-                                            .sharedElement(
-                                                "image",
-                                                image.uri,
-                                                animatedVisibilityScope = this@AnimatedVisibility,
-                                            )
-                                            .height(IMAGE_HEIGHT)
                                     )
                                 }
-                            }
+                        ) {
+                            val image = images[(page - 1).coerceAtLeast(0)]
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalPlatformContext.current)
+                                    .data(image.uri)
+                                    .size(
+                                        width = Dimension.Undefined,
+                                        targetHeight
+                                    )
+                                    .build(),
+                                contentScale = ContentScale.Fit,
+                                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                                modifier = Modifier
+                                    .sharedElement("image", image.uri)
+                                    .height(IMAGE_HEIGHT)
+                            )
                         }
                     }
                 }
             }
 
             AnimatedVisibility(
-                visible = fullscreenImagesState.index == null && images.size > 1
-                        && zoomPanState.canPanExternal(),
+                visible = images.size > 1 && zoomPanState.canPanExternal(),
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier.align(Alignment.BottomCenter)
@@ -496,9 +408,7 @@ object DetailsScreen {
             }
 
             AnimatedVisibility(
-                visible = fullscreenImagesState.index == null
-                        && pagerState.currentPage != 0
-                        && zoomPanState.canPanExternal(),
+                visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier.align(Alignment.BottomEnd)
@@ -524,67 +434,10 @@ object DetailsScreen {
         }
     }
 
-    @Composable
-    private fun FullscreenImagePager(
-        state: FullscreenImagesState,
-        pagerState: PagerState,
-        sharedElementId: Any,
-        images: () -> List<CatalogImage>,
-    ) {
-        val coroutineScope = rememberCoroutineScope()
-        val imageIndex = state.index
-        AnimatedVisibility(
-            visible = imageIndex != null,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            val images = images()
-            val fullPagerState = rememberPagerState(
-                initialPage = imageIndex ?: 0,
-                pageCount = {
-                    when {
-                        images.isEmpty() -> 0
-                        images.size == 1 -> 1
-                        else -> images.size + 1
-                    }
-                },
-            )
-            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-                BackHandler {
-                    state.index = null
-                    coroutineScope.launch {
-                        pagerState.scrollToPage(fullPagerState.currentPage)
-                    }
-                }
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
-                        .copy(alpha = 0.75f),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    @Suppress("NAME_SHADOWING")
-                    val images = images()
-                    ImagePager(
-                        images = images,
-                        pagerState = pagerState,
-                        sharedElementId = sharedElementId,
-                        onClickPage = null,
-                        clipCorners = false,
-                        imageContentScale = ContentScale.Fit,
-                        onClickOutside = { state.index = null },
-                    )
-                }
-            }
-        }
-    }
-
-    @Stable
-    class FullscreenImagesState {
-        var index by mutableStateOf<Int?>(null)
-    }
-
     sealed interface Event {
         data class FavoriteToggle(val favorite: Boolean) : Event
         data object NavigateBack : Event
+        data class OpenImage(val imageIndex: Int) : Event
         data object OpenMap : Event
     }
 }
@@ -618,11 +471,8 @@ private fun ImagePagerGrid() = PreviewDark {
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     DetailsScreen.ImagePager(
         sharedElementId = "sharedElementId",
-        pagerState = DetailsScreen.rememberImagePagerState(
-            images = { images },
-            initialImageIndex = 0,
-        ),
+        pagerState = rememberImagePagerState( images = { images }, initialImageIndex = 0, ),
         images = images,
-        fullscreenImagesState = remember { FullscreenImagesState() },
+        onClickImage = {},
     )
 }

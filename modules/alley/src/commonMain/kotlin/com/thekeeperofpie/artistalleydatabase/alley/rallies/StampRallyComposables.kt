@@ -16,15 +16,56 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_free
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_paid
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun StampRallyTitle(id: String, hostTable: String?, fandom: String?) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = hostTable.orEmpty(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .placeholder(
+                    visible = hostTable == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+                .sharedElement(
+                    "hostTable",
+                    id,
+                    zIndexInOverlay = 1f,
+                )
+        )
+
+        Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
+
+        Text(
+            text = fandom.orEmpty(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(1f)
+                .placeholder(
+                    visible = hostTable == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+                .sharedElement("fandom", id, zIndexInOverlay = 1f)
+        )
+    }
+}
 
 @Composable
 fun StampRallyListRow(

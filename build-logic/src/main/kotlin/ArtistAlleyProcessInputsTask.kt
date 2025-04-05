@@ -37,7 +37,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         private const val PACKAGE_NAME = "com.thekeeperofpie.artistalleydatabase.generated"
         private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp")
         private const val RESIZE_TARGET = 1200
-        private const val WEBP_TARGET_QUALITY = 50
+        private const val WEBP_TARGET_QUALITY = 80
         private const val WEBP_METHOD = 6
         private const val COMPOSE_FILES_CHUNK_SIZE = 50
     }

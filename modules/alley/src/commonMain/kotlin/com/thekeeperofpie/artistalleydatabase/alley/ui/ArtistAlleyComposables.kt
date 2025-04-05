@@ -111,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
@@ -295,6 +296,30 @@ private class WrappedViewConfiguration(
     val overrideTouchSlop: Float,
 ) : ViewConfiguration by viewConfiguration {
     override val touchSlop = overrideTouchSlop
+}
+
+@Composable
+fun rememberImagePagerState(
+    images: () -> List<CatalogImage>,
+    initialImageIndex: Int,
+): PagerState {
+    @Suppress("NAME_SHADOWING")
+    val images = images()
+    val pageCount = when {
+        images.isEmpty() -> 0
+        images.size == 1 -> 1
+        else -> images.size + 1
+    }
+    val maxIndex = (pageCount - 1).coerceAtLeast(0)
+    val initialPage = initialImageIndex.coerceAtMost(maxIndex)
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { pageCount },
+    )
+    OnChangeEffect(images) {
+        pagerState.requestScrollToPage(initialPage)
+    }
+    return pagerState
 }
 
 @Composable

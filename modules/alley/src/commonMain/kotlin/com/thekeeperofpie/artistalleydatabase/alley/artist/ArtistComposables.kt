@@ -45,14 +45,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry.Different.id
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
 
 @Composable
-fun ArtistTitle(year: DataYear, booth: String?, name: String?) {
+fun ArtistTitle(year: DataYear, id: String, booth: String?, name: String?) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
         if (!isCurrentYear) {
