@@ -167,6 +167,7 @@ fun ZoomPanBox(
             }
             .transformable(
                 state = state.transformableState,
+                canPan = { state.scale > 1.1f },
                 lockRotationOnZoomPan = true,
             )
             .graphicsLayer(
