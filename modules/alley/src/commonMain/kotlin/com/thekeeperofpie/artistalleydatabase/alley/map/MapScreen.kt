@@ -5,7 +5,6 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateCentroid
@@ -13,18 +12,11 @@ import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ZoomIn
-import androidx.compose.material.icons.filled.ZoomOut
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,11 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
-import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_zoom_in
-import artistalleydatabase.modules.alley.generated.resources.alley_zoom_out
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
@@ -103,33 +92,19 @@ object MapScreen {
 
     @Composable
     fun ZoomSlider(transformState: TransformState, modifier: Modifier = Modifier) {
-        Row(modifier = modifier) {
-            val scope = rememberCoroutineScope()
-            IconButton(onClick = {
+        val scope = rememberCoroutineScope()
+        ZoomSlider(
+            scale = { transformState.scale },
+            onScaleChange = { scope.launch { transformState.updateScale(it) } },
+            scaleRange = transformState.scaleRange,
+            onClickZoomOut = {
                 scope.launch { transformState.updateScale(transformState.scale - 0.2f) }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.ZoomOut,
-                    contentDescription = stringResource(Res.string.alley_zoom_out),
-                )
-            }
-            Slider(
-                value = transformState.scale,
-                onValueChange = { scope.launch { transformState.updateScale(it) } },
-                valueRange = transformState.scaleRange,
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(interactionSource = null, indication = null) { /* Consume events */ }
-            )
-            IconButton(onClick = {
+            },
+            onClickZoomIn = {
                 scope.launch { transformState.updateScale(transformState.scale + 0.2f) }
-            }) {
-                Icon(
-                    imageVector = Icons.Default.ZoomIn,
-                    contentDescription = stringResource(Res.string.alley_zoom_in),
-                )
-            }
-        }
+            },
+            modifier = modifier,
+        )
     }
 
     @Composable

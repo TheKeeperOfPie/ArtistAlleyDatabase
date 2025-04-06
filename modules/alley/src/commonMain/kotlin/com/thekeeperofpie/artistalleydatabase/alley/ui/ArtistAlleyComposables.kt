@@ -21,6 +21,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -66,11 +67,13 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,6 +114,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
@@ -123,7 +127,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberZoomPanState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -331,11 +334,16 @@ fun ImagePager(
     modifier: Modifier = Modifier,
     onClickOutside: (() -> Unit)? = null,
     clipCorners: Boolean = true,
+    forceMinHeight: Boolean = true,
     imageContentScale: ContentScale = ContentScale.FillWidth,
+    zoomPanStates: MultiZoomPanState = rememberSaveable(
+        images,
+        LocalDensity.current,
+        saver = MultiZoomPanState.Saver
+    ) { MultiZoomPanState(images.size) },
 ) {
-    val zoomPanState = rememberZoomPanState()
     val scope = rememberCoroutineScope()
-    Box(Modifier.conditionallyNonNull(onClickOutside) { clickable(onClick = it) }) {
+    Box(modifier.conditionallyNonNull(onClickOutside) { clickable(onClick = it) }) {
         val existingViewConfiguration = LocalViewConfiguration.current
         val newViewConfiguration = remember(existingViewConfiguration) {
             WrappedViewConfiguration(
@@ -343,20 +351,27 @@ fun ImagePager(
                 overrideTouchSlop = existingViewConfiguration.touchSlop * 2,
             )
         }
+        val userScrollEnabled by remember(images) {
+            derivedStateOf {
+                images.size > 1 && zoomPanStates[(pagerState.currentPage - 1).coerceAtLeast(0)]
+                    .canPanExternal()
+            }
+        }
         CompositionLocalProvider(LocalViewConfiguration provides newViewConfiguration) {
             var minHeight by remember { mutableIntStateOf(0) }
             val density = LocalDensity.current
             HorizontalPager(
                 state = pagerState,
                 pageSpacing = 16.dp,
-                userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
+                userScrollEnabled = userScrollEnabled,
                 modifier = Modifier
-                    .heightIn(min = density.run { minHeight.toDp() })
-                    .then(modifier)
-                    .onSizeChanged {
-                        if (it.height > minHeight) {
-                            minHeight = it.height
-                        }
+                    .conditionally(forceMinHeight) {
+                        heightIn(min = density.run { minHeight.toDp() })
+                            .onSizeChanged {
+                                if (it.height > minHeight) {
+                                    minHeight = it.height
+                                }
+                            }
                     }
                     .conditionally(clipCorners) {
                         clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
@@ -367,9 +382,13 @@ fun ImagePager(
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     if (it == 0 && images.size > 1) {
                         SmallImageGrid(
-                            targetHeight = minHeight.coerceAtLeast(
-                                density.run { 320.dp.roundToPx() }
-                            ),
+                            targetHeight = if (forceMinHeight) {
+                                minHeight.coerceAtLeast(
+                                    density.run { 320.dp.roundToPx() }
+                                )
+                            } else {
+                                null
+                            },
                             images = images,
                             onImageClick = { index, _ ->
                                 scope.launch {
@@ -378,8 +397,10 @@ fun ImagePager(
                             }
                         )
                     } else {
+                        val imageIndex = (it - 1).coerceAtLeast(0)
+                        val zoomPanState = zoomPanStates[imageIndex]
                         ZoomPanBox(state = zoomPanState, onClick = onClickOutside) {
-                            val image = images[(it - 1).coerceAtLeast(0)]
+                            val image = images[imageIndex]
                             val width = image.width
                             val height = image.height
                             val isFillWidth = imageContentScale == ContentScale.FillWidth
@@ -413,7 +434,12 @@ fun ImagePager(
                                         fillMaxHeight()
                                     }
                                     .conditionally(clipCorners && LocalSharedTransitionScope.current.isTransitionActive) {
-                                        clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                                        clip(
+                                            RoundedCornerShape(
+                                                topStart = 12.dp,
+                                                topEnd = 12.dp
+                                            )
+                                        )
                                     }
                                     .align(Alignment.Center)
                                 // Causes page buttons to render underneath
@@ -425,108 +451,124 @@ fun ImagePager(
             }
         }
 
-        AnimatedVisibility(
-            visible = images.size > 1 && zoomPanState.canPanExternal(),
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter)
+        ImagePagerActions(
+            sharedElementId = sharedElementId,
+            images = images,
+            pagerState = pagerState,
+            userScrollEnabled = { userScrollEnabled },
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.ImagePagerActions(
+    sharedElementId: Any,
+    images: List<CatalogImage>,
+    pagerState: PagerState,
+    userScrollEnabled: () -> Boolean,
+) {
+    AnimatedVisibility(
+        visible = userScrollEnabled(),
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.align(Alignment.BottomCenter)
+    ) {
+        HorizontalPagerIndicator(
+            pagerState = pagerState,
+            modifier = Modifier
+                .sharedElement("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
+                .padding(8.dp)
+        )
+    }
+
+    val scope = rememberCoroutineScope()
+    AnimatedVisibility(
+        visible = pagerState.currentPage != 0 && userScrollEnabled(),
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.align(Alignment.BottomEnd)
+    ) {
+        IconButton(
+            onClick = {
+                scope.launch {
+                    pagerState.animateScrollToPage(0)
+                }
+            },
+            modifier = Modifier.sharedElement("gridIcon", sharedElementId)
         ) {
-            HorizontalPagerIndicator(
-                pagerState = pagerState,
-                modifier = Modifier
-                    .sharedElement("pagerIndicator", sharedElementId, zIndexInOverlay = 1f)
-                    .padding(8.dp)
+            Icon(
+                imageVector = Icons.Filled.GridOn,
+                contentDescription = stringResource(
+                    Res.string.alley_show_catalog_grid_content_description
+                )
             )
         }
+    }
 
-        AnimatedVisibility(
-            visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.BottomEnd)
+    val previousPageInteractionSource = remember { MutableInteractionSource() }
+    AnimatedVisibility(
+        visible = pagerState.pageCount > 1 && pagerState.currentPage != 0,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.align(Alignment.CenterStart)
+    ) {
+        IconButton(
+            onClick = {
+                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+            },
+            modifier = Modifier.sharedElement("previousPage", sharedElementId)
+                .hoverable(previousPageInteractionSource)
         ) {
-            IconButton(
-                onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(0)
-                    }
-                },
-                modifier = Modifier.sharedElement("gridIcon", sharedElementId)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.GridOn,
-                    contentDescription = stringResource(
-                        Res.string.alley_show_catalog_grid_content_description
+            val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceDim
+                            .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
+                        shape = CircleShape,
                     )
+            ) {
+                val willPageToGrid = images.size > 1 && pagerState.currentPage == 1
+                Icon(
+                    imageVector = if (willPageToGrid) {
+                        Icons.Default.GridView
+                    } else {
+                        Icons.AutoMirrored.Filled.ArrowLeft
+                    },
+                    contentDescription = stringResource(Res.string.alley_previous_page),
+                    modifier = Modifier.conditionally(willPageToGrid) { size(16.dp) }
                 )
             }
         }
+    }
 
-        val previousPageInteractionSource = remember { MutableInteractionSource() }
-        AnimatedVisibility(
-            visible = pagerState.pageCount > 1 && pagerState.currentPage != 0,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.CenterStart)
+    AnimatedVisibility(
+        visible = pagerState.currentPage < pagerState.pageCount - 1,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.align(Alignment.CenterEnd)
+    ) {
+        val nextPageInteractionSource = remember { MutableInteractionSource() }
+        IconButton(
+            onClick = {
+                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+            },
+            modifier = Modifier.sharedElement("nextPage", sharedElementId)
+                .hoverable(nextPageInteractionSource)
         ) {
-            IconButton(
-                onClick = {
-                    scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-                },
-                modifier = Modifier.sharedElement("previousPage", sharedElementId)
-                    .hoverable(previousPageInteractionSource)
-            ) {
-                val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceDim
-                                .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
-                            shape = CircleShape,
-                        )
-                ) {
-                    val willPageToGrid = images.size > 1 && pagerState.currentPage == 1
-                    Icon(
-                        imageVector = if (willPageToGrid) {
-                            Icons.Default.GridView
-                        } else {
-                            Icons.AutoMirrored.Filled.ArrowLeft
-                        },
-                        contentDescription = stringResource(Res.string.alley_previous_page),
-                        modifier = Modifier.conditionally(willPageToGrid) { size(16.dp) }
+            val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                contentDescription = stringResource(Res.string.alley_next_page),
+                modifier = Modifier.padding(8.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceDim
+                            .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
+                        shape = CircleShape,
                     )
-                }
-            }
-        }
-
-        AnimatedVisibility(
-            visible = pagerState.currentPage < pagerState.pageCount - 1,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.CenterEnd)
-        ) {
-            val nextPageInteractionSource = remember { MutableInteractionSource() }
-            IconButton(
-                onClick = {
-                    scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-                },
-                modifier = Modifier.sharedElement("nextPage", sharedElementId)
-                    .hoverable(nextPageInteractionSource)
-            ) {
-                val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
-                    contentDescription = stringResource(Res.string.alley_next_page),
-                    modifier = Modifier.padding(8.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceDim
-                                .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
-                            shape = CircleShape,
-                        )
-                )
-            }
+            )
         }
     }
 }
@@ -620,7 +662,7 @@ internal fun SmallImageGrid(
                     .sharedElement("gridImage", image.uri)
                     .fillMaxWidth()
                     .conditionally(image.width != null && image.height != null) {
-                        aspectRatio(image.height!!.toFloat() / image.width!!)
+                        aspectRatio(image.width!! / image.height!!.toFloat())
                     }
             )
         }

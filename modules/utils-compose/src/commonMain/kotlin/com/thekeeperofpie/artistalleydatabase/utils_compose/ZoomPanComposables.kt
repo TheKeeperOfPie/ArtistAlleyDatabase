@@ -11,8 +11,14 @@ import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -30,8 +36,39 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.lerp
+import artistalleydatabase.modules.utils_compose.generated.resources.Res
+import artistalleydatabase.modules.utils_compose.generated.resources.zoom_in
+import artistalleydatabase.modules.utils_compose.generated.resources.zoom_out
+import org.jetbrains.compose.resources.stringResource
 
-class ZoomPanComposables {
+class MultiZoomPanState private constructor(
+    private val states: List<ZoomPanState>,
+) {
+    constructor(size: Int) : this(states = List(size) { ZoomPanState() })
+
+    operator fun get(index: Int) = states[index]
+
+    companion object {
+        val Saver: Saver<MultiZoomPanState, *> = listSaver(
+            save = {
+                it.states.flatMap {
+                    listOf(it.translation.x, it.translation.y, it.scale)
+                }
+            },
+            restore = {
+                MultiZoomPanState(
+                    states =
+                        it.chunked(3).map {
+                            ZoomPanState(
+                                initialTranslationX = it[0],
+                                initialTranslationY = it[1],
+                                initialScale = it[2],
+                            )
+                        }
+                )
+            }
+        )
+    }
 }
 
 class ZoomPanState(
@@ -42,19 +79,7 @@ class ZoomPanState(
     var maxTranslationY: Float = 0f,
 ) {
     var transformableState = TransformableState { zoomChange, panChange, _ ->
-        val translation = translation + panChange
-        val scale = this.scale
-        this.translation = translation.copy(
-            x = translation.x.coerceIn(
-                -maxTranslationX * (scale - 1f),
-                maxTranslationX * (scale - 1f),
-            ),
-            y = translation.y.coerceIn(
-                -maxTranslationY * (scale - 1f),
-                maxTranslationY * (scale - 1f),
-            ),
-        )
-        this.scale = (scale * zoomChange).coerceIn(1f, 5f)
+        onZoomChange((scale * zoomChange).coerceIn(1f, 5f), translation + panChange)
     }
 
     companion object {
@@ -72,6 +97,7 @@ class ZoomPanState(
 
     var translation by mutableStateOf(Offset(initialTranslationX, initialTranslationY))
     var scale by mutableFloatStateOf(initialScale)
+        private set
 
     fun canPanExternal(): Boolean {
         return scale < 1.1f
@@ -104,6 +130,20 @@ class ZoomPanState(
             .coerceIn(-maxTranslationY * (scale - 1f), maxTranslationY * (scale - 1f))
         return Offset(offsetX, offsetY)
     }
+    
+    fun onZoomChange(newScale: Float, translation: Offset = this.translation) {
+        this.scale = newScale
+        this.translation = translation.copy(
+            x = translation.x.coerceIn(
+                -maxTranslationX * (newScale - 1f),
+                maxTranslationX * (newScale - 1f),
+            ),
+            y = translation.y.coerceIn(
+                -maxTranslationY * (newScale - 1f),
+                maxTranslationY * (newScale - 1f),
+            ),
+        )
+    }
 }
 
 @Composable
@@ -127,8 +167,7 @@ fun ZoomPanBox(
             }
             .transformable(
                 state = state.transformableState,
-                canPan = { state.scale > 1.1f },
-                lockRotationOnZoomPan = true
+                lockRotationOnZoomPan = true,
             )
             .graphicsLayer(
                 translationX = state.translation.x,
@@ -145,4 +184,37 @@ fun ZoomPanBox(
             },
         content = content,
     )
+}
+
+@Composable
+fun ZoomSlider(
+    scale: () -> Float,
+    onScaleChange: (Float) -> Unit,
+    scaleRange: ClosedFloatingPointRange<Float>,
+    onClickZoomOut: () -> Unit,
+    onClickZoomIn: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier) {
+        IconButton(onClick = onClickZoomOut) {
+            Icon(
+                imageVector = Icons.Default.ZoomOut,
+                contentDescription = stringResource(Res.string.zoom_out),
+            )
+        }
+        Slider(
+            value = scale(),
+            onValueChange = onScaleChange,
+            valueRange = scaleRange,
+            modifier = Modifier
+                .weight(1f)
+                .clickable(interactionSource = null, indication = null) { /* Consume events */ }
+        )
+        IconButton(onClick = onClickZoomIn) {
+            Icon(
+                imageVector = Icons.Default.ZoomIn,
+                contentDescription = stringResource(Res.string.zoom_in),
+            )
+        }
+    }
 }

@@ -93,6 +93,7 @@ object StampRallyDetailsScreen {
         onClickOpenUri: (String) -> Unit,
     ) {
         item("stampRallyFandom") {
+            Spacer(Modifier.height(16.dp))
             ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                 InfoText(
                     stringResource(Res.string.alley_stamp_rally_details_fandom),
@@ -103,9 +104,9 @@ object StampRallyDetailsScreen {
             Spacer(Modifier.height(16.dp))
         }
 
-        item("stampRallyLinks") {
-            val links = entry()?.stampRally?.links
-            if (links?.isNotEmpty() != false) {
+        val links = entry()?.stampRally?.links
+        if (links?.isNotEmpty() != false) {
+            item("stampRallyLinks") {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_stamp_rally_details_links,
@@ -166,9 +167,9 @@ object StampRallyDetailsScreen {
             Spacer(Modifier.height(16.dp))
         }
 
-        item("stampRallyArtists") {
-            val artists = entry()?.artists
-            if (artists?.isNotEmpty() != false) {
+        val artists = entry()?.artists
+        if (artists?.isNotEmpty() != false) {
+            item("stampRallyArtists") {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_stamp_rally_details_artists,
@@ -194,9 +195,9 @@ object StampRallyDetailsScreen {
             }
         }
 
-        item("stampRallyOtherTables") {
-            val otherTables = entry()?.otherTables
-            if (otherTables?.isNotEmpty() != false) {
+        val otherTables = entry()?.otherTables
+        if (otherTables?.isNotEmpty() != false) {
+            item("stampRallyOtherTables") {
                 ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     expandableListInfoText(
                         labelTextRes = Res.string.alley_stamp_rally_details_other_tables,
