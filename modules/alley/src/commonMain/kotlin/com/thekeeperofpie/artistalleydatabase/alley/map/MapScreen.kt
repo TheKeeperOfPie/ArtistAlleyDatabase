@@ -11,11 +11,13 @@ import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -29,10 +31,13 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
@@ -43,6 +48,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
@@ -67,15 +73,21 @@ object MapScreen {
         modifier: Modifier = Modifier,
         initialGridPosition: IntOffset? = null,
         showSlider: Boolean = true,
+        bottomContentPadding: Dp = 0.dp,
         content: @Composable (Table) -> Unit,
     ) {
         val gridData = viewModel.gridData.result
-        Column(modifier = modifier.fillMaxSize()) {
+        Box {
             Map(
                 gridData = gridData,
                 transformState = transformState,
                 initialGridPosition = initialGridPosition,
-                modifier = Modifier.weight(1f),
+                bottomContentPadding = if (showSlider) {
+                    bottomContentPadding + 100.dp
+                } else {
+                    bottomContentPadding
+                },
+                modifier = modifier.fillMaxSize(),
                 content = content,
             )
 
@@ -83,8 +95,13 @@ object MapScreen {
                 ZoomSlider(
                     transformState = transformState,
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp))
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp),
+                            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                        )
                         .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .widthIn(max = 480.dp)
+                        .align(Alignment.BottomCenter)
                 )
             }
         }
@@ -113,23 +130,29 @@ object MapScreen {
         transformState: TransformState,
         modifier: Modifier = Modifier,
         initialGridPosition: IntOffset? = null,
+        bottomContentPadding: Dp = 0.dp,
         content: @Composable (Table) -> Unit,
     ) {
         if (gridData != null) {
-            val contentPaddingPixels = LocalDensity.current.run { 32.dp.toPx() }
+            val density = LocalDensity.current
+            val contentPaddingPixels = density.run { 32.dp.toPx() }
+            val bottomContentPaddingPixels = density.run { bottomContentPadding.toPx() }
 
-            val baseItemWidth = LocalDensity.current.run { itemWidth.toPx() }
-            val baseItemHeight = LocalDensity.current.run { itemHeight.toPx() }
-            val width = transformState.size.width
-            val height = transformState.size.height
-            val baseMaxX = (gridData.maxX * baseItemWidth)
+            val baseItemWidth = density.run { itemWidth.toPx() }
+            val baseItemHeight = density.run { itemHeight.toPx() }
+            val (width, height) = transformState.size
+            val baseMaxX = ((gridData.maxX + 2) * baseItemWidth)
                 .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
             val baseMaxY = ((gridData.maxY + 1) * baseItemHeight)
                 .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
-            transformState.scaleRange = (width / baseMaxX).coerceAtLeast(height / baseMaxY)..3f
+            val newScale = Snapshot.withMutableSnapshot {
+                transformState.scaleRange = (width / baseMaxX).coerceAtLeast(height / baseMaxY)..3f
+                transformState.scale.coerceIn(transformState.scaleRange)
+                    .also { transformState.scale = it }
+            }
 
-            val itemWidthPixels = baseItemWidth * transformState.scale
-            val itemHeightPixels = baseItemHeight * transformState.scale
+            val itemWidthPixels = baseItemWidth * newScale
+            val itemHeightPixels = baseItemHeight * newScale
             val maxX = ((gridData.maxX + 1) * itemWidthPixels)
                 .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
             val maxY = ((gridData.maxY + 1) * itemHeightPixels)
@@ -182,6 +205,29 @@ object MapScreen {
                                 transformState.translation.snapTo(
                                     Offset(targetTranslation.x, targetTranslation.y - size.height)
                                 )
+                            }
+                        }
+                    }
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            val event = awaitPointerEvent()
+                            if (event.type == PointerEventType.Scroll) {
+                                val change = event.changes.first()
+                                val deltaY = change.scrollDelta.y
+                                val zoom = if (deltaY > 0f) {
+                                    0.9f
+                                } else {
+                                    1.1f
+                                }
+
+                                // This doesn't align perfectly, but it's good enough
+                                val position = change.position
+                                coroutineScope.launch {
+                                    transformState.updateScale(
+                                        transformState.scale * zoom,
+                                        position,
+                                    )
+                                }
                             }
                         }
                     }
@@ -311,7 +357,8 @@ object MapScreen {
                         val offsetY = -table.gridY * itemHeightPixels
                         val translation = transformState.translation.value
                         val xPosition = contentPaddingPixels + offsetX - translation.x
-                        val yPosition = offsetY - translation.y - contentPaddingPixels
+                        val yPosition = offsetY - translation.y - contentPaddingPixels -
+                                bottomContentPaddingPixels
                         placeables.forEach {
                             it.placeRelative(xPosition.toInt(), yPosition.toInt())
                         }
@@ -379,8 +426,9 @@ object MapScreen {
         initialTranslationX: Float = 0f,
         initialTranslationY: Float = 0f,
         initialScale: Float = 1f,
-        var scaleRange: ClosedFloatingPointRange<Float> = 0.5f..3f,
+        initialScaleRange: ClosedFloatingPointRange<Float> = 0.5f..3f,
     ) {
+        var scaleRange by mutableStateOf(initialScaleRange)
         var size by mutableStateOf(IntSize(0, 0))
         val translation by mutableStateOf(
             Animatable(Offset(initialTranslationX, initialTranslationY), Offset.VectorConverter)
@@ -390,8 +438,11 @@ object MapScreen {
 
         var initialized = initialTranslationY != 0f
 
-        suspend fun updateScale(newRawScale: Float) = onTransform(
-            centroid = Offset(size.width / 2f, size.height / 2f),
+        suspend fun updateScale(
+            newRawScale: Float,
+            centroid: Offset = Offset(size.width / 2f, size.height / 2f),
+        ) = onTransform(
+            centroid = centroid,
             translate = Offset.Zero,
             newRawScale = newRawScale,
         )
@@ -406,8 +457,7 @@ object MapScreen {
             )
             val scaleDiff = scale / newScale
             val newCentroidInGridSpace = centroidInGridSpace * scaleDiff
-            val centroidDiffInGridSpace =
-                centroidInGridSpace - newCentroidInGridSpace
+            val centroidDiffInGridSpace = centroidInGridSpace - newCentroidInGridSpace
             val newTranslation = translationValue + centroidDiffInGridSpace - translate
             scale = newScale
             translation.snapTo(newTranslation)
@@ -417,13 +467,20 @@ object MapScreen {
             val Saver: Saver<TransformState, *> = listSaver(
                 save = {
                     val translationValue = it.translation.targetValue
-                    listOf(translationValue.x, translationValue.y, it.scale)
+                    listOf(
+                        translationValue.x,
+                        translationValue.y,
+                        it.scale,
+                        it.scaleRange.start,
+                        it.scaleRange.endInclusive,
+                    )
                 },
                 restore = {
                     TransformState(
                         initialTranslationX = it[0],
                         initialTranslationY = it[1],
                         initialScale = it[2],
+                        initialScaleRange = it[3]..it[4],
                     )
                 }
             )

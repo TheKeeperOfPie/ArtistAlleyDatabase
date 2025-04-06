@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.map
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -93,12 +92,12 @@ object ArtistMapScreen {
                 viewModel = mapViewModel,
                 transformState = transformState,
                 initialGridPosition = targetTable?.run { IntOffset(gridX, gridY) },
-                modifier = Modifier.padding(it)
+                bottomContentPadding = it.calculateBottomPadding(),
             ) {
                 HighlightedTableCell(
                     mapViewModel = mapViewModel,
                     table = it,
-                    highlight = it.booth == viewModel.id,
+                    highlight = it.id == viewModel.id,
                     onArtistClick = onArtistClick,
                 )
             }

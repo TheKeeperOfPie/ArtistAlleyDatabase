@@ -1,12 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.map
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
@@ -40,7 +38,7 @@ object StampRallyMapScreen {
                 viewModel = mapViewModel,
                 transformState = transformState,
                 initialGridPosition = targetTable?.run { IntOffset(gridX, gridY) },
-                modifier = Modifier.padding(it)
+                bottomContentPadding = it.calculateBottomPadding(),
             ) {
                 HighlightedTableCell(
                     mapViewModel = mapViewModel,

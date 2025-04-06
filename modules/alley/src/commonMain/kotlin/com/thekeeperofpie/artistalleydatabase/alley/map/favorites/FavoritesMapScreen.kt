@@ -59,7 +59,7 @@ object FavoritesMapScreen {
                 viewModel = mapViewModel,
                 transformState = mapTransformState,
                 showSlider = false,
-                modifier = Modifier.padding(it)
+                bottomContentPadding = it.calculateBottomPadding(),
             ) { table ->
                 if (showOnlyFavorites) {
                     HighlightedTableCell(

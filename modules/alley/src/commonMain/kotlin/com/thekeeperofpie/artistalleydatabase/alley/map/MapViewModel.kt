@@ -100,7 +100,10 @@ class MapViewModel(
                 )
             }.also {
                 currentIndex++
-                if (letterIndex % 2 == 0) {
+                if (letterIndex == 11) {
+                    // There's a large gap between the two halves of the map
+                    currentIndex += 4
+                } else if (letterIndex % 2 == 0) {
                     // Skip an extra between every 2 tables
                     currentIndex++
                 }

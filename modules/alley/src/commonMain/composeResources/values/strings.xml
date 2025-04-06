@@ -53,6 +53,7 @@
     <string name="alley_filter_show_only_has_commissions">Has commissions</string>
     <string name="alley_filter_show_ignored">Show ignored (long press)</string>
     <string name="alley_filter_force_one_display_column">Force one display column</string>
+    <string name="alley_filter_data_year">Convention</string>
     <string name="alley_search_option_ignored">Ignored</string>
 
     <string name="alley_nav_bar_artists">Artists</string>

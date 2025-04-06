@@ -17,21 +17,25 @@ WHERE has2025 = 1;
 getBoothsBySeriesId2024:
 SELECT artistEntry2024.booth FROM artistSeriesConnection
 INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)
-WHERE artistSeriesConnection.seriesId = :seriesId;
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND artistSeriesConnection.has2024 = 1;
 
 getBoothsBySeriesIdConfirmed2024:
 SELECT artistEntry2024.booth FROM artistSeriesConnection
 INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
+AND artistSeriesConnection.has2024 = 1
 AND artistSeriesConnection.confirmed IS 1;
 
 getBoothsBySeriesId2025:
 SELECT artistEntry2025.booth FROM artistSeriesConnection
 INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025.id)
-WHERE artistSeriesConnection.seriesId = :seriesId;
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND artistSeriesConnection.has2025 = 1;
 
 getBoothsBySeriesIdConfirmed2025:
 SELECT artistEntry2025.booth FROM artistSeriesConnection
 INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
+AND artistSeriesConnection.has2025 = 1
 AND artistSeriesConnection.confirmed IS 1;
