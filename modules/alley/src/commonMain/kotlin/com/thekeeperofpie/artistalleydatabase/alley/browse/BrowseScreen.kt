@@ -128,7 +128,11 @@ object BrowseScreen {
                                 item = {
                                     SeriesRow(
                                         series = it,
-                                        image = { null }, // TODO
+                                        image = {
+                                            it?.let {
+                                                tagsViewModel.getSeriesImage(it)
+                                            }
+                                        },
                                         textStyle = LocalTextStyle.current,
                                         expanded = true,
                                         onClick = { it?.let { onSeriesClick(it) } },

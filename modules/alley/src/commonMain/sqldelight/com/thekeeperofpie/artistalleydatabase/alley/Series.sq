@@ -2,6 +2,9 @@
 getSeries:
 SELECT * FROM seriesEntry;
 
+getSeriesAndImageIds:
+SELECT id, aniListId FROM seriesEntry;
+
 getSeriesById:
 SELECT * FROM seriesEntry
 WHERE id = :id;

@@ -18,7 +18,22 @@ class SeriesImagesStore(
     private val aniListApi: AlleyAniListApi,
     private val imageEntryDao: ImageEntryDao,
     private val imageCache: ImageCache,
+    private val seriesEntryDao: SeriesEntryDao,
 ) {
+    suspend fun getAllCachedImages(): Map<String, String> {
+        val images = imageEntryDao.getAllImages()
+            .groupBy { it.type }
+            .mapValues { it.value.associate { it.imageId to it.url } }
+        return seriesEntryDao.getSeriesIds()
+            .mapNotNull {
+                val aniListId = it.aniListId ?: return@mapNotNull null
+                val imageUrl = images[ImageType.ANILIST.name]?.get(it.aniListId.toString()) ?:
+                    return@mapNotNull null
+                it.id to imageUrl
+            }
+            .associate { it }
+    }
+
     suspend fun getImages(series: List<SeriesEntry>): Map<String, String> {
         val aniListIdMap = series.filter { it.aniListId != null }
             .associate { it.aniListId!!.toString() to it.id }

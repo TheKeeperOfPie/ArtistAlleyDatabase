@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import app.cash.paging.PagingSource
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
@@ -19,6 +20,8 @@ class SeriesEntryDao(
     private val database: suspend () -> AlleySqlDatabase,
     private val seriesDao: suspend () -> SeriesQueries = { database().seriesQueries },
 ) {
+    suspend fun getSeriesIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
+
     suspend fun getSeriesById(id: String): SeriesEntry =
         seriesDao().getSeriesById(id).awaitAsOneOrNull()
         // Some tags were adjusted between years, and the most recent list may not have all

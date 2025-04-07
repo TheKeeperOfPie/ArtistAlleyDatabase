@@ -1,20 +1,37 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     id("library-android")
     id("library-desktop")
     id("library-inject")
+    id("library-web")
 }
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvm") {
+                withAndroidTarget()
+                withJvm()
+            }
+        }
+    }
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.cronet.okhttp)
         }
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.okhttp3.logging.interceptor)
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.skrapeit)
+            }
+        }
         commonMain.dependencies {
             api(libs.apollo.runtime)
             api(libs.ktor.client.core)
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.okhttp3.logging.interceptor)
-            implementation(libs.skrapeit)
         }
     }
 }

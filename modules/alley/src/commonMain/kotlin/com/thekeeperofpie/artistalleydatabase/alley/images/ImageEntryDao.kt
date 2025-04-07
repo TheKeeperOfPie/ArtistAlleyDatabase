@@ -12,6 +12,11 @@ class ImageEntryDao(
     private val database: suspend () -> AlleySqlDatabase,
     private val imageDao: suspend () -> ImageQueries = { database().imageQueries },
 ) {
+    suspend fun getAllImages() =
+        imageDao()
+            .getAllImages()
+            .awaitAsList()
+
     suspend fun getImages(ids: Collection<String>, type: ImageType) =
         imageDao()
             .getImageEntries(ids, type.name)

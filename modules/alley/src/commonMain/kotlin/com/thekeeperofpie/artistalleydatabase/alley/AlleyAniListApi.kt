@@ -2,9 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import com.anilist.data.MediaImagesQuery
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.http.HttpRequest
+import com.apollographql.apollo3.network.http.HttpInterceptor
+import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListResponseCodeCoercingInterceptor
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
 import me.tatarka.inject.annotations.Inject
 
 @Inject
@@ -13,6 +17,10 @@ class AlleyAniListApi {
 
     private val client = ApolloClient.Builder()
         .serverUrl(AniListDataUtils.GRAPHQL_API_URL)
+        .addHttpInterceptor(object : HttpInterceptor {
+            override suspend fun intercept(request: HttpRequest, chain: HttpInterceptorChain) =
+                ApolloRateLimitUtils.rateLimit(request, chain)
+        })
         .addHttpInterceptor(AniListResponseCodeCoercingInterceptor)
         .build()
 

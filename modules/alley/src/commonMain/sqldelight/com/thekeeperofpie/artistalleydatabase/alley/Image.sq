@@ -3,6 +3,9 @@ SELECT imageId, url, createdAtSecondsUtc FROM imageEntry
 WHERE imageId IN :imageIds
 AND type = :type;
 
+getAllImages:
+SELECT imageId, type, url FROM imageEntry;
+
 insertImageEntry:
 INSERT OR REPLACE INTO imageEntry
 VALUES ?;
