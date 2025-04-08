@@ -81,7 +81,7 @@ fun main() {
         val url = URL(event.request.url)
         val urlPath = url.pathname
         val urlPathWithoutSlash = urlPath.removePrefix("/")
-        if (url.host.contains("anilist.co")) {
+        if (url.host.contains("anilist.co") || url.host.contains("wikipedia.org")) {
             event.respondWith(self.fetch(request))
         } else {
             event.respondWith(
