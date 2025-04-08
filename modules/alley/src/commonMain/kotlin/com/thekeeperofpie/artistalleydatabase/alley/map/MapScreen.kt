@@ -141,9 +141,9 @@ object MapScreen {
             val baseItemWidth = density.run { itemWidth.toPx() }
             val baseItemHeight = density.run { itemHeight.toPx() }
             val (width, height) = transformState.size
-            val baseMaxX = ((gridData.maxX + 2) * baseItemWidth)
+            val baseMaxX = ((gridData.maxX + 1) * baseItemWidth)
                 .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
-            val baseMaxY = ((gridData.maxY + 1) * baseItemHeight)
+            val baseMaxY = ((gridData.maxY + 1) * baseItemHeight + bottomContentPaddingPixels)
                 .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
             val newScale = Snapshot.withMutableSnapshot {
                 transformState.scaleRange = (width / baseMaxX).coerceAtLeast(height / baseMaxY)..3f
@@ -155,7 +155,7 @@ object MapScreen {
             val itemHeightPixels = baseItemHeight * newScale
             val maxX = ((gridData.maxX + 1) * itemWidthPixels)
                 .coerceAtLeast(width.toFloat()) + 2 * contentPaddingPixels
-            val maxY = ((gridData.maxY + 1) * itemHeightPixels)
+            val maxY = ((gridData.maxY + 1) * itemHeightPixels + bottomContentPaddingPixels)
                 .coerceAtLeast(height.toFloat()) + 2 * contentPaddingPixels
 
             transformState.translation.updateBounds(

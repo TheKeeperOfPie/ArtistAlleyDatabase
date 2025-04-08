@@ -33,6 +33,8 @@ kotlin {
         commonMain.dependencies {
             api(libs.apollo.runtime)
             api(libs.ktor.client.core)
+        }
+        wasmJsMain.dependencies {
             implementation(libs.apollo.engine.ktor.wasm.js)
         }
     }
