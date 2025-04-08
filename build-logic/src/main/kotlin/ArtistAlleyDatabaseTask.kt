@@ -563,12 +563,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             read(it)
                 .map {
                     // Validated, Series, Notes, AniList ID, AniList Type, Source Type, English,
-                    // Romaji, Native, Preferred, External Link,
+                    // Romaji, Native, Preferred, Wikipedia ID, External Link,
                     val validated = it["Validated"] == "DONE"
                     val id = it["Series"]!!
                     val notes = it["Notes"]
                     val aniListId = it["AniList ID"]?.toLongOrNull()
                     val aniListType = it["AniList Type"]
+                    val wikipediaId = it["Wikipedia ID"]?.toLongOrNull()
                     val link = it["External Link"]?.ifBlank { null }
                     val source = it["Source Type"]?.let { value ->
                         if (value.isBlank()) {
@@ -587,6 +588,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         notes = notes,
                         aniListId = aniListId,
                         aniListType = aniListType,
+                        wikipediaId = wikipediaId,
                         source = source,
                         // Fallback so that every field has a value so that it can be sorted
                         titlePreferred = titlePreferred ?: titleRomaji ?: titleEnglish ?: id,

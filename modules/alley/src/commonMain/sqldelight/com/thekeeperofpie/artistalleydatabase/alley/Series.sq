@@ -3,7 +3,7 @@ getSeries:
 SELECT * FROM seriesEntry;
 
 getSeriesAndImageIds:
-SELECT id, aniListId FROM seriesEntry;
+SELECT id, aniListId, wikipediaId FROM seriesEntry;
 
 getSeriesById:
 SELECT * FROM seriesEntry

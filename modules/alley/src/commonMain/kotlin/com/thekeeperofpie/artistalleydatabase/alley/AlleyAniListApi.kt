@@ -9,13 +9,15 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListResponseCodeCoercingInterceptor
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 @SingletonScope
-class AlleyAniListApi {
+class AlleyAniListApi(networkClient: NetworkClient) {
 
     private val client = ApolloClient.Builder()
+        .httpEngine(networkClient.httpEngine)
         .serverUrl(AniListDataUtils.GRAPHQL_API_URL)
         .addHttpInterceptor(object : HttpInterceptor {
             override suspend fun intercept(request: HttpRequest, chain: HttpInterceptorChain) =

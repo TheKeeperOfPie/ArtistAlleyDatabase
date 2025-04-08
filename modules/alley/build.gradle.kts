@@ -30,11 +30,11 @@ kotlin {
             api(projects.modules.alley.user)
             api(projects.modules.anilist.data)
             api(projects.modules.entry)
+            api(projects.modules.utilsNetwork)
             implementation(projects.modules.apollo.utils)
             implementation(projects.modules.settings.ui)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
-            implementation(projects.modules.utilsNetwork)
 
             // TODO: This import doesn't work since 1.8.0-alpha01 isn't published for this artifact
 //            implementation(compose.material3AdaptiveNavigationSuite)

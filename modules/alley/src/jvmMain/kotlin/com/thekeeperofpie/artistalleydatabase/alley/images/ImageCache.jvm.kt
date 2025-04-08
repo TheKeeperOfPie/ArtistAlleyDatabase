@@ -6,7 +6,7 @@ import me.tatarka.inject.annotations.Inject
 @SingletonScope
 @Inject
 actual class ImageCache {
-    actual suspend fun cache(urls: List<String>) {
+    actual suspend fun cache(urls: Collection<String>) {
         // Do nothing, JVM targets don't support this
     }
 }

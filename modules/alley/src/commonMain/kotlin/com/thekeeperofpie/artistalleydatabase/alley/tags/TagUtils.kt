@@ -34,6 +34,7 @@ fun previewSeriesEntry(id: String): SeriesEntry {
         notes = null,
         aniListId = null,
         aniListType = null,
+        wikipediaId = null,
         source = null,
         titlePreferred = id,
         titleEnglish = id,

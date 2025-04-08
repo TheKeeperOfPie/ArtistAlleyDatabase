@@ -5,7 +5,6 @@ import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.cache.normalized.api.MemoryCacheFactory
 import com.apollographql.apollo3.cache.normalized.normalizedCache
 import com.apollographql.apollo3.network.http.HttpInterceptor
-import com.apollographql.apollo3.network.http.KtorHttpEngine
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListResponseCodeCoercingInterceptor
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
@@ -18,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkAuthProvider
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import io.ktor.client.HttpClient
 import me.tatarka.inject.annotations.IntoSet
@@ -41,7 +41,7 @@ interface AniListComponent : AniListSqlCacheComponent {
     @Provides
     fun provideAniListApolloClient(
         networkSettings: NetworkSettings,
-        httpClient: HttpClient,
+        networkClient: NetworkClient,
         apolloHttpInterceptors: Set<HttpInterceptor> = emptySet(),
         sqlCache: AniListSqlCache? = null,
     ): ApolloClient {
@@ -58,7 +58,7 @@ interface AniListComponent : AniListSqlCacheComponent {
 
         return ApolloClient.Builder()
             .serverUrl(AniListDataUtils.GRAPHQL_API_URL)
-            .httpEngine(KtorHttpEngine(httpClient))
+            .httpEngine(networkClient.httpEngine)
             .addLoggingInterceptors("AniListApi", networkSettings)
             .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
             .apply { apolloHttpInterceptors.forEach(::addHttpInterceptor) }

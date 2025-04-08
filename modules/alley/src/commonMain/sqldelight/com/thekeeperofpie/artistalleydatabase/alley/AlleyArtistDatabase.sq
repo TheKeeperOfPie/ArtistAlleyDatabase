@@ -203,6 +203,7 @@ CREATE TABLE
         notes TEXT,
         aniListId INTEGER,
         aniListType TEXT,
+        wikipediaId INTEGER,
         source TEXT AS SeriesSource,
         titlePreferred TEXT NOT NULL COLLATE NOCASE,
         titleEnglish TEXT NOT NULL COLLATE NOCASE,

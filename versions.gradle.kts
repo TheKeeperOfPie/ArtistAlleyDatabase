@@ -214,6 +214,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     library("com.apollographql.apollo3:apollo-normalized-cache-sqlite")
                     library("com.apollographql.apollo3:apollo-engine-ktor")
                 }
+                library("com.apollographql.ktor:apollo-engine-ktor-wasm-js:0.1.1")
 
                 with(Versions.google) {
                     library("com.google.android.play:app-update-ktx:$appUpdate")

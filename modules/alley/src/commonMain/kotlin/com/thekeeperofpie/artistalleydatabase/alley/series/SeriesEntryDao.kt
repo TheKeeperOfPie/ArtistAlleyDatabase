@@ -31,6 +31,7 @@ class SeriesEntryDao(
                 notes = null,
                 aniListId = null,
                 aniListType = null,
+                wikipediaId = null,
                 source = SeriesSource.NONE,
                 titlePreferred = id,
                 titleEnglish = id,

@@ -31,8 +31,10 @@ class SeriesImageLoader(
             )
             while (isActive) {
                 val chunk = mutableSetOf(requestChannel.receive())
-                withTimeoutOrNull(5.seconds) {
-                    chunk += requestChannel.receive()
+                withTimeoutOrNull(2.seconds) {
+                    while (isActive) {
+                        chunk += requestChannel.receive()
+                    }
                 }
                 Snapshot.withMutableSnapshot {
                     val map = requests.toMap()
@@ -62,7 +64,7 @@ class SeriesImageLoader(
     }
 
     fun getSeriesImage(series: SeriesEntry): String? {
-        val cached = requests[series.id].takeUnless { it is Request.Failed }
+        val cached = requests[series.id]
         if (cached == null) {
             requestChannel.trySend(series)
         }

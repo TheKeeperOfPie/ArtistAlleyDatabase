@@ -16,20 +16,21 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 fun SqlCursor.toSeriesEntry(): SeriesEntry {
-    val source = getString(4)
+    val source = getString(5)
     return SeriesEntry(
         id = getString(0)!!,
         notes = getString(1),
         aniListId = getLong(2),
         aniListType = getString(3),
+        wikipediaId = getLong(4),
         source = SeriesSource.entries.find { it.name == source },
-        titlePreferred = getString(5)!!,
-        titleEnglish = getString(6)!!,
-        titleRomaji = getString(7)!!,
-        titleNative = getString(8)!!,
-        link = getString(9),
-        has2024 = getBoolean(10)!!,
-        has2025 = getBoolean(11)!!,
+        titlePreferred = getString(6)!!,
+        titleEnglish = getString(7)!!,
+        titleRomaji = getString(8)!!,
+        titleNative = getString(9)!!,
+        link = getString(10),
+        has2024 = getBoolean(11)!!,
+        has2025 = getBoolean(12)!!,
     )
 }
 

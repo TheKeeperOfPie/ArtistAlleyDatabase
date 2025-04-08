@@ -24,6 +24,7 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
+                implementation(libs.apollo.engine.ktor)
                 implementation(libs.okhttp3.logging.interceptor)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.skrapeit)
@@ -32,6 +33,7 @@ kotlin {
         commonMain.dependencies {
             api(libs.apollo.runtime)
             api(libs.ktor.client.core)
+            implementation(libs.apollo.engine.ktor.wasm.js)
         }
     }
 }

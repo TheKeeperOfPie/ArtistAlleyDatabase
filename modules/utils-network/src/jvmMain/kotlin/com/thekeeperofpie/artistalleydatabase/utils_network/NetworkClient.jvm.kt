@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils_network
 
+import com.apollographql.apollo3.annotations.ApolloExperimental
+import com.apollographql.apollo3.network.http.HttpEngine
+import com.apollographql.apollo3.network.http.KtorHttpEngine
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import it.skrape.fetcher.BrowserFetcher
@@ -12,7 +15,8 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
-class NetworkClient(
+@OptIn(ApolloExperimental::class)
+actual class NetworkClient(
     cache: Cache?,
     authProviders: @JvmSuppressWildcards Map<String, NetworkAuthProvider>,
     isConnected: () -> Boolean,
@@ -57,11 +61,13 @@ class NetworkClient(
         }
         .build()
 
-    val httpClient = HttpClient(OkHttp) {
+    actual val httpClient = HttpClient(OkHttp) {
         engine {
             preconfigured = okHttpClient
         }
     }
+
+    actual val httpEngine: HttpEngine = KtorHttpEngine(httpClient)
 
     val webScraper = object : WebScraper {
         override fun get(url: String): WebScraper.Result {

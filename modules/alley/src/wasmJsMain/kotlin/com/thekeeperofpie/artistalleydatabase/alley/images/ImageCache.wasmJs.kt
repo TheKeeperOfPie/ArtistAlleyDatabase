@@ -22,7 +22,7 @@ private const val MEDIA_IMAGE_CACHE = "media-image-v1"
 actual class ImageCache(
     private val imageEntryDao: ImageEntryDao,
 ) {
-    private val queue = Channel<List<String>>(1)
+    private val queue = Channel<Collection<String>>(1)
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
@@ -58,7 +58,7 @@ actual class ImageCache(
         }
     }
 
-    actual suspend fun cache(urls: List<String>) = queue.send(urls)
+    actual suspend fun cache(urls: Collection<String>) = queue.send(urls)
 
     private suspend fun cache() = window.caches.open(MEDIA_IMAGE_CACHE).await<Cache>()
 }
