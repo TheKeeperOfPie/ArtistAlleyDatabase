@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -53,7 +52,7 @@ fun SeriesRow(
             null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxHeight()
-                .width(40.dp)
+                .width(64.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         )
 
