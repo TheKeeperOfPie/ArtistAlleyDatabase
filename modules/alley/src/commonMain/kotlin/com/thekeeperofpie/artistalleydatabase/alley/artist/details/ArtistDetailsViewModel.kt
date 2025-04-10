@@ -79,8 +79,8 @@ class ArtistDetailsViewModel(
                 ?: return@launch
             val artistWithUserData = entryWithStampRallies.artist
             val artist = artistWithUserData.artist
-            val seriesInferred = artist.seriesInferred.map { seriesEntryDao.getSeriesById(it) }
-            val seriesConfirmed = artist.seriesConfirmed.map { seriesEntryDao.getSeriesById(it) }
+            val seriesInferred = seriesEntryDao.getSeriesByIds(artist.seriesInferred)
+            val seriesConfirmed = seriesEntryDao.getSeriesByIds(artist.seriesConfirmed)
 
             val entry = Entry(
                 artist = artist,

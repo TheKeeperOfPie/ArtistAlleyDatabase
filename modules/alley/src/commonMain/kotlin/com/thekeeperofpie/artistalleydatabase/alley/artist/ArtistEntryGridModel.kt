@@ -54,7 +54,7 @@ class ArtistEntryGridModel(
             if (!showOnlyConfirmedTags) {
                 seriesIds += entry.artist.seriesInferred
             }
-            return seriesIds.map { seriesEntryDao.getSeriesById(it) }
+            return seriesEntryDao.getSeriesByIds(seriesIds)
         }
 
         fun buildFromEntry(

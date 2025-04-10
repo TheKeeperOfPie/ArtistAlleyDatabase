@@ -23,24 +23,13 @@ class SeriesEntryDao(
     suspend fun getSeriesIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
 
     suspend fun getSeriesById(id: String): SeriesEntry =
-        seriesDao().getSeriesById(id).awaitAsOneOrNull()
-        // Some tags were adjusted between years, and the most recent list may not have all
-        // of the prior tags. In those cases, mock a response.
-            ?: SeriesEntry(
-                id = id,
-                notes = null,
-                aniListId = null,
-                aniListType = null,
-                wikipediaId = null,
-                source = SeriesSource.NONE,
-                titlePreferred = id,
-                titleEnglish = id,
-                titleRomaji = id,
-                titleNative = id,
-                link = null,
-                has2024 = false,
-                has2025 = false,
-            )
+        seriesDao().getSeriesById(id).awaitAsOneOrNull() ?: fallbackSeriesEntry(id)
+
+    suspend fun getSeriesByIds(ids: List<String>): List<SeriesEntry> {
+        if (ids.isEmpty()) return emptyList()
+        val series = seriesDao().getSeriesByIds(ids).awaitAsList().associateBy { it.id }
+        return ids.map { series[it] ?: fallbackSeriesEntry(it) }
+    }
 
     fun getSeries(
         languageOption: AniListLanguageOption,
@@ -168,4 +157,22 @@ class SeriesEntryDao(
             mapper = SqlCursor::toSeriesEntry,
         )
     }
+
+    // Some tags were adjusted between years, and the most recent list may not have all
+    // of the prior tags. In those cases, mock a response.
+    private fun fallbackSeriesEntry(id: String) = SeriesEntry(
+        id = id,
+        notes = null,
+        aniListId = null,
+        aniListType = null,
+        wikipediaId = null,
+        source = SeriesSource.NONE,
+        titlePreferred = id,
+        titleEnglish = id,
+        titleRomaji = id,
+        titleNative = id,
+        link = null,
+        has2024 = false,
+        has2025 = false,
+    )
 }

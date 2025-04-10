@@ -1,11 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.cash.paging.PagingData
 import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
-import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -15,10 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
@@ -35,7 +33,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -51,13 +48,14 @@ import kotlin.random.Random
 @Inject
 class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
+    dispatchers: CustomDispatchers,
     private val seriesEntryDao: SeriesEntryDao,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
     @Assisted private val filterParams: StateFlow<ArtistSortFilterViewModel.FilterParams>,
-) : EntrySearchViewModel<ArtistSearchQuery, ArtistEntryGridModel>() {
+) : ViewModel() {
 
     @Serializable
     data class InternalRoute(
@@ -91,69 +89,81 @@ class ArtistSearchViewModel(
     val lockedSeriesEntry = flowOf(lockedSeries)
         .mapNotNull {
             it ?: return@mapNotNull null
-            withContext(CustomDispatchers.IO) {
+            withContext(dispatchers.io) {
                 seriesEntryDao.getSeriesById(it)
             }
         }
         .stateInForCompose(this, null)
 
-    override val sections = emptyList<EntrySection>()
-
     val displayType = settings.displayType
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
     private val mutationUpdates = MutableSharedFlow<ArtistUserEntry>(5, 5)
 
+    val query = MutableStateFlow("")
+    val results = MutableStateFlow(PagingData.empty<ArtistEntryGridModel>())
+
     init {
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(dispatchers.io) {
             mutationUpdates.collectLatest {
                 userEntryDao.insertArtistUserEntry(it)
             }
         }
-    }
 
-    // TODO: Remove defer?
-    override fun searchOptions() = defer {
-        filterParams.mapLatest {
-            ArtistSearchQuery(
-                filterParams = it,
-                randomSeed = randomSeed,
-                lockedSeries = lockedSeries,
-                lockedMerch = lockedMerch,
+        viewModelScope.launch(dispatchers.io) {
+            combine(
+                year,
+                filterParams.mapLatest {
+                    ArtistSearchQuery(
+                        filterParams = it,
+                        randomSeed = randomSeed,
+                        lockedSeries = lockedSeries,
+                        lockedMerch = lockedMerch,
+                    )
+                },
+                query,
+                settings.showOnlyConfirmedTags,
+                ::SearchParams
             )
+                .flatMapLatest { (year, searchQuery, query, showOnlyConfirmedTags) ->
+                    createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                        artistEntryDao.search(
+                            year = year,
+                            query = query,
+                            searchQuery = searchQuery,
+                        )
+                    }.flow
+                        .map {
+                            it.filterOnIO {
+                                !it.userEntry.ignored || searchQuery.filterParams.showIgnored
+                            }
+                        }
+                        .map {
+                            it.mapOnIO {
+                                val series = ArtistEntryGridModel.getSeries(
+                                    showOnlyConfirmedTags = showOnlyConfirmedTags,
+                                    entry = it,
+                                    seriesEntryDao = seriesEntryDao,
+                                )
+                                ArtistEntryGridModel.buildFromEntry(
+                                    randomSeed = randomSeed,
+                                    showOnlyConfirmedTags = showOnlyConfirmedTags,
+                                    entry = it,
+                                    series = series,
+                                )
+                            }
+                        }
+                }
+                .cachedIn(viewModelScope)
+                .collect(results)
         }
     }
 
-    override fun mapQuery(
-        query: String,
-        options: ArtistSearchQuery,
-    ) = combine(year, settings.showOnlyConfirmedTags, ::Pair)
-        .flatMapLatest { (year, showOnlyConfirmedTags) ->
-            createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                artistEntryDao.search(
-                    year = year,
-                    query = query,
-                    searchQuery = options
-                )
-            }.flow
-                .map { it.filterOnIO { !it.userEntry.ignored || options.filterParams.showIgnored } }
-                .map {
-                    it.mapOnIO {
-                        val series = ArtistEntryGridModel.getSeries(
-                            showOnlyConfirmedTags = showOnlyConfirmedTags,
-                            entry = it,
-                            seriesEntryDao = seriesEntryDao,
-                        )
-                        ArtistEntryGridModel.buildFromEntry(
-                            randomSeed = randomSeed,
-                            showOnlyConfirmedTags = showOnlyConfirmedTags,
-                            entry = it,
-                            series = series,
-                        )
-                    }
-                }
-        }
-        .flowOn(CustomDispatchers.IO)
-        .cachedIn(viewModelScope)
+    private data class SearchParams(
+        val year: DataYear,
+        val searchQuery: ArtistSearchQuery,
+        val query: String,
+        val showOnlyConfirmedTags: Boolean,
+    )
 
     fun onEvent(navigationController: NavigationController, event: ArtistSearchScreen.Event) =
         when (event) {
