@@ -28,8 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
-import com.thekeeperofpie.artistalleydatabase.alley.ui.ImagePager
-import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider

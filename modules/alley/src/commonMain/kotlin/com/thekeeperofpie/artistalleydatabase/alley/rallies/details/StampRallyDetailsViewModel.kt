@@ -15,7 +15,6 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
@@ -29,7 +28,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -48,8 +46,14 @@ class StampRallyDetailsViewModel(
     val id = route.id
     val initialImageIndex = route.imageIndex?.toIntOrNull() ?: 0
 
+    // Block main to load images as fast as possible so shared transition works
+    val images = AlleyDataUtils.getImages(
+        year = route.year,
+        folder = AlleyDataUtils.Folder.RALLIES,
+        file = route.let { "${it.hostTable}${it.fandom}" },
+    )
+
     var entry by mutableStateOf<Entry?>(null)
-    var images by mutableStateOf<List<CatalogImage>>(emptyList())
 
     val notes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
         mutableStateOf(TextFieldState())
@@ -60,13 +64,7 @@ class StampRallyDetailsViewModel(
             val entryWithArtists = stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@launch
             val stampRallyWithUserData = entryWithArtists.stampRally
             val stampRally = stampRallyWithUserData.stampRally
-            val userEntry = stampRallyWithUserData.userEntry
             val artists = entryWithArtists.artists
-            val catalogImages = AlleyDataUtils.getImages(
-                year = stampRally.year,
-                folder = AlleyDataUtils.Folder.RALLIES,
-                file = stampRally.let { "${it.hostTable}${it.fandom}" },
-            )
 
             // Some stamp rallies have artists in non-AA regions, try and show those
             val otherTables = stampRally.tables
@@ -76,15 +74,12 @@ class StampRallyDetailsViewModel(
                     }
                 }
 
-            withContext(CustomDispatchers.Main) {
-                entry = Entry(
-                    stampRally = stampRally,
-                    userEntry = userEntry,
-                    artists = artists,
-                    otherTables = otherTables,
-                )
-                images = catalogImages
-            }
+            entry = Entry(
+                stampRally = stampRally,
+                userEntry = stampRallyWithUserData.userEntry,
+                artists = artists,
+                otherTables = otherTables,
+            )
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {

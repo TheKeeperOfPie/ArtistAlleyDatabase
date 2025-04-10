@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -34,7 +32,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -56,13 +53,17 @@ class ArtistDetailsViewModel(
     val id = route.id
     val initialImageIndex = route.imageIndex ?: 0
 
+    // Block main to load images as fast as possible so shared transition works
+    val catalogImages = AlleyDataUtils.getImages(
+        year = route.year,
+        folder = AlleyDataUtils.Folder.CATALOGS,
+        file = route.booth,
+    )
+
     var entry by mutableStateOf<Entry?>(null)
         private set
 
     var otherYears by mutableStateOf(listOf<DataYear>())
-        private set
-
-    var catalogImages by mutableStateOf<List<CatalogImage>>(emptyList())
         private set
 
     var seriesImages by mutableStateOf<Map<String, String>>(emptyMap())
@@ -78,37 +79,25 @@ class ArtistDetailsViewModel(
                 ?: return@launch
             val artistWithUserData = entryWithStampRallies.artist
             val artist = artistWithUserData.artist
-            val userEntry = artistWithUserData.userEntry
-            val stampRallies = entryWithStampRallies.stampRallies
-
-            val catalogImages = AlleyDataUtils.getImages(
-                year = artist.year,
-                folder = AlleyDataUtils.Folder.CATALOGS,
-                file = artist.booth,
-            )
             val seriesInferred = artist.seriesInferred.map { seriesEntryDao.getSeriesById(it) }
             val seriesConfirmed = artist.seriesConfirmed.map { seriesEntryDao.getSeriesById(it) }
 
             val entry = Entry(
                 artist = artist,
-                userEntry = userEntry,
+                userEntry = artistWithUserData.userEntry,
                 seriesInferred = seriesInferred,
                 seriesConfirmed = seriesConfirmed,
-                stampRallies = stampRallies,
+                stampRallies = entryWithStampRallies.stampRallies,
             )
 
-            Snapshot.withMutableSnapshot {
-                this@ArtistDetailsViewModel.entry = entry
-                this@ArtistDetailsViewModel.catalogImages = catalogImages
-            }
+            this@ArtistDetailsViewModel.entry = entry
 
             seriesImages = seriesImagesStore.getImages(entry.seriesInferred + entry.seriesConfirmed)
         }
 
-        viewModelScope.launch(CustomDispatchers.Main) {
-            otherYears = withContext(CustomDispatchers.IO) {
-                (DataYear.entries - year).filter { artistEntryDao.getEntry(it, id) != null }
-            }
+        viewModelScope.launch(CustomDispatchers.IO) {
+            otherYears = (DataYear.entries - year)
+                .filter { artistEntryDao.getEntry(it, id) != null }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {

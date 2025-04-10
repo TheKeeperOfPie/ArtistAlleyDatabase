@@ -68,11 +68,7 @@ fun ArtistTitle(year: DataYear, id: String, booth: String?, name: String?) {
                         visible = name == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
-                    .sharedElement(
-                        "booth",
-                        id,
-                        zIndexInOverlay = 1f,
-                    )
+                    .sharedElement("booth", id)
             )
             Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
         }
@@ -82,7 +78,7 @@ fun ArtistTitle(year: DataYear, id: String, booth: String?, name: String?) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .sharedElement("name", id, zIndexInOverlay = 1f)
+                .sharedElement("name", id)
                 .weight(1f)
                 .placeholder(
                     visible = name == null,
@@ -103,7 +99,7 @@ fun ArtistListRow(
     Column(modifier = modifier.fillMaxWidth()) {
         val artist = entry.artist
         Row(
-            modifier = Modifier.sharedBounds("container", artist.id, zIndexInOverlay = 1f)
+            modifier = Modifier.sharedBounds("container", artist.id)
         ) {
             if (artist.booth != null) {
                 Text(
@@ -112,7 +108,7 @@ fun ArtistListRow(
                         .copy(fontFamily = FontFamily.Monospace),
                     modifier = Modifier
                         .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
-                        .sharedElement("booth", artist.id, zIndexInOverlay = 1f)
+                        .sharedElement("booth", artist.id)
                 )
                 Spacer(Modifier.width(16.dp))
             }
@@ -122,7 +118,7 @@ fun ArtistListRow(
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
-                    .sharedElement("name", artist.id, zIndexInOverlay = 1f)
+                    .sharedElement("name", artist.id)
                     .weight(1f)
                     .padding(
                         start = if (artist.booth == null) 16.dp else 0.dp,
@@ -149,11 +145,7 @@ fun ArtistListRow(
                 onClick = { onFavoriteToggle(!favorite) },
                 modifier = Modifier
                     .align(Alignment.Top)
-                    .sharedElement(
-                        "favorite",
-                        artist.id,
-                        zIndexInOverlay = 1f,
-                    )
+                    .sharedElement("favorite", artist.id)
             ) {
                 Icon(
                     imageVector = if (favorite) {
