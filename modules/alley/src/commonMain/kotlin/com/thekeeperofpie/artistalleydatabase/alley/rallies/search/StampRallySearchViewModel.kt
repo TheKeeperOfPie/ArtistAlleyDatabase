@@ -99,7 +99,7 @@ class StampRallySearchViewModel(
                 navigationController.navigate(
                     Destinations.StampRallyDetails(
                         entry = searchEvent.entry.stampRally,
-                        imageIndex = searchEvent.imageIndex.toString(),
+                        initialImageIndex = searchEvent.imageIndex.toString(),
                     )
                 )
         }

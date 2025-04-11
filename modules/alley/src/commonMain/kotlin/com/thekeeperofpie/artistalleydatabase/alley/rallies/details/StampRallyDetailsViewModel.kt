@@ -44,7 +44,7 @@ class StampRallyDetailsViewModel(
     private val route = savedStateHandle.toDestination<Destinations.StampRallyDetails>(navigationTypeMap)
     val year = route.year
     val id = route.id
-    val initialImageIndex = route.imageIndex?.toIntOrNull() ?: 0
+    val initialImageIndex = route.initialImageIndex?.toIntOrNull() ?: 0
 
     // Block main to load images as fast as possible so shared transition works
     val images = AlleyDataUtils.getImages(

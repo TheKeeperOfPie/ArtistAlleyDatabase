@@ -15,11 +15,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
+import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
@@ -96,11 +99,31 @@ object ArtistAlleyAppScreen {
                                 val viewModel = viewModel {
                                     component.artistDetailsViewModel(createSavedStateHandle())
                                 }
+                                val images = viewModel.catalogImages
+                                val pageCount = when {
+                                    images.isEmpty() -> 0
+                                    images.size == 1 -> 1
+                                    else -> images.size + 1
+                                }
+                                val imageIndex = it.savedStateHandle
+                                    .remove<Int>("imageIndex")
+                                    ?.coerceAtMost(pageCount - 1)
+                                    ?.takeIf { it >= 0 }
+                                val imagePagerState = rememberImagePagerState(
+                                    images,
+                                    imageIndex ?: viewModel.initialImageIndex
+                                )
+                                LifecycleStartEffect(imagePagerState, imageIndex) {
+                                    if (imageIndex != null) {
+                                        imagePagerState.requestScrollToPage(imageIndex)
+                                    }
+                                    onStopOrDispose { Unit }
+                                }
                                 ArtistDetailsScreen(
                                     route = route,
                                     entry = { viewModel.entry },
                                     notesTextState = viewModel.notes,
-                                    initialImageIndex = viewModel.initialImageIndex,
+                                    imagePagerState = imagePagerState,
                                     catalogImages = viewModel::catalogImages,
                                     seriesImages = viewModel::seriesImages,
                                     otherYears = viewModel::otherYears,
@@ -178,9 +201,21 @@ object ArtistAlleyAppScreen {
                                     component.imagesViewModel(createSavedStateHandle())
                                 }
                                 val route = it.toRoute<Destinations.Images>()
+                                val imagePagerState = rememberImagePagerState(
+                                    images = viewModel.images,
+                                    initialImageIndex = route.initialImageIndex ?: 0,
+                                )
+                                val previousDestinationSavedStateHandle =
+                                    navHostController.previousBackStackEntry?.savedStateHandle
+                                val targetPage = imagePagerState.targetPage
+                                LaunchedEffect(targetPage) {
+                                    previousDestinationSavedStateHandle
+                                        ?.set("imageIndex", targetPage)
+                                }
                                 ImagesScreen(
                                     route = route,
                                     images = viewModel::images,
+                                    imagePagerState = imagePagerState,
                                 )
                             }
 
@@ -203,12 +238,32 @@ object ArtistAlleyAppScreen {
                                         createSavedStateHandle()
                                     )
                                 }
+                                val images = viewModel.images
+                                val pageCount = when {
+                                    images.isEmpty() -> 0
+                                    images.size == 1 -> 1
+                                    else -> images.size + 1
+                                }
+                                val imageIndex = it.savedStateHandle
+                                    .remove<Int>("imageIndex")
+                                    ?.coerceAtMost(pageCount - 1)
+                                    ?.takeIf { it >= 0 }
+                                val imagePagerState = rememberImagePagerState(
+                                    images,
+                                    imageIndex ?: viewModel.initialImageIndex
+                                )
+                                LifecycleStartEffect(imagePagerState, imageIndex) {
+                                    if (imageIndex != null) {
+                                        imagePagerState.requestScrollToPage(imageIndex)
+                                    }
+                                    onStopOrDispose { Unit }
+                                }
                                 StampRallyDetailsScreen(
                                     route = route,
                                     entry = { viewModel.entry },
                                     notesTextState = viewModel.notes,
-                                    initialImageIndex = viewModel.initialImageIndex,
                                     images = viewModel::images,
+                                    imagePagerState = imagePagerState,
                                     eventSink = {
                                         when (it) {
                                             is StampRallyDetailsScreen.Event.DetailsEvent ->

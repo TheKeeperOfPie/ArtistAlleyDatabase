@@ -78,12 +78,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun rememberImagePagerState(
-    images: () -> List<CatalogImage>,
-    initialImageIndex: Int,
-): PagerState {
-    @Suppress("NAME_SHADOWING")
-    val images = images()
+fun rememberImagePagerState(images: List<CatalogImage>, initialImageIndex: Int): PagerState {
     val pageCount = when {
         images.isEmpty() -> 0
         images.size == 1 -> 1

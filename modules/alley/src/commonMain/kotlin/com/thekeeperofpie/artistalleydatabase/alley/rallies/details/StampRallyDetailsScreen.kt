@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -39,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
+import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
@@ -58,8 +60,8 @@ object StampRallyDetailsScreen {
         route: Destinations.StampRallyDetails,
         entry: () -> StampRallyDetailsViewModel.Entry?,
         notesTextState: TextFieldState,
-        initialImageIndex: Int,
         images: () -> List<CatalogImage>,
+        imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
     ) {
         val uriHandler = LocalUriHandler.current
@@ -74,7 +76,7 @@ object StampRallyDetailsScreen {
             sharedElementId = route.id,
             favorite = { entry()?.favorite },
             images = images,
-            initialImageIndex = initialImageIndex,
+            imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {
             detailsContent(entry, notesTextState, eventSink, onClickOpenUri = {
@@ -265,8 +267,8 @@ private fun PhoneLayout() {
                 )
             },
             notesTextState = rememberTextFieldState(),
-            initialImageIndex = 1,
             images = { images },
+            imagePagerState = rememberImagePagerState(images, 1),
             eventSink = {},
         )
     }

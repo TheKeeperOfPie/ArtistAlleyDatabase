@@ -76,7 +76,7 @@ object DetailsScreen {
         sharedElementId: Any,
         favorite: () -> Boolean?,
         images: () -> List<CatalogImage>,
-        initialImageIndex: Int,
+        imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
@@ -105,7 +105,7 @@ object DetailsScreen {
                     CompactLayout(
                         sharedElementId = sharedElementId,
                         images = images,
-                        initialImageIndex = initialImageIndex,
+                        imagePagerState = imagePagerState,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
                         content = content,
                     )
@@ -183,11 +183,10 @@ object DetailsScreen {
     private fun CompactLayout(
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
-        initialImageIndex: Int,
+        imagePagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
-        val headerPagerState = rememberImagePagerState(images, initialImageIndex)
         LazyColumn(
             contentPadding = PaddingValues(bottom = 32.dp),
             modifier = Modifier.fillMaxSize()
@@ -196,7 +195,7 @@ object DetailsScreen {
                 SmallImageHeader(
                     sharedElementId = sharedElementId,
                     images = images,
-                    headerPagerState = headerPagerState,
+                    headerPagerState = imagePagerState,
                     onClickImage = onClickImage,
                 )
             }
@@ -302,7 +301,7 @@ private fun DetailsScreen() = PreviewDark {
         sharedElementId = "sharedElementId",
         favorite = { true },
         images = { images },
-        initialImageIndex = 1,
+        imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
     ) {
         item {
@@ -322,7 +321,7 @@ private fun ImagePagerGrid() = PreviewDark {
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     ImagePager(
         sharedElementId = "sharedElementId",
-        pagerState = rememberImagePagerState(images = { images }, initialImageIndex = 0),
+        pagerState = rememberImagePagerState(images = images, initialImageIndex = 0),
         images = images,
         onClickPage = {},
     )

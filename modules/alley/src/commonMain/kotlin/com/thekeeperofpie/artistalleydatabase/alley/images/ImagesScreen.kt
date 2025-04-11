@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.animateZoomBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,6 +43,7 @@ object ImagesScreen {
     operator fun invoke(
         route: Destinations.Images,
         images: () -> List<CatalogImage>,
+        imagePagerState: PagerState,
     ) {
         Scaffold(
             topBar = {
@@ -54,12 +56,14 @@ object ImagesScreen {
                                     id = route.id,
                                     booth = title.booth,
                                     name = title.name,
+                                    useSharedElement = false,
                                 )
                             is Destinations.Images.Title.StampRally ->
                                 StampRallyTitle(
                                     id = route.id,
                                     hostTable = title.hostTable,
                                     fandom = title.fandom,
+                                    useSharedElement = false,
                                 )
                         }
                     },
@@ -78,10 +82,6 @@ object ImagesScreen {
             }
         ) {
             Column(Modifier.padding(it)) {
-                val pagerState = rememberImagePagerState(
-                    images = images,
-                    initialImageIndex = route.initialImageIndex ?: 0,
-                )
                 val images = images()
                 val zoomPanStates = rememberSaveable(
                     images,
@@ -92,7 +92,7 @@ object ImagesScreen {
                 }
                 ImagePager(
                     images = images,
-                    pagerState = pagerState,
+                    pagerState = imagePagerState,
                     sharedElementId = route.id,
                     onClickPage = null,
                     clipCorners = false,
@@ -103,7 +103,7 @@ object ImagesScreen {
                 )
 
                 if (images.isNotEmpty()) {
-                    val imageIndex = pagerState.currentPage - 1
+                    val imageIndex = imagePagerState.currentPage - 1
                     val zoomPanState = zoomPanStates[imageIndex.coerceAtLeast(0)]
                     val scope = rememberCoroutineScope()
                     val alpha by animateFloatAsState(if (imageIndex >= 0 || images.size == 1) 1f else 0f)

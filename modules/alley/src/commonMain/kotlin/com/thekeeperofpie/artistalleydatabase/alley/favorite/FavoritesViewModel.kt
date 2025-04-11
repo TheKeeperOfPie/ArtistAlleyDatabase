@@ -184,7 +184,7 @@ class FavoritesViewModel(
                 is StampRallyEntryGridModel -> navigationController.navigate(
                     Destinations.StampRallyDetails(
                         entry = searchEvent.entry.stampRally,
-                        imageIndex = searchEvent.imageIndex.toString(),
+                        initialImageIndex = searchEvent.imageIndex.toString(),
                     )
                 )
                 else -> throw IllegalArgumentException(

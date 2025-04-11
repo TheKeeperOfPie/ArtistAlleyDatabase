@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -69,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataPro
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
@@ -97,7 +99,7 @@ object ArtistDetailsScreen {
         route: Destinations.ArtistDetails,
         entry: () -> ArtistDetailsViewModel.Entry?,
         notesTextState: TextFieldState,
-        initialImageIndex: Int,
+        imagePagerState: PagerState,
         catalogImages: () -> List<CatalogImage>,
         seriesImages: () -> Map<String, String>,
         otherYears: () -> List<DataYear>,
@@ -121,7 +123,7 @@ object ArtistDetailsScreen {
             sharedElementId = route.id,
             favorite = { entry()?.favorite },
             images = catalogImages,
-            initialImageIndex = initialImageIndex,
+            imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
             item("artistName") {
@@ -651,7 +653,7 @@ private fun PhoneLayout() = PreviewDark {
         route = Destinations.ArtistDetails(artist.artist),
         entry = { entry },
         notesTextState = rememberTextFieldState(),
-        initialImageIndex = 1,
+        imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
         catalogImages = { images },
         seriesImages = { emptyMap() },

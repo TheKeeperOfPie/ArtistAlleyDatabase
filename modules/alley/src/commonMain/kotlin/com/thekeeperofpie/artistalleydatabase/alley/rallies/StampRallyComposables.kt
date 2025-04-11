@@ -29,24 +29,28 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun StampRallyTitle(id: String, hostTable: String?, fandom: String?) {
+fun StampRallyTitle(
+    id: String,
+    hostTable: String?,
+    fandom: String?,
+    useSharedElement: Boolean = true,
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = hostTable.orEmpty(),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
+                .conditionally(useSharedElement) {
+                    sharedElement("hostTable", id)
+                }
                 .placeholder(
                     visible = hostTable == null,
                     highlight = PlaceholderHighlight.shimmer(),
-                )
-                .sharedElement(
-                    "hostTable",
-                    id,
-                    zIndexInOverlay = 1f,
                 )
         )
 
@@ -57,12 +61,14 @@ fun StampRallyTitle(id: String, hostTable: String?, fandom: String?) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
+                .conditionally(useSharedElement) {
+                    sharedElement("fandom", id)
+                }
                 .weight(1f)
                 .placeholder(
                     visible = hostTable == null,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
-                .sharedElement("fandom", id, zIndexInOverlay = 1f)
         )
     }
 }

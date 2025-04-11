@@ -85,14 +85,14 @@ sealed interface Destinations : NavDestination {
         val id: String,
         val hostTable: String?,
         val fandom: String?,
-        val imageIndex: String? = null,
+        val initialImageIndex: String? = null,
     ) : Destinations {
-        constructor(entry: StampRallyEntry, imageIndex: String? = null) : this(
+        constructor(entry: StampRallyEntry, initialImageIndex: String? = null) : this(
             year = entry.year,
             id = entry.id,
             hostTable = entry.hostTable,
             fandom = entry.fandom,
-            imageIndex = imageIndex,
+            initialImageIndex = initialImageIndex,
         )
     }
 

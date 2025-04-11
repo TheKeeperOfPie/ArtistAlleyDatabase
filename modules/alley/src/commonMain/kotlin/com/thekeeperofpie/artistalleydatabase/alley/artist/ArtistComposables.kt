@@ -46,12 +46,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
 
 @Composable
-fun ArtistTitle(year: DataYear, id: String, booth: String?, name: String?) {
+fun ArtistTitle(
+    year: DataYear,
+    id: String,
+    booth: String?,
+    name: String?,
+    useSharedElement: Boolean = true,
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
         if (!isCurrentYear) {
@@ -64,11 +71,14 @@ fun ArtistTitle(year: DataYear, id: String, booth: String?, name: String?) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
+                    .conditionally(useSharedElement) {
+                        sharedElement("booth", id)
+                    }
                     .placeholder(
                         visible = name == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
-                    .sharedElement("booth", id)
+
             )
             Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
         }
@@ -78,7 +88,9 @@ fun ArtistTitle(year: DataYear, id: String, booth: String?, name: String?) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .sharedElement("name", id)
+                .conditionally(useSharedElement) {
+                    sharedElement("name", id)
+                }
                 .weight(1f)
                 .placeholder(
                     visible = name == null,
