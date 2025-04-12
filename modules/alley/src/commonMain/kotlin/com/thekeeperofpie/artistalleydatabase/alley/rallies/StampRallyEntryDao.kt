@@ -347,11 +347,17 @@ class StampRallyEntryDao(
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
 
+        val joinStatement = """
+            LEFT OUTER JOIN stampRallyUserEntry
+            ON idAsKey = stampRallyUserEntry.stampRallyId
+        """.trimIndent()
+
         val countStatement = DaoUtils.buildSearchCountStatement(
             ftsTableName = "${tableName}_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
+            andStatement = andStatement,
         )
         val statement = DaoUtils.buildSearchStatement(
             tableName = tableName,
@@ -361,10 +367,7 @@ class StampRallyEntryDao(
             likeOrderBy = "",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
-            additionalJoinStatement = """
-                LEFT OUTER JOIN stampRallyUserEntry
-                ON idAsKey = stampRallyUserEntry.stampRallyId
-                """.trimIndent(),
+            additionalJoinStatement = joinStatement,
             orderBy = sortSuffix,
             randomSeed = searchQuery.randomSeed
                 .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM },

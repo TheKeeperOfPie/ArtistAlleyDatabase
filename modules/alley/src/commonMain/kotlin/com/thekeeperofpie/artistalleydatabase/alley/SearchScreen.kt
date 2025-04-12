@@ -417,7 +417,7 @@ object SearchScreen {
                 contentPadding = PaddingValues(bottom = 80.dp),
                 columnHeader = columnHeader,
                 tableCell = tableCell,
-                additionalHeader = noResultsItem,
+                noResultsHeader = noResultsItem,
                 modifier = Modifier.onSizeChanged { onWidthChanged(it.width) }
             )
 

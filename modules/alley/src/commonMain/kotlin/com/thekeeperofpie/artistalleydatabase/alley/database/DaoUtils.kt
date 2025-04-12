@@ -103,6 +103,8 @@ object DaoUtils {
         idField: String,
         matchQuery: String,
         likeStatement: String,
+        additionalJoinStatement: String = "",
+        andStatement: String = "",
     ) = """
         SELECT COUNT(*) FROM (
             SELECT * FROM (
@@ -120,6 +122,10 @@ object DaoUtils {
                     )
                 )
             )
+            JOIN $ftsTableName
+            ON idAsKey = $ftsTableName.$idField
+            $additionalJoinStatement
+            $andStatement
             GROUP BY idAsKey
         )
         """.trimIndent()

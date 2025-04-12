@@ -45,7 +45,7 @@ object TwoWayGrid {
         columns: EnumEntries<ColumnType>,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
-        additionalHeader: @Composable (() -> Unit)? = null,
+        noResultsHeader: @Composable (() -> Unit)? = null,
         listState: LazyListState = rememberLazyListState(),
         horizontalScrollState: ScrollState = rememberScrollState(),
         topOffset: Dp = 0.dp,
@@ -86,9 +86,9 @@ object TwoWayGrid {
                     HorizontalDivider()
                 }
 
-                if (additionalHeader != null) {
-                    item("tableAdditionalHeader") {
-                        additionalHeader()
+                if (rows.itemCount == 0 && noResultsHeader != null) {
+                    item("tableNoResultsHeader") {
+                        noResultsHeader()
                     }
                 }
 

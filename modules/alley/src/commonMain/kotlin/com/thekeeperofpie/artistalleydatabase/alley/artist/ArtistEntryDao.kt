@@ -483,18 +483,20 @@ class ArtistEntryDao(
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
 
-        val countStatement = DaoUtils.buildSearchCountStatement(
-            ftsTableName = "${tableName}_fts",
-            idField = "id",
-            matchQuery = matchQuery,
-            likeStatement = likeStatement,
-        )
-
         val joinStatement = """
                 LEFT OUTER JOIN artistUserEntry
                 ON idAsKey = artistUserEntry.artistId
                 AND '${year.serializedName}' = artistUserEntry.dataYear
             """.trimIndent()
+
+        val countStatement = DaoUtils.buildSearchCountStatement(
+            ftsTableName = "${tableName}_fts",
+            idField = "id",
+            matchQuery = matchQuery,
+            likeStatement = likeStatement,
+            additionalJoinStatement = joinStatement,
+            andStatement = andStatement,
+        )
 
         val statement = DaoUtils.buildSearchStatement(
             tableName = tableName,
