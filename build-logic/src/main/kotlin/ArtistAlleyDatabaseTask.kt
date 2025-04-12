@@ -429,12 +429,17 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val artist2024 = artists2024ById[id]
 
                     val newLineRegex = Regex("\n\\s?")
-                    val links = it["Links"].orEmpty().split(newLineRegex)
-                        .filter(String::isNotBlank)
-                        .ifEmpty { artist2024?.links ?: artist2023?.links ?: emptyList() }
+                    val links = it["Links"]
+                        ?.split(newLineRegex)
+                        ?.filter(String::isNotBlank)
+                        ?.ifEmpty { artist2024?.links ?: artist2023?.links }
+                        .orEmpty()
 
-                    val storeLinks = it["Store"].orEmpty().split(newLineRegex)
-                        .filter(String::isNotBlank)
+                    val storeLinks = it["Store"]
+                        ?.split(newLineRegex)
+                        ?.filter(String::isNotBlank)
+                        ?.ifEmpty { artist2024?.storeLinks }
+                        .orEmpty()
                     val catalogLinks = it["Catalog / table"].orEmpty().split(newLineRegex)
                         .filter(String::isNotBlank)
                     val driveLink = it["Drive"]
