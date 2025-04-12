@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.FlowRowOverflow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Link
@@ -35,7 +33,6 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -55,8 +52,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_series
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
-import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
-import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -69,7 +64,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
-import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
@@ -159,8 +153,6 @@ object ArtistSearchScreen {
                 }
             }
 
-            val year by state.year.collectAsState()
-            val yearShortName = stringResource(year.shortName)
             val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
             val languageOption = LocalLanguageOptionMedia.current
             val seriesTitle = lockedSeriesEntry?.name(languageOption)
@@ -316,16 +308,12 @@ object ArtistSearchScreen {
                 TagsFlowRow(
                     column = column,
                     tags = shuffledSeries,
-                    contentDescription = Res.string.alley_expand_series,
-                    onEntryClick = { if (row != null) onEntryClick(row, 1) },
                     onTagClick = onSeriesClick,
                 )
             }
             ArtistColumn.MERCH -> TagsFlowRow(
                 column = column,
                 tags = row?.merch,
-                contentDescription = Res.string.alley_expand_merch,
-                onEntryClick = { if (row != null) onEntryClick(row, 1) },
                 onTagClick = onMerchClick,
             )
             ArtistColumn.LINKS -> row?.artist?.linkModels?.let {
@@ -387,21 +375,11 @@ object ArtistSearchScreen {
     private fun TagsFlowRow(
         column: ArtistColumn,
         tags: List<String>?,
-        contentDescription: StringResource,
-        onEntryClick: () -> Unit,
         onTagClick: (String) -> Unit,
     ) {
         if (tags.isNullOrEmpty()) return
         FlowRow(
             maxLines = 6,
-            overflow = FlowRowOverflow.expandIndicator {
-                IconButton(onClick = onEntryClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.OpenInNew,
-                        contentDescription = stringResource(contentDescription),
-                    )
-                }
-            },
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
