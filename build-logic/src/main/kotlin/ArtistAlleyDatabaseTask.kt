@@ -153,7 +153,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             merchConnections2024.forEach { merchConnections.addMerchConnection(it) }
 
             val (artists2025, seriesConnections2025, merchConnections2025) =
-                parseArtists2025(database, artists2024)
+                parseArtists2025(database, artists2023, artists2024)
             seriesConnections2025.forEach { seriesConnections.addSeriesConnection(it) }
             merchConnections2025.forEach { merchConnections.addMerchConnection(it) }
 
@@ -404,9 +404,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
     private fun parseArtists2025(
         database: BuildLogicDatabase,
+        artists2023: List<ArtistEntry2023>,
         artists2024: List<ArtistEntry2024>,
     ): Triple<List<ArtistEntry2025>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
         val existingIds = mutableSetOf<String>()
+        val artists2023ById = artists2023.associateBy { it.id }
         val artists2024ById = artists2024.associateBy { it.id }
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
@@ -423,10 +425,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val summary = it["Summary"]
 
                     if (artist.isBlank()) return@mapNotNull null
+                    val artist2023 = artists2023ById[id]
+                    val artist2024 = artists2024ById[id]
 
                     val newLineRegex = Regex("\n\\s?")
                     val links = it["Links"].orEmpty().split(newLineRegex)
                         .filter(String::isNotBlank)
+                        .ifEmpty { artist2024?.links ?: artist2023?.links ?: emptyList() }
+
                     val storeLinks = it["Store"].orEmpty().split(newLineRegex)
                         .filter(String::isNotBlank)
                     val catalogLinks = it["Catalog / table"].orEmpty().split(newLineRegex)
@@ -437,23 +443,17 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                     var seriesInferredRaw = it["Series - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
-                    if (seriesInferredRaw.isEmpty()) {
-                        val artist2024 = artists2024ById[id]
-                        if (artist2024 != null) {
-                            seriesInferredRaw = artist2024.seriesConfirmed.ifEmpty {
-                                (artist2024.seriesInferred + artist2024.seriesConfirmed).distinct()
-                            }
+                    if (seriesInferredRaw.isEmpty() && artist2024 != null) {
+                        seriesInferredRaw = artist2024.seriesConfirmed.ifEmpty {
+                            (artist2024.seriesInferred + artist2024.seriesConfirmed).distinct()
                         }
                     }
 
                     var merchInferredRaw = it["Merch - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
-                    if (merchInferredRaw.isEmpty()) {
-                        val artist2024 = artists2024ById[id]
-                        if (artist2024 != null) {
-                            merchInferredRaw = artist2024.merchConfirmed.ifEmpty {
-                                (artist2024.merchInferred + artist2024.merchConfirmed).distinct()
-                            }
+                    if (merchInferredRaw.isEmpty() && artist2024 != null) {
+                        merchInferredRaw = artist2024.merchConfirmed.ifEmpty {
+                            (artist2024.merchInferred + artist2024.merchConfirmed).distinct()
                         }
                     }
 
