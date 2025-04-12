@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.FilledTonalButton
@@ -97,11 +99,15 @@ object StampRallyDetailsScreen {
         item("stampRallyFandom") {
             Spacer(Modifier.height(16.dp))
             ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                InfoText(
-                    stringResource(Res.string.alley_stamp_rally_details_fandom),
-                    entry()?.stampRally?.fandom,
-                    showDividerAbove = false,
-                )
+                SelectionContainer {
+                    Column {
+                        InfoText(
+                            stringResource(Res.string.alley_stamp_rally_details_fandom),
+                            entry()?.stampRally?.fandom,
+                            showDividerAbove = false,
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -158,13 +164,15 @@ object StampRallyDetailsScreen {
                     }
                 }
 
-                twoColumnInfoText(
-                    labelOne = stringResource(Res.string.alley_stamp_rally_details_cost),
-                    bodyOne = body,
-                    labelTwo = stringResource(Res.string.alley_stamp_rally_details_prize_limit),
-                    bodyTwo = stampRally?.prizeLimitText(),
-                    showDividerAbove = false,
-                )
+                SelectionContainer {
+                    twoColumnInfoText(
+                        labelOne = stringResource(Res.string.alley_stamp_rally_details_cost),
+                        bodyOne = body,
+                        labelTwo = stringResource(Res.string.alley_stamp_rally_details_prize_limit),
+                        bodyTwo = stampRally?.prizeLimitText(),
+                        showDividerAbove = false,
+                    )
+                }
             }
             Spacer(Modifier.height(16.dp))
         }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -59,44 +60,46 @@ fun ArtistTitle(
     name: String?,
     useSharedElement: Boolean = true,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
-        if (!isCurrentYear) {
-            Text(text = "${year.year} - ")
-        }
+    SelectionContainer {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
+            if (!isCurrentYear) {
+                Text(text = "${year.year} - ")
+            }
 
-        if (name == null || booth != null) {
+            if (name == null || booth != null) {
+                Text(
+                    text = if (name == null) "" else booth!!,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .conditionally(useSharedElement) {
+                            sharedElement("booth", id)
+                        }
+                        .placeholder(
+                            visible = name == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+
+                )
+                Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
+            }
+
             Text(
-                text = if (name == null) "" else booth!!,
+                text = name.orEmpty(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .conditionally(useSharedElement) {
-                        sharedElement("booth", id)
+                        sharedElement("name", id)
                     }
+                    .weight(1f)
                     .placeholder(
                         visible = name == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
-
             )
-            Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
         }
-
-        Text(
-            text = name.orEmpty(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .conditionally(useSharedElement) {
-                    sharedElement("name", id)
-                }
-                .weight(1f)
-                .placeholder(
-                    visible = name == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
     }
 }
 

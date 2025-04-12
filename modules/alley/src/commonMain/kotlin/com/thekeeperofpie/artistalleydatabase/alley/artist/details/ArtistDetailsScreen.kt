@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
@@ -132,7 +133,7 @@ object ArtistDetailsScreen {
                     ThemeAwareElevatedCard(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
-                        InfoText(
+                        SelectableInfoText(
                             stringResource(Res.string.alley_artist_details_artist_name),
                             entry()?.artist?.name,
                             showDividerAbove = false,
@@ -150,7 +151,7 @@ object ArtistDetailsScreen {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         ) {
-                            InfoText(
+                            SelectableInfoText(
                                 label = stringResource(Res.string.alley_artist_details_description),
                                 body = summary,
                                 showDividerAbove = false
@@ -399,6 +400,19 @@ object ArtistDetailsScreen {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun SelectableInfoText(
+        label: String,
+        body: String?,
+        showDividerAbove: Boolean = true,
+    ) {
+        SelectionContainer {
+            Column {
+                InfoText(label, body, showDividerAbove)
             }
         }
     }

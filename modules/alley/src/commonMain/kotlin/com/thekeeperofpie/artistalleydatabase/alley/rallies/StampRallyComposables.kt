@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -39,37 +40,39 @@ fun StampRallyTitle(
     fandom: String?,
     useSharedElement: Boolean = true,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = hostTable.orEmpty(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .conditionally(useSharedElement) {
-                    sharedElement("hostTable", id)
-                }
-                .placeholder(
-                    visible = hostTable == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
+    SelectionContainer {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = hostTable.orEmpty(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .conditionally(useSharedElement) {
+                        sharedElement("hostTable", id)
+                    }
+                    .placeholder(
+                        visible = hostTable == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
 
-        Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
+            Text(text = " - ", modifier = Modifier.skipToLookaheadSize())
 
-        Text(
-            text = fandom.orEmpty(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .conditionally(useSharedElement) {
-                    sharedElement("fandom", id)
-                }
-                .weight(1f)
-                .placeholder(
-                    visible = hostTable == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
+            Text(
+                text = fandom.orEmpty(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .conditionally(useSharedElement) {
+                        sharedElement("fandom", id)
+                    }
+                    .weight(1f)
+                    .placeholder(
+                        visible = hostTable == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+        }
     }
 }
 
