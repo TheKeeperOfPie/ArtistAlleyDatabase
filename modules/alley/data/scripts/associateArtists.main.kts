@@ -9,7 +9,7 @@ val inputs = __FILE__.resolve("../../inputs")
     .walk()
     .filter { it.name == "artists.csv" }
     .map { it.parentFile.name to it }
-    .sortedByDescending { it.first }
+    .sortedBy { it.first }
 
 val artists = mutableMapOf<String, Artist>()
 
@@ -60,11 +60,16 @@ fun inferArtist(artist: Artist, artistId: String) {
                     it.takeIf { it.second == searchingLink.second }
                 }
         }?.let { existingArtist to it }
+    } ?: artists.values.firstNotNullOfOrNull { existingArtist ->
+        existingArtist.names.firstNotNullOfOrNull { searchingName ->
+            artist.names.firstOrNull { it.contains(searchingName) || searchingName.contains(it) }
+        }?.let { existingArtist to it }
     }
     val inferredArtist = inferred?.first
     val inferredLink = inferred?.second
     if (inferredArtist != null) {
-        if (!artist.ids.containsAll(inferredArtist.ids)) {
+        if (artist.ids.map { it.lowercase() }
+            .intersect(inferredArtist.ids.map { it.lowercase() }).isEmpty()) {
             println(
                 "${artist.booth} - ${artist.names} in ${artist.sheet} " +
                         "should have ID ${inferredArtist.ids}, found by $inferredLink"

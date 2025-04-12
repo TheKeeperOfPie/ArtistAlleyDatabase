@@ -406,6 +406,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         database: BuildLogicDatabase,
         artists2024: List<ArtistEntry2024>,
     ): Triple<List<ArtistEntry2025>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
+        val existingIds = mutableSetOf<String>()
         val artists2024ById = artists2024.associateBy { it.id }
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
@@ -538,6 +539,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
                 .chunked(100)
                 .onEach {
+                    it.forEach {
+                        if (!existingIds.add(it.first.id)) {
+                            logger.lifecycle("Duplicate ID ${it.first.id}")
+                        }
+                    }
                     val artists = it.map { it.first }
                     val mutationQueries = database.mutationQueries
                     mutationQueries.transaction {
