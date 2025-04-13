@@ -61,18 +61,20 @@ fun inferArtist(artist: Artist, artistId: String) {
                 }
         }?.let { existingArtist to it }
     } ?: artists.values.firstNotNullOfOrNull { existingArtist ->
-        existingArtist.names.firstNotNullOfOrNull { searchingName ->
-            artist.names.firstOrNull { it.contains(searchingName) || searchingName.contains(it) }
+        existingArtist.names.map { it.lowercase() }.firstNotNullOfOrNull { searchingName ->
+            artist.names.map { it.lowercase() }.firstOrNull {
+                it.contains(searchingName) || searchingName.contains(it)
+            }
         }?.let { existingArtist to it }
     }
     val inferredArtist = inferred?.first
     val inferredLink = inferred?.second
     if (inferredArtist != null) {
-        if (artist.ids.map { it.lowercase() }
-            .intersect(inferredArtist.ids.map { it.lowercase() }).isEmpty()) {
+        if (artist.ids.intersect(inferredArtist.ids).isEmpty()) {
             println(
                 "${artist.booth} - ${artist.names} in ${artist.sheet} " +
-                        "should have ID ${inferredArtist.ids}, found by $inferredLink"
+                        "should have ID ${inferredArtist.ids} but had ${artist.ids}, " +
+                        "found by $inferredLink"
             )
         }
     } else {
