@@ -54,10 +54,12 @@ class ArtistDetailsViewModel(
     val initialImageIndex = route.imageIndex ?: 0
 
     // Block main to load images as fast as possible so shared transition works
-    val catalogImages = AlleyDataUtils.getImages(
-        year = route.year,
-        folder = AlleyDataUtils.Folder.CATALOGS,
-        file = route.booth,
+    var catalogImages by mutableStateOf(
+        AlleyDataUtils.getImages(
+            year = route.year,
+            folder = AlleyDataUtils.Folder.CATALOGS,
+            file = route.booth,
+        )
     )
 
     var entry by mutableStateOf<Entry?>(null)
@@ -74,6 +76,7 @@ class ArtistDetailsViewModel(
     }
 
     init {
+        val hasImages = catalogImages.isNotEmpty()
         viewModelScope.launch(CustomDispatchers.IO) {
             val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
                 ?: return@launch
@@ -91,6 +94,15 @@ class ArtistDetailsViewModel(
             )
 
             this@ArtistDetailsViewModel.entry = entry
+
+            // Booth changes, so input route may not have booth, re-fetch using correct year's booth
+            if (!hasImages) {
+                catalogImages = AlleyDataUtils.getImages(
+                    year = route.year,
+                    folder = AlleyDataUtils.Folder.CATALOGS,
+                    file = artist.booth,
+                )
+            }
 
             seriesImages = seriesImagesStore.getImages(entry.seriesInferred + entry.seriesConfirmed)
         }

@@ -143,7 +143,13 @@ object ArtistAlleyAppScreen {
                                                 )
                                             is ArtistDetailsScreen.Event.OpenOtherYear ->
                                                 navigationController
-                                                    .navigate(route.copy(year = it.year))
+                                                    .navigate(
+                                                        route.copy(
+                                                            year = it.year,
+                                                            booth = null,
+                                                            name = null,
+                                                        )
+                                                    )
                                             is ArtistDetailsScreen.Event.DetailsEvent ->
                                                 when (val event = it.event) {
                                                     is DetailsScreen.Event.FavoriteToggle ->
