@@ -544,9 +544,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 }
                 .chunked(100)
                 .onEach {
-                    it.forEach {
-                        if (!existingIds.add(it.first.id)) {
-                            logger.lifecycle("Duplicate ID ${it.first.id}")
+                    it.forEach { (artist, _, _) ->
+                        if (!existingIds.add(artist.id)) {
+                            logger.error("Duplicate ID ${artist.id}")
+                        }
+                        if (artist.links.isEmpty()) {
+                            logger.error("${artist.booth} ${artist.name} ${artist.id} has no links")
                         }
                     }
                     val artists = it.map { it.first }
