@@ -78,9 +78,6 @@ class ZoomPanState(
     var maxTranslationX: Float = 0f,
     var maxTranslationY: Float = 0f,
 ) {
-    var transformableState = TransformableState { zoomChange, panChange, _ ->
-        onZoomChange((scale * zoomChange).coerceIn(1f, 5f), translation + panChange)
-    }
 
     companion object {
         val Saver: Saver<ZoomPanState, *> = listSaver(
@@ -95,13 +92,15 @@ class ZoomPanState(
         )
     }
 
+    var transformableState = TransformableState { zoomChange, panChange, _ ->
+        onZoomChange((scale * zoomChange).coerceIn(1f, 5f), translation + panChange)
+    }
+
     var translation by mutableStateOf(Offset(initialTranslationX, initialTranslationY))
     var scale by mutableFloatStateOf(initialScale)
         private set
 
-    fun canPanExternal(): Boolean {
-        return scale < 1.1f
-    }
+    fun canPanExternal() = !transformableState.isTransformInProgress && scale < 1.1f
 
     suspend fun toggleZoom(offset: Offset, size: IntSize) {
         val scaleTarget: Float

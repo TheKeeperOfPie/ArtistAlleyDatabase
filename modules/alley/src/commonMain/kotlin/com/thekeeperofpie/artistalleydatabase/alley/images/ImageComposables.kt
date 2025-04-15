@@ -119,7 +119,7 @@ fun ImagePager(
         val newViewConfiguration = remember(existingViewConfiguration) {
             WrappedViewConfiguration(
                 viewConfiguration = existingViewConfiguration,
-                overrideTouchSlop = existingViewConfiguration.touchSlop * 2,
+                overrideTouchSlop = existingViewConfiguration.touchSlop * 4,
             )
         }
         val userScrollEnabled by remember(images) {
