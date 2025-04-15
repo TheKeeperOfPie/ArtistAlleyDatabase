@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
@@ -23,7 +23,7 @@ class AniListOAuthStore(
         aniListSettings.ignoreViewer
     ) { authToken, ignore -> authToken.takeUnless { ignore } }
 
-    override val host: String = AniListUtils.GRAPHQL_API_HOST
+    override val host: String = AniListDataUtils.GRAPHQL_API_HOST
 
     override val authHeader get() = authToken.value?.let { "Bearer $it" }
 

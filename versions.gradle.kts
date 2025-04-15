@@ -5,20 +5,20 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.11.0-alpha04"
+        const val gradle = "8.11.0-alpha06"
     }
 
     object androidx {
-        const val activity = "1.11.0-alpha02"
+        const val activity = "1.11.0-beta01"
         const val annotation = "1.9.1"
-        const val browser = "1.9.0-alpha01"
-        const val core = "1.16.0-rc01"
-        const val media3 = "1.6.0"
+        const val browser = "1.9.0-alpha02"
+        const val core = "1.16.0"
+        const val media3 = "1.6.1"
         const val paging = "3.3.6"
         const val palette = "1.0.0"
-        const val room = "2.7.0-rc03"
-        const val securityCrypto = "1.1.0-alpha06"
-        const val sqlite = "2.5.0-rc03"
+        const val room = "2.7.0"
+        const val securityCrypto = "1.1.0-alpha07"
+        const val sqlite = "2.5.0"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -70,8 +70,8 @@ object Versions {
         }
 
         object composeMultiplatform {
-            const val plugin = "1.8.0-beta01"
-            const val runtime = "1.8.0-beta01"
+            const val plugin = "1.8.0-beta02"
+            const val runtime = "1.8.0-beta02"
         }
     }
 
@@ -83,7 +83,7 @@ object Versions {
 
     object kotlin {
         const val core = "2.1.20"
-        const val coroutines = "1.10.1"
+        const val coroutines = "1.10.2"
         const val datetime = "0.6.2"
         const val io = "0.7.0"
         const val ksp = "2.1.20-1.0.32"
@@ -98,8 +98,8 @@ object Versions {
     const val manifoldGraphql = "2025.1.2"
     const val markwon = "4.6.2"
     const val moduleGraph = "0.10.1"
-    const val molecule = "2.0.0"
-    const val multiplatformMarkdown = "0.33.0-b05"
+    const val molecule = "2.1.0"
+    const val multiplatformMarkdown = "0.33.0-rc01"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.0.0-alpha.14"

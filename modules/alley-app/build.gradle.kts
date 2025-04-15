@@ -120,7 +120,7 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        moduleName = "ArtistAlley"
+        outputModuleName.set("ArtistAlley")
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"

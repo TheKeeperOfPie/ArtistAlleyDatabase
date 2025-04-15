@@ -43,7 +43,7 @@ kotlin {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.alley.data"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         minSdk = 28
     }

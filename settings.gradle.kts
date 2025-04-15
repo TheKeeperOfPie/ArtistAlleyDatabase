@@ -116,8 +116,8 @@ apply(rootProject.projectDir.resolve("versions.gradle.kts"))
 (extra["versions"] as (DependencyResolutionManagement) -> Unit)(dependencyResolutionManagement)
 
 plugins {
-    id("com.autonomousapps.build-health").version("2.5.0")
-    id("com.android.application").version("8.11.0-alpha04").apply(false)
+    id("com.autonomousapps.build-health").version("2.16.0")
+    id("com.android.application").version("8.11.0-alpha06").apply(false)
     id("org.jetbrains.kotlin.android").version("2.1.20").apply(false)
     id("org.jetbrains.kotlin.jvm").version("2.1.20").apply(false)
 }
