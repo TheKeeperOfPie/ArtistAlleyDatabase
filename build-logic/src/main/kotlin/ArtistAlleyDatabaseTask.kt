@@ -440,8 +440,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         ?.filter(String::isNotBlank)
                         ?.ifEmpty { artist2024?.storeLinks }
                         .orEmpty()
-                    val catalogLinks = it["Catalog / table"].orEmpty().split(newLineRegex)
-                        .filter(String::isNotBlank)
+                    val catalogLinks = it["Catalog - Confirmed"]
+                        ?.ifEmpty { it["Catalog - Inferred"] }
+                        ?.split(newLineRegex)
+                        ?.filter(String::isNotBlank)
+                        .orEmpty()
                     val driveLink = it["Drive"]
 
                     val commaRegex = Regex(",\\s?")

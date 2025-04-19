@@ -22,7 +22,7 @@
     <string name="alley_artist_details_artist_name">Name</string>
     <string name="alley_artist_details_description">Description</string>
     <string name="alley_artist_details_store">Store</string>
-    <string name="alley_artist_details_catalog">Catalog</string>
+    <string name="alley_artist_details_catalog">Catalog / portfolio</string>
     <string name="alley_artist_details_links">Links</string>
     <string name="alley_artist_details_links_expand_content_description">Expand links</string>
     <string name="alley_artist_details_series">Series</string>
