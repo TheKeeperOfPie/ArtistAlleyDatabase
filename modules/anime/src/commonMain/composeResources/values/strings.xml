@@ -71,7 +71,6 @@
     <string name="anime_media_filter_tag_content_description">Tag filter expand</string>
     <string name="anime_media_filter_tag_chip_state_content_description">Tag chip state</string>
     <string name="anime_media_filter_tag_misc">Miscellaneous</string>
-    <string name="anime_media_filter_tag_category_expand_content_description">Tag %1$s expand</string>
     <string name="anime_media_filter_tag_rank_query_summary">%1$s "%2$s"</string>
 
     <string name="anime_media_filter_licensed_by_label">Licensed by</string>
@@ -86,7 +85,6 @@
     <string name="anime_media_filter_format_chip_state_content_description">Format chip state</string>
     <string name="anime_media_tag_adult">Adult</string>
     <string name="anime_media_tag_spoiler">Spoiler</string>
-    <string name="anime_media_tag_search_placeholder">Search tag…</string>
 
     <string name="anime_media_next_airing_episode_without_episode">%1$s</string>
     <string name="anime_media_next_airing_episode_without_episode_with_relative">%1$s (%2$s)</string>
@@ -386,8 +384,6 @@
     <string name="anime_recommendations_home_title">RECOMMENDATIONS</string>
 
     <string name="anime_generic_filter_show_adult_content">Show adult content</string>
-
-    <string name="anime_media_tag_search_clear_content_description">Clear query</string>
 
     <string name="anime_requires_unlock">Requires higher feature tier</string>
     <string name="anime_open_feature_tiers_button">Open tiers</string>

@@ -79,7 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterable
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaGenre
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaHeaderParams
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
@@ -512,7 +512,7 @@ fun MediaListQuickEditIconButton(
 
 @Composable
 fun MediaTagPreview(
-    tag: MediaTagSection.Tag,
+    tag: MediaTagEntry.Tag,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(

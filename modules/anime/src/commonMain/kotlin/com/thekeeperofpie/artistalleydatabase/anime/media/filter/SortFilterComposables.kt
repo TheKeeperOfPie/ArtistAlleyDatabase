@@ -2,71 +2,55 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.anime.generated.resources.Res
-import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_category_expand_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_chip_state_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_content_description
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_rank_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_filter_tag_rank_query_summary
 import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_long_click_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_clear_content_description
-import artistalleydatabase.modules.anime.generated.resources.anime_media_tag_search_placeholder
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_search_show_when_spoiler
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FilterChip
-import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes
 
 @Composable
-fun TagSection(
+fun MediaTagSection(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     showMediaWithTagSpoiler: () -> Boolean,
     onShowMediaWithTagSpoilerChange: (Boolean) -> Unit,
-    tags: Map<String, MediaTagSection>,
+    tags: Map<String, TagEntry>,
     tagIdIn: Set<String>,
     tagIdNotIn: Set<String>,
     disabledOptions: Set<String>,
@@ -77,9 +61,8 @@ fun TagSection(
     onQueryChange: (String) -> Unit,
     showDivider: Boolean,
 ) {
-    @Suppress("NAME_SHADOWING")
-    val expanded = expanded()
-    CustomFilterSection(
+    val mediaTagDialogController = LocalMediaTagDialogController.current
+    TagSection(
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         titleRes = Res.string.anime_media_filter_tag_label,
@@ -100,308 +83,111 @@ fun TagSection(
             }
         },
         onSummaryClick = { onTagRankChange("") },
-        showDivider = showDivider,
-    ) {
-        Column(modifier = Modifier.animateContentSize()) {
-            @Suppress("NAME_SHADOWING")
-            val subcategoriesToShow = (if (query.isNotBlank()) {
-                tags.values.mapNotNull {
-                    it.filter {
-                        tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id)
-                                || it.name.contains(query, ignoreCase = true)
-                    }
-                }
-            } else if (expanded) {
-                tags.values
-            } else {
-                tags.values.mapNotNull {
-                    it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
-                }
-            }).filterIsInstance<MediaTagSection.Category>()
-
-            if (expanded || subcategoriesToShow.isNotEmpty()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onShowMediaWithTagSpoilerChange(!showMediaWithTagSpoiler()) }
-                ) {
-                    Text(
-                        text = stringResource(MediaDataRes.string.anime_media_tag_search_show_when_spoiler),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .padding(start = 32.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
-                            .weight(1f)
-                    )
-
-                    Switch(
-                        checked = showMediaWithTagSpoiler(),
-                        onCheckedChange = onShowMediaWithTagSpoilerChange,
-                        modifier = Modifier.padding(end = 16.dp),
-                    )
-                }
-            }
-
-            if (expanded) {
-                TextField(
-                    value = query,
-                    placeholder = {
-                        Text(text = stringResource(Res.string.anime_media_tag_search_placeholder))
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = { onQueryChange("") }) {
-                            Icon(
-                                imageVector = Icons.Filled.Clear,
-                                contentDescription = stringResource(
-                                    Res.string.anime_media_tag_search_clear_content_description
-                                ),
-                            )
-                        }
-                    },
-                    onValueChange = onQueryChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 32.dp, end = 16.dp)
-                )
-            }
-
-            val children =
-                tags.values.filterIsInstance<MediaTagSection.Tag>()
-            if (children.isNotEmpty()) {
-                TagChips(
-                    tags = children,
-                    tagIdIn = tagIdIn,
-                    tagIdNotIn = tagIdNotIn,
-                    disabledOptions = disabledOptions,
-                    level = 0,
-                    onTagClick = onTagClick,
-                )
-            }
-
-            subcategoriesToShow.forEachIndexed { index, section ->
-                TagSubsection(
-                    name = section.name,
-                    children = section.children.values,
-                    tagIdIn = tagIdIn,
-                    tagIdNotIn = tagIdNotIn,
-                    disabledOptions = disabledOptions,
-                    parentExpanded = expanded,
-                    level = 0,
-                    onTagClick = onTagClick,
-                    query = query,
-                    showDivider = expanded || index != subcategoriesToShow.size - 1,
-                )
-            }
-
-            if (expanded) {
+        header = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onShowMediaWithTagSpoilerChange(!showMediaWithTagSpoiler()) }
+            ) {
                 Text(
-                    text = stringResource(Res.string.anime_media_filter_tag_rank_label),
-                    style = MaterialTheme.typography.titleSmall,
+                    text = stringResource(MediaDataRes.string.anime_media_tag_search_show_when_spoiler),
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 8.dp)
+                        .padding(start = 32.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+                        .weight(1f)
                 )
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                ) {
-                    @Suppress("NAME_SHADOWING")
-                    val tagRank = tagRank()
-                    Slider(
-                        value = tagRank.toIntOrNull()?.coerceIn(0, 100)?.toFloat() ?: 0f,
-                        valueRange = 0f..100f,
-                        steps = 100,
-                        onValueChange = { onTagRankChange(it.roundToInt().toString()) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 4.dp),
-                    )
-
-                    CustomOutlinedTextField(
-                        value = tagRank,
-                        onValueChange = { onTagRankChange(it) },
-                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number,
-                            autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
-                        ),
-                        contentPadding = OutlinedTextFieldDefaults.contentPadding(
-                            start = 12.dp,
-                            top = 8.dp,
-                            end = 12.dp,
-                            bottom = 8.dp
-                        ),
-                        modifier = Modifier.width(64.dp),
-                    )
-                }
+                Switch(
+                    checked = showMediaWithTagSpoiler(),
+                    onCheckedChange = onShowMediaWithTagSpoilerChange,
+                    modifier = Modifier.padding(end = 16.dp),
+                )
             }
-        }
-    }
-}
+        },
+        footer = {
+            Text(
+                text = stringResource(Res.string.anime_media_filter_tag_rank_label),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 8.dp)
+            )
 
-@Composable
-private fun TagSubsection(
-    name: String,
-    children: Collection<MediaTagSection>,
-    tagIdIn: Set<String>,
-    tagIdNotIn: Set<String>,
-    disabledOptions: Set<String>,
-    parentExpanded: Boolean,
-    level: Int,
-    onTagClick: (String) -> Unit,
-    query: String,
-    showDivider: Boolean,
-) {
-    var expanded by remember(name) { mutableStateOf(false) }
-    val startPadding = 16.dp * level + 32.dp
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .run {
-                if (parentExpanded) {
-                    clickable { expanded = !expanded }
-                } else this
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            ) {
+                @Suppress("NAME_SHADOWING")
+                val tagRank = tagRank()
+                Slider(
+                    value = tagRank.toIntOrNull()?.coerceIn(0, 100)?.toFloat() ?: 0f,
+                    valueRange = 0f..100f,
+                    steps = 100,
+                    onValueChange = { onTagRankChange(it.roundToInt().toString()) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 4.dp),
+                )
+
+                CustomOutlinedTextField(
+                    value = tagRank,
+                    onValueChange = { onTagRankChange(it) },
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,
+                    ),
+                    contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                        start = 12.dp,
+                        top = 8.dp,
+                        end = 12.dp,
+                        bottom = 8.dp
+                    ),
+                    modifier = Modifier.width(64.dp),
+                )
             }
-    ) {
-        Text(
-            text = name,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = startPadding, top = 8.dp, end = 16.dp, bottom = 8.dp)
-                .weight(1f)
-        )
-
-        if (parentExpanded) {
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(
-                    Res.string.anime_media_filter_tag_category_expand_content_description,
-                    name
-                ),
-                onClick = { expanded = !expanded },
-            )
-        }
-    }
-
-    val tags = children.filterIsInstance<MediaTagSection.Tag>()
-    val tagsToShow = if (query.isNotBlank()) {
-        tags.filter {
-            tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id)
-                    || it.name.contains(query, ignoreCase = true)
-        }
-    } else if (expanded) {
-        tags
-    } else {
-        tags.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
-    }
-
-    val subcategories =
-        children.filterIsInstance<MediaTagSection.Category>()
-    val subcategoriesToShow = if (query.isNotBlank()) {
-        subcategories.mapNotNull {
-            it.filter {
-                tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id)
-                        || it.name.contains(query, ignoreCase = true)
-            } as? MediaTagSection.Category
-        }
-    } else if (expanded) {
-        subcategories
-    } else {
-        subcategories.mapNotNull {
-            it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) } as? MediaTagSection.Category
-        }
-    }
-
-    val dividerStartPadding = startPadding - 8.dp
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize()
-    ) {
-        if (tagsToShow.isNotEmpty()) {
-            TagChips(
-                tags = tagsToShow,
-                tagIdIn = tagIdIn,
-                tagIdNotIn = tagIdNotIn,
-                disabledOptions = disabledOptions,
-                level = level,
-                onTagClick = onTagClick,
-            )
-        }
-
-        subcategoriesToShow.forEachIndexed { index, section ->
-            TagSubsection(
-                name = section.name,
-                children = section.children.values,
-                tagIdIn = tagIdIn,
-                tagIdNotIn = tagIdNotIn,
-                disabledOptions = disabledOptions,
-                parentExpanded = parentExpanded && expanded,
-                level = level + 1,
-                onTagClick = onTagClick,
-                query = query,
-                showDivider = index != subcategoriesToShow.size - 1,
-            )
-        }
-    }
-
-    if (showDivider) {
-        HorizontalDivider(modifier = Modifier.padding(start = dividerStartPadding))
-    }
-}
-
-@Composable
-private fun TagChips(
-    tags: List<MediaTagSection.Tag>,
-    tagIdIn: Set<String>,
-    tagIdNotIn: Set<String>,
-    disabledOptions: Set<String>,
-    level: Int,
-    onTagClick: (String) -> Unit,
-) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp * level + 48.dp, end = 16.dp)
-            .animateContentSize(),
-    ) {
-        val mediaTagDialogController = LocalMediaTagDialogController.current
-        tags.forEach {
+        },
+        tags = tags,
+        tagIdIn = tagIdIn,
+        tagIdNotIn = tagIdNotIn,
+        disabledOptions = disabledOptions,
+        query = query,
+        onQueryChange = onQueryChange,
+        showDivider = showDivider,
+        categoryToName = { (it as MediaTagEntry.Category).name },
+        tagChip = { tag, selected, enabled, modifier ->
+            tag as MediaTagEntry.Tag
             FilterChip(
-                selected = tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id),
-                onClick = { onTagClick(it.id) },
+                selected = selected,
+                onClick = { onTagClick(tag.id) },
                 onLongClickLabel = stringResource(
                     Res.string.anime_media_tag_long_click_content_description
                 ),
-                onLongClick = { mediaTagDialogController?.onLongClickTag(it.id) },
-                enabled = it.id !in disabledOptions,
-                label = { AutoHeightText(it.value.name) },
+                onLongClick = { mediaTagDialogController?.onLongClickTag(tag.id) },
+                enabled = enabled,
+                label = { AutoHeightText(tag.value.name) },
                 leadingIcon = {
                     IncludeExcludeIcon(
                         enabled = when {
-                            tagIdIn.contains(it.id) -> true
-                            tagIdNotIn.contains(it.id) -> false
+                            tagIdIn.contains(tag.id) -> true
+                            tagIdNotIn.contains(tag.id) -> false
                             else -> null
                         },
                         contentDescriptionRes = Res.string.anime_media_filter_tag_chip_state_content_description,
                         leadingIconVector = MediaDataUtils.tagLeadingIcon(
-                            isAdult = it.isAdult,
-                            isGeneralSpoiler = it.value.isGeneralSpoiler,
+                            isAdult = tag.isAdult,
+                            isGeneralSpoiler = tag.value.isGeneralSpoiler,
                         ),
                         leadingIconContentDescription = MediaDataUtils.tagLeadingIconContentDescription(
-                            isAdult = it.isAdult,
-                            isGeneralSpoiler = it.value.isGeneralSpoiler,
+                            isAdult = tag.isAdult,
+                            isGeneralSpoiler = tag.value.isGeneralSpoiler,
                         ),
                     )
                 },
-                modifier = Modifier.animateContentSize()
+                modifier = modifier
             )
         }
-    }
+    )
 }

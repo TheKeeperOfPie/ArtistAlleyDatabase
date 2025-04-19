@@ -3,11 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 import com.anilist.data.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -36,8 +37,8 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi,
         .flatMapLatest { tags ->
             settings.showAdult.map { showAdult ->
                 if (showAdult) return@map tags
-                tags.values.mapNotNull { it.filter { it.isAdult == false } }
-                    .associateBy { it.name }
+                tags.values.mapNotNull { it.filter { (it as MediaTagEntry.Tag).isAdult == false } }
+                    .associateBy { (it as MediaTagEntry).name }
                     .toSortedMap(String.CASE_INSENSITIVE_ORDER)
             }
         }
@@ -52,7 +53,7 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi,
      */
     private fun buildTagSections(
         tags: List<MediaTagsQuery.Data.MediaTagCollection>,
-    ): Map<String, MediaTagSection> {
+    ): Map<String, TagEntry> {
         val sections = mutableMapOf<String, Any>()
         tags.forEach {
             var categories = it.category?.split('-')
@@ -71,27 +72,24 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi,
                 }
             }
 
-            var currentCategory: MediaTagSection.Category.Builder? = null
+            var currentCategory: MediaTagEntry.Category.Builder? = null
             categories?.forEach {
-                currentCategory = if (currentCategory == null) {
-                    sections.getOrPut(it) { MediaTagSection.Category.Builder(it) }
-                            as MediaTagSection.Category.Builder
-                } else {
-                    (currentCategory as MediaTagSection.Category.Builder).getOrPutCategory(it)
-                }
+                currentCategory = currentCategory?.getOrPutCategory(it)
+                    ?: sections.getOrPut(it) { MediaTagEntry.Category.Builder(it) }
+                            as MediaTagEntry.Category.Builder
             }
 
             if (currentCategory == null) {
-                sections[it.name] = MediaTagSection.Tag(it)
+                sections[it.name] = MediaTagEntry.Tag(it)
             } else {
-                currentCategory!!.addChild(it)
+                currentCategory.addChild(it)
             }
         }
 
         return sections.mapValues { (_, value) ->
             when (value) {
-                is MediaTagSection.Category.Builder -> value.build()
-                is MediaTagSection.Tag -> value
+                is MediaTagEntry.Category.Builder -> value.build()
+                is MediaTagEntry.Tag -> value
                 else -> throw IllegalStateException("Unexpected value $value")
             }
         }

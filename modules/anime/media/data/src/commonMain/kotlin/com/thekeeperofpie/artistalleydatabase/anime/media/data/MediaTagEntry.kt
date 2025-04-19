@@ -3,63 +3,23 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.data
 import com.anilist.data.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
 
-sealed interface MediaTagSection {
-    // TODO: Convert to value classes
+interface MediaTagEntry {
+
     val name: String
-
-    fun findTag(id: String): Tag? = when (this) {
-        is Category -> {
-            children.values.asSequence()
-                .mapNotNull { it.findTag(id) }
-                .firstOrNull()
-        }
-        is Tag -> takeIf { it.id == id }
-    }
-
-    fun filter(predicate: (Tag) -> Boolean): MediaTagSection? = when (this) {
-        is Category -> {
-            children.values
-                .mapNotNull { it.filter(predicate) }
-                .associateBy { it.name }
-                .toList()
-                .sortedWith { first, second ->
-                    first.first.compareTo(second.first, ignoreCase = true)
-                }
-                .toMap()
-                .takeIf { it.isNotEmpty() }
-                ?.let { copy(children = it) }
-        }
-        is Tag -> takeIf { predicate(it) }
-    }
-
-    fun replace(block: (Tag) -> Tag): MediaTagSection = when (this) {
-        is Category -> {
-            copy(
-                children = children.mapValues { (_, value) -> value.replace(block) }
-                    .toList()
-                    .sortedWith { first, second ->
-                        first.first.compareTo(second.first, ignoreCase = true)
-                    }
-                    .toMap()
-            )
-        }
-        is Tag -> block(this)
-    }
 
     data class Category(
         override val name: String,
-        val children: Map<String, MediaTagSection>,
+        override val children: Map<String, TagEntry>,
         val expanded: Boolean = false,
         val hasAnySelected: Boolean = false,
-    ) : MediaTagSection {
+    ) : MediaTagEntry, TagEntry.Category {
+        override val id = name
 
-        fun flatten(): List<Tag> = children.values.flatMap {
-            when (it) {
-                is Category -> it.flatten()
-                is Tag -> listOf(it)
-            }
-        }
+        override fun copyWithChildren(children: Map<String, TagEntry>) = copy(children = children)
+
+        override fun matches(query: String) = name.contains(query, ignoreCase = true)
 
         class Builder(private val name: String) {
             private var children = mutableMapOf<String, Any>()
@@ -107,7 +67,7 @@ sealed interface MediaTagSection {
 
     // TODO: Remove FilterEntry
     data class Tag(
-        val id: String,
+        override val id: String,
         override val name: String,
         val category: String?,
         val description: String?,
@@ -115,7 +75,7 @@ sealed interface MediaTagSection {
         override val value: MediaTagsQuery.Data.MediaTagCollection,
         override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
         override val clickable: Boolean = true,
-    ) : FilterEntry<MediaTagsQuery.Data.MediaTagCollection>, MediaTagSection {
+    ) : FilterEntry<MediaTagsQuery.Data.MediaTagCollection>, MediaTagEntry, TagEntry.Tag {
         override val leadingIconVector = MediaDataUtils.tagLeadingIcon(
             isAdult = isAdult,
             isGeneralSpoiler = value.isGeneralSpoiler,
@@ -135,5 +95,7 @@ sealed interface MediaTagSection {
             description = tag.description,
             value = tag,
         )
+
+        override fun matches(query: String) = name.contains(query, ignoreCase = true)
     }
 }

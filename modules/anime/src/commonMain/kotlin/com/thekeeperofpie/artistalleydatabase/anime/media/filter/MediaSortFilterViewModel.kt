@@ -42,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaDataSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSearchFilterParams
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toTextRes
@@ -250,7 +251,7 @@ abstract class MediaSortFilterViewModel<SortType>(
             var tagRank by tagRank.collectAsMutableStateWithLifecycle()
             var tagSearchQuery by tagSearchQuery.collectAsMutableStateWithLifecycle()
             var tagShowWhenSpoiler by tagShowWhenSpoiler.collectAsMutableStateWithLifecycle()
-            TagSection(
+            MediaTagSection(
                 expanded = { state.expandedState[id] == true },
                 onExpandedChange = { state.expandedState[id] = it },
                 showMediaWithTagSpoiler = { tagShowWhenSpoiler },
@@ -260,7 +261,7 @@ abstract class MediaSortFilterViewModel<SortType>(
                 tagIdNotIn = tagNotIn,
                 disabledOptions = tagIdsLockedIn,
                 onTagClick = { tagId ->
-                    if (tagId in tagIdsLockedIn) return@TagSection
+                    if (tagId in tagIdsLockedIn) return@MediaTagSection
                     if (tagIn.contains(tagId)) {
                         tagIn -= tagId
                         tagNotIn += tagId
@@ -413,11 +414,11 @@ abstract class MediaSortFilterViewModel<SortType>(
         combineStates(mediaTagsController.tags, tagIdIn, tagIdNotIn) { tags, tagIdIn, tagIdNotIn ->
             tagIdIn.mapNotNull { tagId ->
                 tags.values.asSequence()
-                    .mapNotNull { it.findTag(tagId)?.name }
+                    .mapNotNull { (it.findTag(tagId) as? MediaTagEntry)?.name }
                     .firstOrNull()
             } to tagIdNotIn.mapNotNull { tagId ->
                 tags.values.asSequence()
-                    .mapNotNull { it.findTag(tagId)?.name }
+                    .mapNotNull { (it.findTag(tagId)  as? MediaTagEntry)?.name }
                     .firstOrNull()
             }
         }
