@@ -134,7 +134,7 @@ class ArtistSearchViewModel(
                     }.flow
                         .map {
                             it.filterOnIO {
-                                !it.userEntry.ignored || searchQuery.filterParams.showIgnored
+                                !it.userEntry.ignored || !searchQuery.filterParams.hideIgnored
                             }
                         }
                         .map {

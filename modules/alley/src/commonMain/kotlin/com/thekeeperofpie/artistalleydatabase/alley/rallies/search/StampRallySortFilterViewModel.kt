@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_search_option_artist
 import artistalleydatabase.modules.alley.generated.resources.alley_search_option_fandom
@@ -59,11 +59,11 @@ class StampRallySortFilterViewModel(
         default = false,
     )
 
-    private val showIgnored = savedStateHandle.getMutableStateFlow("showIgnored", true)
-    private val showIgnoredSection = SortFilterSectionState.Switch(
-        title = Res.string.alley_filter_show_ignored,
-        defaultEnabled = true,
-        enabled = showIgnored,
+    private val hideIgnored = savedStateHandle.getMutableStateFlow("hideIgnored", false)
+    private val hideIgnoredSection = SortFilterSectionState.Switch(
+        title = Res.string.alley_filter_hide_ignored,
+        defaultEnabled = false,
+        enabled = hideIgnored,
     )
     private val forceOneDisplayColumnSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_force_one_display_column,
@@ -75,7 +75,7 @@ class StampRallySortFilterViewModel(
         sortSection,
         gridByDefaultSection,
         randomCatalogImageSection,
-        showIgnoredSection,
+        hideIgnoredSection,
         forceOneDisplayColumnSection,
     )
 
@@ -88,7 +88,7 @@ class StampRallySortFilterViewModel(
         }.stateIn(viewModelScope, SharingStarted.Eagerly, SnapshotState()),
         sortOption,
         settings.stampRalliesSortAscending,
-        showIgnored,
+        hideIgnored,
     ) {
         val snapshotState = it[0] as SnapshotState
         FilterParams(
@@ -96,7 +96,7 @@ class StampRallySortFilterViewModel(
             tables = snapshotState.tables,
             sortOption = it[1] as StampRallySearchSortOption,
             sortAscending = it[2] as Boolean,
-            showIgnored = it[3] as Boolean,
+            hideIgnored = it[3] as Boolean,
         )
     }
 
@@ -116,6 +116,6 @@ class StampRallySortFilterViewModel(
         val tables: String?,
         val sortOption: StampRallySearchSortOption,
         val sortAscending: Boolean,
-        val showIgnored: Boolean,
+        val hideIgnored: Boolean,
     )
 }

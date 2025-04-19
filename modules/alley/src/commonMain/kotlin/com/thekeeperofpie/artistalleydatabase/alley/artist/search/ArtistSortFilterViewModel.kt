@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_has_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
@@ -96,11 +96,11 @@ class ArtistSortFilterViewModel(
         default = false,
     )
 
-    private val showIgnored = savedStateHandle.getMutableStateFlow("showIgnored", true)
-    private val showIgnoredSection = SortFilterSectionState.Switch(
-        title = Res.string.alley_filter_show_ignored,
-        defaultEnabled = true,
-        enabled = showIgnored,
+    private val hideIgnored = savedStateHandle.getMutableStateFlow("hideIgnored", false)
+    private val hideIgnoredSection = SortFilterSectionState.Switch(
+        title = Res.string.alley_filter_hide_ignored,
+        defaultEnabled = false,
+        enabled = hideIgnored,
     )
 
     private val forceOneDisplayColumnSection = SortFilterSectionState.SwitchBySetting(
@@ -116,7 +116,7 @@ class ArtistSortFilterViewModel(
         randomCatalogImageSection,
         onlyConfirmedTagsSection,
         onlyHasCommissionsSection,
-        showIgnoredSection,
+        hideIgnoredSection,
         forceOneDisplayColumnSection,
     )
 
@@ -137,7 +137,7 @@ class ArtistSortFilterViewModel(
         onlyCatalogImages,
         settings.showOnlyConfirmedTags,
         settings.showOnlyHasCommissions,
-        showIgnored,
+        hideIgnored,
     ) {
         val snapshotState = it[0] as SnapshotState
         FilterParams(
@@ -151,7 +151,7 @@ class ArtistSortFilterViewModel(
             showOnlyWithCatalog = it[3] as Boolean,
             showOnlyConfirmedTags = it[4] as Boolean,
             showOnlyHasCommissions = it[5] as Boolean,
-            showIgnored = it[6] as Boolean,
+            hideIgnored = it[6] as Boolean,
         )
     }
 
@@ -180,6 +180,6 @@ class ArtistSortFilterViewModel(
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
         val showOnlyHasCommissions: Boolean,
-        val showIgnored: Boolean,
+        val hideIgnored: Boolean,
     )
 }

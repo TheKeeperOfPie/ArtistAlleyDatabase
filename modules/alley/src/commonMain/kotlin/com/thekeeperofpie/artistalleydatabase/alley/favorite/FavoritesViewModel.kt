@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
-import app.cash.paging.filter
-import app.cash.paging.map
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -30,6 +28,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,10 +90,10 @@ class FavoritesViewModel(
                     searchQuery = ArtistSearchQuery(filterParams, randomSeed),
                     onlyFavorites = true,
                 )
-            }.flow.map { it.filter { !it.userEntry.ignored || filterParams.showIgnored } }
+            }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
         }
             .map {
-                it.map {
+                it.mapOnIO {
                     val series = ArtistEntryGridModel.getSeries(
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
@@ -120,9 +120,9 @@ class FavoritesViewModel(
                     searchQuery = StampRallySearchQuery(filterParams, randomSeed),
                     onlyFavorites = true,
                 )
-            }.flow.map { it.filter { !it.userEntry.ignored || filterParams.showIgnored } }
+            }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
         }
-            .map { it.map(StampRallyEntryGridModel::buildFromEntry) }
+            .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
     }
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)

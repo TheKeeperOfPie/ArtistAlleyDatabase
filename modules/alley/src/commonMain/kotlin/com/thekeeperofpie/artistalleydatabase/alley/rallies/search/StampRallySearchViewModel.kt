@@ -19,6 +19,8 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,8 +87,12 @@ class StampRallySearchViewModel(
             }.flow
         }
         .flowOn(CustomDispatchers.IO)
-        .map { it.filter { !it.userEntry.ignored || options.filterParams.showIgnored } }
-        .map { it.map { StampRallyEntryGridModel.buildFromEntry(it) } }
+        .map {
+            it.filterOnIO {
+                !it.userEntry.ignored || !options.filterParams.hideIgnored
+            }
+        }
+        .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
     fun onEvent(navigationController: NavigationController, event: StampRallySearchScreen.Event) = when (event) {
