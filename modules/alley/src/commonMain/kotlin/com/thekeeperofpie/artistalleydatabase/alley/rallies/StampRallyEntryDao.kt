@@ -357,7 +357,8 @@ class StampRallyEntryDao(
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
-            andStatement = andStatement,
+            additionalJoinStatement = joinStatement,
+            andStatement = andStatement.replace(tableName, "${tableName}_fts"),
         )
         val statement = DaoUtils.buildSearchStatement(
             tableName = tableName,

@@ -495,7 +495,7 @@ class ArtistEntryDao(
             matchQuery = matchQuery,
             likeStatement = likeStatement,
             additionalJoinStatement = joinStatement,
-            andStatement = andStatement,
+            andStatement = andStatement.replace(tableName, "${tableName}_fts"),
         )
 
         val statement = DaoUtils.buildSearchStatement(
