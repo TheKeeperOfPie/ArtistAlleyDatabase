@@ -43,7 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataPro
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
-import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
+import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
@@ -61,7 +61,7 @@ object StampRallyDetailsScreen {
     operator fun invoke(
         route: Destinations.StampRallyDetails,
         entry: () -> StampRallyDetailsViewModel.Entry?,
-        notesTextState: TextFieldState,
+        userNotesTextState: TextFieldState,
         images: () -> List<CatalogImage>,
         imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
@@ -81,7 +81,7 @@ object StampRallyDetailsScreen {
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {
-            detailsContent(entry, notesTextState, eventSink, onClickOpenUri = {
+            detailsContent(entry, userNotesTextState, eventSink, onClickOpenUri = {
                 try {
                     uriHandler.openUri(it)
                 } catch (_: Throwable) {
@@ -92,7 +92,7 @@ object StampRallyDetailsScreen {
 
     private fun LazyListScope.detailsContent(
         entry: () -> StampRallyDetailsViewModel.Entry?,
-        notesTextState: TextFieldState,
+        userNotesTextState: TextFieldState,
         eventSink: (Event) -> Unit,
         onClickOpenUri: (String) -> Unit,
     ) {
@@ -223,9 +223,9 @@ object StampRallyDetailsScreen {
             }
         }
 
-        item("stampRallyNotes") {
-            NotesText(
-                state = notesTextState,
+        item("stampRallyUserNotes") {
+            UserNotesText(
+                state = userNotesTextState,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             Spacer(Modifier.height(16.dp))
@@ -274,7 +274,7 @@ private fun PhoneLayout() {
                     otherTables = listOf("ANX-101"),
                 )
             },
-            notesTextState = rememberTextFieldState(),
+            userNotesTextState = rememberTextFieldState(),
             images = { images },
             imagePagerState = rememberImagePagerState(images, 1),
             eventSink = {},

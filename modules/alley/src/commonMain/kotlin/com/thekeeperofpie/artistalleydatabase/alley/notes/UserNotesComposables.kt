@@ -25,19 +25,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_notes
-import artistalleydatabase.modules.alley.generated.resources.alley_notes_character_count
 import artistalleydatabase.modules.alley.generated.resources.alley_redo
 import artistalleydatabase.modules.alley.generated.resources.alley_undo
-import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
+import artistalleydatabase.modules.alley.generated.resources.alley_user_notes
+import artistalleydatabase.modules.alley.generated.resources.alley_user_notes_character_count
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun NotesText(state: TextFieldState, modifier: Modifier = Modifier) {
+fun UserNotesText(state: TextFieldState, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(Res.string.alley_notes),
+                text = stringResource(Res.string.alley_user_notes),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.surfaceTint,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -71,11 +71,11 @@ fun NotesText(state: TextFieldState, modifier: Modifier = Modifier) {
                     val length = state.text.length
                     Text(
                         text = stringResource(
-                            Res.string.alley_notes_character_count,
+                            Res.string.alley_user_notes_character_count,
                             length,
-                            NotesDao.MAX_CHARACTER_COUNT
+                            UserNotesDao.MAX_CHARACTER_COUNT
                         ),
-                        color = if (length >= NotesDao.MAX_CHARACTER_COUNT) {
+                        color = if (length >= UserNotesDao.MAX_CHARACTER_COUNT) {
                             MaterialTheme.colorScheme.error
                         } else {
                             Color.Unspecified

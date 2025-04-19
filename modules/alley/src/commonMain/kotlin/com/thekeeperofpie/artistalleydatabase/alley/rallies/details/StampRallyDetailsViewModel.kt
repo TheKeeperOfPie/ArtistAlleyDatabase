@@ -15,8 +15,8 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
@@ -36,7 +36,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Inject
 class StampRallyDetailsViewModel(
     private val stampRallyEntryDao: StampRallyEntryDao,
-    private val notesDao: NotesDao,
+    private val userNotesDao: UserNotesDao,
     private val userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -55,7 +55,7 @@ class StampRallyDetailsViewModel(
 
     var entry by mutableStateOf<Entry?>(null)
 
-    val notes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
+    val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
         mutableStateOf(TextFieldState())
     }
 
@@ -83,13 +83,13 @@ class StampRallyDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            notesDao.getStampRallyNotes(id)?.notes
-                ?.let(notes::setTextAndPlaceCursorAtEnd)
-            snapshotFlow { notes.text }
+            userNotesDao.getStampRallyNotes(id)?.notes
+                ?.let(userNotes::setTextAndPlaceCursorAtEnd)
+            snapshotFlow { userNotes.text }
                 .drop(1)
                 .debounce(500.milliseconds)
                 .collectLatest {
-                    notesDao.updateStampRallyNotes(id, it.toString())
+                    userNotesDao.updateStampRallyNotes(id, it.toString())
                 }
         }
     }

@@ -75,7 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerSta
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
-import com.thekeeperofpie.artistalleydatabase.alley.notes.NotesText
+import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
@@ -99,7 +99,7 @@ object ArtistDetailsScreen {
     operator fun invoke(
         route: Destinations.ArtistDetails,
         entry: () -> ArtistDetailsViewModel.Entry?,
-        notesTextState: TextFieldState,
+        userNotesTextState: TextFieldState,
         imagePagerState: PagerState,
         catalogImages: () -> List<CatalogImage>,
         seriesImages: () -> Map<String, String>,
@@ -358,10 +358,10 @@ object ArtistDetailsScreen {
                 }
             }
 
-            item("artistNotes") {
+            item("artistUserNotes") {
                 Column(Modifier.animateItem()) {
-                    NotesText(
-                        state = notesTextState,
+                    UserNotesText(
+                        state = userNotesTextState,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                     Spacer(Modifier.height(16.dp))
@@ -666,7 +666,7 @@ private fun PhoneLayout() = PreviewDark {
     ArtistDetailsScreen(
         route = Destinations.ArtistDetails(artist.artist),
         entry = { entry },
-        notesTextState = rememberTextFieldState(),
+        userNotesTextState = rememberTextFieldState(),
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
         catalogImages = { images },

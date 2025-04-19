@@ -28,7 +28,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.toRoute
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyMap
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
@@ -122,7 +121,7 @@ object ArtistAlleyAppScreen {
                                 ArtistDetailsScreen(
                                     route = route,
                                     entry = { viewModel.entry },
-                                    notesTextState = viewModel.notes,
+                                    userNotesTextState = viewModel.userNotes,
                                     imagePagerState = imagePagerState,
                                     catalogImages = viewModel::catalogImages,
                                     seriesImages = viewModel::seriesImages,
@@ -267,7 +266,7 @@ object ArtistAlleyAppScreen {
                                 StampRallyDetailsScreen(
                                     route = route,
                                     entry = { viewModel.entry },
-                                    notesTextState = viewModel.notes,
+                                    userNotesTextState = viewModel.userNotes,
                                     images = viewModel::images,
                                     imagePagerState = imagePagerState,
                                     eventSink = {
@@ -297,7 +296,7 @@ object ArtistAlleyAppScreen {
                                                     }
                                                     DetailsScreen.Event.OpenMap ->
                                                         navigationController.navigate(
-                                                            StampRallyMap(
+                                                            Destinations.StampRallyMap(
                                                                 year = route.year,
                                                                 id = route.id,
                                                             )

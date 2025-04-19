@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchVi
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
-import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
@@ -65,9 +65,6 @@ interface ArtistAlleyComponent {
     val ArtistAlleyDatabase.bindImageEntryDao: ImageEntryDao
         @Provides get() = this.imageEntryDao
 
-    val ArtistAlleyDatabase.bindNotesDao: NotesDao
-        @Provides get() = this.notesDao
-
     val ArtistAlleyDatabase.bindSeriesEntryDao: SeriesEntryDao
         @Provides get() = this.seriesEntryDao
 
@@ -76,6 +73,9 @@ interface ArtistAlleyComponent {
 
     val ArtistAlleyDatabase.bindUserEntryDao: UserEntryDao
         @Provides get() = this.userEntryDao
+
+    val ArtistAlleyDatabase.bindNotesDao: UserNotesDao
+        @Provides get() = this.userNotesDao
 
     val navigationTypeMap: NavigationTypeMap
     val settings: ArtistAlleySettings

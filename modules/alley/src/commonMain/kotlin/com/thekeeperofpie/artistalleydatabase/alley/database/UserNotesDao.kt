@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.NotesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 
-class NotesDao(
+class UserNotesDao(
     private val database: suspend () -> AlleySqlDatabase,
     private val dao: suspend () -> NotesQueries = { database().notesQueries },
 ) {

@@ -18,8 +18,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.alley.database.NotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -40,7 +40,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Inject
 class ArtistDetailsViewModel(
     private val artistEntryDao: ArtistEntryDao,
-    private val notesDao: NotesDao,
+    private val userNotesDao: UserNotesDao,
     private val seriesImagesStore: SeriesImagesStore,
     private val seriesEntryDao: SeriesEntryDao,
     private val userEntryDao: UserEntryDao,
@@ -71,7 +71,7 @@ class ArtistDetailsViewModel(
     var seriesImages by mutableStateOf<Map<String, String>>(emptyMap())
         private set
 
-    val notes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
+    val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
         mutableStateOf(TextFieldState())
     }
 
@@ -113,13 +113,13 @@ class ArtistDetailsViewModel(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            notesDao.getArtistNotes(id, year)?.notes
-                ?.let(notes::setTextAndPlaceCursorAtEnd)
-            snapshotFlow { notes.text }
+            userNotesDao.getArtistNotes(id, year)?.notes
+                ?.let(userNotes::setTextAndPlaceCursorAtEnd)
+            snapshotFlow { userNotes.text }
                 .drop(1)
                 .debounce(500.milliseconds)
                 .collectLatest {
-                    notesDao.updateArtistNotes(id, year, it.toString())
+                    userNotesDao.updateArtistNotes(id, year, it.toString())
                 }
         }
     }
