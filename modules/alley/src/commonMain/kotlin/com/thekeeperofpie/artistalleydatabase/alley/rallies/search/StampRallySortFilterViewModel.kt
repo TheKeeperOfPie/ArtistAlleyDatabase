@@ -48,13 +48,15 @@ class StampRallySortFilterViewModel(
     )
 
     private val gridByDefaultSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_show_grid_by_default,
-        settings.showGridByDefault,
+        title = Res.string.alley_filter_show_grid_by_default,
+        property = settings.showGridByDefault,
+        default = false,
     )
 
     private val randomCatalogImageSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_show_random_catalog_image,
-        settings.showRandomCatalogImage,
+        title = Res.string.alley_filter_show_random_catalog_image,
+        property = settings.showRandomCatalogImage,
+        default = false,
     )
 
     private val showIgnored = savedStateHandle.getMutableStateFlow("showIgnored", true)
@@ -64,8 +66,9 @@ class StampRallySortFilterViewModel(
         enabled = showIgnored,
     )
     private val forceOneDisplayColumnSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_force_one_display_column,
-        settings.forceOneDisplayColumn,
+        title = Res.string.alley_filter_force_one_display_column,
+        property = settings.forceOneDisplayColumn,
+        default = false,
     )
 
     private val sections = listOf(

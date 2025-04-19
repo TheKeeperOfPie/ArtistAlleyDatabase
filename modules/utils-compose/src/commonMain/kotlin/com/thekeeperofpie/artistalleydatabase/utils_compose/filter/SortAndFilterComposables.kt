@@ -1,4 +1,5 @@
-@file:OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
+@file:OptIn(
+    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
     ExperimentalComposeUiApi::class
 )
 
@@ -6,8 +7,11 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.filter
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +30,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -74,7 +79,9 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.clear
 import artistalleydatabase.modules.utils_compose.generated.resources.section_expand_all_content_description
@@ -85,7 +92,7 @@ import artistalleydatabase.modules.utils_compose.generated.resources.sort_direct
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_direction_label
 import artistalleydatabase.modules.utils_compose.generated.resources.sort_expand_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
@@ -872,23 +879,22 @@ fun SheetDragHandle(
                 .padding(end = 8.dp)
         ) {
             val activatedCount = sections.count { !it.isDefault() }
-
-            val badgeProgress by animateFloatAsState(
-                targetValue = if (activatedCount > 0) 1f else 0f,
-                label = "Sort filter badge progress",
-            )
-            if (badgeProgress > 0f) {
+            AnimatedVisibility(
+                visible = activatedCount > 0,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+                modifier = Modifier.align(Alignment.CenterVertically)
+            ) {
                 Box(
                     modifier = Modifier
                         .padding(vertical = 8.dp)
-                        .size(32.dp * badgeProgress)
+                        .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
                         .background(MaterialTheme.colorScheme.secondary, CircleShape)
-                        .padding(4.dp * badgeProgress)
-                        .align(Alignment.CenterVertically)
+                        .padding(4.dp)
                 ) {
-                    AutoSizeText(
+                    AutoHeightText(
                         text = activatedCount.coerceAtLeast(1).toString(),
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -947,6 +953,7 @@ fun SortFilterBottomScaffold(
     topBar: @Composable (() -> Unit)? = null,
     sheetState: SheetState = rememberStandardBottomSheetState(),
     scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState),
+    sheetPeekHeight: Dp = Dp.Unspecified,
     bottomNavigationState: BottomNavigationState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -961,7 +968,8 @@ fun SortFilterBottomScaffold(
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = 56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
+        sheetPeekHeight = (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
+                (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
         sheetDragHandle = {
             SheetDragHandle(
                 state = state,

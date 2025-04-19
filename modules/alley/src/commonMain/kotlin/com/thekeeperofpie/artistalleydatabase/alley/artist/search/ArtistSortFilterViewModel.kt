@@ -73,23 +73,27 @@ class ArtistSortFilterViewModel(
     )
 
     private val gridByDefaultSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_show_grid_by_default,
-        settings.showGridByDefault,
+        title = Res.string.alley_filter_show_grid_by_default,
+        property = settings.showGridByDefault,
+        default = false,
     )
 
     private val randomCatalogImageSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_show_random_catalog_image,
-        settings.showRandomCatalogImage,
+        title = Res.string.alley_filter_show_random_catalog_image,
+        property = settings.showRandomCatalogImage,
+        default = false,
     )
 
     private val onlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_show_only_confirmed_tags,
-        settings.showOnlyConfirmedTags,
+        title = Res.string.alley_filter_show_only_confirmed_tags,
+        property = settings.showOnlyConfirmedTags,
+        default = false,
     )
 
     private val onlyHasCommissionsSection = SortFilterSectionState.SwitchBySetting(
         Res.string.alley_filter_show_only_has_commissions,
         settings.showOnlyHasCommissions,
+        default = false,
     )
 
     private val showIgnored = savedStateHandle.getMutableStateFlow("showIgnored", true)
@@ -100,8 +104,9 @@ class ArtistSortFilterViewModel(
     )
 
     private val forceOneDisplayColumnSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_force_one_display_column,
-        settings.forceOneDisplayColumn
+        title = Res.string.alley_filter_force_one_display_column,
+        property = settings.forceOneDisplayColumn,
+        default = false,
     )
 
     private val sections = listOf(

@@ -10,7 +10,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -40,8 +39,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.ViewAgenda
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
@@ -108,6 +105,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
@@ -135,7 +134,7 @@ object SearchScreen {
         query: MutableStateFlow<String>,
         entries: LazyPagingItems<EntryModel>,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
-        bottomSheet: @Composable ColumnScope.() -> Unit,
+        sortFilterState: SortFilterState<*>,
         dataYearHeaderState: DataYearHeaderState,
         gridState: LazyStaggeredGridState,
         shouldShowCount: () -> Boolean,
@@ -162,26 +161,10 @@ object SearchScreen {
             var horizontalScrollBarWidth by remember { mutableStateOf(0) }
             val horizontalScrollState = rememberScrollState()
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-            BottomSheetScaffold(
+            SortFilterBottomScaffold(
+                state = sortFilterState,
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = 72.dp,
-                sheetDragHandle = {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = {
-                                if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded) {
-                                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-                                } else {
-                                    scope.launch { scaffoldState.bottomSheetState.expand() }
-                                }
-                            })
-                    ) {
-                        BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
-                    }
-                },
-                sheetContent = bottomSheet,
                 topBar = {
                     TopBar(
                         query = query,

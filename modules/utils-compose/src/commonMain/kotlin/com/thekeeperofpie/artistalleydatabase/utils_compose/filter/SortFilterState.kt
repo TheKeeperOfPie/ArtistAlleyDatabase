@@ -370,10 +370,15 @@ sealed class SortFilterSectionState(val id: String) {
     class SwitchBySetting(
         private val title: StringResource,
         val property: MutableStateFlow<Boolean>,
+        val default: Boolean? = null,
     ) : SortFilterSectionState(title.key) {
 
         @Composable
-        override fun isDefault() = true
+        override fun isDefault(): Boolean {
+            val default = default ?: return true
+            var enabled by property.collectAsMutableStateWithLifecycle()
+            return default == enabled
+        }
 
         override fun clear() {
             // This is persistent, can't be cleared

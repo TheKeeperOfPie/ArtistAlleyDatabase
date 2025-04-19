@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
@@ -75,7 +73,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
@@ -178,15 +175,7 @@ object ArtistSearchScreen {
                 onClickBack = onClickBack,
                 entries = entries,
                 scaffoldState = scaffoldState,
-                bottomSheet = {
-                    SortFilterOptionsPanel(
-                        state = sortFilterState,
-                        showClear = false,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 320.dp)
-                    )
-                },
+                sortFilterState = sortFilterState,
                 dataYearHeaderState = dataYearHeaderState,
                 gridState = gridState,
                 shouldShowCount = { shouldShowCount },

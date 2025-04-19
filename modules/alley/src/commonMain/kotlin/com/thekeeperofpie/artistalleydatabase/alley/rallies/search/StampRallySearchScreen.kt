@@ -1,8 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -49,22 +46,14 @@ object StampRallySearchScreen {
             val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
             val query by viewModel.query.collectAsStateWithLifecycle()
             val navigationController = LocalNavigationController.current
-            SearchScreen<StampRallyEntryGridModel, StampRallyColumn>(
+            SearchScreen(
                 state = viewModel.searchState,
                 eventSink = {
                     viewModel.onEvent(navigationController, Event.SearchEvent(it))
                 },
                 query = viewModel.query,
                 entries = entries,
-                bottomSheet = {
-                    SortFilterOptionsPanel(
-                        state = sortFilterState,
-                        showClear = false,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 320.dp)
-                    )
-                },
+                sortFilterState = sortFilterState,
                 dataYearHeaderState = dataYearHeaderState,
                 gridState = gridState,
                 shouldShowCount = { query.isNotEmpty() },
