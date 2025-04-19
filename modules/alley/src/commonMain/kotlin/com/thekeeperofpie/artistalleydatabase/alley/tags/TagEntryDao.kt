@@ -63,6 +63,12 @@ class TagEntryDao(
         )
     }
 
+    suspend fun getMerchIds(year: DataYear) = when (year) {
+        DataYear.YEAR_2023 -> emptyList()
+        DataYear.YEAR_2024 -> merchDao().getMerchIds2024().awaitAsList()
+        DataYear.YEAR_2025 -> merchDao().getMerchIds2025().awaitAsList()
+    }.filterNot { it.contains("Commissions") }
+
     fun searchMerch(year: DataYear, query: String): PagingSource<Int, MerchEntry> {
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)

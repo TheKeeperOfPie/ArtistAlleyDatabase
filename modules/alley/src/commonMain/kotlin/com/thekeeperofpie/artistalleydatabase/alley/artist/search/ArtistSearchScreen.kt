@@ -90,7 +90,7 @@ object ArtistSearchScreen {
     @Composable
     operator fun invoke(
         viewModel: ArtistSearchViewModel,
-        sortViewModel: ArtistSortFilterViewModel,
+        sortFilterController: ArtistSortFilterController,
         onClickBack: (() -> Unit)?,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
@@ -98,7 +98,7 @@ object ArtistSearchScreen {
     ) {
         val navigationController = LocalNavigationController.current
         ArtistSearchScreen(
-            remember(viewModel, sortViewModel) {
+            remember(viewModel, sortFilterController) {
                 State(
                     lockedSeriesEntry = viewModel.lockedSeriesEntry,
                     lockedMerch = viewModel.lockedMerch,
@@ -107,13 +107,13 @@ object ArtistSearchScreen {
                     year = viewModel.year,
                     query = viewModel.query,
                     results = viewModel.results,
-                    onlyCatalogImages = sortViewModel.onlyCatalogImages,
-                    sortOption = sortViewModel.sortOption,
-                    sortAscending = sortViewModel.sortAscending,
+                    onlyCatalogImages = sortFilterController.onlyCatalogImages,
+                    sortOption = sortFilterController.sortOption,
+                    sortAscending = sortFilterController.sortAscending,
                     searchState = viewModel.searchState,
                 )
             },
-            sortFilterState = sortViewModel.state,
+            sortFilterState = sortFilterController.state,
             eventSink = { viewModel.onEvent(navigationController, it) },
             onClickBack,
             scaffoldState,

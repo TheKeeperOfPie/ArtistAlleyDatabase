@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
@@ -28,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -50,11 +50,11 @@ class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
     private val seriesEntryDao: SeriesEntryDao,
+    private val tagEntryDao: TagEntryDao,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted private val filterParams: StateFlow<ArtistSortFilterViewModel.FilterParams>,
 ) : ViewModel() {
 
     @Serializable
@@ -70,13 +70,22 @@ class ArtistSearchViewModel(
     val year = if (route.isRoot) {
         settings.dataYear
     } else {
-        // TODO: Connect to SavedStateHandle
-        MutableStateFlow(settings.dataYear.value)
+        savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
     }
 
     val lockedYear = route.year
     val lockedSeries = route.series
     val lockedMerch = route.merch
+
+    val sortFilterController = ArtistSortFilterController(
+        scope = viewModelScope,
+        savedStateHandle = savedStateHandle,
+        dataYear = year,
+        lockedMerchId = lockedMerch,
+        dispatchers = dispatchers,
+        settings = settings,
+        tagEntryDao = tagEntryDao,
+    )
 
     val searchState = SearchScreen.State(
         columns = ArtistSearchScreen.ArtistColumn.entries,
@@ -112,12 +121,12 @@ class ArtistSearchViewModel(
         viewModelScope.launch(dispatchers.io) {
             combine(
                 year,
-                filterParams.mapLatest {
+                sortFilterController.state.filterParams.mapLatest {
                     ArtistSearchQuery(
                         filterParams = it,
                         randomSeed = randomSeed,
                         lockedSeries = lockedSeries,
-                        lockedMerch = lockedMerch,
+                        merchIn = it.merchIn,
                     )
                 },
                 query,

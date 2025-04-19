@@ -5,11 +5,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
-import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
@@ -35,11 +34,9 @@ interface ArtistAlleyComponent {
 
     val artistDetailsViewModel: (SavedStateHandle) -> ArtistDetailsViewModel
     val artistMapViewModel: (SavedStateHandle) -> ArtistMapViewModel
-    val artistSearchViewModel: (SavedStateHandle, StateFlow<ArtistSortFilterViewModel.FilterParams>) -> ArtistSearchViewModel
-    val artistSortFilterViewModel: (SavedStateHandle) -> ArtistSortFilterViewModel
+    val artistSearchViewModel: (SavedStateHandle) -> ArtistSearchViewModel
     val favoritesViewModel: (
         SavedStateHandle,
-        StateFlow<ArtistSortFilterViewModel.FilterParams>,
         StateFlow<StampRallySortFilterViewModel.FilterParams>,
     ) -> FavoritesViewModel
     val favoritesSortFilterViewModel: (SavedStateHandle) -> FavoritesSortFilterViewModel

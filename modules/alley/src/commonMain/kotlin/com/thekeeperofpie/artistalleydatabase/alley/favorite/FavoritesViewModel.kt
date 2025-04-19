@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -50,15 +51,25 @@ class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
     seriesEntryDao: SeriesEntryDao,
+    tagEntryDao: TagEntryDao,
     userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted private val artistFilterParams: StateFlow<ArtistSortFilterViewModel.FilterParams>,
     @Assisted private val stampRallyFilterParams: StateFlow<StampRallySortFilterViewModel.FilterParams>,
 ) : ViewModel() {
 
     val year = settings.dataYear
+
+    val artistSortFilterController = ArtistSortFilterController(
+        scope = viewModelScope,
+        savedStateHandle = savedStateHandle,
+        dataYear = year,
+        lockedMerchId = null,
+        dispatchers = dispatchers,
+        settings = settings,
+        tagEntryDao = tagEntryDao,
+    )
 
     val artistSearchState = SearchScreen.State(
         columns = ArtistSearchScreen.ArtistColumn.entries,
@@ -82,7 +93,7 @@ class FavoritesViewModel(
 
     private val inputs = combineStates(query, year, settings.showOnlyConfirmedTags, ::Triple)
     val artistEntries = inputs.flatMapLatest { (query, year, showOnlyConfirmedTags) ->
-        artistFilterParams.flatMapLatest { filterParams ->
+        artistSortFilterController.state.filterParams.flatMapLatest { filterParams ->
             createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 artistEntryDao.search(
                     year = year,

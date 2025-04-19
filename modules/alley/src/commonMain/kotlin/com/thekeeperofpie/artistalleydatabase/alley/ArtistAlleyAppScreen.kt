@@ -116,7 +116,7 @@ object ArtistAlleyAppScreen {
                                     if (imageIndex != null) {
                                         imagePagerState.requestScrollToPage(imageIndex)
                                     }
-                                    onStopOrDispose { Unit }
+                                    onStopOrDispose {}
                                 }
                                 ArtistDetailsScreen(
                                     route = route,
@@ -335,21 +335,12 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val route = it.toRoute<Destinations.Series>()
-                                val sortViewModel =
-                                    viewModel {
-                                        component.artistSortFilterViewModel(
-                                            createSavedStateHandle()
-                                        )
-                                    }
                                 val viewModel = viewModel {
-                                    component.artistSearchViewModel(
-                                        createSavedStateHandle(),
-                                        sortViewModel.state.filterParams,
-                                    )
+                                    component.artistSearchViewModel(createSavedStateHandle())
                                 }
                                 ArtistSearchScreen(
                                     viewModel = viewModel,
-                                    sortViewModel = sortViewModel,
+                                    sortFilterController = viewModel.sortFilterController,
                                     onClickBack = navigationController::popBackStack,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
@@ -367,20 +358,12 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val route = it.toRoute<Destinations.Merch>()
-                                val sortViewModel = viewModel {
-                                    component.artistSortFilterViewModel(
-                                        createSavedStateHandle(),
-                                    )
-                                }
                                 val viewModel = viewModel {
-                                    component.artistSearchViewModel(
-                                        createSavedStateHandle(),
-                                        sortViewModel.state.filterParams,
-                                    )
+                                    component.artistSearchViewModel(createSavedStateHandle())
                                 }
                                 ArtistSearchScreen(
                                     viewModel = viewModel,
-                                    sortViewModel = sortViewModel,
+                                    sortFilterController = viewModel.sortFilterController,
                                     onClickBack = navigationController::popBackStack,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {

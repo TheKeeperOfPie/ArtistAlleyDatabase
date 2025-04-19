@@ -58,7 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
@@ -87,7 +87,7 @@ object FavoritesScreen {
     @Composable
     operator fun invoke(
         favoritesViewModel: FavoritesViewModel,
-        artistSortViewModel: ArtistSortFilterViewModel,
+        artistSortFilterController: ArtistSortFilterController,
         stampRallySortViewModel: StampRallySortFilterViewModel,
         scrollStateSaver: ScrollStateSaver,
         onNavigateToArtists: () -> Unit,
@@ -103,15 +103,15 @@ object FavoritesScreen {
                     year = favoritesViewModel.year,
                     artistsEntries = favoritesViewModel.artistEntries,
                     artistsSearchState = favoritesViewModel.artistSearchState,
-                    artistsSortOption = artistSortViewModel.sortOption,
-                    artistsSortAscending = artistSortViewModel.sortAscending,
+                    artistsSortOption = artistSortFilterController.sortOption,
+                    artistsSortAscending = artistSortFilterController.sortAscending,
                     ralliesEntries = favoritesViewModel.stampRallyEntries,
                     ralliesSearchState = favoritesViewModel.stampRallySearchState,
                     ralliesSortOption = stampRallySortViewModel.sortOption,
                     ralliesSortAscending = stampRallySortViewModel.sortAscending,
                 )
             },
-            artistSortViewModel.state,
+            artistSortFilterController.state,
             stampRallySortViewModel.state,
             scrollStateSaver = scrollStateSaver,
             onNavigateToArtists = onNavigateToArtists,

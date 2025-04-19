@@ -82,19 +82,14 @@ object AlleyRootScreen {
                 Box(Modifier.fillMaxSize().padding(it)) {
                     when (currentDestination) {
                         Destination.ARTISTS -> {
-                            val sortViewModel =
-                                viewModel {
-                                    component.artistSortFilterViewModel(createSavedStateHandle())
-                                }
                             val viewModel = viewModel {
                                 component.artistSearchViewModel(
                                     createSavedStateHandle().apply { this["isRoot"] = true },
-                                    sortViewModel.state.filterParams,
                                 )
                             }
                             ArtistSearchScreen(
                                 viewModel = viewModel,
-                                sortViewModel = sortViewModel,
+                                sortFilterController = viewModel.sortFilterController,
                                 onClickBack = null,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.ARTISTS.name,
@@ -118,10 +113,6 @@ object AlleyRootScreen {
                             )
                         }
                         Destination.FAVORITES -> {
-                            val artistSortViewModel =
-                                viewModel {
-                                    component.artistSortFilterViewModel(createSavedStateHandle())
-                                }
                             val stampRallySortViewModel =
                                 viewModel {
                                     component.stampRallySortFilterViewModel(
@@ -131,13 +122,12 @@ object AlleyRootScreen {
                             val favoritesViewModel = viewModel {
                                 component.favoritesViewModel(
                                     createSavedStateHandle(),
-                                    artistSortViewModel.state.filterParams,
                                     stampRallySortViewModel.state.filterParams,
                                 )
                             }
                             FavoritesScreen(
                                 favoritesViewModel = favoritesViewModel,
-                                artistSortViewModel = artistSortViewModel,
+                                artistSortFilterController = favoritesViewModel.artistSortFilterController,
                                 stampRallySortViewModel = stampRallySortViewModel,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.FAVORITES.name,

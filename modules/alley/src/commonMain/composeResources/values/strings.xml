@@ -224,4 +224,8 @@
     <string name="alley_series_filter_music">Music</string>
     <string name="alley_series_filter_multimedia">Multimedia</string>
     <string name="alley_series_filter_other">Other</string>
+
+    <string name="alley_merch_chip_state_content_description">Merch chip state</string>
+    <string name="alley_merch_filter_label">Merch</string>
+    <string name="alley_merch_filter_content_description">Merch filter expand</string>
 </resources>

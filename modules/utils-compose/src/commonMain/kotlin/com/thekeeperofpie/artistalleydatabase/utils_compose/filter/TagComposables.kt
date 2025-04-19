@@ -42,7 +42,7 @@ fun TagSection(
     titleDropdownContentDescriptionRes: StringResource,
     summaryText: (@Composable () -> String?)? = null,
     onSummaryClick: () -> Unit = {},
-    header: (@Composable () -> Unit)?,
+    header: (@Composable () -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
     tags: Map<String, TagEntry>,
     tagIdIn: Set<String>,
@@ -51,6 +51,7 @@ fun TagSection(
     query: String,
     onQueryChange: (String) -> Unit,
     showDivider: Boolean,
+    showRootTagsWhenNotExpanded: Boolean = true,
     categoryToName: (Category) -> String,
     tagChip: @Composable (tag: Tag, selected: Boolean, enabled: Boolean, Modifier) -> Unit,
 ) {
@@ -66,19 +67,17 @@ fun TagSection(
         showDivider = showDivider,
     ) {
         Column(modifier = Modifier.animateContentSize()) {
-            val subcategoriesToShow = (if (query.isNotBlank()) {
-                tags.values.mapNotNull {
+            val subcategoriesToShow = when {
+                query.isNotBlank() -> tags.values.mapNotNull {
                     it.filter {
                         tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) || it.matches(query)
                     }
                 }
-            } else if (expanded) {
-                tags.values
-            } else {
-                tags.values.mapNotNull {
+                expanded -> tags.values
+                else -> tags.values.mapNotNull {
                     it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
                 }
-            }).filterIsInstance<Category>()
+            }.filterIsInstance<Category>()
 
             if (header != null && (expanded || subcategoriesToShow.isNotEmpty())) {
                 header()
@@ -107,7 +106,18 @@ fun TagSection(
                 )
             }
 
-            val children = tags.values.filterIsInstance<Tag>()
+            val children = when {
+                showRootTagsWhenNotExpanded ->  tags.values
+                query.isNotBlank() -> tags.values.mapNotNull {
+                    it.filter {
+                        tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) || it.matches(query)
+                    }
+                }
+                expanded -> tags.values
+                else -> tags.values.mapNotNull {
+                    it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
+                }
+            }.filterIsInstance<Tag>()
             if (children.isNotEmpty()) {
                 TagChips(
                     tags = children,

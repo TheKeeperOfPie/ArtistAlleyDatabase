@@ -601,8 +601,8 @@ fun IncludeExcludeIcon(
 fun IncludeExcludeIcon(
     enabled: Boolean?,
     contentDescriptionRes: StringResource,
-    leadingIconVector: ImageVector?,
-    leadingIconContentDescription: StringResource?,
+    leadingIconVector: ImageVector? = null,
+    leadingIconContentDescription: StringResource? = null,
 ) {
     if (enabled == null) {
         if (leadingIconVector != null) {

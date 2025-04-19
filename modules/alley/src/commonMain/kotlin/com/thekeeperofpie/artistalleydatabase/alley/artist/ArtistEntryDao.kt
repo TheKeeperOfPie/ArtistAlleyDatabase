@@ -358,18 +358,21 @@ class ArtistEntryDao(
                         (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed = 1 AND " else "") +
                         " artistSeriesConnection.seriesId = " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
-            } else if (searchQuery.lockedMerch != null) {
+            } else if (searchQuery.merchIn.isNotEmpty()) {
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
                     DataYear.YEAR_2024 -> "artistMerchConnection.has2024 = 1 AND "
                     DataYear.YEAR_2025 -> "artistMerchConnection.has2025 = 1 AND "
                 }
 
+                val merchList = searchQuery.merchIn.joinToString(separator = ",") {
+                    DatabaseUtils.sqlEscapeString(it)
+                }
+
                 this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
                         yearFilter +
                         (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed = 1 AND " else "") +
-                        "artistMerchConnection.merchId = " +
-                        "${DatabaseUtils.sqlEscapeString(searchQuery.lockedMerch)})"
+                        "artistMerchConnection.merchId IN ($merchList))"
             }
         }
 
@@ -386,34 +389,7 @@ class ArtistEntryDao(
                 .orEmpty()
         val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored"
 
-        val matchOptions = mutableListOf<String>()
-        filterParams.artist.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(name : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
-        }
-        filterParams.booth.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(booth : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
-        }
-        filterParams.summary.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(summary : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
-        }
-        if (year != DataYear.YEAR_2023) {
-            filterParams.series.takeUnless { it.isEmpty() }?.let {
-                if (filterParams.showOnlyConfirmedTags) {
-                    "(seriesConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
-                } else {
-                    "({seriesInferred seriesConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
-                }
-            }
-            filterParams.merch.takeUnless { it.isEmpty() }?.let {
-                if (filterParams.showOnlyConfirmedTags) {
-                    "(merchConfirmed : ${DaoUtils.makeMatchAndQuery(it)})"
-                } else {
-                    "({merchInferred merchConfirmed} : ${DaoUtils.makeMatchAndQuery(it)})"
-                }
-            }
-        }
-
-        if (query.isEmpty() && matchOptions.isEmpty()) {
+        if (query.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
                 ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
                 .orEmpty()
@@ -471,6 +447,8 @@ class ArtistEntryDao(
                 )
             }
         }
+
+        val matchOptions = mutableListOf<String>()
         val matchQuery = buildString {
             append("'")
             append(matchOptions.joinToString(separator = " ", postfix = " "))
