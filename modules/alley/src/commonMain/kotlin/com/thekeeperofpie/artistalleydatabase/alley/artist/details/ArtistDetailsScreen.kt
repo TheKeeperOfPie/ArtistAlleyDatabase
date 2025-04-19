@@ -59,6 +59,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_year
 import com.eygraber.compose.placeholder.PlaceholderHighlight
@@ -351,6 +352,24 @@ object ArtistDetailsScreen {
                                 allowExpand = false,
                                 showDividerAbove = false,
                                 item = { model, _, isLast -> CommissionRow(model, isLast) },
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
+            }
+
+            val notes = artist?.notes
+            if (!notes.isNullOrEmpty()) {
+                item("artistMaintainerNotes") {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            SelectableInfoText(
+                                label = stringResource(Res.string.alley_maintainer_notes),
+                                body = notes,
+                                showDividerAbove = false
                             )
                         }
                         Spacer(Modifier.height(16.dp))

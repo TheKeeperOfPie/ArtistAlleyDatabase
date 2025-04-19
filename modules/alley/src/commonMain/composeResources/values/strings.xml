@@ -190,6 +190,8 @@
     <string name="alley_unfavorite_dialog_yes">Yes</string>
     <string name="alley_unfavorite_dialog_no">No</string>
 
+    <string name="alley_maintainer_notes">Maintainer notes</string>
+
     <string name="alley_user_notes">User notes</string>
     <string name="alley_user_notes_character_count">%1$d / %2$d</string>
 

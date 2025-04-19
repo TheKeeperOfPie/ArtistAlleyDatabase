@@ -160,6 +160,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2024_fts USING FTS5 (
     fandom,
     tables,
     counter,
+    notes,
     content=stampRallyEntry2024,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -184,6 +185,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2025_fts USING FTS5 (
     fandom,
     tables,
     counter,
+    notes,
     content=stampRallyEntry2025,
     tokenize="unicode61 remove_diacritics 2"
 );

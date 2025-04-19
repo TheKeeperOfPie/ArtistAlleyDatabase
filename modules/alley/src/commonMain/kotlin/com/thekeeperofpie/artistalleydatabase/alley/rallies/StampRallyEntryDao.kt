@@ -333,6 +333,7 @@ class StampRallyEntryDao(
         val targetColumns = listOfNotNull(
             "fandom",
             "tables",
+            "notes".takeIf { year != DataYear.YEAR_2023 },
         )
         val matchQuery = buildString {
             append("'")

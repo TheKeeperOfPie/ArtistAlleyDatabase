@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_booth_and_table_name
+import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_any
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_equation_any
@@ -220,6 +221,28 @@ object StampRallyDetailsScreen {
                     )
                 }
                 Spacer(Modifier.height(16.dp))
+            }
+        }
+
+        val notes = entry()?.stampRally?.notes
+        if (!notes.isNullOrEmpty()) {
+            item("stampRallyMaintainerNotes") {
+                Column(Modifier.animateItem()) {
+                    ThemeAwareElevatedCard(
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        SelectionContainer {
+                            Column {
+                                InfoText(
+                                    label = stringResource(Res.string.alley_maintainer_notes),
+                                    body = notes,
+                                    showDividerAbove = false
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
             }
         }
 

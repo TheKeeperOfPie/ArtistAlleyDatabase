@@ -458,6 +458,7 @@ class ArtistEntryDao(
             "booth",
             "name",
             "summary",
+            "notes",
         ).let {
             if (year == DataYear.YEAR_2023) {
                 it
