@@ -342,9 +342,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistSeriesConnection(
                                 artistId = id,
                                 seriesId = it,
-                                confirmed = false,
-                                has2024 = true,
-                                has2025 = false,
+                                state2024 = 1,
+                                state2025 = 0,
                             )
                         }
                     val seriesConnectionsConfirmed = seriesConfirmed
@@ -352,9 +351,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistSeriesConnection(
                                 artistId = id,
                                 seriesId = it,
-                                confirmed = true,
-                                has2024 = true,
-                                has2025 = false,
+                                state2024 = 2,
+                                state2025 = 0,
                             )
                         }
 
@@ -363,9 +361,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = false,
-                                has2024 = true,
-                                has2025 = false,
+                                state2024 = 1,
+                                state2025 = 0,
                             )
                         }
                     val merchConnectionsConfirmed = merchConfirmed
@@ -373,9 +370,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = true,
-                                has2024 = true,
-                                has2025 = false,
+                                state2024 = 2,
+                                state2025 = 0,
                             )
                         }
 
@@ -502,9 +498,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         ArtistSeriesConnection(
                             artistId = id,
                             seriesId = it,
-                            confirmed = false,
-                            has2024 = false,
-                            has2025 = true,
+                            state2024 = 0,
+                            state2025 = 1,
                         )
                     }
                     val seriesConnectionsConfirmed = seriesConfirmed
@@ -512,9 +507,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistSeriesConnection(
                                 artistId = id,
                                 seriesId = it,
-                                confirmed = true,
-                                has2024 = false,
-                                has2025 = true,
+                                state2024 = 0,
+                                state2025 = 2,
                             )
                         }
 
@@ -523,9 +517,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = false,
-                                has2024 = false,
-                                has2025 = true,
+                                state2024 = 0,
+                                state2025 = 1,
                             )
                         }
                     val merchConnectionsConfirmed = merchConfirmed
@@ -533,9 +526,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             ArtistMerchConnection(
                                 artistId = id,
                                 merchId = it,
-                                confirmed = true,
-                                has2024 = false,
-                                has2025 = true,
+                                state2024 = 0,
+                                state2025 = 2,
                             )
                         }
 
@@ -611,10 +603,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         titlePreferred = titlePreferred ?: titleRomaji ?: titleEnglish ?: id,
                         titleEnglish = titleEnglish ?: titlePreferred ?: titleRomaji ?: id,
                         titleRomaji = titleRomaji ?: titlePreferred ?: titleEnglish ?: id,
-                        titleNative = titleNative ?: titleRomaji ?: titlePreferred ?: titleEnglish ?: id,
+                        titleNative = titleNative ?: titleRomaji ?: titlePreferred ?: titleEnglish
+                        ?: id,
                         link = link,
-                        has2024 = seriesConnections.any { it.value.seriesId == id && it.value.has2024 },
-                        has2025 = seriesConnections.any { it.value.seriesId == id && it.value.has2025 },
+                        has2024 = seriesConnections.any { it.value.seriesId == id && it.value.state2024 > 0 },
+                        has2025 = seriesConnections.any { it.value.seriesId == id && it.value.state2025 > 0 },
                     )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
@@ -641,8 +634,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     MerchEntry(
                         name = name,
                         notes = notes,
-                        has2024 = merchConnections.any { it.value.merchId == name && it.value.has2024 },
-                        has2025 = merchConnections.any { it.value.merchId == name && it.value.has2025 },
+                        has2024 = merchConnections.any { it.value.merchId == name && it.value.state2024 > 0 },
+                        has2025 = merchConnections.any { it.value.merchId == name && it.value.state2025 > 0 },
                     )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
@@ -838,8 +831,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             this[idPair] = seriesConnection
         } else {
             this[idPair] = existing.copy(
-                has2024 = existing.has2024 || seriesConnection.has2024,
-                has2025 = existing.has2025 || seriesConnection.has2025,
+                state2024 = existing.state2024.coerceAtLeast(seriesConnection.state2024),
+                state2025 = existing.state2025.coerceAtLeast(seriesConnection.state2025),
             )
         }
     }
@@ -851,8 +844,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             this[idPair] = merchConnection
         } else {
             this[idPair] = existing.copy(
-                has2024 = existing.has2024 || merchConnection.has2024,
-                has2025 = existing.has2025 || merchConnection.has2025,
+                state2024 = existing.state2024.coerceAtLeast(merchConnection.state2024),
+                state2025 = existing.state2025.coerceAtLeast(merchConnection.state2025),
             )
         }
     }

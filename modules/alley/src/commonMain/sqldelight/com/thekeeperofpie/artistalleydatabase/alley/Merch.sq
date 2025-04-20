@@ -29,7 +29,7 @@ getBoothsByMerchIdConfirmed2024:
 SELECT artistEntry2024.booth FROM artistMerchConnection
 INNER JOIN artistEntry2024 ON (artistMerchConnection.artistId = artistEntry2024.id)
 WHERE artistMerchConnection.merchId = :merchId
-AND artistMerchConnection.confirmed IS 1;
+AND artistMerchConnection.state2024 = 2;
 
 getBoothsByMerchId2025:
 SELECT artistEntry2025.booth FROM artistMerchConnection
@@ -40,4 +40,4 @@ getBoothsByMerchIdConfirmed2025:
 SELECT artistEntry2025.booth FROM artistMerchConnection
 INNER JOIN artistEntry2025 ON (artistMerchConnection.artistId = artistEntry2025.id)
 WHERE artistMerchConnection.merchId = :merchId
-AND artistMerchConnection.confirmed IS 1;
+AND artistMerchConnection.state2025 = 2;

@@ -348,21 +348,38 @@ class ArtistEntryDao(
             }
 
             if (searchQuery.lockedSeries != null) {
+                val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
-                    DataYear.YEAR_2024 -> "artistSeriesConnection.has2024 = 1 AND "
-                    DataYear.YEAR_2025 -> "artistSeriesConnection.has2025 = 1 AND "
+                    DataYear.YEAR_2024 -> if (filterParams.showOnlyConfirmedTags) {
+                        "artistSeriesConnection.state2024 = 2 AND "
+                    } else {
+                        "artistSeriesConnection.state2024 != 0 AND "
+                    }
+                    DataYear.YEAR_2025 -> if (filterParams.showOnlyConfirmedTags) {
+                        "artistSeriesConnection.state2025 = 2 AND "
+                    } else {
+                        "artistSeriesConnection.state2025 != 0 AND "
+                    }
                 }
                 this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
                         yearFilter +
-                        (if (filterParams.showOnlyConfirmedTags) "artistSeriesConnection.confirmed = 1 AND " else "") +
                         " artistSeriesConnection.seriesId = " +
                         "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
             } else if (searchQuery.merchIn.isNotEmpty()) {
+                val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
-                    DataYear.YEAR_2024 -> "artistMerchConnection.has2024 = 1 AND "
-                    DataYear.YEAR_2025 -> "artistMerchConnection.has2025 = 1 AND "
+                    DataYear.YEAR_2024 -> if (filterParams.showOnlyConfirmedTags) {
+                        "artistMerchConnection.state2024 = 2 AND "
+                    } else {
+                        "artistMerchConnection.state2024 != 0 AND "
+                    }
+                    DataYear.YEAR_2025 -> if (filterParams.showOnlyConfirmedTags) {
+                        "artistMerchConnection.state2025 = 2 AND "
+                    } else {
+                        "artistMerchConnection.state2025 != 0 AND "
+                    }
                 }
 
                 val merchList = searchQuery.merchIn.joinToString(separator = ",") {
@@ -371,7 +388,6 @@ class ArtistEntryDao(
 
                 this += "$tableName.id IN (SELECT artistId from artistMerchConnection WHERE " +
                         yearFilter +
-                        (if (filterParams.showOnlyConfirmedTags) "artistMerchConnection.confirmed = 1 AND " else "") +
                         "artistMerchConnection.merchId IN ($merchList))"
             }
         }
