@@ -29,6 +29,27 @@ function onOpen(event: SheetsOnOpen) {
 }
 
 function onEdit(event: SheetsOnEdit) {
+    const range = event.range
+    const sheet = range.getSheet()
+    const row = range.getRow()
+    const validationColumn = findColumnForHeader(sheet, "Validation")
+    const unlockAll = sheet.getRange(2, validationColumn).getValue() == "UNLOCK_ALL"
+    Logger.log(`unlockAll = ${unlockAll}`)
+    Logger.log(`getNumRows = ${range.getNumRows()}`)
+    Logger.log(`getNumColumns = ${range.getNumColumns()}`)
+    if (sheet.getName() == "Artists" && !unlockAll) {
+        if (range.getNumRows() != 1 || range.getNumColumns() != 1) {
+            SpreadsheetApp.getUi().alert(`CAUTION: Edited multiple rows without UNLOCK_ALL, cannot rollback`)
+            return
+        } else if (validationColumn != range.getColumn() &&
+            findValueForHeader(sheet, row, "Validation") != "UNLOCKED"
+        ) {
+            range.setValue(event.oldValue)
+            SpreadsheetApp.getUi().alert(`Row ${row} was not UNLOCKED`)
+            return
+        }
+    }
+
     onArbitraryLinkInput(event)
     multiSelect(event)
 }
