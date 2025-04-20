@@ -371,6 +371,7 @@ sealed class SortFilterSectionState(val id: String) {
         private val title: StringResource,
         val property: MutableStateFlow<Boolean>,
         val default: Boolean? = null,
+        val allowClear: Boolean = false,
     ) : SortFilterSectionState(title.key) {
 
         @Composable
@@ -381,7 +382,9 @@ sealed class SortFilterSectionState(val id: String) {
         }
 
         override fun clear() {
-            // This is persistent, can't be cleared
+            if (allowClear && default != null) {
+                property.value = default
+            }
         }
 
         @Composable

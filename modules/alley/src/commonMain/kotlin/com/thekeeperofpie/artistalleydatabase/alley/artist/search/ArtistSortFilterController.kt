@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.DropdownMenuItem
@@ -103,7 +102,7 @@ class ArtistSortFilterController(
     lockedMerchId: String?,
     dispatchers: CustomDispatchers,
     seriesEntryDao: SeriesEntryDao,
-    private val seriesImagesStore: SeriesImagesStore,
+    seriesImagesStore: SeriesImagesStore,
     tagEntryDao: TagEntryDao,
     val settings: ArtistAlleySettings,
 ) {
@@ -186,7 +185,7 @@ class ArtistSortFilterController(
                         ExposedDropdownMenuBox(
                             expanded = dropdownExpanded,
                             onExpandedChange = { dropdownExpanded = it },
-                            modifier = Modifier.wrapContentWidth()
+                            modifier = Modifier.padding(bottom = 8.dp)
                         ) {
                             val interactionSource = remember { MutableInteractionSource() }
                             TextField(
@@ -374,24 +373,28 @@ class ArtistSortFilterController(
         title = Res.string.alley_filter_show_grid_by_default,
         property = settings.showGridByDefault,
         default = false,
+        allowClear = true,
     )
 
     private val randomCatalogImageSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_show_random_catalog_image,
         property = settings.showRandomCatalogImage,
         default = false,
+        allowClear = true,
     )
 
     private val onlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_show_only_confirmed_tags,
         property = settings.showOnlyConfirmedTags,
         default = false,
+        allowClear = true,
     )
 
     private val onlyHasCommissionsSection = SortFilterSectionState.SwitchBySetting(
         Res.string.alley_filter_show_only_has_commissions,
         settings.showOnlyHasCommissions,
         default = false,
+        allowClear = true,
     )
 
     private val hideIgnored = savedStateHandle.getMutableStateFlow("hideIgnored", false)
@@ -405,6 +408,7 @@ class ArtistSortFilterController(
         title = Res.string.alley_filter_force_one_display_column,
         property = settings.forceOneDisplayColumn,
         default = false,
+        allowClear = true,
     )
 
     private val sections = listOf(
