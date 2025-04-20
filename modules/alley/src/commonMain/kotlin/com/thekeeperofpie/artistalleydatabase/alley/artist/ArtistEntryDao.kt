@@ -347,7 +347,8 @@ class ArtistEntryDao(
                 if (filterParams.showOnlyHasCommissions) this += "$tableName.commissions != '[]'"
             }
 
-            if (searchQuery.lockedSeries != null) {
+            // TODO: Locked series/merch doesn't enforce AND
+            if (searchQuery.seriesIn.isNotEmpty()) {
                 val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
@@ -362,11 +363,17 @@ class ArtistEntryDao(
                         "artistSeriesConnection.state2025 != 0 AND "
                     }
                 }
+
+                val seriesList = searchQuery.seriesIn.joinToString(separator = ",") {
+                    DatabaseUtils.sqlEscapeString(it)
+                }
+
                 this += "$tableName.id IN (SELECT artistId from artistSeriesConnection WHERE " +
                         yearFilter +
-                        " artistSeriesConnection.seriesId = " +
-                        "${DatabaseUtils.sqlEscapeString(searchQuery.lockedSeries)})"
-            } else if (searchQuery.merchIn.isNotEmpty()) {
+                        "artistSeriesConnection.seriesId IN ($seriesList))"
+            }
+
+            if (searchQuery.merchIn.isNotEmpty()) {
                 val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""

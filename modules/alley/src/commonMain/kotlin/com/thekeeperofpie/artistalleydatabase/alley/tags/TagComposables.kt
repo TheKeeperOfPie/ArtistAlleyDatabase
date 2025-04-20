@@ -37,14 +37,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 fun SeriesRow(
     series: SeriesEntry?,
     image: () -> String?,
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
-    expanded: Boolean,
-    onClick: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .optionalClickable(onClick = onClick.takeIf { expanded })
+        modifier = modifier
+            .optionalClickable(onClick)
             .height(IntrinsicSize.Min)
     ) {
         AsyncImage(

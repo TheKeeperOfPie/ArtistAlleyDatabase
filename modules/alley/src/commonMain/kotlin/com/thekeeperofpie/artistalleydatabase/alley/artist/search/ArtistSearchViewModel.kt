@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -50,6 +51,7 @@ class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
     private val seriesEntryDao: SeriesEntryDao,
+    private val seriesImagesStore: SeriesImagesStore,
     private val tagEntryDao: TagEntryDao,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
@@ -77,16 +79,6 @@ class ArtistSearchViewModel(
     val lockedSeries = route.series
     val lockedMerch = route.merch
 
-    val sortFilterController = ArtistSortFilterController(
-        scope = viewModelScope,
-        savedStateHandle = savedStateHandle,
-        dataYear = year,
-        lockedMerchId = lockedMerch,
-        dispatchers = dispatchers,
-        settings = settings,
-        tagEntryDao = tagEntryDao,
-    )
-
     val searchState = SearchScreen.State(
         columns = ArtistSearchScreen.ArtistColumn.entries,
         displayType = settings.displayType,
@@ -103,6 +95,19 @@ class ArtistSearchViewModel(
             }
         }
         .stateInForCompose(this, null)
+
+    val sortFilterController = ArtistSortFilterController(
+        scope = viewModelScope,
+        savedStateHandle = savedStateHandle,
+        dataYear = year,
+        lockedMerchId = lockedMerch,
+        lockedSeriesEntry = lockedSeriesEntry,
+        dispatchers = dispatchers,
+        settings = settings,
+        seriesEntryDao = seriesEntryDao,
+        seriesImagesStore = seriesImagesStore,
+        tagEntryDao = tagEntryDao,
+    )
 
     val displayType = settings.displayType
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
@@ -125,7 +130,7 @@ class ArtistSearchViewModel(
                     ArtistSearchQuery(
                         filterParams = it,
                         randomSeed = randomSeed,
-                        lockedSeries = lockedSeries,
+                        seriesIn = it.seriesIn, // TODO: Deferred and may cause an extra load
                         merchIn = it.merchIn,
                     )
                 },

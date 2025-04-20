@@ -134,7 +134,6 @@ object BrowseScreen {
                                             }
                                         },
                                         textStyle = LocalTextStyle.current,
-                                        expanded = true,
                                         onClick = { it?.let { onSeriesClick(it) } },
                                     )
                                 },

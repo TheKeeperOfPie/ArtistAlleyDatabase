@@ -21,11 +21,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
@@ -51,6 +53,7 @@ class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
     seriesEntryDao: SeriesEntryDao,
+    seriesImagesStore: SeriesImagesStore,
     tagEntryDao: TagEntryDao,
     userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
@@ -66,8 +69,11 @@ class FavoritesViewModel(
         savedStateHandle = savedStateHandle,
         dataYear = year,
         lockedMerchId = null,
+        lockedSeriesEntry = ReadOnlyStateFlow(null),
         dispatchers = dispatchers,
         settings = settings,
+        seriesEntryDao = seriesEntryDao,
+        seriesImagesStore = seriesImagesStore,
         tagEntryDao = tagEntryDao,
     )
 

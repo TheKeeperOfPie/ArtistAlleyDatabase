@@ -263,10 +263,11 @@ object ArtistDetailsScreen {
                             forSeries = true,
                         ) { value, expanded ->
                             SeriesRow(
-                                value,
+                                series = value,
                                 image = { value?.id?.let { seriesImages()[it] } },
-                                expanded = expanded,
-                                onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } },
+                                onClick = if (expanded) {
+                                    { value?.id?.let { eventSink(Event.OpenSeries(it)) } }
+                                } else null,
                             )
                         }
                         Spacer(Modifier.height(16.dp))
@@ -289,10 +290,11 @@ object ArtistDetailsScreen {
                             forSeries = true,
                         ) { value, expanded ->
                             SeriesRow(
-                                value,
+                                series = value,
                                 image = { value?.id?.let { seriesImages()[it] } },
-                                expanded = expanded,
-                                onClick = { value?.id?.let { eventSink(Event.OpenSeries(it)) } },
+                                onClick = if (expanded) {
+                                    { value?.id?.let { eventSink(Event.OpenSeries(it)) } }
+                                } else null,
                             )
                         }
                         Spacer(Modifier.height(16.dp))

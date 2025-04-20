@@ -158,6 +158,38 @@ class SeriesEntryDao(
         )
     }
 
+    suspend fun searchSeriesForAutocomplete(query: String): List<SeriesEntry> {
+        if (query.isBlank()) return emptyList()
+        val queries = query.split(Regex("\\s+"))
+        val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
+        val targetColumns = listOfNotNull(
+            "titleEnglish",
+            "titleRomaji",
+            "titleNative",
+        )
+        val matchQuery = buildString {
+            append("'{ ${targetColumns.joinToString(separator = " ")} } : $matchOrQuery'")
+        }
+
+        val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
+            "(${DaoUtils.makeLikeAndQuery("seriesEntry_fts.$it", queries)})"
+        }
+        val statement = DaoUtils.buildSearchStatement(
+            tableName = "seriesEntry",
+            ftsTableName = "seriesEntry_fts",
+            idField = "id",
+            likeOrderBy = "ORDER BY rank",
+            matchQuery = matchQuery,
+            likeStatement = likeStatement,
+        ) + " LIMIT 10"
+
+        return DaoUtils.makeQuery(
+            driver = driver(),
+            statement = statement,
+            tableNames = listOf("seriesEntry", "seriesEntry_fts"), mapper = SqlCursor::toSeriesEntry
+        ).awaitAsList()
+    }
+
     // Some tags were adjusted between years, and the most recent list may not have all
     // of the prior tags. In those cases, mock a response.
     private fun fallbackSeriesEntry(id: String) = SeriesEntry(
