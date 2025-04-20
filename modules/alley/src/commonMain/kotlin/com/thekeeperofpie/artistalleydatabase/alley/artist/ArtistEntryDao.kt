@@ -348,7 +348,7 @@ class ArtistEntryDao(
             }
 
             // TODO: Locked series/merch doesn't enforce AND
-            if (searchQuery.seriesIn.isNotEmpty()) {
+            if (searchQuery.filterParams.seriesIn.isNotEmpty()) {
                 val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
@@ -364,7 +364,7 @@ class ArtistEntryDao(
                     }
                 }
 
-                val seriesList = searchQuery.seriesIn.joinToString(separator = ",") {
+                val seriesList = searchQuery.filterParams.seriesIn.joinToString(separator = ",") {
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
@@ -373,7 +373,7 @@ class ArtistEntryDao(
                         "artistSeriesConnection.seriesId IN ($seriesList))"
             }
 
-            if (searchQuery.merchIn.isNotEmpty()) {
+            if (searchQuery.filterParams.merchIn.isNotEmpty()) {
                 val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
@@ -389,7 +389,7 @@ class ArtistEntryDao(
                     }
                 }
 
-                val merchList = searchQuery.merchIn.joinToString(separator = ",") {
+                val merchList = searchQuery.filterParams.merchIn.joinToString(separator = ",") {
                     DatabaseUtils.sqlEscapeString(it)
                 }
 

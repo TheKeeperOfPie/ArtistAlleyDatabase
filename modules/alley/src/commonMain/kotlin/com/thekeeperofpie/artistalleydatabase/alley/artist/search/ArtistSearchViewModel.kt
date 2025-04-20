@@ -127,12 +127,7 @@ class ArtistSearchViewModel(
             combine(
                 year,
                 sortFilterController.state.filterParams.mapLatest {
-                    ArtistSearchQuery(
-                        filterParams = it,
-                        randomSeed = randomSeed,
-                        seriesIn = it.seriesIn, // TODO: Deferred and may cause an extra load
-                        merchIn = it.merchIn,
-                    )
+                    ArtistSearchQuery(filterParams = it, randomSeed = randomSeed)
                 },
                 query,
                 settings.showOnlyConfirmedTags,
