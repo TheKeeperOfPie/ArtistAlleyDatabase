@@ -493,7 +493,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         commissions = commissions,
                         commissionOnsite = commissions.contains("On-site"),
                         commissionOnline = commissions.contains("Online") ||
-                                commissions.any { it.contains("http", ignoreCase = true) },
+                                commissions.any {
+                                    it.contains("http", ignoreCase = true) &&
+                                            !it.contains("vgen.co", ignoreCase = true)
+                                },
                         commissionVGen = commissions.any {
                             it.contains("vgen.co", ignoreCase = true)
                         },
