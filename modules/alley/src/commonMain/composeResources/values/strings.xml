@@ -233,4 +233,13 @@
     <string name="alley_merch_chip_state_content_description">Merch chip state</string>
     <string name="alley_merch_filter_label">Merch</string>
     <string name="alley_merch_filter_content_description">Merch filter expand</string>
+
+    <string name="alley_commission_type_any">Any</string>
+    <string name="alley_commission_type_on_site">On-site</string>
+    <string name="alley_commission_type_online">Online</string>
+    <string name="alley_commission_type_vgen">VGen</string>
+    <string name="alley_commission_type_other">Other</string>
+    <string name="alley_commission_type_filter_label">Commissions</string>
+    <string name="alley_commission_type_filter_content_description">Commissions filter expand</string>
+    <string name="alley_commission_type_filter_chip_state_content_description">Commissions chip state</string>
 </resources>

@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -98,17 +99,21 @@ class FavoritesViewModel(
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
     private val inputs = combineStates(query, year, settings.showOnlyConfirmedTags, ::Triple)
-    val artistEntries = inputs.flatMapLatest { (query, year, showOnlyConfirmedTags) ->
-        artistSortFilterController.state.filterParams.flatMapLatest { filterParams ->
-            createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                artistEntryDao.search(
-                    year = year,
-                    query = query,
-                    searchQuery = ArtistSearchQuery(filterParams, randomSeed),
-                    onlyFavorites = true,
-                )
-            }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
-        }
+    val artistEntries = combine(
+        inputs,
+        artistSortFilterController.state.filterParams,
+        ::Pair,
+    ).flatMapLatest { (inputs, filterParams) ->
+        val (query, year, showOnlyConfirmedTags) = inputs
+        createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+            artistEntryDao.search(
+                year = year,
+                query = query,
+                searchQuery = ArtistSearchQuery(filterParams, randomSeed),
+                onlyFavorites = true,
+            )
+        }.flow
+            .map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
             .map {
                 it.mapOnIO {
                     val series = ArtistEntryGridModel.getSeries(
@@ -128,8 +133,9 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val stampRallyEntries = inputs.flatMapLatest { (query, year, showOnlyConfirmedTags) ->
-        stampRallyFilterParams.flatMapLatest { filterParams ->
+    val stampRallyEntries = combine(inputs, stampRallyFilterParams, ::Pair)
+        .flatMapLatest { (inputs, filterParams) ->
+            val (query, year, showOnlyConfirmedTags) = inputs
             createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 stampRallyEntryDao.search(
                     year = year,
@@ -139,8 +145,7 @@ class FavoritesViewModel(
                 )
             }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
         }
-            .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
-    }
+        .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 

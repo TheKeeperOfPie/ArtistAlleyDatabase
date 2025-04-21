@@ -37,12 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_chip_state_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
-import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_has_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_content_description
@@ -58,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.AlleyTagEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.CommissionType
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
@@ -80,6 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
@@ -362,6 +366,24 @@ class ArtistSortFilterController(
         }
     }
 
+    private val commissionsIn = savedStateHandle.getMutableStateFlow<String, Set<CommissionType>>(
+        scope = scope,
+        key = "commissionsIn",
+        initialValue = { emptySet() },
+        serialize = Json::encodeToString,
+        deserialize = Json::decodeFromString,
+    )
+    private val commissionsSection = SortFilterSectionState.Filter(
+        title = Res.string.alley_commission_type_filter_label,
+        titleDropdownContentDescription = Res.string.alley_commission_type_filter_content_description,
+        includeExcludeIconContentDescription = Res.string.alley_commission_type_filter_chip_state_content_description,
+        options = MutableStateFlow(CommissionType.entries),
+        filterIn = commissionsIn,
+        filterNotIn = MutableStateFlow(emptySet()),
+        valueToText = { stringResource(it.textRes) },
+        selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
+    )
+
     val onlyCatalogImages = savedStateHandle.getMutableStateFlow("onlyCatalogImages", false)
     private val onlyCatalogImagesSection = SortFilterSectionState.Switch(
         title = Res.string.alley_filter_only_catalogs,
@@ -390,13 +412,6 @@ class ArtistSortFilterController(
         allowClear = true,
     )
 
-    private val onlyHasCommissionsSection = SortFilterSectionState.SwitchBySetting(
-        Res.string.alley_filter_show_only_has_commissions,
-        settings.showOnlyHasCommissions,
-        default = false,
-        allowClear = true,
-    )
-
     private val hideIgnored = savedStateHandle.getMutableStateFlow("hideIgnored", false)
     private val hideIgnoredSection = SortFilterSectionState.Switch(
         title = Res.string.alley_filter_hide_ignored,
@@ -415,35 +430,35 @@ class ArtistSortFilterController(
         sortSection,
         seriesSection,
         merchSection,
+        commissionsSection,
         onlyCatalogImagesSection,
         gridByDefaultSection,
         randomCatalogImageSection,
         onlyConfirmedTagsSection,
-        onlyHasCommissionsSection,
         hideIgnoredSection,
         forceOneDisplayColumnSection,
     )
 
     @Suppress("UNCHECKED_CAST")
     private val filterParams = combineStates(
+        sortOption,
+        settings.artistsSortAscending,
         lockedSeriesEntry,
         seriesIn,
         merchIdIn,
-        sortOption,
-        settings.artistsSortAscending,
+        commissionsIn,
         onlyCatalogImages,
         settings.showOnlyConfirmedTags,
-        settings.showOnlyHasCommissions,
         hideIgnored,
     ) {
         FilterParams(
-            seriesIn = setOfNotNull((it[0] as SeriesEntry?)?.id) + (it[1] as List<SeriesFilterEntry>).map { it.id },
-            merchIn = (it[2] as Set<String>) + setOfNotNull(lockedMerchId),
-            sortOption = it[3] as ArtistSearchSortOption,
-            sortAscending = it[4] as Boolean,
-            showOnlyWithCatalog = it[5] as Boolean,
-            showOnlyConfirmedTags = it[6] as Boolean,
-            showOnlyHasCommissions = it[7] as Boolean,
+            sortOption = it[0] as ArtistSearchSortOption,
+            sortAscending = it[1] as Boolean,
+            seriesIn = setOfNotNull((it[2] as SeriesEntry?)?.id) + (it[3] as List<SeriesFilterEntry>).map { it.id },
+            merchIn = (it[4] as Set<String>) + setOfNotNull(lockedMerchId),
+            commissionsIn = it[5] as Set<CommissionType>,
+            showOnlyWithCatalog = it[6] as Boolean,
+            showOnlyConfirmedTags = it[7] as Boolean,
             hideIgnored = it[8] as Boolean,
         )
     }
@@ -455,13 +470,13 @@ class ArtistSortFilterController(
     )
 
     data class FilterParams(
-        val seriesIn: Set<String>,
-        val merchIn: Set<String>,
         val sortOption: ArtistSearchSortOption,
         val sortAscending: Boolean,
+        val seriesIn: Set<String>,
+        val merchIn: Set<String>,
+        val commissionsIn: Set<CommissionType>,
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
-        val showOnlyHasCommissions: Boolean,
         val hideIgnored: Boolean,
     )
 }

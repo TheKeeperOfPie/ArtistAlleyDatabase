@@ -194,6 +194,7 @@ sealed class SortFilterSectionState(val id: String) {
             AT_MOST_ONE,
             EXACTLY_ONE,
             ONLY_INCLUDE,
+            ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
             ALLOW_EXCLUDE,
         }
 
@@ -243,6 +244,15 @@ sealed class SortFilterSectionState(val id: String) {
                                 filterIn -= it
                             } else {
                                 filterIn += it
+                            }
+                        }
+                        SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST -> {
+                            if (filterIn.contains(it)) {
+                                filterIn -= it
+                            } else if (it == options.first() ){
+                                filterIn = setOf(options.first())
+                            } else {
+                                filterIn = filterIn + it - options.first()
                             }
                         }
                         SelectionMethod.ALLOW_EXCLUDE -> {

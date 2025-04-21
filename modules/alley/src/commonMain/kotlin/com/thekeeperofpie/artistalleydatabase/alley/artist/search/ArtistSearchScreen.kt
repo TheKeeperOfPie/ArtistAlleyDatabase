@@ -1,10 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Link
@@ -50,6 +50,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_series
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
+import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -294,43 +296,45 @@ object ArtistSearchScreen {
                     series?.map { it.name(languageOption) }
                         ?.shuffled(Random(randomSeed))
                 }
-                TagsFlowRow(
+                TagsCell(
                     column = column,
                     tags = shuffledSeries,
+                    moreContentDescription = Res.string.alley_expand_series,
                     onTagClick = onSeriesClick,
+                    onMoreClick = { if (row != null) onEntryClick(row, 1) },
                 )
             }
-            ArtistColumn.MERCH -> TagsFlowRow(
+            ArtistColumn.MERCH -> TagsCell(
                 column = column,
                 tags = row?.merch,
+                moreContentDescription = Res.string.alley_expand_merch,
                 onTagClick = onMerchClick,
+                onMoreClick = { if (row != null) onEntryClick(row, 1) },
             )
-            ArtistColumn.LINKS -> row?.artist?.linkModels?.let {
-                FlowRow {
-                    val uriHandler = LocalUriHandler.current
-                    it.forEach {
-                        IconButtonWithTooltip(
-                            imageVector = it.logo?.icon ?: Icons.Default.Link,
-                            tooltipText = it.link,
-                            onClick = { uriHandler.openUri(it.link) },
-                        )
-                    }
+            ArtistColumn.LINKS -> row?.artist?.linkModels?.let { linkModels ->
+                val uriHandler = LocalUriHandler.current
+                Grid(linkModels.size) {
+                    val linkModel = linkModels[it]
+                    IconButtonWithTooltip(
+                        imageVector = linkModel.logo?.icon ?: Icons.Default.Link,
+                        tooltipText = linkModel.link,
+                        onClick = { uriHandler.openUri(linkModel.link) },
+                    )
                 }
             }
-            ArtistColumn.STORE -> row?.artist?.storeLinkModels?.let {
-                FlowRow {
-                    val uriHandler = LocalUriHandler.current
-                    it.forEach {
-                        IconButtonWithTooltip(
-                            imageVector = it.logo?.icon ?: Icons.Default.Link,
-                            tooltipText = it.link,
-                            onClick = { uriHandler.openUri(it.link) },
-                        )
-                    }
+            ArtistColumn.STORE -> row?.artist?.storeLinkModels?.let { storeLinkModels ->
+                val uriHandler = LocalUriHandler.current
+                Grid(storeLinkModels.size) {
+                    val linkModel = storeLinkModels[it]
+                    IconButtonWithTooltip(
+                        imageVector = linkModel.logo?.icon ?: Icons.Default.Link,
+                        tooltipText = linkModel.link,
+                        onClick = { uriHandler.openUri(linkModel.link) },
+                    )
                 }
             }
             ArtistColumn.COMMISSIONS -> row?.artist?.commissionModels?.let {
-                FlowRow {
+                Column {
                     val uriHandler = LocalUriHandler.current
                     it.forEach {
                         when (it) {
@@ -361,23 +365,30 @@ object ArtistSearchScreen {
     }
 
     @Composable
-    private fun TagsFlowRow(
+    private fun TagsCell(
         column: ArtistColumn,
         tags: List<String>?,
+        moreContentDescription: StringResource,
         onTagClick: (String) -> Unit,
+        onMoreClick: () -> Unit,
     ) {
         if (tags.isNullOrEmpty()) return
-        FlowRow(
-            maxLines = 6,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(horizontal = 8.dp)
-        ) {
-            tags.forEach {
-                SuggestionChip(
-                    onClick = { onTagClick(it) },
-                    label = { Text(text = it, modifier = Modifier.padding(vertical = 4.dp)) },
-                    modifier = Modifier.widthIn(max = column.size - 16.dp)
-                )
+        Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+            tags.take(8)
+                .forEach {
+                    SuggestionChip(
+                        onClick = { onTagClick(it) },
+                        label = { Text(text = it, modifier = Modifier.padding(vertical = 4.dp)) },
+                        modifier = Modifier.widthIn(max = column.size - 16.dp)
+                    )
+                }
+            if (tags.size > 8) {
+                IconButton(onClick = onMoreClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.OpenInNew,
+                        contentDescription = stringResource(moreContentDescription),
+                    )
+                }
             }
         }
     }
@@ -396,6 +407,23 @@ object ArtistSearchScreen {
                 },
                 label = label,
             )
+        }
+    }
+
+    @Composable
+    private fun Grid(count: Int, item: @Composable (index: Int) -> Unit) {
+        Column {
+            val rowCount = (count + 2) / 3
+            var index = 0
+            repeat(rowCount) {
+                Row {
+                    repeat(3) {
+                        if (index < count) {
+                            item(index++)
+                        }
+                    }
+                }
+            }
         }
     }
 

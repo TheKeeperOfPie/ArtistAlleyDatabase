@@ -73,7 +73,6 @@ class ArtistAlleyWasmJsSettings(
     override val showGridByDefault by registerBoolean(false)
     override val showRandomCatalogImage by registerBoolean(false)
     override val showOnlyConfirmedTags by registerBoolean(false)
-    override val showOnlyHasCommissions by registerBoolean(false)
     override val forceOneDisplayColumn by registerBoolean(false)
     override val dataYear by register(
         serialize = { it.year.toString() },

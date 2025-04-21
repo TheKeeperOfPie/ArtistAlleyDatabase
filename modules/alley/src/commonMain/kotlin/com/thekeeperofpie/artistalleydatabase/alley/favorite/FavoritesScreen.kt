@@ -4,16 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -69,7 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
@@ -158,25 +154,13 @@ object FavoritesScreen {
             Box {
                 var horizontalScrollBarWidth by remember { mutableStateOf(0) }
                 val horizontalScrollState = rememberScrollState()
-                BottomSheetScaffold(
+                SortFilterBottomScaffold(
+                    state = when (tab) {
+                        EntryTab.ARTISTS -> artistSortFilterState
+                        EntryTab.RALLIES -> stampRallySortFilterState
+                    },
                     scaffoldState = scaffoldState,
                     sheetPeekHeight = 72.dp,
-                    sheetDragHandle = {
-                        BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
-                    },
-                    sheetContent = {
-                        val sortFilterState = when (tab) {
-                            EntryTab.ARTISTS -> artistSortFilterState
-                            EntryTab.RALLIES -> stampRallySortFilterState
-                        }
-                        SortFilterOptionsPanel(
-                            state = sortFilterState,
-                            showClear = false,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 320.dp)
-                        )
-                    },
                     topBar = {
                         val title = stringResource(Res.string.alley_favorites_search)
                         SearchScreen.TopBar(

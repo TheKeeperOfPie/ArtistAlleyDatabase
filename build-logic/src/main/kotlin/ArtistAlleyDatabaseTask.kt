@@ -491,6 +491,18 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         merchConfirmed = merchConfirmed,
                         notes = notes,
                         commissions = commissions,
+                        commissionOnsite = commissions.contains("On-site"),
+                        commissionOnline = commissions.contains("Online") ||
+                                commissions.any { it.contains("http", ignoreCase = true) },
+                        commissionVGen = commissions.any {
+                            it.contains("vgen.co", ignoreCase = true)
+                        },
+                        commissionOther = commissions.filterNot {
+                            it.contains("On-site", ignoreCase = true) ||
+                                    it.contains("Online", ignoreCase = true) ||
+                                    it.contains("http", ignoreCase = true) ||
+                                    it.contains("vgen.co", ignoreCase = true)
+                        }.isNotEmpty(),
                         counter = counter++,
                     )
 

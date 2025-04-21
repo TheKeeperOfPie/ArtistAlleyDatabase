@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.tags.CommissionType
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -105,17 +106,18 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
             driveLink = getString(7),
             notes = getString(8),
             commissions = getString(9)!!.let(Json::decodeFromString),
-            seriesInferred = getString(10)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(11)!!.let(Json::decodeFromString),
-            merchInferred = getString(12)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(13)!!.let(Json::decodeFromString),
-            counter = getLong(14)!!,
+            // Skip 4 for commission booleans
+            seriesInferred = getString(14)!!.let(Json::decodeFromString),
+            seriesConfirmed = getString(15)!!.let(Json::decodeFromString),
+            merchInferred = getString(16)!!.let(Json::decodeFromString),
+            merchConfirmed = getString(17)!!.let(Json::decodeFromString),
+            counter = getLong(18)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.YEAR_2025,
-            favorite = getBoolean(15) == true,
-            ignored = getBoolean(16) == true,
+            favorite = getBoolean(19) == true,
+            ignored = getBoolean(20) == true,
         )
     )
 }
@@ -344,12 +346,26 @@ class ArtistEntryDao(
             if (filterParams.showOnlyWithCatalog) this += "$tableName.driveLink LIKE 'http%'"
 
             if (year == DataYear.YEAR_2025) {
-                if (filterParams.showOnlyHasCommissions) this += "$tableName.commissions != '[]'"
+                val commissionsIn = filterParams.commissionsIn
+                val commissionStatements = CommissionType.entries
+                    .filter(commissionsIn::contains)
+                    .map {
+                        when (it) {
+                            CommissionType.ANY -> "$tableName.commissions != '[]'"
+                            CommissionType.ON_SITE -> "$tableName.commissionOnsite = 1"
+                            CommissionType.ONLINE -> "$tableName.commissionOnline = 1"
+                            CommissionType.VGEN -> "$tableName.commissionVGen = 1"
+                            CommissionType.OTHER -> "$tableName.commissionOther = 1"
+                        }
+                    }
+
+                if (commissionStatements.isNotEmpty()) {
+                    this += "(${commissionStatements.joinToString(separator = " OR ")})"
+                }
             }
 
             // TODO: Locked series/merch doesn't enforce AND
-            if (searchQuery.filterParams.seriesIn.isNotEmpty()) {
-                val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
+            if (filterParams.seriesIn.isNotEmpty()) {
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
                     DataYear.YEAR_2024 -> if (filterParams.showOnlyConfirmedTags) {
@@ -364,7 +380,7 @@ class ArtistEntryDao(
                     }
                 }
 
-                val seriesList = searchQuery.filterParams.seriesIn.joinToString(separator = ",") {
+                val seriesList = filterParams.seriesIn.joinToString(separator = ",") {
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
@@ -373,7 +389,7 @@ class ArtistEntryDao(
                         "artistSeriesConnection.seriesId IN ($seriesList))"
             }
 
-            if (searchQuery.filterParams.merchIn.isNotEmpty()) {
+            if (filterParams.merchIn.isNotEmpty()) {
                 val filterLevel = if (filterParams.showOnlyConfirmedTags) 2 else 1
                 val yearFilter = when (year) {
                     DataYear.YEAR_2023 -> ""
@@ -389,7 +405,7 @@ class ArtistEntryDao(
                     }
                 }
 
-                val merchList = searchQuery.filterParams.merchIn.joinToString(separator = ",") {
+                val merchList = filterParams.merchIn.joinToString(separator = ",") {
                     DatabaseUtils.sqlEscapeString(it)
                 }
 
