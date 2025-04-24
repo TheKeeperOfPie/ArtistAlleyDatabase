@@ -256,8 +256,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             name = name,
                             artistNames = artistNames,
                             summary = summary,
-                            links = contactLinks.getOrElse(index) { emptyList() } +
-                                    links.getOrElse(index) { emptyList() },
+                            links = (contactLinks.getOrElse(index) { emptyList() } +
+                                    links.getOrElse(index) { emptyList() }).distinct(),
                             catalogLinks = catalogLinks.getOrElse(index) { emptyList() },
                             driveLink = driveLink,
                             counter = counter++,
