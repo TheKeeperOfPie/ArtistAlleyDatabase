@@ -104,7 +104,10 @@ class ArtistDetailsViewModel(
                 )
             }
 
-            seriesImages = seriesImagesStore.getImages(entry.seriesInferred + entry.seriesConfirmed)
+            val series = entry.seriesInferred + entry.seriesConfirmed
+            val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
+            seriesImages = seriesImagesCacheResult.seriesIdsToImages
+            seriesImages = seriesImagesStore.getAllImages(series, seriesImagesCacheResult)
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {

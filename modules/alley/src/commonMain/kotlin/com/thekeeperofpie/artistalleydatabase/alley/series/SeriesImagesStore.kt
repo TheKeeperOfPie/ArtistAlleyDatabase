@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyAniListApi
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyWikipediaApi
+import com.thekeeperofpie.artistalleydatabase.alley.GetImageEntries
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
@@ -28,15 +29,17 @@ class SeriesImagesStore(
             .mapValues { it.value.associate { it.imageId to it.url } }
         return seriesEntryDao.getSeriesIds()
             .mapNotNull {
-                val imageUrl = it.aniListId?.toString()?.let {images[ImageType.ANILIST.name]?.get(it) }
-                    ?: it.wikipediaId?.toString()?.let {images[ImageType.WIKIPEDIA.name]?.get(it) }
-                    ?: return@mapNotNull null
+                val imageUrl =
+                    it.aniListId?.toString()?.let { images[ImageType.ANILIST.name]?.get(it) }
+                        ?: it.wikipediaId?.toString()
+                            ?.let { images[ImageType.WIKIPEDIA.name]?.get(it) }
+                        ?: return@mapNotNull null
                 it.id to imageUrl
             }
             .associate { it }
     }
 
-    suspend fun getImages(series: List<SeriesEntry>): Map<String, String> {
+    suspend fun getCachedImages(series: List<SeriesEntry>): CacheResult {
         val seriesIdToAniListIds = series.filter { it.aniListId != null }
             .associate { it.id to it.aniListId!!.toString() }
         val seriesIdToWikipediaIds = series.filter { it.wikipediaId != null }
@@ -50,6 +53,32 @@ class SeriesImagesStore(
             .getImages(seriesIdToWikipediaIds.values, ImageType.WIKIPEDIA)
             .associateBy { it.imageId }
 
+        val seriesIdsToImages = series.mapNotNull {
+            val imageUrl = when {
+                it.aniListId != null -> cachedAniListImages[it.aniListId.toString()]?.url
+                it.wikipediaId != null -> cachedWikipediaImages[it.wikipediaId.toString()]?.url
+                else -> null
+            } ?: return@mapNotNull null
+            it.id to imageUrl
+        }.associate { it }
+
+        return CacheResult(
+            cachedAniListImages = cachedAniListImages,
+            cachedWikipediaImages = cachedWikipediaImages,
+            seriesIdsToImages = seriesIdsToImages,
+        )
+    }
+
+    suspend fun getAllImages(
+        series: List<SeriesEntry>,
+        cacheResult: CacheResult,
+    ): Map<String, String> {
+        val seriesIdToAniListIds = series.filter { it.aniListId != null }
+            .associate { it.id to it.aniListId!!.toString() }
+        val seriesIdToWikipediaIds = series.filter { it.wikipediaId != null }
+            .associate { it.id to it.wikipediaId!!.toString() }
+            .filterKeys { it !in seriesIdToAniListIds }
+        val (cachedAniListImages, cachedWikipediaImages, _) = cacheResult
         val now = Clock.System.now()
         val missingAniListIds = seriesIdToAniListIds.values.filter {
             cachedAniListImages[it]?.takeUnless {
@@ -103,6 +132,7 @@ class SeriesImagesStore(
                 allWikipediaImages += newWikipediaImages.mapKeys { it.key.toString() }
             }
         }
+
         return series.mapNotNull {
             val imageUrl = when {
                 it.aniListId != null -> allAniListImages[it.aniListId.toString()]
@@ -112,4 +142,10 @@ class SeriesImagesStore(
             it.id to imageUrl
         }.associate { it }
     }
+
+    data class CacheResult(
+        val cachedAniListImages: Map<String, GetImageEntries>,
+        val cachedWikipediaImages: Map<String, GetImageEntries>,
+        val seriesIdsToImages: Map<String, String>,
+    )
 }

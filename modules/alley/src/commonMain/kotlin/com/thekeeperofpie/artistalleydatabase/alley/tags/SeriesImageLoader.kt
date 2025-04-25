@@ -46,11 +46,19 @@ class SeriesImageLoader(
                     requests.putAll(newEntries)
                 }
 
-                val images = seriesImagesStore.getImages(chunk.toList())
-                val succeeded =
-                    chunk.mapNotNull { series -> images[series.id]?.let { series to it } }
+                val series = chunk.toList()
+                val cacheResult = seriesImagesStore.getCachedImages(series)
+                val cachedImages = cacheResult.seriesIdsToImages
+                val cachedSucceeded =
+                    chunk.mapNotNull { series -> cachedImages[series.id]?.let { series to it } }
                         .associate { it.first.id to Request.Done(it.second) }
-                val failed = chunk.filter { !images.contains(it.id) }
+                requests.putAll(cachedSucceeded)
+
+                val allImages = seriesImagesStore.getAllImages(series, cacheResult)
+                val succeeded =
+                    chunk.mapNotNull { series -> allImages[series.id]?.let { series to it } }
+                        .associate { it.first.id to Request.Done(it.second) }
+                val failed = chunk.filter { !allImages.contains(it.id) }
                     .associate { it.id to Request.Failed }
                 requests.putAll(succeeded + failed)
             }
