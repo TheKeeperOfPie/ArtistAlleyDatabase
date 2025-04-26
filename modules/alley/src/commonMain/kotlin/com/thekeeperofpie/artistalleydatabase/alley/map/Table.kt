@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.map
 
 import androidx.compose.ui.graphics.Color
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 data class Table(
     val year: DataYear,

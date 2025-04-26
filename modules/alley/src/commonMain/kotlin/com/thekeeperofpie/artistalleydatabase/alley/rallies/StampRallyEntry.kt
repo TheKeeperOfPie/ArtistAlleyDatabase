@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 data class StampRallyEntry(
     val year: DataYear,

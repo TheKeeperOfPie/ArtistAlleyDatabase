@@ -9,10 +9,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 fun SqlCursor.toSeriesEntry(): SeriesEntry {

@@ -14,11 +14,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.TestQueries
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.Buffer
@@ -489,6 +489,10 @@ class AlleyExporterTest {
                     driveLink = null,
                     notes = null,
                     commissions = emptyList(),
+                    commissionOnline = false,
+                    commissionOnsite = false,
+                    commissionOther = false,
+                    commissionVGen = false,
                     seriesInferred = emptyList(),
                     seriesConfirmed = emptyList(),
                     merchInferred = emptyList(),

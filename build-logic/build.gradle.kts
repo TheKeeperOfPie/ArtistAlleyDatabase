@@ -38,6 +38,7 @@ sqldelight {
 }
 
 dependencies {
+    implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
     implementation(libs.burst.gradle.plugin)
     implementation(libs.com.google.devtools.ksp.gradle.plugin)
     implementation(libs.commons.io)

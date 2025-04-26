@@ -12,6 +12,12 @@
                   <project path="$PROJECT_DIR$/build-logic" />
                 </projects>
               </build>
+              <build path="$PROJECT_DIR$/shared" name="shared">
+                <projects>
+                  <project path="$PROJECT_DIR$/shared" />
+                  <project path="$PROJECT_DIR$/shared/data" />
+                </projects>
+              </build>
             </builds>
           </compositeBuild>
         </compositeConfiguration>
@@ -89,6 +95,8 @@
             <option value="$PROJECT_DIR$/modules/utils-network" />
             <option value="$PROJECT_DIR$/modules/utils-room" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
+            <option value="$PROJECT_DIR$/shared" />
+            <option value="$PROJECT_DIR$/shared/data" />
           </set>
         </option>
       </GradleProjectSettings>

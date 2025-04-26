@@ -1,6 +1,5 @@
-package com.thekeeperofpie.artistalleydatabase.alley.series
+package com.thekeeperofpie.artistalleydatabase.shared.alley.data
 
-// All changes must be duplicated in the build-logic variant
 enum class SeriesSource {
     ANIME,
     BOOK,

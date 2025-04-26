@@ -7,7 +7,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_data_year_202
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_2024_short
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_2025_full
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_2025_short
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime

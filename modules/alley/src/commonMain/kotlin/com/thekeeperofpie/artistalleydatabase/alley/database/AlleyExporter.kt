@@ -9,11 +9,11 @@ import artistalleydatabase.modules.alley.generated.resources.alley_import_failed
 import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_schema_version
 import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_user_data
 import artistalleydatabase.modules.alley.generated.resources.alley_import_schema_version_mismatch
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.CHARACTERS
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.SEPARATOR
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyNotes
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.decodeSequenceIgnoreEndOfFile
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import kotlinx.io.Buffer

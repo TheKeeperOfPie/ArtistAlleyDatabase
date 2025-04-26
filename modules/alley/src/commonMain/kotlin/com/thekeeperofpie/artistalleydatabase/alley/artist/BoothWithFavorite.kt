@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 data class BoothWithFavorite(
     val year: DataYear,

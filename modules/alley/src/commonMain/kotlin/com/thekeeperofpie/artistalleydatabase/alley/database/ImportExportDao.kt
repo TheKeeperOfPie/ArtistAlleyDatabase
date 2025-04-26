@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 class ImportExportDao(
     val database: suspend () -> AlleySqlDatabase,
