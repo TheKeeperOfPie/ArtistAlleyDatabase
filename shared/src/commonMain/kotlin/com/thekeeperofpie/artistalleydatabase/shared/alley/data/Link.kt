@@ -31,12 +31,22 @@ data class Link(
             return null
         }
 
-        fun parseFlags(links: Collection<String>): Long {
+        fun parseFlags(links: Collection<String>): Pair<Long, Long> {
+            // TODO: SQLite theoretically supports 64 bits, but it didn't work for some reason
             val entries = Type.entries
-            return links.mapNotNull { parse(it)?.type }
-                .fold(0L) { flags, linkType ->
-                    flags or (1L shl entries.indexOf(linkType))
+            var flagOne = 0L
+            var flagTwo = 0L
+            links.map { parse(it)?.type ?: Type.OTHER }
+                .forEach {
+                    val index = entries.indexOf(it)
+                    if (index < 32) {
+                        flagOne = flagOne or (1L shl index)
+                    } else {
+                        flagTwo = flagTwo or (1L shl (index - 32))
+                    }
                 }
+
+            return flagOne to flagTwo
         }
     }
 
@@ -96,6 +106,7 @@ data class Link(
                 ?.substringAfter("c/")
                 ?: "YouTube")
         }),
+        OTHER,
         ;
     }
 }

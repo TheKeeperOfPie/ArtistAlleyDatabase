@@ -477,7 +477,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val seriesInferred = (seriesInferredRaw - seriesConfirmed).sorted()
                     val merchInferred = (merchInferredRaw - merchConfirmed).sorted()
 
-                    val linkFlags = Link.parseFlags(links + storeLinks + catalogLinks)
+                    val (linkFlags, linkFlags2) = Link.parseFlags(links + storeLinks + catalogLinks)
 
                     val artistEntry = ArtistEntry2025(
                         id = id,
@@ -488,6 +488,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         storeLinks = storeLinks,
                         catalogLinks = catalogLinks,
                         linkFlags = linkFlags,
+                        linkFlags2 = linkFlags2,
                         driveLink = driveLink,
                         seriesInferred = seriesInferred,
                         seriesConfirmed = seriesConfirmed,

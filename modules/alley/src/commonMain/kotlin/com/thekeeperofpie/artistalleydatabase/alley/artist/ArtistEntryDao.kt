@@ -104,22 +104,22 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
             links = getString(4)!!.let(Json::decodeFromString),
             storeLinks = getString(5)!!.let(Json::decodeFromString),
             catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            // Skip 1 for link flags
-            driveLink = getString(8),
-            notes = getString(9),
-            commissions = getString(10)!!.let(Json::decodeFromString),
+            // Skip 2 for link flags
+            driveLink = getString(9),
+            notes = getString(10),
+            commissions = getString(11)!!.let(Json::decodeFromString),
             // Skip 4 for commission booleans
-            seriesInferred = getString(15)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(16)!!.let(Json::decodeFromString),
-            merchInferred = getString(17)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(18)!!.let(Json::decodeFromString),
-            counter = getLong(19)!!,
+            seriesInferred = getString(16)!!.let(Json::decodeFromString),
+            seriesConfirmed = getString(17)!!.let(Json::decodeFromString),
+            merchInferred = getString(18)!!.let(Json::decodeFromString),
+            merchConfirmed = getString(19)!!.let(Json::decodeFromString),
+            counter = getLong(20)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.YEAR_2025,
-            favorite = getBoolean(20) == true,
-            ignored = getBoolean(21) == true,
+            favorite = getBoolean(21) == true,
+            ignored = getBoolean(22) == true,
         )
     )
 }
@@ -368,8 +368,11 @@ class ArtistEntryDao(
 
                 val linkTypeStatements = filterParams.linkTypesIn.map {
                     val index = Link.Type.entries.indexOf(it)
-                    val flag = 1 shl index
-                    "$tableName.linkFlags & $flag != 0"
+                    if (index < 32) {
+                        "$tableName.linkFlags & ${1 shl index} != 0"
+                    } else {
+                        "$tableName.linkFlags2 & ${1 shl (index - 32)} != 0"
+                    }
                 }
 
                 if (linkTypeStatements.isNotEmpty()) {
