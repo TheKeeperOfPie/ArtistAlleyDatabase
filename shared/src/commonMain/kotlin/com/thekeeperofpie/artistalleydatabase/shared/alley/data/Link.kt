@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.shared.alley.data
 
 import com.eygraber.uri.Uri
+import kotlinx.serialization.Serializable
 
 data class Link(
     val type: Type,
@@ -50,6 +51,7 @@ data class Link(
         }
     }
 
+    @Serializable
     enum class Type(
         vararg val domains: String,
         val parsePath: (path: String) -> String? = { it },
