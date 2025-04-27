@@ -242,4 +242,8 @@
     <string name="alley_commission_type_filter_label">Commissions</string>
     <string name="alley_commission_type_filter_content_description">Commissions filter expand</string>
     <string name="alley_commission_type_filter_chip_state_content_description">Commissions chip state</string>
+
+    <string name="alley_link_type_filter_label">Links</string>
+    <string name="alley_link_type_filter_content_description">Links filter expand</string>
+    <string name="alley_link_type_filter_chip_state_content_description">Links chip state</string>
 </resources>

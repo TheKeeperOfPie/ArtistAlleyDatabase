@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.CommissionType
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -103,21 +104,22 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
             links = getString(4)!!.let(Json::decodeFromString),
             storeLinks = getString(5)!!.let(Json::decodeFromString),
             catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            driveLink = getString(7),
-            notes = getString(8),
-            commissions = getString(9)!!.let(Json::decodeFromString),
+            // Skip 1 for link flags
+            driveLink = getString(8),
+            notes = getString(9),
+            commissions = getString(10)!!.let(Json::decodeFromString),
             // Skip 4 for commission booleans
-            seriesInferred = getString(14)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(15)!!.let(Json::decodeFromString),
-            merchInferred = getString(16)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(17)!!.let(Json::decodeFromString),
-            counter = getLong(18)!!,
+            seriesInferred = getString(15)!!.let(Json::decodeFromString),
+            seriesConfirmed = getString(16)!!.let(Json::decodeFromString),
+            merchInferred = getString(17)!!.let(Json::decodeFromString),
+            merchConfirmed = getString(18)!!.let(Json::decodeFromString),
+            counter = getLong(19)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.YEAR_2025,
-            favorite = getBoolean(19) == true,
-            ignored = getBoolean(20) == true,
+            favorite = getBoolean(20) == true,
+            ignored = getBoolean(21) == true,
         )
     )
 }
@@ -346,6 +348,7 @@ class ArtistEntryDao(
             if (filterParams.showOnlyWithCatalog) this += "$tableName.driveLink LIKE 'http%'"
 
             if (year == DataYear.YEAR_2025) {
+                // TODO: Convert commissions to flags, too?
                 val commissionsIn = filterParams.commissionsIn
                 val commissionStatements = CommissionType.entries
                     .filter(commissionsIn::contains)
@@ -361,6 +364,16 @@ class ArtistEntryDao(
 
                 if (commissionStatements.isNotEmpty()) {
                     this += "(${commissionStatements.joinToString(separator = " OR ")})"
+                }
+
+                val linkTypeStatements = filterParams.linkTypesIn.map {
+                    val index = Link.Type.entries.indexOf(it)
+                    val flag = 1 shl index
+                    "$tableName.linkFlags & $flag != 0"
+                }
+
+                if (linkTypeStatements.isNotEmpty()) {
+                    this += "(${linkTypeStatements.joinToString(separator = " OR ")})"
                 }
             }
 

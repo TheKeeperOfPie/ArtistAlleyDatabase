@@ -72,6 +72,7 @@ CREATE TABLE
         links TEXT AS List<String> NOT NULL,
         storeLinks TEXT AS List<String> NOT NULL,
         catalogLinks TEXT AS List<String> NOT NULL,
+        linkFlags INTEGER NOT NULL DEFAULT 0,
         driveLink TEXT,
         notes TEXT,
         commissions TEXT AS List<String> NOT NULL,

@@ -324,7 +324,7 @@ object ArtistSearchScreen {
             }
             ArtistColumn.STORE -> row?.artist?.storeLinkModels?.let { storeLinkModels ->
                 val uriHandler = LocalUriHandler.current
-                Grid(storeLinkModels.size) {
+                Grid(count = storeLinkModels.size, columnCount = 2) {
                     val linkModel = storeLinkModels[it]
                     IconButtonWithTooltip(
                         imageVector = linkModel.logo?.icon ?: Icons.Default.Link,
@@ -411,13 +411,13 @@ object ArtistSearchScreen {
     }
 
     @Composable
-    private fun Grid(count: Int, item: @Composable (index: Int) -> Unit) {
+    private fun Grid(count: Int, columnCount: Int = 3, item: @Composable (index: Int) -> Unit) {
         Column {
-            val rowCount = (count + 2) / 3
+            val rowCount = (count + columnCount - 1) / columnCount
             var index = 0
             repeat(rowCount) {
                 Row {
-                    repeat(3) {
+                    repeat(columnCount) {
                         if (index < count) {
                             item(index++)
                         }

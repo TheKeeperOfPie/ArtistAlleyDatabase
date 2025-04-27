@@ -585,7 +585,7 @@ object ArtistDetailsScreen {
                             }
                         }
                         if (link != null) {
-                            append(link.title)
+                            append(link.identifier)
                         }
                     }
                 }

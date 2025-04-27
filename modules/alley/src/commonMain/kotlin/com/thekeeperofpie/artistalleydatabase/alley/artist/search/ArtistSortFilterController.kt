@@ -46,6 +46,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_c
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_chip_state_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_link_type_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_label
@@ -55,6 +58,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -67,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
@@ -384,6 +389,24 @@ class ArtistSortFilterController(
         selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
     )
 
+    private val linkTypesIn = savedStateHandle.getMutableStateFlow<String, Set<Link.Type>>(
+        scope = scope,
+        key = "linkTypesIn",
+        initialValue = { emptySet() },
+        serialize = Json::encodeToString,
+        deserialize = Json::decodeFromString,
+    )
+    private val linkTypesSection = SortFilterSectionState.Filter(
+        title = Res.string.alley_link_type_filter_label,
+        titleDropdownContentDescription = Res.string.alley_link_type_filter_content_description,
+        includeExcludeIconContentDescription = Res.string.alley_link_type_filter_chip_state_content_description,
+        options = MutableStateFlow(Link.Type.entries),
+        filterIn = linkTypesIn,
+        filterNotIn = MutableStateFlow(emptySet()),
+        valueToText = { stringResource(it.textRes) },
+        selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE,
+    )
+
     val onlyCatalogImages = savedStateHandle.getMutableStateFlow("onlyCatalogImages", false)
     private val onlyCatalogImagesSection = SortFilterSectionState.Switch(
         title = Res.string.alley_filter_only_catalogs,
@@ -431,6 +454,7 @@ class ArtistSortFilterController(
         seriesSection,
         merchSection,
         commissionsSection,
+        linkTypesSection,
         onlyCatalogImagesSection,
         gridByDefaultSection,
         randomCatalogImageSection,
@@ -447,6 +471,7 @@ class ArtistSortFilterController(
         seriesIn,
         merchIdIn,
         commissionsIn,
+        linkTypesIn,
         onlyCatalogImages,
         settings.showOnlyConfirmedTags,
         hideIgnored,
@@ -457,9 +482,10 @@ class ArtistSortFilterController(
             seriesIn = setOfNotNull((it[2] as SeriesEntry?)?.id) + (it[3] as List<SeriesFilterEntry>).map { it.id },
             merchIn = (it[4] as Set<String>) + setOfNotNull(lockedMerchId),
             commissionsIn = it[5] as Set<CommissionType>,
-            showOnlyWithCatalog = it[6] as Boolean,
-            showOnlyConfirmedTags = it[7] as Boolean,
-            hideIgnored = it[8] as Boolean,
+            linkTypesIn = it[6] as Set<Link.Type>,
+            showOnlyWithCatalog = it[7] as Boolean,
+            showOnlyConfirmedTags = it[8] as Boolean,
+            hideIgnored = it[9] as Boolean,
         )
     }
 
@@ -475,6 +501,7 @@ class ArtistSortFilterController(
         val seriesIn: Set<String>,
         val merchIn: Set<String>,
         val commissionsIn: Set<CommissionType>,
+        val linkTypesIn: Set<Link.Type>,
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
         val hideIgnored: Boolean,
