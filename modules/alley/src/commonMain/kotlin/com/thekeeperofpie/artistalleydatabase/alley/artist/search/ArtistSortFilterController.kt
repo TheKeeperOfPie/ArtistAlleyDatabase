@@ -40,6 +40,8 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_label
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_catalogs
@@ -58,6 +60,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
+import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -82,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExclud
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -100,7 +106,8 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class, ExperimentalComposeUiApi::class,
+@OptIn(
+    ExperimentalCoroutinesApi::class, FlowPreview::class, ExperimentalComposeUiApi::class,
     ExperimentalMaterial3Api::class
 )
 class ArtistSortFilterController(
@@ -298,9 +305,9 @@ class ArtistSortFilterController(
     // TODO: Consider storing this in a singleton instead?
     private val merch = dataYear
         .mapLatest { tagEntryDao.getMerchIds(it) }
-        .mapLatest { it.map { AlleyTagEntry.Tag(it) }.associateBy { it.id } }
+        .mapLatest { it.map { it to AlleyTagEntry.Tag(it) } }
         .flowOn(dispatchers.io)
-        .stateIn(scope, SharingStarted.Lazily, emptyMap())
+        .stateIn(scope, SharingStarted.Lazily, emptyList())
     private val merchIdsLockedIn = setOfNotNull(lockedMerchId)
     private val merchIdIn =
         savedStateHandle.getMutableStateFlow<List<String>, Set<String>>(
@@ -389,23 +396,85 @@ class ArtistSortFilterController(
         selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
     )
 
-    private val linkTypesIn = savedStateHandle.getMutableStateFlow<String, Set<Link.Type>>(
-        scope = scope,
-        key = "linkTypesIn",
-        initialValue = { emptySet() },
-        serialize = Json::encodeToString,
-        deserialize = Json::decodeFromString,
-    )
-    private val linkTypesSection = SortFilterSectionState.Filter(
-        title = Res.string.alley_link_type_filter_label,
-        titleDropdownContentDescription = Res.string.alley_link_type_filter_content_description,
-        includeExcludeIconContentDescription = Res.string.alley_link_type_filter_chip_state_content_description,
-        options = MutableStateFlow(Link.Type.entries),
-        filterIn = linkTypesIn,
-        filterNotIn = MutableStateFlow(emptySet()),
-        valueToText = { stringResource(it.textRes) },
-        selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE,
-    )
+    private val linkTypes =
+        Link.Type.entries.groupBy { it.category }
+            .mapValues { (category, types) ->
+                if (category == LinkCategory.OTHER) {
+                    LinkTagEntry.Tag(Link.Type.OTHER_NON_STORE)
+                } else {
+                    LinkTagEntry.Category(
+                        category = category,
+                        children = types.associate { it.name to LinkTagEntry.Tag(it) },
+                    )
+                } as TagEntry
+            }
+            .map { it.key.name to it.value }
+            .sortedBy { it.first }
+    private val linkTypeIdIn =
+        savedStateHandle.getMutableStateFlow<List<String>, Set<String>>(
+            scope = scope,
+            key = "linkTypeIdIn",
+            initialValue = { emptySet() },
+            serialize = { it.toList() },
+            deserialize = { it.toSet() },
+        )
+    private val linkTypeSection = object : SortFilterSectionState.Custom("linkType") {
+        override fun clear() {
+            linkTypeIdIn.value = emptySet()
+        }
+
+        @Composable
+        override fun isDefault() = linkTypeIdIn.collectAsState().value.isEmpty()
+
+        @Composable
+        override fun Content(state: SortFilterExpandedState, showDivider: Boolean) {
+            var linkTypeIdIn by linkTypeIdIn.collectAsMutableStateWithLifecycle()
+            TagSection(
+                expanded = { state.expandedState[id] == true },
+                onExpandedChange = { state.expandedState[id] = it },
+                titleRes = Res.string.alley_link_type_filter_label,
+                titleDropdownContentDescriptionRes = Res.string.alley_link_type_filter_content_description,
+                tags = linkTypes,
+                tagIdIn = linkTypeIdIn,
+                tagIdNotIn = emptySet(),
+                disabledOptions = emptySet(),
+                query = "",
+                onQueryChange = {},
+                showDivider = showDivider,
+                showSearch = false,
+                showRootTagsWhenNotExpanded = false,
+                showRootTagsAtBottom = true,
+                categoryToName = { stringResource((it as LinkTagEntry.Category).category.textRes) },
+                tagChip = { linkTag, selected, enabled, modifier ->
+                    FilterChip(
+                        selected = selected,
+                        onClick = {
+                            val linkTypeId = linkTag.id
+                            if (linkTypeIdIn.contains(linkTypeId)) {
+                                linkTypeIdIn -= linkTypeId
+                            } else {
+                                linkTypeIdIn += linkTypeId
+                            }
+                        },
+                        enabled = enabled,
+                        label = {
+                            AutoHeightText(stringResource((linkTag as LinkTagEntry.Tag).type.textRes))
+                        },
+                        leadingIcon = {
+                            IncludeExcludeIcon(
+                                enabled = when {
+                                    linkTypeIdIn.contains(linkTag.id) -> true
+                                    else -> null
+                                },
+                                contentDescriptionRes = Res.string.alley_link_type_filter_chip_state_content_description,
+                            )
+                        },
+                        modifier = modifier
+                    )
+                }
+            )
+        }
+    }
 
     val onlyCatalogImages = savedStateHandle.getMutableStateFlow("onlyCatalogImages", false)
     private val onlyCatalogImagesSection = SortFilterSectionState.Switch(
@@ -449,18 +518,28 @@ class ArtistSortFilterController(
         allowClear = true,
     )
 
+    val advancedSection = SortFilterSectionState.Group(
+        title = Res.string.alley_filter_advanced,
+        titleDropdownContentDescription = Res.string.alley_filter_advanced_expand_content_description,
+        children = MutableStateFlow(
+            listOf(
+                onlyCatalogImagesSection,
+                gridByDefaultSection,
+                randomCatalogImageSection,
+                onlyConfirmedTagsSection,
+                hideIgnoredSection,
+                forceOneDisplayColumnSection,
+            )
+        )
+    )
+
     private val sections = listOf(
         sortSection,
         seriesSection,
         merchSection,
         commissionsSection,
-        linkTypesSection,
-        onlyCatalogImagesSection,
-        gridByDefaultSection,
-        randomCatalogImageSection,
-        onlyConfirmedTagsSection,
-        hideIgnoredSection,
-        forceOneDisplayColumnSection,
+        linkTypeSection,
+        advancedSection,
     )
 
     @Suppress("UNCHECKED_CAST")
@@ -471,7 +550,7 @@ class ArtistSortFilterController(
         seriesIn,
         merchIdIn,
         commissionsIn,
-        linkTypesIn,
+        linkTypeIdIn,
         onlyCatalogImages,
         settings.showOnlyConfirmedTags,
         hideIgnored,
@@ -482,7 +561,7 @@ class ArtistSortFilterController(
             seriesIn = setOfNotNull((it[2] as SeriesEntry?)?.id) + (it[3] as List<SeriesFilterEntry>).map { it.id },
             merchIn = (it[4] as Set<String>) + setOfNotNull(lockedMerchId),
             commissionsIn = it[5] as Set<CommissionType>,
-            linkTypesIn = it[6] as Set<Link.Type>,
+            linkTypesIn = (it[6] as Set<String>).map(Link.Type::valueOf).toSet(),
             showOnlyWithCatalog = it[7] as Boolean,
             showOnlyConfirmedTags = it[8] as Boolean,
             hideIgnored = it[9] as Boolean,
@@ -492,7 +571,7 @@ class ArtistSortFilterController(
     val state = SortFilterState(
         sections = sections,
         filterParams = filterParams,
-        collapseOnClose = ReadOnlyStateFlow(true),
+        collapseOnClose = ReadOnlyStateFlow(false),
     )
 
     data class FilterParams(

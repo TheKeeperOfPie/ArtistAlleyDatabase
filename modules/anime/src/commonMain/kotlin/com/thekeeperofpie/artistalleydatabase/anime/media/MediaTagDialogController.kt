@@ -17,7 +17,9 @@ class MediaTagDialogController(
     var tagShown by mutableStateOf<MediaTagEntry.Tag?>(null)
 
     fun onLongClickTag(tagId: String) {
-        tagShown = mediaTagsController.tags.replayCache.firstOrNull().orEmpty().values
+        tagShown = mediaTagsController.tags.replayCache.firstOrNull()
+            .orEmpty()
+            .map { it.second }
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .map { it as MediaTagEntry.Tag }

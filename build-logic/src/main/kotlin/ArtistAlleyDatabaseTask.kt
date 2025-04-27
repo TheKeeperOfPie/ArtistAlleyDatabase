@@ -16,6 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link.Companion.parse
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link.Type
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
@@ -477,7 +479,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val seriesInferred = (seriesInferredRaw - seriesConfirmed).sorted()
                     val merchInferred = (merchInferredRaw - merchConfirmed).sorted()
 
-                    val (linkFlags, linkFlags2) = Link.parseFlags(links + storeLinks + catalogLinks)
+                    val linkTypes = (links + catalogLinks).map {
+                        parse(it)?.type ?: Type.OTHER_NON_STORE
+                    }
+                    val storeLinkTypes = storeLinks.map {
+                        parse(it)?.type ?: Type.OTHER_STORE
+                    }
+
+                    val (linkFlags, linkFlags2) = Link.parseFlags(linkTypes + storeLinkTypes)
 
                     val artistEntry = ArtistEntry2025(
                         id = id,

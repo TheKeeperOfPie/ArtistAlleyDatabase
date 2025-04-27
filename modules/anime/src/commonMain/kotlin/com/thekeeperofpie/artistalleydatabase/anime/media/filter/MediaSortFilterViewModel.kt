@@ -413,11 +413,11 @@ abstract class MediaSortFilterViewModel<SortType>(
     val tagNameInAndNotIn =
         combineStates(mediaTagsController.tags, tagIdIn, tagIdNotIn) { tags, tagIdIn, tagIdNotIn ->
             tagIdIn.mapNotNull { tagId ->
-                tags.values.asSequence()
+                tags.map { it.second }.asSequence()
                     .mapNotNull { (it.findTag(tagId) as? MediaTagEntry)?.name }
                     .firstOrNull()
             } to tagIdNotIn.mapNotNull { tagId ->
-                tags.values.asSequence()
+                tags.map { it.second }.asSequence()
                     .mapNotNull { (it.findTag(tagId)  as? MediaTagEntry)?.name }
                     .firstOrNull()
             }

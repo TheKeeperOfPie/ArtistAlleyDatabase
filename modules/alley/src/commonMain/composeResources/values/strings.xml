@@ -54,6 +54,8 @@
     <string name="alley_filter_hide_ignored">Hide ignored (long press)</string>
     <string name="alley_filter_force_one_display_column">Force one display column</string>
     <string name="alley_filter_data_year">Convention</string>
+    <string name="alley_filter_advanced">Advanced</string>
+    <string name="alley_filter_advanced_expand_content_description">Advanced group expand</string>
     <string name="alley_search_option_ignored">Ignored</string>
 
     <string name="alley_nav_bar_artists">Artists</string>
@@ -146,7 +148,8 @@
     <string name="alley_link_label_weebly">Weebly</string>
     <string name="alley_link_label_x">X</string>
     <string name="alley_link_label_you_tube">YouTube</string>
-    <string name="alley_link_label_other">Other</string>
+    <string name="alley_link_label_other_non_store">Other</string>
+    <string name="alley_link_label_other_store">Other store</string>
 
     <string name="alley_display_type_card">Card</string>
     <string name="alley_display_type_image">Image</string>
@@ -247,4 +250,10 @@
     <string name="alley_link_type_filter_label">Links</string>
     <string name="alley_link_type_filter_content_description">Links filter expand</string>
     <string name="alley_link_type_filter_chip_state_content_description">Links chip state</string>
+
+    <string name="alley_link_type_category_portfolios">Portfolios</string>
+    <string name="alley_link_type_category_socials">Socials</string>
+    <string name="alley_link_type_category_stores">Stores</string>
+    <string name="alley_link_type_category_support">Support</string>
+    <string name="alley_link_type_category_other">Other</string>
 </resources>

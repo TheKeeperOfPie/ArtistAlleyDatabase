@@ -41,9 +41,10 @@ class MediaTagsController(scope: ApplicationScope, aniListApi: AuthedAniListApi,
                     .associateBy { (it as MediaTagEntry).name }
                     .toSortedMap(String.CASE_INSENSITIVE_ORDER)
             }
+                .map { it.entries.map { it.toPair() } } // TODO: Remove conversion
         }
         .flowOn(CustomDispatchers.IO)
-        .stateIn(scope, SharingStarted.Lazily, emptyMap())
+        .stateIn(scope, SharingStarted.Lazily, emptyList())
 
     fun refresh() = refresh.refresh()
 

@@ -19,7 +19,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_it
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_kickstarter
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_ko_fi
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_linktree
-import artistalleydatabase.modules.alley.generated.resources.alley_link_label_other
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_other_non_store
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_other_store
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_patreon
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_pixiv
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_redbubble
@@ -71,7 +72,8 @@ val Link.Type.textRes: StringResource
         Link.Type.WEEBLY -> Res.string.alley_link_label_weebly
         Link.Type.X -> Res.string.alley_link_label_x
         Link.Type.YOU_TUBE -> Res.string.alley_link_label_you_tube
-        Link.Type.OTHER -> Res.string.alley_link_label_other
+        Link.Type.OTHER_NON_STORE -> Res.string.alley_link_label_other_non_store
+        Link.Type.OTHER_STORE -> Res.string.alley_link_label_other_store
     }
 
 data class LinkModel(
@@ -121,7 +123,8 @@ data class LinkModel(
                 Link.Type.WEEBLY -> Logo.WEEBLY
                 Link.Type.X -> Logo.X
                 Link.Type.YOU_TUBE -> Logo.YOU_TUBE
-                Link.Type.OTHER -> null
+                Link.Type.OTHER_NON_STORE,
+                Link.Type.OTHER_STORE -> null
             }
             return LinkModel(link = uri, logo = logo, identifier = link.identifier)
         }

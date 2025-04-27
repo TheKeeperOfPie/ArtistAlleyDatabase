@@ -32,25 +32,25 @@ data class Link(
             return null
         }
 
-        fun parseFlags(links: Collection<String>): Pair<Long, Long> {
+        fun parseFlags(types: Collection<Type>): Pair<Long, Long> {
             // TODO: SQLite theoretically supports 64 bits, but it didn't work for some reason
             val entries = Type.entries
             var flagOne = 0L
             var flagTwo = 0L
-            links.map { parse(it)?.type ?: Type.OTHER }
-                .forEach {
-                    val index = entries.indexOf(it)
-                    if (index < 32) {
-                        flagOne = flagOne or (1L shl index)
-                    } else {
-                        flagTwo = flagTwo or (1L shl (index - 32))
-                    }
+            types.forEach {
+                val index = entries.indexOf(it)
+                if (index < 32) {
+                    flagOne = flagOne or (1L shl index)
+                } else {
+                    flagTwo = flagTwo or (1L shl (index - 32))
                 }
+            }
 
             return flagOne to flagTwo
         }
     }
 
+    @Suppress("SpellCheckingInspection")
     @Serializable
     enum class Type(
         vararg val domains: String,
@@ -108,7 +108,8 @@ data class Link(
                 ?.substringAfter("c/")
                 ?: "YouTube")
         }),
-        OTHER,
+        OTHER_STORE,
+        OTHER_NON_STORE,
         ;
     }
 }

@@ -50,7 +50,7 @@ fun MediaTagSection(
     onExpandedChange: (Boolean) -> Unit,
     showMediaWithTagSpoiler: () -> Boolean,
     onShowMediaWithTagSpoilerChange: (Boolean) -> Unit,
-    tags: Map<String, TagEntry>,
+    tags: List<Pair<String, TagEntry>>,
     tagIdIn: Set<String>,
     tagIdNotIn: Set<String>,
     disabledOptions: Set<String>,

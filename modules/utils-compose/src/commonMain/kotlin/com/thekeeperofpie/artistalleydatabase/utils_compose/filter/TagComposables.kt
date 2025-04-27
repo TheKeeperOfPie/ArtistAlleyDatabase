@@ -44,15 +44,17 @@ fun TagSection(
     onSummaryClick: () -> Unit = {},
     header: (@Composable () -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
-    tags: Map<String, TagEntry>,
+    tags: List<Pair<String, TagEntry>>,
     tagIdIn: Set<String>,
     tagIdNotIn: Set<String>,
     disabledOptions: Set<String>,
     query: String,
     onQueryChange: (String) -> Unit,
     showDivider: Boolean,
+    showSearch: Boolean = true,
     showRootTagsWhenNotExpanded: Boolean = true,
-    categoryToName: (Category) -> String,
+    showRootTagsAtBottom: Boolean = false,
+    categoryToName: @Composable (Category) -> String,
     tagChip: @Composable (tag: Tag, selected: Boolean, enabled: Boolean, Modifier) -> Unit,
 ) {
     @Suppress("NAME_SHADOWING")
@@ -68,13 +70,13 @@ fun TagSection(
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             val subcategoriesToShow = when {
-                query.isNotBlank() -> tags.values.mapNotNull {
+                query.isNotBlank() -> tags.map { it.second }.mapNotNull {
                     it.filter {
                         tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) || it.matches(query)
                     }
                 }
-                expanded -> tags.values
-                else -> tags.values.mapNotNull {
+                expanded -> tags.map { it.second }
+                else -> tags.map { it.second }.mapNotNull {
                     it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
                 }
             }.filterIsInstance<Category>()
@@ -83,7 +85,7 @@ fun TagSection(
                 header()
             }
 
-            if (expanded) {
+            if (showSearch && expanded) {
                 TextField(
                     value = query,
                     placeholder = {
@@ -107,18 +109,19 @@ fun TagSection(
             }
 
             val children = when {
-                showRootTagsWhenNotExpanded ->  tags.values
-                query.isNotBlank() -> tags.values.mapNotNull {
+                showRootTagsWhenNotExpanded ->  tags.map { it.second }
+                query.isNotBlank() -> tags.map { it.second }.mapNotNull {
                     it.filter {
                         tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) || it.matches(query)
                     }
                 }
-                expanded -> tags.values
-                else -> tags.values.mapNotNull {
+                expanded -> tags.map { it.second }
+                else -> tags.map { it.second }.mapNotNull {
                     it.filter { tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) }
                 }
             }.filterIsInstance<Tag>()
-            if (children.isNotEmpty()) {
+
+            if (!showRootTagsAtBottom && children.isNotEmpty()) {
                 TagChips(
                     tags = children,
                     tagIdIn = tagIdIn,
@@ -144,6 +147,17 @@ fun TagSection(
                 )
             }
 
+            if (showRootTagsAtBottom && children.isNotEmpty()) {
+                TagChips(
+                    tags = children,
+                    tagIdIn = tagIdIn,
+                    tagIdNotIn = tagIdNotIn,
+                    disabledOptions = disabledOptions,
+                    level = 0,
+                    tagChip = tagChip,
+                )
+            }
+
             if (footer != null && expanded) {
                 footer()
             }
@@ -154,7 +168,7 @@ fun TagSection(
 @Composable
 private fun TagSubsection(
     category: Category,
-    categoryToName: (Category) -> String,
+    categoryToName: @Composable (Category) -> String,
     tagIdIn: Set<String>,
     tagIdNotIn: Set<String>,
     disabledOptions: Set<String>,
