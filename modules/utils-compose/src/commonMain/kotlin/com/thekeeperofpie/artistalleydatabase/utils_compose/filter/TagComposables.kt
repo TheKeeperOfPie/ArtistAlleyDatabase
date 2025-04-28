@@ -34,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry.Tag
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
+// TODO: Move expanded state (with subsections) into its own state object
 @Composable
 fun TagSection(
     expanded: () -> Boolean,
@@ -109,7 +110,7 @@ fun TagSection(
             }
 
             val children = when {
-                showRootTagsWhenNotExpanded ->  tags.map { it.second }
+                showRootTagsWhenNotExpanded -> tags.map { it.second }
                 query.isNotBlank() -> tags.map { it.second }.mapNotNull {
                     it.filter {
                         tagIdIn.contains(it.id) || tagIdNotIn.contains(it.id) || it.matches(query)
@@ -142,7 +143,8 @@ fun TagSection(
                     parentExpanded = expanded,
                     level = 0,
                     query = query,
-                    showDivider = expanded || index != subcategoriesToShow.size - 1,
+                    showDivider = (expanded && footer != null) ||
+                            index != subcategoriesToShow.size - 1,
                     tagChip = tagChip,
                 )
             }

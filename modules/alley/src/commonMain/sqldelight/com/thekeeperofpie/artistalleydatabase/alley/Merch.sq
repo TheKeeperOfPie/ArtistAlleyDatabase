@@ -2,15 +2,13 @@
 getMerch:
 SELECT * FROM merchEntry;
 
-getMerchIds2024:
-SELECT name FROM merchEntry
-WHERE has2024 = 1
-ORDER BY name ASC;
+getMerchEntries2024:
+SELECT * FROM merchEntry
+WHERE has2024 = 1;
 
-getMerchIds2025:
-SELECT name FROM merchEntry
-WHERE has2025 = 1
-ORDER BY name ASC;
+getMerchEntries2025:
+SELECT * FROM merchEntry
+WHERE has2025 = 1;
 
 getMerchSize2024:
 SELECT COUNT(*) FROM merchEntry

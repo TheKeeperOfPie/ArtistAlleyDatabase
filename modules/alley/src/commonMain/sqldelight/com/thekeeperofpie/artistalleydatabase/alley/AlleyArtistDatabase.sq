@@ -241,6 +241,7 @@ CREATE TABLE
     IF NOT EXISTS merchEntry (
         name TEXT NOT NULL,
         notes TEXT,
+        categories TEXT,
         has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
         has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (name)

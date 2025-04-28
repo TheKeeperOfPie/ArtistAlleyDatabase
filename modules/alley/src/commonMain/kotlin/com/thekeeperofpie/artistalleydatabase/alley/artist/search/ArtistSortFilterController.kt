@@ -304,8 +304,31 @@ class ArtistSortFilterController(
 
     // TODO: Consider storing this in a singleton instead?
     private val merch = dataYear
-        .mapLatest { tagEntryDao.getMerchIds(it) }
-        .mapLatest { it.map { it to AlleyTagEntry.Tag(it) } }
+        .mapLatest { tagEntryDao.getMerchEntries(it) }
+        .mapLatest { merchEntries ->
+            // Categories are decided by data entry
+            val merchToCategories = merchEntries.map {
+                it to it.categories?.split(",")?.map(String::trim).orEmpty()
+            }
+
+            val other = "Other" to AlleyTagEntry.Category(
+                id = "Other",
+                children = merchEntries.filter { it.categories.isNullOrEmpty() }
+                    .associate { it.name to AlleyTagEntry.Tag(it.name) }
+            )
+            val categories = merchToCategories.flatMap { it.second }.distinct().sorted()
+                .filter { it.isNotEmpty() }
+            categories.map { category ->
+                val tagsForCategory = merchToCategories.filter { it.second.contains(category) }
+                    .map { it.first }
+                category to AlleyTagEntry.Category(
+                    id = category,
+                    children = tagsForCategory.associate {
+                        it.name to AlleyTagEntry.Tag(it.name)
+                    },
+                )
+            } + other
+        }
         .flowOn(dispatchers.io)
         .stateIn(scope, SharingStarted.Lazily, emptyList())
     private val merchIdsLockedIn = setOfNotNull(lockedMerchId)

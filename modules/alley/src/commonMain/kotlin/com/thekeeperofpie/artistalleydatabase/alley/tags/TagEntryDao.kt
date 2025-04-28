@@ -35,10 +35,11 @@ fun SqlCursor.toSeriesEntry(): SeriesEntry {
 }
 
 fun SqlCursor.toMerchEntry() = MerchEntry(
-    getString(0)!!,
-    getString(1),
-    getBoolean(2)!!,
-    getBoolean(3)!!,
+    name = getString(0)!!,
+    notes = getString(1),
+    categories = getString(2),
+    has2024 = getBoolean(3)!!,
+    has2025 = getBoolean(4)!!,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -63,11 +64,11 @@ class TagEntryDao(
         )
     }
 
-    suspend fun getMerchIds(year: DataYear) = when (year) {
+    suspend fun getMerchEntries(year: DataYear) = when (year) {
         DataYear.YEAR_2023 -> emptyList()
-        DataYear.YEAR_2024 -> merchDao().getMerchIds2024().awaitAsList()
-        DataYear.YEAR_2025 -> merchDao().getMerchIds2025().awaitAsList()
-    }.filterNot { it.contains("Commissions") }
+        DataYear.YEAR_2024 -> merchDao().getMerchEntries2024().awaitAsList()
+        DataYear.YEAR_2025 -> merchDao().getMerchEntries2025().awaitAsList()
+    }.filterNot { it.name.contains("Commissions") }
 
     fun searchMerch(year: DataYear, query: String): PagingSource<Int, MerchEntry> {
         val queries = query.split(Regex("\\s+"))

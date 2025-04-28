@@ -660,9 +660,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     // Merch, Notes
                     val name = it["Merch"]!!
                     val notes = it["Notes"]
+                    val categories = it["Categories"]
                     MerchEntry(
                         name = name,
                         notes = notes,
+                        categories = categories,
                         has2024 = merchConnections.any { it.value.merchId == name && it.value.state2024 > 0 },
                         has2025 = merchConnections.any { it.value.merchId == name && it.value.state2025 > 0 },
                     )
