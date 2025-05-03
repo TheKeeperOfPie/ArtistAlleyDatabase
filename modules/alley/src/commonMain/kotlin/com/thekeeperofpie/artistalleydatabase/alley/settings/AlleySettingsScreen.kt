@@ -303,23 +303,12 @@ private fun ImportSection(
             }
         }
 
-        OutlinedTextField(
-            value = importData,
-            onValueChange = {
-                if (state().error != null) {
-                    onResetState()
-                }
-                importData = it
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
         val state = state()
         val error = state.error
         val message = if (state.success) {
             stringResource(Res.string.alley_settings_import_success)
         } else {
-            error?.message()
+            error?.let { "${it.message()} ${it.throwable?.message}" }
         }
         if (message != null) {
             Text(
@@ -332,6 +321,17 @@ private fun ImportSection(
                 modifier = Modifier.fillMaxWidth()
             )
         }
+
+        OutlinedTextField(
+            value = importData,
+            onValueChange = {
+                if (state().error != null) {
+                    onResetState()
+                }
+                importData = it
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

@@ -71,7 +71,7 @@ class AlleyExporterTest {
             it.asSink().buffered().use { exportFull(it) }
         }
 
-        println("Export size ${tempFile.length()} at ${tempFile.absolutePath}:")
+        println("Export size ${tempFile.length()} at ${tempFile.absolutePath}: ${tempFile.readText()}")
 
         val importResult = tempFile.inputStream().use {
             it.asSource().buffered().use { import(it) }
@@ -484,6 +484,8 @@ class AlleyExporterTest {
                     name = name,
                     summary = null,
                     links = emptyList(),
+                    linkFlags = 0L,
+                    linkFlags2 = 0L,
                     storeLinks = emptyList(),
                     catalogLinks = emptyList(),
                     driveLink = null,

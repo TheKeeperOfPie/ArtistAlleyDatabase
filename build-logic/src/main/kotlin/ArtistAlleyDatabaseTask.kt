@@ -89,7 +89,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             )
         } else {
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
-            BuildLogicDatabase.Schema.create(driver)
+            try {
+                BuildLogicDatabase.Schema.create(driver)
+            } catch (_: Throwable){
+                Thread.sleep(5000)
+                BuildLogicDatabase.Schema.create(driver)
+            }
             val database = BuildLogicDatabase(
                 driver = driver,
                 artistEntry2023Adapter = ArtistEntry2023.Adapter(

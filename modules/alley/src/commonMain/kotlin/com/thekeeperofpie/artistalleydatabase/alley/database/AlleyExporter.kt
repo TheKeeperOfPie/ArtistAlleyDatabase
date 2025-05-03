@@ -7,29 +7,22 @@ import artistalleydatabase.modules.alley.generated.resources.alley_import_failed
 import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_parse_chunk
 import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_database_hash
 import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_schema_version
-import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_user_data
 import artistalleydatabase.modules.alley.generated.resources.alley_import_schema_version_mismatch
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.CHARACTERS
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.SEPARATOR
-import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
-import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyNotes
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.decodeSequenceIgnoreEndOfFile
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import kotlinx.io.Buffer
-import kotlinx.io.RawSource
 import kotlinx.io.Sink
 import kotlinx.io.Source
-import kotlinx.io.buffered
-import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.io.indexOf
 import kotlinx.io.readCodePointValue
-import kotlinx.io.readLine
 import kotlinx.io.readString
 import kotlinx.io.writeString
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -62,8 +55,7 @@ class AlleyExporter(
     private val json: Json = Json { encodeDefaults = false },
 ) {
     companion object {
-        private const val SCHEMA_VERSION = "1"
-        private const val FULL_CHUNK_SIZE = 10L
+        private const val SCHEMA_VERSION = "2"
 
         private val CHARACTERS = listOf(
             '0'.rangeTo('9'),
@@ -91,213 +83,57 @@ class AlleyExporter(
         sink.writeString(SEPARATOR)
 
         sink.writeData(
-            source = importExportDao.getExportDataArtists2023(),
+            source = importExportDao.getExportPartialArtists2023(),
             id = { it.id },
             favorite = { it.favorite },
             ignored = { it.ignored },
         )
         sink.writeData(
-            source = importExportDao.getExportDataArtists2024(),
+            source = importExportDao.getExportPartialArtists2024(),
             id = { it.id },
             favorite = { it.favorite },
             ignored = { it.ignored },
         )
         sink.writeData(
-            source = importExportDao.getExportDataArtists2025(),
+            source = importExportDao.getExportPartialArtists2025(),
             id = { it.id },
             favorite = { it.favorite },
             ignored = { it.ignored },
         )
 
         sink.writeData(
-            source = importExportDao.getExportDataStampRallies2023(),
+            source = importExportDao.getExportPartialStampRallies2023(),
             id = { it.id },
             favorite = { it.favorite },
             ignored = { it.ignored },
         )
         sink.writeData(
-            source = importExportDao.getExportDataStampRallies2024(),
+            source = importExportDao.getExportPartialStampRallies2024(),
             id = { it.id },
             favorite = { it.favorite },
             ignored = { it.ignored },
         )
         sink.writeData(
-            source = importExportDao.getExportDataStampRallies2025(),
+            source = importExportDao.getExportPartialStampRallies2025(),
             id = { it.id },
             favorite = { it.favorite },
             ignored = { it.ignored },
         )
-    }
-
-    suspend fun exportFull(sink: Sink) {
-        val partial = Buffer().use {
-            exportPartial(it)
-            it.readString()
-        }
-        sink.writeString("{\"partial\":\"$partial\",\n")
-
-        importExportDao.database().transaction {
-            val limit = FULL_CHUNK_SIZE
-            DataYear.entries.sortedBy { it.year }
-                .forEach {
-                    var writtenFirst = false
-                    sink.writeString("\"${it.serializedName}\":[")
-                    var offset = 0L
-                    var done = false
-                    while (!done) {
-                        val list = importExportDao.getExportArtistNotes(it, limit, offset)
-                        list.forEach {
-                            if (writtenFirst) {
-                                sink.writeString(",\n")
-                            } else {
-                                writtenFirst = true
-                            }
-                            json.encodeToSink(ArtistNotesWrapper(it), sink)
-                        }
-                        offset += limit
-                        done = list.size < limit
-                    }
-                    sink.writeString("],\n")
-                }
-
-            var writtenFirst = false
-            sink.writeString("\"stampRallies\":[")
-            var offset = 0L
-            var done = false
-            while (!done) {
-                val list = importExportDao.getExportStampRallyNotes(limit, offset)
-                list.forEach {
-                    if (writtenFirst) {
-                        sink.writeString(",\n")
-                    } else {
-                        writtenFirst = true
-                    }
-                    json.encodeToSink(StampRallyNotesWrapper(it), sink)
-                }
-                offset += limit
-                done = list.size < limit
-            }
-            sink.writeString("]")
-        }
-
-        sink.writeString("}")
     }
 
     // TODO: Remove usages of indexOf(ByteString) as it doesn't have a maximum read length
     suspend fun import(source: Source): LoadingResult<*> {
         return try {
-            if (source.peek().readCodePointValue() == '{'.code.toInt()) {
-                val partialKeyTarget = "partial\":".encodeToByteString()
-                val partialKeyIndex = source.indexOf(partialKeyTarget)
-                if (partialKeyIndex < 0) {
-                    return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_user_data)
-                }
-                source.skip(partialKeyIndex + partialKeyTarget.size)
-                val partialStartIndex = source.indexOf('"'.code.toByte())
-                if (partialStartIndex < 0) {
-                    return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_user_data)
-                }
-                source.skip(1)
-                val partialEndIndex = source.indexOf('"'.code.toByte())
-                if (partialEndIndex < 0) {
-                    return LoadingResult.error<Unit>(Res.string.alley_import_failed_to_read_user_data)
-                }
-                val partialResult = Buffer().use {
-                    source.readAtMostTo(it, partialEndIndex)
-                    importPartial(it)
-                }
-                if (!partialResult.success) return partialResult
-
-                DataYear.entries
-                    .sortedBy { it.year }
-                    .forEach { year ->
-                        val result = importTarget(source, year.serializedName) {
-                            json.decodeSequenceIgnoreEndOfFile<ArtistNotesWrapper>(it)
-                                .chunked(10)
-                                .forEach {
-                                    it.forEach {
-                                        if (it.notes != null) {
-                                            importExportDao.importArtistNotes(
-                                                artistId = it.artistId,
-                                                dataYear = year,
-                                                notes = it.notes,
-                                            )
-                                        }
-                                    }
-                                }
-                        }
-                        if (!result.success) return result
-                    }
-
-                val result = importTarget(source, "stampRallies") {
-                    json.decodeSequenceIgnoreEndOfFile<StampRallyNotesWrapper>(it)
-                        .chunked(10)
-                        .forEach {
-                            it.forEach {
-                                if (it.notes != null) {
-                                    importExportDao.importStampRallyNotes(it.stampRallyId, it.notes)
-                                }
-                            }
-                        }
-                }
-                // TODO: Exhaust the rest of the JSON
-                return result
+            if (source.peek().readCodePointValue() == '{'.code) {
+                val data = json.decodeFromSource<FullExport>(source)
+                importFull(data)
+                return LoadingResult.success(data)
             } else {
                 importPartial(source)
             }
         } catch (t: Throwable) {
             LoadingResult.error<Unit>(Res.string.alley_import_failed, throwable = t)
         }
-    }
-
-    private suspend fun importTarget(
-        originalSource: Source,
-        targetName: String,
-        decode: suspend (Source) -> Unit,
-    ): LoadingResult<*> {
-        val truncatedSource = object : RawSource {
-            private var exhausted = false
-            override fun readAtMostTo(
-                sink: Buffer,
-                byteCount: Long,
-            ): Long {
-                if (exhausted) return -1
-                val index = originalSource.indexOf(byte = ']'.code.toByte(), endIndex = byteCount)
-                return if (index >= 0) {
-                    exhausted = true
-                    originalSource.readAtMostTo(sink, index + 1)
-                } else {
-                    originalSource.readAtMostTo(sink, byteCount)
-                }
-            }
-
-            override fun close() {
-                originalSource.close()
-            }
-        }.buffered()
-        val target = "\"$targetName\":"
-        val targetIndex = truncatedSource.indexOf(target.encodeToByteString())
-        if (targetIndex < 0) {
-            return LoadingResult.error<Unit>(
-                "Failed to read $targetName, ${
-                    truncatedSource.peek().readLine()
-                }"
-            )
-        }
-        truncatedSource.skip(targetIndex)
-
-        val arrayIndex = truncatedSource.indexOf("[".encodeToByteString())
-        if (arrayIndex < 0) {
-            return LoadingResult.error<Unit>(
-                "Failed to read array for $targetName, ${
-                    truncatedSource.peek().readLine()
-                }"
-            )
-        }
-        truncatedSource.skip(arrayIndex)
-
-        decode(truncatedSource)
-        return LoadingResult.success(Unit)
     }
 
     private suspend fun importPartial(source: Source): LoadingResult<*> {
@@ -333,7 +169,7 @@ class AlleyExporter(
         importExportDao.database().transaction {
             readData(
                 source = source,
-                databaseValues = importExportDao.getExportDataArtists2023(),
+                databaseValues = importExportDao.getExportPartialArtists2023(),
                 id = { it.id },
                 insert = { artistId, favorite, ignored ->
                     importExportDao.importArtist(
@@ -347,7 +183,7 @@ class AlleyExporter(
 
             readData(
                 source = source,
-                databaseValues = importExportDao.getExportDataArtists2024(),
+                databaseValues = importExportDao.getExportPartialArtists2024(),
                 id = { it.id },
                 insert = { artistId, favorite, ignored ->
                     importExportDao.importArtist(
@@ -361,7 +197,7 @@ class AlleyExporter(
 
             readData(
                 source = source,
-                databaseValues = importExportDao.getExportDataArtists2025(),
+                databaseValues = importExportDao.getExportPartialArtists2025(),
                 id = { it.id },
                 insert = { artistId, favorite, ignored ->
                     importExportDao.importArtist(
@@ -375,21 +211,21 @@ class AlleyExporter(
 
             readData(
                 source = source,
-                databaseValues = importExportDao.getExportDataStampRallies2023(),
+                databaseValues = importExportDao.getExportPartialStampRallies2023(),
                 id = { it.id },
                 insert = importExportDao::importStampRally,
             )
 
             readData(
                 source = source,
-                databaseValues = importExportDao.getExportDataStampRallies2024(),
+                databaseValues = importExportDao.getExportPartialStampRallies2024(),
                 id = { it.id },
                 insert = importExportDao::importStampRally,
             )
 
             readData(
                 source = source,
-                databaseValues = importExportDao.getExportDataStampRallies2025(),
+                databaseValues = importExportDao.getExportPartialStampRallies2025(),
                 id = { it.id },
                 insert = importExportDao::importStampRally,
             )
@@ -490,27 +326,87 @@ class AlleyExporter(
             }
     }
 
-    /** Wraps for Serialization support. */
-    @Serializable
-    private class ArtistNotesWrapper(
-        val artistId: String,
-        val notes: String? = null,
-    ) {
-        constructor(entry: ArtistNotes) : this(
-            artistId = entry.artistId,
-            notes = entry.notes,
+    suspend fun exportFull(sink: Sink) {
+        val artists: Map<DataYear?, Map<String, FullExport.ArtistData>> = mapOf(
+            DataYear.YEAR_2023 to importExportDao.getExportFullArtists2023()
+                .associate {
+                    it.id to FullExport.ArtistData(
+                        it.favorite == true,
+                        it.ignored == true,
+                        it.notes
+                    )
+                },
+            DataYear.YEAR_2024 to importExportDao.getExportFullArtists2024()
+                .associate {
+                    it.id to FullExport.ArtistData(
+                        it.favorite == true,
+                        it.ignored == true,
+                        it.notes
+                    )
+                },
+            DataYear.YEAR_2025 to importExportDao.getExportFullArtists2025()
+                .associate {
+                    it.id to FullExport.ArtistData(
+                        it.favorite == true,
+                        it.ignored == true,
+                        it.notes
+                    )
+                },
         )
+
+        val rallies = mutableMapOf<String, FullExport.RallyData>()
+        rallies += importExportDao.getExportFullStampRallies2023()
+            .associate {
+                it.id to FullExport.RallyData(it.favorite == true, it.ignored == true, it.notes)
+            }
+        rallies += importExportDao.getExportFullStampRallies2024()
+            .map {
+                it.id to FullExport.RallyData(it.favorite == true, it.ignored == true, it.notes)
+            }
+        rallies += importExportDao.getExportFullStampRallies2025()
+            .map {
+                it.id to FullExport.RallyData(it.favorite == true, it.ignored == true, it.notes)
+            }
+
+        json.encodeToSink(FullExport(artists, rallies), sink)
     }
 
-    /** Wraps for Serialization support. */
+    private suspend fun importFull(data: FullExport) {
+        data.artists.forEach { (year, artists) ->
+            if (year != null) {
+                artists.forEach { (id, data) ->
+                    importExportDao.importArtist(id, year, data.favorite, data.ignored, data.notes)
+                }
+            }
+        }
+        data.rallies.forEach { (id, data) ->
+            importExportDao.importStampRally(id, data.favorite, data.ignored, data.notes)
+        }
+    }
+
     @Serializable
-    private class StampRallyNotesWrapper(
-        val stampRallyId: String,
-        val notes: String? = null,
+    private class FullExport(
+        val artists: Map<DataYear?, Map<String, ArtistData>>,
+        val rallies: Map<String, RallyData>,
     ) {
-        constructor(entry: StampRallyNotes) : this(
-            stampRallyId = entry.stampRallyId,
-            notes = entry.notes,
+        @Serializable
+        data class ArtistData(
+            @SerialName("f")
+            val favorite: Boolean = false,
+            @SerialName("i")
+            val ignored: Boolean = false,
+            @SerialName("n")
+            val notes: String? = null,
+        )
+
+        @Serializable
+        data class RallyData(
+            @SerialName("f")
+            val favorite: Boolean = false,
+            @SerialName("i")
+            val ignored: Boolean = false,
+            @SerialName("n")
+            val notes: String? = null,
         )
     }
 }

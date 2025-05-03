@@ -14,43 +14,86 @@ importStampRallyNotes:
 INSERT OR REPLACE INTO stampRallyNotes(stampRallyId, notes)
 VALUES(:stampRallyId, :notes);
 
-getExportDataArtists2023:
+getExportPartialArtists2023:
 SELECT artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2023
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear;
+ON (artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear)
+ORDER BY artistEntry2023.id ASC;
 
-getExportDataArtists2024:
+getExportPartialArtists2024:
 SELECT artistEntry2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2024
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear;
+ON (artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear)
+ORDER BY artistEntry2024.id ASC;
 
-getExportDataArtists2025:
+getExportPartialArtists2025:
 SELECT artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntry2025
 LEFT OUTER JOIN artistUserEntry
-ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
-VALUES(:stampRallyId, :notes);
+ON (artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear)
+ORDER BY artistEntry2025.id ASC;
 
-getExportDataStampRallies2023:
+getExportFullArtists2023:
+SELECT artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry2023
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear)
+LEFT OUTER JOIN artistNotes
+ON (artistEntry2023.id = artistNotes.artistId AND 'AX2023' = artistNotes.dataYear)
+WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
+
+getExportFullArtists2024:
+SELECT artistEntry2024.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry2024
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear)
+LEFT OUTER JOIN artistNotes
+ON (artistEntry2024.id = artistNotes.artistId AND 'AX2024' = artistNotes.dataYear)
+WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
+
+getExportFullArtists2025:
+SELECT artistEntry2025.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry2025
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear)
+LEFT OUTER JOIN artistNotes
+ON (artistEntry2025.id = artistNotes.artistId AND 'AX2025' = artistNotes.dataYear)
+WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
+
+getExportPartialStampRallies2023:
 SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2023
 LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId;
+ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId
+ORDER BY stampRallyEntry2023.id ASC;
 
-getExportDataStampRallies2024:
+getExportPartialStampRallies2024:
 SELECT stampRallyEntry2024.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2024
 LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId;
+ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId
+ORDER BY stampRallyEntry2024.id ASC;
 
-getExportDataStampRallies2025:
+getExportPartialStampRallies2025:
 SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntry2025
 LEFT OUTER JOIN stampRallyUserEntry
-ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId;
+ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId
+ORDER BY stampRallyEntry2025.id ASC;
 
-getExportArtistNotes:
-SELECT artistNotes.* FROM artistNotes
-WHERE artistNotes.dataYear = :dataYear
-LIMIT :limit OFFSET :offset;
+getExportFullStampRallies2023:
+SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry2023
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2023.id = stampRallyUserEntry.stampRallyId
+LEFT OUTER JOIN stampRallyNotes
+ON stampRallyEntry2023.id = stampRallyNotes.stampRallyId
+WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
 
-getExportStampRallyNotes:
-SELECT stampRallyNotes.* FROM stampRallyNotes
-ORDER BY stampRallyNotes.stampRallyId
-LIMIT :limit OFFSET :offset;
+getExportFullStampRallies2024:
+SELECT stampRallyEntry2024.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry2024
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId
+LEFT OUTER JOIN stampRallyNotes
+ON stampRallyEntry2024.id = stampRallyNotes.stampRallyId
+WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
+
+getExportFullStampRallies2025:
+SELECT stampRallyEntry2025.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry2025
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId
+LEFT OUTER JOIN stampRallyNotes
+ON stampRallyEntry2025.id = stampRallyNotes.stampRallyId
+WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
