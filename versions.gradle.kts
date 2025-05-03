@@ -43,6 +43,7 @@ object Versions {
     const val colormath = "3.6.1"
     const val cronetEmbedded = "119.6045.31"
     const val diffUtils = "0.7.0"
+    const val fileKit = "0.10.0-beta03"
     const val flowExt = "1.0.0"
     const val fluidI18n = "0.13.0"
 
@@ -372,6 +373,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.fluidsonic.i18n:fluid-i18n:${Versions.fluidI18n}")
                 library("io.github.hoc081098:FlowExt:${Versions.flowExt}")
                 library("io.github.petertrr:kotlin-multiplatform-diff:${Versions.diffUtils}")
+                library("io.github.vinceglb:filekit-dialogs-compose:${Versions.fileKit}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
                 library("me.tatarka.inject:kotlin-inject-runtime-kmp:${Versions.kotlinInject}")
                 library("nl.jacobras:Human-Readable:${Versions.humanReadable}")

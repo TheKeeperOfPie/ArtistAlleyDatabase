@@ -23,4 +23,11 @@ object DateTimeUtils {
         chars(" - ")
         year()
     }
+    val fileDateFormat = LocalDate.Format {
+        year()
+        chars("-")
+        monthNumber()
+        char('-')
+        dayOfMonth()
+    }
 }

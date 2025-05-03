@@ -16,8 +16,10 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -53,13 +55,21 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_author_link
 import artistalleydatabase.modules.alley.generated.resources.alley_server_link
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_action
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_cancel
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_confirm
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_copy_instructions
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_copy_share
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_download
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_full
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_partial
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_share
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_file
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
@@ -76,6 +86,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -87,7 +99,7 @@ object AlleySettingsScreen {
     class State(
         val sections: List<SettingsSection>,
     ) {
-        var exportPartialText by mutableStateOf<String?>(null)
+        var exportText by mutableStateOf<String?>(null)
         var importState by mutableStateOf<LoadingResult<*>>(LoadingResult.empty<Unit>())
     }
 
@@ -95,6 +107,8 @@ object AlleySettingsScreen {
         data object ExportPartial : Event
         data object ExportFull : Event
         data class Import(val data: String) : Event
+        data class ImportFile(val file: PlatformFile?) : Event
+        data object ClearUserData : Event
     }
 }
 
@@ -105,6 +119,7 @@ internal fun AlleySettingsScreen(
 ) {
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
         val navigationController = LocalNavigationController.current
+        val scope = rememberCoroutineScope()
         SettingsScreen(
             sections = state.sections,
             upIconOption = UpIconOption.Back(navigationController::popBackStack),
@@ -114,18 +129,27 @@ internal fun AlleySettingsScreen(
             when (it.id) {
                 "header" -> Header()
                 "export" -> ExportSection(
-                    exportPartialText = { state.exportPartialText },
+                    exportText = { state.exportText },
                     onClickExportPartial = {
                         eventSink(AlleySettingsScreen.Event.ExportPartial)
                     },
                     onClickExportFull = {
                         eventSink(AlleySettingsScreen.Event.ExportFull)
                     },
+                    onClickDownload = {
+                        scope.launch {
+                            ExportFileDownloader.download(it)
+                        }
+                    },
                 )
                 "import" -> ImportSection(
                     state = { state.importState },
                     onResetState = { state.importState = LoadingResult.empty<Unit>() },
-                    onClickImport = { eventSink(AlleySettingsScreen.Event.Import(it)) }
+                    onClickImport = { eventSink(AlleySettingsScreen.Event.Import(it)) },
+                    onImportFile = { eventSink(AlleySettingsScreen.Event.ImportFile(it)) },
+                )
+                "clear" -> ClearSection(
+                    onClear = { eventSink(AlleySettingsScreen.Event.ClearUserData) },
                 )
                 "faq" -> FaqSection(
                     onInstallClick = { PlatformSpecificConfig.requestInstall() },
@@ -194,9 +218,10 @@ private fun Header() {
 
 @Composable
 private fun ExportSection(
-    exportPartialText: () -> String?,
+    exportText: () -> String?,
     onClickExportPartial: () -> Unit,
     onClickExportFull: () -> Unit,
+    onClickDownload: (String) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -226,11 +251,14 @@ private fun ExportSection(
             }
         }
 
-        val exportPartialText = exportPartialText()
-        if (exportPartialText != null) {
+        val exportText = exportText()
+        if (exportText != null) {
             HorizontalDivider()
 
-            Row(Modifier.fillMaxWidth()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
                     text = stringResource(Res.string.alley_settings_export_copy_instructions),
                     modifier = Modifier.weight(1f)
@@ -244,15 +272,22 @@ private fun ExportSection(
                 if (shareHandler != null) {
                     IconButtonWithTooltip(
                         imageVector = Icons.Default.Share,
-                        tooltipText = stringResource(Res.string.alley_settings_export_copy_share),
-                        onClick = { shareHandler.shareText(exportPartialText) },
-                        contentDescription = stringResource(Res.string.alley_settings_export_copy_share),
+                        tooltipText = stringResource(Res.string.alley_settings_export_share),
+                        onClick = { shareHandler.shareText(exportText) },
+                        contentDescription = stringResource(Res.string.alley_settings_export_share),
                     )
                 }
+
+                IconButtonWithTooltip(
+                    imageVector = Icons.Default.Download,
+                    tooltipText = stringResource(Res.string.alley_settings_export_download),
+                    onClick = { onClickDownload(exportText) },
+                    contentDescription = stringResource(Res.string.alley_settings_export_download),
+                )
             }
 
             OutlinedTextField(
-                value = exportPartialText,
+                value = exportText,
                 onValueChange = {},
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth()
@@ -266,6 +301,7 @@ private fun ImportSection(
     state: () -> LoadingResult<*>,
     onResetState: () -> Unit,
     onClickImport: (data: String) -> Unit,
+    onImportFile: (PlatformFile?) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -287,6 +323,11 @@ private fun ImportSection(
                 )
             }
 
+            val launcher = rememberFilePickerLauncher(onResult = onImportFile)
+            Button(onClick = launcher::launch) {
+                Text(text = stringResource(Res.string.alley_settings_import_file))
+            }
+
             val enabled by remember {
                 derivedStateOf {
                     val state = state()
@@ -294,7 +335,7 @@ private fun ImportSection(
                 }
             }
             Button(enabled = enabled, onClick = { onClickImport(importData) }) {
-                Box {
+                Box(contentAlignment = Alignment.Center) {
                     Text(text = stringResource(Res.string.alley_settings_import))
                     if (state().loading) {
                         CircularProgressIndicator()
@@ -332,6 +373,57 @@ private fun ImportSection(
             },
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
+
+@Composable
+private fun ClearSection(onClear: () -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(Res.string.alley_settings_clear),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(Res.string.alley_settings_clear_summary),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            var showConfirmationDialog by remember { mutableStateOf(false) }
+            Button(onClick = { showConfirmationDialog = true }) {
+                Text(stringResource(Res.string.alley_settings_clear_action))
+            }
+
+            if (showConfirmationDialog) {
+                AlertDialog(
+                    onDismissRequest = { showConfirmationDialog = false },
+                    text = {
+                        Text(stringResource(Res.string.alley_settings_clear_explanation))
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            onClear()
+                            showConfirmationDialog = false
+                        }) {
+                            Text(stringResource(Res.string.alley_settings_clear_confirm))
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showConfirmationDialog = false }) {
+                            Text(stringResource(Res.string.alley_settings_clear_cancel))
+                        }
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -539,9 +631,10 @@ private fun HeaderPreview() = PreviewDark {
 private fun ExportPreview() = PreviewDark {
     var exportPartialText by remember { mutableStateOf<String?>(null) }
     ExportSection(
-        exportPartialText = { exportPartialText },
+        exportText = { exportPartialText },
         onClickExportPartial = { exportPartialText = "Preview partial export" },
         onClickExportFull = { exportPartialText = "Preview full export" },
+        onClickDownload = {},
     )
 }
 
@@ -560,6 +653,7 @@ private fun ImportPreview() = PreviewDark {
                 state = LoadingResult.error("Failed to import")
             }
         },
+        onImportFile = {},
     )
 }
 

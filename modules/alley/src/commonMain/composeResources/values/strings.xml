@@ -173,10 +173,18 @@
     <string name="alley_settings_export_full">Full</string>
     <string name="alley_settings_export_copy_instructions">Copy the following into the Import section on another device</string>
     <string name="alley_settings_export_copy">Copy export text</string>
-    <string name="alley_settings_export_copy_share">Share export text</string>
+    <string name="alley_settings_export_share">Share export text</string>
+    <string name="alley_settings_export_download">Download export text</string>
     <string name="alley_settings_import">Import</string>
     <string name="alley_settings_import_summary">Paste the export output from another device to import the data to this one</string>
     <string name="alley_settings_import_success">Imported successfully</string>
+    <string name="alley_settings_import_file">Open file</string>
+    <string name="alley_settings_clear">Clear artists/rallies data</string>
+    <string name="alley_settings_clear_summary">Wipe the user entry and notes databases</string>
+    <string name="alley_settings_clear_action">Clear</string>
+    <string name="alley_settings_clear_explanation">This will remove all artist and rally user data, including favorites and notes. This is not reversible. Consider exporting data first and saving it somewhere just in case.</string>
+    <string name="alley_settings_clear_confirm">Delete user data</string>
+    <string name="alley_settings_clear_cancel">Cancel</string>
 
     <string name="alley_author_link">GitHub link</string>
     <string name="alley_server_link">Discord link</string>

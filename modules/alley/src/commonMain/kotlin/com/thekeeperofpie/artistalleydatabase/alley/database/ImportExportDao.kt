@@ -67,4 +67,6 @@ class ImportExportDao(
             importStampRallyNotes(stampRallyId, notes)
         }
     }
+
+    suspend fun deleteUserData() = database().userImportExportQueries.deleteUserData()
 }

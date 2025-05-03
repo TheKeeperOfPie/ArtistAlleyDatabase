@@ -97,3 +97,10 @@ ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId
 LEFT OUTER JOIN stampRallyNotes
 ON stampRallyEntry2025.id = stampRallyNotes.stampRallyId
 WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
+
+deleteUserData {
+    DELETE FROM artistNotes;
+    DELETE FROM artistUserEntry;
+    DELETE FROM stampRallyUserEntry;
+    DELETE FROM stampRallyNotes;
+}
