@@ -13,11 +13,11 @@ import org.w3c.dom.url.URL
 import org.w3c.files.File
 
 actual object ImportExportUtils {
-    actual suspend fun download(text: String) {
+    actual suspend fun download(fullExport: Boolean, text: String) {
         val dateSuffix = DateTimeUtils.fileDateFormat.format(
             Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         )
-        val fileName = "ArtistAlley-$dateSuffix.json"
+        val fileName = "ArtistAlley-$dateSuffix.${if (fullExport) "json" else "txt"}"
         val array = JsArray<JsAny?>()
         array[0] = text.encodeToByteArray().toJsArray()
 

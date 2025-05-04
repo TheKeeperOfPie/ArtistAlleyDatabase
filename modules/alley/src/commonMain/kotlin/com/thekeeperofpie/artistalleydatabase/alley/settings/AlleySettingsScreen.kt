@@ -68,7 +68,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_clea
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_copy_instructions
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_copy_instructions_full
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_copy_instructions_partial
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_download
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_full
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_partial
@@ -147,9 +148,9 @@ internal fun AlleySettingsScreen(
                     onClickExportFull = {
                         eventSink(AlleySettingsScreen.Event.ExportFull)
                     },
-                    onClickDownload = {
+                    onClickDownload = { fullExport, data ->
                         scope.launch {
-                            ImportExportUtils.download(it)
+                            ImportExportUtils.download(fullExport, data)
                         }
                     },
                 )
@@ -232,7 +233,7 @@ private fun ExportSection(
     exportData: () -> Pair<Boolean, String>?,
     onClickExportPartial: () -> Unit,
     onClickExportFull: () -> Unit,
-    onClickDownload: (String) -> Unit,
+    onClickDownload: (fullExport: Boolean, data: String) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -272,7 +273,13 @@ private fun ExportSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(Res.string.alley_settings_export_copy_instructions),
+                    text = stringResource(
+                        if (exportData.first) {
+                            Res.string.alley_settings_export_copy_instructions_full
+                        } else {
+                            Res.string.alley_settings_export_copy_instructions_partial
+                        }
+                    ),
                     modifier = Modifier.weight(1f)
                 )
 
@@ -310,7 +317,7 @@ private fun ExportSection(
                 IconButtonWithTooltip(
                     imageVector = Icons.Default.Download,
                     tooltipText = stringResource(Res.string.alley_settings_export_download),
-                    onClick = { onClickDownload(exportText) },
+                    onClick = { onClickDownload(exportData.first, exportText) },
                     contentDescription = stringResource(Res.string.alley_settings_export_download),
                 )
             }
@@ -351,6 +358,16 @@ private fun QrCodeDialog(exportPartial: String, onDismiss: () -> Unit) {
                     onValueChange = {},
                     readOnly = true,
                 )
+
+                QuestionAnswer(
+                    "Importing didn't work?",
+                    "Make sure both this device and the other device are on the most up " +
+                            "to date version of the site. This might require closing all tabs " +
+                            "for the site and turning off anything that would block the update " +
+                            "like VPN. \n\nIf that doesn't work, consider copy-pasting or using " +
+                            "the file export + import instead.",
+
+                    )
             }
         }
     }
@@ -694,7 +711,7 @@ private fun ExportPreview() = PreviewDark {
         exportData = { exportPartialText?.let { false to it } },
         onClickExportPartial = { exportPartialText = "Preview partial export" },
         onClickExportFull = { exportPartialText = "Preview full export" },
-        onClickDownload = {},
+        onClickDownload = { _, _ -> },
     )
 }
 

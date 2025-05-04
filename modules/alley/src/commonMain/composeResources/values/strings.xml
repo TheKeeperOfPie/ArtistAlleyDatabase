@@ -172,7 +172,8 @@
     <string name="alley_settings_export_summary">Transfer the data from this device to another. Partial export does not export notes field</string>
     <string name="alley_settings_export_partial">Partial</string>
     <string name="alley_settings_export_full">Full</string>
-    <string name="alley_settings_export_copy_instructions">Copy the following into the Import section on another device</string>
+    <string name="alley_settings_export_copy_instructions_partial">Copy the following into the Import section on another device, or click an icon to show QR code or download as a file</string>
+    <string name="alley_settings_export_copy_instructions_full">Copy the following into the Import section on another device, or click the icon to download as a file</string>
     <string name="alley_settings_export_copy">Copy export text</string>
     <string name="alley_settings_export_share">Share export text</string>
     <string name="alley_settings_export_download">Download export text</string>
@@ -219,7 +220,7 @@
     <string name="alley_user_notes_character_count">%1$d / %2$d</string>
 
     <string name="alley_import_failed_to_read_database_hash">Failed to read database hash</string>
-    <string name="alley_import_database_hash_mismatch">Database hash did not match, expected %1$s but got %2$s.\nYou may have to re-export this from the other device on the latest version of the website</string>
+    <string name="alley_import_database_hash_mismatch">Database hash did not match, expected %1$s but got %2$s.\nYou may have to re-export this from the other device on the latest version of the site, or update this device's site version</string>
     <string name="alley_import_failed_to_read_schema_version">Failed to read schema version</string>
     <string name="alley_import_schema_version_mismatch">Schema version did not match, expected %1$s but got %2$s</string>
     <string name="alley_import_failed_to_parse_chunk">Failed to parse chunk</string>
