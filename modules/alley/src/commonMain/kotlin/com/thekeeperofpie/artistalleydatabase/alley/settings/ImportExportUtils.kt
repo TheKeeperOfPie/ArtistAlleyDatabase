@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
-expect object ExportFileDownloader {
+expect object ImportExportUtils {
     suspend fun download(text: String)
+    fun getImportUrl(exportPartial: String): String
 }

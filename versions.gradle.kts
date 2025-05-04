@@ -107,6 +107,7 @@ object Versions {
     const val okio = "3.10.2"
     const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
     const val placeholder = "1.0.10"
+    const val qrose = "1.0.1"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.1.0-wasm.2"
     const val sqldelightAndroidXDriver = "0.0.7"
@@ -374,6 +375,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.github.hoc081098:FlowExt:${Versions.flowExt}")
                 library("io.github.petertrr:kotlin-multiplatform-diff:${Versions.diffUtils}")
                 library("io.github.vinceglb:filekit-dialogs-compose:${Versions.fileKit}")
+                library("io.github.alexzhirkevich:qrose:${Versions.qrose}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
                 library("me.tatarka.inject:kotlin-inject-runtime-kmp:${Versions.kotlinInject}")
                 library("nl.jacobras:Human-Readable:${Versions.humanReadable}")

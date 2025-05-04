@@ -20,6 +20,7 @@ interface NavigationController {
     fun navigateUp(): Boolean
     fun navigate(navDestination: NavDestination)
     fun popBackStack(): Boolean
+    fun popBackStack(navDestination: NavDestination): Boolean
 }
 
 class NavigationControllerImpl(
@@ -49,6 +50,9 @@ class NavigationControllerImpl(
     }
 
     override fun popBackStack() = navigateBack()
+
+    override fun popBackStack(navDestination: NavDestination) =
+        navHostController.popBackStack(route = navDestination, inclusive = false)
 }
 
 internal expect fun NavigationControllerImpl.navigateBack(): Boolean

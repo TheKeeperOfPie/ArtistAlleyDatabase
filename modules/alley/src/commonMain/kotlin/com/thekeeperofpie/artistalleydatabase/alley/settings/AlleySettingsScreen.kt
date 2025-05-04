@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,12 +14,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -39,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -51,6 +56,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.compose.ui.window.Dialog
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_author_link
@@ -66,10 +72,14 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_expo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_download
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_full
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_partial
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_qr_code
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_qr_code_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_qr_code_url_label
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_share
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_file
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_qr_code_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
@@ -86,6 +96,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.delay
@@ -99,7 +110,7 @@ object AlleySettingsScreen {
     class State(
         val sections: List<SettingsSection>,
     ) {
-        var exportText by mutableStateOf<String?>(null)
+        var exportData by mutableStateOf<Pair<Boolean, String>?>(null)
         var importState by mutableStateOf<LoadingResult<*>>(LoadingResult.empty<Unit>())
     }
 
@@ -129,7 +140,7 @@ internal fun AlleySettingsScreen(
             when (it.id) {
                 "header" -> Header()
                 "export" -> ExportSection(
-                    exportText = { state.exportText },
+                    exportData = { state.exportData },
                     onClickExportPartial = {
                         eventSink(AlleySettingsScreen.Event.ExportPartial)
                     },
@@ -138,7 +149,7 @@ internal fun AlleySettingsScreen(
                     },
                     onClickDownload = {
                         scope.launch {
-                            ExportFileDownloader.download(it)
+                            ImportExportUtils.download(it)
                         }
                     },
                 )
@@ -218,7 +229,7 @@ private fun Header() {
 
 @Composable
 private fun ExportSection(
-    exportText: () -> String?,
+    exportData: () -> Pair<Boolean, String>?,
     onClickExportPartial: () -> Unit,
     onClickExportFull: () -> Unit,
     onClickDownload: (String) -> Unit,
@@ -251,7 +262,8 @@ private fun ExportSection(
             }
         }
 
-        val exportText = exportText()
+        val exportData = exportData()
+        val exportText = exportData?.second
         if (exportText != null) {
             HorizontalDivider()
 
@@ -278,6 +290,23 @@ private fun ExportSection(
                     )
                 }
 
+                if (!exportData.first) {
+                    var showQrCodeDialog by remember { mutableStateOf(false) }
+                    if (showQrCodeDialog) {
+                        QrCodeDialog(
+                            exportPartial = exportText,
+                            onDismiss = { showQrCodeDialog = false },
+                        )
+                    }
+
+                    IconButtonWithTooltip(
+                        imageVector = Icons.Default.QrCode2,
+                        tooltipText = stringResource(Res.string.alley_settings_export_qr_code),
+                        onClick = { showQrCodeDialog = true },
+                        contentDescription = stringResource(Res.string.alley_settings_export_qr_code),
+                    )
+                }
+
                 IconButtonWithTooltip(
                     imageVector = Icons.Default.Download,
                     tooltipText = stringResource(Res.string.alley_settings_export_download),
@@ -292,6 +321,37 @@ private fun ExportSection(
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth()
             )
+        }
+    }
+}
+
+@Composable
+private fun QrCodeDialog(exportPartial: String, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        OutlinedCard {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(stringResource(Res.string.alley_settings_export_qr_code_explanation))
+
+                val exportUrl =
+                    remember(exportPartial) { ImportExportUtils.getImportUrl(exportPartial) }
+                Image(
+                    painter = rememberQrCodePainter(exportUrl),
+                    contentDescription = stringResource(Res.string.alley_settings_import_qr_code_content_description),
+                    modifier = Modifier.background(Color.White, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                )
+
+                OutlinedTextField(
+                    value = exportUrl,
+                    label = { Text(stringResource(Res.string.alley_settings_export_qr_code_url_label)) },
+                    onValueChange = {},
+                    readOnly = true,
+                )
+            }
         }
     }
 }
@@ -631,7 +691,7 @@ private fun HeaderPreview() = PreviewDark {
 private fun ExportPreview() = PreviewDark {
     var exportPartialText by remember { mutableStateOf<String?>(null) }
     ExportSection(
-        exportText = { exportPartialText },
+        exportData = { exportPartialText?.let { false to it } },
         onClickExportPartial = { exportPartialText = "Preview partial export" },
         onClickExportFull = { exportPartialText = "Preview full export" },
         onClickDownload = {},

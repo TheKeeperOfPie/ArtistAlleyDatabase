@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
+import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
@@ -261,7 +262,7 @@ object ArtistAlleyAppScreen {
                                     if (imageIndex != null) {
                                         imagePagerState.requestScrollToPage(imageIndex)
                                     }
-                                    onStopOrDispose { Unit }
+                                    onStopOrDispose {}
                                 }
                                 StampRallyDetailsScreen(
                                     route = route,
@@ -404,6 +405,21 @@ object ArtistAlleyAppScreen {
                                     mapViewModel = mapViewModel,
                                     onClickBack = navigationController::popBackStack,
                                     onArtistClick = onArtistClick,
+                                )
+                            }
+
+                            sharedElementComposable<Destinations.Import>(
+                                navigationTypeMap = navigationTypeMap,
+                            ) {
+                                val viewModel = viewModel {
+                                    component.importViewModel(createSavedStateHandle())
+                                }
+                                val navigationController = LocalNavigationController.current
+                                ImportScreen(
+                                    state = viewModel::state,
+                                    importData = viewModel.route.data,
+                                    onDismiss = { navigationController.popBackStack(Destinations.Home) },
+                                    onConfirmImport = viewModel::confirm,
                                 )
                             }
                         }

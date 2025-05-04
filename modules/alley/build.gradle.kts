@@ -45,6 +45,7 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlinx.serialization.json.io)
+            implementation(libs.qrose)
             implementation(libs.sqldelight.coroutines.extensions)
         }
         androidMain.dependencies {

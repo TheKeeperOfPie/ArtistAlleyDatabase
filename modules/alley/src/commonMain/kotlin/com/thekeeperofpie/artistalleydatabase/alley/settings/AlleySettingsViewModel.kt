@@ -68,14 +68,14 @@ class AlleySettingsViewModel(
         AlleySettingsScreen.Event.ExportPartial -> viewModelScope.launch(dispatchers.io) {
             Buffer().use {
                 exporter.exportPartial(it)
-                state.exportText = it.readString()
+                state.exportData = false to it.readString()
             }
         }
         AlleySettingsScreen.Event.ExportFull -> viewModelScope.launch(dispatchers.io) {
             Buffer().use {
                 // TODO: Export to a user chosen file instead
                 exporter.exportFull(it)
-                state.exportText = it.readString()
+                state.exportData = true to it.readString()
             }
         }
         is AlleySettingsScreen.Event.Import -> {

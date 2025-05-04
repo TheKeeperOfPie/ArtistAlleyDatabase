@@ -167,6 +167,7 @@
     <string name="alley_settings">Settings</string>
     <string name="alley_settings_theme">Theme</string>
     <string name="alley_settings_series_language">Series language</string>
+
     <string name="alley_settings_export">Export</string>
     <string name="alley_settings_export_summary">Transfer the data from this device to another. Partial export does not export notes field</string>
     <string name="alley_settings_export_partial">Partial</string>
@@ -175,10 +176,20 @@
     <string name="alley_settings_export_copy">Copy export text</string>
     <string name="alley_settings_export_share">Share export text</string>
     <string name="alley_settings_export_download">Download export text</string>
+    <string name="alley_settings_export_qr_code">Show export link QR code</string>
+    <string name="alley_settings_export_qr_code_explanation">Scan with another device's camera</string>
+    <string name="alley_settings_export_qr_code_url_label">URL</string>
+
+    <string name="alley_settings_import_qr_code_content_description">Import link QR code</string>
     <string name="alley_settings_import">Import</string>
     <string name="alley_settings_import_summary">Paste the export output from another device to import the data to this one</string>
     <string name="alley_settings_import_success">Imported successfully</string>
     <string name="alley_settings_import_file">Open file</string>
+    <string name="alley_settings_import_prompt_title">Import this data?</string>
+    <string name="alley_settings_import_prompt_confirm">Confirm</string>
+    <string name="alley_settings_import_prompt_cancel">Cancel</string>
+    <string name="alley_settings_import_prompt_close">Close</string>
+
     <string name="alley_settings_clear">Clear artists/rallies data</string>
     <string name="alley_settings_clear_summary">Wipe the user entry and notes databases</string>
     <string name="alley_settings_clear_action">Clear</string>

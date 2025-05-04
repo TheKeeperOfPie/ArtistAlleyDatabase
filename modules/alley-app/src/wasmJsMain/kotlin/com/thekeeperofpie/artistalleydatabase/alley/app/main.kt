@@ -29,6 +29,7 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
@@ -136,8 +137,16 @@ fun main() {
                     globalSkipWaitingBridge.onComposeReady(updateShowWaiting)
                 }
 
-                ArtistAlleyAppScreen(component, navHostController, rootSnackbarHostState)
+                ArtistAlleyAppScreen(
+                    component = component,
+                    navHostController = navHostController,
+                    rootSnackbarHostState = rootSnackbarHostState,
+                )
                 LaunchedEffect(navHostController) {
+                    val route = window.location.hash.substringAfter('#', "")
+                    if (route.startsWith("import")) {
+                        navHostController.navigate(Destinations.Import(route.removePrefix("import=")))
+                    }
                     window.bindToNavigation(navHostController)
                 }
             }

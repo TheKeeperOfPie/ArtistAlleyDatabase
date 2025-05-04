@@ -23,6 +23,7 @@ fun PreviewDark(content: @Composable () -> Unit) {
         override fun navigateUp() = false
         override fun navigate(navDestination: NavDestination) = Unit
         override fun popBackStack() = false
+        override fun popBackStack(navDestination: NavDestination) = false
     }
 
     CompositionLocalProvider(

@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.import.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
@@ -41,6 +42,7 @@ interface ArtistAlleyComponent {
     ) -> FavoritesViewModel
     val favoritesSortFilterViewModel: (SavedStateHandle) -> FavoritesSortFilterViewModel
     val imagesViewModel: (SavedStateHandle) -> ImagesViewModel
+    val importViewModel: (SavedStateHandle) -> ImportViewModel
     val mapViewModel: (SavedStateHandle) -> MapViewModel
     val alleySettingsViewModel: () -> AlleySettingsViewModel
     val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
