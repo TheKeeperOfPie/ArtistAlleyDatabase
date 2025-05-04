@@ -17,5 +17,5 @@ actual object ImportExportUtils {
         FileKit.download(text.encodeToByteArray(), fileName)
     }
 
-    actual fun getImportUrl(exportPartial: String) = "${window.location.host}#import=$exportPartial"
+    actual fun getImportUrl(exportPartial: String) = "${window.location.origin}#import=$exportPartial"
 }

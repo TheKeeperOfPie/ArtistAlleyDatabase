@@ -55,15 +55,15 @@ class AlleyExporter(
     private val json: Json = Json { encodeDefaults = false },
 ) {
     companion object {
-        private const val SCHEMA_VERSION = "2"
+        private const val SCHEMA_VERSION = "3"
 
         private val CHARACTERS = listOf(
             '0'.rangeTo('9'),
             'a'.rangeTo('z'),
             'A'.rangeTo('Z'),
             listOf(
-                '!', '#', '$', '%', '&', '(', ')', '*', '+', '-', ';', '<', '>', '?', '@', '^', '_',
-                '`', '{', '|', '}', '~', '[', ']'
+                '?', '/', ':', '@', '-', '.', '_', '~', '!', '$', '&', '\'', '(', ')', '*', '+',
+                ',', ';', '='
             )
         ).flatten()
             .sorted()
