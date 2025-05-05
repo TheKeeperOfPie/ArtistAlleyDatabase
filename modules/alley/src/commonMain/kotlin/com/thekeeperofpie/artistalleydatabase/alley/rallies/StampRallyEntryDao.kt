@@ -35,9 +35,11 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
             links = getString(4)!!.let(Json::decodeFromString),
             tableMin = null,
             totalCost = null,
+            prize = null,
             prizeLimit = null,
             notes = null,
             counter = getLong(5)!!,
+            confirmed = true,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
@@ -59,9 +61,11 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
             links = getString(4)!!.let(Json::decodeFromString),
             tableMin = getLong(5),
             totalCost = getLong(6),
+            prize = null,
             prizeLimit = getLong(7),
             notes = getString(8),
             counter = getLong(9)!!,
+            confirmed = true,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
@@ -83,14 +87,16 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             links = getString(4)!!.let(Json::decodeFromString),
             tableMin = getLong(5),
             totalCost = getLong(6),
-            prizeLimit = getLong(7),
-            notes = getString(8),
-            counter = getLong(9)!!,
+            prize = getString(7),
+            prizeLimit = getLong(8),
+            notes = getString(9),
+            counter = getLong(10)!!,
+            confirmed = getBoolean(11) == true,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBoolean(10) == true,
-            ignored = getBoolean(11) == true,
+            favorite = getBoolean(12) == true,
+            ignored = getBoolean(13) == true,
         )
     )
 }
@@ -105,9 +111,11 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
         links = links,
         tableMin = null,
         totalCost = null,
+        prize = null,
         prizeLimit = null,
         notes = null,
         counter = counter,
+        confirmed = true,
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
@@ -126,9 +134,11 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
         links = links,
         tableMin = tableMin,
         totalCost = totalCost,
+        prize = null,
         prizeLimit = prizeLimit,
         notes = notes,
         counter = counter,
+        confirmed = true,
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
@@ -147,9 +157,11 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
         links = links,
         tableMin = tableMin,
         totalCost = totalCost,
+        prize = prize,
         prizeLimit = prizeLimit,
         notes = notes,
         counter = counter,
+        confirmed = confirmed,
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
@@ -167,9 +179,11 @@ fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
     links = links,
     tableMin = null,
     totalCost = null,
+    prize = null,
     prizeLimit = null,
     notes = null,
     counter = counter,
+    confirmed = true,
 )
 
 fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
@@ -181,9 +195,11 @@ fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
     links = links,
     tableMin = tableMin,
     totalCost = totalCost,
+    prize = null,
     prizeLimit = prizeLimit,
     notes = notes,
     counter = counter,
+    confirmed = true,
 )
 
 fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
@@ -195,9 +211,11 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
     links = links,
     tableMin = tableMin,
     totalCost = totalCost,
+    prize = prize,
     prizeLimit = prizeLimit,
     notes = notes,
     counter = counter,
+    confirmed = confirmed,
 )
 
 class StampRallyEntryDao(

@@ -11,7 +11,9 @@ data class StampRallyEntry(
     val links: List<String>,
     val tableMin: Long?,
     val totalCost: Long?,
+    val prize: String?,
     val prizeLimit: Long?,
     val notes: String?,
     val counter: Long,
+    val confirmed: Boolean,
 )

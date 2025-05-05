@@ -60,6 +60,7 @@ object ImagesScreen {
                                 )
                             is Destinations.Images.Title.StampRally ->
                                 StampRallyTitle(
+                                    year = route.year,
                                     id = route.id,
                                     hostTable = title.hostTable,
                                     fandom = title.fandom,

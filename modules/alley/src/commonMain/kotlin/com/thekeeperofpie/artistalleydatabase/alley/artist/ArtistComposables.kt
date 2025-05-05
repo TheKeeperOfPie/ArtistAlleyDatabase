@@ -40,6 +40,7 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
@@ -64,7 +65,7 @@ fun ArtistTitle(
         Row(verticalAlignment = Alignment.CenterVertically) {
             val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
             if (!isCurrentYear) {
-                Text(text = "${year.year} - ")
+                Text(text = "${stringResource(year.shortName)} - ")
             }
 
             if (name == null || booth != null) {

@@ -16,9 +16,11 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 links = listOf("https://example.org/stampRally"),
                 tableMin = 10,
                 totalCost = 30,
+                prize = null,
                 prizeLimit = 100,
                 notes = null,
                 counter = 1,
+                confirmed = true,
             ),
             userEntry = StampRallyUserEntry(
                 stampRallyId = "stampRallyId",

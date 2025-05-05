@@ -30,12 +30,14 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_equation_any
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_equation_paid
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_free
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_paid
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_unknown
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_fandom
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_links
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
@@ -74,10 +76,14 @@ object StampRallyDetailsScreen {
                 val stampRally = entry()?.stampRally
                 val hostTable = stampRally?.hostTable ?: route.hostTable
                 val fandom = stampRally?.fandom ?: route.fandom
-                StampRallyTitle(id = id, hostTable = hostTable, fandom = fandom)
+                StampRallyTitle(year = route.year, id = id, hostTable = hostTable, fandom = fandom)
             },
             sharedElementId = route.id,
-            favorite = { entry()?.favorite },
+            favorite = {
+                // TODO: Show explanation for why favorites is disabled
+                val entry = entry()
+                entry?.favorite?.takeIf { entry.stampRally.confirmed }
+            },
             images = images,
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
@@ -131,6 +137,28 @@ object StampRallyDetailsScreen {
             }
         }
 
+        val prize = entry()?.stampRally?.prize
+        if (prize != null) {
+            item("stampRallyPrize") {
+                Column(Modifier.animateItem()) {
+                    ThemeAwareElevatedCard(
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        SelectionContainer {
+                            Column {
+                                InfoText(
+                                    label = stringResource(Res.string.alley_stamp_rally_details_prize),
+                                    body = prize,
+                                    showDividerAbove = false,
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
+            }
+        }
+
         item("stampRallyCostAndPrizes") {
             val stampRally = entry()?.stampRally
             ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -142,6 +170,8 @@ object StampRallyDetailsScreen {
                     val tableCount = stampRally.tables.count()
                     if (tableMin == null) {
                         stringResource(Res.string.alley_stamp_rally_cost_unknown)
+                    } else if (tableMin == -1L) {
+                        stringResource(Res.string.alley_stamp_rally_cost_paid)
                     } else if (tableMin == 0L) {
                         stringResource(Res.string.alley_stamp_rally_cost_free)
                     } else if (tableMin == 1L) {
@@ -161,7 +191,7 @@ object StampRallyDetailsScreen {
                             totalCost
                         )
                     } else {
-                        stringResource(Res.string.alley_stamp_rally_cost_unknown)
+                        stringResource(Res.string.alley_stamp_rally_cost_paid)
                     }
                 }
 
@@ -246,12 +276,14 @@ object StampRallyDetailsScreen {
             }
         }
 
-        item("stampRallyUserNotes") {
-            UserNotesText(
-                state = userNotesTextState,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(Modifier.height(16.dp))
+        if (entry()?.stampRally?.confirmed == true) {
+            item("stampRallyUserNotes") {
+                UserNotesText(
+                    state = userNotesTextState,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(Modifier.height(16.dp))
+            }
         }
 
         item("stampRallyButtons") {

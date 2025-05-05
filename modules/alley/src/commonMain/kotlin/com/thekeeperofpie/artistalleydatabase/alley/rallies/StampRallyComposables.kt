@@ -1,40 +1,52 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_free
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_paid
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_disabled
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_prize_limit
-import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_free
-import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_paid
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_total_cost
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun StampRallyTitle(
+    year: DataYear,
     id: String,
     hostTable: String?,
     fandom: String?,
@@ -42,6 +54,11 @@ fun StampRallyTitle(
 ) {
     SelectionContainer {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            val isCurrentYear = remember(year) { AlleyUtils.isCurrentYear(year) }
+            if (!isCurrentYear) {
+                Text(text = "${stringResource(year.shortName)} - ")
+            }
+
             Text(
                 text = hostTable.orEmpty(),
                 maxLines = 1,
@@ -85,7 +102,6 @@ fun StampRallyListRow(
     val stampRally = entry.stampRally
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
             .sharedBounds("container", stampRally.id, zIndexInOverlay = 1f)
@@ -100,6 +116,8 @@ fun StampRallyListRow(
                 .padding(vertical = 8.dp)
         )
 
+        Spacer(Modifier.width(16.dp))
+
         Text(
             text = stampRally.fandom,
             color = MaterialTheme.colorScheme.primary,
@@ -109,6 +127,8 @@ fun StampRallyListRow(
                 .weight(1f)
                 .padding(vertical = 8.dp)
         )
+
+        Spacer(Modifier.width(16.dp))
 
         Column(
             horizontalAlignment = Alignment.End,
@@ -127,35 +147,62 @@ fun StampRallyListRow(
             if (totalCost != null) {
                 Text(
                     text = if (totalCost == 0L) {
-                        stringResource(Res.string.alley_stamp_rally_total_free)
+                        stringResource(Res.string.alley_stamp_rally_cost_free)
                     } else {
                         stringResource(
-                            Res.string.alley_stamp_rally_total_paid,
+                            Res.string.alley_stamp_rally_total_cost,
                             totalCost,
                         )
                     },
                     style = MaterialTheme.typography.labelSmall,
                 )
+            } else {
+                val textRes = when {
+                    stampRally.tableMin == -1L -> Res.string.alley_stamp_rally_cost_paid
+                    stampRally.tableMin == -0L -> Res.string.alley_stamp_rally_cost_free
+                    stampRally.tableMin != null -> Res.string.alley_stamp_rally_cost_paid
+                    else -> null
+                }
+                if (textRes != null) {
+                    Text(
+                        text = stringResource(textRes),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
             }
         }
 
-        val favorite = entry.favorite
-        IconButton(
-            onClick = { onFavoriteToggle(!favorite) },
-            modifier = Modifier
-                .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
-                .align(Alignment.Top)
-        ) {
-            Icon(
-                imageVector = if (favorite) {
-                    Icons.Filled.Favorite
-                } else {
-                    Icons.Filled.FavoriteBorder
-                },
-                contentDescription = stringResource(
-                    Res.string.alley_stamp_rally_favorite_icon_content_description
-                ),
-            )
+        if (entry.stampRally.confirmed) {
+            val favorite = entry.favorite
+            IconButton(
+                onClick = { onFavoriteToggle(!favorite) },
+                modifier = Modifier
+                    .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
+                    .align(Alignment.Top)
+            ) {
+                Icon(
+                    imageVector = if (favorite) {
+                        Icons.Filled.Favorite
+                    } else {
+                        Icons.Filled.FavoriteBorder
+                    },
+                    contentDescription = stringResource(
+                        Res.string.alley_stamp_rally_favorite_icon_content_description
+                    ),
+                )
+            }
+        } else {
+            Tooltip(text = stringResource(Res.string.alley_stamp_rally_favorite_disabled)) {
+                IconButton(
+                    enabled = false,
+                    onClick = {},
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.FavoriteBorder,
+                        contentDescription = stringResource(Res.string.alley_stamp_rally_favorite_disabled),
+                    )
+                }
+            }
         }
     }
 }

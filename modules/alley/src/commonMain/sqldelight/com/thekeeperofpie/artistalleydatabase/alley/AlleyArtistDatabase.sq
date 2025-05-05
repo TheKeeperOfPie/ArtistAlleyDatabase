@@ -182,9 +182,11 @@ CREATE TABLE
         links TEXT AS List<String> NOT NULL,
         tableMin INTEGER,
         totalCost INTEGER,
+        prize TEXT,
         prizeLimit INTEGER,
         notes TEXT,
         counter INTEGER NOT NULL DEFAULT 1,
+        confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
 
@@ -193,6 +195,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2025_fts USING FTS5 (
     fandom,
     tables,
     counter,
+    prize,
     notes,
     content=stampRallyEntry2025,
     tokenize="unicode61 remove_diacritics 2"

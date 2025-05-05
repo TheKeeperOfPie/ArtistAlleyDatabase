@@ -66,6 +66,7 @@
 
     <string name="alley_stamp_rally_details_fandom">Fandom</string>
     <string name="alley_stamp_rally_details_links">Links</string>
+    <string name="alley_stamp_rally_details_prize">Prize</string>
     <string name="alley_stamp_rally_details_artists">Artists</string>
     <string name="alley_stamp_rally_details_other_tables">Other tables</string>
     <string name="alley_stamp_rally_favorite_icon_content_description">Mark stamp rally as favorite</string>
@@ -74,8 +75,7 @@
 
     <string name="alley_browse_tab_series">Series</string>
     <string name="alley_browse_tab_merch">Merch</string>
-    <string name="alley_stamp_rally_total_free">Free</string>
-    <string name="alley_stamp_rally_total_paid">$%1$d</string>
+    <string name="alley_stamp_rally_total_cost">$%1$d</string>
     <string name="alley_stamp_rally_prize_limit_unknown">Unknown</string>
     <string name="alley_stamp_rally_prize_limit">%1$s prizes</string>
     <string name="alley_stamp_rally_table_min">%1$s/table%2$s</string>
@@ -85,8 +85,10 @@
     <string name="alley_stamp_rally_cost_free">Free</string>
     <string name="alley_stamp_rally_cost_any">Any</string>
     <string name="alley_stamp_rally_cost_unknown">Unknown</string>
+    <string name="alley_stamp_rally_cost_paid">Paid</string>
     <string name="alley_stamp_rally_cost_equation_any">Any × %1$d tables</string>
     <string name="alley_stamp_rally_cost_equation_paid">$%1$d × %2$d tables = $%3$d+</string>
+    <string name="alley_stamp_rally_favorite_disabled">Rally status is pending, favoriting disabled</string>
 
     <string name="alley_previous_page">Previous page</string>
     <string name="alley_next_page">Next page</string>

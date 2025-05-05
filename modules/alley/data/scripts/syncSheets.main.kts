@@ -11,6 +11,7 @@ val artists2024OutputFile = inputsFolder.resolve("2024/artists.csv")
 val artists2023OutputFile = inputsFolder.resolve("2023/artists.csv")
 val seriesOutputFile = inputsFolder.resolve("series.csv")
 val merchOutputFile = inputsFolder.resolve("merch.csv")
+val rallies2025OutputFile = inputsFolder.resolve("2025/rallies.csv")
 
 downloadUrl(sheetId2024, "Artists", artists2024OutputFile, "A1:M")
 downloadUrl(sheetId2023, "Artists", artists2023OutputFile, "A1:K")
@@ -22,6 +23,7 @@ downloadUrl(sheetId2025, "Merch", merchOutputFile)
 // For some reason Stamp Rallies doesn't download correctly, dev should overwrite manually.
 // This is kept around in case optimistically it fixes itself.
 //downloadUrl("Stamp Rallies", "rallies.csv", "A1:G")
+downloadUrl(sheetId2025, "Stamp Rallies", rallies2025OutputFile, "A1:J")
 
 fun downloadUrl(sheetId: String, sheetName: String, outputFile: File, range: String? = null) {
     outputFile.parentFile.mkdirs()

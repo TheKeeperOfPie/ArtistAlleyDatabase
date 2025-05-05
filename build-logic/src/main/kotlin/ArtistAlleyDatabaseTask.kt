@@ -172,7 +172,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             parseSeries(database, seriesConnections)
             parseMerch(database, merchConnections)
 
-            parseStampRallies(artists2023, artists2024, artists2025, database)
+            parseStampRallies2023(artists2023, database)
+            parseStampRallies2024(artists2024, database)
+            parseStampRallies2025(artists2025, database)
 
             runBlocking {
                 // Don't retain user tables (merged from depending on :modules:alley:user)
@@ -683,21 +685,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun parseStampRallies(
+    private fun parseStampRallies2023(
         artists2023: List<ArtistEntry2023>,
-        artists2024: List<ArtistEntry2024>,
-        artists2025: List<ArtistEntry2025>,
         database: BuildLogicDatabase,
     ) {
         val mutationQueries = database.mutationQueries
-//        val stampRalliesCsv2025 = inputsDirectory.file("2025/$STAMP_RALLIES_CSV_NAME").get()
-        val stampRalliesCsv2024 = inputsDirectory.file("2024/$STAMP_RALLIES_CSV_NAME").get()
         val stampRalliesCsv2023 = inputsDirectory.file("2023/$STAMP_RALLIES_CSV_NAME").get()
-
         val boothToArtist2023 = artists2023.associate { it.booth to it }
-        val boothToArtist2024 = artists2024.associate { it.booth to it }
-//        val boothToArtist2025 = artists2025.associate { it.booth to it }
-
         open(stampRalliesCsv2023).use {
             var counter = 1L
             read(it)
@@ -759,6 +753,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                 }
         }
+    }
+
+    private fun parseStampRallies2024(
+        artists2024: List<ArtistEntry2024>,
+        database: BuildLogicDatabase,
+    ) {
+        val mutationQueries = database.mutationQueries
+        val stampRalliesCsv2024 = inputsDirectory.file("2024/$STAMP_RALLIES_CSV_NAME").get()
+        val boothToArtist2024 = artists2024.associate { it.booth to it }
 
         open(stampRalliesCsv2024).use {
             var counter = 1L
@@ -812,6 +815,80 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val artistConnections = it.flatMap { it.second }
                     mutationQueries.transaction {
                         stampRallies.forEach(mutationQueries::insertStampRally2024)
+                        artistConnections.forEach(mutationQueries::insertArtistConnection)
+                    }
+                }
+        }
+    }
+
+    private fun parseStampRallies2025(
+        artists2025: List<ArtistEntry2025>,
+        database: BuildLogicDatabase,
+    ) {
+        val mutationQueries = database.mutationQueries
+        val stampRalliesCsv2025 = inputsDirectory.file("2025/$STAMP_RALLIES_CSV_NAME").get()
+        val boothToArtist2025 = artists2025.associate { it.booth to it }
+
+        open(stampRalliesCsv2025).use {
+            var counter = 1L
+            read(it)
+                .mapNotNull {
+                    // Confirmed, Theme, Prize, Link, Tables, Table Min, Total, Notes, UUID
+                    val tables = it["Tables"]!!
+                        .ifEmpty { return@mapNotNull null }
+                        .split("\n")
+                        .filter(String::isNotBlank)
+                    val confirmed = it["Confirmed"] == "TRUE"
+                    val stampRallyId = it["UUID"]!!
+                    val theme = it["Theme"]!!.ifEmpty { "Unknown" }
+                    val prize = it["Prize"]?.ifBlank { null }
+                    val links = it["Link"]!!.split("\n")
+                        .filter(String::isNotBlank)
+                    val hostTable = tables.firstOrNull()?.trim() ?: return@mapNotNull null
+                    val tableMin = it["Table Min"]!!.let {
+                        when {
+                            it.isEmpty() -> null
+                            it.equals("Paid", ignoreCase = true) -> -1
+                            it.equals("Free", ignoreCase = true) -> 0
+                            it.equals("Any", ignoreCase = true) -> 1
+                            else -> it.removePrefix("$").toIntOrNull()
+                        }
+                    }
+                    val total = it["Total"]?.removePrefix("$")?.toIntOrNull()
+                    val totalCost = when {
+                        !confirmed -> null
+                        total != null -> total
+                        else ->  tableMin?.takeIf { it > 0 }?.let { it * tables.size }
+                    }
+                    val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
+                    val notes = it["Notes"]
+
+                    val connections = tables.map(String::trim)
+                        .filter { it.length == 3 }
+                        .map { boothToArtist2025[it]!! }
+                        .map { StampRallyArtistConnection(stampRallyId, it.id) }
+
+                    StampRallyEntry2025(
+                        id = stampRallyId,
+                        fandom = theme,
+                        tables = tables,
+                        hostTable = hostTable,
+                        links = links,
+                        tableMin = tableMin?.toLong(),
+                        totalCost = (if (tableMin == 0) 0 else totalCost)?.toLong(),
+                        prize = prize,
+                        prizeLimit = prizeLimit?.toLong(),
+                        notes = notes,
+                        counter = counter++,
+                        confirmed = confirmed,
+                    ) to connections
+                }
+                .chunked(DATABASE_CHUNK_SIZE)
+                .forEach {
+                    val stampRallies = it.map { it.first }
+                    val artistConnections = it.flatMap { it.second }
+                    mutationQueries.transaction {
+                        stampRallies.forEach(mutationQueries::insertStampRally2025)
                         artistConnections.forEach(mutationQueries::insertArtistConnection)
                     }
                 }
