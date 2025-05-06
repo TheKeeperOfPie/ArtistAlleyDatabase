@@ -389,24 +389,32 @@ fun Tooltip(
     popupAlignment: Alignment = Alignment.BottomCenter,
     onClick: (() -> Unit)? = null,
     allowPopupHover: Boolean = true,
+    showOnClick: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
     val contentInteractionSource = remember { MutableInteractionSource() }
-    var popupLongPressVisible by remember { mutableStateOf(false) }
+    var popupPressVisible by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .let {
                 if (onClick == null) {
                     it.pointerInput(Unit) {
-                        detectTapGestures(onLongPress = {
-                            popupLongPressVisible = true
-                        })
+                        detectTapGestures(
+                            onLongPress = {
+                                popupPressVisible = true
+                            },
+                            onTap = if (showOnClick) {
+                                {
+                                    popupPressVisible = true
+                                }
+                            } else null,
+                        )
                     }
                 } else {
                     it.combinedClickable(
                         onClick = onClick,
-                        onLongClick = { popupLongPressVisible = true },
+                        onLongClick = { popupPressVisible = true },
                     )
                 }
             }
@@ -419,11 +427,11 @@ fun Tooltip(
             val popupInteractionSource = remember { MutableInteractionSource() }
             val contentIsHovered by contentInteractionSource.collectIsHoveredAsState()
             val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
-            if (contentIsHovered || (popupIsHovered && allowPopupHover) || popupLongPressVisible) {
+            if (contentIsHovered || (popupIsHovered && allowPopupHover) || popupPressVisible) {
                 Popup(
                     alignment = popupAlignment,
                     offset = IntOffset(0, -size.height),
-                    onDismissRequest = { popupLongPressVisible = false },
+                    onDismissRequest = { popupPressVisible = false },
                 ) {
                     Text(
                         text = text,
@@ -527,7 +535,7 @@ fun DataYearHeader(state: DataYearHeaderState) {
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     } else {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             var expanded by remember { mutableStateOf(false) }
             ExposedDropdownMenuBox(
                 expanded = expanded,

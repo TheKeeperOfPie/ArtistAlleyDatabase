@@ -2,11 +2,13 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
@@ -15,9 +17,13 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -192,15 +198,23 @@ fun StampRallyListRow(
                 )
             }
         } else {
-            Tooltip(text = stringResource(Res.string.alley_stamp_rally_favorite_disabled)) {
-                IconButton(
-                    enabled = false,
-                    onClick = {},
+            Tooltip(
+                text = stringResource(Res.string.alley_stamp_rally_favorite_disabled),
+                showOnClick = true,
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier =
+                        modifier
+                            .minimumInteractiveComponentSize()
+                            .size(IconButtonDefaults.smallContainerSize()),
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.FavoriteBorder,
-                        contentDescription = stringResource(Res.string.alley_stamp_rally_favorite_disabled),
-                    )
+                    CompositionLocalProvider(LocalContentColor provides IconButtonDefaults.iconButtonColors().disabledContentColor) {
+                        Icon(
+                            imageVector = Icons.Filled.FavoriteBorder,
+                            contentDescription = stringResource(Res.string.alley_stamp_rally_favorite_disabled),
+                        )
+                    }
                 }
             }
         }
