@@ -27,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -65,6 +66,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
@@ -73,6 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -98,26 +102,17 @@ object ArtistSearchScreen {
         scrollStateSaver: ScrollStateSaver,
         onClickMap: (() -> Unit)? = null,
     ) {
+        val state = remember(viewModel, sortFilterController) {
+            State(viewModel, sortFilterController)
+        }
+        val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         val navigationController = LocalNavigationController.current
         ArtistSearchScreen(
-            remember(viewModel, sortFilterController) {
-                State(
-                    lockedSeriesEntry = viewModel.lockedSeriesEntry,
-                    lockedMerch = viewModel.lockedMerch,
-                    lockedYear = viewModel.lockedYear,
-                    randomSeed = viewModel.randomSeed,
-                    year = viewModel.year,
-                    query = viewModel.query,
-                    results = viewModel.results,
-                    onlyCatalogImages = sortFilterController.onlyCatalogImages,
-                    sortOption = sortFilterController.sortOption,
-                    sortAscending = sortFilterController.sortAscending,
-                    searchState = viewModel.searchState,
-                )
-            },
+            state = state,
             sortFilterState = sortFilterController.state,
             eventSink = { viewModel.onEvent(navigationController, it) },
             onClickBack,
+            header = { DataYearHeader(dataYearHeaderState) },
             scaffoldState,
             scrollStateSaver,
             onClickMap,
@@ -130,6 +125,7 @@ object ArtistSearchScreen {
         sortFilterState: SortFilterState<*>,
         eventSink: (Event) -> Unit,
         onClickBack: (() -> Unit)?,
+        header: @Composable () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
         onClickMap: (() -> Unit)? = null,
@@ -139,7 +135,6 @@ object ArtistSearchScreen {
 
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
             val showOnlyCatalogImages by state.onlyCatalogImages.collectAsStateWithLifecycle()
-            val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
             val query by state.query.collectAsStateWithLifecycle()
             val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
             val shouldShowCount by remember {
@@ -152,35 +147,46 @@ object ArtistSearchScreen {
                 }
             }
 
-            val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
-            val languageOption = LocalLanguageOptionMedia.current
-            val seriesTitle = lockedSeriesEntry?.name(languageOption)
+            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+            val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
             SearchScreen(
                 state = state.searchState,
                 eventSink = {
                     eventSink(Event.SearchEvent(it))
                 },
-                query = state.query,
-                title = { seriesTitle ?: state.lockedMerch },
-                actions = if (onClickMap == null) {
-                    null
-                } else {
-                    {
-                        IconButton(onClick = onClickMap) {
-                            Icon(
-                                imageVector = Icons.Default.Map,
-                                contentDescription = stringResource(Res.string.alley_open_in_map),
-                            )
-                        }
-                    }
-                },
                 onClickBack = onClickBack,
                 entries = entries,
                 scaffoldState = scaffoldState,
                 sortFilterState = sortFilterState,
-                dataYearHeaderState = dataYearHeaderState,
                 gridState = gridState,
                 shouldShowCount = { shouldShowCount },
+                topBar = {
+                    val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
+                    val seriesTitle = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
+                    EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                        DisplayTypeSearchBar(
+                            onClickBack = onClickBack,
+                            query = state.query,
+                            title = { seriesTitle ?: state.lockedMerch },
+                            itemCount = { entries.itemCount },
+                            displayType = state.searchState.displayType,
+                            actions = if (onClickMap == null) {
+                                null
+                            } else {
+                                {
+                                    IconButton(onClick = onClickMap) {
+                                        Icon(
+                                            imageVector = Icons.Default.Map,
+                                            contentDescription = stringResource(Res.string.alley_open_in_map),
+                                        )
+                                    }
+                                }
+                            },
+                        )
+                    }
+                },
+                topBarScrollBehavior = scrollBehavior,
+                header = header,
                 itemToSharedElementId = { it.artist.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(
@@ -454,7 +460,24 @@ object ArtistSearchScreen {
         val sortOption: MutableStateFlow<ArtistSearchSortOption>,
         val sortAscending: MutableStateFlow<Boolean>,
         val searchState: SearchScreen.State<ArtistColumn>,
-    )
+    ) {
+        constructor(
+            viewModel: ArtistSearchViewModel,
+            sortFilterController: ArtistSortFilterController,
+        ) : this(
+            lockedSeriesEntry = viewModel.lockedSeriesEntry,
+            lockedMerch = viewModel.lockedMerch,
+            lockedYear = viewModel.lockedYear,
+            randomSeed = viewModel.randomSeed,
+            year = viewModel.year,
+            query = viewModel.query,
+            results = viewModel.results,
+            onlyCatalogImages = sortFilterController.onlyCatalogImages,
+            sortOption = sortFilterController.sortOption,
+            sortAscending = sortFilterController.sortAscending,
+            searchState = viewModel.searchState,
+        )
+    }
 
     sealed interface Event {
         data class SearchEvent(val event: SearchScreen.Event<ArtistEntryGridModel>) : Event
@@ -495,6 +518,7 @@ object ArtistSearchScreen {
             ),
         )
 
+        val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         ArtistSearchScreen(
             state = state,
             sortFilterState = SortFilterState(
@@ -504,6 +528,7 @@ object ArtistSearchScreen {
             ),
             eventSink = {},
             onClickBack = {},
+            header = { DataYearHeader(dataYearHeaderState) },
             scrollStateSaver = ScrollStateSaver.STUB,
         )
     }

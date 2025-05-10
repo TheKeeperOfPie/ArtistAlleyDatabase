@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -9,19 +8,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,20 +30,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -76,7 +65,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_card
-import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_image
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_list
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_table
@@ -84,12 +72,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_search_no_res
 import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
 import artistalleydatabase.modules.entry.generated.resources.entry_results_one
 import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
-import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
-import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
-import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
@@ -97,17 +83,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.Column
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.modifierDefaultCellPadding
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaggeredGridCellsAdaptiveWithMin
-import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
@@ -150,6 +133,59 @@ object SearchScreen {
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        SearchScreen(
+            state = state,
+            eventSink = eventSink,
+            entries = entries,
+            scaffoldState = scaffoldState,
+            sortFilterState = sortFilterState,
+            gridState = gridState,
+            shouldShowCount = shouldShowCount,
+            topBar = {
+                EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                    DisplayTypeSearchBar(
+                        onClickBack = onClickBack,
+                        query = query,
+                        displayType = state.displayType,
+                        itemCount = { entries.itemCount },
+                        title = title,
+                        actions = actions,
+                    )
+                }
+            },
+            topBarScrollBehavior = scrollBehavior,
+            header = { DataYearHeader(dataYearHeaderState) },
+            onClickBack = onClickBack,
+            itemToSharedElementId = itemToSharedElementId,
+            itemRow = itemRow,
+            columnHeader = columnHeader,
+            tableCell = tableCell,
+        )
+    }
+
+    @Composable
+    operator fun <EntryModel, ColumnType> invoke(
+        state: State<ColumnType>,
+        eventSink: (Event<EntryModel>) -> Unit,
+        entries: LazyPagingItems<EntryModel>,
+        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+        sortFilterState: SortFilterState<*>,
+        gridState: LazyStaggeredGridState,
+        shouldShowCount: () -> Boolean,
+        onClickBack: (() -> Unit)? = null,
+        topBar: @Composable () -> Unit,
+        topBarScrollBehavior: TopAppBarScrollBehavior,
+        header: @Composable () -> Unit,
+        itemToSharedElementId: (EntryModel) -> Any,
+        itemRow: @Composable (
+            entry: EntryModel,
+            onFavoriteToggle: (Boolean) -> Unit,
+            modifier: Modifier,
+        ) -> Unit,
+        columnHeader: @Composable (column: ColumnType) -> Unit,
+        tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
+    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         val scope = rememberCoroutineScope()
         BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
             scope.launch {
@@ -160,23 +196,12 @@ object SearchScreen {
         Box {
             var horizontalScrollBarWidth by remember { mutableStateOf(0) }
             val horizontalScrollState = rememberScrollState()
-            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             SortFilterBottomScaffold(
                 state = sortFilterState,
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = 72.dp,
-                topBar = {
-                    TopBar(
-                        query = query,
-                        displayType = state.displayType,
-                        entries = entries,
-                        scrollBehavior = scrollBehavior,
-                        onClickBack = onClickBack,
-                        title = title,
-                        actions = actions,
-                    )
-                },
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                topBar = topBar,
+                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
             ) {
                 Content(
                     state = state,
@@ -188,7 +213,7 @@ object SearchScreen {
                     onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
                     shouldShowCount = shouldShowCount,
                     itemToSharedElementId = itemToSharedElementId,
-                    header = { DataYearHeader(dataYearHeaderState) },
+                    header = header,
                     itemRow = itemRow,
                     columnHeader = columnHeader,
                     tableCell = tableCell,
@@ -202,108 +227,6 @@ object SearchScreen {
                         .align(Alignment.BottomCenter)
                         .width(LocalDensity.current.run { horizontalScrollBarWidth.toDp() })
                         .padding(horizontal = 8.dp)
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun <EntryModel : SearchEntryModel> TopBar(
-        query: MutableStateFlow<String>,
-        displayType: MutableStateFlow<DisplayType>,
-        scrollBehavior: TopAppBarScrollBehavior,
-        entries: LazyPagingItems<EntryModel>,
-        onClickBack: (() -> Unit)?,
-        title: () -> String?,
-        actions: (@Composable RowScope.() -> Unit)?,
-    ) {
-        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                var query by query.collectAsMutableStateWithLifecycle()
-                val isNotEmpty by remember { derivedStateOf { query.isNotEmpty() } }
-                BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
-                    query = ""
-                }
-
-                StaticSearchBar(
-                    leadingIcon = if (onClickBack != null) {
-                        { ArrowBackIconButton(onClickBack) }
-                    } else null,
-                    query = query,
-                    onQueryChange = { query = it },
-                    placeholder = {
-                        @Suppress("NAME_SHADOWING")
-                        val title = title()
-                        if (title != null) {
-                            Text(title)
-                        } else {
-                            val entriesSize = entries.itemCount
-                            Text(
-                                if (entriesSize > 0) {
-                                    stringResource(
-                                        EntryRes.string.entry_search_hint_with_entry_count,
-                                        entriesSize,
-                                    )
-                                } else {
-                                    stringResource(EntryRes.string.entry_search_hint)
-                                }
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        Row {
-                            AnimatedVisibility(isNotEmpty) {
-                                IconButton(onClick = { query = "" }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Clear,
-                                        contentDescription = stringResource(
-                                            EntryRes.string.entry_search_clear
-                                        ),
-                                    )
-                                }
-                            }
-                            Box {
-                                var displayType by displayType
-                                    .collectAsMutableStateWithLifecycle()
-                                var expanded by remember { mutableStateOf(false) }
-                                IconButton(onClick = { expanded = true }) {
-                                    Icon(
-                                        imageVector = displayType.icon,
-                                        contentDescription = stringResource(
-                                            Res.string.alley_display_type_icon_content_description,
-                                        ),
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                ) {
-                                    DisplayType.entries.forEach {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(it.label)) },
-                                            leadingIcon = {
-                                                RadioButton(
-                                                    selected = displayType == it,
-                                                    onClick = { displayType = it },
-                                                )
-                                            },
-                                            onClick = { displayType = it },
-                                        )
-                                    }
-                                }
-                            }
-
-                            actions?.invoke(this)
-                        }
-                    },
-                    onSearch = {},
-                    modifier = Modifier
-                        .widthIn(max = 1200.dp)
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
                 )
             }
         }

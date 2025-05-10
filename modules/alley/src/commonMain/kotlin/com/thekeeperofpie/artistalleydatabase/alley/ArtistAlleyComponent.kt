@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.lifecycle.SavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
@@ -36,6 +37,7 @@ interface ArtistAlleyComponent {
     val artistDetailsViewModel: (SavedStateHandle) -> ArtistDetailsViewModel
     val artistMapViewModel: (SavedStateHandle) -> ArtistMapViewModel
     val artistSearchViewModel: (SavedStateHandle) -> ArtistSearchViewModel
+    val artistSeriesViewModel: (SavedStateHandle) -> ArtistSeriesViewModel
     val favoritesViewModel: (
         SavedStateHandle,
         StateFlow<StampRallySortFilterViewModel.FilterParams>,

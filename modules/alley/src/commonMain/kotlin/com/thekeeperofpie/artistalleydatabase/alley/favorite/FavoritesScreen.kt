@@ -61,8 +61,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
@@ -163,15 +165,15 @@ object FavoritesScreen {
                     sheetPeekHeight = 72.dp,
                     topBar = {
                         val title = stringResource(Res.string.alley_favorites_search)
-                        SearchScreen.TopBar(
-                            query = state.query,
-                            displayType = state.displayType,
-                            entries = entries,
-                            scrollBehavior = scrollBehavior,
-                            onClickBack = null,
-                            title = { title },
-                            actions = null,
-                        )
+                        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                            DisplayTypeSearchBar(
+                                onClickBack = null,
+                                query = state.query,
+                                title = { title },
+                                itemCount = { entries.itemCount },
+                                displayType = state.displayType,
+                            )
+                        }
                     },
                     modifier = Modifier
                         .align(Alignment.TopCenter)

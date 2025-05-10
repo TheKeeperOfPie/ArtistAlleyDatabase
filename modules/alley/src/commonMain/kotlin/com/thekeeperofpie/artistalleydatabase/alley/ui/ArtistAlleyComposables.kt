@@ -1,10 +1,12 @@
 @file:OptIn(
     ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class,
-    ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalComposeUiApi::class
 )
 
 package com.thekeeperofpie.artistalleydatabase.alley.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -18,8 +20,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,9 +40,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -54,13 +61,16 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -78,19 +88,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_settings
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year
+import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
+import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
+import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import coil3.compose.AsyncImage
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
+import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -99,11 +116,13 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
+import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 @Composable
 fun <EntryModel : SearchEntryModel> ItemCard(
@@ -596,5 +615,103 @@ fun DataYearHeader(state: DataYearHeaderState) {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun DisplayTypeSearchBar(
+    onClickBack: (() -> Unit)?,
+    query: MutableStateFlow<String>,
+    displayType: MutableStateFlow<DisplayType>,
+    itemCount: () -> Int,
+    title: () -> String?,
+    actions: (@Composable RowScope.() -> Unit)? = null,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        var query by query.collectAsMutableStateWithLifecycle()
+        val isNotEmpty by remember { derivedStateOf { query.isNotEmpty() } }
+        BackHandler(isNotEmpty && !WindowInsets.isImeVisibleKmp) {
+            query = ""
+        }
+
+        StaticSearchBar(
+            leadingIcon = if (onClickBack != null) {
+                { ArrowBackIconButton(onClickBack) }
+            } else null,
+            query = query,
+            onQueryChange = { query = it },
+            placeholder = {
+                val title = title()
+                if (title != null) {
+                    Text(title)
+                } else {
+                    val itemCount = itemCount()
+                    Text(
+                        if (itemCount > 0) {
+                            stringResource(
+                                EntryRes.string.entry_search_hint_with_entry_count,
+                                itemCount,
+                            )
+                        } else {
+                            stringResource(EntryRes.string.entry_search_hint)
+                        }
+                    )
+                }
+            },
+            trailingIcon = {
+                Row {
+                    AnimatedVisibility(isNotEmpty) {
+                        IconButton(onClick = { query = "" }) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(
+                                    EntryRes.string.entry_search_clear
+                                ),
+                            )
+                        }
+                    }
+                    Box {
+                        var displayType by displayType
+                            .collectAsMutableStateWithLifecycle()
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(
+                                imageVector = displayType.icon,
+                                contentDescription = stringResource(
+                                    Res.string.alley_display_type_icon_content_description,
+                                ),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                        ) {
+                            DisplayType.entries.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(it.label)) },
+                                    leadingIcon = {
+                                        RadioButton(
+                                            selected = displayType == it,
+                                            onClick = { displayType = it },
+                                        )
+                                    },
+                                    onClick = { displayType = it },
+                                )
+                            }
+                        }
+                    }
+
+                    actions?.invoke(this)
+                }
+            },
+            onSearch = {},
+            modifier = Modifier
+                .widthIn(max = 1200.dp)
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+        )
     }
 }

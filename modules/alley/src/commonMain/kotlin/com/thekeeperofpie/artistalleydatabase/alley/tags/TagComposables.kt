@@ -16,11 +16,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.anilist.data.type.MediaType
@@ -39,6 +43,7 @@ fun SeriesRow(
     image: () -> String?,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    showAllTitles: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     Row(
@@ -56,8 +61,36 @@ fun SeriesRow(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         )
 
+        val languageOptionMedia = LocalLanguageOptionMedia.current
+        val title = if (showAllTitles && series != null) {
+            val colorScheme = MaterialTheme.colorScheme
+            remember(series, languageOptionMedia, colorScheme) {
+                val name = series.name(languageOptionMedia)
+                val otherTitles = listOf(
+                    series.titlePreferred,
+                    series.titleEnglish,
+                    series.titleRomaji,
+                    series.titleNative,
+                ).distinct() - name
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = colorScheme.secondary)) {
+                        append(name)
+                    }
+                    if (otherTitles.isNotEmpty()) {
+                        otherTitles.forEach {
+                            append(" / ")
+                            append(it)
+                        }
+                    }
+                }
+            }
+        } else {
+            buildAnnotatedString {
+                append(series?.name(languageOptionMedia))
+            }
+        }
         Text(
-            text = series?.name(LocalLanguageOptionMedia.current).orEmpty(),
+            text = title,
             style = textStyle,
             modifier = Modifier
                 .minimumInteractiveComponentSize()
