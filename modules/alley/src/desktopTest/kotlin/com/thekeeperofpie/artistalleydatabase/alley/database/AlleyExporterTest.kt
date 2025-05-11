@@ -550,9 +550,11 @@ class AlleyExporterTest {
                     links = emptyList(),
                     tableMin = null,
                     totalCost = null,
+                    prize = null,
                     prizeLimit = null,
                     notes = null,
                     counter = index.toLong(),
+                    confirmed = false,
                 )
             }
         )

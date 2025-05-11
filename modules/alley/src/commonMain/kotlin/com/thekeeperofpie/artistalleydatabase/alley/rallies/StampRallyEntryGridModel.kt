@@ -32,9 +32,8 @@ class StampRallyEntryGridModel(
         fun buildFromEntry(entry: StampRallyWithUserData) = StampRallyEntryGridModel(
             stampRally = entry.stampRally,
             userEntry = entry.userEntry,
-            images = AlleyDataUtils.getImages(
+            images = AlleyDataUtils.getRallyImages(
                 year = entry.stampRally.year,
-                folder = AlleyDataUtils.Folder.RALLIES,
                 file = entry.stampRally.let { "${it.hostTable}${it.fandom}" },
             ),
             placeholderText = entry.stampRally.fandom,

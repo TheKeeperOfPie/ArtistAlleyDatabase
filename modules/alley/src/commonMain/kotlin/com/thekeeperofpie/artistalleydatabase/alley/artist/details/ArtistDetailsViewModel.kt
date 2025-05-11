@@ -55,10 +55,10 @@ class ArtistDetailsViewModel(
 
     // Block main to load images as fast as possible so shared transition works
     var catalogImages by mutableStateOf(
-        AlleyDataUtils.getImages(
+        AlleyDataUtils.getArtistImages(
             year = route.year,
-            folder = AlleyDataUtils.Folder.CATALOGS,
-            file = route.booth,
+            booth = route.booth,
+            name = route.name,
         )
     )
 
@@ -97,10 +97,10 @@ class ArtistDetailsViewModel(
 
             // Booth changes, so input route may not have booth, re-fetch using correct year's booth
             if (!hasImages) {
-                catalogImages = AlleyDataUtils.getImages(
+                catalogImages = AlleyDataUtils.getArtistImages(
                     year = route.year,
-                    folder = AlleyDataUtils.Folder.CATALOGS,
-                    file = artist.booth,
+                    booth = artist.booth,
+                    name = artist.name,
                 )
             }
 

@@ -47,9 +47,8 @@ class StampRallyDetailsViewModel(
     val initialImageIndex = route.initialImageIndex?.toIntOrNull() ?: 0
 
     // Block main to load images as fast as possible so shared transition works
-    val images = AlleyDataUtils.getImages(
+    val images = AlleyDataUtils.getRallyImages(
         year = route.year,
-        folder = AlleyDataUtils.Folder.RALLIES,
         file = route.let { "${it.hostTable}${it.fandom}" },
     )
 

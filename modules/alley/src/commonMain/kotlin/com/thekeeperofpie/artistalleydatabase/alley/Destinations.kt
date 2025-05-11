@@ -18,7 +18,7 @@ sealed interface Destinations : NavDestination {
             typeOf<DataYear>() to CustomNavTypes.SerializableType<DataYear>(),
             typeOf<DataYear?>() to CustomNavTypes.SerializableType<DataYear>(),
             typeOf<AlleyDataUtils.Folder>() to CustomNavTypes.SerializableType<AlleyDataUtils.Folder>(),
-            typeOf<Images.Title>() to CustomNavTypes.SerializableType<Images.Title>(),
+            typeOf<Images.Type>() to CustomNavTypes.SerializableType<Images.Type>(),
         )
     }
 
@@ -49,19 +49,17 @@ sealed interface Destinations : NavDestination {
     data class Images(
         val year: DataYear,
         val id: String,
-        val folder: AlleyDataUtils.Folder,
-        val file: String,
-        val title: Title,
+        val type: Type,
         val initialImageIndex: Int?,
     ) : Destinations {
 
         @Serializable
-        sealed interface Title {
+        sealed interface Type {
             @Serializable
-            data class Artist(val booth: String, val name: String?) : Title
+            data class Artist(val booth: String, val name: String?) : Type
 
             @Serializable
-            data class StampRally(val hostTable: String?, val fandom: String?) : Title
+            data class StampRally(val hostTable: String?, val fandom: String?) : Type
         }
     }
 

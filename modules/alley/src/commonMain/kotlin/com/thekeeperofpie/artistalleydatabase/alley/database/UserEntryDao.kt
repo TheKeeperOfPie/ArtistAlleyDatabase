@@ -19,13 +19,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
 private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
-    BoothWithFavorite(year = DataYear.YEAR_2023, id = id, booth = booth, favorite = favorite)
+    BoothWithFavorite(year = DataYear.YEAR_2023, id = id, booth = booth, name = name, favorite = favorite)
 
 private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
-    BoothWithFavorite(year = DataYear.YEAR_2024, id = id, booth = booth, favorite = favorite)
+    BoothWithFavorite(year = DataYear.YEAR_2024, id = id, booth = booth, name = name, favorite = favorite)
 
 private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
-    BoothWithFavorite(year = DataYear.YEAR_2025, id = id, booth = booth, favorite = favorite)
+    BoothWithFavorite(year = DataYear.YEAR_2025, id = id, booth = booth, name = name, favorite = favorite)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class UserEntryDao(

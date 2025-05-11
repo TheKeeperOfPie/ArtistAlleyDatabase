@@ -180,6 +180,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("androidx.paging:paging-compose")
                         library("androidx.paging:paging-compose-android")
                         library("androidx.paging:paging-runtime-ktx")
+                        library("androidx.paging:paging-testing")
                     }
 
                     library("androidx.palette:palette-ktx:$palette")
@@ -250,6 +251,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     withVersion(Versions.pagingMultiplatform) {
                         library("app.cash.paging:paging-common")
                         library("app.cash.paging:paging-compose-common")
+                        library("app.cash.paging:paging-testing")
                     }
                 }
 

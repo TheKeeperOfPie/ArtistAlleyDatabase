@@ -33,7 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
@@ -164,9 +163,7 @@ object ArtistAlleyAppScreen {
                                                                 Destinations.Images(
                                                                     year = route.year,
                                                                     id = route.id,
-                                                                    folder = AlleyDataUtils.Folder.CATALOGS,
-                                                                    file = artist.booth,
-                                                                    title = Destinations.Images.Title.Artist(
+                                                                    type = Destinations.Images.Type.Artist(
                                                                         booth = artist.booth,
                                                                         name = artist.name,
                                                                     ),
@@ -285,9 +282,7 @@ object ArtistAlleyAppScreen {
                                                                 Destinations.Images(
                                                                     year = route.year,
                                                                     id = route.id,
-                                                                    folder = AlleyDataUtils.Folder.RALLIES,
-                                                                    file = "${it.hostTable}${it.fandom}",
-                                                                    title = Destinations.Images.Title.StampRally(
+                                                                    type = Destinations.Images.Type.StampRally(
                                                                         hostTable = it.hostTable,
                                                                         fandom = it.fandom,
                                                                     ),

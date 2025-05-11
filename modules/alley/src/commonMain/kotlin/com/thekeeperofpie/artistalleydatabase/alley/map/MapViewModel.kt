@@ -76,10 +76,10 @@ class MapViewModel(
             pair.second.mapNotNull {
                 val booth = it.booth ?: return@mapNotNull null
                 val tableNumber = it.booth.filter { it.isDigit() }.toInt()
-                val images = AlleyDataUtils.getImages(
+                val images = AlleyDataUtils.getArtistImages(
                     year = it.year,
-                    folder = AlleyDataUtils.Folder.CATALOGS,
-                    file = it.booth,
+                    booth = it.booth,
+                    name = it.name,
                 )
                 val imageIndex = if (showRandomCatalogImage) {
                     images.indices.randomOrNull()

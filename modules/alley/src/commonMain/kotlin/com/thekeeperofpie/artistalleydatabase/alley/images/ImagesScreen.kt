@@ -49,21 +49,21 @@ object ImagesScreen {
             topBar = {
                 TopAppBar(
                     title = {
-                        when (val title = route.title) {
-                            is Destinations.Images.Title.Artist ->
+                        when (val type = route.type) {
+                            is Destinations.Images.Type.Artist ->
                                 ArtistTitle(
                                     year = route.year,
                                     id = route.id,
-                                    booth = title.booth,
-                                    name = title.name,
+                                    booth = type.booth,
+                                    name = type.name,
                                     useSharedElement = false,
                                 )
-                            is Destinations.Images.Title.StampRally ->
+                            is Destinations.Images.Type.StampRally ->
                                 StampRallyTitle(
                                     year = route.year,
                                     id = route.id,
-                                    hostTable = title.hostTable,
-                                    fandom = title.fandom,
+                                    hostTable = type.hostTable,
+                                    fandom = type.fandom,
                                     useSharedElement = false,
                                 )
                         }

@@ -58,6 +58,12 @@ kotlin {
                 implementation(libs.sqldelight.sqlite.driver)
             }
         }
+        val desktopTest by getting {
+            dependencies {
+                // TODO: Multiplatform variant doesn't resolve
+                implementation(libs.paging.testing)
+            }
+        }
         val jvmMain by getting {
             dependencies {
                 implementation(libs.commons.csv)

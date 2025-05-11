@@ -246,7 +246,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val catalogLinks = it["Catalog link"].orEmpty().split("\n\n")
                         .map { it.split("\n").filter(String::isNotBlank) }
 
-                    val driveLink = it["Drive"]
+                    val driveLink = it["Catalog"]
 
                     ids.mapIndexed { index, artistId ->
                         val artistNames = allArtistNames.getOrElse(index) { emptyList() }

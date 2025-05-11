@@ -76,7 +76,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogs2023 = "catalogs2023" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2023/catalogs",
-                    transformName = { it.substringBefore(" -") },
+                    transformName = { it },
                 )
                 val rallies2023 = "rallies2023" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -141,6 +141,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     ): List<CatalogFolder> {
         val folders = inputFolder.listFiles()
             .orEmpty()
+            .flatMap { it.listFiles().filter { it.isDirectory }.ifEmpty { listOf(it) } }
             .map {
                 async {
                     val images = it.listFiles()

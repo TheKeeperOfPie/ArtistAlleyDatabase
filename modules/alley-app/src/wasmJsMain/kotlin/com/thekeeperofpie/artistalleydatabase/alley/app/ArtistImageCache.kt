@@ -94,10 +94,10 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                         }
                     }
                     val images = entriesForArtist.flatMap {
-                        AlleyDataUtils.getImages(
-                            it.artist.year,
-                            AlleyDataUtils.Folder.CATALOGS,
-                            it.artist.booth,
+                        AlleyDataUtils.getArtistImages(
+                            year = it.artist.year,
+                            booth = it.artist.booth,
+                            name = it.artist.name,
                         )
                     }
                     if (images.isEmpty()) return
@@ -132,10 +132,10 @@ class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val u
                         DataYear.entries.forEach {
                             val artist = artistEntryDao.getEntry(it, artist.artistId)
                                 ?: return@forEach
-                            val images = AlleyDataUtils.getImages(
+                            val images = AlleyDataUtils.getArtistImages(
                                 year = it,
-                                folder = AlleyDataUtils.Folder.CATALOGS,
-                                file = artist.artist.booth,
+                                booth = artist.artist.booth,
+                                name = artist.artist.name,
                             )
                             images.forEach { image ->
                                 var matchingKey: Request? = null

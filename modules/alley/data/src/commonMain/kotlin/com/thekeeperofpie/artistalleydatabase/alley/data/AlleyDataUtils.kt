@@ -16,22 +16,48 @@ object AlleyDataUtils {
         RALLIES("rallies"),
     }
 
-    fun getImages(year: DataYear, folder: Folder, file: String?): List<CatalogImage> {
+    fun getArtistImages(
+        year: DataYear,
+        booth: String?,
+        name: String?,
+    ): List<CatalogImage> {
+        booth ?: return emptyList()
+        val targetName = fixName(booth)
+        val candidates = when (year) {
+            DataYear.YEAR_2023 -> ComposeFiles.catalogs2023
+            DataYear.YEAR_2024 -> ComposeFiles.catalogs2024
+            DataYear.YEAR_2025 -> ComposeFiles.catalogs2025
+        }.files
+            .filterIsInstance<ComposeFile.Folder>()
+            .filter { it.name.startsWith(targetName) }
+
+        val targetFolder = if (year == DataYear.YEAR_2023 && name != null) {
+            findName2023(candidates, name)
+        } else {
+            candidates.firstOrNull()
+        }
+
+        @OptIn(ExperimentalResourceApi::class)
+        return targetFolder?.files
+            ?.filterIsInstance<ComposeFile.Image>()
+            ?.sortedBy { it.name }
+            ?.map {
+                CatalogImage(
+                    uri = Uri.parse(Res.getUri("files/${year.year}/${Folder.CATALOGS.folderName}/${targetFolder.name}/${it.name}")),
+                    width = it.width,
+                    height = it.height,
+                )
+            }
+            .orEmpty()
+    }
+
+    fun getRallyImages(year: DataYear, file: String?): List<CatalogImage> {
         file ?: return emptyList()
-        val targetName = file.replace("'", "_")
+        val targetName = fixName(file)
         val targetFolder = when (year) {
-            DataYear.YEAR_2023 -> when (folder) {
-                Folder.CATALOGS -> ComposeFiles.catalogs2023
-                Folder.RALLIES -> ComposeFiles.rallies2023
-            }
-            DataYear.YEAR_2024 -> when (folder) {
-                Folder.CATALOGS -> ComposeFiles.catalogs2024
-                Folder.RALLIES -> ComposeFiles.rallies2024
-            }
-            DataYear.YEAR_2025 -> when (folder) {
-                Folder.CATALOGS -> ComposeFiles.catalogs2025
-                Folder.RALLIES -> ComposeFiles.rallies2025
-            }
+            DataYear.YEAR_2023 -> ComposeFiles.rallies2023
+            DataYear.YEAR_2024 -> ComposeFiles.rallies2024
+            DataYear.YEAR_2025 -> ComposeFiles.rallies2025
         }.files
             .filterIsInstance<ComposeFile.Folder>()
             .find { it.name.startsWith(targetName) }
@@ -42,13 +68,29 @@ object AlleyDataUtils {
             ?.sortedBy { it.name }
             ?.map {
                 CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/${year.year}/${folder.folderName}/${targetFolder.name}/${it.name}")),
+                    uri = Uri.parse(Res.getUri("files/${year.year}/${Folder.RALLIES.folderName}/${targetFolder.name}/${it.name}")),
                     width = it.width,
                     height = it.height,
                 )
             }
             .orEmpty()
     }
+
+    fun findName2023(folders: List<ComposeFile.Folder>, name: String): ComposeFile.Folder? {
+        val escapedName = fixName(name).removeSuffix(".")
+        val exact = folders.find { it.name.contains(escapedName, ignoreCase = true) }
+        if (exact != null) return exact
+        val segments = escapedName.split(Regex(" - ")).reversed()
+        if (segments.isEmpty()) return null
+        return folders.find { folder ->
+            segments.any { segment ->
+                folder.name.contains(segment, ignoreCase = true)
+            }
+        }
+    }
+
+    private fun fixName(name: String) = name.replace("'", "_")
+        .replace("&", "_")
 
     fun exists(path: String): Boolean {
         val parts = path.substringAfter("generated.resources/files/").split("/")
