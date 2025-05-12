@@ -23,7 +23,7 @@ data class Link(
 
             val containsMatch = Type.entries.find { it.domains.any(host::contains) }
             if (containsMatch != null) {
-                val identifier = containsMatch.parseHost(path)
+                val identifier = containsMatch.parseHost(host)
                 if (identifier != null) {
                     return Link(containsMatch, identifier)
                 }
