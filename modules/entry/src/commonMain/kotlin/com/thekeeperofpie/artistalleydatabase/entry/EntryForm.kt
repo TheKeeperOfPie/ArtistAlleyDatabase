@@ -729,9 +729,14 @@ private fun OpenSectionField(
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier,
 ) {
+    // TODO: There must be a better way to intercept previous value
+    var previousValue by remember { mutableStateOf(section.pendingValue) }
     OpenSectionField(
         value = { section.pendingValue },
-        onValueChange = { section.pendingValue = it },
+        onValueChange = {
+            previousValue = section.pendingValue
+            section.pendingValue = it
+        },
         onNext = {
             if (section.contentSize() > 0) {
                 section.rotateLockState()
@@ -740,11 +745,16 @@ private fun OpenSectionField(
         },
         onBackspace = {
             if (section.contentSize() > 0) {
-                val removed = section.removeContentAt(section.contentSize() - 1)
-                section.pendingValue = TextFieldValue(
-                    text = removed.text,
-                    selection = TextRange(removed.text.length),
-                )
+                if (previousValue.text.isEmpty()) {
+                    val removed = section.removeContentAt(section.contentSize() - 1)
+                    section.pendingValue = TextFieldValue(
+                        text = removed.text,
+                        selection = TextRange(removed.text.length),
+                    )
+                } else {
+                    // Set the next value to ensure empty eventually propagates to previous
+                    previousValue = section.pendingValue
+                }
                 true
             } else {
                 onFocusPrevious()
