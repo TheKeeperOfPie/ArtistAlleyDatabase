@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,6 +32,7 @@ import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
+import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
@@ -152,4 +154,40 @@ fun MerchRow(
                 highlight = PlaceholderHighlight.shimmer(),
             )
     )
+}
+
+@Composable
+fun MerchRow(
+    merchEntry: MerchEntry?,
+    onClick: (() -> Unit)? = null,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .optionalClickable(onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = merchEntry?.name.orEmpty(),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .placeholder(
+                    visible = merchEntry == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+        )
+        if (merchEntry == null || !merchEntry.notes.isNullOrEmpty()) {
+            Text(
+                text = merchEntry?.notes.orEmpty(),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .placeholder(
+                        visible = merchEntry == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+        }
+    }
 }

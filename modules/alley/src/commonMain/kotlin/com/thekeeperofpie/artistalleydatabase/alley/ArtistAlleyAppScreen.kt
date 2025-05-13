@@ -29,10 +29,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
@@ -362,8 +362,12 @@ object ArtistAlleyAppScreen {
                                 val viewModel = viewModel {
                                     component.artistSearchViewModel(createSavedStateHandle())
                                 }
-                                ArtistSearchScreen(
-                                    viewModel = viewModel,
+                                val merchViewModel = viewModel {
+                                    component.artistMerchViewModel(createSavedStateHandle())
+                                }
+                                ArtistMerchScreen(
+                                    artistSearchViewModel = viewModel,
+                                    artistMerchViewModel = merchViewModel,
                                     sortFilterController = viewModel.sortFilterController,
                                     onClickBack = navigationController::popBackStack,
                                     scrollStateSaver = ScrollStateSaver(),

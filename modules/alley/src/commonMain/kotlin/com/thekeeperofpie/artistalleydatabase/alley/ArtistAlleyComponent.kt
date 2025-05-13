@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.lifecycle.SavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
@@ -16,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
@@ -36,6 +38,7 @@ interface ArtistAlleyComponent {
 
     val artistDetailsViewModel: (SavedStateHandle) -> ArtistDetailsViewModel
     val artistMapViewModel: (SavedStateHandle) -> ArtistMapViewModel
+    val artistMerchViewModel: (SavedStateHandle) -> ArtistMerchViewModel
     val artistSearchViewModel: (SavedStateHandle) -> ArtistSearchViewModel
     val artistSeriesViewModel: (SavedStateHandle) -> ArtistSeriesViewModel
     val favoritesViewModel: (
@@ -65,6 +68,9 @@ interface ArtistAlleyComponent {
 
     val ArtistAlleyDatabase.bindImageEntryDao: ImageEntryDao
         @Provides get() = this.imageEntryDao
+
+    val ArtistAlleyDatabase.bindMerchEntryDao: MerchEntryDao
+        @Provides get() = this.merchEntryDao
 
     val ArtistAlleyDatabase.bindSeriesEntryDao: SeriesEntryDao
         @Provides get() = this.seriesEntryDao

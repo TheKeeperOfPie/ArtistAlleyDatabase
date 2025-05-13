@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQu
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
@@ -53,6 +54,7 @@ import kotlin.random.Random
 class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
+    merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     tagEntryDao: TagEntryDao,
@@ -73,6 +75,7 @@ class FavoritesViewModel(
         lockedSeriesEntry = ReadOnlyStateFlow(null),
         dispatchers = dispatchers,
         settings = settings,
+        merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImagesStore = seriesImagesStore,
         tagEntryDao = tagEntryDao,

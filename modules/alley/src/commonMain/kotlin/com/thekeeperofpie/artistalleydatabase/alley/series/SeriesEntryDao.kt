@@ -9,11 +9,29 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
-import com.thekeeperofpie.artistalleydatabase.alley.tags.toSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+fun SqlCursor.toSeriesEntry(): SeriesEntry {
+    val source = getString(5)
+    return SeriesEntry(
+        id = getString(0)!!,
+        notes = getString(1),
+        aniListId = getLong(2),
+        aniListType = getString(3),
+        wikipediaId = getLong(4),
+        source = SeriesSource.entries.find { it.name == source },
+        titlePreferred = getString(6)!!,
+        titleEnglish = getString(7)!!,
+        titleRomaji = getString(8)!!,
+        titleNative = getString(9)!!,
+        link = getString(10),
+        has2024 = getBoolean(11)!!,
+        has2025 = getBoolean(12)!!,
+    )
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SeriesEntryDao(

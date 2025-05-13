@@ -4,6 +4,7 @@ import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -43,6 +44,7 @@ class ArtistAlleyDatabase(
     internal val imageEntryDao = ImageEntryDao(database)
     internal val importExportDao = ImportExportDao(database)
     internal val userNotesDao = UserNotesDao(database)
+    internal val merchEntryDao = MerchEntryDao(driver, database)
     internal val seriesEntryDao = SeriesEntryDao(driver, database)
     internal val tagEntryDao = TagEntryDao(driver, database)
     internal val userEntryDao = UserEntryDao(database, settings)

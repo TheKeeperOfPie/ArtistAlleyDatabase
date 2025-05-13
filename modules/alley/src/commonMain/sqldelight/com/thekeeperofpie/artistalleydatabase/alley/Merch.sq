@@ -2,6 +2,11 @@
 getMerch:
 SELECT * FROM merchEntry;
 
+/** Generic get is unused, but generates the object and cursor code for easy copy-paste */
+getMerchById:
+SELECT * FROM merchEntry
+WHERE name = :id;
+
 getMerchEntries2024:
 SELECT * FROM merchEntry
 WHERE has2024 = 1;

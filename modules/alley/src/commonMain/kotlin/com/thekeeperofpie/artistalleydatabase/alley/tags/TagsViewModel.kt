@@ -18,6 +18,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -39,6 +40,7 @@ import org.jetbrains.compose.resources.stringResource
 @Inject
 class TagsViewModel(
     dispatchers: CustomDispatchers,
+    merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     tagsEntryDao: TagEntryDao,
     settings: ArtistAlleySettings,
@@ -85,9 +87,9 @@ class TagsViewModel(
             } else {
                 createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                     if (query.isBlank()) {
-                        tagsEntryDao.getMerch(year)
+                        merchEntryDao.getMerch(year)
                     } else {
-                        tagsEntryDao.searchMerch(year, query)
+                        merchEntryDao.searchMerch(year, query)
                     }
                 }
                     .flow

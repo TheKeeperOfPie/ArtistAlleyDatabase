@@ -65,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -118,6 +119,7 @@ class ArtistSortFilterController(
     lockedSeriesEntry: StateFlow<SeriesEntry?>,
     lockedMerchId: String?,
     dispatchers: CustomDispatchers,
+    merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     tagEntryDao: TagEntryDao,
@@ -305,7 +307,7 @@ class ArtistSortFilterController(
 
     // TODO: Consider storing this in a singleton instead?
     private val merch = dataYear
-        .mapLatest { tagEntryDao.getMerchEntries(it) }
+        .mapLatest { merchEntryDao.getMerchEntries(it) }
         .mapLatest(::MerchTagData)
         .flowOn(dispatchers.io)
         .stateIn(scope, SharingStarted.Lazily, MerchTagData(emptyList()))
