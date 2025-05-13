@@ -745,7 +745,7 @@ private fun OpenSectionField(
         },
         onBackspace = {
             if (section.contentSize() > 0) {
-                if (previousValue.text.isEmpty()) {
+                if (previousValue.text.isEmpty() && section.pendingValue.text.isEmpty()) {
                     val removed = section.removeContentAt(section.contentSize() - 1)
                     section.pendingValue = TextFieldValue(
                         text = removed.text,
