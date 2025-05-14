@@ -1,4 +1,3 @@
-
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -262,7 +261,11 @@ tasks.register("webRelease") {
         val resourceFiles = folder.resolve("composeResources")
             .walkBottomUp()
             .filter { it.isFile }
-            .filter { it.extension == "cvr" || it.name.contains("database") }
+            .filter {
+                it.extension == "cvr" ||
+                        it.extension == "ttf" ||
+                        it.name.contains("database")
+            }
 
         val filesToCache = rootFiles + icons + resourceFiles
 
