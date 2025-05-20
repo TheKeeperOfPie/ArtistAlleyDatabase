@@ -98,9 +98,10 @@ LEFT OUTER JOIN stampRallyNotes
 ON stampRallyEntry2025.id = stampRallyNotes.stampRallyId
 WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
 
+/** RETURNING for https://github.com/sqldelight/sqldelight/issues/5753 */
 deleteUserData {
     DELETE FROM artistNotes;
     DELETE FROM artistUserEntry;
     DELETE FROM stampRallyUserEntry;
-    DELETE FROM stampRallyNotes;
+    DELETE FROM stampRallyNotes RETURNING COUNT(*);
 }

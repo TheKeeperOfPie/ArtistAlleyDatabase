@@ -9,20 +9,6 @@ buildCache {
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven {
-            // https://github.com/sqldelight/sqldelight/pull/5534#issuecomment-2507584197
-            url = uri("https://maven.pkg.github.com/edna-aa/sqldelight")
-            credentials {
-                // Borrowed from https://github.com/0ffz/gpr-for-gradle
-                username = "token"
-                password =
-                    "\u0037\u0066\u0066\u0036\u0030\u0039\u0033\u0066\u0032\u0037\u0033\u0036\u0033\u0037\u0064\u0036\u0037\u0066\u0038\u0030\u0034\u0039\u0062\u0030\u0039\u0038\u0039\u0038\u0066\u0034\u0066\u0034\u0031\u0064\u0062\u0033\u0064\u0033\u0038\u0065"
-            }
-            content {
-                includeGroup("app.cash.sqldelight")
-                includeVersionByRegex("app.cash.sqldelight", ".*", ".*-wasm.*")
-            }
-        }
         google()
         mavenCentral()
     }

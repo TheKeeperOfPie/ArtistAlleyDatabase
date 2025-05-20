@@ -9,7 +9,7 @@ repositories {
 
 plugins {
     `kotlin-dsl`
-    alias(libs.plugins.app.cash.sqldelight).version("2.0.2")
+    alias(libs.plugins.app.cash.sqldelight).version("2.1.0")
 }
 
 // Enable Enum.entries support
@@ -24,7 +24,7 @@ sqldelight {
     databases {
         create("BuildLogicDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.build_logic")
-            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.0.2")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
             srcDirs(
                 project.layout.projectDirectory
                     .dir("../modules/alley/src/commonMain/sqldelight"),
@@ -53,9 +53,8 @@ dependencies {
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.parcelize.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
+    implementation(libs.sqldelight.sqlite.driver)
     implementation(libs.webp.imageio)
-    // TODO: Replace with catalog version once officially published
-    implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
 }
 
 kotlin {

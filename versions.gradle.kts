@@ -109,7 +109,7 @@ object Versions {
     const val placeholder = "1.0.11"
     const val qrose = "1.0.1"
     const val skrapeIt = "1.3.0-alpha.1"
-    const val sqldelight = "2.1.0-wasm.2"
+    const val sqldelight = "2.1.0"
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.0"
