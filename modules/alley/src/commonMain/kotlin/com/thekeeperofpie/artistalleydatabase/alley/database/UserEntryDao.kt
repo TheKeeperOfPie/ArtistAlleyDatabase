@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.utils.PersistentStorageRequester
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -58,26 +59,33 @@ class UserEntryDao(
             }
         }
 
-    suspend fun insertArtistUserEntry(entry: ArtistUserEntry) = dao().run {
-        transaction {
-            val existing = getArtistUserEntry(entry.artistId, entry.dataYear).awaitAsOneOrNull() ?: entry
-            val newEntry = existing.copy(
-                favorite = entry.favorite,
-                ignored = entry.ignored,
-            )
-            insertArtistUserEntry(newEntry)
+    suspend fun insertArtistUserEntry(entry: ArtistUserEntry) {
+        PersistentStorageRequester.requestPersistent()
+        dao().run {
+            transaction {
+                val existing =
+                    getArtistUserEntry(entry.artistId, entry.dataYear).awaitAsOneOrNull() ?: entry
+                val newEntry = existing.copy(
+                    favorite = entry.favorite,
+                    ignored = entry.ignored,
+                )
+                insertArtistUserEntry(newEntry)
+            }
         }
     }
 
-    suspend fun insertStampRallyUserEntry(entry: StampRallyUserEntry) = dao().run {
-        transaction {
-            val existing = getStampRallyUserEntry(entry.stampRallyId).awaitAsOneOrNull()
-                ?: entry
-            val newEntry = existing.copy(
-                favorite = entry.favorite,
-                ignored = entry.ignored,
-            )
-            insertStampRallyUserEntry(newEntry)
+    suspend fun insertStampRallyUserEntry(entry: StampRallyUserEntry) {
+        PersistentStorageRequester.requestPersistent()
+        dao().run {
+            transaction {
+                val existing = getStampRallyUserEntry(entry.stampRallyId).awaitAsOneOrNull()
+                    ?: entry
+                val newEntry = existing.copy(
+                    favorite = entry.favorite,
+                    ignored = entry.ignored,
+                )
+                insertStampRallyUserEntry(newEntry)
+            }
         }
     }
 }
