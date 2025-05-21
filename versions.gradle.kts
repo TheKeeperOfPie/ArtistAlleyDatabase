@@ -83,11 +83,11 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.1.20"
+        const val core = "2.2.0-RC"
         const val coroutines = "1.10.2"
         const val datetime = "0.6.2"
         const val io = "0.7.0"
-        const val ksp = "2.1.20-1.0.32"
+        const val ksp = "2.2.0-RC-2.0.1"
         const val serialization = "1.8.1"
     }
 
