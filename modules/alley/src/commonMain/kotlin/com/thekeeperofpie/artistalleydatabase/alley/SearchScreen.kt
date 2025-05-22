@@ -165,7 +165,7 @@ object SearchScreen {
     }
 
     @Composable
-    operator fun <EntryModel, ColumnType> invoke(
+    operator fun <EntryModel : SearchEntryModel, ColumnType> invoke(
         state: State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
@@ -185,7 +185,7 @@ object SearchScreen {
         ) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
-    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
+    ) where ColumnType : Enum<ColumnType>, ColumnType : Column {
         val scope = rememberCoroutineScope()
         BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
             scope.launch {
