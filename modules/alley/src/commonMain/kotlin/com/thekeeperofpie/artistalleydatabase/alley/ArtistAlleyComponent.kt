@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
+import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
@@ -50,6 +51,7 @@ interface ArtistAlleyComponent {
     val importViewModel: (SavedStateHandle) -> ImportViewModel
     val mapViewModel: (SavedStateHandle) -> MapViewModel
     val alleySettingsViewModel: () -> AlleySettingsViewModel
+    val qrCodeViewModel: () -> QrCodeViewModel
     val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
     val stampRallyMapViewModel: (SavedStateHandle) -> StampRallyMapViewModel
     val stampRallySearchViewModel: (StateFlow<StampRallySortFilterViewModel.FilterParams>) -> StampRallySearchViewModel

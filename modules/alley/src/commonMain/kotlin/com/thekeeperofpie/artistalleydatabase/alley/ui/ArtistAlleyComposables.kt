@@ -9,6 +9,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,11 +41,13 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +63,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -66,6 +71,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -80,6 +86,11 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
@@ -87,7 +98,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_show_qr
+import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_suffix
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_settings
@@ -104,12 +118,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryMode
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
@@ -120,8 +136,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.atStartOfDayIn
+import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.days
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 @Composable
@@ -545,74 +565,124 @@ class DataYearHeaderState(
         }
 }
 
+private val UPCOMING_PROMPT_DURATION = 15.days
+
 @Composable
 fun DataYearHeader(state: DataYearHeaderState) {
-    if (state.lockedYear) {
-        Text(
-            text = stringResource(state.year.fullName),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-    } else {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            var expanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
+    Column {
+        val year = state.year
+        val windowSizeClass = currentWindowSizeClass()
+        val relativeTime = remember(windowSizeClass, year) {
+            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+                return@remember null
+            }
+            val start = year.dates.start.atStartOfDayIn(year.timeZone)
+            val now = Clock.System.now()
+            if (start > now && start - now < UPCOMING_PROMPT_DURATION) {
+                HumanReadable.timeAgo(start)
+            } else {
+                null
+            }
+        }
+        if (relativeTime != null) {
+            ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
-                    Text(
-                        text = stringResource(state.year.fullName),
-                        style = MaterialTheme.typography.headlineSmall,
-                    )
-
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.minimumInteractiveComponentSize()
-                    ) {
-                        TrailingDropdownIcon(
-                            expanded = expanded,
-                            contentDescription = stringResource(Res.string.alley_switch_data_year),
-                        )
+                    val text = buildAnnotatedString {
+                        append(stringResource(year.shortName))
+                        append(" is ")
+                        withStyle(
+                            SpanStyle(
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight.Black,
+                            )
+                        ) {
+                            append(relativeTime)
+                        }
+                        append(stringResource(Res.string.alley_con_upcoming_suffix))
                     }
-                }
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
-                    DataYear.entries.forEach {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(it.fullName)) },
-                            leadingIcon = {
-                                RadioButton(
-                                    selected = state.year == it,
-                                    onClick = { state.year = it },
-                                )
-                            },
-                            onClick = {
-                                state.year = it
-                                expanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                        )
+                    Text(
+                        text = text,
+                        modifier = Modifier.weight(1f)
+                    )
+                    val navigationController = LocalNavigationController.current
+                    Button(onClick = { navigationController.navigate(Destinations.Export) }) {
+                        Text(stringResource(Res.string.alley_con_upcoming_show_qr))
                     }
                 }
             }
+        }
 
-            val navigationController = LocalNavigationController.current
-            IconButton(onClick = { navigationController.navigate(Destinations.Settings) }) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = stringResource(Res.string.alley_settings),
-                )
+        if (state.lockedYear) {
+            Text(
+                text = stringResource(state.year.fullName),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                var expanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    ) {
+                        Text(
+                            text = stringResource(state.year.fullName),
+                            style = MaterialTheme.typography.headlineSmall,
+                        )
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.minimumInteractiveComponentSize()
+                        ) {
+                            TrailingDropdownIcon(
+                                expanded = expanded,
+                                contentDescription = stringResource(Res.string.alley_switch_data_year),
+                            )
+                        }
+                    }
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                    ) {
+                        DataYear.entries.forEach {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(it.fullName)) },
+                                leadingIcon = {
+                                    RadioButton(
+                                        selected = state.year == it,
+                                        onClick = { state.year = it },
+                                    )
+                                },
+                                onClick = {
+                                    state.year = it
+                                    expanded = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            )
+                        }
+                    }
+                }
+
+                val navigationController = LocalNavigationController.current
+                IconButton(onClick = { navigationController.navigate(Destinations.Settings) }) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(Res.string.alley_settings),
+                    )
+                }
             }
         }
     }
@@ -713,5 +783,69 @@ fun DisplayTypeSearchBar(
                 .fillMaxWidth()
                 .padding(top = 4.dp),
         )
+    }
+}
+
+@Composable
+fun QuestionAnswer(
+    question: String,
+    answer: String,
+    inlineContent: Map<String, InlineTextContent> = emptyMap(),
+    extraContent: @Composable () -> Unit = {},
+) = QuestionAnswer(
+    question = question,
+    answer = { append(answer) },
+    inlineContent = inlineContent,
+    extraContent = extraContent,
+)
+
+@Composable
+fun QuestionAnswer(
+    question: String,
+    answer: AnnotatedString.Builder.() -> Unit,
+    inlineContent: Map<String, InlineTextContent> = emptyMap(),
+    extraContent: @Composable () -> Unit = {},
+) {
+    Column {
+        var expanded by rememberSaveable { mutableStateOf(false) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+                .clickable { expanded = !expanded }
+        ) {
+            Text(
+                text = question,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            TrailingDropdownIconButton(
+                expanded = expanded,
+                contentDescription = stringResource(Res.string.alley_answer_expand_content_description),
+                onClick = { expanded = !expanded },
+            )
+        }
+
+        AnimatedVisibility(expanded, enter = expandVertically(), exit = shrinkVertically()) {
+            if (expanded) {
+                val answerText = remember(answer) {
+                    buildAnnotatedString(answer)
+                }
+                Text(
+                    text = answerText,
+                    inlineContent = inlineContent,
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 12.dp,
+                    )
+                )
+            }
+        }
+
+        extraContent()
     }
 }

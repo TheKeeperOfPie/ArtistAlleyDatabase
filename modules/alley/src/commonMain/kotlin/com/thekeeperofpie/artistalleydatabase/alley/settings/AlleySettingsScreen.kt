@@ -1,11 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,15 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.QrCode2
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,9 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -56,9 +44,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.window.Dialog
 import artistalleydatabase.modules.alley.generated.resources.Res
-import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_author_link
 import artistalleydatabase.modules.alley.generated.resources.alley_server_link
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear
@@ -68,36 +54,25 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_clea
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_clear_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_copy_instructions_full
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_copy_instructions_partial
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_download
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_full
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_partial
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_qr_code
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_qr_code_explanation
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_qr_code_url_label
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_share
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_export_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_file
-import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_qr_code_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
+import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalShareHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.delay
@@ -111,13 +86,10 @@ object AlleySettingsScreen {
     class State(
         val sections: List<SettingsSection>,
     ) {
-        var exportData by mutableStateOf<Pair<Boolean, String>?>(null)
         var importState by mutableStateOf<LoadingResult<*>>(LoadingResult.empty<Unit>())
     }
 
     sealed interface Event {
-        data object ExportPartial : Event
-        data object ExportFull : Event
         data class Import(val data: String) : Event
         data class ImportFile(val file: PlatformFile?) : Event
         data object ClearUserData : Event
@@ -131,7 +103,6 @@ internal fun AlleySettingsScreen(
 ) {
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
         val navigationController = LocalNavigationController.current
-        val scope = rememberCoroutineScope()
         SettingsScreen(
             sections = state.sections,
             upIconOption = UpIconOption.Back(navigationController::popBackStack),
@@ -140,20 +111,7 @@ internal fun AlleySettingsScreen(
         ) {
             when (it.id) {
                 "header" -> Header()
-                "export" -> ExportSection(
-                    exportData = { state.exportData },
-                    onClickExportPartial = {
-                        eventSink(AlleySettingsScreen.Event.ExportPartial)
-                    },
-                    onClickExportFull = {
-                        eventSink(AlleySettingsScreen.Event.ExportFull)
-                    },
-                    onClickDownload = { fullExport, data ->
-                        scope.launch {
-                            ImportExportUtils.download(fullExport, data)
-                        }
-                    },
-                )
+                "export" -> ExportSection()
                 "import" -> ImportSection(
                     state = { state.importState },
                     onResetState = { state.importState = LoadingResult.empty<Unit>() },
@@ -163,12 +121,7 @@ internal fun AlleySettingsScreen(
                 "clear" -> ClearSection(
                     onClear = { eventSink(AlleySettingsScreen.Event.ClearUserData) },
                 )
-                "faq" -> FaqSection(
-                    onInstallClick = { PlatformSpecificConfig.requestInstall() },
-                    onExportClick = {
-                        eventSink(AlleySettingsScreen.Event.ExportPartial)
-                    }
-                )
+                "faq" -> FaqSection(onInstallClick = { PlatformSpecificConfig.requestInstall() })
                 else -> throw IllegalArgumentException()
             }
         }
@@ -229,12 +182,7 @@ private fun Header() {
 }
 
 @Composable
-private fun ExportSection(
-    exportData: () -> Pair<Boolean, String>?,
-    onClickExportPartial: () -> Unit,
-    onClickExportFull: () -> Unit,
-    onClickDownload: (fullExport: Boolean, data: String) -> Unit,
-) {
+private fun ExportSection() {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -254,120 +202,9 @@ private fun ExportSection(
                 )
             }
 
-            Button(onClickExportPartial) {
-                Text(text = stringResource(Res.string.alley_settings_export_partial))
-            }
-
-            Button(onClickExportFull) {
-                Text(text = stringResource(Res.string.alley_settings_export_full))
-            }
-        }
-
-        val exportData = exportData()
-        val exportText = exportData?.second
-        if (exportText != null) {
-            HorizontalDivider()
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(
-                        if (exportData.first) {
-                            Res.string.alley_settings_export_copy_instructions_full
-                        } else {
-                            Res.string.alley_settings_export_copy_instructions_partial
-                        }
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
-
-                // TODO: Add copy action once CMP supports it on all platforms
-                //   https://youtrack.jetbrains.com/issue/CMP-7624
-
-                // TODO: Support sharing for non-Android platforms
-                val shareHandler = LocalShareHandler.current
-                if (shareHandler != null) {
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Default.Share,
-                        tooltipText = stringResource(Res.string.alley_settings_export_share),
-                        onClick = { shareHandler.shareText(exportText) },
-                        contentDescription = stringResource(Res.string.alley_settings_export_share),
-                    )
-                }
-
-                if (!exportData.first) {
-                    var showQrCodeDialog by remember { mutableStateOf(false) }
-                    if (showQrCodeDialog) {
-                        QrCodeDialog(
-                            exportPartial = exportText,
-                            onDismiss = { showQrCodeDialog = false },
-                        )
-                    }
-
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Default.QrCode2,
-                        tooltipText = stringResource(Res.string.alley_settings_export_qr_code),
-                        onClick = { showQrCodeDialog = true },
-                        contentDescription = stringResource(Res.string.alley_settings_export_qr_code),
-                    )
-                }
-
-                IconButtonWithTooltip(
-                    imageVector = Icons.Default.Download,
-                    tooltipText = stringResource(Res.string.alley_settings_export_download),
-                    onClick = { onClickDownload(exportData.first, exportText) },
-                    contentDescription = stringResource(Res.string.alley_settings_export_download),
-                )
-            }
-
-            OutlinedTextField(
-                value = exportText,
-                onValueChange = {},
-                readOnly = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-@Composable
-private fun QrCodeDialog(exportPartial: String, onDismiss: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        OutlinedCard {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(stringResource(Res.string.alley_settings_export_qr_code_explanation))
-
-                val exportUrl =
-                    remember(exportPartial) { ImportExportUtils.getImportUrl(exportPartial) }
-                Image(
-                    painter = rememberQrCodePainter(exportUrl),
-                    contentDescription = stringResource(Res.string.alley_settings_import_qr_code_content_description),
-                    modifier = Modifier.background(Color.White, RoundedCornerShape(16.dp))
-                        .padding(16.dp)
-                )
-
-                OutlinedTextField(
-                    value = exportUrl,
-                    label = { Text(stringResource(Res.string.alley_settings_export_qr_code_url_label)) },
-                    onValueChange = {},
-                    readOnly = true,
-                )
-
-                QuestionAnswer(
-                    "Importing didn't work?",
-                    "Make sure both this device and the other device are on the most up " +
-                            "to date version of the site. This might require closing all tabs " +
-                            "for the site and turning off anything that would block the update " +
-                            "like VPN. \n\nIf that doesn't work, consider copy-pasting or using " +
-                            "the file export + import instead.",
-
-                    )
+            val navigationController = LocalNavigationController.current
+            Button(onClick = { navigationController.navigate(Destinations.Export) }) {
+                Text(text = stringResource(Res.string.alley_settings_export))
             }
         }
     }
@@ -505,7 +342,7 @@ private fun ClearSection(onClear: () -> Unit) {
 }
 
 @Composable
-private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
+private fun FaqSection(onInstallClick: () -> Unit) {
     OutlinedCard(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
         Text(
             text = "FAQ",
@@ -549,6 +386,7 @@ private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
 
         val colorScheme = MaterialTheme.colorScheme
         if (PlatformSpecificConfig.installable) {
+            val navigationController = LocalNavigationController.current
             QuestionAnswer(
                 "Can I use this offline?",
                 answer = {
@@ -581,7 +419,9 @@ private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
                         withLink(
                             LinkAnnotation.Clickable(
                                 tag = "export",
-                                linkInteractionListener = { onExportClick() },
+                                linkInteractionListener = {
+                                    navigationController.navigate(Destinations.Export)
+                                },
                             )
                         ) {
                             append("Export")
@@ -633,70 +473,6 @@ private fun FaqSection(onInstallClick: () -> Unit, onExportClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun QuestionAnswer(
-    question: String,
-    answer: String,
-    inlineContent: Map<String, InlineTextContent> = emptyMap(),
-    extraContent: @Composable () -> Unit = {},
-) = QuestionAnswer(
-    question = question,
-    answer = { append(answer) },
-    inlineContent = inlineContent,
-    extraContent = extraContent,
-)
-
-@Composable
-private fun QuestionAnswer(
-    question: String,
-    answer: AnnotatedString.Builder.() -> Unit,
-    inlineContent: Map<String, InlineTextContent> = emptyMap(),
-    extraContent: @Composable () -> Unit = {},
-) {
-    Column {
-        var expanded by rememberSaveable { mutableStateOf(false) }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-                .clickable { expanded = !expanded }
-        ) {
-            Text(
-                text = question,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f)
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(Res.string.alley_answer_expand_content_description),
-                onClick = { expanded = !expanded },
-            )
-        }
-
-        AnimatedVisibility(expanded, enter = expandVertically(), exit = shrinkVertically()) {
-            if (expanded) {
-                val answerText = remember(answer) {
-                    buildAnnotatedString(answer)
-                }
-                Text(
-                    text = answerText,
-                    inlineContent = inlineContent,
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = 12.dp,
-                    )
-                )
-            }
-        }
-
-        extraContent()
-    }
-}
-
 @Preview
 @Composable
 private fun HeaderPreview() = PreviewDark {
@@ -706,13 +482,7 @@ private fun HeaderPreview() = PreviewDark {
 @Preview
 @Composable
 private fun ExportPreview() = PreviewDark {
-    var exportPartialText by remember { mutableStateOf<String?>(null) }
-    ExportSection(
-        exportData = { exportPartialText?.let { false to it } },
-        onClickExportPartial = { exportPartialText = "Preview partial export" },
-        onClickExportFull = { exportPartialText = "Preview full export" },
-        onClickDownload = { _, _ -> },
-    )
+    ExportSection()
 }
 
 @Preview
@@ -737,5 +507,5 @@ private fun ImportPreview() = PreviewDark {
 @Preview
 @Composable
 private fun FaqPreview() = PreviewDark {
-    FaqSection(onInstallClick = {}, onExportClick = {})
+    FaqSection(onInstallClick = {})
 }

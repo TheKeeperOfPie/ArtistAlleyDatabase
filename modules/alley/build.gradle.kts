@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
             implementation(libs.filekit.dialogs.compose)
+            implementation(libs.human.readable)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.qrose)

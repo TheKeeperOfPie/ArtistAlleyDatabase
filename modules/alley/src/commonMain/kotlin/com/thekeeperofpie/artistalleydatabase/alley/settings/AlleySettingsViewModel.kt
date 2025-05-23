@@ -19,7 +19,6 @@ import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
-import kotlinx.io.readString
 import kotlinx.io.writeString
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
@@ -65,19 +64,6 @@ class AlleySettingsViewModel(
     private var importJob: Job? = null
 
     fun onEvent(event: AlleySettingsScreen.Event) = when (event) {
-        AlleySettingsScreen.Event.ExportPartial -> viewModelScope.launch(dispatchers.io) {
-            Buffer().use {
-                exporter.exportPartial(it)
-                state.exportData = false to it.readString()
-            }
-        }
-        AlleySettingsScreen.Event.ExportFull -> viewModelScope.launch(dispatchers.io) {
-            Buffer().use {
-                // TODO: Export to a user chosen file instead
-                exporter.exportFull(it)
-                state.exportData = true to it.readString()
-            }
-        }
         is AlleySettingsScreen.Event.Import -> {
             val previousJob = importJob
             previousJob?.cancel()

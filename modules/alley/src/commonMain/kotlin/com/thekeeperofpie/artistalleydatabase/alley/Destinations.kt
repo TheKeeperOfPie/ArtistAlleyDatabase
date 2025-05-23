@@ -46,6 +46,9 @@ sealed interface Destinations : NavDestination {
     data class ArtistMap(val id: String) : Destinations
 
     @Serializable
+    data object Export : Destinations
+
+    @Serializable
     data class Images(
         val year: DataYear,
         val id: String,

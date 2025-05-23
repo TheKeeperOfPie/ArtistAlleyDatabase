@@ -171,19 +171,8 @@
     <string name="alley_settings_series_language">Series language</string>
 
     <string name="alley_settings_export">Export</string>
-    <string name="alley_settings_export_summary">Transfer the data from this device to another. Partial export does not export notes field</string>
-    <string name="alley_settings_export_partial">Partial</string>
-    <string name="alley_settings_export_full">Full</string>
-    <string name="alley_settings_export_copy_instructions_partial">Copy the following into the Import section on another device, or click an icon to show QR code or download as a file</string>
-    <string name="alley_settings_export_copy_instructions_full">Copy the following into the Import section on another device, or click the icon to download as a file</string>
-    <string name="alley_settings_export_copy">Copy export text</string>
-    <string name="alley_settings_export_share">Share export text</string>
-    <string name="alley_settings_export_download">Download export text</string>
-    <string name="alley_settings_export_qr_code">Show export link QR code</string>
-    <string name="alley_settings_export_qr_code_explanation">Scan with another device's camera</string>
-    <string name="alley_settings_export_qr_code_url_label">URL</string>
+    <string name="alley_settings_export_summary">Transfer the data from this device to another</string>
 
-    <string name="alley_settings_import_qr_code_content_description">Import link QR code</string>
     <string name="alley_settings_import">Import</string>
     <string name="alley_settings_import_summary">Paste the export output from another device to import the data to this one</string>
     <string name="alley_settings_import_success">Imported successfully</string>
@@ -278,4 +267,16 @@
     <string name="alley_link_type_category_stores">Stores</string>
     <string name="alley_link_type_category_support">Support</string>
     <string name="alley_link_type_category_other">Other</string>
+
+    <string name="alley_con_upcoming_suffix">, export data to your phone so your favorites are available at con</string>
+    <string name="alley_con_upcoming_show_qr">Show QR</string>
+
+    <string name="alley_export_notes_warning">Note: QR code will not export notes field, consider downloading the data to a file to include notes</string>
+    <string name="alley_export_download_content_description">Download</string>
+    <string name="alley_export_qr_code_explanation">Scan with another device's camera</string>
+    <string name="alley_export_qr_code_content_description">Import link QR code</string>
+    <string name="alley_export_qr_code_or_open_explanation">Or open this URL on the other device</string>
+    <string name="alley_export_qr_code_url_label">URL</string>
+
+    <string name="alley_close_content_description">Close X</string>
 </resources>

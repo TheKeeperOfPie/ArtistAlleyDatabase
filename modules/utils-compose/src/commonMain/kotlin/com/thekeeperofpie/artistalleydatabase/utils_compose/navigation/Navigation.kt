@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
@@ -11,6 +12,7 @@ import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.serialization.decodeArguments
 import androidx.navigation.serialization.generateNavArguments
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
@@ -60,5 +62,20 @@ inline fun <reified T : NavDestination> NavGraphBuilder.sharedElementComposable(
 ) {
     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
         content(it)
+    }
+}
+
+inline fun <reified T : NavDestination> NavGraphBuilder.sharedElementDialog(
+    navigationTypeMap: NavigationTypeMap,
+    deepLinks: List<NavDeepLink> = emptyList(),
+    noinline content: @Composable (NavBackStackEntry) -> Unit,
+) = dialog<T>(
+    typeMap = navigationTypeMap.typeMap,
+    deepLinks = deepLinks,
+) {
+    AnimatedVisibility(true) {
+        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+            content(it)
+        }
     }
 }

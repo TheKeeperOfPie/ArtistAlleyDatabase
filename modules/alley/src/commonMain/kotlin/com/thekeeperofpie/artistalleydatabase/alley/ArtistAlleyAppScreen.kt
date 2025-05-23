@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
@@ -46,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementDialog
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
@@ -425,6 +427,14 @@ object ArtistAlleyAppScreen {
                                     onDismiss = { navigationController.popBackStack(Destinations.Home) },
                                     onConfirmImport = viewModel::confirm,
                                 )
+                            }
+
+                            sharedElementDialog<Destinations.Export>(
+                                navigationTypeMap = navigationTypeMap,
+                            ) {
+                                val viewModel = viewModel { component.qrCodeViewModel() }
+                                val data by viewModel.data.collectAsStateWithLifecycle()
+                                QrCodeScreen(data = { data }, onClickDownload = viewModel::download)
                             }
                         }
                     }
