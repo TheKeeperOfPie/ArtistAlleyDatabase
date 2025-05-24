@@ -27,7 +27,6 @@ import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.window.ComposeViewport
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.ExperimentalBrowserHistoryApi
-import androidx.navigation.bindToNavigation
 import androidx.navigation.compose.rememberNavController
 import artistalleydatabase.modules.alley_app.generated.resources.Res
 import artistalleydatabase.modules.alley_app.generated.resources.service_worker_reload
@@ -181,7 +180,7 @@ private fun App(
                 if (route.startsWith("import")) {
                     navHostController.navigate(Destinations.Import(route.removePrefix("import=")))
                 }
-                window.bindToNavigation(navHostController)
+                window.bindToNavigationFixed(navHostController)
             }
         }
     }

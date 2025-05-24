@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.libs
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -35,11 +34,14 @@ kotlin {
         commonMain.dependencies {
             api(compose.components.resources)
             api(libs.compose.placeholder.material3)
+            api(libs.jetBrainsAndroidX.lifecycle.runtime.compose)
+            api(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
             api(libs.jetBrainsCompose.ui.backhandler)
             api(libs.pagingMultiplatform.paging.common)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
+            implementation(libs.jetBrainsAndroidX.lifecycle.runtime.compose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.molecule.runtime)
             implementation(projects.modules.utils)
