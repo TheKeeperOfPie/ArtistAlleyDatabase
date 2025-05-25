@@ -695,6 +695,8 @@ data class RangeData(
     val apiStart = startInt?.takeIf { it > 0 }
     val apiEnd = endInt?.takeIf { it != maxValue || !hardMax }?.let { it + 1 }
 
+    val isOnlyStart = startString.toIntOrNull() == 0 && endString.toIntOrNull() == 0
+
     val summaryText = if (startInt != null && endInt != null) {
         if (startInt == endInt) {
             startInt.toString()

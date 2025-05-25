@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.json.Json
+import kotlin.text.isNullOrBlank
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
@@ -283,6 +284,50 @@ class StampRallyEntryDao(
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (onlyFavorites) this += "stampRallyUserEntry.favorite = 1"
+
+            if (year == DataYear.YEAR_2025 || year == DataYear.YEAR_2024) {
+                val totalCost = filterParams.totalCost
+                if (totalCost.isOnlyStart) {
+                    this += "$tableName.totalCost = 0"
+                } else {
+                    val totalCostMin = totalCost.startInt
+                    if (totalCostMin != null) {
+                        this += "$tableName.totalCost IS NOT NULL"
+                        this += "$tableName.totalCost >= $totalCostMin"
+                    }
+
+                    val totalCostMax = totalCost.endInt
+                    if (totalCostMax != null) {
+                        if (totalCostMin == null) {
+                            this += "($tableName.totalCost IS NULL OR $tableName.totalCost <= $totalCostMax)"
+                        } else {
+                            this += "$tableName.totalCost <= $totalCostMax"
+                        }
+                    }
+                }
+
+                val prizeLimit = filterParams.prizeLimit
+                val prizeLimitMin = prizeLimit.startInt
+                if (prizeLimitMin != null) {
+                    this += "$tableName.prizeLimit IS NOT NULL"
+                    this += "$tableName.prizeLimit >= $prizeLimitMin"
+                }
+
+                val prizeLimitMax = prizeLimit.endInt
+                if (prizeLimitMax != null) {
+                    if (prizeLimitMin == null) {
+                        this += "($tableName.prizeLimit IS NULL OR $tableName.prizeLimit <= $prizeLimitMax)"
+                    } else {
+                        this += "$tableName.prizeLimit <= $prizeLimitMax"
+                    }
+                }
+            }
+
+            if (year == DataYear.YEAR_2025) {
+                if (filterParams.onlyConfirmed) {
+                    this += "$tableName.confirmed = 1"
+                }
+            }
         }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"

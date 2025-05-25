@@ -80,6 +80,12 @@
     <string name="alley_stamp_rally_prize_limit">%1$s prizes</string>
     <string name="alley_stamp_rally_table_min">%1$s/table%2$s</string>
 
+    <string name="alley_stamp_rally_filter_total_cost">Total cost</string>
+    <string name="alley_stamp_rally_filter_total_cost_expand_content_description">Total cost filter expand</string>
+    <string name="alley_stamp_rally_filter_prize_limit">Prize limit</string>
+    <string name="alley_stamp_rally_filter_prize_limit_expand_content_description">Prize limit filter expand</string>
+    <string name="alley_stamp_rally_filter_only_confirmed">Show only confirmed</string>
+
     <string name="alley_stamp_rally_details_cost">Cost</string>
     <string name="alley_stamp_rally_details_prize_limit">Prize limit</string>
     <string name="alley_stamp_rally_cost_free">Free</string>

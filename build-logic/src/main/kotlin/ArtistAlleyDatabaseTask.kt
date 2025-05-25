@@ -856,7 +856,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
                     val total = it["Total"]?.removePrefix("$")?.toIntOrNull()
                     val totalCost = when {
-                        !confirmed -> null
                         total != null -> total
                         else ->  tableMin?.takeIf { it > 0 }?.let { it * tables.size }
                     }
