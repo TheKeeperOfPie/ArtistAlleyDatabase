@@ -8,17 +8,14 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.map.TableCell
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterOptionsPanel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,28 +51,19 @@ object FavoritesMapScreen {
                 )
             },
         ) {
-            val showOnlyFavorites by viewModel.showOnlyFavorites.collectAsStateWithLifecycle()
             MapScreen(
                 viewModel = mapViewModel,
                 transformState = mapTransformState,
                 showSlider = false,
                 bottomContentPadding = it.calculateBottomPadding(),
             ) { table ->
-                if (showOnlyFavorites) {
-                    HighlightedTableCell(
-                        mapViewModel = mapViewModel,
-                        table = table,
-                        highlight = table.favorite,
-                        showImages = table.favorite,
-                        onArtistClick = onArtistClick,
-                    )
-                } else {
-                    TableCell(
-                        mapViewModel = mapViewModel,
-                        table = table,
-                        onArtistClick = onArtistClick,
-                    )
-                }
+                HighlightedTableCell(
+                    mapViewModel = mapViewModel,
+                    table = table,
+                    highlight = table.favorite,
+                    showImages = table.favorite,
+                    onArtistClick = onArtistClick,
+                )
             }
         }
     }

@@ -162,6 +162,11 @@ fun HighlightedTableCell(
     mapViewModel: MapViewModel,
     table: Table,
     highlight: Boolean,
+    defaultBackground: Color = if (table.image != null) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        table.section.color.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface)
+    },
     showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
@@ -174,7 +179,7 @@ fun HighlightedTableCell(
     val background = if (highlight) {
         MaterialTheme.colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.surface
+        defaultBackground
     }
     val textColor = if (highlight) {
         MaterialTheme.colorScheme.onPrimary
