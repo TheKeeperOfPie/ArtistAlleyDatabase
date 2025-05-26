@@ -54,7 +54,10 @@ interface ArtistAlleyComponent {
     val qrCodeViewModel: () -> QrCodeViewModel
     val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
     val stampRallyMapViewModel: (SavedStateHandle) -> StampRallyMapViewModel
-    val stampRallySearchViewModel: (StateFlow<StampRallySortFilterViewModel.FilterParams>) -> StampRallySearchViewModel
+    val stampRallySearchViewModel: (
+        SavedStateHandle,
+        StateFlow<StampRallySortFilterViewModel.FilterParams>,
+    ) -> StampRallySearchViewModel
     val stampRallySortFilterViewModel: (SavedStateHandle) -> StampRallySortFilterViewModel
     val tagMapViewModel: (SavedStateHandle) -> TagMapViewModel
     val tagsViewModel: (SavedStateHandle) -> TagsViewModel

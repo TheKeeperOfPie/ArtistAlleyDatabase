@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -39,6 +41,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_other_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_series
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
@@ -50,7 +53,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
@@ -67,6 +74,7 @@ object StampRallyDetailsScreen {
         userNotesTextState: TextFieldState,
         images: () -> List<CatalogImage>,
         imagePagerState: PagerState,
+        seriesImages: () -> Map<String, String>,
         eventSink: (Event) -> Unit,
     ) {
         val uriHandler = LocalUriHandler.current
@@ -88,18 +96,25 @@ object StampRallyDetailsScreen {
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {
-            detailsContent(entry, userNotesTextState, eventSink, onClickOpenUri = {
-                try {
-                    uriHandler.openUri(it)
-                } catch (_: Throwable) {
-                }
-            })
+            detailsContent(
+                entry = entry,
+                userNotesTextState = userNotesTextState,
+                seriesImages = seriesImages,
+                eventSink = eventSink,
+                onClickOpenUri = {
+                    try {
+                        uriHandler.openUri(it)
+                    } catch (_: Throwable) {
+                    }
+                },
+            )
         }
     }
 
     private fun LazyListScope.detailsContent(
         entry: () -> StampRallyDetailsViewModel.Entry?,
         userNotesTextState: TextFieldState,
+        seriesImages: () -> Map<String, String>,
         eventSink: (Event) -> Unit,
         onClickOpenUri: (String) -> Unit,
     ) {
@@ -254,6 +269,52 @@ object StampRallyDetailsScreen {
             }
         }
 
+        val series = entry()?.series
+        if (series?.isNotEmpty() != false) {
+            item("artistSeries") {
+                Column(Modifier.animateItem()) {
+                    val languageOption = LocalLanguageOptionMedia.current
+                    val sorted = remember(series, languageOption) {
+                        series?.sortedBy { it.name(languageOption) }
+                    }
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_stamp_rally_details_series,
+                            contentDescriptionTextRes = null,
+                            values = sorted,
+                            allowExpand = true,
+                            showDividerAbove = false,
+                            dividerPadding = PaddingValues(start = 0.dp),
+                            header = {
+                                DetailsSubsectionHeader(
+                                    text = stringResource(Res.string.alley_stamp_rally_details_series),
+                                    modifier = Modifier.padding(bottom = 6.dp)
+                                )
+                            },
+                            item = { value, expanded, _ ->
+                                SeriesRow(
+                                    series = value,
+                                    image = { value?.id?.let { seriesImages()[it] } },
+                                    onClick = if (expanded) {
+                                        {
+                                            value?.id?.let {
+                                                eventSink(
+                                                    StampRallyDetailsScreen.Event.OpenSeries(
+                                                        it
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    } else null,
+                                )
+                            },
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
+            }
+        }
+
         val notes = entry()?.stampRally?.notes
         if (!notes.isNullOrEmpty()) {
             item("stampRallyMaintainerNotes") {
@@ -309,6 +370,7 @@ object StampRallyDetailsScreen {
     sealed interface Event {
         data class DetailsEvent(val event: DetailsScreen.Event) : Event
         data class OpenArtist(val artist: ArtistEntry) : Event
+        data class OpenSeries(val series: String) : Event
     }
 }
 
@@ -326,12 +388,14 @@ private fun PhoneLayout() {
                     stampRally = stampRally.stampRally,
                     userEntry = stampRally.userEntry,
                     artists = artists,
+                    series = emptyList(),
                     otherTables = listOf("ANX-101"),
                 )
             },
             userNotesTextState = rememberTextFieldState(),
             images = { images },
             imagePagerState = rememberImagePagerState(images, 1),
+            seriesImages = { emptyMap() },
             eventSink = {},
         )
     }

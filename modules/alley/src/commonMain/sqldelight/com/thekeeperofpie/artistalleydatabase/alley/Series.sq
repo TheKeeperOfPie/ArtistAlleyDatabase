@@ -44,3 +44,7 @@ SELECT artistEntry2025.booth FROM artistSeriesConnection
 INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
 AND artistSeriesConnection.state2025 = 2;
+
+getRallyCount:
+SELECT COUNT(*) FROM stampRallySeriesConnection
+WHERE seriesId = :seriesId;

@@ -18,8 +18,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import kotlinx.serialization.json.Json
-import kotlin.text.isNullOrBlank
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
@@ -38,6 +38,7 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
             totalCost = null,
             prize = null,
             prizeLimit = null,
+            series = emptyList(),
             notes = null,
             counter = getLong(5)!!,
             confirmed = true,
@@ -64,6 +65,7 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
             totalCost = getLong(6),
             prize = null,
             prizeLimit = getLong(7),
+            series = emptyList(),
             notes = getString(8),
             counter = getLong(9)!!,
             confirmed = true,
@@ -90,14 +92,15 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             totalCost = getLong(6),
             prize = getString(7),
             prizeLimit = getLong(8),
-            notes = getString(9),
-            counter = getLong(10)!!,
-            confirmed = getBoolean(11) == true,
+            series = getString(9)!!.let(Json::decodeFromString),
+            notes = getString(10),
+            counter = getLong(11)!!,
+            confirmed = getBoolean(12) == true,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBoolean(12) == true,
-            ignored = getBoolean(13) == true,
+            favorite = getBoolean(13) == true,
+            ignored = getBoolean(14) == true,
         )
     )
 }
@@ -114,6 +117,7 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
         totalCost = null,
         prize = null,
         prizeLimit = null,
+        series = emptyList(),
         notes = null,
         counter = counter,
         confirmed = true,
@@ -137,6 +141,7 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
         totalCost = totalCost,
         prize = null,
         prizeLimit = prizeLimit,
+        series = emptyList(),
         notes = notes,
         counter = counter,
         confirmed = true,
@@ -160,6 +165,7 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
         totalCost = totalCost,
         prize = prize,
         prizeLimit = prizeLimit,
+        series = series,
         notes = notes,
         counter = counter,
         confirmed = confirmed,
@@ -182,6 +188,7 @@ fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
     totalCost = null,
     prize = null,
     prizeLimit = null,
+    series = emptyList(),
     notes = null,
     counter = counter,
     confirmed = true,
@@ -198,6 +205,7 @@ fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
     totalCost = totalCost,
     prize = null,
     prizeLimit = prizeLimit,
+    series = emptyList(),
     notes = notes,
     counter = counter,
     confirmed = true,
@@ -214,6 +222,7 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
     totalCost = totalCost,
     prize = prize,
     prizeLimit = prizeLimit,
+    series = series,
     notes = notes,
     counter = counter,
     confirmed = confirmed,
@@ -328,6 +337,13 @@ class StampRallyEntryDao(
                     this += "$tableName.confirmed = 1"
                 }
             }
+
+            val series = searchQuery.series
+            if (year == DataYear.YEAR_2025 && series != null) {
+                this += "$tableName.id IN (SELECT stampRallyId from stampRallySeriesConnection " +
+                        "WHERE stampRallySeriesConnection.seriesId = " +
+                        DatabaseUtils.sqlEscapeString(series) + ")"
+            }
         }
 
         val ascending = if (filterParams.sortAscending) "ASC" else "DESC"
@@ -397,6 +413,7 @@ class StampRallyEntryDao(
             "fandom",
             "tables",
             "notes".takeIf { year != DataYear.YEAR_2023 },
+            "series".takeIf { year == DataYear.YEAR_2025 },
         )
         val matchQuery = buildString {
             append("'")

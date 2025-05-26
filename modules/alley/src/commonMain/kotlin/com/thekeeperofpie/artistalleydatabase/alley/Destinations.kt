@@ -85,6 +85,9 @@ sealed interface Destinations : NavDestination {
     data object Settings : Destinations
 
     @Serializable
+    data class StampRallies(val year: DataYear?, val series: String) : Destinations
+
+    @Serializable
     data class StampRallyDetails(
         val year: DataYear,
         val id: String,

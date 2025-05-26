@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -57,7 +56,6 @@ class FavoritesViewModel(
     merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
-    tagEntryDao: TagEntryDao,
     userEntryDao: UserEntryDao,
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
@@ -78,7 +76,6 @@ class FavoritesViewModel(
         merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImagesStore = seriesImagesStore,
-        tagEntryDao = tagEntryDao,
     )
 
     val artistSearchState = SearchScreen.State(
@@ -143,7 +140,7 @@ class FavoritesViewModel(
                 stampRallyEntryDao.search(
                     year = year,
                     query = query,
-                    searchQuery = StampRallySearchQuery(filterParams, randomSeed),
+                    searchQuery = StampRallySearchQuery(null, filterParams, randomSeed),
                     onlyFavorites = true,
                 )
             }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }

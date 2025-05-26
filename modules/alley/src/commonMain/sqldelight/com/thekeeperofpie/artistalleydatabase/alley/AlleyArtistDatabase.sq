@@ -119,6 +119,9 @@ CREATE TABLE
         PRIMARY KEY (artistId, seriesId)
     );
 
+CREATE INDEX IF NOT EXISTS index_artistSeriesConnection_artistId ON artistSeriesConnection (artistId);
+CREATE INDEX IF NOT EXISTS index_artistSeriesConnection_seriesId ON artistSeriesConnection (seriesId);
+
 CREATE TABLE
     IF NOT EXISTS artistMerchConnection (
         artistId TEXT NOT NULL,
@@ -127,6 +130,9 @@ CREATE TABLE
         state2025 INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY (artistId, merchId)
     );
+
+CREATE INDEX IF NOT EXISTS index_artistMerchConnection_artistId ON artistMerchConnection (artistId);
+CREATE INDEX IF NOT EXISTS index_artistMerchConnection_merchId ON artistMerchConnection (merchId);
 
 CREATE TABLE
     IF NOT EXISTS stampRallyEntry2023 (
@@ -186,6 +192,7 @@ CREATE TABLE
         totalCost INTEGER,
         prize TEXT,
         prizeLimit INTEGER,
+        series TEXT AS List<String> NOT NULL,
         notes TEXT,
         counter INTEGER NOT NULL DEFAULT 1,
         confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
@@ -200,6 +207,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2025_fts USING FTS5 (
     prizeLimit,
     counter,
     prize,
+    series,
     notes,
     content=stampRallyEntry2025,
     tokenize="unicode61 remove_diacritics 2"
@@ -212,7 +220,18 @@ CREATE TABLE
         PRIMARY KEY (stampRallyId, artistId)
     );
 
+CREATE INDEX IF NOT EXISTS index_stampRallyArtistConnection_stampRallyId ON stampRallyArtistConnection (stampRallyId);
 CREATE INDEX IF NOT EXISTS index_stampRallyArtistConnection_artistId ON stampRallyArtistConnection (artistId);
+
+CREATE TABLE
+    IF NOT EXISTS stampRallySeriesConnection (
+        stampRallyId TEXT NOT NULL,
+        seriesId TEXT NOT NULL,
+        PRIMARY KEY (stampRallyId, seriesId)
+    );
+
+CREATE INDEX IF NOT EXISTS index_stampRallySeriesConnection_stampRallyId ON stampRallySeriesConnection (stampRallyId);
+CREATE INDEX IF NOT EXISTS index_stampRallySeriesConnection_seriesId ON stampRallySeriesConnection (seriesId);
 
 CREATE TABLE
     IF NOT EXISTS seriesEntry (

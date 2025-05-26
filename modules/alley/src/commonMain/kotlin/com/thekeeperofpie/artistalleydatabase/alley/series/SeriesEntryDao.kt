@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import app.cash.paging.PagingSource
 import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
@@ -208,6 +209,9 @@ class SeriesEntryDao(
             tableNames = listOf("seriesEntry", "seriesEntry_fts"), mapper = SqlCursor::toSeriesEntry
         ).awaitAsList()
     }
+
+    suspend fun hasRallies(series: String) = seriesDao().getRallyCount(series)
+        .awaitAsOne() > 0
 
     // Some tags were adjusted between years, and the most recent list may not have all
     // of the prior tags. In those cases, mock a response.

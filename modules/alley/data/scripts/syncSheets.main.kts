@@ -23,7 +23,7 @@ downloadUrl(sheetId2025, "Merch", merchOutputFile)
 // For some reason Stamp Rallies doesn't download correctly, dev should overwrite manually.
 // This is kept around in case optimistically it fixes itself.
 //downloadUrl("Stamp Rallies", "rallies.csv", "A1:G")
-downloadUrl(sheetId2025, "Stamp Rallies", rallies2025OutputFile, "A1:J")
+downloadUrl(sheetId2025, "Stamp Rallies", rallies2025OutputFile, "A1:K")
 
 fun downloadUrl(sheetId: String, sheetName: String, outputFile: File, range: String? = null) {
     outputFile.parentFile.mkdirs()

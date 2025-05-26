@@ -67,10 +67,14 @@
     <string name="alley_stamp_rally_details_fandom">Fandom</string>
     <string name="alley_stamp_rally_details_links">Links</string>
     <string name="alley_stamp_rally_details_prize">Prize</string>
+    <string name="alley_stamp_rally_details_cost">Cost</string>
+    <string name="alley_stamp_rally_details_prize_limit">Prize limit</string>
     <string name="alley_stamp_rally_details_artists">Artists</string>
     <string name="alley_stamp_rally_details_other_tables">Other tables</string>
+    <string name="alley_stamp_rally_details_series">Series</string>
     <string name="alley_stamp_rally_favorite_icon_content_description">Mark stamp rally as favorite</string>
     <string name="alley_open_in_map">Open in map</string>
+    <string name="alley_open_rallies">Open stamp rallies</string>
     <string name="alley_open_year">Open %1$d</string>
 
     <string name="alley_browse_tab_series">Series</string>
@@ -86,8 +90,6 @@
     <string name="alley_stamp_rally_filter_prize_limit_expand_content_description">Prize limit filter expand</string>
     <string name="alley_stamp_rally_filter_only_confirmed">Show only confirmed</string>
 
-    <string name="alley_stamp_rally_details_cost">Cost</string>
-    <string name="alley_stamp_rally_details_prize_limit">Prize limit</string>
     <string name="alley_stamp_rally_cost_free">Free</string>
     <string name="alley_stamp_rally_cost_any">Any</string>
     <string name="alley_stamp_rally_cost_unknown">Unknown</string>

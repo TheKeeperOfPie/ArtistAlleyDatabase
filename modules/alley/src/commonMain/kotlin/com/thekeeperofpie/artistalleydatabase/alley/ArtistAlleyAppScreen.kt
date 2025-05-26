@@ -39,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerSta
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -235,6 +236,26 @@ object ArtistAlleyAppScreen {
                                 )
                             }
 
+                            sharedElementComposable<Destinations.StampRallies>(
+                                navigationTypeMap = navigationTypeMap,
+                            ) {
+                                val sortViewModel = viewModel {
+                                    component.stampRallySortFilterViewModel(createSavedStateHandle())
+                                }
+                                val viewModel = viewModel {
+                                    component.stampRallySearchViewModel(
+                                        createSavedStateHandle(),
+                                        sortViewModel.state.filterParams,
+                                    )
+                                }
+                                StampRallySearchScreen(
+                                    viewModel = viewModel,
+                                    sortViewModel = sortViewModel,
+                                    scrollStateSaver = ScrollStateSaver(),
+                                    onClickBack = navigationController::popBackStack,
+                                )
+                            }
+
                             sharedElementComposable<Destinations.StampRallyDetails>(
                                 navigationTypeMap = navigationTypeMap,
                             ) {
@@ -270,6 +291,7 @@ object ArtistAlleyAppScreen {
                                     userNotesTextState = viewModel.userNotes,
                                     images = viewModel::images,
                                     imagePagerState = imagePagerState,
+                                    seriesImages = viewModel::seriesImages,
                                     eventSink = {
                                         when (it) {
                                             is StampRallyDetailsScreen.Event.DetailsEvent ->
@@ -304,6 +326,10 @@ object ArtistAlleyAppScreen {
                                             is StampRallyDetailsScreen.Event.OpenArtist ->
                                                 navigationController.navigate(
                                                     Destinations.ArtistDetails(it.artist)
+                                                )
+                                            is StampRallyDetailsScreen.Event.OpenSeries ->
+                                                navigationController.navigate(
+                                                    Destinations.Series(route.year, it.series)
                                                 )
                                         }
                                     },
@@ -340,12 +366,22 @@ object ArtistAlleyAppScreen {
                                 val seriesViewModel = viewModel {
                                     component.artistSeriesViewModel(createSavedStateHandle())
                                 }
+                                val hasRallies by viewModel.hasRallies.collectAsStateWithLifecycle()
                                 ArtistSeriesScreen(
                                     artistSearchViewModel = viewModel,
                                     artistSeriesViewModel = seriesViewModel,
                                     sortFilterController = viewModel.sortFilterController,
                                     onClickBack = navigationController::popBackStack,
                                     scrollStateSaver = ScrollStateSaver(),
+                                    showRalliesButton = { hasRallies },
+                                    onClickRallies = {
+                                        navigationController.navigate(
+                                            Destinations.StampRallies(
+                                                viewModel.year.value,
+                                                route.series
+                                            )
+                                        )
+                                    },
                                     onClickMap = {
                                         navigationController.navigate(
                                             Destinations.SeriesMap(

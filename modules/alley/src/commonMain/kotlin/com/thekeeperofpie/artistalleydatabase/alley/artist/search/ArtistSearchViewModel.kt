@@ -17,10 +17,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
@@ -54,7 +55,6 @@ class ArtistSearchViewModel(
     private val merchEntryDao: MerchEntryDao,
     private val seriesEntryDao: SeriesEntryDao,
     private val seriesImagesStore: SeriesImagesStore,
-    private val tagEntryDao: TagEntryDao,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
     navigationTypeMap: NavigationTypeMap,
@@ -109,7 +109,6 @@ class ArtistSearchViewModel(
         merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImagesStore = seriesImagesStore,
-        tagEntryDao = tagEntryDao,
     )
 
     val displayType = settings.displayType
@@ -118,6 +117,20 @@ class ArtistSearchViewModel(
 
     val query = MutableStateFlow("")
     val results = MutableStateFlow(PagingData.empty<ArtistEntryGridModel>())
+
+    val hasRallies = if (lockedSeries == null) {
+        ReadOnlyStateFlow(false)
+    } else {
+        year.mapLatest {
+            if (it == DataYear.YEAR_2025) {
+                seriesEntryDao.hasRallies(lockedSeries)
+            } else {
+                false
+            }
+        }
+            .flowOn(dispatchers.io)
+            .stateInForCompose(this, false)
+    }
 
     init {
         viewModelScope.launch(dispatchers.io) {

@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
@@ -48,6 +49,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         private const val SERIES_CSV_NAME = "series.csv"
         private const val MERCH_CSV_NAME = "merch.csv"
         private const val DATABASE_CHUNK_SIZE = 50
+
+        private val commaRegex = Regex(",\\s?")
     }
 
     @get:Inject
@@ -132,6 +135,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
                     tablesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
+                    seriesAdapter = listStringAdapter,
                 ),
                 artistNotesAdapter = ArtistNotes.Adapter(
                     dataYearAdapter = dataYearAdapter,
@@ -452,8 +456,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         ?.filter(String::isNotBlank)
                         .orEmpty()
                     val driveLink = it["Drive"]
-
-                    val commaRegex = Regex(",\\s?")
 
                     var seriesInferredRaw = it["Series - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
@@ -827,13 +829,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) {
         val mutationQueries = database.mutationQueries
         val stampRalliesCsv2025 = inputsDirectory.file("2025/$STAMP_RALLIES_CSV_NAME").get()
-        val boothToArtist2025 = artists2025.associate { it.booth to it }
+        val boothToArtist2025 = artists2025.associateBy { it.booth }
 
         open(stampRalliesCsv2025).use {
             var counter = 1L
             read(it)
                 .mapNotNull {
-                    // Confirmed, Theme, Prize, Link, Tables, Table Min, Total, Notes, UUID
+                    // Confirmed, Theme, Prize, Link, Tables, Table Min, Total, Prize Limit,
+                    // Series, Notes, UUID, Images
                     val tables = it["Tables"]!!
                         .ifEmpty { return@mapNotNull null }
                         .split("\n")
@@ -860,14 +863,21 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         else ->  tableMin?.takeIf { it > 0 }?.let { it * tables.size }
                     }
                     val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
+                    val series = it["Series"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+                        .sorted()
                     val notes = it["Notes"]
 
-                    val connections = tables.map(String::trim)
+                    val artistConnections = tables.map(String::trim)
                         .filter { it.length == 3 }
                         .map { boothToArtist2025[it]!! }
                         .map { StampRallyArtistConnection(stampRallyId, it.id) }
 
-                    StampRallyEntry2025(
+                    val seriesConnections = series.map(String::trim)
+                        .map { StampRallySeriesConnection(stampRallyId, it) }
+
+                    Triple(
+                        StampRallyEntry2025(
                         id = stampRallyId,
                         fandom = theme,
                         tables = tables,
@@ -877,18 +887,21 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         totalCost = (if (tableMin == 0) 0 else totalCost)?.toLong(),
                         prize = prize,
                         prizeLimit = prizeLimit?.toLong(),
+                        series = series,
                         notes = notes,
                         counter = counter++,
                         confirmed = confirmed,
-                    ) to connections
+                    ), artistConnections, seriesConnections)
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
                     val stampRallies = it.map { it.first }
                     val artistConnections = it.flatMap { it.second }
+                    val seriesConnections = it.flatMap { it.third }
                     mutationQueries.transaction {
                         stampRallies.forEach(mutationQueries::insertStampRally2025)
                         artistConnections.forEach(mutationQueries::insertArtistConnection)
+                        seriesConnections.forEach(mutationQueries::insertStampRallySeriesConnection)
                     }
                 }
         }

@@ -34,6 +34,10 @@ insertArtistConnection:
 INSERT OR REPLACE INTO stampRallyArtistConnection
 VALUES ?;
 
+insertStampRallySeriesConnection:
+INSERT OR REPLACE INTO stampRallySeriesConnection
+VALUES ?;
+
 insertSeries:
 INSERT OR REPLACE INTO seriesEntry
 VALUES ?;

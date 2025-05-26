@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,7 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +53,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
-import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
@@ -100,7 +99,6 @@ object ArtistSearchScreen {
         onClickBack: (() -> Unit)?,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
-        onClickMap: (() -> Unit)? = null,
     ) {
         val state = remember(viewModel, sortFilterController) {
             State(viewModel, sortFilterController)
@@ -115,7 +113,6 @@ object ArtistSearchScreen {
             header = { DataYearHeader(dataYearHeaderState) },
             scaffoldState,
             scrollStateSaver,
-            onClickMap,
         )
     }
 
@@ -128,7 +125,7 @@ object ArtistSearchScreen {
         header: @Composable () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
-        onClickMap: (() -> Unit)? = null,
+        actions: (@Composable RowScope.() -> Unit)? = null,
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
         sortFilterState.ImmediateScrollResetEffect(gridState)
@@ -170,18 +167,7 @@ object ArtistSearchScreen {
                             title = { seriesTitle ?: state.lockedMerch },
                             itemCount = { entries.itemCount },
                             displayType = state.searchState.displayType,
-                            actions = if (onClickMap == null) {
-                                null
-                            } else {
-                                {
-                                    IconButton(onClick = onClickMap) {
-                                        Icon(
-                                            imageVector = Icons.Default.Map,
-                                            contentDescription = stringResource(Res.string.alley_open_in_map),
-                                        )
-                                    }
-                                }
-                            },
+                            actions = actions,
                         )
                     }
                 },

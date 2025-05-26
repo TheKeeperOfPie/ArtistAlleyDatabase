@@ -157,7 +157,10 @@ object AlleyRootScreen {
                                 component.stampRallySortFilterViewModel(createSavedStateHandle())
                             }
                             val viewModel = viewModel {
-                                component.stampRallySearchViewModel(sortViewModel.state.filterParams)
+                                component.stampRallySearchViewModel(
+                                    createSavedStateHandle(),
+                                    sortViewModel.state.filterParams,
+                                )
                             }
                             StampRallySearchScreen(
                                 viewModel = viewModel,

@@ -7,7 +7,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -19,8 +21,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
+import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
@@ -36,16 +40,22 @@ object StampRallySearchScreen {
         viewModel: StampRallySearchViewModel,
         sortViewModel: StampRallySortFilterViewModel,
         scrollStateSaver: ScrollStateSaver,
+        onClickBack: (() -> Unit)? = null,
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
         val sortFilterState = sortViewModel.state
         sortFilterState.ImmediateScrollResetEffect(gridState)
 
         CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
-            val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, null)
+            val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, viewModel.lockedYear)
             val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
             val query by viewModel.query.collectAsStateWithLifecycle()
             val navigationController = LocalNavigationController.current
+            val lockedSeriesEntry by viewModel.lockedSeriesEntry.collectAsStateWithLifecycle()
+            val languageOptionMedia = LocalLanguageOptionMedia.current
+            val shouldShowCount by remember {
+                derivedStateOf { query.isNotEmpty() || lockedSeriesEntry != null }
+            }
             SearchScreen(
                 state = viewModel.searchState,
                 eventSink = {
@@ -56,7 +66,9 @@ object StampRallySearchScreen {
                 sortFilterState = sortFilterState,
                 dataYearHeaderState = dataYearHeaderState,
                 gridState = gridState,
-                shouldShowCount = { query.isNotEmpty() },
+                title = { lockedSeriesEntry?.name(languageOptionMedia) },
+                shouldShowCount = { shouldShowCount },
+                onClickBack = onClickBack,
                 itemToSharedElementId = { it.stampRally.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     StampRallyListRow(entry, onFavoriteToggle, modifier)

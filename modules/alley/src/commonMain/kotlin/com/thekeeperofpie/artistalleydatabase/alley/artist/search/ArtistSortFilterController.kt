@@ -73,7 +73,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.AlleyTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.CommissionType
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -122,7 +121,6 @@ class ArtistSortFilterController(
     merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
-    tagEntryDao: TagEntryDao,
     val settings: ArtistAlleySettings,
 ) {
     val sortOption = settings.artistsSortOption

@@ -13,12 +13,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
@@ -35,6 +38,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
 @Inject
 class StampRallyDetailsViewModel(
+    private val seriesEntryDao: SeriesEntryDao,
+    private val seriesImagesStore: SeriesImagesStore,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userNotesDao: UserNotesDao,
     private val userEntryDao: UserEntryDao,
@@ -58,6 +63,9 @@ class StampRallyDetailsViewModel(
         mutableStateOf(TextFieldState())
     }
 
+    var seriesImages by mutableStateOf<Map<String, String>>(emptyMap())
+        private set
+
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             val entryWithArtists = stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@launch
@@ -73,12 +81,19 @@ class StampRallyDetailsViewModel(
                     }
                 }
 
+            val series = seriesEntryDao.getSeriesByIds(stampRally.series)
+
             entry = Entry(
                 stampRally = stampRally,
                 userEntry = stampRallyWithUserData.userEntry,
                 artists = artists,
                 otherTables = otherTables,
+                series = series,
             )
+
+            val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
+            seriesImages = seriesImagesCacheResult.seriesIdsToImages
+            seriesImages = seriesImagesStore.getAllImages(series, seriesImagesCacheResult)
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -107,6 +122,7 @@ class StampRallyDetailsViewModel(
         val userEntry: StampRallyUserEntry,
         val artists: List<ArtistEntry>,
         val otherTables: List<String>,
+        val series: List<SeriesEntry>,
     ) {
         var favorite by mutableStateOf(userEntry.favorite)
     }

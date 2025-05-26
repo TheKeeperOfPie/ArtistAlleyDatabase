@@ -733,6 +733,8 @@ fun DisplayTypeSearchBar(
             },
             trailingIcon = {
                 Row {
+                    actions?.invoke(this)
+
                     AnimatedVisibility(isNotEmpty) {
                         IconButton(onClick = { query = "" }) {
                             Icon(
@@ -773,8 +775,6 @@ fun DisplayTypeSearchBar(
                             }
                         }
                     }
-
-                    actions?.invoke(this)
                 }
             },
             onSearch = {},

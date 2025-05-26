@@ -13,6 +13,7 @@ data class StampRallyEntry(
     val totalCost: Long?,
     val prize: String?,
     val prizeLimit: Long?,
+    val series: List<String>,
     val notes: String?,
     val counter: Long,
     val confirmed: Boolean,
