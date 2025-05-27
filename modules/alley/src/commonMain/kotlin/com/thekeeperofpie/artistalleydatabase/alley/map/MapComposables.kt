@@ -74,8 +74,8 @@ fun TableCell(
     background: Color = if (table.image != null) {
         MaterialTheme.colorScheme.primary
     } else {
-        table.section.color.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface)
-    },
+        table.section.color
+    }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
     textColor: Color = if (table.image != null) {
@@ -181,8 +181,8 @@ fun HighlightedTableCell(
     defaultBackground: Color = if (table.image != null) {
         MaterialTheme.colorScheme.primary
     } else {
-        table.section.color.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface)
-    },
+        table.section.color
+    }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
     showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
 ) {
