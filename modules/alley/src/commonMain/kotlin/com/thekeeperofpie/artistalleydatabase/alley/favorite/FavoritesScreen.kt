@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
@@ -45,9 +43,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_emp
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
-import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_no
-import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text
-import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_yes
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
@@ -442,44 +437,6 @@ object FavoritesScreen {
                 }
                 Text(stringResource(buttonTextRes))
             }
-        }
-    }
-
-    @Composable
-    private fun UnfavoriteDialog(
-        entry: () -> SearchScreen.SearchEntryModel?,
-        onClearEntry: () -> Unit,
-        onRemoveFavorite: (SearchScreen.SearchEntryModel) -> Unit,
-    ) {
-        val entry = entry()
-        if (entry != null) {
-            val name = when (entry) {
-                is ArtistEntryGridModel -> entry.artist.name
-                is StampRallyEntryGridModel ->
-                    "${entry.stampRally.hostTable}-${entry.stampRally.fandom}"
-                else -> throw IllegalArgumentException()
-            }
-            AlertDialog(
-                onDismissRequest = onClearEntry,
-                text = {
-                    Text(text = stringResource(Res.string.alley_unfavorite_dialog_text, name))
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onRemoveFavorite(entry)
-                            onClearEntry()
-                        },
-                    ) {
-                        Text(stringResource(Res.string.alley_unfavorite_dialog_yes))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = onClearEntry) {
-                        Text(stringResource(Res.string.alley_unfavorite_dialog_no))
-                    }
-                },
-            )
         }
     }
 

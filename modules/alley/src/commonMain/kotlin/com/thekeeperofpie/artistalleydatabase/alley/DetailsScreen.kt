@@ -37,7 +37,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -49,11 +52,13 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_none
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
+import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text_generic
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
@@ -82,14 +87,29 @@ object DetailsScreen {
     ) {
         Scaffold(
             topBar = {
+                var showUnfavoriteDialog by remember { mutableStateOf(false) }
                 TopBar(
                     sharedElementId = sharedElementId,
                     title = title,
                     favorite = favorite,
-                    onFavoriteToggle = { eventSink(Event.FavoriteToggle(it)) },
+                    onFavoriteToggle = {
+                        if (it) {
+                            eventSink(Event.FavoriteToggle(true))
+                        } else {
+                            showUnfavoriteDialog = true
+                        }
+                    },
                     onClickBack = { eventSink(Event.NavigateBack) },
                     onClickOpenInMap = { eventSink(Event.OpenMap) },
                 )
+
+                if (showUnfavoriteDialog) {
+                    UnfavoriteDialog(
+                        text = stringResource(Res.string.alley_unfavorite_dialog_text_generic),
+                        onDismissRequest = { showUnfavoriteDialog = false },
+                        onRemoveFavorite = { eventSink(Event.FavoriteToggle(false)) },
+                    )
+                }
             },
             modifier = Modifier.sharedBounds("itemContainer", sharedElementId)
         ) {

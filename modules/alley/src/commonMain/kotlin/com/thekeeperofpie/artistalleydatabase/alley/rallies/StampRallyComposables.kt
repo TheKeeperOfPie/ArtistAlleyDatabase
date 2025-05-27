@@ -24,7 +24,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -41,6 +44,8 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
@@ -178,10 +183,20 @@ fun StampRallyListRow(
             }
         }
 
+        var unfavoriteDialogEntry by remember {
+            mutableStateOf<SearchScreen.SearchEntryModel?>(null)
+        }
+
         if (entry.stampRally.confirmed) {
             val favorite = entry.favorite
             IconButton(
-                onClick = { onFavoriteToggle(!favorite) },
+                onClick = {
+                    if (favorite) {
+                        unfavoriteDialogEntry = entry
+                    } else {
+                        onFavoriteToggle(true)
+                    }
+                },
                 modifier = Modifier
                     .sharedElement("favorite", stampRally.id, zIndexInOverlay = 1f)
                     .align(Alignment.Top)
@@ -197,6 +212,12 @@ fun StampRallyListRow(
                     ),
                 )
             }
+
+            UnfavoriteDialog(
+                entry = { unfavoriteDialogEntry },
+                onClearEntry = { unfavoriteDialogEntry = null },
+                onRemoveFavorite = { onFavoriteToggle(false) },
+            )
         } else {
             Tooltip(
                 text = stringResource(Res.string.alley_stamp_rally_favorite_disabled),

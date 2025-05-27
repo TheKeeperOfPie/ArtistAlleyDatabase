@@ -24,7 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -39,7 +42,9 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
+import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
@@ -156,9 +161,19 @@ fun ArtistListRow(
                 )
             }
 
+            var unfavoriteDialogEntry by remember {
+                mutableStateOf<SearchScreen.SearchEntryModel?>(null)
+            }
+
             val favorite = entry.favorite
             IconButton(
-                onClick = { onFavoriteToggle(!favorite) },
+                onClick = {
+                    if (favorite) {
+                        unfavoriteDialogEntry = entry
+                    } else {
+                        onFavoriteToggle(true)
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.Top)
                     .sharedElement("favorite", artist.id)
@@ -174,6 +189,12 @@ fun ArtistListRow(
                     ),
                 )
             }
+
+            UnfavoriteDialog(
+                entry = { unfavoriteDialogEntry },
+                onClearEntry = { unfavoriteDialogEntry = null },
+                onRemoveFavorite = { onFavoriteToggle(false) },
+            )
         }
 
         if (entry.series.isNotEmpty()) {

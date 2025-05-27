@@ -60,6 +60,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -116,6 +117,10 @@ fun TableCell(
             }
         }
 
+        var unfavoriteDialogEntry by remember {
+            mutableStateOf<ArtistEntryGridModel?>(null)
+        }
+
         if (showPopup) {
             BackHandler { showPopup = false }
             var tableEntry by remember { mutableStateOf<ArtistEntryGridModel?>(null) }
@@ -136,8 +141,12 @@ fun TableCell(
                         table = table,
                         entry = entry,
                         onFavoriteToggle = {
-                            entry.favorite = it
-                            mapViewModel.onFavoriteToggle(entry, it)
+                            if (it) {
+                                entry.favorite = it
+                                mapViewModel.onFavoriteToggle(entry, it)
+                            } else {
+                                unfavoriteDialogEntry = entry
+                            }
                         },
                         onIgnoredToggle = {
                             entry.ignored = it
@@ -149,6 +158,13 @@ fun TableCell(
                 }
             }
         }
+
+        UnfavoriteDialog(
+            entry = { unfavoriteDialogEntry },
+            onClearEntry = { unfavoriteDialogEntry = null },
+            onRemoveFavorite = { mapViewModel.onFavoriteToggle(it, false) },
+        )
+
         Text(
             text = table.booth,
             color = textColor,
