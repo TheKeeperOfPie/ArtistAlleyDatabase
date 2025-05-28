@@ -2,7 +2,6 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import java.util.zip.CRC32
 
@@ -119,10 +118,10 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        outputModuleName.set("ArtistAlley")
+        outputModuleName.set("ArtistAlleyWasm")
         browser {
             commonWebpackConfig {
-                outputFileName = "composeApp.js"
+                outputFileName = "composeApp-wasm.js"
                 devServer = null
                 mode = KotlinWebpackConfig.Mode.PRODUCTION
             }
@@ -130,21 +129,13 @@ kotlin {
         binaries.executable()
     }
 
-    js("serviceWorker", KotlinJsCompilerType.IR) {
-        binaries.executable()
-        browser {
-            webpackTask {
-                mainOutputFileName = "serviceWorker.js"
-            }
-        }
-    }
-
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
-            group("nonJsCommon") {
+            group("nonServiceWorkerCommon") {
                 withAndroidTarget()
                 withJvm()
+                withJs()
                 withWasmJs()
             }
         }
@@ -168,7 +159,7 @@ kotlin {
             implementation(libs.coil3.coil.network.ktor3)
             implementation(libs.kotlinx.coroutines.core)
         }
-        val nonJsCommonMain by getting {
+        val nonServiceWorkerCommonMain by getting {
             dependencies {
                 implementation(projects.modules.alley)
                 implementation(projects.modules.utils)
@@ -202,9 +193,7 @@ kotlin {
             }
         }
         val wasmJsMain by getting {
-            resources.srcDirs(layout.buildDirectory.dir("dist/serviceWorker/productionExecutable"))
-        }
-        val serviceWorkerMain by getting {
+            dependsOn(nonServiceWorkerCommonMain)
             dependencies {
                 implementation(projects.modules.alley.data)
             }
@@ -212,20 +201,28 @@ kotlin {
     }
 }
 
+val serviceWorkerOutput: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
     add("kspAndroid", kspProcessors.kotlin.inject.compiler.ksp)
     add("kspDesktop", kspProcessors.kotlin.inject.compiler.ksp)
     add("kspWasmJs", kspProcessors.kotlin.inject.compiler.ksp)
+    serviceWorkerOutput(project(":modules:alley-app:service-worker")) {
+        targetConfiguration = "distribution"
+    }
+}
+
+val copyServiceWorkerOutput: TaskProvider<Copy> by tasks.registering(Copy::class) {
+    dependsOn("wasmJsBrowserDistribution")
+    from(serviceWorkerOutput)
+    into(project.layout.buildDirectory.dir("dist/wasmJs/productionExecutable"))
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
-
-tasks.named { "wasmJsProcessResources" in it }.configureEach {
-    dependsOn("serviceWorkerBrowserDistribution")
-    // Ignore duplicate composeResources included from JS :modules:alley:data dependency
-    (this as ProcessResources).duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
 
 configurations.all {
     resolutionStrategy {
@@ -241,7 +238,10 @@ configurations.all {
 // Replicates Workbox InjectManifest since configuring that doesn't seem to work
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
-    dependsOn(":modules:alley:user:verifySqlDelightMigration", "wasmJsBrowserDistribution")
+    dependsOn(
+        ":modules:alley:user:verifySqlDelightMigration",
+        "copyServiceWorkerOutput"
+    )
 
     val distDir = project.layout.buildDirectory.dir("dist/wasmJs/productionExecutable")
     doLast {
