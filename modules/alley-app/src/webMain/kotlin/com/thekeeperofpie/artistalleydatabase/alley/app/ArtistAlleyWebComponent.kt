@@ -7,12 +7,12 @@ import me.tatarka.inject.annotations.Component
 import me.tatarka.inject.annotations.Provides
 
 @Component
-abstract class ArtistAlleyWasmJsComponent(
+abstract class ArtistAlleyWebComponent(
     @get:Provides val scope: ApplicationScope,
 ) : ArtistAlleyAppComponent {
     abstract val appFileSystem: AppFileSystem
     abstract val artistImageCache: ArtistImageCache
 
-    val ArtistAlleyWasmJsSettings.bindArtistAlleySettings: ArtistAlleySettings
+    val ArtistAlleyWebSettings.bindArtistAlleySettings: ArtistAlleySettings
         @Provides get() = this
 }

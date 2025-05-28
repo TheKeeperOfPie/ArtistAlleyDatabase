@@ -24,7 +24,7 @@ import org.w3c.workers.Cache
 
 @SingletonScope
 @Inject
-class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val userEntryDao: UserEntryDao) {
+actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val userEntryDao: UserEntryDao) {
 
     init {
         @OptIn(DelicateCoroutinesApi::class)

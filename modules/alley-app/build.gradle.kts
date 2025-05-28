@@ -122,8 +122,8 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp-wasm.js"
-                devServer = null
-                mode = KotlinWebpackConfig.Mode.PRODUCTION
+                devServer = devServer ?: KotlinWebpackConfig.DevServer()
+//                mode = KotlinWebpackConfig.Mode.PRODUCTION
             }
         }
         binaries.executable()
@@ -138,6 +138,10 @@ kotlin {
                 withJs()
                 withWasmJs()
             }
+            group("web") {
+                withJs()
+                withWasmJs()
+            }
         }
     }
 
@@ -149,7 +153,7 @@ kotlin {
             }
         }
         freeCompilerArgs.add("-Xcontext-receivers")
-//        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
+        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
     sourceSets {
@@ -192,7 +196,7 @@ kotlin {
                 implementation(libs.ktor.client.java)
             }
         }
-        val wasmJsMain by getting {
+        val webMain by getting {
             dependsOn(nonServiceWorkerCommonMain)
             dependencies {
                 implementation(projects.modules.alley.data)

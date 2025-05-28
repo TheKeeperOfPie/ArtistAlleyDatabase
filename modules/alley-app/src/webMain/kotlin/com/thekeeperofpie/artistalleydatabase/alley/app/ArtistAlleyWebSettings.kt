@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
+import coil3.util.ServiceLoaderComponentRegistry.register
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
@@ -22,20 +23,18 @@ import org.w3c.dom.StorageEvent
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
+expect fun initWebSettings(onNewValue: (key: String, value: String?) -> Unit)
+
 @SingletonScope
 @Inject
-class ArtistAlleyWasmJsSettings(
+class ArtistAlleyWebSettings(
     private val applicationScope: ApplicationScope,
 ) : ArtistAlleySettings {
 
     val updates = MutableSharedFlow<Pair<String, String?>>(extraBufferCapacity = 20)
 
     init {
-        window.addEventListener("storage") {
-            it as StorageEvent
-            val key = it.key ?: return@addEventListener
-            updates.tryEmit(key to it.newValue)
-        }
+        initWebSettings { key, value -> updates.tryEmit(key to value) }
     }
 
     override val appTheme by register(
