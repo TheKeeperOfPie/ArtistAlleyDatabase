@@ -76,7 +76,7 @@ data class LoadingResult<T>(
                 this(Either.Right(message), throwable, args)
 
         @Composable
-        fun message() = when (message) {
+        fun messageText() = when (message) {
             is Either.Left -> message.value
             is Either.Right -> if (args.isEmpty()) {
                 stringResource(message.value)

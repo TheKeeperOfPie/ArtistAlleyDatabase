@@ -15,6 +15,10 @@ kotlin {
                 withAndroidTarget()
                 withJvm()
             }
+            group("web") {
+                withJs()
+                withWasmJs()
+            }
         }
     }
 

@@ -110,7 +110,7 @@ object ForumThreadScreen {
         val refresh by refresh.updates.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
         val entry = state.entry
-        val errorText = entry.error?.message()
+        val errorText = entry.error?.messageText()
             ?: state.error?.first?.let { stringResource(it) }
         LaunchedEffect(errorText) {
             if (errorText != null) {

@@ -174,7 +174,7 @@ object CharacterDetailsScreen {
                     Crossfade(targetState = finalError, label = "Character details crossfade") {
                         if (it) {
                             VerticalList.ErrorContent(
-                                errorText = entry.error?.message().orEmpty(),
+                                errorText = entry.error?.messageText().orEmpty(),
                                 exception = entry.error?.throwable,
                             )
                         } else if (entry.result != null) {

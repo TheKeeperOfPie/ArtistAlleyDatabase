@@ -88,8 +88,8 @@ dependencyResolutionManagement {
             content {
                 includeGroup("app.cash.sqldelight")
                 includeGroup("app.cash.paging")
-                includeVersionByRegex("app.cash.sqldelight", ".*", ".*-wasm.*")
-                includeVersionByRegex("app.cash.paging", ".*", ".*-wasm.*")
+                includeVersionByRegex("app.cash.sqldelight", ".*", ".*-(wasm|js).*")
+                includeVersionByRegex("app.cash.paging", ".*", ".*-(wasm|js).*")
             }
         }
 

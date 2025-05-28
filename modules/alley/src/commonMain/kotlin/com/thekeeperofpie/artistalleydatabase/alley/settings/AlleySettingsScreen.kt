@@ -263,7 +263,7 @@ private fun ImportSection(
         val message = if (state.success) {
             stringResource(Res.string.alley_settings_import_success)
         } else {
-            error?.let { "${it.message()} ${it.throwable?.message}" }
+            error?.let { "${it.messageText()} ${it.throwable?.message}" }
         }
         if (message != null) {
             Text(

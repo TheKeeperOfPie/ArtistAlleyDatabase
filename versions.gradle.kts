@@ -333,6 +333,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     withVersion(Versions.sqldelight) {
                         library("app.cash.sqldelight:coroutines-extensions")
                         library("app.cash.sqldelight:sqlite-driver")
+                        library("app.cash.sqldelight:web-worker-driver-js")
                         library("app.cash.sqldelight:web-worker-driver-wasm-js")
                     }
                 }

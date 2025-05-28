@@ -66,7 +66,7 @@ object MediaActivitiesScreen {
         val snackbarHostState = remember { SnackbarHostState() }
 
         val error = entry.error
-        val errorString = error?.message()
+        val errorString = error?.messageText()
         LaunchedEffect(errorString) {
             if (errorString != null) {
                 snackbarHostState.showSnackbar(

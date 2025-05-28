@@ -150,7 +150,7 @@ object AnimeUserListScreen {
                 bottomNavigationState = bottomNavigationState,
             ) { scaffoldPadding ->
                 val error = entry.error
-                val errorText = error?.message()
+                val errorText = error?.messageText()
                 LaunchedEffect(error) {
                     if (errorText != null) {
                         scope.launch {

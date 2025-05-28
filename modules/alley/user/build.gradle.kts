@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     id("library-android")
     id("library-compose")
@@ -8,6 +10,16 @@ plugins {
 }
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("web") {
+                withJs()
+                withWasmJs()
+            }
+        }
+    }
+
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.alley.data)
@@ -24,9 +36,18 @@ kotlin {
                 implementation(libs.sqldelight.sqlite.driver)
             }
         }
+        val jsMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.web.worker.driver.js)
+            }
+        }
         val wasmJsMain by getting {
             dependencies {
                 implementation(libs.sqldelight.web.worker.driver.wasm.js)
+            }
+        }
+        val webMain by getting {
+            dependencies {
                 implementation(npm("@thekeeperofpie/alley-sqldelight-worker", file("../sqldelight-worker")))
                 implementation(npm("@sqlite.org/sqlite-wasm", "3.49.1-build2"))
             }

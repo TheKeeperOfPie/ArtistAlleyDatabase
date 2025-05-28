@@ -10,4 +10,5 @@ plugins {
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs { browser() }
+    js { browser() }
 }

@@ -34,13 +34,13 @@ internal object ImportScreen {
                 Text(
                     when {
                         success -> stringResource(Res.string.alley_settings_import_success)
-                        error != null -> error.message()
+                        error != null -> error.messageText()
                         else -> stringResource(Res.string.alley_settings_import_prompt_title)
                     }
                 )
             },
             text = if (state.success) null else {
-                { Text(state.error?.message() ?: importData) }
+                { Text(state.error?.messageText() ?: importData) }
             },
             confirmButton = {
                 val loading = state.loading

@@ -121,7 +121,7 @@ object ReviewDetailsScreen {
                     } else {
                         val error = entry.error
                         VerticalList.ErrorContent(
-                            errorText = error?.message().orEmpty(),
+                            errorText = error?.messageText().orEmpty(),
                             exception = error?.throwable,
                         )
                     }

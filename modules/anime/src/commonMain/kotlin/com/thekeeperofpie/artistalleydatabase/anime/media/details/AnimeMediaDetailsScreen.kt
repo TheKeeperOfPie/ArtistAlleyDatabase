@@ -670,7 +670,7 @@ object AnimeMediaDetailsScreen {
                     Crossfade(targetState = finalError, label = "Media details crossfade") {
                         if (it) {
                             VerticalList.ErrorContent(
-                                errorText = mediaEntry.error?.message().orEmpty(),
+                                errorText = mediaEntry.error?.messageText().orEmpty(),
                                 exception = mediaEntry.error?.throwable,
                             )
                         } else if (mediaEntry.result != null) {

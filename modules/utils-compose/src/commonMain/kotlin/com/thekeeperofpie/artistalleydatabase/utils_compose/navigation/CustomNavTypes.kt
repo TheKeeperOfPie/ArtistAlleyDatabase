@@ -126,8 +126,8 @@ object CustomNavTypes {
 
     class StringValueType<Type : Any>(
         type: KClass<Type>,
-        val toString: (Type) -> String,
-        val fromString: (String) -> Type,
+        private val toString: (Type) -> String,
+        private val fromString: (String) -> Type,
     ) : NavType<Type?>(true) {
         companion object {
             inline operator fun <reified T : Any> invoke(

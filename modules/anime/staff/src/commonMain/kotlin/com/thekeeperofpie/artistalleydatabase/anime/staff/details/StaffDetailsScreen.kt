@@ -116,7 +116,7 @@ object StaffDetailsScreen {
                 Column(modifier = Modifier.padding(scaffoldPadding)) {
                     val entryLoadingResult = entry()
                     val error = entryLoadingResult.error
-                    val errorText = entryLoadingResult.error?.message()
+                    val errorText = entryLoadingResult.error?.messageText()
                     val entry = entryLoadingResult.result
                     LaunchedEffect(entry, error, errorText) {
                         if (entry != null && errorText != null) {

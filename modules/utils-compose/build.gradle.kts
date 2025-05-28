@@ -16,8 +16,13 @@ kotlin {
                 withAndroidTarget()
                 withJvm()
             }
-            group("desktopAndWasm") {
+            group("desktopAndWeb") {
                 withJvm()
+                withJs()
+                withWasmJs()
+            }
+            group("web") {
+                withJs()
                 withWasmJs()
             }
         }
@@ -50,15 +55,17 @@ kotlin {
             api(libs.paging.common.jvm)
             implementation(libs.kmpalette.core)
         }
-        wasmJsMain.dependencies {
-            implementation(libs.pagingMultiplatform.paging.compose.common)
+        val webMain by getting {
+            dependencies {
+                implementation(libs.pagingMultiplatform.paging.compose.common)
+            }
         }
         val androidAndDesktopMain by getting {
             dependencies {
                 compileOnly(libs.paging.common.jvm)
             }
         }
-        val desktopAndWasmMain by getting {
+        val desktopAndWebMain by getting {
             dependencies {
                 implementation(libs.human.readable)
             }
