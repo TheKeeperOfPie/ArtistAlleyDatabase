@@ -1,20 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <link rel="icon" type="image/png" href="/icons/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
-    <link rel="shortcut icon" href="/icons/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="Artist Alley 2025" />
-    <link rel="manifest" href="manifest.webmanifest" />
+    <head>
+        <link rel="icon" type="image/png" href="/icons/favicon-96x96.png" sizes="96x96"/>
+        <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg"/>
+        <link rel="shortcut icon" href="/icons/favicon.ico"/>
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png"/>
+        <meta name="apple-mobile-web-app-title" content="Artist Alley 2025"/>
+        <link rel="manifest" href="manifest.webmanifest"/>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artist Alley</title>
-    <link type="text/css" rel="stylesheet" href="styles.css">
-    <script src="init.js"></script>
-    <script type="application/javascript" src="composeApp-wasm.js"></script>
-</head>
-<body>
-</body>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Artist Alley</title>
+        <link type="text/css" rel="stylesheet" href="styles.css">
+        <script src="init.js"></script>
+    </head>
+    <body>
+        <script type="application/javascript">
+            const body = document.body
+
+            <!-- https://github.com/JetBrains/kotlinconf-app/blob/1d4c2f997af6a4b073bca38481003936ae970bd1/shared/src/webMain/resources/index.html#L123 -->
+            const simpleWasmModule = new Uint8Array([
+                0,  97, 115, 109,   1,   0,   0,  0,   1,   8,   2,  95,
+                1, 120,   0,  96,   0,   0,   3,  3,   2,   1,   1,  10,
+               14,   2,   6,   0,   6,  64,  25, 11,  11,   5,   0, 208,
+              112,  26,  11,   0,  45,   4, 110, 97, 109, 101,   1,  15,
+                2,   0,   5, 102, 117, 110,  99, 48,   1,   5, 102, 117,
+              110,  99,  49,   4,   8,   1,   0,  5, 116, 121, 112, 101,
+               48,  10,  11,   1,   0,   1,   0,  6, 102, 105, 101, 108,
+              100,  48
+            ])
+
+            const hasSupportOfAllRequiredWasmFeatures = () =>
+                typeof WebAssembly !== "undefined" &&
+                typeof WebAssembly?.validate === "function" &&
+                WebAssembly.validate(simpleWasmModule)
+
+            const createScript = (src) => {
+                const script = document.createElement("script")
+                script.src = src
+                script.type = "application/javascript"
+                return script
+            }
+
+            const forceJsVariant = localStorage.getItem("forceJsVariant");
+            console.log("forceJsVariant: ", forceJsVariant)
+            if (forceJsVariant != "true" && hasSupportOfAllRequiredWasmFeatures()) {
+                body.appendChild(createScript("composeApp-wasm.js"))
+            } else {
+                body.appendChild(createScript("skiko.js"))
+                body.appendChild(createScript("composeApp-js.js"))
+            }
+        </script>
+    </body>
 </html>

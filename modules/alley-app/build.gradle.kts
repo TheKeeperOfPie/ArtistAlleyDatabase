@@ -122,8 +122,20 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp-wasm.js"
-                devServer = devServer ?: KotlinWebpackConfig.DevServer()
-//                mode = KotlinWebpackConfig.Mode.PRODUCTION
+                devServer = null
+                mode = KotlinWebpackConfig.Mode.PRODUCTION
+            }
+        }
+        binaries.executable()
+    }
+
+    js {
+        outputModuleName.set("ArtistAlleyJs")
+        browser {
+            commonWebpackConfig {
+                outputFileName = "composeApp-js.js"
+                devServer = null
+                mode = KotlinWebpackConfig.Mode.PRODUCTION
             }
         }
         binaries.executable()
@@ -215,15 +227,30 @@ dependencies {
     add("kspAndroid", kspProcessors.kotlin.inject.compiler.ksp)
     add("kspDesktop", kspProcessors.kotlin.inject.compiler.ksp)
     add("kspWasmJs", kspProcessors.kotlin.inject.compiler.ksp)
+    add("kspJs", kspProcessors.kotlin.inject.compiler.ksp)
     serviceWorkerOutput(project(":modules:alley-app:service-worker")) {
         targetConfiguration = "distribution"
     }
 }
 
+val buildBothWebVariants by tasks.registering(Copy::class) {
+    val wasmDist = "wasmJsBrowserDistribution"
+    val jsDist = "jsBrowserDistribution"
+
+    dependsOn(wasmDist, jsDist)
+
+    from(tasks.named(jsDist).get().outputs.files)
+    from(tasks.named(wasmDist).get().outputs.files)
+
+    into(layout.buildDirectory.dir("dist/web/productionExecutable"))
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 val copyServiceWorkerOutput: TaskProvider<Copy> by tasks.registering(Copy::class) {
-    dependsOn("wasmJsBrowserDistribution")
+    dependsOn("buildBothWebVariants")
     from(serviceWorkerOutput)
-    into(project.layout.buildDirectory.dir("dist/wasmJs/productionExecutable"))
+    into(project.layout.buildDirectory.dir("dist/web/productionExecutable"))
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
@@ -247,7 +274,7 @@ tasks.register("webRelease") {
         "copyServiceWorkerOutput"
     )
 
-    val distDir = project.layout.buildDirectory.dir("dist/wasmJs/productionExecutable")
+    val distDir = project.layout.buildDirectory.dir("dist/web/productionExecutable")
     doLast {
         val folder = distDir.get().asFile
         folder.listFiles()
