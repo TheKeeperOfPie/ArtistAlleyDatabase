@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
@@ -29,8 +30,8 @@ fun SqlCursor.toSeriesEntry(): SeriesEntry {
         titleRomaji = getString(8)!!,
         titleNative = getString(9)!!,
         link = getString(10),
-        has2024 = getBoolean(11)!!,
-        has2025 = getBoolean(12)!!,
+        has2024 = getBooleanFixed(11),
+        has2025 = getBooleanFixed(12),
     )
 }
 

@@ -9,14 +9,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 fun SqlCursor.toMerchEntry() = MerchEntry(
     name = getString(0)!!,
     notes = getString(1),
     categories = getString(2),
-    has2024 = getBoolean(3)!!,
-    has2025 = getBoolean(4)!!,
+    has2024 = getBooleanFixed(3),
+    has2025 = getBooleanFixed(4),
 )
 
 class MerchEntryDao(

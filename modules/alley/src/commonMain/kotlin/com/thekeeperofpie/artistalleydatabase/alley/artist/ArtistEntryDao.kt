@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithSta
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.CommissionType
@@ -57,8 +58,8 @@ private fun SqlCursor.toArtistWithUserData2023(): ArtistWithUserData {
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.YEAR_2023,
-            favorite = getBoolean(9) == true,
-            ignored = getBoolean(10) == true,
+            favorite = getBooleanFixed(9),
+            ignored = getBooleanFixed(10),
         )
     )
 }
@@ -86,8 +87,8 @@ private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.YEAR_2024,
-            favorite = getBoolean(14) == true,
-            ignored = getBoolean(15) == true,
+            favorite = getBooleanFixed(14),
+            ignored = getBooleanFixed(15),
         )
     )
 }
@@ -118,8 +119,8 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.YEAR_2025,
-            favorite = getBoolean(21) == true,
-            ignored = getBoolean(22) == true,
+            favorite = getBooleanFixed(21),
+            ignored = getBooleanFixed(22),
         )
     )
 }

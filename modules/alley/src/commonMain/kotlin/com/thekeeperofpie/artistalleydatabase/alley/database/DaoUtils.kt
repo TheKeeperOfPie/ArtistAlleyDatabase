@@ -22,6 +22,9 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.serialization.json.Json
 
+// TODO: On js target, "1" isn't coerced to true properly
+fun SqlCursor.getBooleanFixed(index: Int) = (getBoolean(index) == true) || getString(index).toString() == "1"
+
 object DaoUtils {
 
     val listStringAdapter = object : ColumnAdapter<List<String>, String> {

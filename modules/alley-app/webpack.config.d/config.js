@@ -28,7 +28,8 @@ module.exports = function override(config) {
         "util": require.resolve("util/"),
         "buffer": require.resolve("buffer/"),
         "stream": require.resolve("stream-browserify"),
-        "crypto": require.resolve("crypto-browserify")
+        "crypto": require.resolve("crypto-browserify"),
+        "os": require.resolve("os-browserify")
     });
     config.resolve.fallback = fallback;
   return config;

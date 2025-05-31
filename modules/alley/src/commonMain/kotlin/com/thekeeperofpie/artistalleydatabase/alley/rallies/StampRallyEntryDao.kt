@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
+import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
@@ -45,8 +46,8 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBoolean(6) == true,
-            ignored = getBoolean(7) == true,
+            favorite = getBooleanFixed(6),
+            ignored = getBooleanFixed(7),
         )
     )
 }
@@ -72,8 +73,8 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBoolean(10) == true,
-            ignored = getBoolean(11) == true,
+            favorite = getBooleanFixed(10),
+            ignored = getBooleanFixed(11),
         )
     )
 }
@@ -95,12 +96,12 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             series = getString(9)!!.let(Json::decodeFromString),
             notes = getString(10),
             counter = getLong(11)!!,
-            confirmed = getBoolean(12) == true,
+            confirmed = getBooleanFixed(12),
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBoolean(13) == true,
-            ignored = getBoolean(14) == true,
+            favorite = getBooleanFixed(13),
+            ignored = getBooleanFixed(14),
         )
     )
 }
