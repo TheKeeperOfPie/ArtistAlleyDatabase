@@ -99,7 +99,7 @@ object DetailsScreen {
                             showUnfavoriteDialog = true
                         }
                     },
-                    onClickBack = { eventSink(Event.NavigateBack) },
+                    onClickBack = { eventSink(Event.NavigateUp) },
                     onClickOpenInMap = { eventSink(Event.OpenMap) },
                 )
 
@@ -306,7 +306,7 @@ object DetailsScreen {
 
     sealed interface Event {
         data class FavoriteToggle(val favorite: Boolean) : Event
-        data object NavigateBack : Event
+        data object NavigateUp : Event
         data class OpenImage(val imageIndex: Int) : Event
         data object OpenMap : Event
     }

@@ -157,8 +157,8 @@ object ArtistAlleyAppScreen {
                                                 when (val event = it.event) {
                                                     is DetailsScreen.Event.FavoriteToggle ->
                                                         viewModel.onFavoriteToggle(event.favorite)
-                                                    DetailsScreen.Event.NavigateBack ->
-                                                        navigationController.popBackStack()
+                                                    DetailsScreen.Event.NavigateUp ->
+                                                        navigationController.navigateUp()
                                                     is DetailsScreen.Event.OpenImage -> {
                                                         val artist = viewModel.entry?.artist
                                                         if (artist != null && artist.booth != null) {
@@ -298,8 +298,8 @@ object ArtistAlleyAppScreen {
                                                 when (val event = it.event) {
                                                     is DetailsScreen.Event.FavoriteToggle ->
                                                         viewModel.onFavoriteToggle(event.favorite)
-                                                    DetailsScreen.Event.NavigateBack ->
-                                                        navigationController.popBackStack()
+                                                    DetailsScreen.Event.NavigateUp ->
+                                                        navigationController.navigateUp()
                                                     is DetailsScreen.Event.OpenImage -> {
                                                         viewModel.entry?.stampRally?.let {
                                                             navigationController.navigate(
