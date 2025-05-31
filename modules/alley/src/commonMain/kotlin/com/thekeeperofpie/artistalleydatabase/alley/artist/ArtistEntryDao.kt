@@ -283,6 +283,19 @@ class ArtistEntryDao(
                 ?.toArtistWithUserData()
         }
 
+    suspend fun getEntryIdByBooth(year: DataYear, booth: String) =
+        when (year) {
+            DataYear.YEAR_2023 -> dao2023()
+                .getEntryIdByBooth(booth)
+                .awaitAsOneOrNull()
+            DataYear.YEAR_2024 -> dao2024()
+                .getEntryIdByBooth(booth)
+                .awaitAsOneOrNull()
+            DataYear.YEAR_2025 -> dao2025()
+                .getEntryIdByBooth(booth)
+                .awaitAsOneOrNull()
+        }
+
     fun getEntryFlow(id: String) = settings.dataYear
         .flatMapLatest {
             when (it) {

@@ -29,12 +29,12 @@ actual fun initWebSettings(onNewValue: (key: String, value: String?) -> Unit) {
 }
 
 @OptIn(ExperimentalBrowserHistoryApi::class)
-actual suspend fun bindToNavigationFixed(navHostController: NavHostController) {
+actual suspend fun bindToNavigationFixed(navHostController: NavHostController, deepLinker: DeepLinker) {
     val route = window.location.hash.substringAfter('#', "")
     if (route.startsWith("import")) {
         navHostController.navigate(Destinations.Import(route.removePrefix("import=")))
     }
-    window.bindToNavigationFixed(navHostController)
+    window.bindToNavigationFixed(navHostController, deepLinker)
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

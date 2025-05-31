@@ -17,10 +17,11 @@ import org.w3c.dom.Window
 @ExperimentalBrowserHistoryApi
 suspend fun Window.bindToNavigationFixed(
     navController: NavController,
+    deepLinker: DeepLinker,
     getBackStackEntryRoute: ((entry: NavBackStackEntry) -> String)? = null,
 ) {
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-    (this as BrowserWindow).bindToNavigationFixed(navController, getBackStackEntryRoute)
+    (this as BrowserWindow).bindToNavigationFixed(navController, deepLinker, getBackStackEntryRoute)
 }
 
 /**
@@ -34,6 +35,7 @@ suspend fun Window.bindToNavigationFixed(
 @ExperimentalBrowserHistoryApi
 internal suspend fun BrowserWindow.bindToNavigationFixed(
     navController: NavController,
+    deepLinker: DeepLinker,
     getBackStackEntryRoute: ((entry: NavBackStackEntry) -> String)?,
 ) {
     coroutineScope {
@@ -42,7 +44,7 @@ internal suspend fun BrowserWindow.bindToNavigationFixed(
 
         //initial route
         if (getBackStackEntryRoute == null) {
-            navController.tryToNavigateToUrlFragment(localWindow)
+            navController.tryToNavigateToUrlFragment(deepLinker, localWindow)
         }
 
         launch {
@@ -53,7 +55,7 @@ internal suspend fun BrowserWindow.bindToNavigationFixed(
                     //if user manually put a new address or open a new page, then there is no state
                     //if there is no route customization we can try to find the route
                     if (getBackStackEntryRoute == null) {
-                        navController.tryToNavigateToUrlFragment(localWindow)
+                        navController.tryToNavigateToUrlFragment(deepLinker, localWindow)
                     }
                     return@collect
                 }
@@ -177,19 +179,25 @@ private fun NavBackStackEntry.getRouteWithArgs(): String? {
 private fun NavBackStackEntry.getRouteAsUrlFragment() =
     getRouteWithArgs()?.let { r -> "#$r" }.orEmpty()
 
-private fun NavController.tryToNavigateToUrlFragment(localWindow: BrowserWindow) {
+private suspend fun NavController.tryToNavigateToUrlFragment(
+    deepLinker: DeepLinker,
+    localWindow: BrowserWindow,
+) {
     val route = decodeURIComponent(localWindow.location.hash.substringAfter('#', ""))
-    if (route.isNotEmpty()) {
-        try {
-            navigate(route)
-        } catch (e: IllegalArgumentException) {
-            localWindow.console.warn(
-                """
+    // TODO: Couldn't figure out how to use actual deep link mechanism
+    if (!deepLinker.processRoute(this, route)) {
+        if (route.isNotEmpty()) {
+            try {
+                navigate(route)
+            } catch (e: IllegalArgumentException) {
+                localWindow.console.warn(
+                    """
                 Can't navigate to '$route'! Error: ${e.message}
                 Check that the NavGraph is set up already in the NavController.
                 A typical mistake is to call `bindToNavigation` before the NavHost function is called.
             """.trimIndent()
-            )
+                )
+            }
         }
     }
 }

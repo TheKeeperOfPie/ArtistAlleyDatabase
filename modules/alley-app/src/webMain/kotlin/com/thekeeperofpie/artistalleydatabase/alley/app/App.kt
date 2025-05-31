@@ -30,7 +30,6 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
@@ -42,7 +41,10 @@ import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 
-expect suspend fun bindToNavigationFixed(navHostController: NavHostController)
+expect suspend fun bindToNavigationFixed(
+    navHostController: NavHostController,
+    deepLinker: DeepLinker,
+)
 
 private lateinit var artistImageCache: ArtistImageCache
 
@@ -91,6 +93,7 @@ private fun Content(
     component: ArtistAlleyWebComponent,
     keyEvents: Channel<WrappedKeyboardEvent>,
 ) {
+    val deepLinker = component.deepLinker
     val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
     AppTheme(appTheme = { appTheme }) {
         val windowSize = LocalWindowInfo.current.containerSize
@@ -147,8 +150,8 @@ private fun Content(
                 navHostController = navHostController,
                 rootSnackbarHostState = rootSnackbarHostState,
             )
-            LaunchedEffect(navHostController) {
-                bindToNavigationFixed(navHostController)
+            LaunchedEffect(navHostController, deepLinker) {
+                bindToNavigationFixed(navHostController, deepLinker)
             }
         }
     }

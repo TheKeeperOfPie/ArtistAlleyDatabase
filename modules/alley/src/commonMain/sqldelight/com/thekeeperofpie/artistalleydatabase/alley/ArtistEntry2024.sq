@@ -4,6 +4,11 @@ LEFT OUTER JOIN artistUserEntry
 ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear
 WHERE id = :id;
 
+getEntryIdByBooth:
+SELECT artistEntry2024.id
+FROM artistEntry2024
+WHERE booth = :booth;
+
 getEntriesRandom:
 SELECT *
 FROM artistEntry2024

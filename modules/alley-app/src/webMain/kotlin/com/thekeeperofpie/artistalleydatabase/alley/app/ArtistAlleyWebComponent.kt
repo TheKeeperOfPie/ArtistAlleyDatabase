@@ -12,6 +12,7 @@ abstract class ArtistAlleyWebComponent(
 ) : ArtistAlleyAppComponent {
     abstract val appFileSystem: AppFileSystem
     abstract val artistImageCache: ArtistImageCache
+    abstract val deepLinker: DeepLinker
 
     val ArtistAlleyWebSettings.bindArtistAlleySettings: ArtistAlleySettings
         @Provides get() = this
