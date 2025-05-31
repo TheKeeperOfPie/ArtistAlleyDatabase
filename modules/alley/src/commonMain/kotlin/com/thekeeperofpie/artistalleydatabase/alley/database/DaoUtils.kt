@@ -241,4 +241,8 @@ object DaoUtils {
             $orderBy
             """.trimIndent()
     }
+
+    // TODO: js target boolean equality broken
+    @Suppress("EQUALITY_NOT_APPLICABLE_WARNING")
+    fun coerceBooleanForJs(value: Boolean?) = value == true || value.toString() == "1"
 }

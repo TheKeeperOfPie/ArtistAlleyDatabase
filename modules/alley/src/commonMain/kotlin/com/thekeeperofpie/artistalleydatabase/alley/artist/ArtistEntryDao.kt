@@ -146,8 +146,8 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
     userEntry = ArtistUserEntry(
         artistId = id,
         dataYear = DataYear.YEAR_2023,
-        favorite = favorite == true,
-        ignored = ignored == true,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
@@ -172,8 +172,8 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
     userEntry = ArtistUserEntry(
         artistId = id,
         dataYear = DataYear.YEAR_2024,
-        favorite = favorite == true,
-        ignored = ignored == true,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
@@ -199,8 +199,8 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
     userEntry = ArtistUserEntry(
         artistId = id,
         dataYear = DataYear.YEAR_2025,
-        favorite = favorite == true,
-        ignored = ignored == true,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 

@@ -93,7 +93,7 @@ class MapViewModel(
                     section = Table.Section.fromTableNumber(tableNumber),
                     image = imageIndex?.let(images::getOrNull),
                     imageIndex = imageIndex,
-                    favorite = it.favorite == true,
+                    favorite = it.favorite,
                     gridX = currentIndex,
                     // There's a physical gap not accounted for in the numbers between 41 and 42
                     gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,

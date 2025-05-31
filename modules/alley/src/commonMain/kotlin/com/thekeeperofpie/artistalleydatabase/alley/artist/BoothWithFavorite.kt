@@ -7,5 +7,5 @@ data class BoothWithFavorite(
     val id: String,
     val booth: String?,
     val name: String?,
-    val favorite: Boolean?,
+    val favorite: Boolean,
 )

@@ -309,7 +309,7 @@ class AlleyExporter(
         data.chunked(CHARACTERS.size)
             .forEach {
                 it.forEachIndexed { index, artist ->
-                    if (favorite(artist) == true) {
+                    if (DaoUtils.coerceBooleanForJs(favorite(artist))) {
                         writeString(CHARACTERS[index]!!)
                     }
                 }
@@ -318,7 +318,7 @@ class AlleyExporter(
         data.chunked(CHARACTERS.size)
             .forEach {
                 it.forEachIndexed { index, artist ->
-                    if (ignored(artist) == true) {
+                    if (DaoUtils.coerceBooleanForJs(ignored(artist))) {
                         writeString(CHARACTERS[index]!!)
                     }
                 }
@@ -331,24 +331,24 @@ class AlleyExporter(
             DataYear.YEAR_2023 to importExportDao.getExportFullArtists2023()
                 .associate {
                     it.id to FullExport.ArtistData(
-                        it.favorite == true,
-                        it.ignored == true,
+                        DaoUtils.coerceBooleanForJs(it.favorite),
+                        DaoUtils.coerceBooleanForJs(it.ignored),
                         it.notes
                     )
                 },
             DataYear.YEAR_2024 to importExportDao.getExportFullArtists2024()
                 .associate {
                     it.id to FullExport.ArtistData(
-                        it.favorite == true,
-                        it.ignored == true,
+                        DaoUtils.coerceBooleanForJs(it.favorite),
+                        DaoUtils.coerceBooleanForJs(it.ignored),
                         it.notes
                     )
                 },
             DataYear.YEAR_2025 to importExportDao.getExportFullArtists2025()
                 .associate {
                     it.id to FullExport.ArtistData(
-                        it.favorite == true,
-                        it.ignored == true,
+                        DaoUtils.coerceBooleanForJs(it.favorite),
+                        DaoUtils.coerceBooleanForJs(it.ignored),
                         it.notes
                     )
                 },
@@ -357,15 +357,27 @@ class AlleyExporter(
         val rallies = mutableMapOf<String, FullExport.RallyData>()
         rallies += importExportDao.getExportFullStampRallies2023()
             .associate {
-                it.id to FullExport.RallyData(it.favorite == true, it.ignored == true, it.notes)
+                it.id to FullExport.RallyData(
+                    DaoUtils.coerceBooleanForJs(it.favorite),
+                    DaoUtils.coerceBooleanForJs(it.ignored),
+                    it.notes,
+                )
             }
         rallies += importExportDao.getExportFullStampRallies2024()
             .map {
-                it.id to FullExport.RallyData(it.favorite == true, it.ignored == true, it.notes)
+                it.id to FullExport.RallyData(
+                    DaoUtils.coerceBooleanForJs(it.favorite),
+                    DaoUtils.coerceBooleanForJs(it.ignored),
+                    it.notes,
+                )
             }
         rallies += importExportDao.getExportFullStampRallies2025()
             .map {
-                it.id to FullExport.RallyData(it.favorite == true, it.ignored == true, it.notes)
+                it.id to FullExport.RallyData(
+                    DaoUtils.coerceBooleanForJs(it.favorite),
+                    DaoUtils.coerceBooleanForJs(it.ignored),
+                    it.notes,
+                )
             }
 
         json.encodeToSink(FullExport(artists, rallies), sink)

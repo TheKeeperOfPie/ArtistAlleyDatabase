@@ -125,8 +125,8 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
-        favorite = favorite == true,
-        ignored = ignored == true,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
@@ -149,8 +149,8 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
-        favorite = favorite == true,
-        ignored = ignored == true,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
@@ -173,8 +173,8 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
-        favorite = favorite == true,
-        ignored = ignored == true,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
