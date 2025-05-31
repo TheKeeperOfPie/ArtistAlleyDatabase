@@ -94,6 +94,7 @@ class FavoritesViewModel(
         forceOneDisplayColumn = settings.forceOneDisplayColumn,
     )
 
+    val tab = MutableStateFlow(FavoritesScreen.EntryTab.ARTISTS)
     val query = MutableStateFlow("")
     val displayType = settings.displayType
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }

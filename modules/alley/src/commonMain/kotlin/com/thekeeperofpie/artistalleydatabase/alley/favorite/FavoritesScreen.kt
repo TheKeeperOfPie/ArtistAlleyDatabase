@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -64,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -95,6 +95,7 @@ object FavoritesScreen {
             state = remember(favoritesViewModel) {
                 State(
                     randomSeed = favoritesViewModel.randomSeed,
+                    tab = favoritesViewModel.tab,
                     query = favoritesViewModel.query,
                     displayType = favoritesViewModel.displayType,
                     year = favoritesViewModel.year,
@@ -138,7 +139,7 @@ object FavoritesScreen {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             val gridState = scrollStateSaver.lazyStaggeredGridState()
 
-            var tab by rememberSaveable { mutableStateOf(EntryTab.ARTISTS) }
+            var tab by state.tab.collectAsMutableStateWithLifecycle()
             val artistsEntries = state.artistsEntries.collectAsLazyPagingItemsWithLifecycle()
             val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItemsWithLifecycle()
             val entries = when (tab) {
@@ -440,7 +441,7 @@ object FavoritesScreen {
         }
     }
 
-    private enum class EntryTab(val text: StringResource) {
+    enum class EntryTab(val text: StringResource) {
         ARTISTS(Res.string.alley_nav_bar_artists),
         RALLIES(Res.string.alley_nav_bar_stamp_rallies),
     }
@@ -448,6 +449,7 @@ object FavoritesScreen {
     @Stable
     class State(
         val randomSeed: Int,
+        val tab: MutableStateFlow<EntryTab>,
         val query: MutableStateFlow<String>,
         val displayType: MutableStateFlow<DisplayType>,
         val year: MutableStateFlow<DataYear>,
