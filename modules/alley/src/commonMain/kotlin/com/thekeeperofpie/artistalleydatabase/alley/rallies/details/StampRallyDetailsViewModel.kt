@@ -54,7 +54,9 @@ class StampRallyDetailsViewModel(
     // Block main to load images as fast as possible so shared transition works
     val images = AlleyDataUtils.getRallyImages(
         year = route.year,
-        file = route.let { "${it.hostTable}${it.fandom}" },
+        id = route.id,
+        hostTable = route.hostTable,
+        fandom = route.fandom,
     )
 
     var entry by mutableStateOf<Entry?>(null)
@@ -71,7 +73,7 @@ class StampRallyDetailsViewModel(
             val entryWithArtists = stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@launch
             val stampRallyWithUserData = entryWithArtists.stampRally
             val stampRally = stampRallyWithUserData.stampRally
-            val artists = entryWithArtists.artists
+            val artists = entryWithArtists.artists.sortedBy { it.booth }
 
             // Some stamp rallies have artists in non-AA regions, try and show those
             val otherTables = stampRally.tables

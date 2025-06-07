@@ -73,6 +73,26 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
             val dispatcher = it.asCoroutineDispatcher()
             runBlocking(dispatcher) {
+                // Copy over preserved pre-processed images
+                listOf("2023", "2024", "2025").forEach {
+                    val processed = inputFolder.dir("$it/processed").get().asFile
+                    if (processed.exists()) {
+                        val output = outputResources.dir("files/$it").get().asFile
+                            .apply { mkdirs() }
+                        processed.copyRecursively(
+                            output,
+                            overwrite = false,
+                            onError = { file, exception ->
+                                if (exception is FileAlreadyExistsException) {
+                                    OnErrorAction.SKIP
+                                } else {
+                                    OnErrorAction.TERMINATE
+                                }
+                            },
+                        )
+                    }
+                }
+
                 val catalogs2023 = "catalogs2023" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2023/catalogs",

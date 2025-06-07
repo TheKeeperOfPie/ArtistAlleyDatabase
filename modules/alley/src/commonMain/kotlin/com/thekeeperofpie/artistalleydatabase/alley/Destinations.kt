@@ -62,7 +62,11 @@ sealed interface Destinations : NavDestination {
             data class Artist(val booth: String, val name: String?) : Type
 
             @Serializable
-            data class StampRally(val hostTable: String?, val fandom: String?) : Type
+            data class StampRally(
+                val id: String,
+                val hostTable: String?,
+                val fandom: String?,
+            ) : Type
         }
     }
 

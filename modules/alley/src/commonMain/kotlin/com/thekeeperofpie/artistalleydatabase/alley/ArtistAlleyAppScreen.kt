@@ -307,6 +307,7 @@ object ArtistAlleyAppScreen {
                                                                     year = route.year,
                                                                     id = route.id,
                                                                     type = Destinations.Images.Type.StampRally(
+                                                                        id = it.id,
                                                                         hostTable = it.hostTable,
                                                                         fandom = it.fandom,
                                                                     ),

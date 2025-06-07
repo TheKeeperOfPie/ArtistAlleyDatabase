@@ -25,7 +25,9 @@ class ImagesViewModel(
         )
         is Destinations.Images.Type.StampRally -> AlleyDataUtils.getRallyImages(
             year = route.year,
-            file = "${type.hostTable}${type.fandom}",
+            id = type.id,
+            hostTable = type.hostTable,
+            fandom = type.fandom,
         )
     }
 }

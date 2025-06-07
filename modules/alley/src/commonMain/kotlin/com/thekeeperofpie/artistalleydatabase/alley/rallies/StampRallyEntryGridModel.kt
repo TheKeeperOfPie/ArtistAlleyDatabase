@@ -29,14 +29,19 @@ class StampRallyEntryGridModel(
     override val booth get() = stampRally.hostTable
 
     companion object {
-        fun buildFromEntry(entry: StampRallyWithUserData) = StampRallyEntryGridModel(
-            stampRally = entry.stampRally,
-            userEntry = entry.userEntry,
-            images = AlleyDataUtils.getRallyImages(
-                year = entry.stampRally.year,
-                file = entry.stampRally.let { "${it.hostTable}${it.fandom}" },
-            ),
-            placeholderText = entry.stampRally.fandom,
-        )
+        fun buildFromEntry(entry: StampRallyWithUserData): StampRallyEntryGridModel {
+            val stampRally = entry.stampRally
+            return StampRallyEntryGridModel(
+                stampRally = stampRally,
+                userEntry = entry.userEntry,
+                images = AlleyDataUtils.getRallyImages(
+                    year = stampRally.year,
+                    id = stampRally.id,
+                    hostTable = stampRally.hostTable,
+                    fandom = stampRally.fandom,
+                ),
+                placeholderText = stampRally.fandom,
+            )
+        }
     }
 }

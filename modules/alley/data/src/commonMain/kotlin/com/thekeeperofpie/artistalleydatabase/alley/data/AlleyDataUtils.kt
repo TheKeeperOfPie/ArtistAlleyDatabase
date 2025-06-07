@@ -51,9 +51,14 @@ object AlleyDataUtils {
             .orEmpty()
     }
 
-    fun getRallyImages(year: DataYear, file: String?): List<CatalogImage> {
-        file ?: return emptyList()
-        val targetName = fixName(file)
+    fun getRallyImages(year: DataYear, id: String, hostTable: String?, fandom: String?): List<CatalogImage> {
+        hostTable ?: fandom ?: return emptyList()
+        val file = "$hostTable$fandom"
+        val targetName = when (year) {
+            DataYear.YEAR_2023,
+            DataYear.YEAR_2024 -> fixName(file)
+            DataYear.YEAR_2025 -> id
+        }
         val targetFolder = when (year) {
             DataYear.YEAR_2023 -> ComposeFiles.rallies2023
             DataYear.YEAR_2024 -> ComposeFiles.rallies2024
