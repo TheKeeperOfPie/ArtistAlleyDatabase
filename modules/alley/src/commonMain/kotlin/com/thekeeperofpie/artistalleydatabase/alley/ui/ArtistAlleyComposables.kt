@@ -174,7 +174,7 @@ fun <EntryModel : SearchEntryModel> ItemCard(
         onLongClick = { onIgnoredToggle(!ignored) },
         modifier = modifier.alpha(if (entry.ignored) 0.38f else 1f)
     ) {
-        if (images.isNotEmpty()) {
+        if (images.isNotEmpty() && !entry.ignored) {
             ImagePager(
                 images = images,
                 pagerState = pagerState,
@@ -228,7 +228,7 @@ fun <EntryModel : SearchEntryModel> ItemImage(
             }
             .alpha(if (entry.ignored) 0.38f else 1f)
     ) {
-        if (images.isEmpty()) {
+        if (images.isEmpty() || entry.ignored) {
             itemRow(entry, onFavoriteToggle, Modifier)
         } else {
             ImagePager(
