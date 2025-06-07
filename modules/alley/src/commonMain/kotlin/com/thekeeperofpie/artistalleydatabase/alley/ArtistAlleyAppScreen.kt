@@ -375,7 +375,7 @@ object ArtistAlleyAppScreen {
                                     artistSearchViewModel = viewModel,
                                     artistSeriesViewModel = seriesViewModel,
                                     sortFilterController = viewModel.sortFilterController,
-                                    onClickBack = navigationController::popBackStack,
+                                    onClickBack = navigationController::navigateUp,
                                     scrollStateSaver = ScrollStateSaver(),
                                     showRalliesButton = { hasRallies },
                                     onClickRallies = {
@@ -411,7 +411,7 @@ object ArtistAlleyAppScreen {
                                     artistSearchViewModel = viewModel,
                                     artistMerchViewModel = merchViewModel,
                                     sortFilterController = viewModel.sortFilterController,
-                                    onClickBack = navigationController::popBackStack,
+                                    onClickBack = navigationController::navigateUp,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickMap = {
                                         navigationController.navigate(
