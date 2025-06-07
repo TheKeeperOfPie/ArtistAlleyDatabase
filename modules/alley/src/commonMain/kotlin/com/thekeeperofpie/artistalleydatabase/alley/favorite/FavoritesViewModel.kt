@@ -76,6 +76,7 @@ class FavoritesViewModel(
         merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImagesStore = seriesImagesStore,
+        allowHideFavorited = false,
     )
 
     val artistSearchState = SearchScreen.State(

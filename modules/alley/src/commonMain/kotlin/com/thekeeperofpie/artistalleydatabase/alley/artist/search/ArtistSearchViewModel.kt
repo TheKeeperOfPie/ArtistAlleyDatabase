@@ -159,7 +159,9 @@ class ArtistSearchViewModel(
                     }.flow
                         .map {
                             it.filterOnIO {
-                                !it.userEntry.ignored || !searchQuery.filterParams.hideIgnored
+                                val passesFavorite = !it.userEntry.favorite || !searchQuery.filterParams.hideFavorited
+                                val passesIgnore = !it.userEntry.ignored || !searchQuery.filterParams.hideIgnored
+                                passesFavorite && passesIgnore
                             }
                         }
                         .map {

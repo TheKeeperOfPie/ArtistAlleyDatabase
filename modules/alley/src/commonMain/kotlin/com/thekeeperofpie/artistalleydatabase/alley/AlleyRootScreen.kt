@@ -114,9 +114,10 @@ object AlleyRootScreen {
                         }
                         Destination.FAVORITES -> {
                             val stampRallySortViewModel =
-                                viewModel {
+                                viewModel(key = "favorites") {
                                     component.stampRallySortFilterViewModel(
-                                        createSavedStateHandle()
+                                        createSavedStateHandle(),
+                                        false,
                                     )
                                 }
                             val favoritesViewModel = viewModel {
@@ -154,7 +155,10 @@ object AlleyRootScreen {
                         }
                         Destination.STAMP_RALLIES -> {
                             val sortViewModel = viewModel {
-                                component.stampRallySortFilterViewModel(createSavedStateHandle())
+                                component.stampRallySortFilterViewModel(
+                                    createSavedStateHandle(),
+                                    true,
+                                )
                             }
                             val viewModel = viewModel {
                                 component.stampRallySearchViewModel(

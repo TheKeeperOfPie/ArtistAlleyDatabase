@@ -43,6 +43,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_commission_ty
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_favorited
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_only_catalogs
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
@@ -122,6 +123,7 @@ class ArtistSortFilterController(
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     val settings: ArtistAlleySettings,
+    allowHideFavorited: Boolean = true,
 ) {
     val sortOption = settings.artistsSortOption
     val sortAscending = settings.artistsSortAscending
@@ -503,6 +505,17 @@ class ArtistSortFilterController(
         allowClear = true,
     )
 
+    private val hideFavorited = if (allowHideFavorited) {
+        savedStateHandle.getMutableStateFlow("hideFavorited", false)
+    } else {
+        MutableStateFlow(false)
+    }
+    private val hideFavoritedSection = SortFilterSectionState.Switch(
+        title = Res.string.alley_filter_hide_favorited,
+        defaultEnabled = false,
+        enabled = hideFavorited,
+    )
+
     private val hideIgnored = savedStateHandle.getMutableStateFlow("hideIgnored", false)
     private val hideIgnoredSection = SortFilterSectionState.Switch(
         title = Res.string.alley_filter_hide_ignored,
@@ -521,11 +534,12 @@ class ArtistSortFilterController(
         title = Res.string.alley_filter_advanced,
         titleDropdownContentDescription = Res.string.alley_filter_advanced_expand_content_description,
         children = MutableStateFlow(
-            listOf(
+            listOfNotNull(
                 onlyCatalogImagesSection,
                 gridByDefaultSection,
                 randomCatalogImageSection,
                 onlyConfirmedTagsSection,
+                hideFavoritedSection.takeIf { allowHideFavorited },
                 hideIgnoredSection,
                 forceOneDisplayColumnSection,
             )
@@ -552,6 +566,7 @@ class ArtistSortFilterController(
         linkTypeIdIn,
         onlyCatalogImages,
         settings.showOnlyConfirmedTags,
+        hideFavorited,
         hideIgnored,
     ) {
         FilterParams(
@@ -563,7 +578,8 @@ class ArtistSortFilterController(
             linkTypesIn = (it[6] as Set<String>).map(Link.Type::valueOf).toSet(),
             showOnlyWithCatalog = it[7] as Boolean,
             showOnlyConfirmedTags = it[8] as Boolean,
-            hideIgnored = it[9] as Boolean,
+            hideFavorited = it[9] as Boolean,
+            hideIgnored = it[10] as Boolean,
         )
     }
 
@@ -582,6 +598,7 @@ class ArtistSortFilterController(
         val linkTypesIn: Set<Link.Type>,
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
+        val hideFavorited: Boolean,
         val hideIgnored: Boolean,
     )
 

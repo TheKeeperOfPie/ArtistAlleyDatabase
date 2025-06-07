@@ -240,7 +240,10 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val sortViewModel = viewModel {
-                                    component.stampRallySortFilterViewModel(createSavedStateHandle())
+                                    component.stampRallySortFilterViewModel(
+                                        createSavedStateHandle(),
+                                        true,
+                                    )
                                 }
                                 val viewModel = viewModel {
                                     component.stampRallySearchViewModel(

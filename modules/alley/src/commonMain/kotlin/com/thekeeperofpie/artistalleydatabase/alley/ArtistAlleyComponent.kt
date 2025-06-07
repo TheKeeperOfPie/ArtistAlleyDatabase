@@ -58,7 +58,10 @@ interface ArtistAlleyComponent {
         SavedStateHandle,
         StateFlow<StampRallySortFilterViewModel.FilterParams>,
     ) -> StampRallySearchViewModel
-    val stampRallySortFilterViewModel: (SavedStateHandle) -> StampRallySortFilterViewModel
+    val stampRallySortFilterViewModel: (
+        SavedStateHandle,
+        allowHideFavorited: Boolean,
+    ) -> StampRallySortFilterViewModel
     val tagMapViewModel: (SavedStateHandle) -> TagMapViewModel
     val tagsViewModel: (SavedStateHandle) -> TagsViewModel
 

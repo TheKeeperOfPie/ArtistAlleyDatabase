@@ -122,7 +122,9 @@ class StampRallySearchViewModel(
         .flowOn(CustomDispatchers.IO)
         .map {
             it.filterOnIO {
-                !it.userEntry.ignored || !options.filterParams.hideIgnored
+                val passesFavorite = !it.userEntry.favorite || !options.filterParams.hideFavorited
+                val passesIgnore = !it.userEntry.ignored || !options.filterParams.hideIgnored
+                passesFavorite && passesIgnore
             }
         }
         .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }

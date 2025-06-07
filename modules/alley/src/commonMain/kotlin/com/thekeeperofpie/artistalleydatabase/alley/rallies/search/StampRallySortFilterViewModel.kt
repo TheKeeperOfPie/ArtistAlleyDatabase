@@ -8,6 +8,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_favorited
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
@@ -39,6 +40,7 @@ import me.tatarka.inject.annotations.Inject
 class StampRallySortFilterViewModel(
     val settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
+    @Assisted allowHideFavorited: Boolean,
 ) : ViewModel() {
 
     val fandomSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_fandom)
@@ -107,12 +109,24 @@ class StampRallySortFilterViewModel(
         allowClear = true,
     )
 
+    private val hideFavorited = if (allowHideFavorited) {
+        savedStateHandle.getMutableStateFlow("hideFavorited", false)
+    } else {
+        MutableStateFlow(false)
+    }
+    private val hideFavoritedSection = SortFilterSectionState.Switch(
+        title = Res.string.alley_filter_hide_favorited,
+        defaultEnabled = false,
+        enabled = hideFavorited,
+    )
+
     private val hideIgnored = savedStateHandle.getMutableStateFlow("hideIgnored", false)
     private val hideIgnoredSection = SortFilterSectionState.Switch(
         title = Res.string.alley_filter_hide_ignored,
         defaultEnabled = false,
         enabled = hideIgnored,
     )
+
     private val forceOneDisplayColumnSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_force_one_display_column,
         property = settings.forceOneDisplayColumn,
@@ -124,9 +138,10 @@ class StampRallySortFilterViewModel(
         title = Res.string.alley_filter_advanced,
         titleDropdownContentDescription = Res.string.alley_filter_advanced_expand_content_description,
         children = MutableStateFlow(
-            listOf(
+            listOfNotNull(
                 gridByDefaultSection,
                 randomCatalogImageSection,
+                hideFavoritedSection.takeIf { allowHideFavorited },
                 hideIgnoredSection,
                 forceOneDisplayColumnSection,
             )
@@ -153,6 +168,7 @@ class StampRallySortFilterViewModel(
         totalCost,
         prizeLimit,
         onlyConfirmed,
+        hideFavorited,
         hideIgnored,
     ) {
         val snapshotState = it[0] as SnapshotState
@@ -164,7 +180,8 @@ class StampRallySortFilterViewModel(
             totalCost = it[3] as RangeData,
             prizeLimit = it[4] as RangeData,
             onlyConfirmed = it[5] as Boolean,
-            hideIgnored = it[6] as Boolean,
+            hideFavorited = it[6] as Boolean,
+            hideIgnored = it[7] as Boolean,
         )
     }
 
@@ -187,6 +204,7 @@ class StampRallySortFilterViewModel(
         val totalCost: RangeData,
         val prizeLimit: RangeData,
         val onlyConfirmed: Boolean,
+        val hideFavorited: Boolean,
         val hideIgnored: Boolean,
     )
 }
