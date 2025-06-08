@@ -509,7 +509,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val resized: Boolean,
             val index: Int,
             val hash: String,
-            val name: String = "$index-$hash.webp",
+            val name: String = "${index.toString().padStart(2, '0')}-$hash.webp",
         )
     }
 }

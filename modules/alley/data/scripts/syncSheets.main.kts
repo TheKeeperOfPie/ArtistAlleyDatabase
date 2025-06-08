@@ -13,8 +13,8 @@ val seriesOutputFile = inputsFolder.resolve("series.csv")
 val merchOutputFile = inputsFolder.resolve("merch.csv")
 val rallies2025OutputFile = inputsFolder.resolve("2025/rallies.csv")
 
-downloadUrl(sheetId2024, "Artists", artists2024OutputFile, "A1:M")
-downloadUrl(sheetId2023, "Artists", artists2023OutputFile, "A1:K")
+//downloadUrl(sheetId2024, "Artists", artists2024OutputFile, "A1:M")
+//downloadUrl(sheetId2023, "Artists", artists2023OutputFile, "A1:K")
 
 downloadUrl(sheetId2025, "Artists", artists2025OutputFile, "A1:Q")
 downloadUrl(sheetId2025, "Series", seriesOutputFile)
