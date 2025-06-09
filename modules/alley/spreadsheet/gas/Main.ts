@@ -430,15 +430,7 @@ function getSortedFiles(folder: Folder): DriveFile[] {
     }
 
     if (files.length == 0) return files
-    if (files[0].getName().indexOf("-") < 0) {
-        const sortedByLastUpdated = files.sort((first, second) => (first.getLastUpdated() > second.getLastUpdated() ? 1 : -1))
-        sortedByLastUpdated.forEach((file, index) => {
-            file.setName(index + " - " + file.getName())
-        })
-        return sortedByLastUpdated
-    } else {
-        return files.sort((first, second) => (parseFileIndex(first) > parseFileIndex(second) ? 1 : -1))
-    }
+    return files.sort((first, second) => (parseFileIndex(first) > parseFileIndex(second) ? 1 : -1))
 }
 
 function insertImages(sheet: Sheet, row: number, targetColumnName: string, images: DriveFile[]) {
