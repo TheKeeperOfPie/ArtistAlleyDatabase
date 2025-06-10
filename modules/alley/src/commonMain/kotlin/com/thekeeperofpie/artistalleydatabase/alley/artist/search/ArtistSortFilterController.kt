@@ -124,6 +124,7 @@ class ArtistSortFilterController(
     seriesImagesStore: SeriesImagesStore,
     val settings: ArtistAlleySettings,
     allowHideFavorited: Boolean = true,
+    allowSettingsBasedConfirmedTagsOnly: Boolean = true,
 ) {
     val sortOption = settings.artistsSortOption
     val sortAscending = settings.artistsSortAscending
@@ -498,9 +499,17 @@ class ArtistSortFilterController(
         allowClear = true,
     )
 
-    private val onlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
+    val showOnlyConfirmedTags = if (allowSettingsBasedConfirmedTagsOnly) {
+        settings.showOnlyConfirmedTags
+    } else {
+        savedStateHandle.getMutableStateFlow(
+            key = "showOnlyConfirmedTags",
+            initialValue = settings.showOnlyConfirmedTags.value,
+        )
+    }
+    val showOnlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
         title = Res.string.alley_filter_show_only_confirmed_tags,
-        property = settings.showOnlyConfirmedTags,
+        property = showOnlyConfirmedTags,
         default = false,
         allowClear = true,
     )
@@ -538,7 +547,7 @@ class ArtistSortFilterController(
                 onlyCatalogImagesSection,
                 gridByDefaultSection,
                 randomCatalogImageSection,
-                onlyConfirmedTagsSection,
+                showOnlyConfirmedTagsSection.takeIf { allowSettingsBasedConfirmedTagsOnly },
                 hideFavoritedSection.takeIf { allowHideFavorited },
                 hideIgnoredSection,
                 forceOneDisplayColumnSection,
@@ -565,7 +574,7 @@ class ArtistSortFilterController(
         commissionsIn,
         linkTypeIdIn,
         onlyCatalogImages,
-        settings.showOnlyConfirmedTags,
+        showOnlyConfirmedTags,
         hideFavorited,
         hideIgnored,
     ) {

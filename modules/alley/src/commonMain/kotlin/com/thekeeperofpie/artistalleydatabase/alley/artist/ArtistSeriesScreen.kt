@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -58,6 +59,7 @@ object ArtistSeriesScreen {
             header = {
                 Header(
                     state = state,
+                    sortFilterController = sortFilterController,
                     showSeries = artistSeriesViewModel.route.series != null,
                     seriesEntry = { seriesEntry },
                     seriesImage = { seriesImage },
@@ -87,6 +89,7 @@ object ArtistSeriesScreen {
     @Composable
     private fun Header(
         state: ArtistSearchScreen.State,
+        sortFilterController: ArtistSortFilterController,
         showSeries: Boolean,
         seriesEntry: () -> SeriesEntry?,
         seriesImage: () -> String?,
@@ -101,6 +104,9 @@ object ArtistSeriesScreen {
                         textStyle = LocalTextStyle.current,
                         showAllTitles = true,
                     )
+                    HorizontalDivider()
+                    sortFilterController.showOnlyConfirmedTagsSection
+                        .Content(sortFilterController.state.expanded, false)
                 }
             }
             DataYearHeader(dataYearHeaderState)

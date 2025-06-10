@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -52,6 +53,7 @@ object ArtistMerchScreen {
             header = {
                 Header(
                     state = state,
+                    sortFilterController = sortFilterController,
                     showMerch = artistMerchViewModel.route.merch != null,
                     merchEntry = { merchEntry },
                 )
@@ -72,6 +74,7 @@ object ArtistMerchScreen {
     @Composable
     private fun Header(
         state: ArtistSearchScreen.State,
+        sortFilterController: ArtistSortFilterController,
         showMerch: Boolean,
         merchEntry: () -> MerchEntry?,
     ) {
@@ -80,6 +83,9 @@ object ArtistMerchScreen {
             if (showMerch) {
                 Card {
                     MerchRow(merchEntry = merchEntry())
+                    HorizontalDivider()
+                    sortFilterController.showOnlyConfirmedTagsSection
+                        .Content(sortFilterController.state.expanded, false)
                 }
             }
             DataYearHeader(dataYearHeaderState)
