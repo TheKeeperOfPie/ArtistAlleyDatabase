@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 data class StampRallySearchQuery(
-    val series: String?,
-    val filterParams: StampRallySortFilterViewModel.FilterParams,
+    val filterParams: StampRallySortFilterController.FilterParams,
     val randomSeed: Int,
 )

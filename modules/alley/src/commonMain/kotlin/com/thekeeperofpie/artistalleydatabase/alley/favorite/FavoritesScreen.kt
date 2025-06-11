@@ -55,7 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridM
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
@@ -85,7 +85,7 @@ object FavoritesScreen {
     operator fun invoke(
         favoritesViewModel: FavoritesViewModel,
         artistSortFilterController: ArtistSortFilterController,
-        stampRallySortViewModel: StampRallySortFilterViewModel,
+        stampRallySortFilterController: StampRallySortFilterController,
         scrollStateSaver: ScrollStateSaver,
         onNavigateToArtists: () -> Unit,
         onNavigateToRallies: () -> Unit,
@@ -105,12 +105,12 @@ object FavoritesScreen {
                     artistsSortAscending = artistSortFilterController.sortAscending,
                     ralliesEntries = favoritesViewModel.stampRallyEntries,
                     ralliesSearchState = favoritesViewModel.stampRallySearchState,
-                    ralliesSortOption = stampRallySortViewModel.sortOption,
-                    ralliesSortAscending = stampRallySortViewModel.sortAscending,
+                    ralliesSortOption = stampRallySortFilterController.sortOption,
+                    ralliesSortAscending = stampRallySortFilterController.sortAscending,
                 )
             },
-            artistSortFilterController.state,
-            stampRallySortViewModel.state,
+            artistSortFilterState = artistSortFilterController.state,
+            stampRallySortFilterState = stampRallySortFilterController.state,
             scrollStateSaver = scrollStateSaver,
             onNavigateToArtists = onNavigateToArtists,
             onNavigateToRallies = onNavigateToRallies,

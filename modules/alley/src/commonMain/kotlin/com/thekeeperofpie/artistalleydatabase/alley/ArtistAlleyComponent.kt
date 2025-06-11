@@ -23,7 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -32,7 +31,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import kotlinx.coroutines.flow.StateFlow
 import me.tatarka.inject.annotations.Provides
 
 interface ArtistAlleyComponent {
@@ -42,10 +40,7 @@ interface ArtistAlleyComponent {
     val artistMerchViewModel: (SavedStateHandle) -> ArtistMerchViewModel
     val artistSearchViewModel: (SavedStateHandle) -> ArtistSearchViewModel
     val artistSeriesViewModel: (SavedStateHandle) -> ArtistSeriesViewModel
-    val favoritesViewModel: (
-        SavedStateHandle,
-        StateFlow<StampRallySortFilterViewModel.FilterParams>,
-    ) -> FavoritesViewModel
+    val favoritesViewModel: (SavedStateHandle) -> FavoritesViewModel
     val favoritesSortFilterViewModel: (SavedStateHandle) -> FavoritesSortFilterViewModel
     val imagesViewModel: (SavedStateHandle) -> ImagesViewModel
     val importViewModel: (SavedStateHandle) -> ImportViewModel
@@ -54,14 +49,7 @@ interface ArtistAlleyComponent {
     val qrCodeViewModel: () -> QrCodeViewModel
     val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
     val stampRallyMapViewModel: (SavedStateHandle) -> StampRallyMapViewModel
-    val stampRallySearchViewModel: (
-        SavedStateHandle,
-        StateFlow<StampRallySortFilterViewModel.FilterParams>,
-    ) -> StampRallySearchViewModel
-    val stampRallySortFilterViewModel: (
-        SavedStateHandle,
-        allowHideFavorited: Boolean,
-    ) -> StampRallySortFilterViewModel
+    val stampRallySearchViewModel: (SavedStateHandle) -> StampRallySearchViewModel
     val tagMapViewModel: (SavedStateHandle) -> TagMapViewModel
     val tagsViewModel: (SavedStateHandle) -> TagsViewModel
 

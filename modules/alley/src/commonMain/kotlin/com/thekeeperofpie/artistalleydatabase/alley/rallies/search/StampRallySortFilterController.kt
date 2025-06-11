@@ -2,8 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced_expand_content_description
@@ -21,27 +19,36 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_limit_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
-class StampRallySortFilterViewModel(
+class StampRallySortFilterController(
+    scope: CoroutineScope,
+    lockedSeriesEntry: StateFlow<SeriesEntry?>,
+    dispatchers: CustomDispatchers,
+    seriesEntryDao: SeriesEntryDao,
+    seriesImagesStore: SeriesImagesStore,
     val settings: ArtistAlleySettings,
-    @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted allowHideFavorited: Boolean,
-) : ViewModel() {
+    savedStateHandle: SavedStateHandle,
+    allowHideFavorited: Boolean,
+) {
 
     val fandomSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_fandom)
 
@@ -62,6 +69,7 @@ class StampRallySortFilterViewModel(
 
     private val totalCostInitialData = RangeData(100)
     private val totalCost = savedStateHandle.getMutableStateFlow(
+        scope = scope,
         json = Json,
         key = "totalCost",
         initialValue = { totalCostInitialData },
@@ -76,6 +84,7 @@ class StampRallySortFilterViewModel(
 
     private val prizeLimitInitialData = RangeData(50)
     private val prizeLimit = savedStateHandle.getMutableStateFlow(
+        scope = scope,
         json = Json,
         key = "prizeLimit",
         initialValue = { prizeLimitInitialData },
@@ -86,6 +95,15 @@ class StampRallySortFilterViewModel(
         initialData = prizeLimitInitialData,
         data = prizeLimit,
         unboundedMax = true,
+    )
+
+    private val seriesAutocompleteSection = SeriesAutocompleteSection(
+        scope = scope,
+        dispatchers = dispatchers,
+        lockedSeriesEntry = lockedSeriesEntry,
+        seriesEntryDao = seriesEntryDao,
+        seriesImagesStore = seriesImagesStore,
+        savedStateHandle = savedStateHandle,
     )
 
     private val onlyConfirmed = savedStateHandle.getMutableStateFlow("onlyConfirmed", false)
@@ -150,21 +168,25 @@ class StampRallySortFilterViewModel(
 
     private val sections = listOf(
         sortSection,
+        seriesAutocompleteSection.section,
         totalCostSection,
         prizeLimitSection,
         onlyConfirmedSection,
         advancedSection,
     )
 
+    @Suppress("UNCHECKED_CAST")
     private val filterParams = combineStates(
         snapshotFlow {
             SnapshotState(
                 fandom = fandomSection.value.trim(),
                 tables = tablesSection.value.trim(),
             )
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, SnapshotState()),
+        }.stateIn(scope, SharingStarted.Eagerly, SnapshotState()),
         sortOption,
         settings.stampRalliesSortAscending,
+        lockedSeriesEntry,
+        seriesAutocompleteSection.seriesIn,
         totalCost,
         prizeLimit,
         onlyConfirmed,
@@ -177,11 +199,13 @@ class StampRallySortFilterViewModel(
             tables = snapshotState.tables,
             sortOption = it[1] as StampRallySearchSortOption,
             sortAscending = it[2] as Boolean,
-            totalCost = it[3] as RangeData,
-            prizeLimit = it[4] as RangeData,
-            onlyConfirmed = it[5] as Boolean,
-            hideFavorited = it[6] as Boolean,
-            hideIgnored = it[7] as Boolean,
+            seriesIn = setOfNotNull((it[3] as SeriesEntry?)?.id) +
+                    (it[4] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.id },
+            totalCost = it[5] as RangeData,
+            prizeLimit = it[6] as RangeData,
+            onlyConfirmed = it[7] as Boolean,
+            hideFavorited = it[8] as Boolean,
+            hideIgnored = it[9] as Boolean,
         )
     }
 
@@ -201,6 +225,7 @@ class StampRallySortFilterViewModel(
         val tables: String?,
         val sortOption: StampRallySearchSortOption,
         val sortAscending: Boolean,
+        val seriesIn: Set<String>,
         val totalCost: RangeData,
         val prizeLimit: RangeData,
         val onlyConfirmed: Boolean,

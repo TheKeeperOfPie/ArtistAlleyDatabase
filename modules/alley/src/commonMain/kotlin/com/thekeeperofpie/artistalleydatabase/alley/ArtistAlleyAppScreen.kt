@@ -239,21 +239,12 @@ object ArtistAlleyAppScreen {
                             sharedElementComposable<Destinations.StampRallies>(
                                 navigationTypeMap = navigationTypeMap,
                             ) {
-                                val sortViewModel = viewModel {
-                                    component.stampRallySortFilterViewModel(
-                                        createSavedStateHandle(),
-                                        true,
-                                    )
-                                }
                                 val viewModel = viewModel {
-                                    component.stampRallySearchViewModel(
-                                        createSavedStateHandle(),
-                                        sortViewModel.state.filterParams,
-                                    )
+                                    component.stampRallySearchViewModel(createSavedStateHandle())
                                 }
                                 StampRallySearchScreen(
                                     viewModel = viewModel,
-                                    sortViewModel = sortViewModel,
+                                    sortFilterState = viewModel.sortFilterController.state,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickBack = navigationController::popBackStack,
                                 )

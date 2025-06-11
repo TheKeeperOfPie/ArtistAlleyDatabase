@@ -339,11 +339,14 @@ class StampRallyEntryDao(
                 }
             }
 
-            val series = searchQuery.series
-            if (year == DataYear.YEAR_2025 && series != null) {
+            // TODO: Locked series/merch doesn't enforce AND
+            if (year == DataYear.YEAR_2025 && filterParams.seriesIn.isNotEmpty()) {
+                val seriesList = filterParams.seriesIn.joinToString(separator = ",") {
+                    DatabaseUtils.sqlEscapeString(it)
+                }
+
                 this += "$tableName.id IN (SELECT stampRallyId from stampRallySeriesConnection " +
-                        "WHERE stampRallySeriesConnection.seriesId = " +
-                        DatabaseUtils.sqlEscapeString(series) + ")"
+                        "WHERE stampRallySeriesConnection.seriesId IN ($seriesList))"
             }
         }
 

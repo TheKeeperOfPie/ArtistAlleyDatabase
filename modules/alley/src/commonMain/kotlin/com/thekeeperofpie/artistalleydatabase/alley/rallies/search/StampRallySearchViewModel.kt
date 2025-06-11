@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
@@ -27,7 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -49,11 +49,11 @@ class StampRallySearchViewModel(
     dispatchers: CustomDispatchers,
     navigationTypeMap: NavigationTypeMap,
     seriesEntryDao: SeriesEntryDao,
+    seriesImagesStore: SeriesImagesStore,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
     @Assisted private val savedStateHandle: SavedStateHandle,
-    @Assisted private val filterParams: StateFlow<StampRallySortFilterViewModel.FilterParams>,
 ) : EntrySearchViewModel<StampRallySearchQuery, StampRallyEntryGridModel>() {
 
     @Serializable
@@ -100,10 +100,20 @@ class StampRallySearchViewModel(
         }
     }
 
+    val sortFilterController = StampRallySortFilterController(
+        scope = viewModelScope,
+        lockedSeriesEntry = lockedSeriesEntry,
+        dispatchers = dispatchers,
+        seriesEntryDao = seriesEntryDao,
+        seriesImagesStore = seriesImagesStore,
+        settings = settings,
+        savedStateHandle = savedStateHandle,
+        allowHideFavorited = true,
+    )
+
     override fun searchOptions() = defer {
-        filterParams.mapLatest {
+        sortFilterController.state.filterParams.mapLatest {
             StampRallySearchQuery(
-                series = route.series,
                 filterParams = it,
                 randomSeed = randomSeed,
             )

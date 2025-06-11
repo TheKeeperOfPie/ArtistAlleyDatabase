@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -36,7 +36,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -60,7 +59,6 @@ class FavoritesViewModel(
     settings: ArtistAlleySettings,
     dispatchers: CustomDispatchers,
     @Assisted savedStateHandle: SavedStateHandle,
-    @Assisted private val stampRallyFilterParams: StateFlow<StampRallySortFilterViewModel.FilterParams>,
 ) : ViewModel() {
 
     val year = settings.dataYear
@@ -76,6 +74,17 @@ class FavoritesViewModel(
         merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImagesStore = seriesImagesStore,
+        allowHideFavorited = false,
+    )
+
+    val stampRallySortFilterController = StampRallySortFilterController(
+        scope = viewModelScope,
+        lockedSeriesEntry = ReadOnlyStateFlow(null),
+        dispatchers = dispatchers,
+        seriesEntryDao = seriesEntryDao,
+        seriesImagesStore = seriesImagesStore,
+        settings = settings,
+        savedStateHandle = savedStateHandle,
         allowHideFavorited = false,
     )
 
@@ -135,14 +144,14 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
-    val stampRallyEntries = combine(inputs, stampRallyFilterParams, ::Pair)
+    val stampRallyEntries = combine(inputs, stampRallySortFilterController.state.filterParams, ::Pair)
         .flatMapLatest { (inputs, filterParams) ->
             val (query, year, showOnlyConfirmedTags) = inputs
             createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 stampRallyEntryDao.search(
                     year = year,
                     query = query,
-                    searchQuery = StampRallySearchQuery(null, filterParams, randomSeed),
+                    searchQuery = StampRallySearchQuery(filterParams, randomSeed),
                     onlyFavorites = true,
                 )
             }.flow.map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }

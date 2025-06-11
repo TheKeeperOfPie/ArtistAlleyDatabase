@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -38,12 +39,11 @@ object StampRallySearchScreen {
     @Composable
     operator fun invoke(
         viewModel: StampRallySearchViewModel,
-        sortViewModel: StampRallySortFilterViewModel,
+        sortFilterState: SortFilterState<StampRallySortFilterController.FilterParams>,
         scrollStateSaver: ScrollStateSaver,
         onClickBack: (() -> Unit)? = null,
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
-        val sortFilterState = sortViewModel.state
         sortFilterState.ImmediateScrollResetEffect(gridState)
 
         CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {

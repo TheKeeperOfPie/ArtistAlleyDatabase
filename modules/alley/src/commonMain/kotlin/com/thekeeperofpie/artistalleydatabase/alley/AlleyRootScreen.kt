@@ -113,23 +113,13 @@ object AlleyRootScreen {
                             )
                         }
                         Destination.FAVORITES -> {
-                            val stampRallySortViewModel =
-                                viewModel(key = "favorites") {
-                                    component.stampRallySortFilterViewModel(
-                                        createSavedStateHandle(),
-                                        false,
-                                    )
-                                }
                             val favoritesViewModel = viewModel {
-                                component.favoritesViewModel(
-                                    createSavedStateHandle(),
-                                    stampRallySortViewModel.state.filterParams,
-                                )
+                                component.favoritesViewModel(createSavedStateHandle())
                             }
                             FavoritesScreen(
                                 favoritesViewModel = favoritesViewModel,
                                 artistSortFilterController = favoritesViewModel.artistSortFilterController,
-                                stampRallySortViewModel = stampRallySortViewModel,
+                                stampRallySortFilterController = favoritesViewModel.stampRallySortFilterController,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.FAVORITES.name,
                                     scrollPositions,
@@ -154,21 +144,12 @@ object AlleyRootScreen {
                             )
                         }
                         Destination.STAMP_RALLIES -> {
-                            val sortViewModel = viewModel {
-                                component.stampRallySortFilterViewModel(
-                                    createSavedStateHandle(),
-                                    true,
-                                )
-                            }
                             val viewModel = viewModel {
-                                component.stampRallySearchViewModel(
-                                    createSavedStateHandle(),
-                                    sortViewModel.state.filterParams,
-                                )
+                                component.stampRallySearchViewModel(createSavedStateHandle())
                             }
                             StampRallySearchScreen(
                                 viewModel = viewModel,
-                                sortViewModel = sortViewModel,
+                                sortFilterState = viewModel.sortFilterController.state,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.STAMP_RALLIES.name,
                                     scrollPositions,
