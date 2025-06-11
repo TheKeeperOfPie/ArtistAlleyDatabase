@@ -334,7 +334,7 @@ class StampRallyEntryDao(
             }
 
             if (year == DataYear.YEAR_2025) {
-                if (filterParams.onlyConfirmed) {
+                if (!filterParams.showUnconfirmed) {
                     this += "$tableName.confirmed = 1"
                 }
             }

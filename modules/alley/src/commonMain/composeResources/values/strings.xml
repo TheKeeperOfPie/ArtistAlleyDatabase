@@ -89,7 +89,7 @@
     <string name="alley_stamp_rally_filter_total_cost_expand_content_description">Total cost filter expand</string>
     <string name="alley_stamp_rally_filter_prize_limit">Prize limit</string>
     <string name="alley_stamp_rally_filter_prize_limit_expand_content_description">Prize limit filter expand</string>
-    <string name="alley_stamp_rally_filter_only_confirmed">Show only confirmed</string>
+    <string name="alley_stamp_rally_filter_show_unconfirmed">Show unconfirmed</string>
 
     <string name="alley_stamp_rally_cost_free">Free</string>
     <string name="alley_stamp_rally_cost_any">Any</string>
