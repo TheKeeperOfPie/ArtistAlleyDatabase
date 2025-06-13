@@ -35,7 +35,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     companion object {
         private const val PACKAGE_NAME = "com.thekeeperofpie.artistalleydatabase.generated"
-        private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp")
+        private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp", "webp")
         private const val RESIZE_TARGET = 1200
         private const val WEBP_TARGET_QUALITY = 80
         private const val WEBP_METHOD = 6
