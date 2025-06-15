@@ -408,7 +408,8 @@ private fun FaqSection(onInstallClick: () -> Unit) {
                     }
                     appendParagraph(
                         ", allowing you to browse during a convention without an " +
-                                "internet connection."
+                                "internet connection. This may not work on Apple devices, but" +
+                                "should work on Android."
                     )
                     withStyle(
                         SpanStyle(
@@ -430,9 +431,9 @@ private fun FaqSection(onInstallClick: () -> Unit) {
                     append(" your favorites to transfer them between desktop and mobile.")
                 }
             )
-        }
 
-        HorizontalDivider()
+            HorizontalDivider()
+        }
 
         QuestionAnswer(
             question = "I'm a tabling artist and my info is missing or incorrect",
