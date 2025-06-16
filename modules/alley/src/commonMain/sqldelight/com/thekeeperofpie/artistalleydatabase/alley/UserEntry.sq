@@ -32,3 +32,19 @@ WHERE stampRallyId = :stampRallyId;
 getArtistFavorites:
 SELECT artistId, favorite FROM artistUserEntry
 WHERE favorite = 1;
+
+getSeriesUserEntry:
+SELECT * FROM seriesUserEntry
+WHERE seriesId = :seriesId;
+
+insertSeriesUserEntry:
+INSERT OR REPLACE INTO seriesUserEntry
+VALUES ?;
+
+getMerchUserEntry:
+SELECT * FROM merchUserEntry
+WHERE merchId = :merchId;
+
+insertMerchUserEntry:
+INSERT OR REPLACE INTO merchUserEntry
+VALUES ?;

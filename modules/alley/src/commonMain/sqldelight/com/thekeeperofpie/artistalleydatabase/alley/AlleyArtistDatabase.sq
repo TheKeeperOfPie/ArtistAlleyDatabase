@@ -209,6 +209,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2025_fts USING FTS5 (
     prize,
     series,
     notes,
+    confirmed,
     content=stampRallyEntry2025,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -236,6 +237,7 @@ CREATE INDEX IF NOT EXISTS index_stampRallySeriesConnection_seriesId ON stampRal
 CREATE TABLE
     IF NOT EXISTS seriesEntry (
         id TEXT NOT NULL COLLATE NOCASE,
+        uuid TEXT NOT NULL,
         notes TEXT,
         aniListId INTEGER,
         aniListType TEXT,
@@ -253,6 +255,7 @@ CREATE TABLE
 
 CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     id,
+    uuid,
     titlePreferred,
     titleEnglish,
     titleRomaji,
@@ -266,6 +269,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
 CREATE TABLE
     IF NOT EXISTS merchEntry (
         name TEXT NOT NULL,
+        uuid TEXT NOT NULL,
         notes TEXT,
         categories TEXT,
         has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
@@ -275,6 +279,7 @@ CREATE TABLE
 
 CREATE VIRTUAL TABLE IF NOT EXISTS merchEntry_fts USING FTS5 (
     name,
+    uuid,
     has2024,
     has2025,
     content=merchEntry,

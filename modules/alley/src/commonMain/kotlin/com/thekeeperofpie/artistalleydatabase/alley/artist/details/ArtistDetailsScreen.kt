@@ -77,10 +77,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
-import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -100,6 +101,8 @@ object ArtistDetailsScreen {
     operator fun invoke(
         route: Destinations.ArtistDetails,
         entry: () -> ArtistDetailsViewModel.Entry?,
+        seriesInferred: () -> List<SeriesWithUserData>?,
+        seriesConfirmed: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
         imagePagerState: PagerState,
         catalogImages: () -> List<CatalogImage>,
@@ -249,13 +252,13 @@ object ArtistDetailsScreen {
                 }
             }
 
-            val seriesConfirmed = entry()?.seriesConfirmed
+            val seriesConfirmed = seriesConfirmed()
             if (seriesConfirmed?.isNotEmpty() != false) {
                 item("artistSeriesConfirmed") {
                     Column(Modifier.animateItem()) {
                         val languageOption = LocalLanguageOptionMedia.current
                         val sorted = remember(seriesConfirmed, languageOption) {
-                            seriesConfirmed?.sortedBy { it.name(languageOption) }
+                            seriesConfirmed?.sortedBy { it.series.name(languageOption) }
                         }
                         Confirmed(
                             confirmed = sorted,
@@ -263,10 +266,15 @@ object ArtistDetailsScreen {
                             forSeries = true,
                         ) { value, expanded ->
                             SeriesRow(
-                                series = value,
-                                image = { value?.id?.let { seriesImages()[it] } },
+                                data = value,
+                                image = { value?.series?.id?.let { seriesImages()[it] } },
+                                onFavoriteToggle = {
+                                    if (value != null) {
+                                        eventSink(Event.SeriesFavoriteToggle(value, it))
+                                    }
+                                },
                                 onClick = if (expanded) {
-                                    { value?.id?.let { eventSink(Event.OpenSeries(it)) } }
+                                    { value?.series?.id?.let { eventSink(Event.OpenSeries(it)) } }
                                 } else null,
                             )
                         }
@@ -275,13 +283,13 @@ object ArtistDetailsScreen {
                 }
             }
 
-            val seriesInferred = entry()?.seriesInferred
+            val seriesInferred = seriesInferred()
             if (seriesInferred?.isNotEmpty() != false) {
                 item("artistSeriesInferred") {
                     Column(Modifier.animateItem()) {
                         val languageOption = LocalLanguageOptionMedia.current
                         val sorted = remember(seriesInferred, languageOption) {
-                            seriesInferred?.sortedBy { it.name(languageOption) }
+                            seriesInferred?.sortedBy { it.series.name(languageOption) }
                         }
                         Inferred(
                             inferred = sorted,
@@ -290,10 +298,15 @@ object ArtistDetailsScreen {
                             forSeries = true,
                         ) { value, expanded ->
                             SeriesRow(
-                                series = value,
-                                image = { value?.id?.let { seriesImages()[it] } },
+                                data = value,
+                                image = { value?.series?.id?.let { seriesImages()[it] } },
+                                onFavoriteToggle = {
+                                    if (value != null) {
+                                        eventSink(Event.SeriesFavoriteToggle(value, it))
+                                    }
+                                },
                                 onClick = if (expanded) {
-                                    { value?.id?.let { eventSink(Event.OpenSeries(it)) } }
+                                    { value?.series?.id?.let { eventSink(Event.OpenSeries(it)) } }
                                 } else null,
                             )
                         }
@@ -668,6 +681,10 @@ object ArtistDetailsScreen {
         data class OpenOtherYear(val year: DataYear) : Event
         data class OpenSeries(val series: String) : Event
         data class OpenStampRally(val entry: StampRallyEntry) : Event
+        data class SeriesFavoriteToggle(
+            val series: SeriesWithUserData,
+            val favorite: Boolean,
+        ) : Event
     }
 }
 
@@ -679,14 +696,16 @@ private fun PhoneLayout() = PreviewDark {
     val entry = ArtistDetailsViewModel.Entry(
         artist = artist.artist,
         userEntry = artist.userEntry,
-        seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed)
-            .map { previewSeriesEntry(it) },
-        seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesEntry(it) },
         stampRallies = emptyList(),
     )
+    val seriesInferred = (artist.artist.seriesInferred - artist.artist.seriesConfirmed)
+        .map { previewSeriesWithUserData(it) }
+    val seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesWithUserData(it) }
     ArtistDetailsScreen(
         route = Destinations.ArtistDetails(artist.artist),
         entry = { entry },
+        seriesInferred = { seriesInferred },
+        seriesConfirmed = { seriesConfirmed },
         userNotesTextState = rememberTextFieldState(),
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},

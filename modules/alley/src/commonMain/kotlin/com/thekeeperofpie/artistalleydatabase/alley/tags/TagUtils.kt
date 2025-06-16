@@ -8,6 +8,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_language_opti
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_native
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_romaji
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import org.jetbrains.compose.resources.StringResource
 
@@ -27,21 +29,28 @@ val AniListLanguageOption.textWithExplanation: StringResource
     }
 
 @Composable
-fun previewSeriesEntry(id: String): SeriesEntry {
+fun previewSeriesWithUserData(id: String): SeriesWithUserData {
     if (!LocalInspectionMode.current) throw IllegalStateException("Must be in preview")
-    return SeriesEntry(
-        id = id,
-        notes = null,
-        aniListId = null,
-        aniListType = null,
-        wikipediaId = null,
-        source = null,
-        titlePreferred = id,
-        titleEnglish = id,
-        titleRomaji = id,
-        titleNative = id,
-        link = null,
-        has2024 = false,
-        has2025 = false,
+    return SeriesWithUserData(
+        series = SeriesEntry(
+            id = id,
+            uuid = id,
+            notes = null,
+            aniListId = null,
+            aniListType = null,
+            wikipediaId = null,
+            source = null,
+            titlePreferred = id,
+            titleEnglish = id,
+            titleRomaji = id,
+            titleNative = id,
+            link = null,
+            has2024 = false,
+            has2025 = false,
+        ),
+        userEntry = SeriesUserEntry(
+            seriesId = id,
+            favorite = false,
+        ),
     )
 }

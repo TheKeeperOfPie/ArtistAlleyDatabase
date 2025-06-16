@@ -98,10 +98,28 @@ LEFT OUTER JOIN stampRallyNotes
 ON stampRallyEntry2025.id = stampRallyNotes.stampRallyId
 WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
 
+getExportFullSeries:
+SELECT * FROM seriesUserEntry
+WHERE seriesUserEntry.favorite = 1;
+
+getExportFullMerch:
+SELECT * FROM merchUserEntry
+WHERE merchUserEntry.favorite = 1;
+
+importSeriesUserEntry:
+INSERT OR REPLACE INTO seriesUserEntry(seriesId, favorite)
+VALUES(:seriesId, :favorite);
+
+importMerchUserEntry:
+INSERT OR REPLACE INTO merchUserEntry(merchId, favorite)
+VALUES(:merchId, :favorite);
+
 /** RETURNING for https://github.com/sqldelight/sqldelight/issues/5753 */
 deleteUserData {
     DELETE FROM artistNotes;
     DELETE FROM artistUserEntry;
     DELETE FROM stampRallyUserEntry;
-    DELETE FROM stampRallyNotes RETURNING COUNT(*);
+    DELETE FROM stampRallyNotes;
+    DELETE FROM seriesUserEntry;
+    DELETE FROM merchUserEntry RETURNING COUNT(*);
 }

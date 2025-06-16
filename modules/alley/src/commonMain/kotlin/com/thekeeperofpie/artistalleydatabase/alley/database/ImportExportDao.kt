@@ -43,6 +43,12 @@ class ImportExportDao(
     suspend fun getExportFullStampRallies2025() =
         database().userImportExportQueries.getExportFullStampRallies2025().awaitAsList()
 
+    suspend fun getExportFullSeries() =
+        database().userImportExportQueries.getExportFullSeries().awaitAsList()
+
+    suspend fun getExportFullMerch() =
+        database().userImportExportQueries.getExportFullMerch().awaitAsList()
+
     suspend fun importArtist(
         artistId: String,
         dataYear: DataYear,
@@ -66,6 +72,20 @@ class ImportExportDao(
         if (!notes.isNullOrBlank()) {
             importStampRallyNotes(stampRallyId, notes)
         }
+    }
+
+    suspend fun importSeries(
+        seriesId: String,
+        favorite: Boolean,
+    ) = database().userImportExportQueries.run {
+        importSeriesUserEntry(seriesId, favorite)
+    }
+
+    suspend fun importMerch(
+        merchId: String,
+        favorite: Boolean,
+    ) = database().userImportExportQueries.run {
+        importMerchUserEntry(merchId, favorite)
     }
 
     suspend fun deleteUserData() = database().userImportExportQueries.deleteUserData()

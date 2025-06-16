@@ -950,7 +950,7 @@ fun SheetContent(
 
 @Composable
 fun SortFilterBottomScaffold(
-    state: SortFilterState<*>,
+    state: SortFilterState<*>?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     sheetState: SheetState = rememberStandardBottomSheetState(),
@@ -973,23 +973,27 @@ fun SortFilterBottomScaffold(
         sheetPeekHeight = (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
                 (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
         sheetDragHandle = {
-            SheetDragHandle(
-                state = state,
-                targetValue = { bottomSheetState.targetValue },
-                onClick = {
-                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
-                        scope.launch { bottomSheetState.partialExpand() }
-                    } else {
-                        scope.launch { bottomSheetState.expand() }
-                    }
-                },
-            )
+            if (state != null) {
+                SheetDragHandle(
+                    state = state,
+                    targetValue = { bottomSheetState.targetValue },
+                    onClick = {
+                        if (bottomSheetState.currentValue == SheetValue.Expanded) {
+                            scope.launch { bottomSheetState.partialExpand() }
+                        } else {
+                            scope.launch { bottomSheetState.expand() }
+                        }
+                    },
+                )
+            }
         },
         sheetContent = {
-            SheetContent(
-                state = state,
-                bottomNavigationState = bottomNavigationState,
-            )
+            if (state != null) {
+                SheetContent(
+                    state = state,
+                    bottomNavigationState = bottomNavigationState,
+                )
+            }
         },
         sheetTonalElevation = 4.dp,
         sheetShadowElevation = 4.dp,

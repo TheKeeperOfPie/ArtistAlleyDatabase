@@ -3,37 +3,122 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 import app.cash.paging.PagingSource
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
-import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
+import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesById
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIds
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapLatest
 
 fun SqlCursor.toSeriesEntry(): SeriesEntry {
-    val source = getString(5)
+    val source = getString(6)
     return SeriesEntry(
         id = getString(0)!!,
-        notes = getString(1),
-        aniListId = getLong(2),
-        aniListType = getString(3),
-        wikipediaId = getLong(4),
+        uuid = getString(1)!!,
+        notes = getString(2),
+        aniListId = getLong(3),
+        aniListType = getString(4),
+        wikipediaId = getLong(5),
         source = SeriesSource.entries.find { it.name == source },
-        titlePreferred = getString(6)!!,
-        titleEnglish = getString(7)!!,
-        titleRomaji = getString(8)!!,
-        titleNative = getString(9)!!,
-        link = getString(10),
-        has2024 = getBooleanFixed(11),
-        has2025 = getBooleanFixed(12),
+        titlePreferred = getString(7)!!,
+        titleEnglish = getString(8)!!,
+        titleRomaji = getString(9)!!,
+        titleNative = getString(10)!!,
+        link = getString(11),
+        has2024 = getBooleanFixed(12),
+        has2025 = getBooleanFixed(13),
     )
 }
+
+fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
+    val uuid = getString(1)!!
+    val source = getString(6)
+    return SeriesWithUserData(
+        SeriesEntry(
+            id = getString(0)!!,
+            uuid = uuid,
+            notes = getString(2),
+            aniListId = getLong(3),
+            aniListType = getString(4),
+            wikipediaId = getLong(5),
+            source = SeriesSource.entries.find { it.name == source },
+            titlePreferred = getString(7)!!,
+            titleEnglish = getString(8)!!,
+            titleRomaji = getString(9)!!,
+            titleNative = getString(10)!!,
+            link = getString(11),
+            has2024 = getBooleanFixed(12),
+            has2025 = getBooleanFixed(13),
+        ),
+        userEntry = SeriesUserEntry(
+            seriesId = uuid,
+            favorite = getBooleanFixed(14),
+        )
+    )
+}
+
+fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
+    series = SeriesEntry(
+        id = id,
+        uuid = uuid,
+        notes = notes,
+        aniListId = aniListId,
+        aniListType = aniListType,
+        wikipediaId = wikipediaId,
+        source = source,
+        titlePreferred = titlePreferred,
+        titleEnglish = titleEnglish,
+        titleRomaji = titleRomaji,
+        titleNative = titleNative,
+        link = link,
+        has2024 = has2024,
+        has2025 = has2025,
+    ),
+    userEntry = SeriesUserEntry(
+        seriesId = uuid,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+    )
+)
+
+fun GetSeriesByIds.toSeriesWithUserData() = SeriesWithUserData(
+    series = SeriesEntry(
+        id = id,
+        uuid = uuid,
+        notes = notes,
+        aniListId = aniListId,
+        aniListType = aniListType,
+        wikipediaId = wikipediaId,
+        source = source,
+        titlePreferred = titlePreferred,
+        titleEnglish = titleEnglish,
+        titleRomaji = titleRomaji,
+        titleNative = titleNative,
+        link = link,
+        has2024 = has2024,
+        has2025 = has2025,
+    ),
+    userEntry = SeriesUserEntry(
+        seriesId = uuid,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+    )
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SeriesEntryDao(
@@ -43,20 +128,32 @@ class SeriesEntryDao(
 ) {
     suspend fun getSeriesIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
 
-    suspend fun getSeriesById(id: String): SeriesEntry =
-        seriesDao().getSeriesById(id).awaitAsOneOrNull() ?: fallbackSeriesEntry(id)
+    fun getSeriesById(id: String): Flow<SeriesWithUserData> =
+        flowFromSuspend { seriesDao() }
+            .flatMapLatest { it.getSeriesById(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO) }
+            .mapLatest { it?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(id) }
 
-    suspend fun getSeriesByIds(ids: List<String>): List<SeriesEntry> {
+    suspend fun getSeriesByIds(ids: List<String>): List<SeriesWithUserData> {
         if (ids.isEmpty()) return emptyList()
         val series = seriesDao().getSeriesByIds(ids).awaitAsList().associateBy { it.id }
-        return ids.map { series[it] ?: fallbackSeriesEntry(it) }
+        return ids.map { series[it]?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(it) }
+    }
+
+    suspend fun observeSeriesByIds(ids: List<String>): Flow<List<SeriesWithUserData>> {
+        if (ids.isEmpty()) return flowOf(emptyList())
+        return seriesDao().getSeriesByIds(ids).asFlow().mapToList(PlatformDispatchers.IO)
+            .mapLatest { it.associateBy { it.id } }
+            .mapLatest { series ->
+                ids.map { series[it]?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(it) }
+            }
     }
 
     fun getSeries(
         languageOption: AniListLanguageOption,
         year: DataYear,
         seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
-    ): PagingSource<Int, SeriesEntry> {
+        favoriteOnly: Boolean = false,
+    ): PagingSource<Int, SeriesWithUserData> {
         val filteredSources = seriesFilterState
             .filter { (_, enabled) -> enabled }
             .flatMap { (option) ->
@@ -86,6 +183,9 @@ class SeriesEntryDao(
                 }
             }
         var where = "WHERE has${year.year} = 1"
+        if (favoriteOnly) {
+            where += " AND seriesUserEntry.favorite = 1"
+        }
         if (filteredSources.isNotEmpty()) {
             where += " AND ("
             filteredSources.forEachIndexed { index, source ->
@@ -103,22 +203,35 @@ class SeriesEntryDao(
             where += ")"
         }
 
-        val countStatement = "SELECT COUNT(*) FROM seriesEntry $where"
+        val joinStatement = """
+            LEFT OUTER JOIN seriesUserEntry
+            ON seriesEntry.uuid = seriesUserEntry.seriesId
+        """.trimIndent()
+
+        val countStatement = """
+            SELECT COUNT(*) FROM seriesEntry
+            $joinStatement
+            $where
+        """.trimIndent()
         val orderBy = when (languageOption) {
             AniListLanguageOption.DEFAULT -> "titlePreferred"
             AniListLanguageOption.ENGLISH -> "titleEnglish"
             AniListLanguageOption.NATIVE -> "titleNative"
             AniListLanguageOption.ROMAJI -> "titleRomaji"
         }
-        val statement =
-            "SELECT * FROM seriesEntry $where ORDER BY $orderBy COLLATE NOCASE"
+        val statement = """
+            SELECT seriesEntry.*, seriesUserEntry.favorite FROM seriesEntry
+            $joinStatement
+            $where
+            ORDER BY $orderBy COLLATE NOCASE
+        """.trimIndent()
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("seriesEntry"),
-            mapper = SqlCursor::toSeriesEntry,
+            mapper = SqlCursor::toSeriesWithUserData,
         )
     }
 
@@ -126,7 +239,8 @@ class SeriesEntryDao(
         languageOption: AniListLanguageOption,
         year: DataYear,
         query: String,
-    ): PagingSource<Int, SeriesEntry> {
+        favoriteOnly: Boolean = false,
+    ): PagingSource<Int, SeriesWithUserData> {
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
         val targetColumns = listOfNotNull(
@@ -148,11 +262,23 @@ class SeriesEntryDao(
         val likeStatement = yearFilter + targetColumns.joinToString(separator = "\nOR ") {
             "(${DaoUtils.makeLikeAndQuery("seriesEntry_fts.$it", queries)})"
         } + yearFilterSuffix
+
+        val joinStatement = """
+            LEFT OUTER JOIN seriesUserEntry
+            ON uuidAsKey = seriesUserEntry.seriesId
+        """.trimIndent()
+
+        val favoriteStatement = "WHERE seriesUserEntry.favorite = 1"
+            .takeIf { favoriteOnly }.orEmpty()
+
         val countStatement = DaoUtils.buildSearchCountStatement(
             ftsTableName = "seriesEntry_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
+            additionalSelectStatement = ", seriesEntry_fts.uuid as uuidAsKey",
+            additionalJoinStatement = joinStatement,
+            andStatement = favoriteStatement,
         )
         val orderBy = when (languageOption) {
             AniListLanguageOption.DEFAULT -> "titlePreferred"
@@ -163,11 +289,18 @@ class SeriesEntryDao(
         val statement = DaoUtils.buildSearchStatement(
             tableName = "seriesEntry",
             ftsTableName = "seriesEntry_fts",
+            select = "seriesEntry.*, seriesUserEntry.favorite",
             idField = "id",
             likeOrderBy = "ORDER BY seriesEntry_fts.$orderBy COLLATE NOCASE",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
+            additionalSelectStatement = ", seriesEntry_fts.uuid as uuidAsKey",
+            additionalJoinStatement = joinStatement,
+            andStatement = favoriteStatement,
         )
+        
+        println("countStatement = $countStatement")
+        println("statement = $statement")
 
         return DaoUtils.queryPagingSource(
             driver = driver,
@@ -175,7 +308,7 @@ class SeriesEntryDao(
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("seriesEntry_fts"),
-            mapper = SqlCursor::toSeriesEntry,
+            mapper = SqlCursor::toSeriesWithUserData,
         )
     }
 
@@ -216,19 +349,26 @@ class SeriesEntryDao(
 
     // Some tags were adjusted between years, and the most recent list may not have all
     // of the prior tags. In those cases, mock a response.
-    private fun fallbackSeriesEntry(id: String) = SeriesEntry(
-        id = id,
-        notes = null,
-        aniListId = null,
-        aniListType = null,
-        wikipediaId = null,
-        source = SeriesSource.NONE,
-        titlePreferred = id,
-        titleEnglish = id,
-        titleRomaji = id,
-        titleNative = id,
-        link = null,
-        has2024 = false,
-        has2025 = false,
+    private fun fallbackSeriesWithUserData(id: String) = SeriesWithUserData(
+        series = SeriesEntry(
+            id = id,
+            uuid = id,
+            notes = null,
+            aniListId = null,
+            aniListType = null,
+            wikipediaId = null,
+            source = SeriesSource.NONE,
+            titlePreferred = id,
+            titleEnglish = id,
+            titleRomaji = id,
+            titleNative = id,
+            link = null,
+            has2024 = false,
+            has2025 = false,
+        ),
+        userEntry = SeriesUserEntry(
+            seriesId = id,
+            favorite = false,
+        )
     )
 }

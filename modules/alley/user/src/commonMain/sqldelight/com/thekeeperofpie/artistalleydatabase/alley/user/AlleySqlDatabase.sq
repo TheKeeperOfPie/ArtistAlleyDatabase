@@ -23,8 +23,9 @@ CREATE TABLE IF NOT EXISTS artistNotes (
     PRIMARY KEY (artistId, dataYear)
 );
 
--- Stamp rally IDs are formatted as "year-hostTable-fandom", without splitting into
--- separate columns since they're generally not associated year to year like artists
+-- Stamp rally IDs for 2023 and 2024 are formatted as "year-hostTable-fandom", without splitting
+-- into separate columns since they're generally not associated year to year like artists. 2025
+-- uses UUIDs.
 CREATE TABLE IF NOT EXISTS stampRallyNotes (
     stampRallyId TEXT NOT NULL,
     notes TEXT,
@@ -37,4 +38,16 @@ CREATE TABLE IF NOT EXISTS imageEntry (
     url TEXT NOT NULL,
     createdAtSecondsUtc INTEGER NOT NULL,
     PRIMARY KEY (imageId, type)
+);
+
+CREATE TABLE IF NOT EXISTS seriesUserEntry (
+    seriesId TEXT NOT NULL,
+    favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (seriesId)
+);
+
+CREATE TABLE IF NOT EXISTS merchUserEntry (
+    merchId TEXT NOT NULL,
+    favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (merchId)
 );

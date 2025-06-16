@@ -18,20 +18,28 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
+import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
@@ -42,9 +50,9 @@ class TagsViewModel(
     dispatchers: CustomDispatchers,
     merchEntryDao: MerchEntryDao,
     seriesEntryDao: SeriesEntryDao,
-    tagsEntryDao: TagEntryDao,
     settings: ArtistAlleySettings,
     seriesImagesStore: SeriesImagesStore,
+    userEntryDao: UserEntryDao,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -69,15 +77,18 @@ class TagsViewModel(
                 } else {
                     createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         if (query.isBlank()) {
-                            seriesEntryDao.getSeries(languageOption, year, seriesFilterState)
+                            seriesEntryDao.getSeries(
+                                languageOption = languageOption,
+                                year = year,
+                                seriesFilterState = listOf(SeriesFilterOption.ALL to true),
+                            )
                         } else {
                             seriesEntryDao.searchSeries(languageOption, year, query)
                         }
-                    }
-                        .flow
+                    }.flow
                 }
             }
-            .enforceUniqueIds { it.id }
+            .enforceUniqueIds { it.series.id }
             .cachedIn(viewModelScope)
 
     val merch = combine(settings.dataYear, snapshotFlow { merchQuery }, ::Pair)
@@ -95,7 +106,7 @@ class TagsViewModel(
                     .flow
             }
         }
-        .enforceUniqueIds { it.name }
+        .enforceUniqueIds { it.merch.name }
         .cachedIn(viewModelScope)
 
     var seriesQuery by mutableStateOf("")
@@ -111,6 +122,23 @@ class TagsViewModel(
     var previouslyClickedOption by savedStateHandle.saved<SeriesFilterOption> { SeriesFilterOption.ALL }
 
     private val seriesImageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
+
+    private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
+    private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)
+
+    init {
+        viewModelScope.launch(dispatchers.io) {
+            seriesMutationUpdates.collectLatest {
+                userEntryDao.insertSeriesUserEntry(it)
+            }
+        }
+
+        viewModelScope.launch(dispatchers.io) {
+            merchMutationUpdates.collectLatest {
+                userEntryDao.insertMerchUserEntry(it)
+            }
+        }
+    }
 
     fun getSeriesImage(series: SeriesEntry) = seriesImageLoader.getSeriesImage(series)
 
@@ -142,5 +170,13 @@ class TagsViewModel(
         seriesFiltersState = state.takeUnless { it.none { it.second } }
             ?: defaultSeriesFiltersState
         previouslyClickedOption = option
+    }
+
+    fun onSeriesFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
+        seriesMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
+    }
+
+    fun onMerchFavoriteToggle(data: MerchWithUserData, favorite: Boolean) {
+        merchMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
     }
 }

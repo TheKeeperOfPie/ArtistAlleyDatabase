@@ -16,10 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
-import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -56,6 +56,7 @@ object ArtistMerchScreen {
                     sortFilterController = sortFilterController,
                     showMerch = artistMerchViewModel.route.merch != null,
                     merchEntry = { merchEntry },
+                    onFavoriteToggle = artistMerchViewModel::onFavoriteToggle,
                 )
             },
             scaffoldState = scaffoldState,
@@ -76,13 +77,22 @@ object ArtistMerchScreen {
         state: ArtistSearchScreen.State,
         sortFilterController: ArtistSortFilterController,
         showMerch: Boolean,
-        merchEntry: () -> MerchEntry?,
+        merchEntry: () -> MerchWithUserData?,
+        onFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
     ) {
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         Column {
             if (showMerch) {
                 Card {
-                    MerchRow(merchEntry = merchEntry())
+                    val data = merchEntry()
+                    MerchRow(
+                        data = data,
+                        onFavoriteToggle = {
+                            if (data != null) {
+                                onFavoriteToggle(data, it)
+                            }
+                        },
+                    )
                     HorizontalDivider()
                     sortFilterController.showOnlyConfirmedTagsSection
                         .Content(sortFilterController.state.expanded, false)

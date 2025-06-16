@@ -19,10 +19,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_rallies
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -63,6 +63,7 @@ object ArtistSeriesScreen {
                     showSeries = artistSeriesViewModel.route.series != null,
                     seriesEntry = { seriesEntry },
                     seriesImage = { seriesImage },
+                    onFavoriteToggle = artistSeriesViewModel::onFavoriteToggle,
                 )
             },
             scaffoldState = scaffoldState,
@@ -91,18 +92,25 @@ object ArtistSeriesScreen {
         state: ArtistSearchScreen.State,
         sortFilterController: ArtistSortFilterController,
         showSeries: Boolean,
-        seriesEntry: () -> SeriesEntry?,
+        seriesEntry: () -> SeriesWithUserData?,
         seriesImage: () -> String?,
+        onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
     ) {
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         Column {
             if (showSeries) {
                 Card {
+                    val data = seriesEntry()
                     SeriesRow(
-                        series = seriesEntry(),
+                        data = data,
                         image = seriesImage,
                         textStyle = LocalTextStyle.current,
                         showAllTitles = true,
+                        onFavoriteToggle = {
+                            if (data != null) {
+                                onFavoriteToggle(data, it)
+                            }
+                        },
                     )
                     HorizontalDivider()
                     sortFilterController.showOnlyConfirmedTagsSection

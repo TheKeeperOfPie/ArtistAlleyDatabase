@@ -11,6 +11,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.utils.PersistentStorageRequester
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -103,6 +105,30 @@ class UserEntryDao(
                     ignored = entry.ignored,
                 )
                 insertStampRallyUserEntry(newEntry)
+            }
+        }
+    }
+
+    suspend fun insertSeriesUserEntry(entry: SeriesUserEntry) {
+        PersistentStorageRequester.requestPersistent()
+        dao().run {
+            transaction {
+                val existing = getSeriesUserEntry(entry.seriesId).awaitAsOneOrNull()
+                    ?: entry
+                val newEntry = existing.copy(favorite = entry.favorite)
+                insertSeriesUserEntry(newEntry)
+            }
+        }
+    }
+
+    suspend fun insertMerchUserEntry(entry: MerchUserEntry) {
+        PersistentStorageRequester.requestPersistent()
+        dao().run {
+            transaction {
+                val existing = getMerchUserEntry(entry.merchId).awaitAsOneOrNull()
+                    ?: entry
+                val newEntry = existing.copy(favorite = entry.favorite)
+                insertMerchUserEntry(newEntry)
             }
         }
     }

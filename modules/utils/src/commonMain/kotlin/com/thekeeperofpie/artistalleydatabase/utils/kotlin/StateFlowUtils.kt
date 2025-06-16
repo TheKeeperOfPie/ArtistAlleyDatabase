@@ -1,4 +1,5 @@
 @file:Suppress("UNCHECKED_CAST")
+@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlin.coroutines.suspendCoroutine
 import kotlin.time.Duration
@@ -103,13 +104,13 @@ fun <T> StateFlow<T>.debounceState(scope: CoroutineScope, duration: Duration): S
 }
 
 fun <Input, Output> StateFlow<Input>.mapState(scope: CoroutineScope, mapping: (Input) -> Output) =
-    map { mapping(it) }.stateIn(scope, SharingStarted.Eagerly, mapping(value))
+    mapLatest { mapping(it) }.stateIn(scope, SharingStarted.Eagerly, mapping(value))
 
 fun <Input, Output> StateFlow<Input>.mapState(
     scope: CoroutineScope,
     initialValue: (Input) -> Output,
     mapping: suspend (Input) -> Output,
-) = map { mapping(it) }.stateIn(scope, SharingStarted.Eagerly, initialValue(value))
+) = mapLatest { mapping(it) }.stateIn(scope, SharingStarted.Eagerly, initialValue(value))
 
 fun <Input, Output> MutableStateFlow<Input>.mapMutableState(
     scope: CoroutineScope,
@@ -117,7 +118,7 @@ fun <Input, Output> MutableStateFlow<Input>.mapMutableState(
     serialize: (Output) -> Input,
 ): MutableStateFlow<Output> {
     val original = this
-    val mapped = map { deserialize(it) }.stateIn(scope, SharingStarted.Eagerly, deserialize(value))
+    val mapped = mapLatest { deserialize(it) }.stateIn(scope, SharingStarted.Eagerly, deserialize(value))
     return MappedMutableStateFlowWrapper(original, mapped, serialize)
 }
 

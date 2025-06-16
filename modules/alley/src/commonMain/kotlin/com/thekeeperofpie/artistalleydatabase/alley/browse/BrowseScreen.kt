@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,7 +54,10 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
@@ -87,7 +89,9 @@ object BrowseScreen {
         dataYearHeaderState: DataYearHeaderState,
         seriesFiltersState: () -> List<Pair<SeriesFilterOption, Boolean>>,
         onSeriesFilterClick: (SeriesFilterOption) -> Unit,
+        onSeriesFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
         onSeriesClick: (SeriesEntry) -> Unit,
+        onMerchFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
         onMerchClick: (MerchEntry) -> Unit,
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
@@ -124,17 +128,22 @@ object BrowseScreen {
                                 onQueryChange = { tagsViewModel.seriesQuery = it },
                                 entriesSize = { series.itemCount },
                                 values = series,
-                                itemKey = { it.id },
-                                item = {
+                                itemKey = { it.series.id },
+                                item = { data ->
                                     SeriesRow(
-                                        series = it,
+                                        data = data,
                                         image = {
-                                            it?.let {
-                                                tagsViewModel.getSeriesImage(it)
+                                            data?.let {
+                                                tagsViewModel.getSeriesImage(it.series)
                                             }
                                         },
                                         textStyle = LocalTextStyle.current,
-                                        onClick = { it?.let { onSeriesClick(it) } },
+                                        onFavoriteToggle = {
+                                            if (data != null) {
+                                                onSeriesFavoriteToggle(data, it)
+                                            }
+                                        },
+                                        onClick = { data?.let { onSeriesClick(it.series) } },
                                     )
                                 },
                                 scrollStateSaver = scrollStateSaver,
@@ -156,14 +165,20 @@ object BrowseScreen {
                             onQueryChange = { tagsViewModel.merchQuery = it },
                             entriesSize = { merch.itemCount },
                             values = merch,
-                            itemKey = { it.name },
-                            item = {
-                                Text(
-                                    text = it?.name.orEmpty(),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { it?.let { onMerchClick(it) } }
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                            itemKey = { it.merch.name },
+                            item = { data ->
+                                MerchRow(
+                                    data = data,
+                                    onFavoriteToggle = {
+                                        if (data != null) {
+                                            onMerchFavoriteToggle(data, it)
+                                        }
+                                    },
+                                    onClick = {
+                                        if (data != null) {
+                                            onMerchClick(data.merch)
+                                        }
+                                    },
                                 )
                             },
                             scrollStateSaver = scrollStateSaver

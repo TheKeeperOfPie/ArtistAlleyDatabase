@@ -1,0 +1,13 @@
+import kotlin.Boolean;
+
+CREATE TABLE IF NOT EXISTS seriesUserEntry (
+    seriesId TEXT NOT NULL,
+    favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (seriesId)
+);
+
+CREATE TABLE IF NOT EXISTS merchUserEntry (
+    merchId TEXT NOT NULL,
+    favorite INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (merchId)
+);

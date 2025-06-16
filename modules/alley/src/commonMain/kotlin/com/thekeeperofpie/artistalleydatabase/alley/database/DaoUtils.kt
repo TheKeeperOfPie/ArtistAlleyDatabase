@@ -171,19 +171,20 @@ object DaoUtils {
         idField: String,
         matchQuery: String,
         likeStatement: String,
+        additionalSelectStatement: String = "",
         additionalJoinStatement: String = "",
         andStatement: String = "",
     ) = """
         SELECT COUNT(*) FROM (
             SELECT * FROM (
                 SELECT * FROM(
-                    SELECT $ftsTableName.$idField as idAsKey
+                    SELECT $ftsTableName.$idField as idAsKey$additionalSelectStatement
                     FROM $ftsTableName
                     WHERE $ftsTableName MATCH $matchQuery
                 )
                 UNION
                 SELECT * FROM(
-                    SELECT $ftsTableName.$idField
+                    SELECT $ftsTableName.$idField$additionalSelectStatement
                     FROM $ftsTableName
                     WHERE (
                         $likeStatement
@@ -206,6 +207,7 @@ object DaoUtils {
         matchQuery: String,
         likeStatement: String,
         select: String = "$tableName.*",
+        additionalSelectStatement: String = "",
         additionalJoinStatement: String = "",
         orderBy: String = "ORDER BY rank",
         randomSeed: Int? = null,
@@ -218,14 +220,14 @@ object DaoUtils {
         return """
             SELECT $select FROM (
                 SELECT * FROM(
-                    SELECT $ftsTableName.$idField as idAsKey, rank as rank$randomOrderIndex
+                    SELECT $ftsTableName.$idField as idAsKey$additionalSelectStatement, rank as rank$randomOrderIndex
                     FROM $ftsTableName
                     WHERE $ftsTableName MATCH $matchQuery
                     ORDER BY rank
                 )
                 UNION
                 SELECT * FROM(
-                    SELECT $ftsTableName.$idField, 999$randomOrderIndex
+                    SELECT $ftsTableName.$idField$additionalSelectStatement, 999$randomOrderIndex
                     FROM $ftsTableName
                     WHERE (
                         $likeStatement

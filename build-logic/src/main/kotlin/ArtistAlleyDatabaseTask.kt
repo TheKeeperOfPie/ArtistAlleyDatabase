@@ -613,6 +613,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     // Romaji, Native, Preferred, Wikipedia ID, External Link,
                     val validated = it["Validated"] == "DONE"
                     val id = it["Series"]!!
+                    val uuid = it["UUID"]!!
                     val notes = it["Notes"]
                     val aniListId = it["AniList ID"]?.toLongOrNull()
                     val aniListType = it["AniList Type"]
@@ -630,8 +631,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val titleEnglish = it["English"]?.ifBlank { null }?.takeIf { validated }
                     val titleNative = it["Native"]?.ifBlank { null }?.takeIf { validated }
                     val titlePreferred = it["Preferred"]?.ifBlank { null }
+
+                    // TODO: Fully migrate series to UUID
                     SeriesEntry(
                         id = id,
+                        uuid = uuid,
                         notes = notes,
                         aniListId = aniListId,
                         aniListType = aniListType,
@@ -668,10 +672,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .map {
                     // Merch, Notes
                     val name = it["Merch"]!!
+                    val uuid = it["UUID"]!!
                     val notes = it["Notes"]
                     val categories = it["Categories"]
+
+                    // TODO: Fully migrate merch to UUID
                     MerchEntry(
                         name = name,
+                        uuid = uuid,
                         notes = notes,
                         categories = categories,
                         has2024 = merchConnections.any { it.value.merchId == name && it.value.state2024 > 0 },
@@ -938,6 +946,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         }
                         else -> buffer.writeByte(byte)
                     }
+                }
+                if (fieldIndex < columnCount && source.exhausted()) {
+                    map[columnNames[fieldIndex]] = buffer.readString()
                 }
 
                 yield(map)

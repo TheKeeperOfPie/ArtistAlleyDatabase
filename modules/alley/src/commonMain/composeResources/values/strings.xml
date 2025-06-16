@@ -208,8 +208,16 @@
     <string name="alley_favorites_search">Search favorites…</string>
     <string name="alley_favorites_empty_artists">No favorite artists yet, click a heart to add one</string>
     <string name="alley_favorites_empty_go_to_artists">Go to artists</string>
-    <string name="alley_favorites_empty_stamp_rallies">No favorites rallies yet, click a heart to add one</string>
+    <string name="alley_favorites_empty_stamp_rallies">No favorite rallies yet, click a heart to add one</string>
     <string name="alley_favorites_empty_go_to_stamp_rallies">Go to rallies</string>
+    <string name="alley_favorites_empty_series">No favorite series yet, click a heart to add one</string>
+    <string name="alley_favorites_empty_go_to_series">Go to series</string>
+    <string name="alley_favorites_empty_merch">No favorite merch yet, click a heart to add one</string>
+    <string name="alley_favorites_empty_go_to_merch">Go to merch</string>
+    <string name="alley_favorites_artists">Artists</string>
+    <string name="alley_favorites_rallies">Rallies</string>
+    <string name="alley_favorites_series">Series</string>
+    <string name="alley_favorites_merch">Merch</string>
 
     <string name="alley_unfavorite_dialog_text">Remove %1$s from favorites?</string>
     <string name="alley_unfavorite_dialog_text_generic">Remove from favorites?</string>
@@ -282,7 +290,7 @@
     <string name="alley_con_upcoming_suffix">, export data to your phone so your favorites are available at con</string>
     <string name="alley_con_upcoming_show_qr">Show QR</string>
 
-    <string name="alley_export_notes_warning">Note: QR code will not export notes field, consider downloading the data to a file to include notes</string>
+    <string name="alley_export_notes_warning">Note: QR code will not export notes field or series/merch favorites, consider downloading the data to a file to include them.</string>
     <string name="alley_export_download_content_description">Download</string>
     <string name="alley_export_qr_code_explanation">Scan with another device's camera</string>
     <string name="alley_export_qr_code_content_description">Import link QR code</string>

@@ -37,7 +37,7 @@ internal fun <T : SearchScreen.SearchEntryModel> UnfavoriteDialog(
 }
 
 @Composable
-internal fun UnfavoriteDialog(
+fun UnfavoriteDialog(
     text: String,
     onDismissRequest: () -> Unit,
     onRemoveFavorite: () -> Unit,

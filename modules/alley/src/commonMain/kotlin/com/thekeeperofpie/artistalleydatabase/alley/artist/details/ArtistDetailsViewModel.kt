@@ -12,8 +12,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
@@ -22,24 +22,37 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class)
+@OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class, ExperimentalCoroutinesApi::class)
 @Inject
 class ArtistDetailsViewModel(
     private val artistEntryDao: ArtistEntryDao,
+    private val dispatchers: CustomDispatchers,
     private val userNotesDao: UserNotesDao,
     private val seriesImagesStore: SeriesImagesStore,
     private val seriesEntryDao: SeriesEntryDao,
@@ -62,60 +75,74 @@ class ArtistDetailsViewModel(
         )
     )
 
-    var entry by mutableStateOf<Entry?>(null)
-        private set
+    val entry = flowFromSuspend {
+        val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
+            ?: return@flowFromSuspend null
+        val artistWithUserData = entryWithStampRallies.artist
+        val artist = artistWithUserData.artist
+
+        Entry(
+            artist = artist,
+            userEntry = artistWithUserData.userEntry,
+            stampRallies = entryWithStampRallies.stampRallies,
+        )
+    }.flowOn(dispatchers.io)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val seriesInferred = entry
+        .filterNotNull()
+        .flatMapLatest { seriesEntryDao.observeSeriesByIds(it.artist.seriesInferred) }
+        .flowOn(dispatchers.io)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val seriesConfirmed = entry
+        .filterNotNull()
+        .flatMapLatest { seriesEntryDao.observeSeriesByIds(it.artist.seriesConfirmed) }
+        .flowOn(dispatchers.io)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     var otherYears by mutableStateOf(listOf<DataYear>())
         private set
 
-    var seriesImages by mutableStateOf<Map<String, String>>(emptyMap())
-        private set
+    val seriesImages =
+        combine(seriesInferred.filterNotNull(), seriesConfirmed.filterNotNull(), ::Pair)
+            .flatMapLatest { (seriesInferred, seriesConfirmed) ->
+                flow {
+                    val series = (seriesInferred + seriesConfirmed).map { it.series }
+                    val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
+                    emit(seriesImagesCacheResult.seriesIdsToImages)
+                    emit(seriesImagesStore.getAllImages(series, seriesImagesCacheResult))
+                }
+            }
+            .flowOn(dispatchers.io)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
         mutableStateOf(TextFieldState())
     }
 
+    private val mutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
+
     init {
         val hasImages = catalogImages.isNotEmpty()
-        viewModelScope.launch(CustomDispatchers.IO) {
-            val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
-                ?: return@launch
-            val artistWithUserData = entryWithStampRallies.artist
-            val artist = artistWithUserData.artist
-            val seriesInferred = seriesEntryDao.getSeriesByIds(artist.seriesInferred)
-            val seriesConfirmed = seriesEntryDao.getSeriesByIds(artist.seriesConfirmed)
-
-            val entry = Entry(
-                artist = artist,
-                userEntry = artistWithUserData.userEntry,
-                seriesInferred = seriesInferred,
-                seriesConfirmed = seriesConfirmed,
-                stampRallies = entryWithStampRallies.stampRallies,
-            )
-
-            this@ArtistDetailsViewModel.entry = entry
-
-            // Booth changes, so input route may not have booth, re-fetch using correct year's booth
-            if (!hasImages) {
+        // Booth changes, so input route may not have booth, re-fetch using correct year's booth
+        if (!hasImages) {
+            viewModelScope.launch(dispatchers.io) {
+                val artist = entry.filterNotNull().first().artist
                 catalogImages = AlleyDataUtils.getArtistImages(
                     year = route.year,
                     booth = artist.booth,
                     name = artist.name,
                 )
             }
-
-            val series = entry.seriesInferred + entry.seriesConfirmed
-            val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
-            seriesImages = seriesImagesCacheResult.seriesIdsToImages
-            seriesImages = seriesImagesStore.getAllImages(series, seriesImagesCacheResult)
         }
 
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(dispatchers.io) {
             otherYears = (DataYear.entries - year)
                 .filter { artistEntryDao.getEntry(it, id) != null }
         }
 
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(dispatchers.io) {
             userNotesDao.getArtistNotes(id, year)?.notes
                 ?.let(userNotes::setTextAndPlaceCursorAtEnd)
             snapshotFlow { userNotes.text }
@@ -125,22 +152,30 @@ class ArtistDetailsViewModel(
                     userNotesDao.updateArtistNotes(id, year, it.toString())
                 }
         }
+
+        viewModelScope.launch(dispatchers.io) {
+            mutationUpdates.collectLatest {
+                userEntryDao.insertSeriesUserEntry(it)
+            }
+        }
     }
 
     fun onFavoriteToggle(favorite: Boolean) {
-        val entry = entry ?: return
+        val entry = entry.value ?: return
         entry.favorite = favorite
-        viewModelScope.launch(CustomDispatchers.IO) {
+        viewModelScope.launch(dispatchers.io) {
             userEntryDao.insertArtistUserEntry(entry.userEntry.copy(favorite = favorite))
         }
+    }
+
+    fun onSeriesFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
+        mutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
     }
 
     @Stable
     class Entry(
         val artist: ArtistEntry,
         val userEntry: ArtistUserEntry,
-        val seriesInferred: List<SeriesEntry>,
-        val seriesConfirmed: List<SeriesEntry>,
         val stampRallies: List<StampRallyEntry>,
     ) {
         var favorite by mutableStateOf(userEntry.favorite)

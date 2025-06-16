@@ -122,13 +122,19 @@ object ArtistAlleyAppScreen {
                                     }
                                     onStopOrDispose {}
                                 }
+                                val entry by viewModel.entry.collectAsStateWithLifecycle()
+                                val seriesInferred by viewModel.seriesInferred.collectAsStateWithLifecycle()
+                                val seriesConfirmed by viewModel.seriesConfirmed.collectAsStateWithLifecycle()
+                                val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
                                 ArtistDetailsScreen(
                                     route = route,
-                                    entry = { viewModel.entry },
+                                    entry = { entry },
+                                    seriesInferred = { seriesInferred },
+                                    seriesConfirmed = { seriesConfirmed },
                                     userNotesTextState = viewModel.userNotes,
                                     imagePagerState = imagePagerState,
                                     catalogImages = viewModel::catalogImages,
-                                    seriesImages = viewModel::seriesImages,
+                                    seriesImages = { seriesImages },
                                     otherYears = viewModel::otherYears,
                                     eventSink = {
                                         when (it) {
@@ -153,6 +159,11 @@ object ArtistAlleyAppScreen {
                                                             name = null,
                                                         )
                                                     )
+                                            is ArtistDetailsScreen.Event.SeriesFavoriteToggle ->
+                                                viewModel.onSeriesFavoriteToggle(
+                                                    data = it.series,
+                                                    favorite = it.favorite,
+                                                )
                                             is ArtistDetailsScreen.Event.DetailsEvent ->
                                                 when (val event = it.event) {
                                                     is DetailsScreen.Event.FavoriteToggle ->
@@ -160,7 +171,7 @@ object ArtistAlleyAppScreen {
                                                     DetailsScreen.Event.NavigateUp ->
                                                         navigationController.navigateUp()
                                                     is DetailsScreen.Event.OpenImage -> {
-                                                        val artist = viewModel.entry?.artist
+                                                        val artist = viewModel.entry.value?.artist
                                                         if (artist != null && artist.booth != null) {
                                                             navigationController.navigate(
                                                                 Destinations.Images(
@@ -279,13 +290,17 @@ object ArtistAlleyAppScreen {
                                     }
                                     onStopOrDispose {}
                                 }
+                                val entry by viewModel.entry.collectAsStateWithLifecycle()
+                                val series by viewModel.series.collectAsStateWithLifecycle()
+                                val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
                                 StampRallyDetailsScreen(
                                     route = route,
-                                    entry = { viewModel.entry },
+                                    entry = { entry },
+                                    series = { series },
                                     userNotesTextState = viewModel.userNotes,
                                     images = viewModel::images,
                                     imagePagerState = imagePagerState,
-                                    seriesImages = viewModel::seriesImages,
+                                    seriesImages = { seriesImages },
                                     eventSink = {
                                         when (it) {
                                             is StampRallyDetailsScreen.Event.DetailsEvent ->
@@ -295,7 +310,7 @@ object ArtistAlleyAppScreen {
                                                     DetailsScreen.Event.NavigateUp ->
                                                         navigationController.navigateUp()
                                                     is DetailsScreen.Event.OpenImage -> {
-                                                        viewModel.entry?.stampRally?.let {
+                                                        viewModel.entry.value?.stampRally?.let {
                                                             navigationController.navigate(
                                                                 Destinations.Images(
                                                                     year = route.year,
@@ -325,6 +340,11 @@ object ArtistAlleyAppScreen {
                                             is StampRallyDetailsScreen.Event.OpenSeries ->
                                                 navigationController.navigate(
                                                     Destinations.Series(route.year, it.series)
+                                                )
+                                            is StampRallyDetailsScreen.Event.SeriesFavoriteToggle ->
+                                                viewModel.onSeriesFavoriteToggle(
+                                                    data = it.series,
+                                                    favorite = it.favorite,
                                                 )
                                         }
                                     },

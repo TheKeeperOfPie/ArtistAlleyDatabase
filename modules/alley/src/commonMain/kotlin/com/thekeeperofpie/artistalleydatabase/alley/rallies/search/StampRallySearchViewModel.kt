@@ -34,9 +34,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
@@ -84,12 +82,11 @@ class StampRallySearchViewModel(
     )
 
     val lockedSeriesEntry = flowOf(lockedSeries)
-        .mapNotNull {
-            it ?: return@mapNotNull null
-            withContext(dispatchers.io) {
-                seriesEntryDao.getSeriesById(it)
-            }
+        .flatMapLatest {
+            if (it == null) flowOf(null) else seriesEntryDao.getSeriesById(it)
         }
+        .mapLatest { it?.series }
+        .flowOn(dispatchers.io)
         .stateInForCompose(this, null)
 
     init {

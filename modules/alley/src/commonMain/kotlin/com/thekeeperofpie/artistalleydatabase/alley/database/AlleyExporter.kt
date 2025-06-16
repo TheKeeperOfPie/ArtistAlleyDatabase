@@ -55,7 +55,7 @@ class AlleyExporter(
     private val json: Json = Json { encodeDefaults = false },
 ) {
     companion object {
-        private const val SCHEMA_VERSION = "3"
+        private const val SCHEMA_VERSION = "4"
 
         private val CHARACTERS = listOf(
             '0'.rangeTo('9'),
@@ -380,7 +380,23 @@ class AlleyExporter(
                 )
             }
 
-        json.encodeToSink(FullExport(artists, rallies), sink)
+        val series = mutableMapOf<String, FullExport.SeriesData>()
+        series += importExportDao.getExportFullSeries()
+            .associate {
+                it.seriesId to FullExport.SeriesData(
+                    DaoUtils.coerceBooleanForJs(it.favorite),
+                )
+            }
+
+        val merch = mutableMapOf<String, FullExport.MerchData>()
+        merch += importExportDao.getExportFullMerch()
+            .associate {
+                it.merchId to FullExport.MerchData(
+                    DaoUtils.coerceBooleanForJs(it.favorite),
+                )
+            }
+
+        json.encodeToSink(FullExport(artists, rallies, series, merch), sink)
     }
 
     private suspend fun importFull(data: FullExport) {
@@ -394,12 +410,20 @@ class AlleyExporter(
         data.rallies.forEach { (id, data) ->
             importExportDao.importStampRally(id, data.favorite, data.ignored, data.notes)
         }
+        data.series.forEach { (id, data) ->
+            importExportDao.importSeries(id, data.favorite)
+        }
+        data.merch.forEach { (id, data) ->
+            importExportDao.importMerch(id, data.favorite)
+        }
     }
 
     @Serializable
     private class FullExport(
-        val artists: Map<DataYear?, Map<String, ArtistData>>,
-        val rallies: Map<String, RallyData>,
+        val artists: Map<DataYear?, Map<String, ArtistData>> = emptyMap(),
+        val rallies: Map<String, RallyData> = emptyMap(),
+        val series: Map<String, SeriesData> = emptyMap(),
+        val merch: Map<String, MerchData> = emptyMap(),
     ) {
         @Serializable
         data class ArtistData(
@@ -419,6 +443,18 @@ class AlleyExporter(
             val ignored: Boolean = false,
             @SerialName("n")
             val notes: String? = null,
+        )
+
+        @Serializable
+        data class SeriesData(
+            @SerialName("f")
+            val favorite: Boolean = false,
+        )
+
+        @Serializable
+        data class MerchData(
+            @SerialName("f")
+            val favorite: Boolean = false,
         )
     }
 }

@@ -4,16 +4,24 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -35,33 +43,45 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.cash.paging.PagingData
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_go_to_artists
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_go_to_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_go_to_series
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_go_to_stamp_rallies
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_series
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_stamp_rallies
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_merch
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
-import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_artists
-import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
+import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
@@ -70,8 +90,12 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
+import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -86,9 +110,14 @@ object FavoritesScreen {
         favoritesViewModel: FavoritesViewModel,
         artistSortFilterController: ArtistSortFilterController,
         stampRallySortFilterController: StampRallySortFilterController,
-        scrollStateSaver: ScrollStateSaver,
+        artistsScrollStateSaver: ScrollStateSaver,
+        ralliesScrollStateSaver: ScrollStateSaver,
+        seriesScrollStateSaver: ScrollStateSaver,
+        merchScrollStateSaver: ScrollStateSaver,
         onNavigateToArtists: () -> Unit,
         onNavigateToRallies: () -> Unit,
+        onNavigateToSeries: () -> Unit,
+        onNavigateToMerch: () -> Unit,
     ) {
         val navigationController = LocalNavigationController.current
         FavoritesScreen(
@@ -107,14 +136,27 @@ object FavoritesScreen {
                     ralliesSearchState = favoritesViewModel.stampRallySearchState,
                     ralliesSortOption = stampRallySortFilterController.sortOption,
                     ralliesSortAscending = stampRallySortFilterController.sortAscending,
+                    seriesEntries = favoritesViewModel.seriesEntries,
+                    merchEntries = favoritesViewModel.merchEntries,
                 )
             },
             artistSortFilterState = artistSortFilterController.state,
             stampRallySortFilterState = stampRallySortFilterController.state,
-            scrollStateSaver = scrollStateSaver,
-            onNavigateToArtists = onNavigateToArtists,
-            onNavigateToRallies = onNavigateToRallies,
-            eventSink = { favoritesViewModel.onEvent(navigationController, it) },
+            artistsScrollStateSaver = artistsScrollStateSaver,
+            ralliesScrollStateSaver = ralliesScrollStateSaver,
+            seriesScrollStateSaver = seriesScrollStateSaver,
+            merchScrollStateSaver = merchScrollStateSaver,
+            getSeriesImage = favoritesViewModel::getSeriesImage,
+            eventSink = {
+                favoritesViewModel.onEvent(
+                    navigationController = navigationController,
+                    event = it,
+                    onNavigateToArtists = onNavigateToArtists,
+                    onNavigateToRallies = onNavigateToRallies,
+                    onNavigateToSeries = onNavigateToSeries,
+                    onNavigateToMerch = onNavigateToMerch,
+                )
+            },
         )
     }
 
@@ -123,9 +165,11 @@ object FavoritesScreen {
         state: State,
         artistSortFilterState: SortFilterState<*>,
         stampRallySortFilterState: SortFilterState<*>,
-        scrollStateSaver: ScrollStateSaver,
-        onNavigateToArtists: () -> Unit,
-        onNavigateToRallies: () -> Unit,
+        artistsScrollStateSaver: ScrollStateSaver,
+        ralliesScrollStateSaver: ScrollStateSaver,
+        seriesScrollStateSaver: ScrollStateSaver,
+        merchScrollStateSaver: ScrollStateSaver,
+        getSeriesImage: (SeriesEntry) -> String?,
         eventSink: (Event) -> Unit,
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
@@ -137,14 +181,17 @@ object FavoritesScreen {
                 }
             }
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-            val gridState = scrollStateSaver.lazyStaggeredGridState()
 
             var tab by state.tab.collectAsMutableStateWithLifecycle()
             val artistsEntries = state.artistsEntries.collectAsLazyPagingItemsWithLifecycle()
             val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItemsWithLifecycle()
+            val seriesEntries = state.seriesEntries.collectAsLazyPagingItemsWithLifecycle()
+            val merchEntries = state.merchEntries.collectAsLazyPagingItemsWithLifecycle()
             val entries = when (tab) {
                 EntryTab.ARTISTS -> artistsEntries
                 EntryTab.RALLIES -> ralliesEntries
+                EntryTab.SERIES -> seriesEntries
+                EntryTab.MERCH -> merchEntries
             }
 
             Box {
@@ -154,6 +201,8 @@ object FavoritesScreen {
                     state = when (tab) {
                         EntryTab.ARTISTS -> artistSortFilterState
                         EntryTab.RALLIES -> stampRallySortFilterState
+                        EntryTab.SERIES -> null // TODO: SortFilterState
+                        EntryTab.MERCH -> null // TODO: SortFilterState
                     },
                     scaffoldState = scaffoldState,
                     sheetPeekHeight = 72.dp,
@@ -187,7 +236,7 @@ object FavoritesScreen {
                     when (tab) {
                         EntryTab.ARTISTS -> ArtistContent(
                             state = state,
-                            gridState = gridState,
+                            gridState = artistsScrollStateSaver.lazyStaggeredGridState(),
                             searchState = state.artistsSearchState,
                             horizontalScrollState = horizontalScrollState,
                             entries = artistsEntries,
@@ -202,17 +251,11 @@ object FavoritesScreen {
                                     dataYearHeaderState = dataYearHeaderState,
                                 )
                             },
-                            noResultsItem = {
-                                NoResultsItem(
-                                    tab = tab,
-                                    onNavigateToArtists = onNavigateToArtists,
-                                    onNavigateToRallies = onNavigateToRallies,
-                                )
-                            },
+                            noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
                         )
                         EntryTab.RALLIES -> RallyContent(
                             state = state,
-                            gridState = gridState,
+                            gridState = ralliesScrollStateSaver.lazyStaggeredGridState(),
                             searchState = state.ralliesSearchState,
                             horizontalScrollState = horizontalScrollState,
                             entries = ralliesEntries,
@@ -227,13 +270,32 @@ object FavoritesScreen {
                                     dataYearHeaderState = dataYearHeaderState,
                                 )
                             },
-                            noResultsItem = {
-                                NoResultsItem(
-                                    tab = tab,
-                                    onNavigateToArtists = onNavigateToArtists,
-                                    onNavigateToRallies = onNavigateToRallies,
+                            noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
+                        )
+                        EntryTab.SERIES -> SeriesContent(
+                            listState = seriesScrollStateSaver.lazyListState(),
+                            series = seriesEntries,
+                            getSeriesImage = getSeriesImage,
+                            header = {
+                                Header(
+                                    tab = { tab },
+                                    onTabChange = { tab = it },
+                                    dataYearHeaderState = dataYearHeaderState,
                                 )
                             },
+                            eventSink = eventSink,
+                        )
+                        EntryTab.MERCH -> MerchContent(
+                            listState = merchScrollStateSaver.lazyListState(),
+                            merch = merchEntries,
+                            header = {
+                                Header(
+                                    tab = { tab },
+                                    onTabChange = { tab = it },
+                                    dataYearHeaderState = dataYearHeaderState,
+                                )
+                            },
+                            eventSink = eventSink,
                         )
                     }
 
@@ -388,6 +450,182 @@ object FavoritesScreen {
     }
 
     @Composable
+    private fun SeriesContent(
+        listState: LazyListState,
+        series: LazyPagingItems<SeriesWithUserData>,
+        getSeriesImage: (SeriesEntry) -> String?,
+        header: @Composable () -> Unit,
+        eventSink: (Event) -> Unit,
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            val width = LocalWindowConfiguration.current.screenWidthDp
+            val horizontalContentPadding = if (width > 800.dp) {
+                (width - 800.dp) / 2
+            } else {
+                0.dp
+            }
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = horizontalContentPadding,
+                    end = horizontalContentPadding,
+                    bottom = 80.dp
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.TopCenter)
+            ) {
+                item("header") { header() }
+
+                if (series.itemCount == 0) {
+                    if (series.loadState.refresh.isLoading) {
+                        item("loadingIndicator") {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(8.dp)
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    } else {
+                        item("noResults") {
+                            NoResultsItem(
+                                tab = EntryTab.SERIES,
+                                eventSink = eventSink,
+                            )
+                        }
+                    }
+                } else {
+                    items(
+                        count = series.itemCount,
+                        key = series.itemKey { it.series.id },
+                        contentType = series.itemContentType { "series" },
+                    ) { index ->
+                        val data = series[index]
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            SeriesRow(
+                                data = data,
+                                image = {
+                                    data?.let { getSeriesImage(it.series) }
+                                },
+                                textStyle = LocalTextStyle.current,
+                                onFavoriteToggle = {
+                                    if (data != null) {
+                                        eventSink(Event.SeriesFavoriteToggle(data, it))
+                                    }
+                                },
+                                onClick = {
+                                    data?.let {
+                                        eventSink(Event.OpenSeries(it.series.id))
+                                    }
+                                },
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                }
+            }
+
+            VerticalScrollbar(
+                state = listState,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .padding(bottom = 72.dp)
+            )
+        }
+    }
+
+    @Composable
+    private fun MerchContent(
+        listState: LazyListState,
+        merch: LazyPagingItems<MerchWithUserData>,
+        header: @Composable () -> Unit,
+        eventSink: (Event) -> Unit,
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            val width = LocalWindowConfiguration.current.screenWidthDp
+            val horizontalContentPadding = if (width > 800.dp) {
+                (width - 800.dp) / 2
+            } else {
+                0.dp
+            }
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = horizontalContentPadding,
+                    end = horizontalContentPadding,
+                    bottom = 80.dp
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.TopCenter)
+            ) {
+                item("header") { header() }
+
+                if (merch.itemCount == 0) {
+                    if (merch.loadState.refresh.isLoading) {
+                        item("loadingIndicator") {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(8.dp)
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    } else {
+                        item("noResults") {
+                            NoResultsItem(
+                                tab = EntryTab.MERCH,
+                                eventSink = eventSink,
+                            )
+                        }
+                    }
+                } else {
+                    items(
+                        count = merch.itemCount,
+                        key = merch.itemKey { it.merch.name },
+                        contentType = merch.itemContentType { "merch" },
+                    ) { index ->
+                        val data = merch[index]
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            MerchRow(
+                                data = data,
+                                showNotes = false,
+                                onFavoriteToggle = {
+                                    if (data != null) {
+                                        eventSink(Event.MerchFavoriteToggle(data, it))
+                                    }
+                                },
+                                onClick = {
+                                    if (data != null) {
+                                        eventSink(Event.OpenMerch(data.merch.name))
+                                    }
+                                },
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                }
+            }
+
+            VerticalScrollbar(
+                state = listState,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .padding(bottom = 72.dp)
+            )
+        }
+    }
+
+    @Composable
     private fun Header(
         tab: () -> EntryTab,
         onTabChange: (EntryTab) -> Unit,
@@ -396,7 +634,7 @@ object FavoritesScreen {
         Column {
             DataYearHeader(dataYearHeaderState)
             val tab = tab()
-            TabRow(EntryTab.entries.indexOf(tab)) {
+            PrimaryScrollableTabRow(EntryTab.entries.indexOf(tab)) {
                 EntryTab.entries.forEach {
                     Tab(
                         selected = tab == it,
@@ -411,8 +649,7 @@ object FavoritesScreen {
     @Composable
     private fun NoResultsItem(
         tab: EntryTab,
-        onNavigateToArtists: () -> Unit,
-        onNavigateToRallies: () -> Unit,
+        eventSink: (Event) -> Unit,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -421,6 +658,8 @@ object FavoritesScreen {
             val textRes = when (tab) {
                 EntryTab.ARTISTS -> Res.string.alley_favorites_empty_artists
                 EntryTab.RALLIES -> Res.string.alley_favorites_empty_stamp_rallies
+                EntryTab.SERIES -> Res.string.alley_favorites_empty_series
+                EntryTab.MERCH -> Res.string.alley_favorites_empty_merch
             }
             Text(
                 text = stringResource(textRes),
@@ -428,13 +667,17 @@ object FavoritesScreen {
             )
             FilledTonalButton(onClick = {
                 when (tab) {
-                    EntryTab.ARTISTS -> onNavigateToArtists()
-                    EntryTab.RALLIES -> onNavigateToRallies()
+                    EntryTab.ARTISTS -> eventSink(Event.NavigateToArtists)
+                    EntryTab.RALLIES -> eventSink(Event.NavigateToRallies)
+                    EntryTab.SERIES -> eventSink(Event.NavigateToSeries)
+                    EntryTab.MERCH -> eventSink(Event.NavigateToMerch)
                 }
             }) {
                 val buttonTextRes = when (tab) {
                     EntryTab.ARTISTS -> Res.string.alley_favorites_empty_go_to_artists
                     EntryTab.RALLIES -> Res.string.alley_favorites_empty_go_to_stamp_rallies
+                    EntryTab.SERIES -> Res.string.alley_favorites_empty_go_to_series
+                    EntryTab.MERCH -> Res.string.alley_favorites_empty_go_to_merch
                 }
                 Text(stringResource(buttonTextRes))
             }
@@ -442,8 +685,10 @@ object FavoritesScreen {
     }
 
     enum class EntryTab(val text: StringResource) {
-        ARTISTS(Res.string.alley_nav_bar_artists),
-        RALLIES(Res.string.alley_nav_bar_stamp_rallies),
+        ARTISTS(Res.string.alley_favorites_artists),
+        RALLIES(Res.string.alley_favorites_rallies),
+        SERIES(Res.string.alley_favorites_series),
+        MERCH(Res.string.alley_favorites_merch),
     }
 
     @Stable
@@ -461,11 +706,26 @@ object FavoritesScreen {
         val ralliesSearchState: SearchScreen.State<StampRallySearchScreen.StampRallyColumn>,
         val ralliesSortOption: MutableStateFlow<StampRallySearchSortOption>,
         val ralliesSortAscending: MutableStateFlow<Boolean>,
+        val seriesEntries: Flow<PagingData<SeriesWithUserData>>,
+        val merchEntries: Flow<PagingData<MerchWithUserData>>,
     )
 
     sealed interface Event {
         data class SearchEvent(val event: SearchScreen.Event<*>) : Event
         data class OpenSeries(val series: String) : Event
         data class OpenMerch(val merch: String) : Event
+        data object NavigateToArtists : Event
+        data object NavigateToRallies : Event
+        data object NavigateToSeries : Event
+        data object NavigateToMerch : Event
+        data class SeriesFavoriteToggle(
+            val series: SeriesWithUserData,
+            val favorite: Boolean,
+        ) : Event
+
+        data class MerchFavoriteToggle(
+            val merch: MerchWithUserData,
+            val favorite: Boolean,
+        ) : Event
     }
 }

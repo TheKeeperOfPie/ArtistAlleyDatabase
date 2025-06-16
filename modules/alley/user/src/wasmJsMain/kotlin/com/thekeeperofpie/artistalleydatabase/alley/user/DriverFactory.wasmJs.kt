@@ -11,6 +11,9 @@ private fun createCustomWorker(): Worker =
 
 private const val pragmaUserVersion = "user_version"
 
+@JsFun("(output) => console.log(output)")
+external fun consoleLog(output: String)
+
 @Inject
 actual class DriverFactory {
 
@@ -48,7 +51,7 @@ actual class DriverFactory {
             }
         }
 
-//        console.log("Migrating from $oldVersion to $currentVersion")
+        consoleLog("Migrating from $oldVersion to $currentVersion")
 
         if (oldVersion == null || oldVersion == 0L) {
             AlleySqlDatabase.Schema.create(driver).await()

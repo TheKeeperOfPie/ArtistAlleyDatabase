@@ -105,7 +105,7 @@ internal fun AlleySettingsScreen(
         val navigationController = LocalNavigationController.current
         SettingsScreen(
             sections = state.sections,
-            upIconOption = UpIconOption.Back(navigationController::popBackStack),
+            upIconOption = UpIconOption.Back(navigationController),
             automaticallyInsertDividers = false,
             modifier = Modifier.widthIn(max = 1200.dp),
         ) {

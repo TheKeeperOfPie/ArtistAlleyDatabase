@@ -53,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.prizeLimitText
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
@@ -71,6 +72,7 @@ object StampRallyDetailsScreen {
     operator fun invoke(
         route: Destinations.StampRallyDetails,
         entry: () -> StampRallyDetailsViewModel.Entry?,
+        series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
         images: () -> List<CatalogImage>,
         imagePagerState: PagerState,
@@ -98,6 +100,7 @@ object StampRallyDetailsScreen {
         ) {
             detailsContent(
                 entry = entry,
+                series = series,
                 userNotesTextState = userNotesTextState,
                 seriesImages = seriesImages,
                 eventSink = eventSink,
@@ -113,6 +116,7 @@ object StampRallyDetailsScreen {
 
     private fun LazyListScope.detailsContent(
         entry: () -> StampRallyDetailsViewModel.Entry?,
+        series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
         seriesImages: () -> Map<String, String>,
         eventSink: (Event) -> Unit,
@@ -269,13 +273,13 @@ object StampRallyDetailsScreen {
             }
         }
 
-        val series = entry()?.series
+        val series = series()
         if (series?.isNotEmpty() != false) {
             item("artistSeries") {
                 Column(Modifier.animateItem()) {
                     val languageOption = LocalLanguageOptionMedia.current
                     val sorted = remember(series, languageOption) {
-                        series?.sortedBy { it.name(languageOption) }
+                        series?.sortedBy { it.series.name(languageOption) }
                     }
                     ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         expandableListInfoText(
@@ -293,16 +297,17 @@ object StampRallyDetailsScreen {
                             },
                             item = { value, expanded, _ ->
                                 SeriesRow(
-                                    series = value,
-                                    image = { value?.id?.let { seriesImages()[it] } },
+                                    data = value,
+                                    image = { value?.series?.id?.let { seriesImages()[it] } },
+                                    onFavoriteToggle = {
+                                        if (value != null) {
+                                            eventSink(Event.SeriesFavoriteToggle(value, it))
+                                        }
+                                    },
                                     onClick = if (expanded) {
                                         {
-                                            value?.id?.let {
-                                                eventSink(
-                                                    StampRallyDetailsScreen.Event.OpenSeries(
-                                                        it
-                                                    )
-                                                )
+                                            value?.series?.id?.let {
+                                                eventSink(Event.OpenSeries(it))
                                             }
                                         }
                                     } else null,
@@ -371,6 +376,10 @@ object StampRallyDetailsScreen {
         data class DetailsEvent(val event: DetailsScreen.Event) : Event
         data class OpenArtist(val artist: ArtistEntry) : Event
         data class OpenSeries(val series: String) : Event
+        data class SeriesFavoriteToggle(
+            val series: SeriesWithUserData,
+            val favorite: Boolean,
+        ) : Event
     }
 }
 
@@ -388,10 +397,10 @@ private fun PhoneLayout() {
                     stampRally = stampRally.stampRally,
                     userEntry = stampRally.userEntry,
                     artists = artists,
-                    series = emptyList(),
                     otherTables = listOf("ANX-101"),
                 )
             },
+            series = { emptyList() },
             userNotesTextState = rememberTextFieldState(),
             images = { images },
             imagePagerState = rememberImagePagerState(images, 1),

@@ -787,7 +787,7 @@ fun <T> expandableListInfoText(
 ): Boolean {
     if (values?.isEmpty() == true) return false
 
-    var expanded by rememberSaveable(labelTextRes, values) { mutableStateOf(!allowExpand) }
+    var expanded by rememberSaveable(labelTextRes) { mutableStateOf(!allowExpand) }
     val showExpand = allowExpand && (values?.size ?: 0) > 3
 
     Box {

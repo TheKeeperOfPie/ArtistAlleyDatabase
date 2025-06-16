@@ -64,7 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
-import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
@@ -481,7 +481,7 @@ object ArtistSearchScreen {
                     randomSeed = 1,
                     showOnlyConfirmedTags = false,
                     entry = it,
-                    series = it.artist.seriesInferred.map { previewSeriesEntry(it) }
+                    series = it.artist.seriesInferred.map { previewSeriesWithUserData(it).series }
                 )
             }
         val state = State(

@@ -108,7 +108,9 @@ object AlleyRootScreen {
                                 tagsViewModel = viewModel,
                                 seriesFiltersState = { viewModel.seriesFiltersState },
                                 onSeriesFilterClick = viewModel::onSeriesFilterClick,
+                                onSeriesFavoriteToggle = viewModel::onSeriesFavoriteToggle,
                                 onSeriesClick = { onSeriesClick(it.id) },
+                                onMerchFavoriteToggle = viewModel::onMerchFavoriteToggle,
                                 onMerchClick = { onMerchClick(it.name) },
                             )
                         }
@@ -120,13 +122,33 @@ object AlleyRootScreen {
                                 favoritesViewModel = favoritesViewModel,
                                 artistSortFilterController = favoritesViewModel.artistSortFilterController,
                                 stampRallySortFilterController = favoritesViewModel.stampRallySortFilterController,
-                                scrollStateSaver = ScrollStateSaver.fromMap(
-                                    Destination.FAVORITES.name,
+                                artistsScrollStateSaver = ScrollStateSaver.fromMap(
+                                    Destination.FAVORITES.name + "artists",
+                                    scrollPositions,
+                                ),
+                                ralliesScrollStateSaver = ScrollStateSaver.fromMap(
+                                    Destination.FAVORITES.name + "rallies",
+                                    scrollPositions,
+                                ),
+                                seriesScrollStateSaver = ScrollStateSaver.fromMap(
+                                    Destination.FAVORITES.name + "series",
+                                    scrollPositions,
+                                ),
+                                merchScrollStateSaver = ScrollStateSaver.fromMap(
+                                    Destination.FAVORITES.name + "merch",
                                     scrollPositions,
                                 ),
                                 onNavigateToArtists = { currentDestination = Destination.ARTISTS },
                                 onNavigateToRallies = {
                                     currentDestination = Destination.STAMP_RALLIES
+                                },
+                                onNavigateToSeries = {
+                                    // TODO: This doesn't tab over to series
+                                    currentDestination = Destination.BROWSE
+                                },
+                                onNavigateToMerch = {
+                                    // TODO: This doesn't tab over to merch
+                                    currentDestination = Destination.BROWSE
                                 },
                             )
                         }

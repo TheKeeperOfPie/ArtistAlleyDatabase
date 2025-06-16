@@ -3,25 +3,33 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ArtistSeriesViewModel(
+    dispatchers: CustomDispatchers,
     navigationTypeMap: NavigationTypeMap,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
+    userEntryDao: UserEntryDao,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -35,7 +43,7 @@ class ArtistSeriesViewModel(
     val seriesEntry = if (route.series == null) {
         ReadOnlyStateFlow(null)
     } else {
-        flowFromSuspend { seriesEntryDao.getSeriesById(route.series) }
+        seriesEntryDao.getSeriesById(route.series)
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
     }
 
@@ -43,6 +51,7 @@ class ArtistSeriesViewModel(
         ReadOnlyStateFlow(null)
     } else {
         seriesEntry.filterNotNull()
+            .map { it.series }
             .map {
                 val cachedResult = seriesImagesStore.getCachedImages(listOf(it))
                 val cachedImage = cachedResult.seriesIdsToImages[it.id]
@@ -50,5 +59,19 @@ class ArtistSeriesViewModel(
                 seriesImagesStore.getAllImages(listOf(it), cachedResult)[it.id]
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
+    }
+
+    private val mutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
+
+    init {
+        viewModelScope.launch(dispatchers.io) {
+            mutationUpdates.collectLatest {
+                userEntryDao.insertSeriesUserEntry(it)
+            }
+        }
+    }
+
+    fun onFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
+        mutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
     }
 }
