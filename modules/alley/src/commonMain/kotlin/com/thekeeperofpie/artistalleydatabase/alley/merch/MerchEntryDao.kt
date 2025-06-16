@@ -95,7 +95,7 @@ class MerchEntryDao(
             database = database,
             countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("merchEntry"),
+            tableNames = listOf("merchEntry", "merchUserEntry"),
             mapper = SqlCursor::toMerchWithUserData,
         )
     }
@@ -158,7 +158,7 @@ class MerchEntryDao(
             database = database,
             countStatement = countStatement,
             statement = statement,
-            tableNames = listOf("merchEntry_fts"),
+            tableNames = listOf("merchEntry_fts", "merchUserEntry"),
             mapper = SqlCursor::toMerchWithUserData,
         )
     }
