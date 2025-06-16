@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
-import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
@@ -11,7 +10,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TagEntryDao(
-    private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val seriesDao: suspend () -> SeriesQueries = { database().seriesQueries },
     private val merchDao: suspend () -> MerchQueries = { database().merchQueries },

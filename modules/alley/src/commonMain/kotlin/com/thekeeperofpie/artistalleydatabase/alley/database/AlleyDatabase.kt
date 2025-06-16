@@ -46,6 +46,6 @@ class ArtistAlleyDatabase(
     internal val userNotesDao = UserNotesDao(database)
     internal val merchEntryDao = MerchEntryDao(driver, database)
     internal val seriesEntryDao = SeriesEntryDao(driver, database)
-    internal val tagEntryDao = TagEntryDao(driver, database)
-    internal val userEntryDao = UserEntryDao(database, settings)
+    internal val tagEntryDao = TagEntryDao(database)
+    internal val userEntryDao = UserEntryDao(driver, database, settings)
 }

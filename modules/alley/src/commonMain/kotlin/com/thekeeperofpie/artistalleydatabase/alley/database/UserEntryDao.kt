@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
@@ -18,8 +19,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.utils.PersistentStorageReque
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlin.time.Duration.Companion.seconds
 
 private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
     BoothWithFavorite(
@@ -50,6 +53,7 @@ private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class UserEntryDao(
+    private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val settings: ArtistAlleySettings,
     private val dao: suspend () -> UserEntryQueries = { database().userEntryQueries },
@@ -91,6 +95,8 @@ class UserEntryDao(
                 )
                 insertArtistUserEntry(newEntry)
             }
+            delay(1.seconds)
+            driver().notifyListeners("artistEntry", "artistUserEntry")
         }
     }
 
@@ -106,6 +112,8 @@ class UserEntryDao(
                 )
                 insertStampRallyUserEntry(newEntry)
             }
+            delay(1.seconds)
+            driver().notifyListeners("stampRallyEntry", "stampRallyUserEntry")
         }
     }
 
@@ -118,6 +126,8 @@ class UserEntryDao(
                 val newEntry = existing.copy(favorite = entry.favorite)
                 insertSeriesUserEntry(newEntry)
             }
+            delay(1.seconds)
+            driver().notifyListeners("seriesEntry", "seriesUserEntry")
         }
     }
 
@@ -130,6 +140,8 @@ class UserEntryDao(
                 val newEntry = existing.copy(favorite = entry.favorite)
                 insertMerchUserEntry(newEntry)
             }
+            delay(1.seconds)
+            driver().notifyListeners("merchEntry", "merchUserEntry")
         }
     }
 }
