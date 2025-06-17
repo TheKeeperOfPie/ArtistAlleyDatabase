@@ -474,7 +474,10 @@ function insertImages(sheet: Sheet, row: number, targetColumnName: string, image
 
 function parseFileIndex(file: DriveFile): number {
     const name = file.getName()
-    const separatorIndex = name.indexOf("-")
+    let separatorIndex = name.indexOf("-")
+    if (separatorIndex < 0) {
+        separatorIndex = name.indexOf(".")
+    }
     return Number(name.substring(0, separatorIndex).trim())
 }
 
