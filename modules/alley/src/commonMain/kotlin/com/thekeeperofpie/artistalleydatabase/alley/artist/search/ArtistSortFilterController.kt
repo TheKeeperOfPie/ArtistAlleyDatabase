@@ -84,7 +84,7 @@ class ArtistSortFilterController(
     seriesImagesStore: SeriesImagesStore,
     val settings: ArtistAlleySettings,
     allowHideFavorited: Boolean = true,
-    allowSettingsBasedConfirmedTagsOnly: Boolean = true,
+    allowSettingsBasedToggles: Boolean = true,
 ) {
     val sortOption = settings.artistsSortOption
     val sortAscending = settings.artistsSortAscending
@@ -276,11 +276,18 @@ class ArtistSortFilterController(
         }
     }
 
-    val onlyCatalogImages = savedStateHandle.getMutableStateFlow("onlyCatalogImages", false)
-    private val onlyCatalogImagesSection = SortFilterSectionState.Switch(
+    val showOnlyWithCatalog = if (allowSettingsBasedToggles) {
+        settings.showOnlyWithCatalog
+    } else {
+        savedStateHandle.getMutableStateFlow(
+            key = "showOnlyWithCatalog",
+            initialValue = settings.showOnlyWithCatalog.value,
+        )
+    }
+    private val showOnlyWithCatalogSection = SortFilterSectionState.Switch(
         title = Res.string.alley_filter_only_catalogs,
         defaultEnabled = false,
-        enabled = onlyCatalogImages
+        enabled = showOnlyWithCatalog,
     )
 
     private val gridByDefaultSection = SortFilterSectionState.SwitchBySetting(
@@ -297,7 +304,7 @@ class ArtistSortFilterController(
         allowClear = true,
     )
 
-    val showOnlyConfirmedTags = if (allowSettingsBasedConfirmedTagsOnly) {
+    val showOnlyConfirmedTags = if (allowSettingsBasedToggles) {
         settings.showOnlyConfirmedTags
     } else {
         savedStateHandle.getMutableStateFlow(
@@ -342,10 +349,10 @@ class ArtistSortFilterController(
         titleDropdownContentDescription = Res.string.alley_filter_advanced_expand_content_description,
         children = MutableStateFlow(
             listOfNotNull(
-                onlyCatalogImagesSection,
+                showOnlyWithCatalogSection,
                 gridByDefaultSection,
                 randomCatalogImageSection,
-                showOnlyConfirmedTagsSection.takeIf { allowSettingsBasedConfirmedTagsOnly },
+                showOnlyConfirmedTagsSection.takeIf { allowSettingsBasedToggles },
                 hideFavoritedSection.takeIf { allowHideFavorited },
                 hideIgnoredSection,
                 forceOneDisplayColumnSection,
@@ -371,7 +378,7 @@ class ArtistSortFilterController(
         merchIdIn,
         commissionsIn,
         linkTypeIdIn,
-        onlyCatalogImages,
+        showOnlyWithCatalog,
         showOnlyConfirmedTags,
         hideFavorited,
         hideIgnored,

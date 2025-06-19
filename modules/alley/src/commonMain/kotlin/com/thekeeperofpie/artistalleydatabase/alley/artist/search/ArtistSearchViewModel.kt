@@ -106,7 +106,7 @@ class ArtistSearchViewModel(
         merchEntryDao = merchEntryDao,
         seriesEntryDao = seriesEntryDao,
         seriesImagesStore = seriesImagesStore,
-        allowSettingsBasedConfirmedTagsOnly = lockedMerch == null && lockedSeries == null,
+        allowSettingsBasedToggles = lockedMerch == null && lockedSeries == null,
     )
 
     val displayType = settings.displayType

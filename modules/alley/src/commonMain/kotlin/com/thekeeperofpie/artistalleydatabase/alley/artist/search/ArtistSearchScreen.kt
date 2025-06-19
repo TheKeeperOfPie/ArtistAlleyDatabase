@@ -131,13 +131,13 @@ object ArtistSearchScreen {
         sortFilterState.ImmediateScrollResetEffect(gridState)
 
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-            val showOnlyCatalogImages by state.onlyCatalogImages.collectAsStateWithLifecycle()
+            val showOnlyWithCatalog by state.showOnlyWithCatalog.collectAsStateWithLifecycle()
             val query by state.query.collectAsStateWithLifecycle()
             val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
             val shouldShowCount by remember {
                 derivedStateOf {
                     query.isNotEmpty()
-                            || showOnlyCatalogImages
+                            || showOnlyWithCatalog
                             || lockedSeriesEntry != null
                             || state.lockedMerch != null
 
@@ -442,7 +442,7 @@ object ArtistSearchScreen {
         val year: MutableStateFlow<DataYear>,
         val query: MutableStateFlow<String>,
         val results: StateFlow<PagingData<ArtistEntryGridModel>>,
-        val onlyCatalogImages: StateFlow<Boolean>,
+        val showOnlyWithCatalog: StateFlow<Boolean>,
         val sortOption: MutableStateFlow<ArtistSearchSortOption>,
         val sortAscending: MutableStateFlow<Boolean>,
         val searchState: SearchScreen.State<ArtistColumn>,
@@ -458,7 +458,7 @@ object ArtistSearchScreen {
             year = viewModel.year,
             query = viewModel.query,
             results = viewModel.results,
-            onlyCatalogImages = sortFilterController.onlyCatalogImages,
+            showOnlyWithCatalog = sortFilterController.showOnlyWithCatalog,
             sortOption = sortFilterController.sortOption,
             sortAscending = sortFilterController.sortAscending,
             searchState = viewModel.searchState,
@@ -492,7 +492,7 @@ object ArtistSearchScreen {
             year = MutableStateFlow(DataYear.YEAR_2025),
             query = MutableStateFlow(""),
             results = MutableStateFlow(PagingData.from(results)),
-            onlyCatalogImages = MutableStateFlow(false),
+            showOnlyWithCatalog = MutableStateFlow(false),
             sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
             sortAscending = MutableStateFlow(false),
             searchState = SearchScreen.State<ArtistColumn>(

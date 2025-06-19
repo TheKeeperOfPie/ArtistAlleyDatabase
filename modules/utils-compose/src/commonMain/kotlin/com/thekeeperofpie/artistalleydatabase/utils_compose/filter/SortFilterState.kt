@@ -365,7 +365,12 @@ sealed class SortFilterSectionState(val id: String) {
             if (expanded || !isDefault()) {
                 Column(modifier = Modifier.padding(start = 16.dp)) {
                     children.forEachIndexed { index, section ->
-                        section.Content(state = state, showDivider = index != children.lastIndex)
+                        if (expanded || !section.isDefault()) {
+                            section.Content(
+                                state = state,
+                                showDivider = index != children.lastIndex,
+                            )
+                        }
                     }
                 }
             }

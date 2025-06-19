@@ -73,6 +73,7 @@ class ArtistAlleyAppSettings(
     override val showGridByDefault = boolean("showGridByDefault", false)
     override val showRandomCatalogImage = boolean("showRandomCatalogImage", false)
     override val showOnlyConfirmedTags = boolean("showOnlyConfirmedTags", false)
+    override val showOnlyWithCatalog = boolean("showOnlyWithCatalog", false)
     override val forceOneDisplayColumn = boolean("forceOneDisplayColumn", false)
     override val dataYear = initialize(
         key = "dataYear",
