@@ -32,6 +32,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_equation_any
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_equation_paid
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_free
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_other
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_paid
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_unknown
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_artists
@@ -58,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
@@ -187,30 +189,30 @@ object StampRallyDetailsScreen {
                     val tableMin = stampRally.tableMin
                     val totalCost = stampRally.totalCost
                     val tableCount = stampRally.tables.count()
-                    if (tableMin == null) {
-                        stringResource(Res.string.alley_stamp_rally_cost_unknown)
-                    } else if (tableMin == -1L) {
-                        stringResource(Res.string.alley_stamp_rally_cost_paid)
-                    } else if (tableMin == 0L) {
-                        stringResource(Res.string.alley_stamp_rally_cost_free)
-                    } else if (tableMin == 1L) {
-                        if (tableCount > 0) {
-                            stringResource(
-                                Res.string.alley_stamp_rally_cost_equation_any,
-                                tableCount
-                            )
+                    when (tableMin) {
+                        TableMin.Any ->
+                            if (tableCount > 0) {
+                                stringResource(
+                                    Res.string.alley_stamp_rally_cost_equation_any,
+                                    tableCount
+                                )
+                            } else {
+                                stringResource(Res.string.alley_stamp_rally_cost_any)
+                            }
+                        TableMin.Free -> stringResource(Res.string.alley_stamp_rally_cost_free)
+                        TableMin.Other -> stringResource(Res.string.alley_stamp_rally_cost_other)
+                        TableMin.Paid -> stringResource(Res.string.alley_stamp_rally_cost_paid)
+                        is TableMin.Price -> if (totalCost == null) {
+                            stringResource(Res.string.alley_stamp_rally_cost_paid)
                         } else {
-                            stringResource(Res.string.alley_stamp_rally_cost_any)
+                            stringResource(
+                                Res.string.alley_stamp_rally_cost_equation_paid,
+                                tableMin.usd,
+                                tableCount,
+                                totalCost
+                            )
                         }
-                    } else if (totalCost != null && tableCount > 0) {
-                        stringResource(
-                            Res.string.alley_stamp_rally_cost_equation_paid,
-                            tableMin,
-                            tableCount,
-                            totalCost
-                        )
-                    } else {
-                        stringResource(Res.string.alley_stamp_rally_cost_paid)
+                        null -> stringResource(Res.string.alley_stamp_rally_cost_unknown)
                     }
                 }
 

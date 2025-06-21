@@ -94,6 +94,7 @@
     <string name="alley_stamp_rally_cost_free">Free</string>
     <string name="alley_stamp_rally_cost_any">Any</string>
     <string name="alley_stamp_rally_cost_unknown">Unknown</string>
+    <string name="alley_stamp_rally_cost_other">Other</string>
     <string name="alley_stamp_rally_cost_paid">Paid</string>
     <string name="alley_stamp_rally_cost_equation_any">Any × %1$d tables</string>
     <string name="alley_stamp_rally_cost_equation_paid">$%1$d × %2$d tables = $%3$d+</string>

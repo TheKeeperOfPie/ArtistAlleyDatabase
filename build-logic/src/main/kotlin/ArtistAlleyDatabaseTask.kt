@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link.Companion.parse
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link.Type
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
 import kotlinx.io.Source
@@ -786,14 +787,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val hostTable = tables.firstOrNull { it.contains("-") }
                         ?.substringBefore("-")
                         ?.trim() ?: return@mapNotNull null
-                    val tableMin = it["Table Min"]!!.let {
-                        when {
-                            it.equals("Free", ignoreCase = true) -> 0
-                            it.equals("Any", ignoreCase = true) -> 1
-                            else -> it.removePrefix("$").toIntOrNull()
-                        }
-                    }
-                    val totalCost = it["Total"]?.removePrefix("$")?.toIntOrNull()
+                    val tableMin = TableMin.parseFromSheet(it["Table Min"])
+                    val total = it["Total"]?.removePrefix("$")?.toIntOrNull()
+                    val totalCost = total ?: tableMin?.totalCost(tables.size)
                     val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
                     val notes = it["Notes"]
 
@@ -812,8 +808,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         tables = tables,
                         hostTable = hostTable,
                         links = links,
-                        tableMin = tableMin?.toLong(),
-                        totalCost = (if (tableMin == 0) 0 else totalCost)?.toLong(),
+                        tableMin = tableMin?.serializedValue?.toLong(),
+                        totalCost = totalCost?.toLong(),
                         prizeLimit = prizeLimit?.toLong(),
                         notes = notes,
                         counter = counter++,
@@ -856,20 +852,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val links = it["Link"]!!.split("\n")
                         .filter(String::isNotBlank)
                     val hostTable = tables.firstOrNull()?.trim() ?: return@mapNotNull null
-                    val tableMin = it["Table Min"]!!.let {
-                        when {
-                            it.isEmpty() -> null
-                            it.equals("Paid", ignoreCase = true) -> -1
-                            it.equals("Free", ignoreCase = true) -> 0
-                            it.equals("Any", ignoreCase = true) -> 1
-                            else -> it.removePrefix("$").toIntOrNull()
-                        }
-                    }
+                    val tableMin = TableMin.parseFromSheet(it["Table Min"])
                     val total = it["Total"]?.removePrefix("$")?.toIntOrNull()
-                    val totalCost = when {
-                        total != null -> total
-                        else ->  tableMin?.takeIf { it > 0 }?.let { it * tables.size }
-                    }
+                    val totalCost = total ?: tableMin?.totalCost(tables.size)
                     val prizeLimit = it["Prize Limit"]!!.toIntOrNull()
                     val series = it["Series"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
@@ -891,8 +876,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         tables = tables,
                         hostTable = hostTable,
                         links = links,
-                        tableMin = tableMin?.toLong(),
-                        totalCost = (if (tableMin == 0) 0 else totalCost)?.toLong(),
+                        tableMin = tableMin?.serializedValue?.toLong(),
+                        totalCost = totalCost?.toLong(),
                         prize = prize,
                         prizeLimit = prizeLimit?.toLong(),
                         series = series,

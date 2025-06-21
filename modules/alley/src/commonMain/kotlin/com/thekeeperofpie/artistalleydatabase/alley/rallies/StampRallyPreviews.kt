@@ -14,7 +14,7 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 hostTable = "C39",
                 tables = listOf("C39, C40, C41"),
                 links = listOf("https://example.org/stampRally"),
-                tableMin = 10,
+                _tableMin = 10,
                 totalCost = 30,
                 prize = null,
                 prizeLimit = 100,

@@ -34,7 +34,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_any
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_free
+import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_other
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_cost_paid
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_disabled
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_favorite_icon_content_description
@@ -51,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLookaheadSize
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import org.jetbrains.compose.resources.stringResource
@@ -155,31 +158,36 @@ fun StampRallyListRow(
                 )
             }
             val totalCost = stampRally.totalCost
-            if (totalCost != null) {
-                Text(
-                    text = if (totalCost == 0L) {
-                        stringResource(Res.string.alley_stamp_rally_cost_free)
-                    } else {
-                        stringResource(
-                            Res.string.alley_stamp_rally_total_cost,
-                            totalCost,
-                        )
-                    },
-                    style = MaterialTheme.typography.labelSmall,
-                )
-            } else {
-                val textRes = when {
-                    stampRally.tableMin == -1L -> Res.string.alley_stamp_rally_cost_paid
-                    stampRally.tableMin == -0L -> Res.string.alley_stamp_rally_cost_free
-                    stampRally.tableMin != null -> Res.string.alley_stamp_rally_cost_paid
-                    else -> null
-                }
-                if (textRes != null) {
-                    Text(
-                        text = stringResource(textRes),
-                        style = MaterialTheme.typography.labelSmall,
+            val text = when (stampRally.tableMin) {
+                TableMin.Free -> stringResource(Res.string.alley_stamp_rally_cost_free)
+                TableMin.Other -> stringResource(Res.string.alley_stamp_rally_cost_other)
+                TableMin.Any -> stringResource(Res.string.alley_stamp_rally_cost_any)
+                TableMin.Paid -> stringResource(Res.string.alley_stamp_rally_cost_paid)
+                is TableMin.Price -> when (totalCost) {
+                    null -> {
+                        val totalCostUsd = stampRally.tableMin.totalCost(stampRally.tables.size)
+                        if (totalCostUsd != null) {
+                            stringResource(
+                                Res.string.alley_stamp_rally_total_cost,
+                                totalCostUsd,
+                            )
+                        } else {
+                            stringResource(Res.string.alley_stamp_rally_cost_paid)
+                        }
+                    }
+                    0L -> stringResource(Res.string.alley_stamp_rally_cost_free)
+                    else -> stringResource(
+                        Res.string.alley_stamp_rally_total_cost,
+                        totalCost,
                     )
                 }
+                null -> null
+            }
+            if (text != null) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelSmall,
+                )
             }
         }
 
