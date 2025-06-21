@@ -9,8 +9,17 @@ const readOnlyDatabaseHashPath = "alleyArtistHash.txt"
 let db = null;
 async function createDatabase() {
     const sqlite3 = await sqlite3InitModule({ print: console.log, printErr: console.error });
-    if (sqlite3.oo1.OpfsDb) {
-        const opfsRoot = await navigator.storage.getDirectory();
+
+    let opfsRoot;
+    try {
+        if (sqlite3.oo1.OpfsDb) {
+            opfsRoot = await navigator.storage.getDirectory();
+        }
+    } catch(error) {
+        console.log("Failed to load OPFS");
+    }
+
+    if (opfsRoot) {
         const hashFile = await opfsRoot.getFileHandle(readOnlyDatabaseHashPath, { create: true });
         const hashHandle = await hashFile.createSyncAccessHandle();
         const oldSize = hashHandle.getSize();
