@@ -42,9 +42,7 @@
                 return script
             }
 
-            const forceJsVariant = localStorage.getItem("forceJsVariant");
-            console.log("forceJsVariant: ", forceJsVariant)
-            if (forceJsVariant != "true" && hasSupportOfAllRequiredWasmFeatures()) {
+            if (hasSupportOfAllRequiredWasmFeatures()) {
                 body.appendChild(createScript("composeApp-wasm.js"))
             } else {
                 body.appendChild(createScript("skiko.js"))

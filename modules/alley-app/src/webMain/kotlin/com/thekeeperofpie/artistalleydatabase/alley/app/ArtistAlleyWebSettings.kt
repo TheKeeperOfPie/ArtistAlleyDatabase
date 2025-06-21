@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import coil3.util.ServiceLoaderComponentRegistry.register
+import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
@@ -95,11 +96,21 @@ class ArtistAlleyWebSettings(
             override fun getValue(thisRef: Any?, property: KProperty<*>): MutableStateFlow<T> {
                 if (!::flow.isInitialized) {
                     val key = property.name
-                    flow = MutableStateFlow(deserialize(localStorage.getItem(key)))
+                    val value = try {
+                        localStorage.getItem(key)
+                    } catch (t: Throwable) {
+                        ConsoleLogger.log("Failed to read $key from localStorage: ${t.message}")
+                        null
+                    }
+                    flow = MutableStateFlow(deserialize(value))
                     applicationScope.launch {
                         flow.drop(1)
                             .collectLatest {
-                                localStorage.setItem(key, serialize(it))
+                                try {
+                                    localStorage.setItem(key, serialize(it))
+                                } catch (t: Throwable) {
+                                    ConsoleLogger.log("Failed to write $key = $it to localStorage: ${t.message}")
+                                }
                             }
                     }
                     applicationScope.launch {
