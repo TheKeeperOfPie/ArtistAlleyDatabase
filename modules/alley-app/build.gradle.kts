@@ -124,6 +124,7 @@ kotlin {
                 outputFileName = "composeApp-wasm.js"
                 devServer = null
                 mode = KotlinWebpackConfig.Mode.PRODUCTION
+                sourceMaps = false
             }
         }
         binaries.executable()
@@ -136,6 +137,7 @@ kotlin {
                 outputFileName = "composeApp-js.js"
                 devServer = null
                 mode = KotlinWebpackConfig.Mode.PRODUCTION
+                sourceMaps = false
             }
         }
         binaries.executable()
