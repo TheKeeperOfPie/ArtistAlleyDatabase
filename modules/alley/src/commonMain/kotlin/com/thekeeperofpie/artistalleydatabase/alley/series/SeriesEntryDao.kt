@@ -154,53 +154,13 @@ class SeriesEntryDao(
         seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
         favoriteOnly: Boolean = false,
     ): PagingSource<Int, SeriesWithUserData> {
-        val filteredSources = seriesFilterState
-            .filter { (_, enabled) -> enabled }
-            .flatMap { (option) ->
-                when (option) {
-                    SeriesFilterOption.ALL -> SeriesSource.entries
-                    SeriesFilterOption.ANIME_MANGA -> listOf(
-                        SeriesSource.ANIME,
-                        SeriesSource.MANGA,
-                    )
-                    SeriesFilterOption.GAMES -> listOf(SeriesSource.GAME, SeriesSource.VIDEO_GAME)
-                    SeriesFilterOption.TV -> listOf(SeriesSource.TV)
-                    SeriesFilterOption.MOVIES -> listOf(SeriesSource.MOVIE)
-                    SeriesFilterOption.BOOKS -> listOf(
-                        SeriesSource.BOOK,
-                        SeriesSource.LIGHT_NOVEL,
-                        SeriesSource.NOVEL
-                    )
-                    SeriesFilterOption.WEB_SERIES -> listOf(
-                        SeriesSource.WEB_NOVEL,
-                        SeriesSource.WEB_SERIES,
-                        SeriesSource.WEBTOON,
-                    )
-                    SeriesFilterOption.VISUAL_NOVELS -> listOf(SeriesSource.VISUAL_NOVEL)
-                    SeriesFilterOption.MUSIC -> listOf(SeriesSource.MUSIC)
-                    SeriesFilterOption.MULTIMEDIA -> listOf(SeriesSource.MULTIMEDIA_PROJECT)
-                    SeriesFilterOption.OTHER -> listOf(SeriesSource.COMIC, SeriesSource.OTHER)
-                }
-            }
         var where = "WHERE has${year.year} = 1"
         if (favoriteOnly) {
             where += " AND seriesUserEntry.favorite = 1"
         }
-        if (filteredSources.isNotEmpty()) {
-            where += " AND ("
-            filteredSources.forEachIndexed { index, source ->
-                if (index != 0) {
-                    where += " OR "
-                }
-                where += "source = '${source.name}'"
-            }
-            if (filteredSources.contains(SeriesSource.ANIME)) {
-                where += " OR aniListType = 'ANIME'"
-            }
-            if (filteredSources.contains(SeriesSource.MANGA)) {
-                where += " OR aniListType = 'MANGA'"
-            }
-            where += ")"
+        val filteredSourcesStatement = getFilteredSourcesStatement(seriesFilterState)
+        if (filteredSourcesStatement.isNotEmpty()) {
+            where += " AND $filteredSourcesStatement"
         }
 
         val joinStatement = """
@@ -239,6 +199,7 @@ class SeriesEntryDao(
         languageOption: AniListLanguageOption,
         year: DataYear,
         query: String,
+        seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
         favoriteOnly: Boolean = false,
     ): PagingSource<Int, SeriesWithUserData> {
         val queries = query.split(Regex("\\s+"))
@@ -268,17 +229,35 @@ class SeriesEntryDao(
             ON uuidAsKey = seriesUserEntry.seriesId
         """.trimIndent()
 
-        val favoriteStatement = "WHERE seriesUserEntry.favorite = 1"
+        val favoritesStatement = "seriesUserEntry.favorite = 1"
             .takeIf { favoriteOnly }.orEmpty()
+        val filteredSourcesStatement = getFilteredSourcesStatement(
+            seriesFilterState = seriesFilterState,
+            sourceKey = "sourceAsKey",
+            aniListTypeKey = "aniListTypeAsKey",
+        )
+
+        var whereStatement = ""
+        if (favoritesStatement.isNotEmpty() || filteredSourcesStatement.isNotEmpty()) {
+            whereStatement += "WHERE"
+            whereStatement += favoritesStatement
+            if (favoritesStatement.isNotEmpty()) {
+                whereStatement += "AND"
+            }
+            whereStatement += filteredSourcesStatement
+        }
+
+        val additionalSelectStatement =
+            ", seriesEntry_fts.aniListType as aniListTypeAsKey, seriesEntry_fts.source as sourceAsKey, seriesEntry_fts.uuid as uuidAsKey"
 
         val countStatement = DaoUtils.buildSearchCountStatement(
             ftsTableName = "seriesEntry_fts",
             idField = "id",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
-            additionalSelectStatement = ", seriesEntry_fts.uuid as uuidAsKey",
+            additionalSelectStatement = additionalSelectStatement,
             additionalJoinStatement = joinStatement,
-            andStatement = favoriteStatement,
+            andStatement = whereStatement,
         )
         val orderBy = when (languageOption) {
             AniListLanguageOption.DEFAULT -> "titlePreferred"
@@ -294,11 +273,11 @@ class SeriesEntryDao(
             likeOrderBy = "ORDER BY seriesEntry_fts.$orderBy COLLATE NOCASE",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
-            additionalSelectStatement = ", seriesEntry_fts.uuid as uuidAsKey",
+            additionalSelectStatement = additionalSelectStatement,
             additionalJoinStatement = joinStatement,
-            andStatement = favoriteStatement,
+            andStatement = whereStatement,
         )
-        
+
         println("countStatement = $countStatement")
         println("statement = $statement")
 
@@ -346,6 +325,59 @@ class SeriesEntryDao(
 
     suspend fun hasRallies(series: String) = seriesDao().getRallyCount(series)
         .awaitAsOne() > 0
+
+    private fun getFilteredSourcesStatement(
+        seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
+        sourceKey: String = "source",
+        aniListTypeKey: String = "aniListType",
+    ): String {
+        val filteredSources = seriesFilterState
+            .filter { (_, enabled) -> enabled }
+            .flatMap { (option) ->
+                when (option) {
+                    SeriesFilterOption.ALL -> SeriesSource.entries
+                    SeriesFilterOption.ANIME_MANGA -> listOf(
+                        SeriesSource.ANIME,
+                        SeriesSource.MANGA,
+                    )
+                    SeriesFilterOption.GAMES -> listOf(SeriesSource.GAME, SeriesSource.VIDEO_GAME)
+                    SeriesFilterOption.TV -> listOf(SeriesSource.TV)
+                    SeriesFilterOption.MOVIES -> listOf(SeriesSource.MOVIE)
+                    SeriesFilterOption.BOOKS -> listOf(
+                        SeriesSource.BOOK,
+                        SeriesSource.LIGHT_NOVEL,
+                        SeriesSource.NOVEL
+                    )
+                    SeriesFilterOption.WEB_SERIES -> listOf(
+                        SeriesSource.WEB_NOVEL,
+                        SeriesSource.WEB_SERIES,
+                        SeriesSource.WEBTOON,
+                    )
+                    SeriesFilterOption.VISUAL_NOVELS -> listOf(SeriesSource.VISUAL_NOVEL)
+                    SeriesFilterOption.MUSIC -> listOf(SeriesSource.MUSIC)
+                    SeriesFilterOption.MULTIMEDIA -> listOf(SeriesSource.MULTIMEDIA_PROJECT)
+                    SeriesFilterOption.OTHER -> listOf(SeriesSource.COMIC, SeriesSource.OTHER)
+                }
+            }
+
+        if (filteredSources.isEmpty()) return ""
+
+        var statement = "("
+        filteredSources.forEachIndexed { index, source ->
+            if (index != 0) {
+                statement += " OR "
+            }
+            statement += "$sourceKey = '${source.name}'"
+        }
+        if (filteredSources.contains(SeriesSource.ANIME)) {
+            statement += " OR $aniListTypeKey = 'ANIME'"
+        }
+        if (filteredSources.contains(SeriesSource.MANGA)) {
+            statement += " OR $aniListTypeKey = 'MANGA'"
+        }
+        statement += ")"
+        return statement
+    }
 
     // Some tags were adjusted between years, and the most recent list may not have all
     // of the prior tags. In those cases, mock a response.

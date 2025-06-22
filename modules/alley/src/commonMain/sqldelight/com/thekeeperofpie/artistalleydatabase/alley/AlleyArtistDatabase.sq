@@ -256,6 +256,8 @@ CREATE TABLE
 CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     id,
     uuid,
+    aniListType,
+    source,
     titlePreferred,
     titleEnglish,
     titleRomaji,

@@ -179,11 +179,12 @@ class FavoritesViewModel(
                 flowOf(PagingData.empty())
             } else {
                 createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                    val seriesFilterState = listOf(SeriesFilterOption.ALL to true)
                     if (query.isBlank()) {
                         seriesEntryDao.getSeries(
                             languageOption = languageOption,
                             year = year,
-                            seriesFilterState = listOf(SeriesFilterOption.ALL to true),
+                            seriesFilterState = seriesFilterState,
                             favoriteOnly = true,
                         )
                     } else {
@@ -191,6 +192,7 @@ class FavoritesViewModel(
                             languageOption = languageOption,
                             year = year,
                             query = query,
+                            seriesFilterState = seriesFilterState,
                             favoriteOnly = true,
                         )
                     }

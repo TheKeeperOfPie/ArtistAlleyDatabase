@@ -65,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
@@ -122,10 +123,12 @@ object BrowseScreen {
                     val scrollStateSaver = ScrollStateSaver.fromMap(it.name, scrollPositions)
                     when (it) {
                         Tab.SERIES -> {
+                            var seriesQuery by tagsViewModel.seriesQuery
+                                .collectAsMutableStateWithLifecycle()
                             TabScreen(
                                 dataYearHeaderState = dataYearHeaderState,
-                                query = { tagsViewModel.seriesQuery },
-                                onQueryChange = { tagsViewModel.seriesQuery = it },
+                                query = { seriesQuery },
+                                onQueryChange = { seriesQuery = it },
                                 entriesSize = { series.itemCount },
                                 values = series,
                                 itemKey = { it.series.id },

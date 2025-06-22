@@ -34,17 +34,21 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class, SavedStateHandleSaveableApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, SavedStateHandleSaveableApi::class, FlowPreview::class)
 @Inject
 class TagsViewModel(
     dispatchers: CustomDispatchers,
@@ -55,6 +59,8 @@ class TagsViewModel(
     userEntryDao: UserEntryDao,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
+    val seriesQuery = MutableStateFlow("")
 
     val seriesLanguageSection = SettingsSection.Dropdown(
         labelTextRes = Res.string.alley_settings_series_language,
@@ -67,11 +73,11 @@ class TagsViewModel(
         combine(
             settings.dataYear,
             settings.languageOption,
-            snapshotFlow { seriesQuery to seriesFiltersState },
-            ::Triple
+            seriesQuery.debounce(250.milliseconds),
+            snapshotFlow { seriesFiltersState },
+            ::SeriesInputs
         )
-            .flatMapLatest { (year, languageOption, pair) ->
-                val (query, seriesFilterState) = pair
+            .flatMapLatest { (year, languageOption, query, seriesFilterState) ->
                 if (year == DataYear.YEAR_2023) {
                     flowOf(PagingData.empty())
                 } else {
@@ -80,16 +86,23 @@ class TagsViewModel(
                             seriesEntryDao.getSeries(
                                 languageOption = languageOption,
                                 year = year,
-                                seriesFilterState = listOf(SeriesFilterOption.ALL to true),
+                                seriesFilterState = seriesFilterState,
                             )
                         } else {
-                            seriesEntryDao.searchSeries(languageOption, year, query)
+                            seriesEntryDao.searchSeries(
+                                languageOption = languageOption,
+                                year = year,
+                                query = query,
+                                seriesFilterState = seriesFilterState,
+                            )
                         }
                     }.flow
                 }
             }
             .enforceUniqueIds { it.series.id }
             .cachedIn(viewModelScope)
+
+    var merchQuery by mutableStateOf("")
 
     val merch = combine(settings.dataYear, snapshotFlow { merchQuery }, ::Pair)
         .flatMapLatest { (year, query) ->
@@ -109,9 +122,6 @@ class TagsViewModel(
         .enforceUniqueIds { it.merch.name }
         .cachedIn(viewModelScope)
 
-    var seriesQuery by mutableStateOf("")
-    var merchQuery by mutableStateOf("")
-
     val dataYear = settings.dataYear
 
     val defaultSeriesFiltersState =
@@ -121,7 +131,8 @@ class TagsViewModel(
     }
     var previouslyClickedOption by savedStateHandle.saved<SeriesFilterOption> { SeriesFilterOption.ALL }
 
-    private val seriesImageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
+    private val seriesImageLoader =
+        SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     private val seriesMutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
     private val merchMutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)
@@ -150,7 +161,8 @@ class TagsViewModel(
             // If re-clicking an already active filter, make it exclusive and disable all others
             if (previouslyClickedOption == option &&
                 oldState.count { it.second } >= 2 &&
-                oldState.first { it.first == option }.second) {
+                oldState.first { it.first == option }.second
+            ) {
                 SeriesFilterOption.entries.map { it to (it == option) }
             } else {
                 oldState.toMutableList().map {
@@ -179,4 +191,11 @@ class TagsViewModel(
     fun onMerchFavoriteToggle(data: MerchWithUserData, favorite: Boolean) {
         merchMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
     }
+
+    private data class SeriesInputs(
+        val dataYear: DataYear,
+        val languageOption: AniListLanguageOption,
+        val seriesQuery: String,
+        val seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
+    )
 }
