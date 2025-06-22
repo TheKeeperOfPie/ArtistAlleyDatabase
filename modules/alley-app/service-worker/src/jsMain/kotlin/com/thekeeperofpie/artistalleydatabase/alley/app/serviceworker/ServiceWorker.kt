@@ -14,7 +14,6 @@ import org.w3c.fetch.ResponseInit
 import org.w3c.workers.ExtendableEvent
 import org.w3c.workers.ExtendableMessageEvent
 import org.w3c.workers.FetchEvent
-import org.w3c.workers.InstallEvent
 import org.w3c.workers.ServiceWorkerGlobalScope
 import kotlin.js.Promise
 
@@ -43,7 +42,7 @@ fun main() {
 
     self.addEventListener("install", { event ->
         console.log("serviceWorker.js install")
-        event as InstallEvent
+        event as ExtendableEvent
         event.waitUntil(
             promise {
                 val urlsToCache = filesToCacheAndRevisions.map {
