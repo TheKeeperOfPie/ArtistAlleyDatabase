@@ -106,8 +106,6 @@ object AlleyRootScreen {
                             BrowseScreen(
                                 dataYearHeaderState = dataYearHeaderState,
                                 tagsViewModel = viewModel,
-                                seriesFiltersState = { viewModel.seriesFiltersState },
-                                onSeriesFilterClick = viewModel::onSeriesFilterClick,
                                 onSeriesFavoriteToggle = viewModel::onSeriesFavoriteToggle,
                                 onSeriesClick = { onSeriesClick(it.id) },
                                 onMerchFavoriteToggle = viewModel::onMerchFavoriteToggle,

@@ -608,6 +608,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val mutationQueries = database.mutationQueries
         val seriesCsv = inputsDirectory.file(SERIES_CSV_NAME).get()
         open(seriesCsv).use {
+            var counter = 1L
             read(it)
                 .map {
                     // Validated, Series, Notes, AniList ID, AniList Type, Source Type, English,
@@ -651,6 +652,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         link = link,
                         has2024 = seriesConnections.any { it.value.seriesId == id && it.value.state2024 > 0 },
                         has2025 = seriesConnections.any { it.value.seriesId == id && it.value.state2025 > 0 },
+                        counter = counter++,
                     )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)

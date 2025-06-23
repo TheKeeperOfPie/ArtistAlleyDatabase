@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
@@ -70,6 +71,14 @@ class ArtistAlleyWebSettings(
         },
     )
     override val stampRalliesSortAscending by registerBoolean(true)
+    override val seriesSortOption by register(
+        serialize = { it.name },
+        deserialize = { value ->
+            SeriesSearchSortOption.entries.find { it.name == value }
+                ?: SeriesSearchSortOption.RANDOM
+        },
+    )
+    override val seriesSortAscending by registerBoolean(true)
     override val showGridByDefault by registerBoolean(false)
     override val showRandomCatalogImage by registerBoolean(false)
     override val showOnlyConfirmedTags by registerBoolean(false)

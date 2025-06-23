@@ -47,6 +47,7 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             link = null,
             has2024 = false,
             has2025 = false,
+            counter = 1,
         ),
         userEntry = SeriesUserEntry(
             seriesId = id,

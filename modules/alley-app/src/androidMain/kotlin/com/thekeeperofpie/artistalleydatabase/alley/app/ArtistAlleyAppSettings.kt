@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
@@ -70,6 +71,16 @@ class ArtistAlleyAppSettings(
         setValue = { key, value -> putString(key, value.name) },
     )
     override val stampRalliesSortAscending = boolean("stampRalliesSortAscending", true)
+    override val seriesSortOption = initialize(
+        key = "seriesSortOption",
+        initialValue = {
+            getString(it, null)
+                ?.let { value -> SeriesSearchSortOption.entries.find { it.name == value } }
+                ?: SeriesSearchSortOption.RANDOM
+        },
+        setValue = { key, value -> putString(key, value.name) },
+    )
+    override val seriesSortAscending = boolean("seriesSortAscending", true)
     override val showGridByDefault = boolean("showGridByDefault", false)
     override val showRandomCatalogImage = boolean("showRandomCatalogImage", false)
     override val showOnlyConfirmedTags = boolean("showOnlyConfirmedTags", false)

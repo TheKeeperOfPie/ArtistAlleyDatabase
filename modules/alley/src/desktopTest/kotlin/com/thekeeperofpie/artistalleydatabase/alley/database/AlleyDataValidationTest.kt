@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils.findName2023
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.DriverFactory
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -48,6 +49,7 @@ class AlleyDataValidationTest {
                         showOnlyWithCatalog = false,
                         showOnlyConfirmedTags = false,
                         hideIgnored = false,
+                        hideFavorited = false,
                     ),
                     randomSeed = 0,
                 )
@@ -76,6 +78,8 @@ class AlleyDataValidationTest {
         override val artistsSortAscending = MutableStateFlow(true)
         override val stampRalliesSortOption = MutableStateFlow(StampRallySearchSortOption.RANDOM)
         override val stampRalliesSortAscending = MutableStateFlow(true)
+        override val seriesSortOption = MutableStateFlow(SeriesSearchSortOption.RANDOM)
+        override val seriesSortAscending = MutableStateFlow(true)
         override val showGridByDefault = MutableStateFlow(false)
         override val showRandomCatalogImage = MutableStateFlow(false)
         override val showOnlyConfirmedTags = MutableStateFlow(false)

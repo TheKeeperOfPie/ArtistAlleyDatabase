@@ -970,8 +970,12 @@ fun SortFilterBottomScaffold(
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
-                (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp),
+        sheetPeekHeight = if (state == null) {
+            0.dp
+        } else {
+            (sheetPeekHeight.takeIf { it.isSpecified } ?: 56.dp) +
+                    (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
+        },
         sheetDragHandle = {
             if (state != null) {
                 SheetDragHandle(

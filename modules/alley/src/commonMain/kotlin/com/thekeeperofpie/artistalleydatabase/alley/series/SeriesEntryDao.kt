@@ -44,6 +44,7 @@ fun SqlCursor.toSeriesEntry(): SeriesEntry {
         link = getString(11),
         has2024 = getBooleanFixed(12),
         has2025 = getBooleanFixed(13),
+        counter = getLong(14)!!,
     )
 }
 
@@ -66,10 +67,11 @@ fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
             link = getString(11),
             has2024 = getBooleanFixed(12),
             has2025 = getBooleanFixed(13),
+            counter = getLong(14)!!,
         ),
         userEntry = SeriesUserEntry(
             seriesId = uuid,
-            favorite = getBooleanFixed(14),
+            favorite = getBooleanFixed(15),
         )
     )
 }
@@ -90,6 +92,7 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
         link = link,
         has2024 = has2024,
         has2025 = has2025,
+        counter = counter,
     ),
     userEntry = SeriesUserEntry(
         seriesId = uuid,
@@ -113,6 +116,7 @@ fun GetSeriesByIds.toSeriesWithUserData() = SeriesWithUserData(
         link = link,
         has2024 = has2024,
         has2025 = has2025,
+        counter = counter,
     ),
     userEntry = SeriesUserEntry(
         seriesId = uuid,
@@ -148,58 +152,12 @@ class SeriesEntryDao(
             }
     }
 
-    fun getSeries(
-        languageOption: AniListLanguageOption,
-        year: DataYear,
-        seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
-        favoriteOnly: Boolean = false,
-    ): PagingSource<Int, SeriesWithUserData> {
-        var where = "WHERE has${year.year} = 1"
-        if (favoriteOnly) {
-            where += " AND seriesUserEntry.favorite = 1"
-        }
-        val filteredSourcesStatement = getFilteredSourcesStatement(seriesFilterState)
-        if (filteredSourcesStatement.isNotEmpty()) {
-            where += " AND $filteredSourcesStatement"
-        }
-
-        val joinStatement = """
-            LEFT OUTER JOIN seriesUserEntry
-            ON seriesEntry.uuid = seriesUserEntry.seriesId
-        """.trimIndent()
-
-        val countStatement = """
-            SELECT COUNT(*) FROM seriesEntry
-            $joinStatement
-            $where
-        """.trimIndent()
-        val orderBy = when (languageOption) {
-            AniListLanguageOption.DEFAULT -> "titlePreferred"
-            AniListLanguageOption.ENGLISH -> "titleEnglish"
-            AniListLanguageOption.NATIVE -> "titleNative"
-            AniListLanguageOption.ROMAJI -> "titleRomaji"
-        }
-        val statement = """
-            SELECT seriesEntry.*, seriesUserEntry.favorite FROM seriesEntry
-            $joinStatement
-            $where
-            ORDER BY $orderBy COLLATE NOCASE
-        """.trimIndent()
-        return DaoUtils.queryPagingSource(
-            driver = driver,
-            database = database,
-            countStatement = countStatement,
-            statement = statement,
-            tableNames = listOf("seriesEntry", "seriesUserEntry"),
-            mapper = SqlCursor::toSeriesWithUserData,
-        )
-    }
-
     fun searchSeries(
         languageOption: AniListLanguageOption,
         year: DataYear,
         query: String,
-        seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
+        randomSeed: Int,
+        seriesFilterParams: SeriesSortFilterController.FilterParams,
         favoriteOnly: Boolean = false,
     ): PagingSource<Int, SeriesWithUserData> {
         val queries = query.split(Regex("\\s+"))
@@ -212,6 +170,83 @@ class SeriesEntryDao(
         )
         val matchQuery = buildString {
             append("'{ ${targetColumns.joinToString(separator = " ")} } : $matchOrQuery'")
+        }
+
+        val favoritesStatement = "seriesUserEntry.favorite = 1"
+            .takeIf { favoriteOnly }.orEmpty()
+        val filteredSourcesStatement = getFilteredSourcesStatement(
+            seriesFilterParams = seriesFilterParams,
+            sourceKey = if (query.isEmpty()) "source" else "sourceAsKey",
+            aniListTypeKey = if (query.isEmpty()) "aniListType" else "aniListTypeAsKey",
+        )
+
+        var whereStatement = ""
+        if (favoritesStatement.isNotEmpty() || filteredSourcesStatement.isNotEmpty() || query.isEmpty()) {
+            whereStatement += "WHERE "
+            if (query.isEmpty() && year != DataYear.YEAR_2023) {
+                whereStatement += "has${year.year} = 1"
+                if (favoritesStatement.isNotEmpty() || filteredSourcesStatement.isNotEmpty()) {
+                    whereStatement += " AND "
+                }
+            }
+            whereStatement += favoritesStatement
+            if (favoritesStatement.isNotEmpty() && filteredSourcesStatement.isNotEmpty()) {
+                whereStatement += " AND"
+            }
+            whereStatement += filteredSourcesStatement
+        }
+
+        val additionalSelectStatement =
+            ", seriesEntry_fts.aniListType as aniListTypeAsKey, seriesEntry_fts.source as sourceAsKey, seriesEntry_fts.uuid as uuidAsKey"
+
+        val nameOrderBy = when (languageOption) {
+            AniListLanguageOption.DEFAULT -> "titlePreferred"
+            AniListLanguageOption.ENGLISH -> "titleEnglish"
+            AniListLanguageOption.NATIVE -> "titleNative"
+            AniListLanguageOption.ROMAJI -> "titleRomaji"
+        }
+        val ascending = if (seriesFilterParams.sortAscending) "ASC" else "DESC"
+        val sortSuffix = when (seriesFilterParams.sortOption) {
+            SeriesSearchSortOption.RANDOM -> "ORDER BY orderIndex"
+            SeriesSearchSortOption.NAME -> "ORDER BY seriesEntry.$nameOrderBy COLLATE NOCASE"
+            SeriesSearchSortOption.POPULARITY -> "ORDER BY seriesEntry.$nameOrderBy COLLATE NOCASE"
+        } + " $ascending" + " NULLS LAST"
+        val randomSortSelectSuffix =
+            (", substr(seriesEntry_fts.counter * 0.$randomSeed," +
+                    " length(seriesEntry_fts.counter) + 2) as orderIndex")
+                .takeIf { seriesFilterParams.sortOption == SeriesSearchSortOption.RANDOM }
+                .orEmpty()
+
+        if (query.isEmpty()) {
+            val joinStatement = """
+                LEFT OUTER JOIN seriesUserEntry
+                ON seriesEntry.uuid = seriesUserEntry.seriesId
+            """.trimIndent()
+
+            val countStatement = """
+                SELECT COUNT(*) FROM seriesEntry
+                $joinStatement
+                $whereStatement
+            """.trimIndent()
+            val statement = """
+                SELECT seriesEntry.*, seriesUserEntry.favorite${randomSortSelectSuffix.replace("_fts", "")}
+                FROM seriesEntry
+                $joinStatement
+                $whereStatement
+                $sortSuffix
+            """.trimIndent()
+
+            println("statement = $statement")
+            println("countStatement = $countStatement")
+
+            return DaoUtils.queryPagingSource(
+                driver = driver,
+                database = database,
+                countStatement = countStatement,
+                statement = statement,
+                tableNames = listOf("seriesEntry", "seriesUserEntry"),
+                mapper = SqlCursor::toSeriesWithUserData,
+            )
         }
 
         val yearFilter = when (year) {
@@ -229,27 +264,6 @@ class SeriesEntryDao(
             ON uuidAsKey = seriesUserEntry.seriesId
         """.trimIndent()
 
-        val favoritesStatement = "seriesUserEntry.favorite = 1"
-            .takeIf { favoriteOnly }.orEmpty()
-        val filteredSourcesStatement = getFilteredSourcesStatement(
-            seriesFilterState = seriesFilterState,
-            sourceKey = "sourceAsKey",
-            aniListTypeKey = "aniListTypeAsKey",
-        )
-
-        var whereStatement = ""
-        if (favoritesStatement.isNotEmpty() || filteredSourcesStatement.isNotEmpty()) {
-            whereStatement += "WHERE"
-            whereStatement += favoritesStatement
-            if (favoritesStatement.isNotEmpty()) {
-                whereStatement += "AND"
-            }
-            whereStatement += filteredSourcesStatement
-        }
-
-        val additionalSelectStatement =
-            ", seriesEntry_fts.aniListType as aniListTypeAsKey, seriesEntry_fts.source as sourceAsKey, seriesEntry_fts.uuid as uuidAsKey"
-
         val countStatement = DaoUtils.buildSearchCountStatement(
             ftsTableName = "seriesEntry_fts",
             idField = "id",
@@ -259,27 +273,21 @@ class SeriesEntryDao(
             additionalJoinStatement = joinStatement,
             andStatement = whereStatement,
         )
-        val orderBy = when (languageOption) {
-            AniListLanguageOption.DEFAULT -> "titlePreferred"
-            AniListLanguageOption.ENGLISH -> "titleEnglish"
-            AniListLanguageOption.NATIVE -> "titleNative"
-            AniListLanguageOption.ROMAJI -> "titleRomaji"
-        }
         val statement = DaoUtils.buildSearchStatement(
             tableName = "seriesEntry",
             ftsTableName = "seriesEntry_fts",
             select = "seriesEntry.*, seriesUserEntry.favorite",
             idField = "id",
-            likeOrderBy = "ORDER BY seriesEntry_fts.$orderBy COLLATE NOCASE",
+            likeOrderBy = "",
+            orderBy = sortSuffix,
+            randomSeed = randomSeed
+                .takeIf { seriesFilterParams.sortOption == SeriesSearchSortOption.RANDOM },
             matchQuery = matchQuery,
             likeStatement = likeStatement,
             additionalSelectStatement = additionalSelectStatement,
             additionalJoinStatement = joinStatement,
             andStatement = whereStatement,
         )
-
-        println("countStatement = $countStatement")
-        println("statement = $statement")
 
         return DaoUtils.queryPagingSource(
             driver = driver,
@@ -327,14 +335,13 @@ class SeriesEntryDao(
         .awaitAsOne() > 0
 
     private fun getFilteredSourcesStatement(
-        seriesFilterState: List<Pair<SeriesFilterOption, Boolean>>,
+        seriesFilterParams: SeriesSortFilterController.FilterParams,
         sourceKey: String = "source",
         aniListTypeKey: String = "aniListType",
     ): String {
-        val filteredSources = seriesFilterState
-            .filter { (_, enabled) -> enabled }
-            .flatMap { (option) ->
-                when (option) {
+        val filteredSources = seriesFilterParams.sourceIn
+            .flatMap {
+                when (it) {
                     SeriesFilterOption.ALL -> SeriesSource.entries
                     SeriesFilterOption.ANIME_MANGA -> listOf(
                         SeriesSource.ANIME,
@@ -397,6 +404,7 @@ class SeriesEntryDao(
             link = null,
             has2024 = false,
             has2025 = false,
+            counter = 1,
         ),
         userEntry = SeriesUserEntry(
             seriesId = id,

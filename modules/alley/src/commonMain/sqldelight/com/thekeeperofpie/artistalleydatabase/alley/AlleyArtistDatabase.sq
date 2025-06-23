@@ -250,6 +250,7 @@ CREATE TABLE
         link TEXT,
         has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
         has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -264,6 +265,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     titleNative,
     has2024,
     has2025,
+    counter,
     content=seriesEntry,
     tokenize="unicode61 remove_diacritics 2"
 );

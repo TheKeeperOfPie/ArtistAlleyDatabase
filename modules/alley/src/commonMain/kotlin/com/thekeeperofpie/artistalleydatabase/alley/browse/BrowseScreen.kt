@@ -29,21 +29,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_merch
@@ -63,9 +67,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
@@ -74,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentTy
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
@@ -88,8 +97,6 @@ object BrowseScreen {
     operator fun invoke(
         tagsViewModel: TagsViewModel,
         dataYearHeaderState: DataYearHeaderState,
-        seriesFiltersState: () -> List<Pair<SeriesFilterOption, Boolean>>,
-        onSeriesFilterClick: (SeriesFilterOption) -> Unit,
         onSeriesFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
         onSeriesClick: (SeriesEntry) -> Unit,
         onMerchFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
@@ -97,95 +104,125 @@ object BrowseScreen {
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-                TabRow(
-                    selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier
-                        .widthIn(max = 1200.dp)
-                        .fillMaxWidth()
-                ) {
-                    Tab.entries.forEachIndexed { index, tab ->
-                        Tab(
-                            selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index },
-                            text = { Text(stringResource(tab.textRes)) },
-                        )
+                val scaffoldState = rememberBottomSheetScaffoldState()
+                val scope = rememberCoroutineScope()
+                BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+                    scope.launch {
+                        scaffoldState.bottomSheetState.partialExpand()
                     }
                 }
-                val scrollPositions = ScrollStateSaver.scrollPositions()
-                val series = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle()
-                val merch = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle()
-                AnimatedContent(
-                    targetState = Tab.entries[selectedTabIndex],
-                    transitionSpec = { fadeIn().togetherWith(fadeOut()) },
-                    label = "Tag screen",
-                ) {
-                    val scrollStateSaver = ScrollStateSaver.fromMap(it.name, scrollPositions)
-                    when (it) {
-                        Tab.SERIES -> {
-                            var seriesQuery by tagsViewModel.seriesQuery
-                                .collectAsMutableStateWithLifecycle()
-                            TabScreen(
-                                dataYearHeaderState = dataYearHeaderState,
-                                query = { seriesQuery },
-                                onQueryChange = { seriesQuery = it },
-                                entriesSize = { series.itemCount },
-                                values = series,
-                                itemKey = { it.series.id },
-                                item = { data ->
-                                    SeriesRow(
-                                        data = data,
-                                        image = {
-                                            data?.let {
-                                                tagsViewModel.getSeriesImage(it.series)
-                                            }
-                                        },
-                                        textStyle = LocalTextStyle.current,
-                                        onFavoriteToggle = {
-                                            if (data != null) {
-                                                onSeriesFavoriteToggle(data, it)
-                                            }
-                                        },
-                                        onClick = { data?.let { onSeriesClick(it.series) } },
-                                    )
-                                },
-                                scrollStateSaver = scrollStateSaver,
-                                additionalHeader = {
-                                    item(key = "seriesLanguageOption") {
-                                        tagsViewModel.seriesLanguageSection
-                                            .Content(Modifier.fillMaxWidth())
-                                    }
-                                    item(key = "seriesFilters") {
-                                        SeriesFilters(seriesFiltersState(), onSeriesFilterClick)
-                                        HorizontalDivider()
+                val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+                var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+                SortFilterBottomScaffold(
+                    state = when (selectedTabIndex) {
+                        0 -> tagsViewModel.seriesSortFilterController.state
+                        else -> null
+                    },
+                    scaffoldState = scaffoldState,
+                    sheetPeekHeight = 72.dp,
+                    topBar = {
+                        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                            Box(Modifier.fillMaxWidth()) {
+                                TabRow(
+                                    selectedTabIndex = selectedTabIndex,
+                                    modifier = Modifier
+                                        .widthIn(max = 1200.dp)
+                                        .align(Alignment.TopCenter)
+                                ) {
+                                    Tab.entries.forEachIndexed { index, tab ->
+                                        Tab(
+                                            selected = selectedTabIndex == index,
+                                            onClick = { selectedTabIndex = index },
+                                            text = { Text(stringResource(tab.textRes)) },
+                                        )
                                     }
                                 }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .conditionallyNonNull(scrollBehavior) {
+                            nestedScroll(
+                                NestedScrollSplitter(
+                                    primary = it.nestedScrollConnection,
+                                    consumeNone = true,
+                                )
                             )
                         }
-                        Tab.MERCH -> TabScreen(
-                            dataYearHeaderState = dataYearHeaderState,
-                            query = { tagsViewModel.merchQuery },
-                            onQueryChange = { tagsViewModel.merchQuery = it },
-                            entriesSize = { merch.itemCount },
-                            values = merch,
-                            itemKey = { it.merch.name },
-                            item = { data ->
-                                MerchRow(
-                                    data = data,
-                                    onFavoriteToggle = {
-                                        if (data != null) {
-                                            onMerchFavoriteToggle(data, it)
-                                        }
+                ) {
+                    val scrollPositions = ScrollStateSaver.scrollPositions()
+                    val series = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle()
+                    val merch = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle()
+                    AnimatedContent(
+                        targetState = Tab.entries[selectedTabIndex],
+                        transitionSpec = { fadeIn().togetherWith(fadeOut()) },
+                        label = "Tag screen",
+                    ) {
+                        val scrollStateSaver =
+                            ScrollStateSaver.fromMap(it.name, scrollPositions)
+                        when (it) {
+                            Tab.SERIES -> {
+                                var seriesQuery by tagsViewModel.seriesQuery
+                                    .collectAsMutableStateWithLifecycle()
+                                TabScreen(
+                                    dataYearHeaderState = dataYearHeaderState,
+                                    query = { seriesQuery },
+                                    onQueryChange = { seriesQuery = it },
+                                    entriesSize = { series.itemCount },
+                                    values = series,
+                                    itemKey = { it.series.id },
+                                    item = { data ->
+                                        SeriesRow(
+                                            data = data,
+                                            image = {
+                                                data?.let {
+                                                    tagsViewModel.getSeriesImage(it.series)
+                                                }
+                                            },
+                                            textStyle = LocalTextStyle.current,
+                                            onFavoriteToggle = {
+                                                if (data != null) {
+                                                    onSeriesFavoriteToggle(data, it)
+                                                }
+                                            },
+                                            onClick = { data?.let { onSeriesClick(it.series) } },
+                                        )
                                     },
-                                    onClick = {
-                                        if (data != null) {
-                                            onMerchClick(data.merch)
+                                    scrollStateSaver = scrollStateSaver,
+                                    additionalHeader = {
+                                        item(key = "seriesLanguageOption") {
+                                            tagsViewModel.seriesLanguageSection
+                                                .Content(Modifier.fillMaxWidth())
                                         }
-                                    },
+                                    }
                                 )
-                            },
-                            scrollStateSaver = scrollStateSaver
-                        )
+                            }
+                            Tab.MERCH -> TabScreen(
+                                dataYearHeaderState = dataYearHeaderState,
+                                query = { tagsViewModel.merchQuery },
+                                onQueryChange = { tagsViewModel.merchQuery = it },
+                                entriesSize = { merch.itemCount },
+                                values = merch,
+                                itemKey = { it.merch.name },
+                                item = { data ->
+                                    MerchRow(
+                                        data = data,
+                                        onFavoriteToggle = {
+                                            if (data != null) {
+                                                onMerchFavoriteToggle(data, it)
+                                            }
+                                        },
+                                        onClick = {
+                                            if (data != null) {
+                                                onMerchClick(data.merch)
+                                            }
+                                        },
+                                    )
+                                },
+                                scrollStateSaver = scrollStateSaver
+                            )
+                        }
                     }
                 }
             }

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.app
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
@@ -22,6 +23,8 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val artistsSortAscending = MutableStateFlow(true)
     override val stampRalliesSortOption = MutableStateFlow(StampRallySearchSortOption.RANDOM)
     override val stampRalliesSortAscending = MutableStateFlow(true)
+    override val seriesSortOption = MutableStateFlow(SeriesSearchSortOption.RANDOM)
+    override val seriesSortAscending = MutableStateFlow(true)
     override val showGridByDefault = MutableStateFlow(false)
     override val showRandomCatalogImage = MutableStateFlow(false)
     override val showOnlyConfirmedTags = MutableStateFlow(false)

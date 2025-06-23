@@ -264,6 +264,13 @@
     <string name="alley_series_filter_content_description">Series filter expand</string>
     <string name="alley_series_filter_search_placeholder">Search series…</string>
     <string name="alley_series_filter_search_clear_content_description">Clear query</string>
+    <string name="alley_series_filter_source_label">Source</string>
+    <string name="alley_series_filter_source_content_description">Source filter expand</string>
+    <string name="alley_series_filter_source_chip_state_content_description">Source chip state</string>
+
+    <string name="alley_series_sort_random">Random</string>
+    <string name="alley_series_sort_name">Name</string>
+    <string name="alley_series_sort_popularity">Popularity</string>
 
     <string name="alley_merch_chip_state_content_description">Merch chip state</string>
     <string name="alley_merch_filter_label">Merch</string>

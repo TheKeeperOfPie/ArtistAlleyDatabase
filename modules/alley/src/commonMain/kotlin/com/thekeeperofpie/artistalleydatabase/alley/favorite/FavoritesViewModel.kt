@@ -29,12 +29,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
@@ -173,29 +175,37 @@ class FavoritesViewModel(
             .flowOn(dispatchers.io)
             .cachedIn(viewModelScope)
 
-    val seriesEntries = combine(query, year, settings.languageOption, ::Triple)
-        .flatMapLatest { (query, year, languageOption) ->
+    val seriesSortFilterController =
+        SeriesSortFilterController(viewModelScope, settings, savedStateHandle)
+
+    data class SeriesInputs(
+        val query: String,
+        val year: DataYear,
+        val languageOption: AniListLanguageOption,
+        val filterParams: SeriesSortFilterController.FilterParams,
+    )
+
+    val seriesEntries = combine(
+        query,
+        year,
+        settings.languageOption,
+        seriesSortFilterController.state.filterParams,
+        ::SeriesInputs,
+    )
+        .flatMapLatest { (query, year, languageOption, filterParams) ->
             if (year == DataYear.YEAR_2023) {
                 flowOf(PagingData.empty())
             } else {
                 createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                     val seriesFilterState = listOf(SeriesFilterOption.ALL to true)
-                    if (query.isBlank()) {
-                        seriesEntryDao.getSeries(
-                            languageOption = languageOption,
-                            year = year,
-                            seriesFilterState = seriesFilterState,
-                            favoriteOnly = true,
-                        )
-                    } else {
-                        seriesEntryDao.searchSeries(
-                            languageOption = languageOption,
-                            year = year,
-                            query = query,
-                            seriesFilterState = seriesFilterState,
-                            favoriteOnly = true,
-                        )
-                    }
+                    seriesEntryDao.searchSeries(
+                        languageOption = languageOption,
+                        year = year,
+                        query = query,
+                        randomSeed = randomSeed,
+                        seriesFilterParams = filterParams,
+                        favoriteOnly = true,
+                    )
                 }.flow
             }
         }
