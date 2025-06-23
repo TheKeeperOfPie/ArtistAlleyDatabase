@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import androidx.lifecycle.SavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_only_confirmed_tags
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_source_label
@@ -49,10 +50,19 @@ class SeriesSortFilterController(
         selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST,
     )
 
-    private val filterParams = combineStates(sortOption, sortAscending, sourceIn, ::FilterParams)
+    val showOnlyConfirmedTags = settings.showOnlyConfirmedTags
+    val showOnlyConfirmedTagsSection = SortFilterSectionState.SwitchBySetting(
+        title = Res.string.alley_filter_show_only_confirmed_tags,
+        property = showOnlyConfirmedTags,
+        default = false,
+        allowClear = true,
+    )
+
+    private val filterParams =
+        combineStates(sortOption, sortAscending, sourceIn, showOnlyConfirmedTags, ::FilterParams)
 
     val state = SortFilterState(
-        sections = listOf(sortSection, sourceSection),
+        sections = listOf(sortSection, sourceSection, showOnlyConfirmedTagsSection),
         filterParams = filterParams,
         collapseOnClose = ReadOnlyStateFlow(false),
     )
@@ -61,5 +71,6 @@ class SeriesSortFilterController(
         val sortOption: SeriesSearchSortOption,
         val sortAscending: Boolean,
         val sourceIn: Set<SeriesFilterOption>,
+        val showOnlyConfirmedTags: Boolean,
     )
 }

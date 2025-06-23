@@ -42,9 +42,11 @@ fun SqlCursor.toSeriesEntry(): SeriesEntry {
         titleRomaji = getString(9)!!,
         titleNative = getString(10)!!,
         link = getString(11),
-        has2024 = getBooleanFixed(12),
-        has2025 = getBooleanFixed(13),
-        counter = getLong(14)!!,
+        inferred2024 = getLong(12)!!,
+        inferred2025 = getLong(13)!!,
+        confirmed2024 = getLong(14)!!,
+        confirmed2025 = getLong(15)!!,
+        counter = getLong(16)!!,
     )
 }
 
@@ -65,13 +67,15 @@ fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
             titleRomaji = getString(9)!!,
             titleNative = getString(10)!!,
             link = getString(11),
-            has2024 = getBooleanFixed(12),
-            has2025 = getBooleanFixed(13),
-            counter = getLong(14)!!,
+            inferred2024 = getLong(12)!!,
+            inferred2025 = getLong(13)!!,
+            confirmed2024 = getLong(14)!!,
+            confirmed2025 = getLong(15)!!,
+            counter = getLong(16)!!,
         ),
         userEntry = SeriesUserEntry(
             seriesId = uuid,
-            favorite = getBooleanFixed(15),
+            favorite = getBooleanFixed(17),
         )
     )
 }
@@ -90,8 +94,10 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
         titleRomaji = titleRomaji,
         titleNative = titleNative,
         link = link,
-        has2024 = has2024,
-        has2025 = has2025,
+        inferred2024 = inferred2024,
+        inferred2025 = inferred2025,
+        confirmed2024 = confirmed2024,
+        confirmed2025 = confirmed2025,
         counter = counter,
     ),
     userEntry = SeriesUserEntry(
@@ -114,8 +120,10 @@ fun GetSeriesByIds.toSeriesWithUserData() = SeriesWithUserData(
         titleRomaji = titleRomaji,
         titleNative = titleNative,
         link = link,
-        has2024 = has2024,
-        has2025 = has2025,
+        inferred2024 = inferred2024,
+        inferred2025 = inferred2025,
+        confirmed2024 = confirmed2024,
+        confirmed2025 = confirmed2025,
         counter = counter,
     ),
     userEntry = SeriesUserEntry(
@@ -180,11 +188,28 @@ class SeriesEntryDao(
             aniListTypeKey = if (query.isEmpty()) "aniListType" else "aniListTypeAsKey",
         )
 
+        val popularityColumn = when (year) {
+            DataYear.YEAR_2023 -> ""
+            DataYear.YEAR_2024 -> if (seriesFilterParams.showOnlyConfirmedTags) {
+                "confirmed2024"
+            } else {
+                "inferred2024"
+            }
+            DataYear.YEAR_2025 -> if (seriesFilterParams.showOnlyConfirmedTags) {
+                "confirmed2025"
+            } else {
+                "inferred2025"
+            }
+        }
         var whereStatement = ""
-        if (favoritesStatement.isNotEmpty() || filteredSourcesStatement.isNotEmpty() || query.isEmpty()) {
+        if (favoritesStatement.isNotEmpty() ||
+            filteredSourcesStatement.isNotEmpty() ||
+            year != DataYear.YEAR_2023
+        ) {
             whereStatement += "WHERE "
-            if (query.isEmpty() && year != DataYear.YEAR_2023) {
-                whereStatement += "has${year.year} = 1"
+            if (year != DataYear.YEAR_2023) {
+                val popularityMinExclusive = if (seriesFilterParams.showOnlyConfirmedTags) 1 else 0
+                whereStatement += "$popularityColumn > $popularityMinExclusive"
                 if (favoritesStatement.isNotEmpty() || filteredSourcesStatement.isNotEmpty()) {
                     whereStatement += " AND "
                 }
@@ -209,7 +234,8 @@ class SeriesEntryDao(
         val sortSuffix = when (seriesFilterParams.sortOption) {
             SeriesSearchSortOption.RANDOM -> "ORDER BY orderIndex"
             SeriesSearchSortOption.NAME -> "ORDER BY seriesEntry.$nameOrderBy COLLATE NOCASE"
-            SeriesSearchSortOption.POPULARITY -> "ORDER BY seriesEntry.$nameOrderBy COLLATE NOCASE"
+            SeriesSearchSortOption.POPULARITY -> "ORDER BY seriesEntry." +
+                    "${popularityColumn.ifEmpty { "inferred2025" }} COLLATE NOCASE"
         } + " $ascending" + " NULLS LAST"
         val randomSortSelectSuffix =
             (", substr(seriesEntry_fts.counter * 0.$randomSeed," +
@@ -229,15 +255,17 @@ class SeriesEntryDao(
                 $whereStatement
             """.trimIndent()
             val statement = """
-                SELECT seriesEntry.*, seriesUserEntry.favorite${randomSortSelectSuffix.replace("_fts", "")}
+                SELECT seriesEntry.*, seriesUserEntry.favorite${
+                randomSortSelectSuffix.replace(
+                    "_fts",
+                    ""
+                )
+            }
                 FROM seriesEntry
                 $joinStatement
                 $whereStatement
                 $sortSuffix
             """.trimIndent()
-
-            println("statement = $statement")
-            println("countStatement = $countStatement")
 
             return DaoUtils.queryPagingSource(
                 driver = driver,
@@ -249,15 +277,9 @@ class SeriesEntryDao(
             )
         }
 
-        val yearFilter = when (year) {
-            DataYear.YEAR_2023 -> ""
-            DataYear.YEAR_2024 -> "has2024 IS 1 AND ("
-            DataYear.YEAR_2025 -> "has2025 IS 1 AND ("
-        }
-        val yearFilterSuffix = if (yearFilter.isEmpty()) "" else ")"
-        val likeStatement = yearFilter + targetColumns.joinToString(separator = "\nOR ") {
+        val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
             "(${DaoUtils.makeLikeAndQuery("seriesEntry_fts.$it", queries)})"
-        } + yearFilterSuffix
+        }
 
         val joinStatement = """
             LEFT OUTER JOIN seriesUserEntry
@@ -402,8 +424,10 @@ class SeriesEntryDao(
             titleRomaji = id,
             titleNative = id,
             link = null,
-            has2024 = false,
-            has2025 = false,
+            inferred2024 = 1,
+            inferred2025 = 1,
+            confirmed2024 = 0,
+            confirmed2025 = 0,
             counter = 1,
         ),
         userEntry = SeriesUserEntry(

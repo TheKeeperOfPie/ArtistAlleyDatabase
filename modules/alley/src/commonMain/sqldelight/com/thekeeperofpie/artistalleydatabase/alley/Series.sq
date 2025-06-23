@@ -19,11 +19,11 @@ WHERE id IN :ids;
 
 getSeriesSize2024:
 SELECT COUNT(*) FROM seriesEntry
-WHERE has2024 = 1;
+WHERE inferred2024 > 0;
 
 getSeriesSize2025:
 SELECT COUNT(*) FROM seriesEntry
-WHERE has2025 = 1;
+WHERE inferred2025 > 0;
 
 getBoothsBySeriesId2024:
 SELECT artistEntry2024.booth FROM artistSeriesConnection

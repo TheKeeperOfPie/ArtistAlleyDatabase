@@ -634,6 +634,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val titleNative = it["Native"]?.ifBlank { null }?.takeIf { validated }
                     val titlePreferred = it["Preferred"]?.ifBlank { null }
 
+                    val connections = seriesConnections.filter { it.value.seriesId == id }
+
                     // TODO: Fully migrate series to UUID
                     SeriesEntry(
                         id = id,
@@ -650,8 +652,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         titleNative = titleNative ?: titleRomaji ?: titlePreferred ?: titleEnglish
                         ?: id,
                         link = link,
-                        has2024 = seriesConnections.any { it.value.seriesId == id && it.value.state2024 > 0 },
-                        has2025 = seriesConnections.any { it.value.seriesId == id && it.value.state2025 > 0 },
+                        inferred2024 = connections.count { it.value.state2024 > 0 }.toLong(),
+                        inferred2025 = connections.count { it.value.state2025 > 0 }.toLong(),
+                        confirmed2024 = connections.count { it.value.state2024 > 1 }.toLong(),
+                        confirmed2025 = connections.count { it.value.state2025 > 1 }.toLong(),
                         counter = counter++,
                     )
                 }
