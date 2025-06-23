@@ -71,7 +71,7 @@ class AlleySettingsViewModel(
                 state.importState = LoadingResult.loading<Unit>()
                 previousJob?.join()
                 Buffer().use {
-                    it.writeString(event.data)
+                    it.writeString(event.data.substringAfter("import="))
                     state.importState = exporter.import(it)
                 }
             }

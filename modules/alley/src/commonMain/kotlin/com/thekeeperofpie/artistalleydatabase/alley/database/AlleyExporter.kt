@@ -132,6 +132,7 @@ class AlleyExporter(
                 importPartial(source)
             }
         } catch (t: Throwable) {
+            t.printStackTrace()
             LoadingResult.error<Unit>(Res.string.alley_import_failed, throwable = t)
         }
     }

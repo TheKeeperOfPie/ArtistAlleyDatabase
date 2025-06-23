@@ -40,7 +40,7 @@ internal object ImportScreen {
                 )
             },
             text = if (state.success) null else {
-                { Text(state.error?.messageText() ?: importData) }
+                { Text(state.error?.throwable?.message ?: importData) }
             },
             confirmButton = {
                 val loading = state.loading
