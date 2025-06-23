@@ -55,6 +55,7 @@ actual class DriverFactory {
 
         if (oldVersion == null || oldVersion == 0L) {
             AlleySqlDatabase.Schema.create(driver).await()
+            driver.execute(null, "PRAGMA $pragmaUserVersion=$currentVersion", 0).await()
         } else if (oldVersion < currentVersion) {
             AlleySqlDatabase.Schema.migrate(
                 driver = driver,
