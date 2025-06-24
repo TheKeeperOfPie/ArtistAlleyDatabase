@@ -42,7 +42,14 @@
                 return script
             }
 
-            if (hasSupportOfAllRequiredWasmFeatures()) {
+            let forceJsVariant;
+            try {
+                forceJsVariant = localStorage.getItem("forceJsVariant");
+            } catch (error) {
+            }
+
+            console.log("forceJsVariant: ", forceJsVariant);
+            if (forceJsVariant != "true" && hasSupportOfAllRequiredWasmFeatures()) {
                 body.appendChild(createScript("composeApp-wasm.js"))
             } else {
                 body.appendChild(createScript("skiko.js"))
