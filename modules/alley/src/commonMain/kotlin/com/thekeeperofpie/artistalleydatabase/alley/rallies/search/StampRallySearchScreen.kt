@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
+import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -64,8 +65,8 @@ object StampRallySearchScreen {
                 query = viewModel.query,
                 entries = entries,
                 sortFilterState = sortFilterState,
-                dataYearHeaderState = dataYearHeaderState,
                 gridState = gridState,
+                header = { DataYearHeader(dataYearHeaderState) },
                 title = { lockedSeriesEntry?.name(languageOptionMedia) },
                 shouldShowCount = { shouldShowCount },
                 onClickBack = onClickBack,

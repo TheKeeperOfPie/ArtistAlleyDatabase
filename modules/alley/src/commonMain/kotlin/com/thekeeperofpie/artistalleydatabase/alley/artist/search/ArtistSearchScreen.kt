@@ -66,7 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
@@ -75,7 +74,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
@@ -146,34 +144,24 @@ object ArtistSearchScreen {
 
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
+            val seriesTitle = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
+
             SearchScreen(
                 state = state.searchState,
                 eventSink = {
                     eventSink(Event.SearchEvent(it))
                 },
+                query = state.query,
                 onClickBack = onClickBack,
                 entries = entries,
                 scaffoldState = scaffoldState,
                 sortFilterState = sortFilterState,
                 gridState = gridState,
+                title = { seriesTitle ?: state.lockedMerch },
                 shouldShowCount = { shouldShowCount },
-                topBar = {
-                    val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
-                    val seriesTitle = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
-                    EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                        DisplayTypeSearchBar(
-                            onClickBack = onClickBack,
-                            query = state.query,
-                            title = { seriesTitle ?: state.lockedMerch },
-                            itemCount = { entries.itemCount },
-                            displayType = state.searchState.displayType,
-                            actions = actions,
-                        )
-                    }
-                },
-                topBarScrollBehavior = scrollBehavior,
                 header = header,
                 itemToSharedElementId = { it.artist.id },
+                actions = actions,
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(
                         entry = entry,

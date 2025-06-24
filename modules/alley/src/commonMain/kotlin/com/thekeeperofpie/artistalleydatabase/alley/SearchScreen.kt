@@ -73,8 +73,6 @@ import artistalleydatabase.modules.entry.generated.resources.entry_results_multi
 import artistalleydatabase.modules.entry.generated.resources.entry_results_one
 import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
@@ -118,13 +116,13 @@ object SearchScreen {
         entries: LazyPagingItems<EntryModel>,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         sortFilterState: SortFilterState<*>,
-        dataYearHeaderState: DataYearHeaderState,
         gridState: LazyStaggeredGridState,
         shouldShowCount: () -> Boolean,
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
         itemToSharedElementId: (EntryModel) -> Any,
         actions: (@Composable RowScope.() -> Unit)? = null,
+        header: @Composable () -> Unit,
         itemRow: @Composable (
             entry: EntryModel,
             onFavoriteToggle: (Boolean) -> Unit,
@@ -155,7 +153,7 @@ object SearchScreen {
                 }
             },
             topBarScrollBehavior = scrollBehavior,
-            header = { DataYearHeader(dataYearHeaderState) },
+            header = header,
             onClickBack = onClickBack,
             itemToSharedElementId = itemToSharedElementId,
             itemRow = itemRow,
