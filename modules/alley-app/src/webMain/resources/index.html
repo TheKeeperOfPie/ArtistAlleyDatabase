@@ -42,14 +42,16 @@
                 return script
             }
 
-            let forceJsVariant;
-            try {
-                forceJsVariant = localStorage.getItem("forceJsVariant");
-            } catch (error) {
+            let forceJsVariant = navigator.userAgent.indexOf("AppleWebKit") != -1;
+            if (!forceJsVariant) {
+                try {
+                    forceJsVariant = localStorage.getItem("forceJsVariant");
+                } catch (error) {
+                }
             }
 
             console.log("forceJsVariant: ", forceJsVariant);
-            if (forceJsVariant != "true" && hasSupportOfAllRequiredWasmFeatures()) {
+            if (!forceJsVariant && hasSupportOfAllRequiredWasmFeatures()) {
                 body.appendChild(createScript("composeApp-wasm.js"))
             } else {
                 body.appendChild(createScript("skiko.js"))
