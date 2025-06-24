@@ -8,7 +8,7 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version "2.2.0-RC2"
+    kotlin("jvm") version "2.2.0"
     `kotlin-dsl`
     alias(libs.plugins.app.cash.sqldelight).version("2.1.0")
 }

@@ -71,8 +71,8 @@ object Versions {
         }
 
         object composeMultiplatform {
-            const val plugin = "1.8.0"
-            const val runtime = "1.8.0"
+            const val plugin = "1.8.2"
+            const val runtime = "1.8.2"
         }
     }
 
@@ -83,11 +83,11 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.2.0-RC2"
+        const val core = "2.2.0"
         const val coroutines = "1.10.2"
         const val datetime = "0.6.2"
         const val io = "0.7.0"
-        const val ksp = "2.2.0-RC-2.0.1"
+        const val ksp = "2.2.0-RC3-2.0.2"
         const val serialization = "1.8.1"
     }
 
