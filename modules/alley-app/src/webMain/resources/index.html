@@ -42,7 +42,8 @@
                 return script
             }
 
-            let forceJsVariant = navigator.userAgent.indexOf("AppleWebKit") != -1;
+            let forceJsVariant = navigator.userAgent.indexOf("Safari") != -1 &&
+                    navigator.userAgent.indexOf("Chrom") == -1;
             if (!forceJsVariant) {
                 try {
                     forceJsVariant = localStorage.getItem("forceJsVariant");
