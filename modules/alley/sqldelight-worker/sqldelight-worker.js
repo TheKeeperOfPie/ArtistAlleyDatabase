@@ -11,8 +11,14 @@ async function createDatabase() {
     const sqlite3 = await sqlite3InitModule({ print: console.log, printErr: console.error });
 
     let opfsRoot;
+    let forceNoOpfs;
     try {
-        if (sqlite3.oo1.OpfsDb) {
+        forceNoOpfs = localStorage.getItem("forceNoOpfs");
+    } catch (error) {
+    }
+
+    try {
+        if (forceNoOpfs != "true" && sqlite3.oo1.OpfsDb) {
             opfsRoot = await navigator.storage.getDirectory();
         }
     } catch(error) {
