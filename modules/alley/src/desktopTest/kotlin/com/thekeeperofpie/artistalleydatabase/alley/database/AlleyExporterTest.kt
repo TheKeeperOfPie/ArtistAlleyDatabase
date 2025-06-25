@@ -293,6 +293,7 @@ class AlleyExporterTest {
         stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
             tablesAdapter = DaoUtils.listStringAdapter,
             linksAdapter = DaoUtils.listStringAdapter,
+            seriesAdapter = DaoUtils.listStringAdapter,
         ),
         artistNotesAdapter = ArtistNotes.Adapter(
             dataYearAdapter = DaoUtils.dataYearAdapter,
@@ -552,6 +553,7 @@ class AlleyExporterTest {
                     totalCost = null,
                     prize = null,
                     prizeLimit = null,
+                    series = emptyList(),
                     notes = null,
                     counter = index.toLong(),
                     confirmed = false,
