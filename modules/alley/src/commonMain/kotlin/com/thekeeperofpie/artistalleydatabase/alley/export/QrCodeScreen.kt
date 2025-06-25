@@ -17,7 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,9 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_close_content_description
@@ -58,41 +54,22 @@ internal object QrCodeScreen {
                             contentDescription = stringResource(Res.string.alley_close_content_description),
                         )
                     }
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = 16.dp, end = 16.dp, bottom = 12.dp)
-                    ) {
-                        OutlinedCard(Modifier.fillMaxWidth()) {
-                            Text(
-                                text = buildAnnotatedString {
-                                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.error)) {
-                                        append(
-                                            "WARNING: There are reports that this breaks iOS " +
-                                                    "devices permanently, use at your own risk! " +
-                                                    "Android should work fine."
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
 
-                        OutlinedCard(Modifier.fillMaxWidth()) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier.fillMaxWidth().padding(16.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.alley_export_notes_warning),
-                                    modifier = Modifier.weight(1f)
+                    OutlinedCard(Modifier.fillMaxWidth().padding(top = 16.dp, end = 16.dp, bottom = 12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.alley_export_notes_warning),
+                                modifier = Modifier.weight(1f)
+                            )
+                            FilledTonalIconButton(onClickDownload) {
+                                Icon(
+                                    imageVector = Icons.Default.Download,
+                                    contentDescription = stringResource(Res.string.alley_export_download_content_description),
                                 )
-                                FilledTonalIconButton(onClickDownload) {
-                                    Icon(
-                                        imageVector = Icons.Default.Download,
-                                        contentDescription = stringResource(Res.string.alley_export_download_content_description),
-                                    )
-                                }
                             }
                         }
                     }
