@@ -137,8 +137,14 @@ private fun Header() {
                 buildAnnotatedString {
                     append("Built by ")
                     withStyle(SpanStyle(color = colorScheme.primary)) {
-                        withLink(LinkAnnotation.Url(BuildKonfig.authorUrl)) {
-                            append(BuildKonfig.authorName)
+                        withLink(LinkAnnotation.Url(BuildKonfig.authorOneUrl)) {
+                            append(BuildKonfig.authorOneName)
+                        }
+                    }
+                    append(" and ")
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url(BuildKonfig.authorTwoUrl)) {
+                            append(BuildKonfig.authorTwoName)
                         }
                     }
                     append(" for the ")
@@ -159,8 +165,8 @@ private fun Header() {
 
             IconButtonWithTooltip(
                 imageVector = Logo.GITHUB.icon,
-                tooltipText = BuildKonfig.authorUrl,
-                onClick = { uriHandler.openUri(BuildKonfig.authorUrl) },
+                tooltipText = BuildKonfig.authorTwoUrl,
+                onClick = { uriHandler.openUri(BuildKonfig.authorTwoUrl) },
                 contentDescription = stringResource(Res.string.alley_author_link),
             )
 
@@ -461,7 +467,7 @@ private fun FaqSection(onInstallClick: () -> Unit) {
             question = "I have questions, comments, concerns, suggestions, or feedback",
             answer = {
                 append("DM ")
-                append(BuildKonfig.authorUsername)
+                append(BuildKonfig.authorTwoUsername)
                 append(" on Discord or visit us in the ")
                 withStyle(SpanStyle(color = colorScheme.primary)) {
                     withLink(LinkAnnotation.Url(BuildKonfig.serverUrl)) {
