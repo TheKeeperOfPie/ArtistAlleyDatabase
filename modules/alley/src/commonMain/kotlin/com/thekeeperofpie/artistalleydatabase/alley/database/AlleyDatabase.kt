@@ -42,7 +42,7 @@ class ArtistAlleyDatabase(
     internal val artistEntryDao = ArtistEntryDao(driver, database, settings)
     internal val stampRallyEntryDao = StampRallyEntryDao(driver, database)
     internal val imageEntryDao = ImageEntryDao(database)
-    internal val importExportDao = ImportExportDao(database)
+    internal val importExportDao = ImportExportDao(driver, database)
     internal val userNotesDao = UserNotesDao(database)
     internal val merchEntryDao = MerchEntryDao(driver, database)
     internal val seriesEntryDao = SeriesEntryDao(driver, database)

@@ -1,10 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 class ImportExportDao(
+    val driver: suspend () -> SqlDriver,
     val database: suspend () -> AlleySqlDatabase,
 ) {
     suspend fun getExportPartialArtists2023() =
@@ -88,5 +92,19 @@ class ImportExportDao(
         importMerchUserEntry(merchId, favorite)
     }
 
-    suspend fun deleteUserData() = database().userImportExportQueries.deleteUserData()
+    suspend fun deleteUserData() {
+        database().userImportExportQueries.run {
+            transaction {
+                deleteArtistNotes()
+                deleteArtistUserEntry()
+                deleteStampRallyNotes()
+                deleteStampRallyUserEntry()
+                deleteSeriesUserEntry()
+                deleteMerchUserEntry()
+            }
+        }
+
+        delay(1.seconds)
+        driver().notifyListeners("artistNotes", "artistUserEntry", "stampRallyNotes", "stampRallyUserEntry", "seriesUserEntry", "merchUserEntry")
+    }
 }

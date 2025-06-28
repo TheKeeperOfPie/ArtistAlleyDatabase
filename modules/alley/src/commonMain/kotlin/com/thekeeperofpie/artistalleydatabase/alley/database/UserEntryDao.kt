@@ -22,6 +22,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
@@ -58,6 +59,10 @@ class UserEntryDao(
     private val settings: ArtistAlleySettings,
     private val dao: suspend () -> UserEntryQueries = { database().userEntryQueries },
 ) {
+    companion object {
+        private val NOTIFY_DELAY = 350.milliseconds
+    }
+
     suspend fun getArtistFavorites() = dao()
         .getArtistFavorites()
         .asFlow()
@@ -95,7 +100,7 @@ class UserEntryDao(
                 )
                 insertArtistUserEntry(newEntry)
             }
-            delay(1.seconds)
+            delay(NOTIFY_DELAY)
             driver().notifyListeners("artistEntry", "artistUserEntry")
         }
     }
@@ -112,7 +117,7 @@ class UserEntryDao(
                 )
                 insertStampRallyUserEntry(newEntry)
             }
-            delay(1.seconds)
+            delay(NOTIFY_DELAY)
             driver().notifyListeners("stampRallyEntry", "stampRallyUserEntry")
         }
     }
@@ -126,7 +131,7 @@ class UserEntryDao(
                 val newEntry = existing.copy(favorite = entry.favorite)
                 insertSeriesUserEntry(newEntry)
             }
-            delay(1.seconds)
+            delay(NOTIFY_DELAY)
             driver().notifyListeners("seriesEntry", "seriesUserEntry")
         }
     }
@@ -140,7 +145,7 @@ class UserEntryDao(
                 val newEntry = existing.copy(favorite = entry.favorite)
                 insertMerchUserEntry(newEntry)
             }
-            delay(1.seconds)
+            delay(NOTIFY_DELAY)
             driver().notifyListeners("merchEntry", "merchUserEntry")
         }
     }

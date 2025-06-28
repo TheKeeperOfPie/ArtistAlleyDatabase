@@ -114,12 +114,20 @@ importMerchUserEntry:
 INSERT OR REPLACE INTO merchUserEntry(merchId, favorite)
 VALUES(:merchId, :favorite);
 
-/** RETURNING for https://github.com/sqldelight/sqldelight/issues/5753 */
-deleteUserData {
-    DELETE FROM artistNotes;
-    DELETE FROM artistUserEntry;
-    DELETE FROM stampRallyUserEntry;
-    DELETE FROM stampRallyNotes;
-    DELETE FROM seriesUserEntry;
-    DELETE FROM merchUserEntry RETURNING COUNT(*);
-}
+deleteArtistNotes:
+DELETE FROM artistNotes;
+
+deleteArtistUserEntry:
+DELETE FROM artistUserEntry;
+
+deleteStampRallyNotes:
+DELETE FROM stampRallyNotes;
+
+deleteStampRallyUserEntry:
+DELETE FROM stampRallyUserEntry;
+
+deleteSeriesUserEntry:
+DELETE FROM seriesUserEntry;
+
+deleteMerchUserEntry:
+DELETE FROM merchUserEntry;
