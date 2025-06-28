@@ -208,8 +208,7 @@ class SeriesEntryDao(
         ) {
             whereStatement += "WHERE "
             if (year != DataYear.YEAR_2023) {
-                val popularityMinExclusive = if (seriesFilterParams.showOnlyConfirmedTags) 1 else 0
-                whereStatement += "$popularityColumn > $popularityMinExclusive"
+                whereStatement += "$popularityColumn > 0"
                 if (favoritesStatement.isNotEmpty() || filteredSourcesStatement.isNotEmpty()) {
                     whereStatement += " AND "
                 }
