@@ -63,8 +63,11 @@ import artistalleydatabase.modules.alley.generated.resources.alley_next_page
 import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
 import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.decode.BlackholeDecoder
+import coil3.request.CachePolicy
 import coil3.request.Disposable
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
@@ -100,6 +103,10 @@ fun rememberImagePagerState(images: List<CatalogImage>, initialImageIndex: Int):
     return pagerState
 }
 
+@OptIn(ExperimentalCoilApi::class)
+private val blackholeFactory = BlackholeDecoder.Factory()
+
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ImagePager(
     images: List<CatalogImage>,
@@ -247,7 +254,8 @@ fun ImagePager(
                     disposables += imageLoader.enqueue(
                         ImageRequest.Builder(context)
                             .data(it.uri)
-                            .memoryCacheKey(it.uri.toString())
+                            .memoryCachePolicy(CachePolicy.DISABLED)
+                            .decoderFactory(blackholeFactory)
                             .build()
                     )
                 }
