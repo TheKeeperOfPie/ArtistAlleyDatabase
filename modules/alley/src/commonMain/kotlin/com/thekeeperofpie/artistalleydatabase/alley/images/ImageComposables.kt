@@ -37,9 +37,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -60,8 +62,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_next_page
 import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
 import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
+import coil3.SingletonImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.request.Disposable
 import coil3.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
@@ -128,6 +132,9 @@ fun ImagePager(
                     .canPanExternal()
             }
         }
+
+        var anySuccess by remember { mutableStateOf(false) }
+
         CompositionLocalProvider(LocalViewConfiguration provides newViewConfiguration) {
             var minHeight by remember { mutableIntStateOf(0) }
             val density = LocalDensity.current
@@ -180,6 +187,7 @@ fun ImagePager(
                                     .memoryCacheKey(image.uri.toString())
                                     .build(),
                                 contentScale = imageContentScale,
+                                onSuccess = { anySuccess = true },
                                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                                 contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                                 modifier = Modifier
@@ -229,6 +237,23 @@ fun ImagePager(
             pagerState = pagerState,
             userScrollEnabled = { userScrollEnabled },
         )
+
+        val context = LocalPlatformContext.current
+        DisposableEffect(context, images, anySuccess) {
+            val imageLoader = SingletonImageLoader.get(context)
+            val disposables = mutableListOf<Disposable>()
+            if (anySuccess) {
+                images.forEach {
+                    disposables += imageLoader.enqueue(
+                        ImageRequest.Builder(context)
+                            .data(it.uri)
+                            .memoryCacheKey(it.uri.toString())
+                            .build()
+                    )
+                }
+            }
+            onDispose { disposables.forEach { it.dispose() } }
+        }
     }
 }
 
