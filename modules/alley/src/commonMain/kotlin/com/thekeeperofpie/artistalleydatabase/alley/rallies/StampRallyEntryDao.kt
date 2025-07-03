@@ -418,6 +418,7 @@ class StampRallyEntryDao(
             "tables",
             "notes".takeIf { year != DataYear.YEAR_2023 },
             "series".takeIf { year == DataYear.YEAR_2025 },
+            "prize".takeIf { year == DataYear.YEAR_2025 },
         )
         val matchQuery = buildString {
             append("'")
