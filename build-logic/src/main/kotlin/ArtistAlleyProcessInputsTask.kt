@@ -166,7 +166,11 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 async {
                     val images = it.listFiles()
                         .orEmpty()
-                        .filter { it.isFile && it.extension in IMAGE_EXTENSIONS }
+                        .filter { file ->
+                            file.isFile && IMAGE_EXTENSIONS.any {
+                                it.equals(file.extension, ignoreCase = true)
+                            }
+                        }
                         .sorted()
                         .mapIndexed { index, file ->
                             val (width, height, resized) = parseScaledImageWidthHeight(
