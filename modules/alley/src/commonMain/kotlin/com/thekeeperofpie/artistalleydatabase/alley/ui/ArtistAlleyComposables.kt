@@ -57,6 +57,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -85,11 +86,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -118,6 +122,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryMode
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
+import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -611,6 +616,35 @@ fun DataYearHeader(state: DataYearHeaderState) {
                     val navigationController = LocalNavigationController.current
                     Button(onClick = { navigationController.navigate(Destinations.Export) }) {
                         Text(stringResource(Res.string.alley_con_upcoming_show_qr))
+                    }
+                }
+            }
+        }
+
+        if (year == DataYear.YEAR_2025) {
+            ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    val text = buildAnnotatedString {
+                        append("Thanks for attending ")
+                        append(stringResource(year.shortName))
+                        append("! If you have any feedback, please let us know ")
+                        withStyle(SpanStyle(color = colorScheme.primary)) {
+                            withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLink)) {
+                                append("here")
+                            }
+                        }
+                    }
+                    Text(
+                        text = text,
+                        modifier = Modifier.weight(1f)
+                    )
+                    val uriHandler = LocalUriHandler.current
+                    Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLink) }) {
+                        Text("Open")
                     }
                 }
             }
