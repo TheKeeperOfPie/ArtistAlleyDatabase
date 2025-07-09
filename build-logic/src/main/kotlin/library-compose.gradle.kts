@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalComposeLibrary::class)
 
-import gradle.kotlin.dsl.accessors._6d8726fd491f317cef515a9d3f855c0f.debugImplementation
+import gradle.kotlin.dsl.accessors._9e1c1cd6318aab2d8fc99bbe0d3fcd08.debugImplementation
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 

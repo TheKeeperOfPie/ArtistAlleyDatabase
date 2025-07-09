@@ -245,7 +245,7 @@ object AniListUserScreen {
                             val error = entryLoadingResult.error
                             if (error != null) {
                                 VerticalList.ErrorContent(
-                                    errorText = error.message(),
+                                    errorText = error.messageText(),
                                     exception = error.throwable,
                                 )
                             }

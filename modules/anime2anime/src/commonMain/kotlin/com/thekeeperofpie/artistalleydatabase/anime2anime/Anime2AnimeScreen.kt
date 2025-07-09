@@ -855,7 +855,7 @@ object Anime2AnimeScreen {
         if (!continuationResult.loading && error != null) {
             item(key = "$key-error") {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = error.message())
+                    Text(text = error.messageText())
                     error.throwable?.let {
                         Text(text = it.stackTraceToString())
                     }
