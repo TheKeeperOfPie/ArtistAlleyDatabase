@@ -6,8 +6,9 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ImportExportUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 import kotlinx.io.readString
@@ -25,7 +26,7 @@ class QrCodeViewModel(
             it.readString()
         }
     }.flowOn(dispatchers.io)
-        .stateInForCompose(null)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun download() {
         viewModelScope.launch(dispatchers.io) {
