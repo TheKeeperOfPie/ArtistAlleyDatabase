@@ -3,6 +3,7 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistSeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
@@ -39,6 +40,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import java.util.UUID
 import javax.inject.Inject
 
 @CacheableTask
@@ -95,7 +97,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
             try {
                 BuildLogicDatabase.Schema.create(driver)
-            } catch (_: Throwable){
+            } catch (_: Throwable) {
                 Thread.sleep(5000)
                 BuildLogicDatabase.Schema.create(driver)
             }
@@ -116,6 +118,16 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     merchConfirmedAdapter = listStringAdapter,
                 ),
                 artistEntry2025Adapter = ArtistEntry2025.Adapter(
+                    linksAdapter = listStringAdapter,
+                    storeLinksAdapter = listStringAdapter,
+                    catalogLinksAdapter = listStringAdapter,
+                    seriesInferredAdapter = listStringAdapter,
+                    seriesConfirmedAdapter = listStringAdapter,
+                    merchInferredAdapter = listStringAdapter,
+                    merchConfirmedAdapter = listStringAdapter,
+                    commissionsAdapter = listStringAdapter,
+                ),
+                artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
                     linksAdapter = listStringAdapter,
                     storeLinksAdapter = listStringAdapter,
                     catalogLinksAdapter = listStringAdapter,
@@ -170,6 +182,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             seriesConnections2025.forEach { seriesConnections.addSeriesConnection(it) }
             merchConnections2025.forEach { merchConnections.addMerchConnection(it) }
 
+            val (_, seriesConnectionsAnimeNyc2025, merchConnectionsAnimeNyc2025) =
+                parseArtistsAnimeNyc2025(database, artists2023, artists2024, artists2025)
+            seriesConnectionsAnimeNyc2025.forEach { seriesConnections.addSeriesConnection(it) }
+            merchConnectionsAnimeNyc2025.forEach { merchConnections.addMerchConnection(it) }
+
             val mutationQueries = database.mutationQueries
             seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
             merchConnections.values.forEach(mutationQueries::insertMerchConnection)
@@ -197,6 +214,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     "artistEntry2023_fts",
                     "artistEntry2024_fts",
                     "artistEntry2025_fts",
+                    "artistEntryAnimeNyc2025_fts",
                     "stampRallyEntry2023_fts",
                     "stampRallyEntry2024_fts",
                     "stampRallyEntry2025_fts",
@@ -359,6 +377,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 seriesId = it,
                                 state2024 = 1,
                                 state2025 = 0,
+                                stateAnimeNyc2025 = 0,
                             )
                         }
                     val seriesConnectionsConfirmed = seriesConfirmed
@@ -368,6 +387,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 seriesId = it,
                                 state2024 = 2,
                                 state2025 = 0,
+                                stateAnimeNyc2025 = 0,
                             )
                         }
 
@@ -378,6 +398,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 merchId = it,
                                 state2024 = 1,
                                 state2025 = 0,
+                                stateAnimeNyc2025 = 0,
                             )
                         }
                     val merchConnectionsConfirmed = merchConfirmed
@@ -387,6 +408,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 merchId = it,
                                 state2024 = 2,
                                 state2025 = 0,
+                                stateAnimeNyc2025 = 0,
                             )
                         }
 
@@ -539,6 +561,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             seriesId = it,
                             state2024 = 0,
                             state2025 = 1,
+                            stateAnimeNyc2025 = 0,
                         )
                     }
                     val seriesConnectionsConfirmed = seriesConfirmed
@@ -548,6 +571,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 seriesId = it,
                                 state2024 = 0,
                                 state2025 = 2,
+                                stateAnimeNyc2025 = 0,
                             )
                         }
 
@@ -558,6 +582,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 merchId = it,
                                 state2024 = 0,
                                 state2025 = 1,
+                                stateAnimeNyc2025 = 0,
                             )
                         }
                     val merchConnectionsConfirmed = merchConfirmed
@@ -567,6 +592,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 merchId = it,
                                 state2024 = 0,
                                 state2025 = 2,
+                                stateAnimeNyc2025 = 0,
                             )
                         }
 
@@ -599,6 +625,211 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .toList()
         }
         return Triple(artists2025, seriesConnections, merchConnections)
+    }
+
+    private fun parseArtistsAnimeNyc2025(
+        database: BuildLogicDatabase,
+        artists2023: List<ArtistEntry2023>,
+        artists2024: List<ArtistEntry2024>,
+        artists2025: List<ArtistEntry2025>,
+    ): Triple<List<ArtistEntryAnimeNyc2025>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
+        val existingIds = mutableSetOf<String>()
+        val artists2023ById = artists2023.associateBy { it.id }
+        val artists2024ById = artists2024.associateBy { it.id }
+        val artists2025ById = artists2025.associateBy { it.id }
+        val seriesConnections = mutableListOf<ArtistSeriesConnection>()
+        val merchConnections = mutableListOf<ArtistMerchConnection>()
+        val artistsCsvAnimeNyc2025 = inputsDirectory.file("animeNyc2025/$ARTISTS_CSV_NAME").get()
+        val artistsAnimeNyc2025 = open(artistsCsvAnimeNyc2025).use {
+            var counter = 1L
+            read(it)
+                .mapNotNull {
+                    // Input,Booth,Artist,Summary,Links,Store,Catalog - Inferred,Series - Inferred,
+                    // Merch - Inferred,Notes,Commissions
+                    val id = it["UUID"]!!.also { UUID.fromString(it) }
+                    val artist = it["Artist"].orEmpty()
+                    val booth = it["Booth"]
+                    val summary = it["Summary"]
+
+                    if (artist.isBlank()) return@mapNotNull null
+                    val artist2023 = artists2023ById[id]
+                    val artist2024 = artists2024ById[id]
+                    val artist2025 = artists2025ById[id]
+
+                    val newLineRegex = Regex("\n\\s?")
+                    val links = it["Links"]
+                        ?.split(newLineRegex)
+                        ?.filter(String::isNotBlank)
+                        ?.ifEmpty { artist2025?.links ?: artist2024?.links ?: artist2023?.links }
+                        .orEmpty()
+
+                    val storeLinks = it["Store"]
+                        ?.split(newLineRegex)
+                        ?.filter(String::isNotBlank)
+                        ?.ifEmpty { artist2025?.storeLinks ?: artist2024?.storeLinks }
+                        .orEmpty()
+                    val catalogLinks = it["Catalog - Confirmed"]
+                        ?.ifEmpty { it["Catalog - Inferred"] }
+                        ?.split(newLineRegex)
+                        ?.filter(String::isNotBlank)
+                        .orEmpty()
+                    val driveLink = it["Drive"]
+
+                    var seriesInferredRaw = it["Series - Inferred"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+                    if (seriesInferredRaw.isEmpty() && artist2025 != null) {
+                        seriesInferredRaw = artist2025.seriesConfirmed.ifEmpty {
+                            (artist2025.seriesInferred + artist2025.seriesConfirmed).distinct()
+                        }
+                    }
+                    if (seriesInferredRaw.isEmpty() && artist2024 != null) {
+                        seriesInferredRaw = artist2024.seriesConfirmed.ifEmpty {
+                            (artist2024.seriesInferred + artist2024.seriesConfirmed).distinct()
+                        }
+                    }
+
+                    var merchInferredRaw = it["Merch - Inferred"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+                    if (merchInferredRaw.isEmpty() && artist2025 != null) {
+                        merchInferredRaw = artist2025.merchConfirmed.ifEmpty {
+                            (artist2025.merchInferred + artist2025.merchConfirmed).distinct()
+                        }
+                    }
+                    if (merchInferredRaw.isEmpty() && artist2024 != null) {
+                        merchInferredRaw = artist2024.merchConfirmed.ifEmpty {
+                            (artist2024.merchInferred + artist2024.merchConfirmed).distinct()
+                        }
+                    }
+
+                    val seriesConfirmed = it["Series - Confirmed"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+                        .sorted()
+                    val merchConfirmed = it["Merch - Confirmed"].orEmpty().split(commaRegex)
+                        .filter(String::isNotBlank)
+                        .sorted()
+
+                    val notes = it["Notes"]
+                    val commissions = it["Commissions"].orEmpty().split(newLineRegex)
+                        .filter(String::isNotBlank)
+                        .sorted()
+
+                    val seriesInferred = (seriesInferredRaw - seriesConfirmed).sorted()
+                    val merchInferred = (merchInferredRaw - merchConfirmed).sorted()
+
+                    val linkTypes = (links + catalogLinks).map {
+                        parse(it)?.type ?: Type.OTHER_NON_STORE
+                    }
+                    val storeLinkTypes = storeLinks.map {
+                        parse(it)?.type ?: Type.OTHER_STORE
+                    }
+
+                    val (linkFlags, linkFlags2) = Link.parseFlags(linkTypes + storeLinkTypes)
+
+                    val artistEntry = ArtistEntryAnimeNyc2025(
+                        id = id,
+                        booth = booth?.takeIf { it.length == 3 },
+                        name = artist,
+                        summary = summary,
+                        links = links,
+                        storeLinks = storeLinks,
+                        catalogLinks = catalogLinks,
+                        linkFlags = linkFlags,
+                        linkFlags2 = linkFlags2,
+                        driveLink = driveLink,
+                        seriesInferred = seriesInferred,
+                        seriesConfirmed = seriesConfirmed,
+                        merchInferred = merchInferred,
+                        merchConfirmed = merchConfirmed,
+                        notes = notes,
+                        commissions = commissions,
+                        commissionOnsite = commissions.contains("On-site"),
+                        commissionOnline = commissions.contains("Online") ||
+                                commissions.any {
+                                    it.contains("http", ignoreCase = true) &&
+                                            !it.contains("vgen.co", ignoreCase = true)
+                                },
+                        commissionVGen = commissions.any {
+                            it.contains("vgen.co", ignoreCase = true)
+                        },
+                        commissionOther = commissions.filterNot {
+                            it.contains("On-site", ignoreCase = true) ||
+                                    it.contains("Online", ignoreCase = true) ||
+                                    it.contains("http", ignoreCase = true) ||
+                                    it.contains("vgen.co", ignoreCase = true)
+                        }.isNotEmpty(),
+                        counter = counter++,
+                    )
+
+                    val seriesConnectionsInferred = seriesInferred.map {
+                        ArtistSeriesConnection(
+                            artistId = id,
+                            seriesId = it,
+                            state2024 = 0,
+                            state2025 = 0,
+                            stateAnimeNyc2025 = 1,
+                        )
+                    }
+                    val seriesConnectionsConfirmed = seriesConfirmed
+                        .map {
+                            ArtistSeriesConnection(
+                                artistId = id,
+                                seriesId = it,
+                                state2024 = 0,
+                                state2025 = 0,
+                                stateAnimeNyc2025 = 2,
+                            )
+                        }
+
+                    val merchConnectionsInferred = merchInferred
+                        .map {
+                            ArtistMerchConnection(
+                                artistId = id,
+                                merchId = it,
+                                state2024 = 0,
+                                state2025 = 0,
+                                stateAnimeNyc2025 = 1,
+                            )
+                        }
+                    val merchConnectionsConfirmed = merchConfirmed
+                        .map {
+                            ArtistMerchConnection(
+                                artistId = id,
+                                merchId = it,
+                                state2024 = 0,
+                                state2025 = 0,
+                                stateAnimeNyc2025 = 2,
+                            )
+                        }
+
+                    Triple(
+                        artistEntry,
+                        seriesConnectionsInferred + seriesConnectionsConfirmed,
+                        merchConnectionsInferred + merchConnectionsConfirmed,
+                    )
+                }
+                .chunked(100)
+                .onEach {
+                    it.forEach { (artist, _, _) ->
+                        if (!existingIds.add(artist.id)) {
+                            logger.error("Duplicate ID ${artist.id}")
+                        }
+                        if (artist.links.isEmpty()) {
+                            logger.error("${artist.booth} ${artist.name} ${artist.id} has no links")
+                        }
+                    }
+                    val artists = it.map { it.first }
+                    val mutationQueries = database.mutationQueries
+                    mutationQueries.transaction {
+                        artists.forEach(mutationQueries::insertArtistAnimeNyc2025)
+                    }
+                    it.flatMap { it.second }.forEach(seriesConnections::add)
+                    it.flatMap { it.third }.forEach(merchConnections::add)
+                }
+                .map { it.map { it.first } }
+                .flatten()
+                .toList()
+        }
+        return Triple(artistsAnimeNyc2025, seriesConnections, merchConnections)
     }
 
     private fun parseSeries(
@@ -654,8 +885,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         link = link,
                         inferred2024 = connections.count { it.value.state2024 > 0 }.toLong(),
                         inferred2025 = connections.count { it.value.state2025 > 0 }.toLong(),
+                        inferredAnimeNyc2025 = connections.count { it.value.stateAnimeNyc2025 > 0 }
+                            .toLong(),
                         confirmed2024 = connections.count { it.value.state2024 > 1 }.toLong(),
                         confirmed2025 = connections.count { it.value.state2025 > 1 }.toLong(),
+                        confirmedAnimeNyc2025 = connections.count { it.value.stateAnimeNyc2025 > 1 }
+                            .toLong(),
                         counter = counter++,
                     )
                 }
@@ -691,6 +926,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         categories = categories,
                         has2024 = merchConnections.any { it.value.merchId == name && it.value.state2024 > 0 },
                         has2025 = merchConnections.any { it.value.merchId == name && it.value.state2025 > 0 },
+                        hasAnimeNyc2025 = merchConnections.any { it.value.merchId == name && it.value.stateAnimeNyc2025 > 0 },
                     )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
@@ -877,20 +1113,21 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                     Triple(
                         StampRallyEntry2025(
-                        id = stampRallyId,
-                        fandom = theme,
-                        tables = tables,
-                        hostTable = hostTable,
-                        links = links,
-                        tableMin = tableMin?.serializedValue?.toLong(),
-                        totalCost = totalCost?.toLong(),
-                        prize = prize,
-                        prizeLimit = prizeLimit?.toLong(),
-                        series = series,
-                        notes = notes,
-                        counter = counter++,
-                        confirmed = confirmed,
-                    ), artistConnections, seriesConnections)
+                            id = stampRallyId,
+                            fandom = theme,
+                            tables = tables,
+                            hostTable = hostTable,
+                            links = links,
+                            tableMin = tableMin?.serializedValue?.toLong(),
+                            totalCost = totalCost?.toLong(),
+                            prize = prize,
+                            prizeLimit = prizeLimit?.toLong(),
+                            series = series,
+                            notes = notes,
+                            counter = counter++,
+                            confirmed = confirmed,
+                        ), artistConnections, seriesConnections
+                    )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
                 .forEach {
@@ -960,6 +1197,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             this[idPair] = existing.copy(
                 state2024 = existing.state2024.coerceAtLeast(seriesConnection.state2024),
                 state2025 = existing.state2025.coerceAtLeast(seriesConnection.state2025),
+                stateAnimeNyc2025 = existing.stateAnimeNyc2025.coerceAtLeast(seriesConnection.stateAnimeNyc2025),
             )
         }
     }
@@ -973,6 +1211,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             this[idPair] = existing.copy(
                 state2024 = existing.state2024.coerceAtLeast(merchConnection.state2024),
                 state2025 = existing.state2025.coerceAtLeast(merchConnection.state2025),
+                stateAnimeNyc2025 = existing.stateAnimeNyc2025.coerceAtLeast(merchConnection.stateAnimeNyc2025),
             )
         }
     }

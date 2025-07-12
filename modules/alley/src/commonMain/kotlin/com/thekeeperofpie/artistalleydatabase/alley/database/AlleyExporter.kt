@@ -175,7 +175,7 @@ class AlleyExporter(
                 insert = { artistId, favorite, ignored ->
                     importExportDao.importArtist(
                         artistId = artistId,
-                        dataYear = DataYear.YEAR_2023,
+                        dataYear = DataYear.ANIME_EXPO_2023,
                         favorite = favorite,
                         ignored = ignored,
                     )
@@ -189,7 +189,7 @@ class AlleyExporter(
                 insert = { artistId, favorite, ignored ->
                     importExportDao.importArtist(
                         artistId = artistId,
-                        dataYear = DataYear.YEAR_2024,
+                        dataYear = DataYear.ANIME_EXPO_2024,
                         favorite = favorite,
                         ignored = ignored,
                     )
@@ -203,7 +203,7 @@ class AlleyExporter(
                 insert = { artistId, favorite, ignored ->
                     importExportDao.importArtist(
                         artistId = artistId,
-                        dataYear = DataYear.YEAR_2025,
+                        dataYear = DataYear.ANIME_EXPO_2025,
                         favorite = favorite,
                         ignored = ignored,
                     )
@@ -329,7 +329,7 @@ class AlleyExporter(
 
     suspend fun exportFull(sink: Sink) {
         val artists: Map<DataYear?, Map<String, FullExport.ArtistData>> = mapOf(
-            DataYear.YEAR_2023 to importExportDao.getExportFullArtists2023()
+            DataYear.ANIME_EXPO_2023 to importExportDao.getExportFullArtists2023()
                 .associate {
                     it.id to FullExport.ArtistData(
                         DaoUtils.coerceBooleanForJs(it.favorite),
@@ -337,7 +337,7 @@ class AlleyExporter(
                         it.notes
                     )
                 },
-            DataYear.YEAR_2024 to importExportDao.getExportFullArtists2024()
+            DataYear.ANIME_EXPO_2024 to importExportDao.getExportFullArtists2024()
                 .associate {
                     it.id to FullExport.ArtistData(
                         DaoUtils.coerceBooleanForJs(it.favorite),
@@ -345,7 +345,7 @@ class AlleyExporter(
                         it.notes
                     )
                 },
-            DataYear.YEAR_2025 to importExportDao.getExportFullArtists2025()
+            DataYear.ANIME_EXPO_2025 to importExportDao.getExportFullArtists2025()
                 .associate {
                     it.id to FullExport.ArtistData(
                         DaoUtils.coerceBooleanForJs(it.favorite),

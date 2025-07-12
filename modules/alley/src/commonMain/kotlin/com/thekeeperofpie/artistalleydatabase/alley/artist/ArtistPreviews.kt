@@ -8,7 +8,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
     override val values = sequence {
         val artist = ArtistWithUserData(
             artist = ArtistEntry(
-                year = DataYear.YEAR_2025,
+                year = DataYear.ANIME_EXPO_2025,
                 id = "artistId",
                 booth = "C39",
                 name = "Hatsune Miku",
@@ -27,7 +27,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
             ),
             userEntry = ArtistUserEntry(
                 artistId = "artistId",
-                dataYear = DataYear.YEAR_2025,
+                dataYear = DataYear.ANIME_EXPO_2025,
                 favorite = false,
                 ignored = false,
             ),

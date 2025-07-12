@@ -74,7 +74,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val dispatcher = it.asCoroutineDispatcher()
             runBlocking(dispatcher) {
                 // Copy over preserved pre-processed images
-                listOf("2023", "2024", "2025").forEach {
+                listOf("2023", "2024", "2025", "animeNyc2025").forEach {
                     val processed = inputFolder.dir("$it/processed").get().asFile
                     if (processed.exists()) {
                         val output = outputResources.dir("files/$it").get().asFile
@@ -126,6 +126,11 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     path = "2025/rallies",
                     transformName = { it.replace(" - ", "").replace("'", "_") },
                 )
+                val catalogsAnimeNyc2025 = "catalogsAnimeNyc2025" to processFolder(
+                    imageCacheDir = imageCacheDir,
+                    path = "animeNyc2025/catalogs",
+                    transformName = { it.substringBefore(" -") },
+                )
 
                 buildComposeFiles(
                     catalogs2023,
@@ -134,6 +139,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     rallies2024,
                     catalogs2025,
                     rallies2025,
+                    catalogsAnimeNyc2025,
                 )
             }
         }

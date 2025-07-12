@@ -120,7 +120,7 @@ class ArtistSearchViewModel(
         ReadOnlyStateFlow(false)
     } else {
         year.mapLatest {
-            if (it == DataYear.YEAR_2025) {
+            if (it == DataYear.ANIME_EXPO_2025) {
                 seriesEntryDao.hasRallies(lockedSeries)
             } else {
                 false

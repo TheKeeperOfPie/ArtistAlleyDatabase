@@ -30,6 +30,6 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val showOnlyConfirmedTags = MutableStateFlow(false)
     override val showOnlyWithCatalog = MutableStateFlow(false)
     override val forceOneDisplayColumn = MutableStateFlow(false)
-    override val dataYear = MutableStateFlow(DataYear.YEAR_2025)
+    override val dataYear = MutableStateFlow(DataYear.LATEST)
     override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
 }

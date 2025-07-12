@@ -621,7 +621,7 @@ fun DataYearHeader(state: DataYearHeaderState) {
             }
         }
 
-        if (year == DataYear.YEAR_2025) {
+        if (year == DataYear.ANIME_EXPO_2025) {
             ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

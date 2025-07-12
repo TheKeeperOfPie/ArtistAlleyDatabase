@@ -8,7 +8,7 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
     override val values = sequenceOf(
         StampRallyWithUserData(
             stampRally = StampRallyEntry(
-                year = DataYear.YEAR_2025,
+                year = DataYear.ANIME_EXPO_2025,
                 id = "stampRallyId",
                 fandom = "Vocaloid",
                 hostTable = "C39",

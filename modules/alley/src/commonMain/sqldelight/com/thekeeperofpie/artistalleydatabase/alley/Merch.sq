@@ -16,6 +16,10 @@ getMerchEntries2025:
 SELECT * FROM merchEntry
 WHERE has2025 = 1;
 
+getMerchEntriesAnimeNyc2025:
+SELECT * FROM merchEntry
+WHERE hasAnimeNyc2025 = 1;
+
 getMerchSize2024:
 SELECT COUNT(*) FROM merchEntry
 WHERE has2024 = 1;
@@ -23,6 +27,10 @@ WHERE has2024 = 1;
 getMerchSize2025:
 SELECT COUNT(*) FROM merchEntry
 WHERE has2025 = 1;
+
+getMerchSizeAnimeNyc2025:
+SELECT COUNT(*) FROM merchEntry
+WHERE hasAnimeNyc2025 = 1;
 
 getBoothsByMerchId2024:
 SELECT artistEntry2024.booth FROM artistMerchConnection
@@ -45,3 +53,14 @@ SELECT artistEntry2025.booth FROM artistMerchConnection
 INNER JOIN artistEntry2025 ON (artistMerchConnection.artistId = artistEntry2025.id)
 WHERE artistMerchConnection.merchId = :merchId
 AND artistMerchConnection.state2025 = 2;
+
+getBoothsByMerchIdAnimeNyc2025:
+SELECT artistEntryAnimeNyc2025.booth FROM artistMerchConnection
+INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2025.id)
+WHERE artistMerchConnection.merchId = :merchId;
+
+getBoothsByMerchIdConfirmedAnimeNyc2025:
+SELECT artistEntryAnimeNyc2025.booth FROM artistMerchConnection
+INNER JOIN artistEntryAnimeNyc2025 ON (artistMerchConnection.artistId = artistEntryAnimeNyc2025.id)
+WHERE artistMerchConnection.merchId = :merchId
+AND artistMerchConnection.stateAnimeNyc2025 = 2;

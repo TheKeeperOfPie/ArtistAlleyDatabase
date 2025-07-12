@@ -30,10 +30,11 @@ fun SqlCursor.toMerchWithUserData(): MerchWithUserData {
             categories = getString(3),
             has2024 = getBooleanFixed(4),
             has2025 = getBooleanFixed(5),
+            hasAnimeNyc2025 = getBooleanFixed(6),
         ),
         userEntry = MerchUserEntry(
             merchId = uuid,
-            favorite = getBooleanFixed(6),
+            favorite = getBooleanFixed(7),
         )
     )
 }
@@ -46,6 +47,7 @@ fun GetMerchById.toMerchWithUserData() = MerchWithUserData(
         categories = categories,
         has2024 = has2024,
         has2025 = has2025,
+        hasAnimeNyc2025 = hasAnimeNyc2025,
     ),
     userEntry = MerchUserEntry(
         merchId = uuid,
@@ -79,15 +81,21 @@ class MerchEntryDao(
             LEFT OUTER JOIN merchUserEntry
             ON merchEntry.uuid = merchUserEntry.merchId
         """.trimIndent()
+        val hasFilter = "has" + when (year) {
+            DataYear.ANIME_EXPO_2023 -> "2023"
+            DataYear.ANIME_EXPO_2024 -> "2024"
+            DataYear.ANIME_EXPO_2025 -> "2025"
+            DataYear.ANIME_NYC_2025 -> "AnimeNyc2025"
+        }
         val countStatement = """
             SELECT COUNT(*) FROM merchEntry
             $joinStatement
-            WHERE $favoritePrefix has${year.year} = 1
+            WHERE $favoritePrefix $hasFilter = 1
         """.trimIndent()
         val statement = """
             SELECT merchEntry.*, merchUserEntry.favorite FROM merchEntry
             $joinStatement
-            WHERE $favoritePrefix has${year.year} = 1
+            WHERE $favoritePrefix $hasFilter = 1
             ORDER BY name COLLATE NOCASE
         """.trimIndent()
         return DaoUtils.queryPagingSource(
@@ -101,9 +109,10 @@ class MerchEntryDao(
     }
 
     suspend fun getMerchEntries(year: DataYear) = when (year) {
-        DataYear.YEAR_2023 -> emptyList()
-        DataYear.YEAR_2024 -> merchDao().getMerchEntries2024().awaitAsList()
-        DataYear.YEAR_2025 -> merchDao().getMerchEntries2025().awaitAsList()
+        DataYear.ANIME_EXPO_2023 -> emptyList()
+        DataYear.ANIME_EXPO_2024 -> merchDao().getMerchEntries2024().awaitAsList()
+        DataYear.ANIME_EXPO_2025 -> merchDao().getMerchEntries2025().awaitAsList()
+        DataYear.ANIME_NYC_2025 -> merchDao().getMerchEntriesAnimeNyc2025().awaitAsList()
     }.filterNot { it.name.contains("Commissions") }
 
     fun searchMerch(
@@ -115,9 +124,10 @@ class MerchEntryDao(
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
 
         val yearFilter = when (year) {
-            DataYear.YEAR_2023 -> ""
-            DataYear.YEAR_2024 -> "has2024 = 1 AND "
-            DataYear.YEAR_2025 -> "has2025 = 1 AND "
+            DataYear.ANIME_EXPO_2023 -> ""
+            DataYear.ANIME_EXPO_2024 -> "has2024 = 1 AND "
+            DataYear.ANIME_EXPO_2025 -> "has2025 = 1 AND "
+            DataYear.ANIME_NYC_2025 -> "hasAnimeNyc2025 = 1 AND "
         }
         val likeAndQuery = yearFilter + DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)
 

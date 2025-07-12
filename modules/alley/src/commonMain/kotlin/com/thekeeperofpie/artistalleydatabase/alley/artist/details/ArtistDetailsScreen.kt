@@ -78,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
@@ -430,7 +431,12 @@ object ArtistDetailsScreen {
                             onClick = { eventSink(Event.OpenOtherYear(it)) },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         ) {
-                            Text(stringResource(Res.string.alley_open_year, it.year))
+                            Text(
+                                stringResource(
+                                    Res.string.alley_open_year,
+                                    stringResource(it.shortName)
+                                )
+                            )
                         }
                     }
                 }
@@ -711,6 +717,6 @@ private fun PhoneLayout() = PreviewDark {
         eventSink = {},
         catalogImages = { images },
         seriesImages = { emptyMap() },
-        otherYears = { listOf(DataYear.YEAR_2024) },
+        otherYears = { listOf(DataYear.ANIME_EXPO_2024) },
     )
 }

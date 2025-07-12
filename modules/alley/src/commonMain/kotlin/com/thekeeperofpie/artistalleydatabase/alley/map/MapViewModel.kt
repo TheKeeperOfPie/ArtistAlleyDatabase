@@ -49,8 +49,8 @@ class MapViewModel(
                 .collectLatest { tables ->
                     gridData = LoadingResult.success(
                         GridData(
-                            maxX = tables.maxOf { it.gridX },
-                            maxY = tables.maxOf { it.gridY },
+                            maxX = tables.maxOfOrNull { it.gridX } ?: 0,
+                            maxY = tables.maxOfOrNull { it.gridY } ?: 0,
                             tables = tables,
                         )
                     )

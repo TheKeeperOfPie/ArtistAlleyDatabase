@@ -193,7 +193,7 @@ class FavoritesViewModel(
         ::SeriesInputs,
     )
         .flatMapLatest { (query, year, languageOption, filterParams) ->
-            if (year == DataYear.YEAR_2023) {
+            if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
             } else {
                 createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
@@ -215,7 +215,7 @@ class FavoritesViewModel(
 
     val merchEntries = combine(query, year, ::Pair)
         .flatMapLatest { (query, year) ->
-            if (year == DataYear.YEAR_2023) {
+            if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
             } else {
                 createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {

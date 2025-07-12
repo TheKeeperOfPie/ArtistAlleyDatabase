@@ -66,10 +66,10 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
 
                     val keysForBooth = mutableListOf<Request>()
                     entriesForArtist.forEach {
-                        val identifier = "${it.artist.year.year}/${AlleyDataUtils.Folder.CATALOGS.folderName}/${it.artist.booth}"
+                        val identifier = "${it.artist.year.folderName}/${AlleyDataUtils.Folder.CATALOGS.folderName}/${it.artist.booth}"
                         for (index in 0 until existingKeys.size) {
                             val request = existingKeys[index]
-                            if (request?.url?.contains(identifier) == true) {
+                            if (request.url.contains(identifier)) {
                                 keysForBooth += request
                             }
                         }
@@ -84,10 +84,10 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
 
                     val keysForBooth = mutableListOf<Request>()
                     entriesForArtist.forEach {
-                        val identifier = "${it.artist.year.year}/${AlleyDataUtils.Folder.CATALOGS.folderName}/${it.artist.booth}"
+                        val identifier = "${it.artist.year.folderName}/${AlleyDataUtils.Folder.CATALOGS.folderName}/${it.artist.booth}"
                         for (index in 0 until existingKeys.size) {
                             val request = existingKeys[index]
-                            if (request?.url?.contains(identifier) == true) {
+                            if (request.url.contains(identifier)) {
                                 keysForBooth += request
                             }
                         }
@@ -116,7 +116,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                 Event.Verify -> {
                     val stale = mutableListOf<Request>()
                     for (index in 0 until existingKeys.size) {
-                        val request = existingKeys[index] ?: continue
+                        val request = existingKeys[index]
                         val path = request.url
                             .let(Uri::parseOrNull)
                             ?.path
@@ -141,7 +141,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                                 for (index in 0 until existingKeys.size) {
                                     val request = existingKeys[index]
                                     val path = image.uri.path
-                                    if (path != null && request?.url?.contains(path) == true) {
+                                    if (path != null && request.url.contains(path)) {
                                         matchingKey = request
                                         break
                                     }

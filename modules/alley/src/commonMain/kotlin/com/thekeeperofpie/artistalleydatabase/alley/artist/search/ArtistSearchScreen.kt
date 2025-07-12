@@ -477,7 +477,7 @@ object ArtistSearchScreen {
             lockedMerch = null,
             lockedYear = null,
             randomSeed = 1,
-            year = MutableStateFlow(DataYear.YEAR_2025),
+            year = MutableStateFlow(DataYear.ANIME_EXPO_2025),
             query = MutableStateFlow(""),
             results = MutableStateFlow(PagingData.from(results)),
             showOnlyWithCatalog = MutableStateFlow(false),

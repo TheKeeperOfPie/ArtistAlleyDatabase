@@ -89,10 +89,11 @@ class ArtistAlleyAppSettings(
     override val dataYear = initialize(
         key = "dataYear",
         initialValue = {
-            getString(it, null)?.toIntOrNull()
-                ?.let { year -> DataYear.entries.find { it.year == year } } ?: DataYear.YEAR_2025
+            getString(it, null)
+                ?.let { serializedName -> DataYear.entries.find { it.serializedName == serializedName } }
+                ?: DataYear.LATEST
         },
-        setValue = { key, value -> putString(key, value.year.toString()) },
+        setValue = { key, value -> putString(key, value.serializedName) },
     )
     override val languageOption = initialize(
         key = "languageOption",

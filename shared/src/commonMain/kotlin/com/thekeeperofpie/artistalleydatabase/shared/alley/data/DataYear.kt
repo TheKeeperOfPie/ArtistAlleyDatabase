@@ -11,25 +11,40 @@ import kotlinx.serialization.Serializable
 enum class DataYear(
     val serializedName: String,
     val year: Int,
+    val folderName: String,
     val dates: ClosedRange<LocalDate>,
     val timeZone: TimeZone,
 ) {
-    YEAR_2023(
+    ANIME_EXPO_2023(
         serializedName = "AX2023",
         year = 2023,
+        folderName = "2023",
         dates = LocalDate(year = 2023, Month.JULY, 1)..LocalDate(year = 2023, Month.JULY, 4),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
-    YEAR_2024(
+    ANIME_EXPO_2024(
         serializedName = "AX2024",
         year = 2024,
+        folderName = "2024",
         dates = LocalDate(year = 2024, Month.JULY, 4)..LocalDate(year = 2024, Month.JULY, 7),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
-    YEAR_2025(
+    ANIME_EXPO_2025(
         serializedName = "AX2025",
         year = 2025,
+        folderName = "2025",
         dates = LocalDate(year = 2025, Month.JULY, 3)..LocalDate(year = 2025, Month.JULY, 6),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
+    ANIME_NYC_2025(
+        serializedName = "ANYC2025",
+        year = 2025,
+        folderName = "animeNyc2025",
+        dates = LocalDate(year = 2025, Month.AUGUST, 24)..LocalDate(year = 2025, Month.AUGUST, 26),
+        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
+    ),
+    ;
+    companion object {
+        val LATEST = ANIME_NYC_2025
+    }
 }

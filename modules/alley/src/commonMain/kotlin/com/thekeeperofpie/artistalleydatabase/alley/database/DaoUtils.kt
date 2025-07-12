@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
@@ -56,6 +57,16 @@ object DaoUtils {
             merchConfirmedAdapter = listStringAdapter,
         ),
         artistEntry2025Adapter = ArtistEntry2025.Adapter(
+            linksAdapter = listStringAdapter,
+            storeLinksAdapter = listStringAdapter,
+            catalogLinksAdapter = listStringAdapter,
+            seriesInferredAdapter = listStringAdapter,
+            seriesConfirmedAdapter = listStringAdapter,
+            merchInferredAdapter = listStringAdapter,
+            merchConfirmedAdapter = listStringAdapter,
+            commissionsAdapter = listStringAdapter,
+        ),
+        artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
             linksAdapter = listStringAdapter,
             storeLinksAdapter = listStringAdapter,
             catalogLinksAdapter = listStringAdapter,

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
-import coil3.util.ServiceLoaderComponentRegistry.register
 import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
@@ -13,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import kotlinx.browser.localStorage
-import kotlinx.browser.window
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -21,7 +19,6 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Inject
-import org.w3c.dom.StorageEvent
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -85,10 +82,10 @@ class ArtistAlleyWebSettings(
     override val showOnlyWithCatalog by registerBoolean(false)
     override val forceOneDisplayColumn by registerBoolean(false)
     override val dataYear by register(
-        serialize = { it.year.toString() },
+        serialize = { it.serializedName },
         deserialize = {
-            it?.toIntOrNull()?.let { year -> DataYear.entries.find { it.year == year } }
-                ?: DataYear.YEAR_2025
+            it?.let { serializedName -> DataYear.entries.find { it.serializedName == serializedName } }
+                ?: DataYear.LATEST
         },
     )
     override val languageOption by register(

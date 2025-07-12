@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
@@ -176,15 +177,15 @@ class AlleyExporterTest {
         val artists2023 = artists2023()
             .take(TEST_COUNT_ARTISTS)
             .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.YEAR_2023, "notes${it.id.hashCode()}") }
+            .map { Triple(it.id, DataYear.ANIME_EXPO_2023, "notes${it.id.hashCode()}") }
         val artists2024 = artists2024()
             .take(TEST_COUNT_ARTISTS)
             .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.YEAR_2024, "notes${it.id.hashCode()}") }
+            .map { Triple(it.id, DataYear.ANIME_EXPO_2024, "notes${it.id.hashCode()}") }
         val artists2025 = artists2025()
             .take(TEST_COUNT_ARTISTS)
             .filterIndexed { index, _ -> index % 3 == 2 }
-            .map { Triple(it.id, DataYear.YEAR_2025, "notes${it.id.hashCode()}") }
+            .map { Triple(it.id, DataYear.ANIME_EXPO_2025, "notes${it.id.hashCode()}") }
 
         val expected = (artists2023 + artists2024 + artists2025)
             .sortedWith(compareBy({ it.first }, { it.second }))
@@ -228,7 +229,7 @@ class AlleyExporterTest {
         val database = makeDatabase(driver)
         addData(database, insertUserData = true)
 
-        val importExportDao = ImportExportDao { database }
+        val importExportDao = ImportExportDao(driver = { driver }, database = { database })
         val exporter = AlleyExporter(importExportDao)
         exporter.exportPartial(sink)
     }
@@ -238,7 +239,7 @@ class AlleyExporterTest {
         val database = makeDatabase(driver)
         addData(database, insertUserData = true)
 
-        val importExportDao = ImportExportDao { database }
+        val importExportDao = ImportExportDao(driver = { driver }, database = { database })
         val exporter = AlleyExporter(importExportDao)
         exporter.exportFull(sink)
     }
@@ -248,7 +249,7 @@ class AlleyExporterTest {
         val database = makeDatabase(driver)
         addData(database, insertUserData = false)
 
-        val importExportDao = ImportExportDao { database }
+        val importExportDao = ImportExportDao(driver = { driver }, database = { database })
         val exporter = AlleyExporter(importExportDao)
         return exporter.import(source).transformResult { database }
     }
@@ -273,6 +274,16 @@ class AlleyExporterTest {
             merchConfirmedAdapter = DaoUtils.listStringAdapter,
         ),
         artistEntry2025Adapter = ArtistEntry2025.Adapter(
+            linksAdapter = DaoUtils.listStringAdapter,
+            storeLinksAdapter = DaoUtils.listStringAdapter,
+            catalogLinksAdapter = DaoUtils.listStringAdapter,
+            seriesInferredAdapter = DaoUtils.listStringAdapter,
+            seriesConfirmedAdapter = DaoUtils.listStringAdapter,
+            merchInferredAdapter = DaoUtils.listStringAdapter,
+            merchConfirmedAdapter = DaoUtils.listStringAdapter,
+            commissionsAdapter = DaoUtils.listStringAdapter,
+        ),
+        artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
             linksAdapter = DaoUtils.listStringAdapter,
             storeLinksAdapter = DaoUtils.listStringAdapter,
             catalogLinksAdapter = DaoUtils.listStringAdapter,
@@ -316,7 +327,7 @@ class AlleyExporterTest {
         insertArtists(
             database = database,
             source = artists2023(),
-            dataYear = DataYear.YEAR_2023,
+            dataYear = DataYear.ANIME_EXPO_2023,
             id = { it.id },
             insert = TestQueries::insertArtist2023,
             insertUserData = insertUserData,
@@ -325,7 +336,7 @@ class AlleyExporterTest {
         insertArtists(
             database = database,
             source = artists2024(),
-            dataYear = DataYear.YEAR_2024,
+            dataYear = DataYear.ANIME_EXPO_2024,
             id = { it.id },
             insert = TestQueries::insertArtist2024,
             insertUserData = insertUserData,
@@ -334,7 +345,7 @@ class AlleyExporterTest {
         insertArtists(
             database = database,
             source = artists2025(),
-            dataYear = DataYear.YEAR_2025,
+            dataYear = DataYear.ANIME_EXPO_2025,
             id = { it.id },
             insert = TestQueries::insertArtist2025,
             insertUserData = insertUserData,

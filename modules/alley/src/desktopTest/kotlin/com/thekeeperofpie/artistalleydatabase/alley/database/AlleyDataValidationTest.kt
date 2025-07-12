@@ -36,7 +36,7 @@ class AlleyDataValidationTest {
         val dao = ArtistEntryDao({ driver }, { database }, Settings())
         val pager = Pager(PagingConfig(100)) {
             dao.search(
-                year = DataYear.YEAR_2023,
+                year = DataYear.ANIME_EXPO_2023,
                 query = "",
                 searchQuery = ArtistSearchQuery(
                     ArtistSortFilterController.FilterParams(
@@ -85,7 +85,7 @@ class AlleyDataValidationTest {
         override val showOnlyConfirmedTags = MutableStateFlow(false)
         override val showOnlyWithCatalog = MutableStateFlow(false)
         override val forceOneDisplayColumn = MutableStateFlow(false)
-        override val dataYear = MutableStateFlow(DataYear.YEAR_2025)
+        override val dataYear = MutableStateFlow(DataYear.ANIME_EXPO_2025)
         override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
     }
 }

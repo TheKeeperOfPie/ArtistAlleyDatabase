@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -21,13 +22,13 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
     BoothWithFavorite(
-        year = DataYear.YEAR_2023,
+        year = DataYear.ANIME_EXPO_2023,
         id = id,
         booth = booth,
         name = name,
@@ -36,7 +37,7 @@ private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
 
 private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
     BoothWithFavorite(
-        year = DataYear.YEAR_2024,
+        year = DataYear.ANIME_EXPO_2024,
         id = id,
         booth = booth,
         name = name,
@@ -45,7 +46,16 @@ private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
 
 private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
     BoothWithFavorite(
-        year = DataYear.YEAR_2025,
+        year = DataYear.ANIME_EXPO_2025,
+        id = id,
+        booth = booth,
+        name = name,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+    )
+
+private fun GetBoothsWithFavoritesAnimeNyc2025.toBoothWithFavorite() =
+    BoothWithFavorite(
+        year = DataYear.ANIME_NYC_2025,
         id = id,
         booth = booth,
         name = name,
@@ -72,18 +82,19 @@ class UserEntryDao(
         .flatMapLatest {
             dao().run {
                 when (it) {
-                    DataYear.YEAR_2023 -> getBoothsWithFavorites2023()
+                    DataYear.ANIME_EXPO_2023 -> getBoothsWithFavorites2023()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
                         .map { it.map { it.toBoothWithFavorite() } }
-                    DataYear.YEAR_2024 -> getBoothsWithFavorites2024()
+                    DataYear.ANIME_EXPO_2024 -> getBoothsWithFavorites2024()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
                         .map { it.map { it.toBoothWithFavorite() } }
-                    DataYear.YEAR_2025 -> getBoothsWithFavorites2025()
+                    DataYear.ANIME_EXPO_2025 -> getBoothsWithFavorites2025()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
                         .map { it.map { it.toBoothWithFavorite() } }
+                    DataYear.ANIME_NYC_2025 -> flowOf(emptyList()) // TODO: Add ANYC Map
                 }
             }
         }

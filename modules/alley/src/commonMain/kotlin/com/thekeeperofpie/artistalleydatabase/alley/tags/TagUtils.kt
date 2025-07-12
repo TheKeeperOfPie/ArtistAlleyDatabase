@@ -47,8 +47,10 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             link = null,
             inferred2024 = 1,
             inferred2025 = 1,
+            inferredAnimeNyc2025 = 1,
             confirmed2024 = 0,
             confirmed2025 = 0,
+            confirmedAnimeNyc2025 = 0,
             counter = 1,
         ),
         userEntry = SeriesUserEntry(

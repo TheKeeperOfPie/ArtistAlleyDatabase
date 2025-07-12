@@ -83,7 +83,7 @@ class TagsViewModel(
             ::SeriesInputs
         )
             .flatMapLatest { (year, languageOption, query, filterParams) ->
-                if (year == DataYear.YEAR_2023) {
+                if (year == DataYear.ANIME_EXPO_2023) {
                     flowOf(PagingData.empty())
                 } else {
                     createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
@@ -104,7 +104,7 @@ class TagsViewModel(
 
     val merch = combine(settings.dataYear, snapshotFlow { merchQuery }, ::Pair)
         .flatMapLatest { (year, query) ->
-            if (year == DataYear.YEAR_2023) {
+            if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
             } else {
                 createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {

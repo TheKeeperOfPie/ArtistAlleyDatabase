@@ -1,6 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
 import app.cash.paging.PagingSource
+import app.cash.paging.PagingSourceLoadParams
+import app.cash.paging.PagingSourceLoadResult
+import app.cash.paging.PagingSourceLoadResultPage
+import app.cash.paging.PagingState
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlCursor
@@ -29,7 +33,7 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
         stampRally = StampRallyEntry(
-            year = DataYear.YEAR_2023,
+            year = DataYear.ANIME_EXPO_2023,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
@@ -56,7 +60,7 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
         stampRally = StampRallyEntry(
-            year = DataYear.YEAR_2024,
+            year = DataYear.ANIME_EXPO_2024,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
@@ -83,7 +87,7 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
         stampRally = StampRallyEntry(
-            year = DataYear.YEAR_2025,
+            year = DataYear.ANIME_EXPO_2025,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
@@ -108,7 +112,7 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
 
 private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyEntry(
-        year = DataYear.YEAR_2023,
+        year = DataYear.ANIME_EXPO_2023,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
@@ -132,7 +136,7 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
 
 private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyEntry(
-        year = DataYear.YEAR_2024,
+        year = DataYear.ANIME_EXPO_2024,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
@@ -156,7 +160,7 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
 
 private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
     stampRally = StampRallyEntry(
-        year = DataYear.YEAR_2025,
+        year = DataYear.ANIME_EXPO_2025,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
@@ -179,7 +183,7 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
 )
 
 fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
-    year = DataYear.YEAR_2023,
+    year = DataYear.ANIME_EXPO_2023,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
@@ -196,7 +200,7 @@ fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
 )
 
 fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
-    year = DataYear.YEAR_2024,
+    year = DataYear.ANIME_EXPO_2024,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
@@ -213,7 +217,7 @@ fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
 )
 
 fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
-    year = DataYear.YEAR_2025,
+    year = DataYear.ANIME_EXPO_2025,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
@@ -238,50 +242,49 @@ class StampRallyEntryDao(
 ) {
     suspend fun getEntry(year: DataYear, stampRallyId: String) =
         when (year) {
-            DataYear.YEAR_2023 -> dao2023()
+            DataYear.ANIME_EXPO_2023 -> dao2023()
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
-            DataYear.YEAR_2024 -> dao2024()
+            DataYear.ANIME_EXPO_2024 -> dao2024()
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
-            DataYear.YEAR_2025 -> dao2025()
+            DataYear.ANIME_EXPO_2025 -> dao2025()
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
+            DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
-    suspend fun getEntryWithArtists(year: DataYear, stampRallyId: String) =
+    suspend fun getEntryWithArtists(
+        year: DataYear,
+        stampRallyId: String,
+    ): StampRallyWithArtistsEntry? =
         when (year) {
-            DataYear.YEAR_2023 -> {
-                dao2023().transactionWithResult {
-                    val stampRally =
-                        getEntry(year, stampRallyId) ?: return@transactionWithResult null
-                    val artists = dao2023().getArtistEntries(stampRallyId).awaitAsList()
+            DataYear.ANIME_EXPO_2023 -> dao2023().transactionWithResult {
+                val stampRally =
+                    getEntry(year, stampRallyId) ?: return@transactionWithResult null
+                val artists = dao2023().getArtistEntries(stampRallyId).awaitAsList()
+                    .map { it.toArtistEntry() }
+                StampRallyWithArtistsEntry(stampRally, artists)
+            }
+            DataYear.ANIME_EXPO_2024 -> dao2024().transactionWithResult {
+                val stampRally =
+                    getEntry(year, stampRallyId) ?: return@transactionWithResult null
+                val artists = dao2024().getArtistEntries(stampRallyId).awaitAsList()
+                    .map { it.toArtistEntry() }
+                StampRallyWithArtistsEntry(stampRally, artists)
+            }
+            DataYear.ANIME_EXPO_2025 -> dao2025().transactionWithResult {
+                val stampRally =
+                    getEntry(year, stampRallyId) ?: return@transactionWithResult null
+                val artists =
+                    dao2025().getArtistEntries(stampRallyId).awaitAsList()
                         .map { it.toArtistEntry() }
-                    StampRallyWithArtistsEntry(stampRally, artists)
-                }
+                StampRallyWithArtistsEntry(stampRally, artists)
             }
-            DataYear.YEAR_2024 -> {
-                dao2024().transactionWithResult {
-                    val stampRally =
-                        getEntry(year, stampRallyId) ?: return@transactionWithResult null
-                    val artists = dao2024().getArtistEntries(stampRallyId).awaitAsList()
-                        .map { it.toArtistEntry() }
-                    StampRallyWithArtistsEntry(stampRally, artists)
-                }
-            }
-            DataYear.YEAR_2025 -> {
-                dao2025().transactionWithResult {
-                    val stampRally =
-                        getEntry(year, stampRallyId) ?: return@transactionWithResult null
-                    val artists =
-                        dao2025().getArtistEntries(stampRallyId).awaitAsList()
-                            .map { it.toArtistEntry() }
-                    StampRallyWithArtistsEntry(stampRally, artists)
-                }
-            }
+            DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
     fun search(
@@ -290,12 +293,30 @@ class StampRallyEntryDao(
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
     ): PagingSource<Int, StampRallyWithUserData> {
-        val tableName = "stampRallyEntry${year.year}"
+        if (year == DataYear.ANIME_NYC_2025) {
+            return object : PagingSource<Int, StampRallyWithUserData>() {
+                override fun getRefreshKey(state: PagingState<Int, StampRallyWithUserData>) = null
+                override suspend fun load(params: PagingSourceLoadParams<Int>): PagingSourceLoadResult<Int, StampRallyWithUserData> {
+                    @Suppress("CAST_NEVER_SUCCEEDS")
+                    return PagingSourceLoadResultPage<Int, StampRallyWithUserData>(
+                        data = emptyList(),
+                        prevKey = null,
+                        nextKey = null,
+                    ) as PagingSourceLoadResult<Int, StampRallyWithUserData>
+                }
+            }
+        }
+        val tableName = when(year) {
+            DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
+            DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
+            DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
+            DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
+        }
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (onlyFavorites) this += "stampRallyUserEntry.favorite = 1"
 
-            if (year == DataYear.YEAR_2025 || year == DataYear.YEAR_2024) {
+            if (year == DataYear.ANIME_EXPO_2025 || year == DataYear.ANIME_EXPO_2024) {
                 val totalCost = filterParams.totalCost
                 if (totalCost.isOnlyStart) {
                     this += "$tableName.totalCost = 0"
@@ -333,14 +354,14 @@ class StampRallyEntryDao(
                 }
             }
 
-            if (year == DataYear.YEAR_2025) {
+            if (year == DataYear.ANIME_EXPO_2025) {
                 if (!filterParams.showUnconfirmed) {
                     this += "$tableName.confirmed = 1"
                 }
             }
 
             // TODO: Locked series/merch doesn't enforce AND
-            if (year == DataYear.YEAR_2025 && filterParams.seriesIn.isNotEmpty()) {
+            if (year == DataYear.ANIME_EXPO_2025 && filterParams.seriesIn.isNotEmpty()) {
                 val seriesList = filterParams.seriesIn.joinToString(separator = ",") {
                     DatabaseUtils.sqlEscapeString(it)
                 }
@@ -404,9 +425,10 @@ class StampRallyEntryDao(
                 statement = statement,
                 tableNames = listOf("${tableName}_fts"),
                 mapper = when (year) {
-                    DataYear.YEAR_2023 -> SqlCursor::toStampRallyWithUserData2023
-                    DataYear.YEAR_2024 -> SqlCursor::toStampRallyWithUserData2024
-                    DataYear.YEAR_2025 -> SqlCursor::toStampRallyWithUserData2025
+                    DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
+                    DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
+                    DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
+                    DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
                 },
             )
         }
@@ -416,9 +438,9 @@ class StampRallyEntryDao(
         val targetColumns = listOfNotNull(
             "fandom",
             "tables",
-            "notes".takeIf { year != DataYear.YEAR_2023 },
-            "series".takeIf { year == DataYear.YEAR_2025 },
-            "prize".takeIf { year == DataYear.YEAR_2025 },
+            "notes".takeIf { year != DataYear.ANIME_EXPO_2023 },
+            "series".takeIf { year == DataYear.ANIME_EXPO_2025 },
+            "prize".takeIf { year == DataYear.ANIME_EXPO_2025 },
         )
         val matchQuery = buildString {
             append("'")
@@ -468,9 +490,10 @@ class StampRallyEntryDao(
             statement = statement,
             tableNames = listOf("${tableName}_fts"),
             mapper = when (year) {
-                DataYear.YEAR_2023 -> SqlCursor::toStampRallyWithUserData2023
-                DataYear.YEAR_2024 -> SqlCursor::toStampRallyWithUserData2024
-                DataYear.YEAR_2025 -> SqlCursor::toStampRallyWithUserData2025
+                DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
+                DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
+                DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
+                DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
             },
         )
     }
