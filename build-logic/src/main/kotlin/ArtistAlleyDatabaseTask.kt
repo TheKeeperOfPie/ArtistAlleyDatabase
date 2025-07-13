@@ -192,8 +192,19 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
             merchConnections.values.forEach(mutationQueries::insertMerchConnection)
 
-            parseSeries(database, seriesConnections)
+            val seriesEntries = parseSeries(database, seriesConnections)
             parseMerch(database, merchConnections)
+
+            val allEnteredSeriesIds = seriesConnections.map { it.value.seriesId }.toSet()
+            val allValidSeriesIds = seriesEntries.map { it.id }.toSet()
+            val diff = allEnteredSeriesIds - allValidSeriesIds
+            if (diff.isNotEmpty()) {
+                logger.warn("Entered series does not match valid series: $diff")
+            }
+            val seriesWithExtraSpaces = allValidSeriesIds.filter { it.endsWith(" ") }
+            if (seriesWithExtraSpaces.isNotEmpty()) {
+                logger.error("Series with extra spaces: $seriesWithExtraSpaces")
+            }
 
             parseStampRallies2023(artists2023, database)
             parseStampRallies2024(artists2024, database)
@@ -808,10 +819,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     private fun parseSeries(
         database: BuildLogicDatabase,
         seriesConnections: MutableMap<Pair<String, String>, ArtistSeriesConnection>,
-    ) {
+    ): List<SeriesEntry> {
         val mutationQueries = database.mutationQueries
         val seriesCsv = inputsDirectory.file(SERIES_CSV_NAME).get()
-        open(seriesCsv).use {
+        return open(seriesCsv).use {
             var counter = 1L
             read(it)
                 .map {
@@ -868,11 +879,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
-                .forEach {
+                .onEach {
                     mutationQueries.transaction {
                         it.forEach(mutationQueries::insertSeries)
                     }
                 }
+                .flatten()
+                .toList()
         }
     }
 
