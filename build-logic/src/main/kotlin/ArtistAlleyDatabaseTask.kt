@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link.Companion.parse
@@ -519,7 +520,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
 
                     val (linkFlags, linkFlags2) = Link.parseFlags(linkTypes + storeLinkTypes)
-
+                    val commissionFlags = CommissionType.parseFlags(commissions)
                     val artistEntry = ArtistEntry2025(
                         id = id,
                         booth = booth?.takeIf { it.length == 3 },
@@ -537,21 +538,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         merchConfirmed = merchConfirmed,
                         notes = notes,
                         commissions = commissions,
-                        commissionOnsite = commissions.contains("On-site"),
-                        commissionOnline = commissions.contains("Online") ||
-                                commissions.any {
-                                    it.contains("http", ignoreCase = true) &&
-                                            !it.contains("vgen.co", ignoreCase = true)
-                                },
-                        commissionVGen = commissions.any {
-                            it.contains("vgen.co", ignoreCase = true)
-                        },
-                        commissionOther = commissions.filterNot {
-                            it.contains("On-site", ignoreCase = true) ||
-                                    it.contains("Online", ignoreCase = true) ||
-                                    it.contains("http", ignoreCase = true) ||
-                                    it.contains("vgen.co", ignoreCase = true)
-                        }.isNotEmpty(),
+                        commissionFlags = commissionFlags,
                         counter = counter++,
                     )
 
@@ -724,7 +711,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
 
                     val (linkFlags, linkFlags2) = Link.parseFlags(linkTypes + storeLinkTypes)
-
+                    val commissionFlags = CommissionType.parseFlags(commissions)
                     val artistEntry = ArtistEntryAnimeNyc2025(
                         id = id,
                         booth = booth?.takeIf { it.length == 3 },
@@ -742,21 +729,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         merchConfirmed = merchConfirmed,
                         notes = notes,
                         commissions = commissions,
-                        commissionOnsite = commissions.contains("On-site"),
-                        commissionOnline = commissions.contains("Online") ||
-                                commissions.any {
-                                    it.contains("http", ignoreCase = true) &&
-                                            !it.contains("vgen.co", ignoreCase = true)
-                                },
-                        commissionVGen = commissions.any {
-                            it.contains("vgen.co", ignoreCase = true)
-                        },
-                        commissionOther = commissions.filterNot {
-                            it.contains("On-site", ignoreCase = true) ||
-                                    it.contains("Online", ignoreCase = true) ||
-                                    it.contains("http", ignoreCase = true) ||
-                                    it.contains("vgen.co", ignoreCase = true)
-                        }.isNotEmpty(),
+                        commissionFlags = commissionFlags,
                         counter = counter++,
                     )
 
@@ -944,7 +917,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) {
         val mutationQueries = database.mutationQueries
         val stampRalliesCsv2023 = inputsDirectory.file("2023/$STAMP_RALLIES_CSV_NAME").get()
-        val boothToArtist2023 = artists2023.associate { it.booth to it }
+        val boothToArtist2023 = artists2023.associateBy { it.booth }
         open(stampRalliesCsv2023).use {
             var counter = 1L
             read(it)
@@ -1014,7 +987,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) {
         val mutationQueries = database.mutationQueries
         val stampRalliesCsv2024 = inputsDirectory.file("2024/$STAMP_RALLIES_CSV_NAME").get()
-        val boothToArtist2024 = artists2024.associate { it.booth to it }
+        val boothToArtist2024 = artists2024.associateBy { it.booth }
 
         open(stampRalliesCsv2024).use {
             var counter = 1L

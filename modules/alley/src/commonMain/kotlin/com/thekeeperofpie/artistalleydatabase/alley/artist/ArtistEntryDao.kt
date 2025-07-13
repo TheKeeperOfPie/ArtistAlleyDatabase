@@ -23,8 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.CommissionType
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
@@ -112,18 +112,18 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
             driveLink = getString(9),
             notes = getString(10),
             commissions = getString(11)!!.let(Json::decodeFromString),
-            // Skip 4 for commission booleans
-            seriesInferred = getString(16)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(17)!!.let(Json::decodeFromString),
-            merchInferred = getString(18)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(19)!!.let(Json::decodeFromString),
-            counter = getLong(20)!!,
+            // Skip 1 for commission flags
+            seriesInferred = getString(13)!!.let(Json::decodeFromString),
+            seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
+            merchInferred = getString(15)!!.let(Json::decodeFromString),
+            merchConfirmed = getString(16)!!.let(Json::decodeFromString),
+            counter = getLong(17)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2025,
-            favorite = getBooleanFixed(21),
-            ignored = getBooleanFixed(22),
+            favorite = getBooleanFixed(18),
+            ignored = getBooleanFixed(19),
         )
     )
 }
@@ -144,18 +144,18 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(): ArtistWithUserData {
             driveLink = getString(9),
             notes = getString(10),
             commissions = getString(11)!!.let(Json::decodeFromString),
-            // Skip 4 for commission booleans
-            seriesInferred = getString(16)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(17)!!.let(Json::decodeFromString),
-            merchInferred = getString(18)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(19)!!.let(Json::decodeFromString),
-            counter = getLong(20)!!,
+            // Skip 1 for commission flags
+            seriesInferred = getString(13)!!.let(Json::decodeFromString),
+            seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
+            merchInferred = getString(15)!!.let(Json::decodeFromString),
+            merchConfirmed = getString(16)!!.let(Json::decodeFromString),
+            counter = getLong(17)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2025,
-            favorite = getBooleanFixed(21),
-            ignored = getBooleanFixed(22),
+            favorite = getBooleanFixed(18),
+            ignored = getBooleanFixed(19),
         )
     )
 }
@@ -412,7 +412,10 @@ class ArtistEntryDao(
             }
         }
 
-    suspend fun getEntryWithStampRallies(dataYear: DataYear, artistId: String): ArtistWithStampRalliesEntry? =
+    suspend fun getEntryWithStampRallies(
+        dataYear: DataYear,
+        artistId: String,
+    ): ArtistWithStampRalliesEntry? =
         when (dataYear) {
             DataYear.ANIME_EXPO_2023 -> dao2023().transactionWithResult {
                 val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
@@ -444,12 +447,7 @@ class ArtistEntryDao(
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
     ): PagingSource<Int, ArtistWithUserData> {
-        val tableName = when (year) {
-            DataYear.ANIME_EXPO_2023 -> "artistEntry2023"
-            DataYear.ANIME_EXPO_2024 -> "artistEntry2024"
-            DataYear.ANIME_EXPO_2025 -> "artistEntry2025"
-            DataYear.ANIME_NYC_2025 -> "artistEntryAnimeNyc2025"
-        }
+        val tableName = year.tableName
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (onlyFavorites) this += "artistUserEntry.favorite = 1"
@@ -458,32 +456,39 @@ class ArtistEntryDao(
             // not empty would require a separate query template
             if (filterParams.showOnlyWithCatalog) this += "$tableName.driveLink LIKE 'http%'"
 
-            if (year == DataYear.ANIME_EXPO_2025) {
-                // TODO: Convert commissions to flags, too?
-                val commissionsIn = filterParams.commissionsIn
-                val commissionStatements = CommissionType.entries
-                    .filter(commissionsIn::contains)
-                    .map {
-                        when (it) {
-                            CommissionType.ANY -> "$tableName.commissions != '[]'"
-                            CommissionType.ON_SITE -> "$tableName.commissionOnsite = 1"
-                            CommissionType.ONLINE -> "$tableName.commissionOnline = 1"
-                            CommissionType.VGEN -> "$tableName.commissionVGen = 1"
-                            CommissionType.OTHER -> "$tableName.commissionOther = 1"
-                        }
-                    }
-
-                if (commissionStatements.isNotEmpty()) {
-                    this += "(${commissionStatements.joinToString(separator = " OR ")})"
+            if (year != DataYear.ANIME_EXPO_2023 && year != DataYear.ANIME_EXPO_2024) {
+                val commissionFlags = filterParams.commissionsIn.fold(0) { flags, type ->
+                    val index = CommissionType.entries.indexOf(type)
+                    flags or (1 shl index)
                 }
 
-                val linkTypeStatements = filterParams.linkTypesIn.map {
-                    val index = Link.Type.entries.indexOf(it)
+                if (commissionFlags != 0) {
+                    this += "($tableName.commissionFlags & $commissionFlags) != 0"
+                }
+
+                val linkFlags = filterParams.linkTypesIn.fold(0) { flags, type ->
+                    val index = Link.Type.entries.indexOf(type)
                     if (index < 32) {
-                        "$tableName.linkFlags & ${1 shl index} != 0"
+                        flags or (1 shl index)
                     } else {
-                        "$tableName.linkFlags2 & ${1 shl (index - 32)} != 0"
+                        flags
                     }
+                }
+                val linkFlags2 = filterParams.linkTypesIn.fold(0) { flags, type ->
+                    val index = Link.Type.entries.indexOf(type)
+                    if (index >= 32) {
+                        flags or (1 shl (index - 32))
+                    } else {
+                        flags
+                    }
+                }
+
+                val linkTypeStatements = mutableListOf<String>()
+                if (linkFlags != 0) {
+                    linkTypeStatements += "($tableName.linkFlags & $linkFlags) != 0"
+                }
+                if (linkFlags2 != 0) {
+                    linkTypeStatements += "($tableName.linkFlags2 & $linkFlags2) != 0"
                 }
 
                 if (linkTypeStatements.isNotEmpty()) {
@@ -564,27 +569,26 @@ class ArtistEntryDao(
                 .orEmpty()
         val selectSuffix = ", artistUserEntry.favorite, artistUserEntry.ignored"
 
-        if (query.isEmpty()) {
-            val andStatement = andClauses.takeIf { it.isNotEmpty() }
-                ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
-                .orEmpty()
-
-            val joinStatement = """
+        val joinStatement = """
                 LEFT OUTER JOIN artistUserEntry
-                ON $tableName.id = artistUserEntry.artistId
+                ON idAsKey = artistUserEntry.artistId
                 AND '${year.serializedName}' = artistUserEntry.dataYear
             """.trimIndent()
 
+        val andStatement = andClauses.takeIf { it.isNotEmpty() }
+            ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
+
+        if (query.isEmpty()) {
             val countStatement = """
                 SELECT COUNT(*)
                 FROM $tableName
-                $joinStatement
+                ${joinStatement.replace("idAsKey", "$tableName.id")}
                 $andStatement
             """.trimIndent()
             val statement = """
                 SELECT $tableName.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
                 FROM $tableName
-                $joinStatement
+                ${joinStatement.replace("idAsKey", "$tableName.id")}
                 $andStatement
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
@@ -610,7 +614,9 @@ class ArtistEntryDao(
             "booth",
             "name",
             "summary",
-            "notes".takeIf { year == DataYear.ANIME_EXPO_2025 }, // TODO: Expose 2024 notes?
+            "notes".takeIf {
+                year != DataYear.ANIME_EXPO_2023 && year != DataYear.ANIME_EXPO_2024
+            }, // TODO: Expose 2024 notes?
         ).let {
             if (year == DataYear.ANIME_EXPO_2023) {
                 it
@@ -634,15 +640,6 @@ class ArtistEntryDao(
         val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
             "(${DaoUtils.makeLikeAndQuery("${tableName}_fts.$it", queries)})"
         }
-
-        val andStatement = andClauses.takeIf { it.isNotEmpty() }
-            ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
-
-        val joinStatement = """
-                LEFT OUTER JOIN artistUserEntry
-                ON idAsKey = artistUserEntry.artistId
-                AND '${year.serializedName}' = artistUserEntry.dataYear
-            """.trimIndent()
 
         val countStatement = DaoUtils.buildSearchCountStatement(
             ftsTableName = "${tableName}_fts",
