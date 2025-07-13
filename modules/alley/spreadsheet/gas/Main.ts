@@ -16,6 +16,7 @@ const DOMAINS = [".com", ".ee", ".app", ".ca", ".site", ".gg", ".social"]
 const SHOP_DOMAINS = ["storenvy.com", "bigcartel.com", "etsy.com", "inprnt.com",
     "myshopify.com", "threadless.com", "itch.io", "faire.com", "gumroad.com",
     "gallerynucleus.com", "redbubble.com"]
+const COMMISSION_DOMAINS = ["vgen.co"]
 
 function onOpen(event: SheetsOnOpen) {
     SpreadsheetApp.getUi()
@@ -65,8 +66,11 @@ function onArbitraryLinkInput(event: SheetsOnEdit) {
 
     const input = event.value.replace("http://", "https://")
     let targetColumn = findColumnForHeader(sheet, "Links")!!
-    if (SHOP_DOMAINS.some(shopDomain => input.indexOf(shopDomain) > 0)) {
+    if (SHOP_DOMAINS.some(domain => input.indexOf(domain) > 0)) {
         targetColumn = findColumnForHeader(sheet, "Store")!!
+    }
+    if (COMMISSION_DOMAINS.some(domain => input.indexOf(domain) > 0)) {
+        targetColumn = findColumnForHeader(sheet, "Commissions")!!
     }
 
     const row = range.getRow()
