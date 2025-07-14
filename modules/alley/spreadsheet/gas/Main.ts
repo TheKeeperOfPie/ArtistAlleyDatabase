@@ -23,9 +23,7 @@ function onOpen(event: SheetsOnOpen) {
         .createMenu("Actions")
         .addItem("Fix artist links", "fixArtistLinks")
         .addItem("Fix catalog images", "fixCatalogImageRows")
-        .addItem("Fix map cells", "fixMapCells")
         .addItem("Fix stamp rally images", "fixStampRallyImageRows")
-        .addItem("Fix table links", "fixTableLinks")
         .addToUi()
 }
 
@@ -171,10 +169,6 @@ function multiSelect(event: SheetsOnEdit) {
     }
 }
 
-function fixArtistLinks() {
-    runOverActiveCells(cell => fixLinks(cell))
-}
-
 function fixLinks(range: SheetRange, text: string = range.getValue() as string) {
     let lastIndex = 0
     let nextIndex = text.indexOf("\n")
@@ -186,61 +180,6 @@ function fixLinks(range: SheetRange, text: string = range.getValue() as string) 
     }
     newTextBuilder.setLinkUrl(lastIndex, text.length, text.substring(lastIndex, text.length))
     range.setRichTextValue(newTextBuilder.build())
-}
-
-function fixTableLinks() {
-    runOverActiveCells(cell => {
-        const text = cell.getValue()
-        if (text.length == 0) return
-        // First add any new text
-        let newText = ""
-        runRegexpOverString(/^([A-L]\d{2}){0,1}(.*$)/gm, text, match => {
-            const table = match[1]
-            const remainder = match[2]
-            if (table == undefined || (remainder != undefined && remainder.length > 0)) {
-                newText += `${match[0]}\n`
-                return
-            }
-            const artist = findArtistName(table)
-            if (artist != undefined) {
-                newText += `${table} - ${artist}\n`
-            } else {
-                newText += `${table}\n`
-            }
-        })
-        newText = newText.trim()
-
-        // Then re-run on the new text so the indexes work out
-        const builder = SpreadsheetApp.newRichTextValue()
-            .setText(newText)
-        runRegexpOverString(/^([A-L]\d{2}){0,1}(.*$)/gm, newText, match => {
-            const index = match["index"]
-            const line = match[0]
-            const table = match[1]
-            const link = findArtistLink(table)
-            if (link == undefined) return
-            builder.setLinkUrl(index, index + line.length, link)
-        })
-        cell.setRichTextValue(builder.build())
-    })
-}
-
-function runOverActiveCells(block: (cell: SheetRange) => void) {
-    runOverAllCells(SpreadsheetApp.getActiveRange(), block)
-}
-
-function runOverAllCells(range: SheetRange, block: (cell: SheetRange) => void) {
-    const numRows = range.getNumRows()
-    const numColumns = range.getNumColumns()
-    for (let relativeRow = 1; relativeRow <= numRows; relativeRow++) {
-        for (let relativeColumn = 1; relativeColumn <= numColumns; relativeColumn++) {
-            const cell = range.getCell(relativeRow, relativeColumn)
-            const text = cell.getValue()
-            if (text.length != 0) {
-                block(cell)
-            }
-        }
-    }
 }
 
 function runRegexpOverString(regExp: RegExp, text: string, block: (match: RegExpExecArray) => void) {
@@ -291,63 +230,6 @@ function findArtistName(table: string): string | undefined {
     const name = findValueForHeader(sheet, row, "Artist")
     if (name == undefined) return undefined
     return name
-}
-
-function findArtistLink(table: string): string | undefined {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
-    const sheet = spreadsheet.getSheetByName("Artists")!!
-    const row = findArtistRow(table, spreadsheet, sheet)
-    if (row == undefined) return undefined
-    const spreadsheetId = spreadsheet.getId()
-    // Use column B so that link previews show artist name
-    return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${sheet.getSheetId()}&fvid=0&range=B${row}`
-}
-
-function fixMapCells() {
-    const range = SpreadsheetApp.getActiveRange()
-    runOverAllCells(range, cell => {
-        const text = cell.getValue()
-        if (text.length == 0) {
-            cell.clearFormat()
-            return
-        }
-        const newTextBuilder = SpreadsheetApp.newRichTextValue()
-            .setText(text)
-        const link = findArtistLink(text)
-        if (link != undefined) {
-            newTextBuilder.setLinkUrl(link)
-        }
-
-        // Set style after to override link styling
-        newTextBuilder.setTextStyle(
-            SpreadsheetApp.newTextStyle()
-                .setForegroundColor("#000000")
-                .setFontSize(16)
-                .setBold(true)
-                .setUnderline(false)
-                .build()
-        )
-
-        const row = cell.getRow()
-        let background: string
-        if (row <= 22) {
-            background = "#d5c1dd"
-        } else if (row <= 40) {
-            background = "#c7dbe6"
-        } else {
-            background = "#fdd6d9"
-        }
-
-        cell.setBackground(background)
-            .setRichTextValue(newTextBuilder.build())
-            .setHorizontalAlignment("center")
-            .setBorder(true, true, true, true, false, false, "#888888", SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
-    })
-
-    const sheet = SpreadsheetApp.getActiveSheet()
-    sheet.setColumnWidths(2, sheet.getLastColumn() - 1, 75)
-        .autoResizeColumns(1, range.getNumColumns()) // Ignore buffer on the left side
-        .autoResizeRows(range.getRow(), range.getNumRows())
 }
 
 function fixCatalogImageRows() {
