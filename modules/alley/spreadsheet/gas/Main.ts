@@ -373,7 +373,7 @@ function blobToDataUrl(blob: GoogleAppsScript.Base.Blob): string {
 
 function validateActiveSheet(sheetName: string): Sheet {
     const sheet = SpreadsheetApp.getActiveSheet()
-    if (sheet.getName() != sheetName) {
+    if (!sheet.getName().includes("maintainer") && sheet.getName() != sheetName) {
         throw Error("Not on " + sheetName + " sheet")
     }
     return sheet
