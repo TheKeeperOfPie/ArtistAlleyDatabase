@@ -9,23 +9,23 @@ object Versions {
     }
 
     object androidx {
-        const val activity = "1.11.0-rc01"
+        const val activity = "1.12.0-alpha04"
         const val annotation = "1.9.1"
-        const val browser = "1.9.0-alpha03"
-        const val core = "1.16.0"
-        const val media3 = "1.6.1"
-        const val paging = "3.3.6"
+        const val browser = "1.9.0-beta01"
+        const val core = "1.17.0-beta01"
+        const val media3 = "1.8.0-beta01"
+        const val paging = "3.4.0-alpha01"
         const val palette = "1.0.0"
-        const val room = "2.7.1"
-        const val securityCrypto = "1.1.0-alpha07"
-        const val sqlite = "2.5.1"
+        const val room = "2.7.2"
+        const val securityCrypto = "1.1.0-beta01"
+        const val sqlite = "2.5.2"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
-        const val work = "2.10.1"
+        const val work = "2.10.2"
     }
 
-    const val androidyoutubeplayer = "12.1.1"
+    const val androidyoutubeplayer = "12.1.2"
 
     object apache {
         const val commonsCompress = "1.27.1"
@@ -38,8 +38,8 @@ object Versions {
     const val benManesVersions = "0.52.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.17.1"
-    const val burst = "2.5.0"
-    const val coil = "3.1.0"
+    const val burst = "2.6.0"
+    const val coil = "3.2.0"
     const val colormath = "3.6.1"
     const val cronetEmbedded = "119.6045.31"
     const val diffUtils = "0.7.0"
@@ -49,7 +49,7 @@ object Versions {
 
     object google {
         const val appUpdate = "2.1.0"
-        const val billing = "7.1.1"
+        const val billing = "8.0.0"
         const val cronetOkHttp = "0.1.0"
         const val playServicesAds = "23.3.0"
         const val playServicesCronet = "18.1.0"
@@ -57,8 +57,8 @@ object Versions {
         const val userMessagingPlatform = "3.0.0"
     }
 
-    const val graphQlJava = "22.3"
-    const val htmlConverter = "1.0.4"
+    const val graphQlJava = "24.1"
+    const val htmlConverter = "1.1.0"
     const val htmlText = "1.6.0"
     const val humanReadable = "1.11.0"
     const val jackson = "2.18.3"
@@ -71,39 +71,39 @@ object Versions {
         }
 
         object composeMultiplatform {
-            const val plugin = "1.8.2"
-            const val runtime = "1.8.2"
+            const val plugin = "1.9.0-alpha03"
+            const val runtime = "1.9.0-alpha03"
         }
     }
 
-    const val jimfs = "1.3.0"
+    const val jimfs = "1.3.1"
     const val jsonTree = "2.5.0"
 
-    const val kermit = "2.0.5"
+    const val kermit = "2.0.6"
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.1.21"
+        const val core = "2.2.20-Beta1"
         const val coroutines = "1.10.2"
         const val datetime = "0.6.2"
-        const val io = "0.7.0"
-        const val ksp = "2.1.20-1.0.32"
-        const val serialization = "1.8.1"
+        const val io = "0.8.0"
+        const val ksp = "2.2.20-Beta1-2.0.2"
+        const val serialization = "1.9.0"
     }
 
     const val kotlinInject = "0.8.0"
     const val kotlinPoet = "1.15.3"
-    const val ktor = "3.1.3"
-    const val ksoup = "0.2.3"
+    const val ktor = "3.2.2"
+    const val ksoup = "0.2.4"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2025.1.2"
     const val markwon = "4.6.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.1.0"
-    const val multiplatformMarkdown = "0.34.0"
+    const val multiplatformMarkdown = "0.36.0-b02"
     const val netflixDgs = "9.1.0"
     const val netflixDgsCodegen = "7.0.3"
-    const val okhttp = "5.0.0-alpha.14"
+    const val okhttp = "5.1.0"
     const val okio = "3.10.2"
     const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
     const val placeholder = "1.0.11"
@@ -112,11 +112,11 @@ object Versions {
     const val sqldelight = "2.1.0"
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
-    const val turbine = "1.2.0"
-    const val unityAds = "4.14.2"
+    const val turbine = "1.2.1"
+    const val unityAds = "4.15.1"
     const val uriKmp = "0.0.19"
     const val webpImageIo = "0.9.0"
-    const val xmlUtil = "0.91.0"
+    const val xmlUtil = "0.91.1"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =

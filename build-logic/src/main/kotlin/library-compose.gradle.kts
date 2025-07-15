@@ -1,6 +1,5 @@
 @file:OptIn(ExperimentalComposeLibrary::class)
 
-import gradle.kotlin.dsl.accessors._a56012e263e29514d7867ab4569185f6.debugImplementation
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 
@@ -29,7 +28,7 @@ kotlin {
                 implementation(compose.ui)
 
                 // https://github.com/JetBrains/compose-multiplatform/releases/tag/v1.8.0-alpha04
-                implementation("org.jetbrains.compose.material3:material3:1.8.0-alpha03")
+                implementation("org.jetbrains.compose.material3:material3:1.9.0-alpha03")
                 // implementation(compose.material3)
             }
         }
@@ -55,6 +54,6 @@ composeCompiler {
 
 configurations.all {
     resolutionStrategy {
-        force("org.jetbrains.compose.material3:material3:1.8.0-alpha03")
+        force("org.jetbrains.compose.material3:material3:1.9.0-alpha03")
     }
 }
