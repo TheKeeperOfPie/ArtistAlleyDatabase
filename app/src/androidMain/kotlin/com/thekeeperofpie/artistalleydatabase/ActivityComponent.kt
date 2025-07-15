@@ -19,6 +19,11 @@ abstract class ActivityComponent(
 
     abstract val injector: Injector
 
+    // For some reason kotlin-inject fails to find these
+    val application get() = applicationComponent.application
+    val featureOverrideProvider get() = applicationComponent.featureOverrideProvider
+    fun provideJson() = applicationComponent.provideJson()
+
     // Doesn't seem to be an easy way to provide optional dependencies directly on the component
     @Inject
     class Injector(
