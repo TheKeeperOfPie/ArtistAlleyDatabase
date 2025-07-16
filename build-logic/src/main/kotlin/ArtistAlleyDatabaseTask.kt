@@ -646,7 +646,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     // Merch - Inferred,Notes,Commissions
                     val id = it["UUID"]!!.also { UUID.fromString(it) }
                     val artist = it["Artist"].orEmpty()
-                    val booth = it["Booth"]
+                    val booth = it["Booth"]?.takeUnless { it.length > 4 }
                     val summary = it["Summary"]
 
                     if (artist.isBlank()) return@mapNotNull null
