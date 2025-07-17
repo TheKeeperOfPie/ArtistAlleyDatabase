@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.shared.alley.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class CommissionType {
     ANY,
     ON_SITE,
