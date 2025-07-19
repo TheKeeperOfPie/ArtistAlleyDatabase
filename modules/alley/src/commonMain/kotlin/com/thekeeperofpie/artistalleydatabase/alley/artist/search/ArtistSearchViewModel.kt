@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -51,6 +52,7 @@ class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
     private val merchEntryDao: MerchEntryDao,
+    private val seriesEntryCache: SeriesEntryCache,
     private val seriesEntryDao: SeriesEntryDao,
     private val seriesImagesStore: SeriesImagesStore,
     private val userEntryDao: UserEntryDao,
@@ -164,16 +166,18 @@ class ArtistSearchViewModel(
                         }
                         .map {
                             it.mapOnIO {
-                                val series = ArtistEntryGridModel.getSeries(
+                                val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
+                                    randomSeed = randomSeed,
                                     showOnlyConfirmedTags = showOnlyConfirmedTags,
                                     entry = it,
-                                    seriesEntryDao = seriesEntryDao,
+                                    seriesEntryCache = seriesEntryCache,
                                 )
                                 ArtistEntryGridModel.buildFromEntry(
                                     randomSeed = randomSeed,
                                     showOnlyConfirmedTags = showOnlyConfirmedTags,
                                     entry = it,
                                     series = series,
+                                    hasMoreSeries = hasMoreSeries,
                                 )
                             }
                         }

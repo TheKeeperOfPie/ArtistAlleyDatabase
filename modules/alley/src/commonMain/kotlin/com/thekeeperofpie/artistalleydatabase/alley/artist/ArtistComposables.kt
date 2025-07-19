@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -23,7 +21,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +38,6 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
-import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
@@ -56,7 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.skipToLook
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import org.jetbrains.compose.resources.stringResource
-import kotlin.random.Random
 
 @Composable
 fun ArtistTitle(
@@ -200,6 +195,7 @@ fun ArtistListRow(
         if (entry.series.isNotEmpty()) {
             SeriesRow(
                 series = entry.series,
+                hasMoreSeries = entry.hasMoreSeries,
                 onSeriesClick = onSeriesClick,
                 onMoreClick = onMoreClick,
             )
@@ -213,18 +209,11 @@ private val chipHeightModifier = Modifier.height(24.dp)
 private fun SeriesRow(
     series: List<SeriesEntry>,
     onSeriesClick: (String) -> Unit,
+    hasMoreSeries: Boolean,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (series.isEmpty()) return
-    val scrollState = rememberScrollState()
-    LaunchedEffect(series) {
-        scrollState.scrollTo(0)
-    }
-    val randomSeed = LocalStableRandomSeed.current
-    val shuffledSeries = remember(series, randomSeed) {
-        series.shuffled(Random(randomSeed))
-    }
     val languageOption = LocalLanguageOptionMedia.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -237,14 +226,13 @@ private fun SeriesRow(
                 endTransparent = 16.dp,
             )
             .then(modifier)
-            .horizontalScroll(scrollState)
     ) {
         Spacer(Modifier.width(12.dp))
         val colors = AssistChipDefaults.assistChipColors(
             labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
         val border = AssistChipDefaults.assistChipBorder(false)
-        shuffledSeries.take(5).forEach {
+        series.forEach {
             AssistChip(
                 colors = colors,
                 border = border,
@@ -253,7 +241,7 @@ private fun SeriesRow(
                 modifier = chipHeightModifier
             )
         }
-        if (shuffledSeries.size > 5) {
+        if (hasMoreSeries) {
             AssistChip(
                 colors = colors,
                 border = border,
@@ -262,6 +250,5 @@ private fun SeriesRow(
                 modifier = chipHeightModifier
             )
         }
-        Spacer(Modifier.width(32.dp))
     }
 }

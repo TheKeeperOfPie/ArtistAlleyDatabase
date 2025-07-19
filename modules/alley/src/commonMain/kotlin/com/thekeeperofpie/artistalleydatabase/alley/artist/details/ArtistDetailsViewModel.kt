@@ -91,13 +91,13 @@ class ArtistDetailsViewModel(
 
     val seriesInferred = entry
         .filterNotNull()
-        .flatMapLatest { seriesEntryDao.observeSeriesByIds(it.artist.seriesInferred) }
+        .flatMapLatest { seriesEntryDao.observeSeriesByIdsWithUserData(it.artist.seriesInferred) }
         .flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val seriesConfirmed = entry
         .filterNotNull()
-        .flatMapLatest { seriesEntryDao.observeSeriesByIds(it.artist.seriesConfirmed) }
+        .flatMapLatest { seriesEntryDao.observeSeriesByIdsWithUserData(it.artist.seriesConfirmed) }
         .flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 

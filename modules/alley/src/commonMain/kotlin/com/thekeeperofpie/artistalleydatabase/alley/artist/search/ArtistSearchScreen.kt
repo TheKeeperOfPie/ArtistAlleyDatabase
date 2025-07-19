@@ -85,7 +85,6 @@ import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object ArtistSearchScreen {
@@ -269,16 +268,15 @@ object ArtistSearchScreen {
                 Text(text = row?.artist?.summary.orEmpty())
             }
             ArtistColumn.SERIES -> {
-                val series = row?.series
-                val randomSeed = LocalStableRandomSeed.current
+                val shuffledSeries = row?.series
                 val languageOption = LocalLanguageOptionMedia.current
-                val shuffledSeries = remember(series, randomSeed, languageOption) {
-                    series?.map { it.name(languageOption) }
-                        ?.shuffled(Random(randomSeed))
+                val seriesNames = remember(row?.series, languageOption) {
+                    shuffledSeries?.map { it.name(languageOption) }
                 }
                 TagsCell(
                     column = column,
-                    tags = shuffledSeries,
+                    tags = seriesNames,
+                    hasMoreTags = row?.hasMoreSeries == true,
                     moreContentDescription = Res.string.alley_expand_series,
                     onTagClick = onSeriesClick,
                     onMoreClick = { if (row != null) onEntryClick(row, 1) },
@@ -287,6 +285,7 @@ object ArtistSearchScreen {
             ArtistColumn.MERCH -> TagsCell(
                 column = column,
                 tags = row?.merch,
+                hasMoreTags = row?.hasMoreMerch == true,
                 moreContentDescription = Res.string.alley_expand_merch,
                 onTagClick = onMerchClick,
                 onMoreClick = { if (row != null) onEntryClick(row, 1) },
@@ -348,13 +347,14 @@ object ArtistSearchScreen {
     private fun TagsCell(
         column: ArtistColumn,
         tags: List<String>?,
+        hasMoreTags: Boolean,
         moreContentDescription: StringResource,
         onTagClick: (String) -> Unit,
         onMoreClick: () -> Unit,
     ) {
         if (tags.isNullOrEmpty()) return
         Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-            tags.take(8)
+            tags.take(ArtistEntryGridModel.TAGS_TO_SHOW)
                 .forEach {
                     SuggestionChip(
                         onClick = { onTagClick(it) },
@@ -362,7 +362,7 @@ object ArtistSearchScreen {
                         modifier = Modifier.widthIn(max = column.size - 16.dp)
                     )
                 }
-            if (tags.size > 8) {
+            if (hasMoreTags) {
                 IconButton(onClick = onMoreClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Default.OpenInNew,
@@ -469,7 +469,9 @@ object ArtistSearchScreen {
                     randomSeed = 1,
                     showOnlyConfirmedTags = false,
                     entry = it,
-                    series = it.artist.seriesInferred.map { previewSeriesWithUserData(it).series }
+                    series = it.artist.seriesInferred.take(ArtistEntryGridModel.TAGS_TO_SHOW)
+                        .map { previewSeriesWithUserData(it).series },
+                    hasMoreSeries = true,
                 )
             }
         val state = State(

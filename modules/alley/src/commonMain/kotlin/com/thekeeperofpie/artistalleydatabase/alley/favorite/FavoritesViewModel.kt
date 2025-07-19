@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridM
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -67,6 +68,7 @@ class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
     merchEntryDao: MerchEntryDao,
+    seriesEntryCache: SeriesEntryCache,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     userEntryDao: UserEntryDao,
@@ -141,16 +143,18 @@ class FavoritesViewModel(
             .map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
             .map {
                 it.mapOnIO {
-                    val series = ArtistEntryGridModel.getSeries(
+                    val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
+                        randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
-                        seriesEntryDao = seriesEntryDao,
+                        seriesEntryCache = seriesEntryCache,
                     )
                     ArtistEntryGridModel.buildFromEntry(
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
                         series = series,
+                        hasMoreSeries = hasMoreSeries,
                     )
                 }
             }

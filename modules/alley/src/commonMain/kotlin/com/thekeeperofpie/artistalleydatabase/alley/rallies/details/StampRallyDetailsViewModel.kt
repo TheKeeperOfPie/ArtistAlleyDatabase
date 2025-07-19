@@ -94,7 +94,7 @@ class StampRallyDetailsViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val series = entry.filterNotNull()
-        .flatMapLatest { seriesEntryDao.observeSeriesByIds(it.stampRally.series) }
+        .flatMapLatest { seriesEntryDao.observeSeriesByIdsWithUserData(it.stampRally.series) }
         .flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 

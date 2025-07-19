@@ -12,6 +12,10 @@ ON seriesEntry.uuid = seriesUserEntry.seriesId
 WHERE id = :id;
 
 getSeriesByIds:
+SELECT seriesEntry.* FROM seriesEntry
+WHERE id IN :ids;
+
+getSeriesByIdsWithUserData:
 SELECT seriesEntry.*, seriesUserEntry.favorite FROM seriesEntry
 LEFT OUTER JOIN seriesUserEntry
 ON seriesEntry.uuid = seriesUserEntry.seriesId

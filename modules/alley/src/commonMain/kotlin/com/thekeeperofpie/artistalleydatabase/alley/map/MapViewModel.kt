@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -30,7 +30,7 @@ import kotlin.random.Random
 @Inject
 class MapViewModel(
     private val artistEntryDao: ArtistEntryDao,
-    private val seriesEntryDao: SeriesEntryDao,
+    private val seriesEntryCache: SeriesEntryCache,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -120,16 +120,18 @@ class MapViewModel(
     }
 
     suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.year, table.id)?.let {
-        val series = ArtistEntryGridModel.getSeries(
+        val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
+            randomSeed = randomSeed,
             showOnlyConfirmedTags = false,
             entry = it,
-            seriesEntryDao = seriesEntryDao,
+            seriesEntryCache = seriesEntryCache,
         )
         ArtistEntryGridModel.buildFromEntry(
             randomSeed = randomSeed,
             showOnlyConfirmedTags = false, // This shouldn't matter here
             entry = it,
             series = series,
+            hasMoreSeries = hasMoreSeries,
         )
     }
 

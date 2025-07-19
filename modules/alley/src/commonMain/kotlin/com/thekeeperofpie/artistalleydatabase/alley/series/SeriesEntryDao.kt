@@ -11,7 +11,7 @@ import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesById
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIds
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdsWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
@@ -118,7 +118,7 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
     )
 )
 
-fun GetSeriesByIds.toSeriesWithUserData() = SeriesWithUserData(
+fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
     series = SeriesEntry(
         id = id,
         uuid = uuid,
@@ -161,15 +161,16 @@ class SeriesEntryDao(
             .flatMapLatest { it.getSeriesById(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO) }
             .mapLatest { it?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(id) }
 
-    suspend fun getSeriesByIds(ids: List<String>): List<SeriesWithUserData> {
+    suspend fun getSeriesByIds(ids: List<String>): List<SeriesEntry> {
         if (ids.isEmpty()) return emptyList()
         val series = seriesDao().getSeriesByIds(ids).awaitAsList().associateBy { it.id }
-        return ids.map { series[it]?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(it) }
+        return ids.map { series[it] ?: fallbackSeriesWithUserData(it).series }
     }
 
-    suspend fun observeSeriesByIds(ids: List<String>): Flow<List<SeriesWithUserData>> {
+    suspend fun observeSeriesByIdsWithUserData(ids: List<String>): Flow<List<SeriesWithUserData>> {
         if (ids.isEmpty()) return flowOf(emptyList())
-        return seriesDao().getSeriesByIds(ids).asFlow().mapToList(PlatformDispatchers.IO)
+        return seriesDao().getSeriesByIdsWithUserData(ids).asFlow()
+            .mapToList(PlatformDispatchers.IO)
             .mapLatest { it.associateBy { it.id } }
             .mapLatest { series ->
                 ids.map { series[it]?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(it) }

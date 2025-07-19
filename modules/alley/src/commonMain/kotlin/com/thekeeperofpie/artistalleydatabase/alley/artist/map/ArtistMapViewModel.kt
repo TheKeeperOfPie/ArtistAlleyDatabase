@@ -7,7 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -31,7 +31,7 @@ import kotlin.random.Random
 @Inject
 class ArtistMapViewModel(
     artistEntryDao: ArtistEntryDao,
-    seriesEntryDao: SeriesEntryDao,
+    seriesEntryCache: SeriesEntryCache,
     userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     settings: ArtistAlleySettings,
@@ -47,16 +47,18 @@ class ArtistMapViewModel(
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
                 .map {
-                    val series = ArtistEntryGridModel.getSeries(
+                    val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
+                        randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
-                        seriesEntryDao = seriesEntryDao,
+                        seriesEntryCache = seriesEntryCache,
                     )
                     ArtistEntryGridModel.buildFromEntry(
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
                         series = series,
+                        hasMoreSeries = hasMoreSeries,
                     )
                 }
         }

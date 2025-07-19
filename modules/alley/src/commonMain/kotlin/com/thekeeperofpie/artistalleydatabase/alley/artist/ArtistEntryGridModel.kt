@@ -8,18 +8,18 @@ import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlin.random.Random
 
 class ArtistEntryGridModel(
-    private val randomSeed: Int,
-    // TODO: Shove tag filter into UI layer
-    private val showOnlyConfirmedTags: Boolean,
     val artist: ArtistEntry,
     val userEntry: ArtistUserEntry,
     val series: List<SeriesEntry>,
+    val hasMoreSeries: Boolean,
+    val merch: List<String>,
+    val hasMoreMerch: Boolean,
     override val images: List<CatalogImage>,
     override val placeholderText: String,
 ) : SearchScreen.SearchEntryModel {
@@ -35,26 +35,21 @@ class ArtistEntryGridModel(
 
     override val booth get() = artist.booth
 
-    val merch by lazy {
-        val random = Random(randomSeed)
-        val list = artist.merchConfirmed.shuffled(random).toMutableList()
-        if (!showOnlyConfirmedTags) {
-            list += artist.merchInferred.shuffled(random)
-        }
-        list
-    }
-
     companion object {
-        suspend fun getSeries(
+        const val TAGS_TO_SHOW = 5
+
+        internal suspend fun getSeriesAndHasMore(
+            randomSeed: Int,
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
-            seriesEntryDao: SeriesEntryDao,
-        ): List<SeriesEntry> {
+            seriesEntryCache: SeriesEntryCache,
+        ): Pair<List<SeriesEntry>, Boolean> {
             val seriesIds = entry.artist.seriesConfirmed.toMutableList()
-            if (!showOnlyConfirmedTags) {
+            if (!showOnlyConfirmedTags && seriesIds.size < TAGS_TO_SHOW) {
                 seriesIds += entry.artist.seriesInferred
             }
-            return seriesEntryDao.getSeriesByIds(seriesIds).map { it.series }
+            val idsToQuery = seriesIds.shuffled(Random(randomSeed)).take(TAGS_TO_SHOW)
+            return seriesEntryCache.getSeries(idsToQuery) to (seriesIds.size > TAGS_TO_SHOW)
         }
 
         fun buildFromEntry(
@@ -62,13 +57,20 @@ class ArtistEntryGridModel(
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
             series: List<SeriesEntry>,
+            hasMoreSeries: Boolean,
         ): ArtistEntryGridModel {
+            val random = Random(randomSeed)
+            var merch = entry.artist.merchConfirmed.shuffled(random)
+            if (!showOnlyConfirmedTags && merch.size < TAGS_TO_SHOW) {
+                merch = merch + entry.artist.merchInferred.shuffled(random)
+            }
             return ArtistEntryGridModel(
-                randomSeed = randomSeed,
-                showOnlyConfirmedTags = showOnlyConfirmedTags,
                 artist = entry.artist,
                 userEntry = entry.userEntry,
                 series = series,
+                hasMoreSeries = hasMoreSeries,
+                merch = merch,
+                hasMoreMerch = merch.size > TAGS_TO_SHOW,
                 images = AlleyDataUtils.getArtistImages(
                     year = entry.artist.year,
                     booth = entry.artist.booth,
