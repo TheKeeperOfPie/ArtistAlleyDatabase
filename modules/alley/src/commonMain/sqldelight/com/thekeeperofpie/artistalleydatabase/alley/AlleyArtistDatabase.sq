@@ -146,11 +146,53 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2025_fts USING FTS5 (
 );
 
 CREATE TABLE
+    IF NOT EXISTS artistEntryAnimeNyc2024 (
+        id TEXT NOT NULL,
+        booth TEXT COLLATE NOCASE,
+        name TEXT NOT NULL COLLATE NOCASE,
+        summary TEXT,
+        links TEXT AS List<String> NOT NULL,
+        storeLinks TEXT AS List<String> NOT NULL,
+        catalogLinks TEXT AS List<String> NOT NULL,
+        linkFlags INTEGER NOT NULL DEFAULT 0,
+        linkFlags2 INTEGER NOT NULL DEFAULT 0,
+        driveLink TEXT,
+        notes TEXT,
+        commissions TEXT AS List<String> NOT NULL,
+        commissionFlags INTEGER NOT NULL DEFAULT 0,
+        seriesInferred TEXT AS List<String> NOT NULL,
+        seriesConfirmed TEXT AS List<String> NOT NULL,
+        merchInferred TEXT AS List<String> NOT NULL,
+        merchConfirmed TEXT AS List<String> NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2024_fts USING FTS5 (
+    id,
+    booth,
+    name,
+    summary,
+    driveLink,
+    notes,
+    commissions,
+    commissionFlags,
+    seriesInferred,
+    seriesConfirmed,
+    merchInferred,
+    merchConfirmed,
+    counter,
+    content=artistEntryAnimeNyc2024,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE TABLE
     IF NOT EXISTS artistSeriesConnection (
         artistId TEXT NOT NULL,
         seriesId TEXT NOT NULL,
         state2024 INTEGER NOT NULL DEFAULT 0,
         state2025 INTEGER NOT NULL DEFAULT 0,
+        stateAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         stateAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY (artistId, seriesId)
     );
@@ -164,6 +206,7 @@ CREATE TABLE
         merchId TEXT NOT NULL,
         state2024 INTEGER NOT NULL DEFAULT 0,
         state2025 INTEGER NOT NULL DEFAULT 0,
+        stateAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         stateAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY (artistId, merchId)
     );
@@ -287,9 +330,11 @@ CREATE TABLE
         link TEXT,
         inferred2024 INTEGER NOT NULL DEFAULT 0,
         inferred2025 INTEGER NOT NULL DEFAULT 0,
+        inferredAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         inferredAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
         confirmed2024 INTEGER NOT NULL DEFAULT 0,
         confirmed2025 INTEGER NOT NULL DEFAULT 0,
+        confirmedAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
         counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
@@ -306,9 +351,11 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     titleNative,
     inferred2024,
     inferred2025,
+    inferredAnimeNyc2024,
     inferredAnimeNyc2025,
     confirmed2024,
     confirmed2025,
+    confirmedAnimeNyc2024,
     confirmedAnimeNyc2025,
     counter,
     content=seriesEntry,
@@ -323,6 +370,7 @@ CREATE TABLE
         categories TEXT,
         has2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
         has2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
+        hasAnimeNyc2024 INTEGER AS Boolean NOT NULL DEFAULT 0,
         hasAnimeNyc2025 INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (name)
     );
@@ -332,6 +380,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS merchEntry_fts USING FTS5 (
     uuid,
     has2024,
     has2025,
+    hasAnimeNyc2024,
     hasAnimeNyc2025,
     content=merchEntry,
     tokenize="unicode61 remove_diacritics 2"

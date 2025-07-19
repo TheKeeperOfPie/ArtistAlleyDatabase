@@ -30,11 +30,12 @@ fun SqlCursor.toMerchWithUserData(): MerchWithUserData {
             categories = getString(3),
             has2024 = getBooleanFixed(4),
             has2025 = getBooleanFixed(5),
-            hasAnimeNyc2025 = getBooleanFixed(6),
+            hasAnimeNyc2024 = getBooleanFixed(6),
+            hasAnimeNyc2025 = getBooleanFixed(7),
         ),
         userEntry = MerchUserEntry(
             merchId = uuid,
-            favorite = getBooleanFixed(7),
+            favorite = getBooleanFixed(8),
         )
     )
 }
@@ -47,6 +48,7 @@ fun GetMerchById.toMerchWithUserData() = MerchWithUserData(
         categories = categories,
         has2024 = has2024,
         has2025 = has2025,
+        hasAnimeNyc2024 = hasAnimeNyc2024,
         hasAnimeNyc2025 = hasAnimeNyc2025,
     ),
     userEntry = MerchUserEntry(
@@ -85,6 +87,7 @@ class MerchEntryDao(
             DataYear.ANIME_EXPO_2023 -> "2023"
             DataYear.ANIME_EXPO_2024 -> "2024"
             DataYear.ANIME_EXPO_2025 -> "2025"
+            DataYear.ANIME_NYC_2024 -> "AnimeNyc2024"
             DataYear.ANIME_NYC_2025 -> "AnimeNyc2025"
         }
         val countStatement = """
@@ -112,6 +115,7 @@ class MerchEntryDao(
         DataYear.ANIME_EXPO_2023 -> emptyList()
         DataYear.ANIME_EXPO_2024 -> merchDao().getMerchEntries2024().awaitAsList()
         DataYear.ANIME_EXPO_2025 -> merchDao().getMerchEntries2025().awaitAsList()
+        DataYear.ANIME_NYC_2024 -> merchDao().getMerchEntriesAnimeNyc2024().awaitAsList()
         DataYear.ANIME_NYC_2025 -> merchDao().getMerchEntriesAnimeNyc2025().awaitAsList()
     }.filterNot { it.name.contains("Commissions") }
 
@@ -127,6 +131,7 @@ class MerchEntryDao(
             DataYear.ANIME_EXPO_2023 -> ""
             DataYear.ANIME_EXPO_2024 -> "has2024 = 1 AND "
             DataYear.ANIME_EXPO_2025 -> "has2025 = 1 AND "
+            DataYear.ANIME_NYC_2024 -> "hasAnimeNyc2024 = 1 AND "
             DataYear.ANIME_NYC_2025 -> "hasAnimeNyc2025 = 1 AND "
         }
         val likeAndQuery = yearFilter + DaoUtils.makeLikeAndQuery("merchEntry_fts.name", queries)

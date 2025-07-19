@@ -10,6 +10,10 @@ insertArtist2025:
 INSERT OR REPLACE INTO artistEntry2025
 VALUES ?;
 
+insertArtistAnimeNyc2024:
+INSERT OR REPLACE INTO artistEntryAnimeNyc2024
+VALUES ?;
+
 insertArtistAnimeNyc2025:
 INSERT OR REPLACE INTO artistEntryAnimeNyc2025
 VALUES ?;

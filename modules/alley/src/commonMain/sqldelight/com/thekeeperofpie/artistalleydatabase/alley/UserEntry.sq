@@ -25,6 +25,11 @@ SELECT artistEntry2025.id, artistEntry2025.booth, artistEntry2025.name, artistUs
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
 
+getBoothsWithFavoritesAnimeNyc2024:
+SELECT artistEntryAnimeNyc2024.id, artistEntryAnimeNyc2024.booth, artistEntryAnimeNyc2024.name, artistUserEntry.favorite FROM artistEntryAnimeNyc2024
+LEFT OUTER JOIN artistUserEntry
+ON artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear;
+
 getBoothsWithFavoritesAnimeNyc2025:
 SELECT artistEntryAnimeNyc2025.id, artistEntryAnimeNyc2025.booth, artistEntryAnimeNyc2025.name, artistUserEntry.favorite FROM artistEntryAnimeNyc2025
 LEFT OUTER JOIN artistUserEntry

@@ -49,6 +49,18 @@ INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025
 WHERE artistSeriesConnection.seriesId = :seriesId
 AND artistSeriesConnection.state2025 = 2;
 
+getBoothsBySeriesIdAnimeNyc2024:
+SELECT artistEntryAnimeNyc2024.booth FROM artistSeriesConnection
+INNER JOIN artistEntryAnimeNyc2024 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2024.id)
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND artistSeriesConnection.stateAnimeNyc2024 = 1;
+
+getBoothsBySeriesIdConfirmedAnimeNyc2024:
+SELECT artistEntryAnimeNyc2024.booth FROM artistSeriesConnection
+INNER JOIN artistEntryAnimeNyc2024 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2024.id)
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND artistSeriesConnection.stateAnimeNyc2024 = 2;
+
 getBoothsBySeriesIdAnimeNyc2025:
 SELECT artistEntryAnimeNyc2025.booth FROM artistSeriesConnection
 INNER JOIN artistEntryAnimeNyc2025 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2025.id)

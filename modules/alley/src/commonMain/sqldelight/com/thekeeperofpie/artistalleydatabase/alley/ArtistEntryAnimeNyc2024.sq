@@ -1,0 +1,15 @@
+getEntry:
+SELECT artistEntryAnimeNyc2024.*, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2024
+LEFT OUTER JOIN artistUserEntry
+ON artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear
+WHERE id = :id;
+
+getEntryIdByBooth:
+SELECT artistEntryAnimeNyc2024.id
+FROM artistEntryAnimeNyc2024
+WHERE booth = :booth;
+
+getEntriesRandom:
+SELECT *
+FROM artistEntryAnimeNyc2024
+ORDER BY substr(artistEntryAnimeNyc2024.counter * ?, length(artistEntryAnimeNyc2024.counter) + 2);

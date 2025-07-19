@@ -27,6 +27,7 @@ object AlleyDataUtils {
             DataYear.ANIME_EXPO_2023 -> ComposeFiles.catalogs2023
             DataYear.ANIME_EXPO_2024 -> ComposeFiles.catalogs2024
             DataYear.ANIME_EXPO_2025 -> ComposeFiles.catalogs2025
+            DataYear.ANIME_NYC_2024 -> ComposeFiles.catalogsAnimeNyc2024
             DataYear.ANIME_NYC_2025 -> ComposeFiles.catalogsAnimeNyc2025
         }.files
             .filterIsInstance<ComposeFile.Folder>()
@@ -65,12 +66,14 @@ object AlleyDataUtils {
             DataYear.ANIME_EXPO_2024,
                 -> fixName(file)
             DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025, -> id
         }
         val targetFolder = when (year) {
             DataYear.ANIME_EXPO_2023 -> ComposeFiles.rallies2023
             DataYear.ANIME_EXPO_2024 -> ComposeFiles.rallies2024
             DataYear.ANIME_EXPO_2025 -> ComposeFiles.rallies2025
+            DataYear.ANIME_NYC_2024 -> ComposeFile.Folder("ralliesAnimeNyc2024", emptyList())
             DataYear.ANIME_NYC_2025 -> ComposeFile.Folder("ralliesAnimeNyc2025", emptyList())
         }.files
             .filterIsInstance<ComposeFile.Folder>()
@@ -129,6 +132,10 @@ object AlleyDataUtils {
             DataYear.ANIME_EXPO_2025 -> when (folderType) {
                 Folder.CATALOGS -> ComposeFiles.catalogs2025
                 Folder.RALLIES -> ComposeFiles.rallies2025
+            }
+            DataYear.ANIME_NYC_2024 -> when (folderType) {
+                Folder.CATALOGS -> ComposeFiles.catalogsAnimeNyc2024
+                Folder.RALLIES -> ComposeFile.Folder("ralliesAnimeNyc2024", emptyList())
             }
             DataYear.ANIME_NYC_2025 -> when (folderType) {
                 Folder.CATALOGS -> ComposeFiles.catalogsAnimeNyc2025

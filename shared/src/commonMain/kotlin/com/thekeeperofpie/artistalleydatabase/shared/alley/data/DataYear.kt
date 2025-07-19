@@ -40,6 +40,14 @@ enum class DataYear(
         dates = LocalDate(year = 2025, Month.JULY, 3)..LocalDate(year = 2025, Month.JULY, 6),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
+    ANIME_NYC_2024(
+        serializedName = "ANYC2024",
+        year = 2024,
+        tableName = "artistEntryAnimeNyc2024",
+        folderName = "animeNyc2024",
+        dates = LocalDate(year = 2024, Month.AUGUST, 23)..LocalDate(year = 2024, Month.AUGUST, 25),
+        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
+    ),
     ANIME_NYC_2025(
         serializedName = "ANYC2025",
         year = 2025,

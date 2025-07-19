@@ -5,11 +5,13 @@ import java.io.File
 import java.net.URI
 import java.util.UUID
 
-val inputs = __FILE__.resolve("../../inputs")
-    .walk()
-    .filter { it.name == "artists.csv" }
-    .map { it.parentFile.name to it }
-    .sortedBy { it.first }
+val inputs = listOf(
+    __FILE__.resolve("../../inputs/2023/artists.csv"),
+    __FILE__.resolve("../../inputs/2024/artists.csv"),
+    __FILE__.resolve("../../inputs/animeNyc2024/artists.csv"),
+    __FILE__.resolve("../../inputs/2025/artists.csv"),
+    __FILE__.resolve("../../inputs/animeNyc2025/artists.csv"),
+).map { it.parentFile.name to it }
 
 val artists = mutableMapOf<String, Artist>()
 

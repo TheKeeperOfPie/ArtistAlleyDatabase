@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
@@ -47,6 +48,15 @@ private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
 private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
     BoothWithFavorite(
         year = DataYear.ANIME_EXPO_2025,
+        id = id,
+        booth = booth,
+        name = name,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+    )
+
+private fun GetBoothsWithFavoritesAnimeNyc2024.toBoothWithFavorite() =
+    BoothWithFavorite(
+        year = DataYear.ANIME_NYC_2024,
         id = id,
         booth = booth,
         name = name,
@@ -94,6 +104,7 @@ class UserEntryDao(
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
                         .map { it.map { it.toBoothWithFavorite() } }
+                    DataYear.ANIME_NYC_2024 -> flowOf(emptyList()) // TODO: Add ANYC Map
                     DataYear.ANIME_NYC_2025 -> flowOf(emptyList()) // TODO: Add ANYC Map
                 }
             }

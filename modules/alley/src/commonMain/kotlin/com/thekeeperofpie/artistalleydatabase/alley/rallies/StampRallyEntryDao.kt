@@ -254,6 +254,7 @@ class StampRallyEntryDao(
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
+            DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
@@ -284,6 +285,7 @@ class StampRallyEntryDao(
                         .map { it.toArtistEntry() }
                 StampRallyWithArtistsEntry(stampRally, artists)
             }
+            DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
@@ -293,7 +295,7 @@ class StampRallyEntryDao(
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
     ): PagingSource<Int, StampRallyWithUserData> {
-        if (year == DataYear.ANIME_NYC_2025) {
+        if (year == DataYear.ANIME_NYC_2024 || year == DataYear.ANIME_NYC_2025) {
             return object : PagingSource<Int, StampRallyWithUserData>() {
                 override fun getRefreshKey(state: PagingState<Int, StampRallyWithUserData>) = null
                 override suspend fun load(params: PagingSourceLoadParams<Int>): PagingSourceLoadResult<Int, StampRallyWithUserData> {
@@ -310,7 +312,8 @@ class StampRallyEntryDao(
             DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
             DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
             DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
-            DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025, -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
@@ -428,6 +431,7 @@ class StampRallyEntryDao(
                     DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
                     DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
                     DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
+                    DataYear.ANIME_NYC_2024,
                     DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
                 },
             )
@@ -493,6 +497,7 @@ class StampRallyEntryDao(
                 DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
                 DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
                 DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
+                DataYear.ANIME_NYC_2024,
                 DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
             },
         )

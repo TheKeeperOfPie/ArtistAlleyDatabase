@@ -44,11 +44,13 @@ fun SqlCursor.toSeriesEntry(): SeriesEntry {
         link = getString(11),
         inferred2024 = getLong(12)!!,
         inferred2025 = getLong(13)!!,
-        inferredAnimeNyc2025 = getLong(14)!!,
-        confirmed2024 = getLong(15)!!,
-        confirmed2025 = getLong(16)!!,
-        confirmedAnimeNyc2025 = getLong(17)!!,
-        counter = getLong(18)!!,
+        inferredAnimeNyc2024 = getLong(14)!!,
+        inferredAnimeNyc2025 = getLong(15)!!,
+        confirmed2024 = getLong(16)!!,
+        confirmed2025 = getLong(17)!!,
+        confirmedAnimeNyc2024 = getLong(18)!!,
+        confirmedAnimeNyc2025 = getLong(19)!!,
+        counter = getLong(20)!!,
     )
 }
 
@@ -72,14 +74,16 @@ fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
             inferred2024 = getLong(12)!!,
             inferred2025 = getLong(13)!!,
             inferredAnimeNyc2025 = getLong(14)!!,
-            confirmed2024 = getLong(15)!!,
-            confirmed2025 = getLong(16)!!,
-            confirmedAnimeNyc2025 = getLong(17)!!,
-            counter = getLong(18)!!,
+            inferredAnimeNyc2024 = getLong(15)!!,
+            confirmed2024 = getLong(16)!!,
+            confirmed2025 = getLong(17)!!,
+            confirmedAnimeNyc2024 = getLong(18)!!,
+            confirmedAnimeNyc2025 = getLong(19)!!,
+            counter = getLong(20)!!,
         ),
         userEntry = SeriesUserEntry(
             seriesId = uuid,
-            favorite = getBooleanFixed(19),
+            favorite = getBooleanFixed(21),
         )
     )
 }
@@ -100,9 +104,11 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
         link = link,
         inferred2024 = inferred2024,
         inferred2025 = inferred2025,
+        inferredAnimeNyc2024 = inferredAnimeNyc2024,
         inferredAnimeNyc2025 = inferredAnimeNyc2025,
         confirmed2024 = confirmed2024,
         confirmed2025 = confirmed2025,
+        confirmedAnimeNyc2024 = confirmedAnimeNyc2024,
         confirmedAnimeNyc2025 = confirmedAnimeNyc2025,
         counter = counter,
     ),
@@ -128,9 +134,11 @@ fun GetSeriesByIds.toSeriesWithUserData() = SeriesWithUserData(
         link = link,
         inferred2024 = inferred2024,
         inferred2025 = inferred2025,
+        inferredAnimeNyc2024 = inferredAnimeNyc2024,
         inferredAnimeNyc2025 = inferredAnimeNyc2025,
         confirmed2024 = confirmed2024,
         confirmed2025 = confirmed2025,
+        confirmedAnimeNyc2024 = confirmedAnimeNyc2024,
         confirmedAnimeNyc2025 = confirmedAnimeNyc2025,
         counter = counter,
     ),
@@ -207,6 +215,11 @@ class SeriesEntryDao(
                 "confirmed2025"
             } else {
                 "inferred2025"
+            }
+            DataYear.ANIME_NYC_2024 -> if (seriesFilterParams.showOnlyConfirmedTags) {
+                "confirmedAnimeNyc2024"
+            } else {
+                "inferredAnimeNyc2024"
             }
             DataYear.ANIME_NYC_2025 -> if (seriesFilterParams.showOnlyConfirmedTags) {
                 "confirmedAnimeNyc2025"
@@ -438,9 +451,11 @@ class SeriesEntryDao(
             link = null,
             inferred2024 = 1,
             inferred2025 = 1,
+            inferredAnimeNyc2024 = 1,
             inferredAnimeNyc2025 = 1,
             confirmed2024 = 0,
             confirmed2025 = 0,
+            confirmedAnimeNyc2024 = 0,
             confirmedAnimeNyc2025 = 0,
             counter = 1,
         ),
