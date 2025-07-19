@@ -103,7 +103,8 @@ fun SeriesRow(
             null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxHeight()
-                .width(64.dp)
+                .width(56.dp)
+                .height(80.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         )
 
