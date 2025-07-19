@@ -62,6 +62,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
@@ -69,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
@@ -151,6 +153,16 @@ private fun Header() {
                     withStyle(SpanStyle(color = colorScheme.primary)) {
                         withLink(LinkAnnotation.Url(BuildKonfig.serverUrl)) {
                             append(BuildKonfig.serverName)
+                        }
+                    }
+                    append(
+                        "\n\nAnime NYC data provided by ${BuildKonfig.authorAnycOneName}, " +
+                                "${BuildKonfig.authorAnycTwoName}, " +
+                                "${BuildKonfig.authorAnycThreeName}, and "
+                    )
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url(BuildKonfig.authorAnycFourUrl)) {
+                            append(BuildKonfig.authorAnycFourName)
                         }
                     }
                 }
@@ -390,7 +402,38 @@ private fun FaqSection(onInstallClick: () -> Unit) {
 
         HorizontalDivider()
 
+        val animeExpo2023 = stringResource(DataYear.ANIME_EXPO_2023.fullName)
+        val animeExpo2024 = stringResource(DataYear.ANIME_EXPO_2024.fullName)
+        val animeExpo2025 = stringResource(DataYear.ANIME_EXPO_2025.fullName)
+        val animeNyc2024 = stringResource(DataYear.ANIME_NYC_2024.fullName)
+        val animeNyc2025 = stringResource(DataYear.ANIME_NYC_2025.fullName)
         val colorScheme = MaterialTheme.colorScheme
+        QuestionAnswer(
+            question = "Can I access the raw data?",
+            answer = {
+                appendParagraph("The backing database is a series of spreadsheets, which you can find here:")
+                val array = arrayOf(
+                    animeExpo2023 to BuildKonfig.sheetIdAnimeExpo2023,
+                    animeExpo2024 to BuildKonfig.sheetIdAnimeExpo2024,
+                    animeExpo2025 to BuildKonfig.sheetIdAnimeExpo2025,
+                    animeNyc2024 to BuildKonfig.sheetIdAnimeNyc2024,
+                    animeNyc2025 to BuildKonfig.sheetIdAnimeNyc2025,
+                )
+                array.forEachIndexed { index, (name, sheetId) ->
+                    withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withLink(LinkAnnotation.Url("https://docs.google.com/spreadsheets/d/$sheetId/view")) {
+                            append(name)
+                        }
+                    }
+                    if (index != array.lastIndex) {
+                        appendLine()
+                    }
+                }
+            },
+        )
+
+        HorizontalDivider()
+
         if (PlatformSpecificConfig.installable) {
             val navigationController = LocalNavigationController.current
             QuestionAnswer(
