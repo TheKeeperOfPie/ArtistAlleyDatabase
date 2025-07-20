@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -558,25 +559,9 @@ class ArtistEntryDao(
             if (filterParams.seriesIn.isNotEmpty()) {
                 val yearFilter = when (year) {
                     DataYear.ANIME_EXPO_2023 -> ""
-                    DataYear.ANIME_EXPO_2024 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistSeriesConnection.state2024 = 2 AND "
-                    } else {
-                        "artistSeriesConnection.state2024 != 0 AND "
-                    }
-                    DataYear.ANIME_EXPO_2025 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistSeriesConnection.state2025 = 2 AND "
-                    } else {
-                        "artistSeriesConnection.state2025 != 0 AND "
-                    }
-                    DataYear.ANIME_NYC_2024 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistSeriesConnection.stateAnimeNyc2024 = 2 AND "
-                    } else {
-                        "artistSeriesConnection.stateAnimeNyc2024 != 0 AND "
-                    }
-                    DataYear.ANIME_NYC_2025 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistSeriesConnection.stateAnimeNyc2025 = 2 AND "
-                    } else {
-                        "artistSeriesConnection.stateAnimeNyc2025 != 0 AND "
+                    else -> {
+                        val flag = TagYearFlag.getFlag(year, confirmed = filterParams.showOnlyConfirmedTags)
+                        "(artistSeriesConnection.yearFlags & $flag) != 0 AND "
                     }
                 }
 
@@ -592,25 +577,9 @@ class ArtistEntryDao(
             if (filterParams.merchIn.isNotEmpty()) {
                 val yearFilter = when (year) {
                     DataYear.ANIME_EXPO_2023 -> ""
-                    DataYear.ANIME_EXPO_2024 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistMerchConnection.state2024 = 2 AND "
-                    } else {
-                        "artistMerchConnection.state2024 != 0 AND "
-                    }
-                    DataYear.ANIME_EXPO_2025 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistMerchConnection.state2025 = 2 AND "
-                    } else {
-                        "artistMerchConnection.state2025 != 0 AND "
-                    }
-                    DataYear.ANIME_NYC_2024 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistMerchConnection.stateAnimeNyc2024 = 2 AND "
-                    } else {
-                        "artistMerchConnection.stateAnimeNyc2024 != 0 AND "
-                    }
-                    DataYear.ANIME_NYC_2025 -> if (filterParams.showOnlyConfirmedTags) {
-                        "artistMerchConnection.stateAnimeNyc2025 = 2 AND "
-                    } else {
-                        "artistMerchConnection.stateAnimeNyc2025 != 0 AND "
+                    else -> {
+                        val flag = TagYearFlag.getFlag(year, confirmed = filterParams.showOnlyConfirmedTags)
+                        "(artistMerchConnection.yearFlags & $flag) != 0 AND "
                     }
                 }
 
