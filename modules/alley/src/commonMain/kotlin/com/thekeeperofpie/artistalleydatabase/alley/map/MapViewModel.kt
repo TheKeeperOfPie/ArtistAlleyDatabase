@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
@@ -44,7 +45,15 @@ class MapViewModel(
         viewModelScope.launch(CustomDispatchers.Main) {
             // TODO: This is very inefficient to respond to favorites updates
             userEntryDao.getBoothsWithFavorites()
-                .map(::mapBooths)
+                .map { (dataYear, booths) ->
+                    when (dataYear) {
+                        DataYear.ANIME_EXPO_2023,
+                        DataYear.ANIME_EXPO_2024,
+                        DataYear.ANIME_EXPO_2025 -> mapBooths(booths)
+                        DataYear.ANIME_NYC_2024,
+                        DataYear.ANIME_NYC_2025 -> mapAnimeNycBooths(booths)
+                    }
+                }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { tables ->
                     gridData = LoadingResult.success(
@@ -75,10 +84,10 @@ class MapViewModel(
         return letterToBooths.mapIndexed { letterIndex, pair ->
             pair.second.mapNotNull {
                 val booth = it.booth ?: return@mapNotNull null
-                val tableNumber = it.booth.filter { it.isDigit() }.toInt()
+                val tableNumber = booth.filter { it.isDigit() }.toInt()
                 val images = AlleyDataUtils.getArtistImages(
                     year = it.year,
-                    booth = it.booth,
+                    booth = booth,
                     name = it.name,
                 )
                 val imageIndex = if (showRandomCatalogImage) {
@@ -89,7 +98,7 @@ class MapViewModel(
                 Table(
                     year = it.year,
                     id = it.id,
-                    booth = it.booth,
+                    booth = booth,
                     section = Table.Section.fromTableNumber(tableNumber),
                     image = imageIndex?.let(images::getOrNull),
                     imageIndex = imageIndex,
@@ -107,6 +116,79 @@ class MapViewModel(
                     // Skip an extra between every 2 tables
                     currentIndex++
                 }
+            }
+        }.flatten()
+    }
+
+    private fun animeNycIndexX(letter: Char, booth: Int): Int {
+        val isEven = (booth % 2) == 0
+        if (booth <= 4) {
+            // These are irregular enough that they're just hardcoded
+            return when (letter) {
+                'A' -> -1 // This is okay because there are no odd As so this becomes 0 further down
+                'B' -> 1
+                'C' -> 5
+                'D' -> 8
+                'E' -> if (isEven) 11 else 10
+                'F' -> 14
+                'G' -> 16
+                'H' -> 20
+                'J' -> 25
+                'K' -> 29
+                'L' -> 31
+                'M' -> 35
+                'O' -> 40
+                'P' -> 44
+                'Q' -> 46
+                'R' -> 50
+                'T' -> 55
+                'U' -> 59
+                'V' -> 61
+                else -> 0
+            } + (if (isEven) 1 else 0)
+        }
+
+        val offset = when {
+            booth <= 4 -> if (isEven) 0 else -1
+            isEven -> 1
+            else -> -1
+        }
+        return (letter - 'A') * 3 + offset - 1
+    }
+
+    private fun mapAnimeNycBooths(booths: List<BoothWithFavorite>): List<Table> {
+        @Suppress("UNCHECKED_CAST")
+        val letterToBooths = (booths.groupBy { it.booth?.take(1) }
+            .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
+            .toList()
+            .sortedBy { it.first }
+        val showRandomCatalogImage = settings.showRandomCatalogImage.value
+        return letterToBooths.mapIndexed { letterIndex, pair ->
+            pair.second.mapNotNull {
+                val booth = it.booth ?: return@mapNotNull null
+                val letter = booth[0]
+                val tableNumber = booth.filter { it.isDigit() }.toInt()
+                val images = AlleyDataUtils.getArtistImages(
+                    year = it.year,
+                    booth = booth,
+                    name = it.name,
+                )
+                val imageIndex = if (showRandomCatalogImage) {
+                    images.indices.randomOrNull()
+                } else {
+                    0
+                }
+                Table(
+                    year = it.year,
+                    id = it.id,
+                    booth = booth,
+                    section = Table.Section.fromTableNumber(tableNumber),
+                    image = imageIndex?.let(images::getOrNull),
+                    imageIndex = imageIndex,
+                    favorite = it.favorite,
+                    gridX = animeNycIndexX(letter, tableNumber),
+                    gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1,
+                )
             }
         }.flatten()
     }

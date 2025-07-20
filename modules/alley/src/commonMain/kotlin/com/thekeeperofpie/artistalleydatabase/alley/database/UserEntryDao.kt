@@ -89,23 +89,26 @@ class UserEntryDao(
         .mapToList(PlatformDispatchers.IO)
 
     fun getBoothsWithFavorites() = settings.dataYear
-        .flatMapLatest {
+        .flatMapLatest { dataYear ->
             dao().run {
-                when (it) {
+                when (dataYear) {
                     DataYear.ANIME_EXPO_2023 -> getBoothsWithFavorites2023()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
-                        .map { it.map { it.toBoothWithFavorite() } }
+                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
                     DataYear.ANIME_EXPO_2024 -> getBoothsWithFavorites2024()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
-                        .map { it.map { it.toBoothWithFavorite() } }
+                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
                     DataYear.ANIME_EXPO_2025 -> getBoothsWithFavorites2025()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
-                        .map { it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_NYC_2024 -> flowOf(emptyList()) // TODO: Add ANYC Map
-                    DataYear.ANIME_NYC_2025 -> flowOf(emptyList()) // TODO: Add ANYC Map
+                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
+                    DataYear.ANIME_NYC_2024 -> getBoothsWithFavoritesAnimeNyc2024()
+                        .asFlow()
+                        .mapToList(PlatformDispatchers.IO)
+                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
+                    DataYear.ANIME_NYC_2025 -> flowOf(dataYear to emptyList()) // TODO: Add ANYC Map
                 }
             }
         }
