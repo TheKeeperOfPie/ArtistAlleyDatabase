@@ -60,7 +60,7 @@ object ArtistAlleyAppScreen {
         navHostController: NavHostController,
         rootSnackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     ) {
-        Surface {
+        Surface(color = MaterialTheme.colorScheme.background) {
             val navigationController = LocalNavigationController.current
             val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
                 navigationController.navigate(

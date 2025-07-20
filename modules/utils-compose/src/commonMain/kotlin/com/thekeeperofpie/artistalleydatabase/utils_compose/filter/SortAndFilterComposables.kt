@@ -53,6 +53,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -60,6 +61,7 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -853,82 +855,87 @@ fun SheetDragHandle(
     targetValue: () -> SheetValue,
     onClick: () -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
-
-        val expandedMap = state.expanded.expandedState
-        val sections by state.sections.collectAsState()
-
-        val collapseOnClose by state.collapseOnClose.collectAsState()
-        val targetValue = targetValue()
-        LaunchedEffect(collapseOnClose, targetValue) {
-            if (targetValue != SheetValue.Expanded) {
-                if (collapseOnClose) {
-                    expandedMap.clear()
-                }
-            }
-        }
-
-        val showExpandAll by remember { derivedStateOf { expandedMap.none { it.value } } }
-
-        Row(
+    Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
+        Box(
             modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 8.dp)
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
         ) {
-            val activatedCount = sections.count { !it.isDefault() }
-            AnimatedVisibility(
-                visible = activatedCount > 0,
-                enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut(),
-                modifier = Modifier.align(Alignment.CenterVertically)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
-                        .background(MaterialTheme.colorScheme.secondary, CircleShape)
-                        .padding(4.dp)
-                ) {
-                    AutoHeightText(
-                        text = activatedCount.coerceAtLeast(1).toString(),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+            BottomSheetDefaults.DragHandle(
+                color = LocalContentColor.current,
+                modifier = Modifier.align(Alignment.Center)
+            )
+
+            val expandedMap = state.expanded.expandedState
+            val sections by state.sections.collectAsState()
+
+            val collapseOnClose by state.collapseOnClose.collectAsState()
+            val targetValue = targetValue()
+            LaunchedEffect(collapseOnClose, targetValue) {
+                if (targetValue != SheetValue.Expanded) {
+                    if (collapseOnClose) {
+                        expandedMap.clear()
+                    }
                 }
             }
 
-            AnimatedVisibility(visible = targetValue == SheetValue.Expanded) {
-                IconButton(
-                    onClick = {
-                        if (showExpandAll) {
-                            sections.forEach {
-                                expandedMap[it.id] = true
-                                // TODO: Don't use .value here?
-                                if (it is SortFilterSectionState.Group<*> && it.children.value.size == 1) {
-                                    expandedMap[it.children.value.first().id] = true
-                                }
-                            }
-                        } else {
-                            expandedMap.clear()
-                        }
-                    },
+            val showExpandAll by remember { derivedStateOf { expandedMap.none { it.value } } }
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 8.dp)
+            ) {
+                val activatedCount = sections.count { !it.isDefault() }
+                AnimatedVisibility(
+                    visible = activatedCount > 0,
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut(),
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 ) {
-                    Icon(
-                        imageVector = if (showExpandAll) {
-                            Icons.Filled.UnfoldMore
-                        } else {
-                            Icons.Filled.UnfoldLess
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                            .background(MaterialTheme.colorScheme.secondary, CircleShape)
+                            .padding(4.dp)
+                    ) {
+                        AutoHeightText(
+                            text = activatedCount.coerceAtLeast(1).toString(),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+
+                AnimatedVisibility(visible = targetValue == SheetValue.Expanded) {
+                    IconButton(
+                        onClick = {
+                            if (showExpandAll) {
+                                sections.forEach {
+                                    expandedMap[it.id] = true
+                                    // TODO: Don't use .value here?
+                                    if (it is SortFilterSectionState.Group<*> && it.children.value.size == 1) {
+                                        expandedMap[it.children.value.first().id] = true
+                                    }
+                                }
+                            } else {
+                                expandedMap.clear()
+                            }
                         },
-                        contentDescription = stringResource(
-                            Res.string.section_expand_all_content_description
-                        ),
-                    )
+                    ) {
+                        Icon(
+                            imageVector = if (showExpandAll) {
+                                Icons.Filled.UnfoldMore
+                            } else {
+                                Icons.Filled.UnfoldLess
+                            },
+                            contentDescription = stringResource(
+                                Res.string.section_expand_all_content_description
+                            ),
+                        )
+                    }
                 }
             }
         }
@@ -1001,6 +1008,7 @@ fun SortFilterBottomScaffold(
         },
         sheetTonalElevation = 4.dp,
         sheetShadowElevation = 4.dp,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = topBar,
         modifier = modifier,
         content = content,

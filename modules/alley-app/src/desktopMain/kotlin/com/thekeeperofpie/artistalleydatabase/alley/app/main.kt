@@ -23,7 +23,6 @@ import coil3.request.Options
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -83,7 +82,7 @@ fun main() {
             state = windowState,
         ) {
             val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
-            AppTheme(appTheme = { appTheme }) {
+            AlleyAppTheme(appTheme = { appTheme }) {
                 val windowSize = windowState.size
                 val windowConfiguration = remember(windowSize) {
                     WindowConfiguration(

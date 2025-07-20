@@ -95,7 +95,7 @@ private fun Content(
 ) {
     val deepLinker = component.deepLinker
     val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
-    AppTheme(appTheme = { appTheme }) {
+    AlleyAppTheme(appTheme = { appTheme }) {
         val windowSize = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current
         val windowConfiguration = remember(windowSize, density) {

@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,32 +78,34 @@ object MapScreen {
         content: @Composable (Table) -> Unit,
     ) {
         val gridData = viewModel.gridData.result
-        Box {
-            Map(
-                gridData = gridData,
-                transformState = transformState,
-                initialGridPosition = initialGridPosition,
-                bottomContentPadding = if (showSlider) {
-                    bottomContentPadding + 100.dp
-                } else {
-                    bottomContentPadding
-                },
-                modifier = modifier.fillMaxSize(),
-                content = content,
-            )
-
-            if (showSlider) {
-                ZoomSlider(
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Box {
+                Map(
+                    gridData = gridData,
                     transformState = transformState,
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp),
-                            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-                        )
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .widthIn(max = 480.dp)
-                        .align(Alignment.BottomCenter)
+                    initialGridPosition = initialGridPosition,
+                    bottomContentPadding = if (showSlider) {
+                        bottomContentPadding + 100.dp
+                    } else {
+                        bottomContentPadding
+                    },
+                    modifier = modifier.fillMaxSize(),
+                    content = content,
                 )
+
+                if (showSlider) {
+                    ZoomSlider(
+                        transformState = transformState,
+                        modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp),
+                                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                            )
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .widthIn(max = 480.dp)
+                            .align(Alignment.BottomCenter)
+                    )
+                }
             }
         }
     }
