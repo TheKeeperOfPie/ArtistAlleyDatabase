@@ -12,6 +12,11 @@
     <string name="alley_search_option_merch_many">Merch</string>
 
     <string name="alley_search_no_results">No results</string>
+    <string name="alley_search_clear_filters">Clear filters</string>
+    <plurals name="alley_search_results_filtered_out">
+        <item quantity="one">1 result filtered out</item>
+        <item quantity="other">%1$d results filtered out</item>
+    </plurals>
 
     <string name="alley_favorite_icon_content_description">Mark as favorite</string>
     <string name="alley_artist_catalog_image">Artist catalog image</string>

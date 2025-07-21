@@ -7,9 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -50,13 +48,10 @@ object StampRallySearchScreen {
         CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
             val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, viewModel.lockedYear)
             val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
-            val query by viewModel.query.collectAsStateWithLifecycle()
             val navigationController = LocalNavigationController.current
             val lockedSeriesEntry by viewModel.lockedSeriesEntry.collectAsStateWithLifecycle()
             val languageOptionMedia = LocalLanguageOptionMedia.current
-            val shouldShowCount by remember {
-                derivedStateOf { query.isNotEmpty() || lockedSeriesEntry != null }
-            }
+            val unfilteredCount by viewModel.unfilteredCount.collectAsStateWithLifecycle()
             SearchScreen(
                 state = viewModel.searchState,
                 eventSink = {
@@ -64,11 +59,11 @@ object StampRallySearchScreen {
                 },
                 query = viewModel.query,
                 entries = entries,
+                unfilteredCount = { unfilteredCount },
                 sortFilterState = sortFilterState,
                 gridState = gridState,
                 header = { DataYearHeader(dataYearHeaderState) },
                 title = { lockedSeriesEntry?.name(languageOptionMedia) },
-                shouldShowCount = { shouldShowCount },
                 onClickBack = onClickBack,
                 itemToSharedElementId = { it.stampRally.id },
                 itemRow = { entry, onFavoriteToggle, modifier ->

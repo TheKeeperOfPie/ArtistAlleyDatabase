@@ -19,7 +19,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -98,6 +97,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSa
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -132,10 +132,12 @@ object FavoritesScreen {
                     artistsSearchState = favoritesViewModel.artistSearchState,
                     artistsSortOption = artistSortFilterController.sortOption,
                     artistsSortAscending = artistSortFilterController.sortAscending,
+                    artistsUnfilteredCount = favoritesViewModel.artistsUnfilteredCount,
                     ralliesEntries = favoritesViewModel.stampRallyEntries,
                     ralliesSearchState = favoritesViewModel.stampRallySearchState,
                     ralliesSortOption = stampRallySortFilterController.sortOption,
                     ralliesSortAscending = stampRallySortFilterController.sortAscending,
+                    ralliesUnfilteredCount = favoritesViewModel.stampRallyUnfilteredCount,
                     seriesEntries = favoritesViewModel.seriesEntries,
                     merchEntries = favoritesViewModel.merchEntries,
                 )
@@ -342,16 +344,16 @@ object FavoritesScreen {
         header: @Composable () -> Unit,
         noResultsItem: @Composable () -> Unit,
     ) {
-        val query by state.query.collectAsStateWithLifecycle()
+        val unfilteredCount by state.artistsUnfilteredCount.collectAsStateWithLifecycle()
         SearchScreen.Content(
             state = searchState,
             eventSink = { eventSink(Event.SearchEvent(it)) },
             entries = entries,
+            unfilteredCount = { unfilteredCount },
             horizontalScrollState = horizontalScrollState,
             gridState = gridState,
             scaffoldPadding = scaffoldPadding,
             onHorizontalScrollBarWidth = onHorizontalScrollBarWidth,
-            shouldShowCount = { query.isNotEmpty() },
             itemToSharedElementId = { it.id.scopedId },
             header = header,
             noResultsItem = noResultsItem,
@@ -418,16 +420,16 @@ object FavoritesScreen {
         header: @Composable () -> Unit,
         noResultsItem: @Composable () -> Unit,
     ) {
-        val query by state.query.collectAsStateWithLifecycle()
+        val unfilteredCount by state.ralliesUnfilteredCount.collectAsStateWithLifecycle()
         SearchScreen.Content(
             state = searchState,
             eventSink = { eventSink(Event.SearchEvent(it)) },
             entries = entries,
+            unfilteredCount = { unfilteredCount },
             horizontalScrollState = horizontalScrollState,
             gridState = gridState,
             scaffoldPadding = scaffoldPadding,
             onHorizontalScrollBarWidth = onHorizontalScrollBarWidth,
-            shouldShowCount = { query.isNotEmpty() },
             itemToSharedElementId = { it.id.scopedId },
             header = header,
             noResultsItem = noResultsItem,
@@ -702,10 +704,12 @@ object FavoritesScreen {
         val artistsSearchState: SearchScreen.State<ArtistSearchScreen.ArtistColumn>,
         val artistsSortOption: MutableStateFlow<ArtistSearchSortOption>,
         val artistsSortAscending: MutableStateFlow<Boolean>,
+        val artistsUnfilteredCount: StateFlow<Int>,
         val ralliesEntries: Flow<PagingData<StampRallyEntryGridModel>>,
         val ralliesSearchState: SearchScreen.State<StampRallySearchScreen.StampRallyColumn>,
         val ralliesSortOption: MutableStateFlow<StampRallySearchSortOption>,
         val ralliesSortAscending: MutableStateFlow<Boolean>,
+        val ralliesUnfilteredCount: StateFlow<Int>,
         val seriesEntries: Flow<PagingData<SeriesWithUserData>>,
         val merchEntries: Flow<PagingData<MerchWithUserData>>,
     )

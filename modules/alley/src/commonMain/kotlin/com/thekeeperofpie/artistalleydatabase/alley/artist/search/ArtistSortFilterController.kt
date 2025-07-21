@@ -84,8 +84,8 @@ class ArtistSortFilterController(
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     val settings: ArtistAlleySettings,
-    allowHideFavorited: Boolean = true,
-    allowSettingsBasedToggles: Boolean = true,
+    private val allowHideFavorited: Boolean = true,
+    private val allowSettingsBasedToggles: Boolean = true,
 ) {
     val sortOption = settings.artistsSortOption
     val sortAscending = settings.artistsSortAscending
@@ -94,6 +94,7 @@ class ArtistSortFilterController(
         defaultSort = ArtistSearchSortOption.RANDOM,
         sortOption = sortOption,
         sortAscending = sortAscending,
+        allowClear = false,
     )
 
     private val seriesAutocompleteSection = SeriesAutocompleteSection(
@@ -404,6 +405,12 @@ class ArtistSortFilterController(
         filterParams = filterParams,
         collapseOnClose = ReadOnlyStateFlow(false),
     )
+
+    fun clear() {
+        sections.forEach { it.clear() }
+        showOnlyConfirmedTagsSection.clear()
+        hideFavoritedSection.clear()
+    }
 
     data class FilterParams(
         val sortOption: ArtistSearchSortOption,

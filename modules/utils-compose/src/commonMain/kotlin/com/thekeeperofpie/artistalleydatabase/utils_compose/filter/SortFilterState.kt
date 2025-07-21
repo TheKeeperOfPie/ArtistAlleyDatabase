@@ -94,6 +94,7 @@ sealed class SortFilterSectionState(val id: String) {
         private val sortAscending: MutableStateFlow<Boolean>?,
         private val sortOption: MutableStateFlow<SortType>,
         var sortOptions: MutableStateFlow<List<SortType>>,
+        private val allowClear: Boolean = true,
     ) : SortFilterSectionState(headerText.key) where SortType : SortOption, SortType : Enum<SortType> {
 
         companion object {
@@ -102,20 +103,23 @@ sealed class SortFilterSectionState(val id: String) {
                 defaultSort: SortType,
                 sortAscending: MutableStateFlow<Boolean>?,
                 sortOption: MutableStateFlow<SortType>,
+                allowClear: Boolean = true,
             ) where SortType : SortOption, SortType : Enum<SortType> = Sort(
                 headerText = headerText,
                 defaultSort = defaultSort,
                 sortAscending = sortAscending,
                 sortOption = sortOption,
                 sortOptions = MutableStateFlow(enumValues<SortType>().toList()),
+                allowClear = allowClear,
             )
         }
 
         override fun clear() {
-            sortOption.value = defaultSort
+            if (allowClear) {
+                sortOption.value = defaultSort
+            }
         }
 
-        // TODO: Should sort be reset when cleared?
         @Composable
         override fun isDefault() =
             sortOption.collectAsStateWithLifecycle().value == defaultSort

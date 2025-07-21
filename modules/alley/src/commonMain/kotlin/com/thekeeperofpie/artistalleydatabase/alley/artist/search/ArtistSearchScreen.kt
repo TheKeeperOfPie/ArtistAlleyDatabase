@@ -27,12 +27,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -128,21 +126,9 @@ object ArtistSearchScreen {
         sortFilterState.ImmediateScrollResetEffect(gridState)
 
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
-            val showOnlyWithCatalog by state.showOnlyWithCatalog.collectAsStateWithLifecycle()
-            val query by state.query.collectAsStateWithLifecycle()
             val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
-            val shouldShowCount by remember {
-                derivedStateOf {
-                    query.isNotEmpty()
-                            || showOnlyWithCatalog
-                            || lockedSeriesEntry != null
-                            || state.lockedMerch != null
-
-                }
-            }
-
-            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
+            val unfilteredCount by state.unfilteredCount.collectAsStateWithLifecycle()
             val seriesTitle = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
 
             SearchScreen(
@@ -153,11 +139,11 @@ object ArtistSearchScreen {
                 query = state.query,
                 onClickBack = onClickBack,
                 entries = entries,
+                unfilteredCount = { unfilteredCount },
                 scaffoldState = scaffoldState,
                 sortFilterState = sortFilterState,
                 gridState = gridState,
                 title = { seriesTitle ?: state.lockedMerch },
-                shouldShowCount = { shouldShowCount },
                 header = header,
                 itemToSharedElementId = { it.artist.id },
                 actions = actions,
@@ -430,6 +416,7 @@ object ArtistSearchScreen {
         val year: MutableStateFlow<DataYear>,
         val query: MutableStateFlow<String>,
         val results: StateFlow<PagingData<ArtistEntryGridModel>>,
+        val unfilteredCount: StateFlow<Int>,
         val showOnlyWithCatalog: StateFlow<Boolean>,
         val sortOption: MutableStateFlow<ArtistSearchSortOption>,
         val sortAscending: MutableStateFlow<Boolean>,
@@ -446,6 +433,7 @@ object ArtistSearchScreen {
             year = viewModel.year,
             query = viewModel.query,
             results = viewModel.results,
+            unfilteredCount = viewModel.unfilteredCount,
             showOnlyWithCatalog = sortFilterController.showOnlyWithCatalog,
             sortOption = sortFilterController.sortOption,
             sortAscending = sortFilterController.sortAscending,
@@ -482,6 +470,7 @@ object ArtistSearchScreen {
             year = MutableStateFlow(DataYear.ANIME_EXPO_2025),
             query = MutableStateFlow(""),
             results = MutableStateFlow(PagingData.from(results)),
+            unfilteredCount = MutableStateFlow(1000),
             showOnlyWithCatalog = MutableStateFlow(false),
             sortOption = MutableStateFlow(ArtistSearchSortOption.RANDOM),
             sortAscending = MutableStateFlow(false),

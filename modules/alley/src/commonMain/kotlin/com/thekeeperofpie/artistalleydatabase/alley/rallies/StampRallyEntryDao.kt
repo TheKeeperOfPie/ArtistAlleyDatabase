@@ -7,6 +7,8 @@ import app.cash.paging.PagingSourceLoadResultPage
 import app.cash.paging.PagingState
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOneOrDefault
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
@@ -24,6 +26,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.json.Json
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
@@ -255,7 +260,8 @@ class StampRallyEntryDao(
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
             DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
+            DataYear.ANIME_NYC_2025,
+                -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
     suspend fun getEntryWithArtists(
@@ -286,7 +292,8 @@ class StampRallyEntryDao(
                 StampRallyWithArtistsEntry(stampRally, artists)
             }
             DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
+            DataYear.ANIME_NYC_2025,
+                -> throw IllegalStateException("ANYC shouldn't have rallies")
         }
 
     fun search(
@@ -294,26 +301,13 @@ class StampRallyEntryDao(
         query: String,
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
-    ): PagingSource<Int, StampRallyWithUserData> {
-        if (year == DataYear.ANIME_NYC_2024 || year == DataYear.ANIME_NYC_2025) {
-            return object : PagingSource<Int, StampRallyWithUserData>() {
-                override fun getRefreshKey(state: PagingState<Int, StampRallyWithUserData>) = null
-                override suspend fun load(params: PagingSourceLoadParams<Int>): PagingSourceLoadResult<Int, StampRallyWithUserData> {
-                    @Suppress("CAST_NEVER_SUCCEEDS")
-                    return PagingSourceLoadResultPage<Int, StampRallyWithUserData>(
-                        data = emptyList(),
-                        prevKey = null,
-                        nextKey = null,
-                    ) as PagingSourceLoadResult<Int, StampRallyWithUserData>
-                }
-            }
-        }
-        val tableName = when(year) {
+    ): Pair<String, String>? {
+        val tableName = when (year) {
             DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
             DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
             DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
             DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025, -> throw IllegalStateException("ANYC shouldn't have rallies")
+            DataYear.ANIME_NYC_2025 -> return null
         }
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
@@ -393,15 +387,7 @@ class StampRallyEntryDao(
                 .orEmpty()
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
 
-        val matchOptions = mutableListOf<String>()
-        filterParams.fandom.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(fandom : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
-        }
-        filterParams.tables.takeUnless(String?::isNullOrBlank)?.let {
-            matchOptions += "(tables : ${DaoUtils.makeMatchAndQuery(listOf(it))})"
-        }
-
-        if (query.isEmpty() && matchOptions.isEmpty()) {
+        if (query.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
                 ?.joinToString(prefix = "WHERE ", separator = "\nAND ")
                 .orEmpty()
@@ -421,20 +407,7 @@ class StampRallyEntryDao(
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
 
-            return DaoUtils.queryPagingSource(
-                driver = driver,
-                database = database,
-                countStatement = countStatement,
-                statement = statement,
-                tableNames = listOf("${tableName}_fts"),
-                mapper = when (year) {
-                    DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
-                    DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
-                    DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
-                    DataYear.ANIME_NYC_2024,
-                    DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
-                },
-            )
+            return countStatement to statement
         }
 
         val queries = query.split(Regex("\\s+"))
@@ -448,7 +421,6 @@ class StampRallyEntryDao(
         )
         val matchQuery = buildString {
             append("'")
-            append(matchOptions.joinToString(separator = " ", postfix = " "))
             append("{ ${targetColumns.joinToString(separator = " ")} } : $matchOrQuery'")
         }
 
@@ -487,18 +459,80 @@ class StampRallyEntryDao(
             andStatement = andStatement,
         )
 
+        return countStatement to statement
+    }
+
+    suspend fun searchCount(
+        year: DataYear,
+        query: String,
+        searchQuery: StampRallySearchQuery,
+        onlyFavorites: Boolean = false,
+    ): Flow<Int> {
+        val statements = search(year, query, searchQuery, onlyFavorites)
+        if (statements == null) {
+            return flowOf(0)
+        }
+        val tableName = when (year) {
+            DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
+            DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
+            DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> throw IllegalStateException("ANYC shouldn't have rallies")
+        }
+        return DaoUtils.makeQuery(
+            driver(),
+            statement = statements.first,
+            tableNames = listOf("${tableName}_fts", "stampRallyUserEntry"),
+            mapper = { it.getLong(0)!!.toInt() },
+        ).asFlow()
+            .mapToOneOrDefault(0, PlatformDispatchers.IO)
+    }
+
+    fun searchPagingSource(
+        year: DataYear,
+        query: String,
+        searchQuery: StampRallySearchQuery,
+        onlyFavorites: Boolean = false,
+    ): PagingSource<Int, StampRallyWithUserData> {
+        val statements = search(year, query, searchQuery, onlyFavorites)
+        if (statements == null) {
+            return object : PagingSource<Int, StampRallyWithUserData>() {
+                override fun getRefreshKey(state: PagingState<Int, StampRallyWithUserData>) = null
+                override suspend fun load(params: PagingSourceLoadParams<Int>): PagingSourceLoadResult<Int, StampRallyWithUserData> {
+                    @Suppress("CAST_NEVER_SUCCEEDS")
+                    return PagingSourceLoadResultPage<Int, StampRallyWithUserData>(
+                        data = emptyList(),
+                        prevKey = null,
+                        nextKey = null,
+                    ) as PagingSourceLoadResult<Int, StampRallyWithUserData>
+                }
+            }
+        }
+
+        val (countStatement, searchStatement) = statements
+        val tableName = when (year) {
+            DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
+            DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
+            DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> throw IllegalStateException("ANYC shouldn't have rallies")
+        }
+
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             countStatement = countStatement,
-            statement = statement,
-            tableNames = listOf("${tableName}_fts"),
+            statement = searchStatement,
+            tableNames = listOf("${tableName}_fts", "stampRallyUserEntry"),
             mapper = when (year) {
                 DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
                 DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
                 DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
                 DataYear.ANIME_NYC_2024,
-                DataYear.ANIME_NYC_2025 -> throw IllegalStateException("ANYC shouldn't have rallies")
+                DataYear.ANIME_NYC_2025,
+                    -> throw IllegalStateException("ANYC shouldn't have rallies")
             },
         )
     }

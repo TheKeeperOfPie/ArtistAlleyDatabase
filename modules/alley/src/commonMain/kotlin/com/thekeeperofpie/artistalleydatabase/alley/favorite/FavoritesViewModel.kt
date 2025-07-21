@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
@@ -25,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -42,11 +44,13 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -126,6 +130,32 @@ class FavoritesViewModel(
     val randomSeed = savedStateHandle.getOrPut("randomSeed") { Random.nextInt().absoluteValue }
 
     private val inputs = combineStates(query, year, settings.showOnlyConfirmedTags, ::Triple)
+
+    val artistsUnfilteredCount = combine(year, query, ::Pair)
+        .flatMapLatest { (year, query) ->
+            artistEntryDao.searchCount(
+                year = year,
+                query = query,
+                searchQuery = ArtistSearchQuery(
+                    ArtistSortFilterController.FilterParams(
+                        sortOption = ArtistSearchSortOption.BOOTH,
+                        sortAscending = true,
+                        seriesIn = emptySet(),
+                        merchIn = emptySet(),
+                        commissionsIn = emptySet(),
+                        linkTypesIn = emptySet(),
+                        showOnlyWithCatalog = false,
+                        showOnlyConfirmedTags = false,
+                        hideFavorited = false,
+                        hideIgnored = false,
+                    ),
+                    randomSeed = randomSeed,
+                ),
+                onlyFavorites = true,
+            )
+        }
+        .stateInForCompose(0)
+
     val artistEntries = combine(
         inputs,
         artistSortFilterController.state.filterParams,
@@ -133,7 +163,7 @@ class FavoritesViewModel(
     ).flatMapLatest { (inputs, filterParams) ->
         val (query, year, showOnlyConfirmedTags) = inputs
         createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-            artistEntryDao.search(
+            artistEntryDao.searchPagingSource(
                 year = year,
                 query = query,
                 searchQuery = ArtistSearchQuery(filterParams, randomSeed),
@@ -162,12 +192,35 @@ class FavoritesViewModel(
         .flowOn(dispatchers.io)
         .cachedIn(viewModelScope)
 
+    val stampRallyUnfilteredCount = combine(year, query, ::Pair)
+        .flatMapLatest { (year, query) ->
+            stampRallyEntryDao.searchCount(
+                year = year,
+                query = query,
+                searchQuery = StampRallySearchQuery(
+                    filterParams = StampRallySortFilterController.FilterParams(
+                        sortOption = StampRallySearchSortOption.MAIN_TABLE,
+                        sortAscending = true,
+                        seriesIn = emptySet(),
+                        totalCost = RangeData(100),
+                        prizeLimit = RangeData(50),
+                        showUnconfirmed = false,
+                        hideFavorited = false,
+                        hideIgnored = false,
+                    ),
+                    randomSeed = randomSeed,
+                ),
+                onlyFavorites = true,
+            )
+        }
+        .stateInForCompose(0)
+
     val stampRallyEntries =
         combine(inputs, stampRallySortFilterController.state.filterParams, ::Pair)
             .flatMapLatest { (inputs, filterParams) ->
                 val (query, year, showOnlyConfirmedTags) = inputs
                 createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                    stampRallyEntryDao.search(
+                    stampRallyEntryDao.searchPagingSource(
                         year = year,
                         query = query,
                         searchQuery = StampRallySearchQuery(filterParams, randomSeed),
@@ -320,6 +373,15 @@ class FavoritesViewModel(
                 else -> throw IllegalArgumentException(
                     "Entry model not supported: ${searchEvent.entry}"
                 )
+            }
+            is SearchScreen.Event.ClearFilters<*> -> when (tab.value) {
+                FavoritesScreen.EntryTab.ARTISTS ->
+                    artistSortFilterController.clear()
+                FavoritesScreen.EntryTab.RALLIES ->
+                    stampRallySortFilterController.clear()
+                FavoritesScreen.EntryTab.SERIES ->
+                    seriesSortFilterController.state.sections.value.forEach { it.clear() }
+                FavoritesScreen.EntryTab.MERCH -> Unit
             }
         }
         FavoritesScreen.Event.NavigateToArtists -> onNavigateToArtists()

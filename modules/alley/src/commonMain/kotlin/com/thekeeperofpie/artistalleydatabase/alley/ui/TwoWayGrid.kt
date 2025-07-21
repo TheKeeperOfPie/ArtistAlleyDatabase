@@ -42,10 +42,12 @@ object TwoWayGrid {
     operator fun <T, ColumnType> invoke(
         header: LazyListScope.() -> Unit,
         rows: LazyPagingItems<T>,
+        unfilteredCount: () -> Int,
         columns: EnumEntries<ColumnType>,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
         noResultsHeader: @Composable (() -> Unit)? = null,
+        moreResultsFooter: @Composable (() -> Unit)? = null,
         listState: LazyListState = rememberLazyListState(),
         horizontalScrollState: ScrollState = rememberScrollState(),
         topOffset: Dp = 0.dp,
@@ -114,6 +116,12 @@ object TwoWayGrid {
 
                     if (index != rows.itemCount - 1) {
                         HorizontalDivider()
+                    }
+                }
+
+                if (moreResultsFooter != null && unfilteredCount() > rows.itemCount) {
+                    item("tableMoreResultsFooter") {
+                        moreResultsFooter()
                     }
                 }
             }

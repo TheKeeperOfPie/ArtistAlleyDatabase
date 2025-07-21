@@ -5,6 +5,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOne
+import app.cash.sqldelight.coroutines.mapToOneOrDefault
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
@@ -31,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
@@ -505,8 +507,8 @@ class ArtistEntryDao(
         query: String,
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
-    ): PagingSource<Int, ArtistWithUserData> {
-        val tableName = year.tableName
+    ): Pair<String, String> {
+        val tableName = year.artistTableName
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (onlyFavorites) this += "artistUserEntry.favorite = 1"
@@ -560,7 +562,10 @@ class ArtistEntryDao(
                 val yearFilter = when (year) {
                     DataYear.ANIME_EXPO_2023 -> ""
                     else -> {
-                        val flag = TagYearFlag.getFlag(year, confirmed = filterParams.showOnlyConfirmedTags)
+                        val flag = TagYearFlag.getFlag(
+                            year,
+                            confirmed = filterParams.showOnlyConfirmedTags
+                        )
                         "(artistSeriesConnection.yearFlags & $flag) != 0 AND "
                     }
                 }
@@ -578,7 +583,10 @@ class ArtistEntryDao(
                 val yearFilter = when (year) {
                     DataYear.ANIME_EXPO_2023 -> ""
                     else -> {
-                        val flag = TagYearFlag.getFlag(year, confirmed = filterParams.showOnlyConfirmedTags)
+                        val flag = TagYearFlag.getFlag(
+                            year,
+                            confirmed = filterParams.showOnlyConfirmedTags
+                        )
                         "(artistMerchConnection.yearFlags & $flag) != 0 AND "
                     }
                 }
@@ -630,20 +638,7 @@ class ArtistEntryDao(
                 ${sortSuffix.replace("_fts", "")}
                 """.trimIndent()
 
-            return DaoUtils.queryPagingSource(
-                driver = driver,
-                database = database,
-                countStatement = countStatement,
-                statement = statement,
-                tableNames = listOf("${tableName}_fts", "artistUserEntry"),
-                mapper = when (year) {
-                    DataYear.ANIME_EXPO_2023 -> SqlCursor::toArtistWithUserData2023
-                    DataYear.ANIME_EXPO_2024 -> SqlCursor::toArtistWithUserData2024
-                    DataYear.ANIME_EXPO_2025 -> SqlCursor::toArtistWithUserData2025
-                    DataYear.ANIME_NYC_2024 -> SqlCursor::toArtistWithUserDataAnimeNyc2024
-                    DataYear.ANIME_NYC_2025 -> SqlCursor::toArtistWithUserDataAnimeNyc2025
-                },
-            )
+            return countStatement to statement
         }
 
         val queries = query.split(Regex("\\s+"))
@@ -703,12 +698,39 @@ class ArtistEntryDao(
             andStatement = andStatement,
         )
 
+        return countStatement to statement
+    }
+
+    suspend fun searchCount(
+        year: DataYear,
+        query: String,
+        searchQuery: ArtistSearchQuery,
+        onlyFavorites: Boolean = false,
+    ): Flow<Int> {
+        val (countStatement, _) = search(year, query, searchQuery, onlyFavorites)
+        return DaoUtils.makeQuery(
+            driver(),
+            statement = countStatement,
+            tableNames = listOf("${year.artistTableName}_fts", "artistUserEntry"),
+            mapper = { it.getLong(0)!!.toInt() },
+        ).asFlow()
+            .mapToOneOrDefault(0, PlatformDispatchers.IO)
+    }
+
+    fun searchPagingSource(
+        year: DataYear,
+        query: String,
+        searchQuery: ArtistSearchQuery,
+        onlyFavorites: Boolean = false,
+    ): PagingSource<Int, ArtistWithUserData> {
+        val (countStatement, searchStatement) = search(year, query, searchQuery, onlyFavorites)
+
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             countStatement = countStatement,
-            statement = statement,
-            tableNames = listOf("${tableName}_fts", "artistUserEntry"),
+            statement = searchStatement,
+            tableNames = listOf("${year.artistTableName}_fts", "artistUserEntry"),
             mapper = when (year) {
                 DataYear.ANIME_EXPO_2023 -> SqlCursor::toArtistWithUserData2023
                 DataYear.ANIME_EXPO_2024 -> SqlCursor::toArtistWithUserData2024

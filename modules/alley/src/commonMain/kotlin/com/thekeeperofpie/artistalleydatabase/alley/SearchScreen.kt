@@ -2,12 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
@@ -27,17 +24,16 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells.Adaptive
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.BottomSheetScaffoldState
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -68,10 +64,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_display_type_
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_image
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_list
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_table
+import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
-import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
-import artistalleydatabase.modules.entry.generated.resources.entry_results_one
-import artistalleydatabase.modules.entry.generated.resources.entry_results_zero
+import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
@@ -98,9 +93,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrol
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
-import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -114,10 +109,10 @@ object SearchScreen {
         eventSink: (Event<EntryModel>) -> Unit,
         query: MutableStateFlow<String>,
         entries: LazyPagingItems<EntryModel>,
+        unfilteredCount: () -> Int = { 0 },
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         sortFilterState: SortFilterState<*>,
         gridState: LazyStaggeredGridState,
-        shouldShowCount: () -> Boolean,
         onClickBack: (() -> Unit)? = null,
         title: () -> String? = { null },
         itemToSharedElementId: (EntryModel) -> Any,
@@ -136,10 +131,11 @@ object SearchScreen {
             state = state,
             eventSink = eventSink,
             entries = entries,
+            unfilteredCount = unfilteredCount,
             scaffoldState = scaffoldState,
             sortFilterState = sortFilterState,
             gridState = gridState,
-            shouldShowCount = shouldShowCount,
+            onClickBack = onClickBack,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                     DisplayTypeSearchBar(
@@ -154,7 +150,6 @@ object SearchScreen {
             },
             topBarScrollBehavior = scrollBehavior,
             header = header,
-            onClickBack = onClickBack,
             itemToSharedElementId = itemToSharedElementId,
             itemRow = itemRow,
             columnHeader = columnHeader,
@@ -167,10 +162,10 @@ object SearchScreen {
         state: State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
+        unfilteredCount: () -> Int,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         sortFilterState: SortFilterState<*>,
         gridState: LazyStaggeredGridState,
-        shouldShowCount: () -> Boolean,
         onClickBack: (() -> Unit)? = null,
         topBar: @Composable () -> Unit,
         topBarScrollBehavior: TopAppBarScrollBehavior,
@@ -205,11 +200,11 @@ object SearchScreen {
                     state = state,
                     eventSink = eventSink,
                     entries = entries,
+                    unfilteredCount = unfilteredCount,
                     horizontalScrollState = horizontalScrollState,
                     gridState = gridState,
                     scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
                     onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
-                    shouldShowCount = shouldShowCount,
                     itemToSharedElementId = itemToSharedElementId,
                     header = header,
                     itemRow = itemRow,
@@ -235,11 +230,11 @@ object SearchScreen {
         state: State<ColumnType>,
         eventSink: (Event<EntryModel>) -> Unit,
         entries: LazyPagingItems<EntryModel>,
+        unfilteredCount: () -> Int = { 0 },
         horizontalScrollState: ScrollState,
         gridState: LazyStaggeredGridState,
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
-        shouldShowCount: () -> Boolean,
         itemToSharedElementId: (EntryModel) -> Any,
         header: @Composable () -> Unit,
         itemRow: @Composable (
@@ -256,6 +251,25 @@ object SearchScreen {
         },
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
         noResultsItem: (@Composable () -> Unit)? = null,
+        moreResultsItem: (@Composable () -> Unit) = {
+            val filteredOut = unfilteredCount() - entries.itemCount
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    pluralStringResource(
+                        Res.plurals.alley_search_results_filtered_out,
+                        filteredOut,
+                        filteredOut,
+                    )
+                )
+                Button(onClick = { eventSink(Event.ClearFilters()) }) {
+                    Text(stringResource(Res.string.alley_search_clear_filters))
+                }
+            }
+        },
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         val displayType by state.displayType.collectAsStateWithLifecycle()
         if (displayType == DisplayType.TABLE) {
@@ -267,12 +281,14 @@ object SearchScreen {
                     }
                 },
                 entries = entries,
+                unfilteredCount = unfilteredCount,
                 columns = state.columns,
                 scaffoldPadding = scaffoldPadding,
                 onWidthChanged = onHorizontalScrollBarWidth,
                 columnHeader = columnHeader,
                 tableCell = tableCell,
                 noResultsItem = noResultsItem,
+                moreResultsItem = moreResultsItem,
             )
         } else {
             VerticalGrid(
@@ -285,11 +301,12 @@ object SearchScreen {
                     }
                 },
                 entries = entries,
+                unfilteredCount = unfilteredCount,
                 gridState = gridState,
-                shouldShowCount = shouldShowCount,
                 itemToSharedElementId = itemToSharedElementId,
                 itemRow = itemRow,
                 noResultsItem = noResultsItem,
+                moreResultsItem = moreResultsItem,
             )
         }
     }
@@ -299,12 +316,14 @@ object SearchScreen {
         horizontalScrollState: ScrollState,
         header: LazyListScope.() -> Unit,
         entries: LazyPagingItems<EntryModel>,
+        unfilteredCount: () -> Int,
         columns: EnumEntries<ColumnType>,
         scaffoldPadding: PaddingValues,
         onWidthChanged: (Int) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
         noResultsItem: (@Composable () -> Unit)? = null,
+        moreResultsItem: (@Composable () -> Unit)? = null,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
         Box(
             contentAlignment = Alignment.TopCenter,
@@ -315,6 +334,7 @@ object SearchScreen {
             TwoWayGrid(
                 header = header,
                 rows = entries,
+                unfilteredCount = unfilteredCount,
                 columns = columns,
                 listState = listState,
                 horizontalScrollState = horizontalScrollState,
@@ -322,6 +342,7 @@ object SearchScreen {
                 columnHeader = columnHeader,
                 tableCell = tableCell,
                 noResultsHeader = noResultsItem,
+                moreResultsFooter = moreResultsItem,
                 modifier = Modifier.onSizeChanged { onWidthChanged(it.width) }
             )
 
@@ -343,10 +364,11 @@ object SearchScreen {
         scaffoldPadding: PaddingValues,
         header: LazyStaggeredGridScope.() -> Unit,
         entries: LazyPagingItems<EntryModel>,
+        unfilteredCount: () -> Int,
         gridState: LazyStaggeredGridState,
-        shouldShowCount: () -> Boolean,
         itemToSharedElementId: (EntryModel) -> Any,
         noResultsItem: (@Composable () -> Unit)? = null,
+        moreResultsItem: (@Composable () -> Unit)? = null,
         itemRow: @Composable (
             entry: EntryModel,
             onFavoriteToggle: (Boolean) -> Unit,
@@ -392,14 +414,14 @@ object SearchScreen {
                         top = 8.dp,
                         start = horizontalContentPadding,
                         end = horizontalContentPadding,
-                        bottom = 80.dp,
+                        bottom = 156.dp,
                     )
                     DisplayType.CARD,
                         -> PaddingValues(
                         start = 16.dp + horizontalContentPadding,
                         end = 16.dp + horizontalContentPadding,
                         top = 8.dp,
-                        bottom = 80.dp,
+                        bottom = 156.dp,
                     )
                     DisplayType.TABLE -> throw IllegalArgumentException()
                 },
@@ -434,19 +456,25 @@ object SearchScreen {
                             }
                         }
                     } else {
-                        item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
-                            if (noResultsItem == null) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.alley_search_no_results),
-                                        modifier = Modifier.padding(16.dp)
-                                    )
+                        if (moreResultsItem != null && unfilteredCount() > 0) {
+                            item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
+                                moreResultsItem()
+                            }
+                        } else {
+                            item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
+                                if (noResultsItem == null) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = stringResource(Res.string.alley_search_no_results),
+                                            modifier = Modifier.padding(16.dp)
+                                        )
+                                    }
+                                } else {
+                                    noResultsItem()
                                 }
-                            } else {
-                                noResultsItem()
                             }
                         }
                     }
@@ -538,6 +566,12 @@ object SearchScreen {
                             DisplayType.TABLE -> throw IllegalArgumentException()
                         }
                     }
+
+                    if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
+                        item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
+                            moreResultsItem()
+                        }
+                    }
                 }
             }
 
@@ -548,39 +582,6 @@ object SearchScreen {
                     .fillMaxHeight()
                     .padding(top = 8.dp, bottom = 72.dp)
             )
-
-            if (shouldShowCount()) {
-                val stringRes = when (entries.itemCount) {
-                    0 -> EntryRes.string.entry_results_zero
-                    1 -> EntryRes.string.entry_results_one
-                    else -> EntryRes.string.entry_results_multiple
-                }
-
-                Text(
-                    text = stringResource(stringRes, entries.itemCount),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .wrapContentSize()
-                        .padding(top = 8.dp)
-                        .background(
-                            MaterialTheme.colorScheme.secondary,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .border(
-                            1.dp,
-                            MaterialTheme.colorScheme.secondaryContainer,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .clickable {
-                            coroutineScope.launch {
-                                gridState.animateScrollToItem(0, 0)
-                            }
-                        }
-                        .padding(8.dp)
-                )
-            }
         }
     }
 
@@ -622,5 +623,7 @@ object SearchScreen {
             val entry: EntryModel,
             val imageIndex: Int,
         ) : Event<EntryModel>
+
+        class ClearFilters<EntryModel : SearchEntryModel> : Event<EntryModel>
     }
 }

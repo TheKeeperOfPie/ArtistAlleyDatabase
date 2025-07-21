@@ -6,7 +6,7 @@ import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
 import com.hoc081098.flowext.defer
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
@@ -29,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -89,14 +91,6 @@ class StampRallySearchViewModel(
         .flowOn(dispatchers.io)
         .stateInForCompose(this, null)
 
-    init {
-        viewModelScope.launch(CustomDispatchers.IO) {
-            mutationUpdates.collectLatest {
-                userEntryDao.insertStampRallyUserEntry(it)
-            }
-        }
-    }
-
     val sortFilterController = StampRallySortFilterController(
         scope = viewModelScope,
         lockedSeriesEntry = lockedSeriesEntry,
@@ -107,6 +101,36 @@ class StampRallySearchViewModel(
         savedStateHandle = savedStateHandle,
         allowHideFavorited = true,
     )
+
+    val unfilteredCount = combine(dataYear, query, ::Pair)
+        .flatMapLatest { (year, query) ->
+            stampRallyEntryDao.searchCount(
+                year = year,
+                query = query,
+                searchQuery = StampRallySearchQuery(
+                    filterParams = StampRallySortFilterController.FilterParams(
+                        sortOption = StampRallySearchSortOption.MAIN_TABLE,
+                        sortAscending = true,
+                        seriesIn = emptySet(),
+                        totalCost = RangeData(100),
+                        prizeLimit = RangeData(50),
+                        showUnconfirmed = false,
+                        hideFavorited = false,
+                        hideIgnored = false,
+                    ),
+                    randomSeed = randomSeed,
+                ),
+            )
+        }
+        .stateInForCompose(0)
+
+    init {
+        viewModelScope.launch(CustomDispatchers.IO) {
+            mutationUpdates.collectLatest {
+                userEntryDao.insertStampRallyUserEntry(it)
+            }
+        }
+    }
 
     override fun searchOptions() = defer {
         sortFilterController.state.filterParams.mapLatest {
@@ -123,7 +147,11 @@ class StampRallySearchViewModel(
     ) = settings.dataYear
         .flatMapLatest {
             createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
-                stampRallyEntryDao.search(year = it, query = query, searchQuery = options)
+                stampRallyEntryDao.searchPagingSource(
+                    year = it,
+                    query = query,
+                    searchQuery = options
+                )
             }.flow
         }
         .flowOn(CustomDispatchers.IO)
@@ -137,19 +165,21 @@ class StampRallySearchViewModel(
         .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
-    fun onEvent(navigationController: NavigationController, event: StampRallySearchScreen.Event) = when (event) {
-        is StampRallySearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
-            is SearchScreen.Event.FavoriteToggle<StampRallyEntryGridModel> ->
-                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
-            is SearchScreen.Event.IgnoreToggle<StampRallyEntryGridModel> ->
-                mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
-            is SearchScreen.Event.OpenEntry<StampRallyEntryGridModel> ->
-                navigationController.navigate(
-                    Destinations.StampRallyDetails(
-                        entry = searchEvent.entry.stampRally,
-                        initialImageIndex = searchEvent.imageIndex.toString(),
+    fun onEvent(navigationController: NavigationController, event: StampRallySearchScreen.Event) =
+        when (event) {
+            is StampRallySearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
+                is SearchScreen.Event.FavoriteToggle<StampRallyEntryGridModel> ->
+                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
+                is SearchScreen.Event.IgnoreToggle<StampRallyEntryGridModel> ->
+                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
+                is SearchScreen.Event.OpenEntry<StampRallyEntryGridModel> ->
+                    navigationController.navigate(
+                        StampRallyDetails(
+                            entry = searchEvent.entry.stampRally,
+                            initialImageIndex = searchEvent.imageIndex.toString(),
+                        )
                     )
-                )
+                is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
+            }
         }
-    }
 }

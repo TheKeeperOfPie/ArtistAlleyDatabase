@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced
@@ -10,9 +9,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_f
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_hide_ignored
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_grid_by_default
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_show_random_catalog_image
-import artistalleydatabase.modules.alley.generated.resources.alley_search_option_artist
-import artistalleydatabase.modules.alley.generated.resources.alley_search_option_fandom
-import artistalleydatabase.modules.alley.generated.resources.alley_search_option_tables
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_prize_limit_expand_content_description
@@ -24,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSec
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
@@ -34,9 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.json.Json
 
 class StampRallySortFilterController(
@@ -47,17 +40,8 @@ class StampRallySortFilterController(
     seriesImagesStore: SeriesImagesStore,
     val settings: ArtistAlleySettings,
     savedStateHandle: SavedStateHandle,
-    allowHideFavorited: Boolean,
+    private val allowHideFavorited: Boolean,
 ) {
-
-    val fandomSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_fandom)
-
-    // TODO: Multi-option
-    val tablesSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_tables)
-
-    // TODO: Artists not wired up
-    val artistsSection = EntrySection.LongText(headerRes = Res.string.alley_search_option_artist)
-
     val sortOption = settings.stampRalliesSortOption
     val sortAscending = settings.stampRalliesSortAscending
     private val sortSection = SortFilterSectionState.Sort(
@@ -65,6 +49,7 @@ class StampRallySortFilterController(
         defaultSort = StampRallySearchSortOption.RANDOM,
         sortOption = sortOption,
         sortAscending = sortAscending,
+        allowClear = false,
     )
 
     private val totalCostInitialData = RangeData(100)
@@ -177,12 +162,6 @@ class StampRallySortFilterController(
 
     @Suppress("UNCHECKED_CAST")
     private val filterParams = combineStates(
-        snapshotFlow {
-            SnapshotState(
-                fandom = fandomSection.value.trim(),
-                tables = tablesSection.value.trim(),
-            )
-        }.stateIn(scope, SharingStarted.Eagerly, SnapshotState()),
         sortOption,
         settings.stampRalliesSortAscending,
         lockedSeriesEntry,
@@ -193,19 +172,16 @@ class StampRallySortFilterController(
         hideFavorited,
         hideIgnored,
     ) {
-        val snapshotState = it[0] as SnapshotState
         FilterParams(
-            fandom = snapshotState.fandom,
-            tables = snapshotState.tables,
-            sortOption = it[1] as StampRallySearchSortOption,
-            sortAscending = it[2] as Boolean,
-            seriesIn = setOfNotNull((it[3] as SeriesEntry?)?.id) +
-                    (it[4] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.id },
-            totalCost = it[5] as RangeData,
-            prizeLimit = it[6] as RangeData,
-            showUnconfirmed = it[7] as Boolean,
-            hideFavorited = it[8] as Boolean,
-            hideIgnored = it[9] as Boolean,
+            sortOption = it[0] as StampRallySearchSortOption,
+            sortAscending = it[1] as Boolean,
+            seriesIn = setOfNotNull((it[2] as SeriesEntry?)?.id) +
+                    (it[3] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.id },
+            totalCost = it[4] as RangeData,
+            prizeLimit = it[5] as RangeData,
+            showUnconfirmed = it[6] as Boolean,
+            hideFavorited = it[7] as Boolean,
+            hideIgnored = it[8] as Boolean,
         )
     }
 
@@ -215,14 +191,12 @@ class StampRallySortFilterController(
         collapseOnClose = ReadOnlyStateFlow(false),
     )
 
-    private data class SnapshotState(
-        val fandom: String? = null,
-        val tables: String? = null,
-    )
+    fun clear() {
+        sections.forEach { it.clear() }
+        hideFavoritedSection.clear()
+    }
 
     data class FilterParams(
-        val fandom: String?,
-        val tables: String?,
         val sortOption: StampRallySearchSortOption,
         val sortAscending: Boolean,
         val seriesIn: Set<String>,
