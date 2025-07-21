@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
@@ -109,6 +110,22 @@ class AlleyExporterTest {
             testFavoriteAndIgnored = { it.favorite to it.ignored },
             testId = { it.id },
         )
+        assertData(
+            database = database,
+            values = artistsAnimeNyc2024().take(TEST_COUNT_ARTISTS).toList(),
+            id = { it.id },
+            resultQuery = { getArtistUserDataAnimeNyc2024().awaitAsList() },
+            testFavoriteAndIgnored = { it.favorite to it.ignored },
+            testId = { it.id },
+        )
+        assertData(
+            database = database,
+            values = artistsAnimeNyc2025().take(TEST_COUNT_ARTISTS).toList(),
+            id = { it.id },
+            resultQuery = { getArtistUserDataAnimeNyc2025().awaitAsList() },
+            testFavoriteAndIgnored = { it.favorite to it.ignored },
+            testId = { it.id },
+        )
 
         assertData(
             database = database,
@@ -186,8 +203,16 @@ class AlleyExporterTest {
             .take(TEST_COUNT_ARTISTS)
             .filterIndexed { index, _ -> index % 3 == 2 }
             .map { Triple(it.id, DataYear.ANIME_EXPO_2025, "notes${it.id.hashCode()}") }
+        val artistsAnimeNyc2024 = artistsAnimeNyc2024()
+            .take(TEST_COUNT_ARTISTS)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { Triple(it.id, DataYear.ANIME_NYC_2024, "notes${it.id.hashCode()}") }
+        val artistsAnimeNyc2025 = artistsAnimeNyc2025()
+            .take(TEST_COUNT_ARTISTS)
+            .filterIndexed { index, _ -> index % 3 == 2 }
+            .map { Triple(it.id, DataYear.ANIME_NYC_2025, "notes${it.id.hashCode()}") }
 
-        val expected = (artists2023 + artists2024 + artists2025)
+        val expected = (artists2023 + artists2024 + artists2025 + artistsAnimeNyc2024 + artistsAnimeNyc2025)
             .sortedWith(compareBy({ it.first }, { it.second }))
             .toList()
 
@@ -283,6 +308,16 @@ class AlleyExporterTest {
             merchConfirmedAdapter = DaoUtils.listStringAdapter,
             commissionsAdapter = DaoUtils.listStringAdapter,
         ),
+        artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
+            linksAdapter = DaoUtils.listStringAdapter,
+            storeLinksAdapter = DaoUtils.listStringAdapter,
+            catalogLinksAdapter = DaoUtils.listStringAdapter,
+            seriesInferredAdapter = DaoUtils.listStringAdapter,
+            seriesConfirmedAdapter = DaoUtils.listStringAdapter,
+            merchInferredAdapter = DaoUtils.listStringAdapter,
+            merchConfirmedAdapter = DaoUtils.listStringAdapter,
+            commissionsAdapter = DaoUtils.listStringAdapter,
+        ),
         artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
             linksAdapter = DaoUtils.listStringAdapter,
             storeLinksAdapter = DaoUtils.listStringAdapter,
@@ -348,6 +383,24 @@ class AlleyExporterTest {
             dataYear = DataYear.ANIME_EXPO_2025,
             id = { it.id },
             insert = TestQueries::insertArtist2025,
+            insertUserData = insertUserData,
+        )
+
+        insertArtists(
+            database = database,
+            source = artistsAnimeNyc2024(),
+            dataYear = DataYear.ANIME_NYC_2024,
+            id = { it.id },
+            insert = TestQueries::insertArtistAnimeNyc2024,
+            insertUserData = insertUserData,
+        )
+
+        insertArtists(
+            database = database,
+            source = artistsAnimeNyc2025(),
+            dataYear = DataYear.ANIME_NYC_2025,
+            id = { it.id },
+            insert = TestQueries::insertArtistAnimeNyc2025,
             insertUserData = insertUserData,
         )
 
@@ -491,6 +544,62 @@ class AlleyExporterTest {
             ids("artists2025").mapIndexed { index, uuid ->
                 val name = uuid.toString().take(10)
                 ArtistEntry2025(
+                    id = uuid.toString(),
+                    booth = "",
+                    name = name,
+                    summary = null,
+                    links = emptyList(),
+                    linkFlags = 0L,
+                    linkFlags2 = 0L,
+                    storeLinks = emptyList(),
+                    catalogLinks = emptyList(),
+                    driveLink = null,
+                    notes = null,
+                    commissions = emptyList(),
+                    commissionFlags = 0L,
+                    seriesInferred = emptyList(),
+                    seriesConfirmed = emptyList(),
+                    merchInferred = emptyList(),
+                    merchConfirmed = emptyList(),
+                    counter = index.toLong(),
+                )
+            }
+        )
+    }
+
+    private fun artistsAnimeNyc2024() = sequence {
+        yieldAll(
+            ids("artistsAnimeNyc2024").mapIndexed { index, uuid ->
+                val name = uuid.toString().take(10)
+                ArtistEntryAnimeNyc2024(
+                    id = uuid.toString(),
+                    booth = "",
+                    name = name,
+                    summary = null,
+                    links = emptyList(),
+                    linkFlags = 0L,
+                    linkFlags2 = 0L,
+                    storeLinks = emptyList(),
+                    catalogLinks = emptyList(),
+                    driveLink = null,
+                    notes = null,
+                    commissions = emptyList(),
+                    commissionFlags = 0L,
+                    seriesInferred = emptyList(),
+                    seriesConfirmed = emptyList(),
+                    merchInferred = emptyList(),
+                    merchConfirmed = emptyList(),
+                    counter = index.toLong(),
+                )
+            }
+        )
+    }
+
+    private fun artistsAnimeNyc2025() = sequence {
+        yieldAll(
+            ids("artistsAnimeNyc2025").mapIndexed { index, uuid ->
+                val name = uuid.toString().take(10)
+                ArtistEntryAnimeNyc2025(
                     id = uuid.toString(),
                     booth = "",
                     name = name,

@@ -35,7 +35,7 @@ class AlleyDataValidationTest {
         val database = DaoUtils.createAlleySqlDatabase(driver)
         val dao = ArtistEntryDao({ driver }, { database }, Settings())
         val pager = Pager(PagingConfig(100)) {
-            dao.search(
+            dao.searchPagingSource(
                 year = DataYear.ANIME_EXPO_2023,
                 query = "",
                 searchQuery = ArtistSearchQuery(

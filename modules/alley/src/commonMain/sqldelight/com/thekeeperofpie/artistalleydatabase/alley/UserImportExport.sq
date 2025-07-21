@@ -32,6 +32,18 @@ LEFT OUTER JOIN artistUserEntry
 ON (artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear)
 ORDER BY artistEntry2025.id ASC;
 
+getExportPartialArtistsAnimeNyc2024:
+SELECT artistEntryAnimeNyc2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2024
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear)
+ORDER BY artistEntryAnimeNyc2024.id ASC;
+
+getExportPartialArtistsAnimeNyc2025:
+SELECT artistEntryAnimeNyc2025.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2025
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntryAnimeNyc2025.id = artistUserEntry.artistId AND 'ANYC2025' = artistUserEntry.dataYear)
+ORDER BY artistEntryAnimeNyc2025.id ASC;
+
 getExportFullArtists2023:
 SELECT artistEntry2023.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntry2023
 LEFT OUTER JOIN artistUserEntry
@@ -54,6 +66,22 @@ LEFT OUTER JOIN artistUserEntry
 ON (artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear)
 LEFT OUTER JOIN artistNotes
 ON (artistEntry2025.id = artistNotes.artistId AND 'AX2025' = artistNotes.dataYear)
+WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
+
+getExportFullArtistsAnimeNyc2024:
+SELECT artistEntryAnimeNyc2024.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeNyc2024
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear)
+LEFT OUTER JOIN artistNotes
+ON (artistEntryAnimeNyc2024.id = artistNotes.artistId AND 'ANYC2024' = artistNotes.dataYear)
+WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
+
+getExportFullArtistsAnimeNyc2025:
+SELECT artistEntryAnimeNyc2025.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeNyc2025
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntryAnimeNyc2025.id = artistUserEntry.artistId AND 'ANYC2025' = artistUserEntry.dataYear)
+LEFT OUTER JOIN artistNotes
+ON (artistEntryAnimeNyc2025.id = artistNotes.artistId AND 'ANYC2025' = artistNotes.dataYear)
 WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
 
 getExportPartialStampRallies2023:

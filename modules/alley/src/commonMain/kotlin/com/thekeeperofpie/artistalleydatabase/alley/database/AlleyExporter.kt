@@ -55,7 +55,7 @@ class AlleyExporter(
     private val json: Json = Json { encodeDefaults = false },
 ) {
     companion object {
-        private const val SCHEMA_VERSION = "4"
+        private const val SCHEMA_VERSION = "5"
 
         private val CHARACTERS = listOf(
             '0'.rangeTo('9'),
@@ -96,6 +96,18 @@ class AlleyExporter(
         )
         sink.writeData(
             source = importExportDao.getExportPartialArtists2025(),
+            id = { it.id },
+            favorite = { it.favorite },
+            ignored = { it.ignored },
+        )
+        sink.writeData(
+            source = importExportDao.getExportPartialArtistsAnimeNyc2024(),
+            id = { it.id },
+            favorite = { it.favorite },
+            ignored = { it.ignored },
+        )
+        sink.writeData(
+            source = importExportDao.getExportPartialArtistsAnimeNyc2025(),
             id = { it.id },
             favorite = { it.favorite },
             ignored = { it.ignored },
@@ -204,6 +216,34 @@ class AlleyExporter(
                     importExportDao.importArtist(
                         artistId = artistId,
                         dataYear = DataYear.ANIME_EXPO_2025,
+                        favorite = favorite,
+                        ignored = ignored,
+                    )
+                },
+            )
+
+            readData(
+                source = source,
+                databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2024(),
+                id = { it.id },
+                insert = { artistId, favorite, ignored ->
+                    importExportDao.importArtist(
+                        artistId = artistId,
+                        dataYear = DataYear.ANIME_NYC_2024,
+                        favorite = favorite,
+                        ignored = ignored,
+                    )
+                },
+            )
+
+            readData(
+                source = source,
+                databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2025(),
+                id = { it.id },
+                insert = { artistId, favorite, ignored ->
+                    importExportDao.importArtist(
+                        artistId = artistId,
+                        dataYear = DataYear.ANIME_NYC_2025,
                         favorite = favorite,
                         ignored = ignored,
                     )
@@ -328,8 +368,8 @@ class AlleyExporter(
     }
 
     suspend fun exportFull(sink: Sink) {
-        val artists: Map<DataYear?, Map<String, FullExport.ArtistData>> = mapOf(
-            DataYear.ANIME_EXPO_2023 to importExportDao.getExportFullArtists2023()
+        val artists: Map<String?, Map<String, FullExport.ArtistData>> = mapOf(
+            DataYear.ANIME_EXPO_2023.serializedName to importExportDao.getExportFullArtists2023()
                 .associate {
                     it.id to FullExport.ArtistData(
                         DaoUtils.coerceBooleanForJs(it.favorite),
@@ -337,7 +377,7 @@ class AlleyExporter(
                         it.notes
                     )
                 },
-            DataYear.ANIME_EXPO_2024 to importExportDao.getExportFullArtists2024()
+            DataYear.ANIME_EXPO_2024.serializedName to importExportDao.getExportFullArtists2024()
                 .associate {
                     it.id to FullExport.ArtistData(
                         DaoUtils.coerceBooleanForJs(it.favorite),
@@ -345,7 +385,23 @@ class AlleyExporter(
                         it.notes
                     )
                 },
-            DataYear.ANIME_EXPO_2025 to importExportDao.getExportFullArtists2025()
+            DataYear.ANIME_EXPO_2025.serializedName to importExportDao.getExportFullArtists2025()
+                .associate {
+                    it.id to FullExport.ArtistData(
+                        DaoUtils.coerceBooleanForJs(it.favorite),
+                        DaoUtils.coerceBooleanForJs(it.ignored),
+                        it.notes
+                    )
+                },
+            DataYear.ANIME_NYC_2024.serializedName to importExportDao.getExportFullArtistsAnimeNyc2024()
+                .associate {
+                    it.id to FullExport.ArtistData(
+                        DaoUtils.coerceBooleanForJs(it.favorite),
+                        DaoUtils.coerceBooleanForJs(it.ignored),
+                        it.notes
+                    )
+                },
+            DataYear.ANIME_NYC_2025.serializedName to importExportDao.getExportFullArtistsAnimeNyc2025()
                 .associate {
                     it.id to FullExport.ArtistData(
                         DaoUtils.coerceBooleanForJs(it.favorite),
@@ -402,9 +458,15 @@ class AlleyExporter(
 
     private suspend fun importFull(data: FullExport) {
         data.artists.forEach { (year, artists) ->
-            if (year != null) {
+            val dataYear = DataYear.entries.find { it.serializedName == year } ?: when (year) {
+                "YEAR_2023" -> DataYear.ANIME_EXPO_2023
+                "YEAR_2024" -> DataYear.ANIME_EXPO_2024
+                "YEAR_2025" -> DataYear.ANIME_EXPO_2025
+                else -> null
+            }
+            if (dataYear != null) {
                 artists.forEach { (id, data) ->
-                    importExportDao.importArtist(id, year, data.favorite, data.ignored, data.notes)
+                    importExportDao.importArtist(id, dataYear, data.favorite, data.ignored, data.notes)
                 }
             }
         }
@@ -421,7 +483,7 @@ class AlleyExporter(
 
     @Serializable
     private class FullExport(
-        val artists: Map<DataYear?, Map<String, ArtistData>> = emptyMap(),
+        val artists: Map<String?, Map<String, ArtistData>> = emptyMap(),
         val rallies: Map<String, RallyData> = emptyMap(),
         val series: Map<String, SeriesData> = emptyMap(),
         val merch: Map<String, MerchData> = emptyMap(),
