@@ -210,17 +210,28 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             merchConnections.values.forEach(mutationQueries::insertMerchConnection)
 
             val seriesEntries = parseSeries(database, seriesConnections)
-            parseMerch(database, merchConnections)
+            val merchEntries = parseMerch(database, merchConnections)
 
             val allEnteredSeriesIds = seriesConnections.map { it.value.seriesId }.toSet()
             val allValidSeriesIds = seriesEntries.map { it.id }.toSet()
-            val diff = allEnteredSeriesIds - allValidSeriesIds
-            if (diff.isNotEmpty()) {
-                logger.warn("Entered series does not match valid series: $diff")
+            val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
+            if (seriesDiff.isNotEmpty()) {
+                logger.warn("Entered series does not match valid series: $seriesDiff")
             }
             val seriesWithExtraSpaces = allValidSeriesIds.filter { it.endsWith(" ") }
             if (seriesWithExtraSpaces.isNotEmpty()) {
                 logger.error("Series with extra spaces: $seriesWithExtraSpaces")
+            }
+
+            val allEnteredMerchIds = merchConnections.map { it.value.merchId }.toSet()
+            val allValidMerchIds = merchEntries.map { it.name }.toSet()
+            val merchDiff = allEnteredMerchIds - allValidMerchIds
+            if (merchDiff.isNotEmpty()) {
+                logger.warn("Entered merch does not match valid merch: $merchDiff")
+            }
+            val merchWithExtraSpaces = allValidMerchIds.filter { it.endsWith(" ") }
+            if (merchWithExtraSpaces.isNotEmpty()) {
+                logger.error("Merch with extra spaces: $merchWithExtraSpaces")
             }
 
             parseStampRallies2023(artists2023, database)
@@ -1111,10 +1122,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     private fun parseMerch(
         database: BuildLogicDatabase,
         merchConnections: MutableMap<Pair<String, String>, ArtistMerchConnection>,
-    ) {
+    ): List<MerchEntry> {
         val mutationQueries = database.mutationQueries
         val merchCsv = inputsDirectory.file(MERCH_CSV_NAME).get()
-        open(merchCsv).use {
+        return open(merchCsv).use {
             read(it)
                 .map {
                     // Merch, Notes
@@ -1135,11 +1146,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     )
                 }
                 .chunked(DATABASE_CHUNK_SIZE)
-                .forEach {
+                .onEach {
                     mutationQueries.transaction {
                         it.forEach(mutationQueries::insertMerch)
                     }
                 }
+                .flatten()
+                .toList()
         }
     }
 
