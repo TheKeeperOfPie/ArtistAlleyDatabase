@@ -8,14 +8,15 @@ import java.util.UUID
 val inputs = listOf(
     __FILE__.resolve("../../inputs/2023/artists.csv"),
     __FILE__.resolve("../../inputs/2024/artists.csv"),
-    __FILE__.resolve("../../inputs/animeNyc2024/artists.csv"),
     __FILE__.resolve("../../inputs/2025/artists.csv"),
+    __FILE__.resolve("../../inputs/animeNyc2024/artists.csv"), // This data was added in 2025
     __FILE__.resolve("../../inputs/animeNyc2025/artists.csv"),
 ).map { it.parentFile.name to it }
 
 val artists = mutableMapOf<String, Artist>()
 
 inputs.forEach { (parentName, input) ->
+    println("\n$parentName:")
     read(input).forEach {
         val ids = if (it.isMapped("UUIDs")) {
             it["UUIDs"].lines().filter { it.isNotBlank() }
@@ -64,8 +65,14 @@ fun inferArtist(artist: Artist, artistId: String) {
         }?.let { existingArtist to it }
     } ?: artists.values.firstNotNullOfOrNull { existingArtist ->
         existingArtist.names.map { it.lowercase() }.firstNotNullOfOrNull { searchingName ->
-            artist.names.map { it.lowercase() }.firstOrNull {
-                it.contains(searchingName) || searchingName.contains(it)
+            artist.names.map { it.lowercase() }.firstNotNullOfOrNull {
+                if (it.contains(searchingName)) {
+                    searchingName
+                } else if (searchingName.contains(it)) {
+                    it
+                } else {
+                    null
+                }
             }
         }?.let { existingArtist to it }
     }
@@ -74,9 +81,8 @@ fun inferArtist(artist: Artist, artistId: String) {
     if (inferredArtist != null) {
         if (artist.ids.intersect(inferredArtist.ids).isEmpty()) {
             println(
-                "${artist.booth} - ${artist.names} in ${artist.sheet} " +
-                        "should have ID ${inferredArtist.ids} but had ${artist.ids}, " +
-                        "found by $inferredLink"
+                "${artist.booth} - ${artist.names} should have ID ${inferredArtist.ids} but had ${artist.ids}" +
+                        "\n\tfound by $inferredLink for ${inferredArtist.names} in ${inferredArtist.sheet}"
             )
         }
     } else {
