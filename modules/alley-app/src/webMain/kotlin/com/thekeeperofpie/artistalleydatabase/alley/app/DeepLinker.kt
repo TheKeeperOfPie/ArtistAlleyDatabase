@@ -18,10 +18,10 @@ class DeepLinker(private val artistEntryDao: ArtistEntryDao) {
             val targetConvention = pieces[1]
             val year = DataYear.entries.find { it.serializedName == targetConvention }
                 ?: return false
-            val artistId = artistEntryDao.getEntryIdByBooth(
+            val artistId = artistEntryDao.getEntriesByBooth(
                 year = year,
                 booth = pieces[2],
-            ) ?: return false
+            ).firstOrNull()?.id ?: return false
             val entry = artistEntryDao.getEntry(year, artistId)?.artist ?: return false
             navController.navigate(
                 Destinations.ArtistDetails(entry, null)
