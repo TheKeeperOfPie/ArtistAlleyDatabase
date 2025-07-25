@@ -53,6 +53,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed_icon_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_other_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series_unconfirmed_icon_content_description
@@ -67,6 +68,7 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
@@ -102,6 +104,7 @@ object ArtistDetailsScreen {
     operator fun invoke(
         route: Destinations.ArtistDetails,
         entry: () -> ArtistDetailsViewModel.Entry?,
+        otherArtists: () -> List<ArtistEntry>,
         seriesInferred: () -> List<SeriesWithUserData>?,
         seriesConfirmed: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
@@ -368,6 +371,26 @@ object ArtistDetailsScreen {
                                 allowExpand = false,
                                 showDividerAbove = false,
                                 item = { model, _, isLast -> CommissionRow(model, isLast) },
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
+            }
+
+            val otherArtists = otherArtists()
+            if (otherArtists.isNotEmpty()) {
+                item("artistOtherArtists") {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            expandableListInfoText(
+                                labelTextRes = Res.string.alley_artist_details_other_artists,
+                                contentDescriptionTextRes = null,
+                                values = otherArtists,
+                                valueToText = { it.name },
+                                onClick = { eventSink(Event.OpenArtist(it.id)) },
+                                allowExpand = false,
+                                showDividerAbove = false,
                             )
                         }
                         Spacer(Modifier.height(16.dp))
@@ -683,6 +706,7 @@ object ArtistDetailsScreen {
 
     sealed interface Event {
         data class DetailsEvent(val event: DetailsScreen.Event) : Event
+        data class OpenArtist(val artistId: String) : Event
         data class OpenMerch(val merch: String) : Event
         data class OpenOtherYear(val year: DataYear) : Event
         data class OpenSeries(val series: String) : Event
@@ -710,6 +734,7 @@ private fun PhoneLayout() = PreviewDark {
     ArtistDetailsScreen(
         route = Destinations.ArtistDetails(artist.artist),
         entry = { entry },
+        otherArtists = { emptyList() },
         seriesInferred = { seriesInferred },
         seriesConfirmed = { seriesConfirmed },
         userNotesTextState = rememberTextFieldState(),

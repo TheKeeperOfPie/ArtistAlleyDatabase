@@ -4,8 +4,8 @@ LEFT OUTER JOIN artistUserEntry
 ON artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear
 WHERE id = :id;
 
-getEntryIdByBooth:
-SELECT artistEntryAnimeNyc2024.id
+getEntriesByBooth:
+SELECT artistEntryAnimeNyc2024.*
 FROM artistEntryAnimeNyc2024
 WHERE booth = :booth;
 

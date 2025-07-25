@@ -15,7 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025Queries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024Queries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
@@ -384,6 +386,44 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
     counter = counter,
 )
 
+fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
+    year = DataYear.ANIME_NYC_2024,
+    id = id,
+    booth = booth,
+    name = name,
+    summary = summary,
+    links = links,
+    storeLinks = storeLinks,
+    catalogLinks = catalogLinks,
+    driveLink = driveLink,
+    notes = notes,
+    commissions = commissions,
+    seriesInferred = seriesInferred,
+    seriesConfirmed = seriesConfirmed,
+    merchInferred = merchInferred,
+    merchConfirmed = merchConfirmed,
+    counter = counter,
+)
+
+fun ArtistEntryAnimeNyc2025.toArtistEntry() = ArtistEntry(
+    year = DataYear.ANIME_NYC_2025,
+    id = id,
+    booth = booth,
+    name = name,
+    summary = summary,
+    links = links,
+    storeLinks = storeLinks,
+    catalogLinks = catalogLinks,
+    driveLink = driveLink,
+    notes = notes,
+    commissions = commissions,
+    seriesInferred = seriesInferred,
+    seriesConfirmed = seriesConfirmed,
+    merchInferred = merchInferred,
+    merchConfirmed = merchConfirmed,
+    counter = counter,
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class ArtistEntryDao(
     private val driver: suspend () -> SqlDriver,
@@ -419,23 +459,28 @@ class ArtistEntryDao(
                 ?.toArtistWithUserData()
         }
 
-    suspend fun getEntryIdByBooth(year: DataYear, booth: String) =
+    suspend fun getEntriesByBooth(year: DataYear, booth: String) =
         when (year) {
             DataYear.ANIME_EXPO_2023 -> dao2023()
-                .getEntryIdByBooth(booth)
-                .awaitAsOneOrNull()
+                .getEntriesByBooth(booth)
+                .awaitAsList()
+                .map { it.toArtistEntry() }
             DataYear.ANIME_EXPO_2024 -> dao2024()
-                .getEntryIdByBooth(booth)
-                .awaitAsOneOrNull()
+                .getEntriesByBooth(booth)
+                .awaitAsList()
+                .map { it.toArtistEntry() }
             DataYear.ANIME_EXPO_2025 -> dao2025()
-                .getEntryIdByBooth(booth)
-                .awaitAsOneOrNull()
+                .getEntriesByBooth(booth)
+                .awaitAsList()
+                .map { it.toArtistEntry() }
             DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024()
-                .getEntryIdByBooth(booth)
-                .awaitAsOneOrNull()
+                .getEntriesByBooth(booth)
+                .awaitAsList()
+                .map { it.toArtistEntry() }
             DataYear.ANIME_NYC_2025 -> daoAnimeNyc2025()
-                .getEntryIdByBooth(booth)
-                .awaitAsOneOrNull()
+                .getEntriesByBooth(booth)
+                .awaitAsList()
+                .map { it.toArtistEntry() }
         }
 
     fun getEntryFlow(id: String) = settings.dataYear

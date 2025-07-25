@@ -42,6 +42,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Assisted
@@ -88,6 +90,11 @@ class ArtistDetailsViewModel(
         )
     }.flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val otherArtists = entry.mapNotNull { it?.artist?.booth }
+        .mapLatest { artistEntryDao.getEntriesByBooth(year, it).filter { it.id != id } }
+        .flowOn(dispatchers.io)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val seriesInferred = entry
         .filterNotNull()

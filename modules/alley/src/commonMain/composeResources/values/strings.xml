@@ -39,6 +39,7 @@
     <string name="alley_artist_details_tags_unconfirmed_explanation">Tags inferred from artist's past work, may not be available at convention</string>
     <string name="alley_artist_details_stamp_rallies">Stamp rallies</string>
     <string name="alley_artist_details_commissions">Commissions</string>
+    <string name="alley_artist_details_other_artists">Other artists at table</string>
     <string name="alley_artist_catalog_image_none">No catalog image</string>
     <string name="alley_sort_label">Sort</string>
     <string name="alley_sort_booth">Booth</string>

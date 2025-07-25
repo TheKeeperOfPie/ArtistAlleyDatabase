@@ -123,12 +123,14 @@ object ArtistAlleyAppScreen {
                                     onStopOrDispose {}
                                 }
                                 val entry by viewModel.entry.collectAsStateWithLifecycle()
+                                val otherArtists by viewModel.otherArtists.collectAsStateWithLifecycle()
                                 val seriesInferred by viewModel.seriesInferred.collectAsStateWithLifecycle()
                                 val seriesConfirmed by viewModel.seriesConfirmed.collectAsStateWithLifecycle()
                                 val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
                                 ArtistDetailsScreen(
                                     route = route,
                                     entry = { entry },
+                                    otherArtists = { otherArtists },
                                     seriesInferred = { seriesInferred },
                                     seriesConfirmed = { seriesConfirmed },
                                     userNotesTextState = viewModel.userNotes,
@@ -138,6 +140,15 @@ object ArtistAlleyAppScreen {
                                     otherYears = viewModel::otherYears,
                                     eventSink = {
                                         when (it) {
+                                            is ArtistDetailsScreen.Event.OpenArtist ->
+                                                navigationController.navigate(
+                                                    Destinations.ArtistDetails(
+                                                        year = route.year,
+                                                        id = it.artistId,
+                                                        booth = null,
+                                                        name = null,
+                                                    )
+                                                )
                                             is ArtistDetailsScreen.Event.OpenMerch ->
                                                 navigationController.navigate(
                                                     Destinations.Merch(route.year, it.merch)
