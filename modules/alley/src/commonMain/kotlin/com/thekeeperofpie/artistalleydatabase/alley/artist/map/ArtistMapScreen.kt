@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.map.Table
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -97,7 +98,10 @@ object ArtistMapScreen {
                 HighlightedTableCell(
                     mapViewModel = mapViewModel,
                     table = it,
-                    highlight = it.id == viewModel.id,
+                    highlight = when (it) {
+                        is Table.Single -> it.artistId == viewModel.id
+                        is Table.Shared -> it.artistIds.contains(viewModel.id)
+                    },
                     onArtistClick = onArtistClick,
                 )
             }

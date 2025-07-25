@@ -82,31 +82,59 @@ class MapViewModel(
         var currentIndex = 0
         val showRandomCatalogImage = settings.showRandomCatalogImage.value
         return letterToBooths.mapIndexed { letterIndex, pair ->
-            pair.second.mapNotNull {
-                val booth = it.booth ?: return@mapNotNull null
-                val tableNumber = booth.filter { it.isDigit() }.toInt()
-                val images = AlleyDataUtils.getArtistImages(
-                    year = it.year,
-                    booth = booth,
-                    name = it.name,
-                )
-                val imageIndex = if (showRandomCatalogImage) {
-                    images.indices.randomOrNull()
-                } else {
-                    0
-                }
-                Table(
-                    year = it.year,
-                    id = it.id,
-                    booth = booth,
-                    section = Table.Section.fromTableNumber(tableNumber),
-                    image = imageIndex?.let(images::getOrNull),
-                    imageIndex = imageIndex,
-                    favorite = it.favorite,
-                    gridX = currentIndex,
-                    // There's a physical gap not accounted for in the numbers between 41 and 42
-                    gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
-                )
+            pair.second.groupBy { it.booth }
+                .mapNotNull { (booth, artists) ->
+                    booth ?: return@mapNotNull null
+                    val tableNumber = booth.filter { it.isDigit() }.toInt()
+                    val artist = artists.singleOrNull()
+                    if (artist != null) {
+                        val images = AlleyDataUtils.getArtistImages(
+                            year = artist.year,
+                            booth = booth,
+                            name = artist.name,
+                        )
+                        val imageIndex = if (showRandomCatalogImage) {
+                            images.indices.randomOrNull()
+                        } else {
+                            0
+                        }
+                        Table.Single(
+                            year = artist.year,
+                            artistId = artist.id,
+                            booth = booth,
+                            section = Table.AnimeExpoSection.fromTableNumber(tableNumber),
+                            image = imageIndex?.let(images::getOrNull),
+                            imageIndex = imageIndex,
+                            favorite = artist.favorite,
+                            gridX = currentIndex,
+                            // There's a physical gap not accounted for in the numbers between 41 and 42
+                            gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
+                        )
+                    } else {
+                        val primaryArtist = artists.first()
+                        val images = AlleyDataUtils.getArtistImages(
+                            year = primaryArtist.year,
+                            booth = booth,
+                            name = primaryArtist.name,
+                        )
+                        val imageIndex = if (showRandomCatalogImage) {
+                            images.indices.randomOrNull()
+                        } else {
+                            0
+                        }
+                        Table.Shared(
+                            year = primaryArtist.year,
+                            artistIds = artists.map { it.id },
+                            booth = booth,
+                            section = Table.AnimeExpoSection.fromTableNumber(tableNumber),
+                            image = imageIndex?.let(images::getOrNull),
+                            imageIndex = imageIndex,
+                            favorite = artists.any { it.favorite },
+                            gridX = currentIndex,
+                            // There's a physical gap not accounted for in the numbers between 41 and 42
+                            gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
+                        )
+                    }
             }.also {
                 currentIndex++
                 if (letterIndex == 11) {
@@ -164,31 +192,60 @@ class MapViewModel(
             .sortedBy { it.first }
         val showRandomCatalogImage = settings.showRandomCatalogImage.value
         return letterToBooths.mapIndexed { letterIndex, pair ->
-            pair.second.mapNotNull {
-                val booth = it.booth ?: return@mapNotNull null
-                val letter = booth[0]
-                val tableNumber = booth.filter { it.isDigit() }.toInt()
-                val images = AlleyDataUtils.getArtistImages(
-                    year = it.year,
-                    booth = booth,
-                    name = it.name,
-                )
-                val imageIndex = if (showRandomCatalogImage) {
-                    images.indices.randomOrNull()
-                } else {
-                    0
-                }
-                Table(
-                    year = it.year,
-                    id = it.id,
-                    booth = booth,
-                    section = Table.Section.fromTableNumber(tableNumber),
-                    image = imageIndex?.let(images::getOrNull),
-                    imageIndex = imageIndex,
-                    favorite = it.favorite,
-                    gridX = animeNycIndexX(letter, tableNumber),
-                    gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1,
-                )
+            pair.second.groupBy { it.booth }
+                .mapNotNull { (booth, artists) ->
+                    booth ?: return@mapNotNull null
+                    val tableNumber = booth.filter { it.isDigit() }.toInt()
+                    val letter = booth[0]
+                    val gridX = animeNycIndexX(letter, tableNumber)
+                    val gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1
+                    val artist = artists.singleOrNull()
+                    if (artist != null) {
+                        val images = AlleyDataUtils.getArtistImages(
+                            year = artist.year,
+                            booth = booth,
+                            name = artist.name,
+                        )
+                        val imageIndex = if (showRandomCatalogImage) {
+                            images.indices.randomOrNull()
+                        } else {
+                            0
+                        }
+                        Table.Single(
+                            year = artist.year,
+                            artistId = artist.id,
+                            booth = booth,
+                            section = null,
+                            image = imageIndex?.let(images::getOrNull),
+                            imageIndex = imageIndex,
+                            favorite = artist.favorite,
+                            gridX = gridX,
+                            gridY = gridY,
+                        )
+                    } else {
+                        val primaryArtist = artists.first()
+                        val images = AlleyDataUtils.getArtistImages(
+                            year = primaryArtist.year,
+                            booth = booth,
+                            name = primaryArtist.name,
+                        )
+                        val imageIndex = if (showRandomCatalogImage) {
+                            images.indices.randomOrNull()
+                        } else {
+                            0
+                        }
+                        Table.Shared(
+                            year = primaryArtist.year,
+                            artistIds = artists.map { it.id },
+                            booth = booth,
+                            section = null,
+                            image = imageIndex?.let(images::getOrNull),
+                            imageIndex = imageIndex,
+                            favorite = artists.any { it.favorite },
+                            gridX = gridX,
+                            gridY = gridY,
+                        )
+                    }
             }
         }.flatten()
     }
@@ -201,7 +258,7 @@ class MapViewModel(
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
-    suspend fun tableEntry(table: Table) = artistEntryDao.getEntry(table.year, table.id)?.let {
+    suspend fun tableEntry(year: DataYear, artistId: String) = artistEntryDao.getEntry(year, artistId)?.let {
         val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
             randomSeed = randomSeed,
             showOnlyConfirmedTags = false,

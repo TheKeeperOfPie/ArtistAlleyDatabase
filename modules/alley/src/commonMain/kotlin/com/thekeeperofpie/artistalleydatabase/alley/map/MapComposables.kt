@@ -10,6 +10,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,8 +20,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -38,7 +41,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -77,15 +79,16 @@ fun TableCell(
     background: Color = if (table.image != null) {
         MaterialTheme.colorScheme.primary
     } else {
-        table.section.color
+        table.section?.color ?: MaterialTheme.colorScheme.primaryContainer
     }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface,
     textColor: Color = if (table.image != null) {
         MaterialTheme.colorScheme.onPrimary
     } else {
-        table.section.textColor.copy(alpha = 0.33f)
-            .compositeOver(MaterialTheme.colorScheme.onSurface)
+        table.section?.textColor?.copy(alpha = 0.33f)
+            ?.compositeOver(MaterialTheme.colorScheme.onSurface)
+            ?: MaterialTheme.colorScheme.onPrimaryContainer
     },
     showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
@@ -126,46 +129,51 @@ fun TableCell(
 
         if (showPopup) {
             BackHandler { showPopup = false }
-            var tableEntry by remember { mutableStateOf<ArtistEntryGridModel?>(null) }
+            var tableEntries by remember { mutableStateOf<List<ArtistEntryGridModel>?>(null) }
             LaunchedEffect(table) {
-                tableEntry = withContext(CustomDispatchers.IO) {
-                    mapViewModel.tableEntry(table)
+                tableEntries = withContext(CustomDispatchers.IO) {
+                    when (table) {
+                        is Table.Single ->
+                            mapViewModel.tableEntry(table.year, table.artistId)?.let { listOf(it) }
+                        is Table.Shared -> table.artistIds.mapNotNull {
+                            mapViewModel.tableEntry(table.year, it)
+                        }.ifEmpty { null }
+                    }
+
                 }
             }
             Popup(
                 alignment = Alignment.TopCenter,
                 onDismissRequest = { showPopup = false },
             ) {
-                val entry = tableEntry
-                if (entry == null) {
-                    CircularProgressIndicator()
-                } else {
-                    TablePopup(
-                        table = table,
-                        entry = entry,
-                        onFavoriteToggle = {
-                            if (it) {
-                                entry.favorite = it
-                                mapViewModel.onFavoriteToggle(entry, it)
-                            } else {
-                                unfavoriteDialogEntry = entry
-                            }
-                        },
-                        onIgnoredToggle = {
-                            entry.ignored = it
-                            mapViewModel.onIgnoredToggle(entry, it)
-                        },
-                        onClick = onArtistClick,
-                        modifier = Modifier.sizeIn(maxWidth = 300.dp)
-                    )
-                }
+                TablePopup(
+                    table = table,
+                    entries = tableEntries,
+                    onFavoriteToggle = { entry, favorite ->
+                        if (favorite) {
+                            entry.favorite = favorite
+                            mapViewModel.onFavoriteToggle(entry, favorite)
+                        } else {
+                            unfavoriteDialogEntry = entry
+                        }
+                    },
+                    onIgnoredToggle = { entry, ignored ->
+                        entry.ignored = ignored
+                        mapViewModel.onIgnoredToggle(entry, ignored)
+                    },
+                    onClick = onArtistClick,
+                    modifier = Modifier.sizeIn(maxWidth = 300.dp)
+                )
             }
         }
 
         UnfavoriteDialog(
             entry = { unfavoriteDialogEntry },
             onClearEntry = { unfavoriteDialogEntry = null },
-            onRemoveFavorite = { mapViewModel.onFavoriteToggle(it, false) },
+            onRemoveFavorite = {
+                unfavoriteDialogEntry?.favorite = false
+                mapViewModel.onFavoriteToggle(it, false)
+            },
         )
 
         Text(
@@ -188,7 +196,7 @@ fun HighlightedTableCell(
     defaultBackground: Color = if (table.image != null) {
         MaterialTheme.colorScheme.primary
     } else {
-        table.section.color
+        table.section?.color ?: MaterialTheme.colorScheme.primaryContainer
     }.copy(alpha = 0.25f).compositeOver(MaterialTheme.colorScheme.surface),
     showImages: Boolean = true,
     onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
@@ -224,45 +232,76 @@ fun HighlightedTableCell(
 @Composable
 fun TablePopup(
     table: Table,
-    entry: ArtistEntryGridModel?,
-    onFavoriteToggle: (Boolean) -> Unit,
-    onIgnoredToggle: (Boolean) -> Unit,
+    entries: List<ArtistEntryGridModel>?,
+    onFavoriteToggle: (ArtistEntryGridModel, Boolean) -> Unit,
+    onIgnoredToggle: (ArtistEntryGridModel, Boolean) -> Unit,
     onClick: (ArtistEntryGridModel, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val ignored = entry?.ignored ?: false
-    val imagesSize = entry?.images?.size ?: 0
-    val pagerState = rememberPagerState(
-        initialPage = table.imageIndex?.coerceAtMost(imagesSize) ?: 0,
-        pageCount = { imagesSize },
-    )
     OutlinedCard(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
+    ) {
+        if (entries == null) {
+            CircularProgressIndicator()
+        } else {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                when (table) {
+                    is Table.Single -> SingleTablePopup(
+                        entry = entries.single(),
+                        imageIndex = table.imageIndex,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onIgnoredToggle = onIgnoredToggle,
+                        onClick = onClick,
+                    )
+                    is Table.Shared ->
+                        entries.forEach {
+                            SingleTablePopup(
+                                entry = it,
+                                imageIndex = null,
+                                onFavoriteToggle = onFavoriteToggle,
+                                onIgnoredToggle = onIgnoredToggle,
+                                onClick = onClick,
+                            )
+                        }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SingleTablePopup(
+    entry: ArtistEntryGridModel,
+    imageIndex: Int?,
+    onFavoriteToggle: (ArtistEntryGridModel, Boolean) -> Unit,
+    onIgnoredToggle: (ArtistEntryGridModel, Boolean) -> Unit,
+    onClick: (ArtistEntryGridModel, Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val ignored = entry.ignored
+    val imagesSize = entry.images.size
+    val pagerState = rememberPagerState(
+        initialPage = imageIndex?.coerceAtMost(imagesSize) ?: 0,
+        pageCount = { imagesSize },
+    )
+    Column(
+        modifier = modifier
+            .alpha(if (entry.ignored) 0.38f else 1f)
             .combinedClickable(
                 onClick = {
-                    entry?.let {
-                        // This is a terrible hack, but DetailsScreen shows a grid in index 0
-                        // while MapScreen does not, so the image index needs to be 1 higher
-                        // to line up correctly when opening DetailsScreen
-                        onClick(it, pagerState.settledPage + 1)
-                    }
+                    // This is a terrible hack, but DetailsScreen shows a grid in index 0
+                    // while MapScreen does not, so the image index needs to be 1 higher
+                    // to line up correctly when opening DetailsScreen
+                    onClick(entry, pagerState.settledPage + 1)
                 },
-                onLongClick = { onIgnoredToggle(!ignored) }
+                onLongClick = { onIgnoredToggle(entry, !ignored) }
             )
-            .alpha(if (entry?.ignored == true) 0.38f else 1f)
     ) {
-        if (entry == null) {
-            CircularProgressIndicator()
-            return@OutlinedCard
-        }
-
         val images = entry.images
-
         if (images.isNotEmpty()) {
             var minHeight by remember { mutableIntStateOf(0) }
-            val coroutineScope = rememberCoroutineScope()
             Box(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -337,7 +376,7 @@ fun TablePopup(
             )
 
             val favorite = entry.favorite
-            IconButton(onClick = { onFavoriteToggle(!favorite) }) {
+            IconButton(onClick = { onFavoriteToggle(entry, !favorite) }) {
                 Icon(
                     imageVector = if (favorite) {
                         Icons.Filled.Favorite
