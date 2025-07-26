@@ -117,8 +117,8 @@ import coil3.compose.AsyncImage
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.SearchEntryModel
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
@@ -573,7 +573,7 @@ class DataYearHeaderState(
 private val UPCOMING_PROMPT_DURATION = 15.days
 
 @Composable
-fun DataYearHeader(state: DataYearHeaderState) {
+fun DataYearHeader(state: DataYearHeaderState, additionalActions: (@Composable () -> Unit)? = null) {
     Column {
         val year = state.year
         val windowSizeClass = currentWindowSizeClass()
@@ -708,6 +708,10 @@ fun DataYearHeader(state: DataYearHeaderState) {
                             )
                         }
                     }
+                }
+
+                if (additionalActions != null) {
+                    additionalActions()
                 }
 
                 val navigationController = LocalNavigationController.current

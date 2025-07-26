@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao

@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -59,12 +60,12 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_w
 import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -167,6 +168,7 @@ object BrowseScreen {
                                     .collectAsMutableStateWithLifecycle()
                                 TabScreen(
                                     dataYearHeaderState = dataYearHeaderState,
+                                    scaffoldState = scaffoldState,
                                     query = { seriesQuery },
                                     onQueryChange = { seriesQuery = it },
                                     entriesSize = { series.itemCount },
@@ -200,6 +202,7 @@ object BrowseScreen {
                             }
                             Tab.MERCH -> TabScreen(
                                 dataYearHeaderState = dataYearHeaderState,
+                                scaffoldState = null,
                                 query = { tagsViewModel.merchQuery },
                                 onQueryChange = { tagsViewModel.merchQuery = it },
                                 entriesSize = { merch.itemCount },
@@ -232,6 +235,7 @@ object BrowseScreen {
     @Composable
     private fun <T : Any> TabScreen(
         dataYearHeaderState: DataYearHeaderState,
+        scaffoldState: BottomSheetScaffoldState?,
         query: () -> String,
         onQueryChange: (String) -> Unit,
         entriesSize: () -> Int,
@@ -321,7 +325,7 @@ object BrowseScreen {
                         .align(Alignment.TopCenter)
                 ) {
                     item(key = "dataYearHeader") {
-                        DataYearHeader(dataYearHeaderState)
+                        BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
                     }
 
                     additionalHeader()

@@ -8,7 +8,7 @@ import app.cash.paging.createPagingConfig
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel

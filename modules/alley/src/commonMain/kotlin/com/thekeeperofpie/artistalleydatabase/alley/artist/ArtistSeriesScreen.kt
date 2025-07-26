@@ -22,9 +22,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_open_rallies
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -60,6 +60,7 @@ object ArtistSeriesScreen {
                 Header(
                     state = state,
                     sortFilterController = sortFilterController,
+                    scaffoldState = scaffoldState,
                     showSeries = artistSeriesViewModel.route.series != null,
                     seriesEntry = { seriesEntry },
                     seriesImage = { seriesImage },
@@ -91,6 +92,7 @@ object ArtistSeriesScreen {
     private fun Header(
         state: ArtistSearchScreen.State,
         sortFilterController: ArtistSortFilterController,
+        scaffoldState: BottomSheetScaffoldState,
         showSeries: Boolean,
         seriesEntry: () -> SeriesWithUserData?,
         seriesImage: () -> String?,
@@ -117,7 +119,7 @@ object ArtistSeriesScreen {
                         .Content(sortFilterController.state.expanded, false)
                 }
             }
-            DataYearHeader(dataYearHeaderState)
+            BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
         }
     }
 }

@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.testing.asSnapshot
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption

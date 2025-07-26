@@ -52,8 +52,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
@@ -61,9 +59,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataPro
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.links.tooltip
+import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
@@ -105,7 +105,7 @@ object ArtistSearchScreen {
             sortFilterState = sortFilterController.state,
             eventSink = { viewModel.onEvent(navigationController, it) },
             onClickBack,
-            header = { DataYearHeader(dataYearHeaderState) },
+            header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
             scaffoldState,
             scrollStateSaver,
         )
@@ -484,6 +484,7 @@ object ArtistSearchScreen {
         )
 
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
+        val scaffoldState = rememberBottomSheetScaffoldState()
         ArtistSearchScreen(
             state = state,
             sortFilterState = SortFilterState(
@@ -493,7 +494,7 @@ object ArtistSearchScreen {
             ),
             eventSink = {},
             onClickBack = {},
-            header = { DataYearHeader(dataYearHeaderState) },
+            header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
             scrollStateSaver = ScrollStateSaver.STUB,
         )
     }

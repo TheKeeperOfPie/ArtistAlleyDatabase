@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -57,8 +58,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_sea
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
@@ -71,10 +70,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -251,6 +252,7 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
+                                    scaffoldState = scaffoldState,
                                 )
                             },
                             noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
@@ -270,6 +272,7 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
+                                    scaffoldState = scaffoldState,
                                 )
                             },
                             noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
@@ -283,6 +286,7 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
+                                    scaffoldState = null,
                                 )
                             },
                             eventSink = eventSink,
@@ -295,6 +299,7 @@ object FavoritesScreen {
                                     tab = { tab },
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
+                                    scaffoldState = null,
                                 )
                             },
                             eventSink = eventSink,
@@ -632,9 +637,10 @@ object FavoritesScreen {
         tab: () -> EntryTab,
         onTabChange: (EntryTab) -> Unit,
         dataYearHeaderState: DataYearHeaderState,
+        scaffoldState: BottomSheetScaffoldState?,
     ) {
         Column {
-            DataYearHeader(dataYearHeaderState)
+            BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
             val tab = tab()
             PrimaryScrollableTabRow(EntryTab.entries.indexOf(tab)) {
                 EntryTab.entries.forEach {

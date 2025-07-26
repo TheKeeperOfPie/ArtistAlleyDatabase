@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.search
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells.Adaptive
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -67,13 +66,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_display_type_
 import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
-import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.Column
-import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid.modifierDefaultCellPadding
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
@@ -125,7 +123,7 @@ object SearchScreen {
         ) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
-    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
+    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         SearchScreen(
             state = state,
@@ -178,7 +176,7 @@ object SearchScreen {
         ) -> Unit,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
-    ) where ColumnType : Enum<ColumnType>, ColumnType : Column {
+    ) where ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
         val scope = rememberCoroutineScope()
         BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
             scope.launch {
@@ -246,7 +244,7 @@ object SearchScreen {
             AutoSizeText(
                 text = stringResource(it.text),
                 modifier = Modifier.requiredWidth(it.size)
-                    .then(modifierDefaultCellPadding)
+                    .then(TwoWayGrid.modifierDefaultCellPadding)
             )
         },
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
@@ -270,7 +268,7 @@ object SearchScreen {
                 }
             }
         },
-    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
+    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
         val displayType by state.displayType.collectAsStateWithLifecycle()
         if (displayType == DisplayType.TABLE) {
             Table(
@@ -324,7 +322,7 @@ object SearchScreen {
         tableCell: @Composable (row: EntryModel?, column: ColumnType) -> Unit,
         noResultsItem: (@Composable () -> Unit)? = null,
         moreResultsItem: (@Composable () -> Unit)? = null,
-    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : Column {
+    ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
         Box(
             contentAlignment = Alignment.TopCenter,
             modifier = Modifier.fillMaxWidth()
@@ -376,8 +374,6 @@ object SearchScreen {
         ) -> Unit,
     ) {
         Box(Modifier.padding(scaffoldPadding)) {
-            val coroutineScope = rememberCoroutineScope()
-
             var displayType by state.displayType.collectAsMutableStateWithLifecycle()
             val showGridByDefault by state.showGridByDefault
                 .collectAsMutableStateWithLifecycle()
@@ -400,7 +396,7 @@ object SearchScreen {
                     when (displayType) {
                         DisplayType.LIST,
                         DisplayType.CARD,
-                            -> Adaptive(350.dp)
+                            -> StaggeredGridCells.Adaptive(350.dp)
                         DisplayType.IMAGE,
                             -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
                         DisplayType.TABLE -> throw IllegalArgumentException()
@@ -606,7 +602,7 @@ object SearchScreen {
         val showGridByDefault: MutableStateFlow<Boolean>,
         val showRandomCatalogImage: MutableStateFlow<Boolean>,
         val forceOneDisplayColumn: MutableStateFlow<Boolean>,
-    ) where ColumnType : Enum<ColumnType>, ColumnType : Column
+    ) where ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column
 
     sealed interface Event<EntryModel : SearchEntryModel> {
         data class FavoriteToggle<EntryModel : SearchEntryModel>(

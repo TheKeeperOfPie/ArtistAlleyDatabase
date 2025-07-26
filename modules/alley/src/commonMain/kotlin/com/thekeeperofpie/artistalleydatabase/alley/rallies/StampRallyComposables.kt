@@ -46,7 +46,7 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip

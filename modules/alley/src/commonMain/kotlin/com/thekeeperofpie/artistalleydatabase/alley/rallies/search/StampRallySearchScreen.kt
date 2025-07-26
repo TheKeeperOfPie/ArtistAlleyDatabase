@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -16,11 +17,11 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_booth
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_fandom
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
+import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -52,6 +53,7 @@ object StampRallySearchScreen {
             val lockedSeriesEntry by viewModel.lockedSeriesEntry.collectAsStateWithLifecycle()
             val languageOptionMedia = LocalLanguageOptionMedia.current
             val unfilteredCount by viewModel.unfilteredCount.collectAsStateWithLifecycle()
+            val scaffoldState = rememberBottomSheetScaffoldState()
             SearchScreen(
                 state = viewModel.searchState,
                 eventSink = {
@@ -60,9 +62,10 @@ object StampRallySearchScreen {
                 query = viewModel.query,
                 entries = entries,
                 unfilteredCount = { unfilteredCount },
+                scaffoldState = scaffoldState,
                 sortFilterState = sortFilterState,
                 gridState = gridState,
-                header = { DataYearHeader(dataYearHeaderState) },
+                header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
                 title = { lockedSeriesEntry?.name(languageOptionMedia) },
                 onClickBack = onClickBack,
                 itemToSharedElementId = { it.stampRally.id },

@@ -20,8 +20,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
-import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -54,6 +54,7 @@ object ArtistMerchScreen {
                 Header(
                     state = state,
                     sortFilterController = sortFilterController,
+                    scaffoldState = scaffoldState,
                     showMerch = artistMerchViewModel.route.merch != null,
                     merchEntry = { merchEntry },
                     onFavoriteToggle = artistMerchViewModel::onFavoriteToggle,
@@ -76,6 +77,7 @@ object ArtistMerchScreen {
     private fun Header(
         state: ArtistSearchScreen.State,
         sortFilterController: ArtistSortFilterController,
+        scaffoldState: BottomSheetScaffoldState,
         showMerch: Boolean,
         merchEntry: () -> MerchWithUserData?,
         onFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
@@ -98,7 +100,7 @@ object ArtistMerchScreen {
                         .Content(sortFilterController.state.expanded, false)
                 }
             }
-            DataYearHeader(dataYearHeaderState)
+            BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
         }
     }
 }

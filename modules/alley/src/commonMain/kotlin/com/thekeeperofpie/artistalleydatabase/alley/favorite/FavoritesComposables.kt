@@ -8,7 +8,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_no
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_yes
-import com.thekeeperofpie.artistalleydatabase.alley.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import org.jetbrains.compose.resources.stringResource
