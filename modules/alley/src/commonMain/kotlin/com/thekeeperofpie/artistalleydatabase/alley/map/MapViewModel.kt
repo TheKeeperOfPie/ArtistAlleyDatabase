@@ -90,6 +90,7 @@ class MapViewModel(
                     if (artist != null) {
                         val images = AlleyDataUtils.getArtistImages(
                             year = artist.year,
+                            artistId = artist.id,
                             booth = booth,
                             name = artist.name,
                         )
@@ -114,6 +115,7 @@ class MapViewModel(
                         val primaryArtist = artists.first()
                         val images = AlleyDataUtils.getArtistImages(
                             year = primaryArtist.year,
+                            artistId = primaryArtist.id,
                             booth = booth,
                             name = primaryArtist.name,
                         )
@@ -203,6 +205,7 @@ class MapViewModel(
                     if (artist != null) {
                         val images = AlleyDataUtils.getArtistImages(
                             year = artist.year,
+                            artistId = artist.id,
                             booth = booth,
                             name = artist.name,
                         )
@@ -226,6 +229,7 @@ class MapViewModel(
                         val primaryArtist = artists.first()
                         val images = AlleyDataUtils.getArtistImages(
                             year = primaryArtist.year,
+                            artistId = primaryArtist.id,
                             booth = booth,
                             name = primaryArtist.name,
                         )

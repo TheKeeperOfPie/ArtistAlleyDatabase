@@ -73,6 +73,7 @@ class ArtistEntryGridModel(
                 hasMoreMerch = merch.size > TAGS_TO_SHOW,
                 images = AlleyDataUtils.getArtistImages(
                     year = entry.artist.year,
+                    artistId = entry.artist.id,
                     booth = entry.artist.booth,
                     name = entry.artist.name,
                 ),

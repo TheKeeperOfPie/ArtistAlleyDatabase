@@ -72,6 +72,7 @@ class ArtistDetailsViewModel(
     var catalogImages by mutableStateOf(
         AlleyDataUtils.getArtistImages(
             year = route.year,
+            artistId = route.id,
             booth = route.booth,
             name = route.name,
         )
@@ -138,6 +139,7 @@ class ArtistDetailsViewModel(
                 val artist = entry.filterNotNull().first().artist
                 catalogImages = AlleyDataUtils.getArtistImages(
                     year = route.year,
+                    artistId = artist.id,
                     booth = artist.booth,
                     name = artist.name,
                 )

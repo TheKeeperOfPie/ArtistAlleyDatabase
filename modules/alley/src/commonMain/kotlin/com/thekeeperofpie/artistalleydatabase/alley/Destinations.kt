@@ -59,7 +59,7 @@ sealed interface Destinations : NavDestination {
         @Serializable
         sealed interface Type {
             @Serializable
-            data class Artist(val booth: String, val name: String?) : Type
+            data class Artist(val id: String, val booth: String, val name: String?) : Type
 
             @Serializable
             data class StampRally(

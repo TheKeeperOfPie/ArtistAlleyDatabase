@@ -189,6 +189,7 @@ object ArtistAlleyAppScreen {
                                                                     year = route.year,
                                                                     id = route.id,
                                                                     type = Destinations.Images.Type.Artist(
+                                                                        id = artist.id,
                                                                         booth = artist.booth,
                                                                         name = artist.name,
                                                                     ),

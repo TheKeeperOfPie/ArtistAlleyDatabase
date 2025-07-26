@@ -18,6 +18,7 @@ object AlleyDataUtils {
 
     fun getArtistImages(
         year: DataYear,
+        artistId: String,
         booth: String?,
         name: String?,
     ): List<CatalogImage> {
@@ -33,11 +34,14 @@ object AlleyDataUtils {
             .filterIsInstance<ComposeFile.Folder>()
             .filter { it.name.startsWith(targetName) }
 
-        val targetFolder = if (year == DataYear.ANIME_EXPO_2023 && name != null) {
-            findName2023(candidates, name)
-        } else {
-            candidates.firstOrNull()
-        }
+        val targetFolder = when (year) {
+            DataYear.ANIME_EXPO_2023 -> name?.let { findName2023(candidates, name) }
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+                -> null
+            DataYear.ANIME_NYC_2025 -> findAnimeNyc(candidates, artistId)
+        } ?: candidates.firstOrNull()
 
         @OptIn(ExperimentalResourceApi::class)
         return targetFolder?.files
@@ -67,7 +71,8 @@ object AlleyDataUtils {
                 -> fixName(file)
             DataYear.ANIME_EXPO_2025,
             DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025, -> id
+            DataYear.ANIME_NYC_2025,
+                -> id
         }
         val targetFolder = when (year) {
             DataYear.ANIME_EXPO_2023 -> ComposeFiles.rallies2023
@@ -105,6 +110,9 @@ object AlleyDataUtils {
             }
         }
     }
+
+    private fun findAnimeNyc(boothFolders: List<ComposeFile.Folder>, artistId: String) =
+        boothFolders.find { it.name.endsWith(artistId) }
 
     private fun fixName(name: String) = name.replace("'", "_")
         .replace("&", "_")
