@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -28,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
@@ -144,6 +144,7 @@ class FavoritesViewModel(
                         merchIn = emptySet(),
                         commissionsIn = emptySet(),
                         linkTypesIn = emptySet(),
+                        exhibitorTagsIn = emptySet(),
                         showOnlyWithCatalog = false,
                         showOnlyConfirmedTags = false,
                         hideFavorited = false,

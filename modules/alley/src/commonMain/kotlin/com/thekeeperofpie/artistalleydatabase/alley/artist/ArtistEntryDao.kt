@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
@@ -599,6 +600,13 @@ class ArtistEntryDao(
 
                 if (linkTypeStatements.isNotEmpty()) {
                     this += "(${linkTypeStatements.joinToString(separator = " OR ")})"
+                }
+            }
+
+            if (year == DataYear.ANIME_NYC_2025) {
+                val exhibitorTagFlags = AnimeNycExhibitorTags.parseFlags(filterParams.exhibitorTagsIn)
+                if (exhibitorTagFlags != 0L) {
+                    this += "($tableName.exhibitorTagFlags & $exhibitorTagFlags) != 0"
                 }
             }
 

@@ -305,6 +305,12 @@
     <string name="alley_link_type_category_support">Support</string>
     <string name="alley_link_type_category_other">Other</string>
 
+    <string name="alley_exhibitor_tags_filter_label">Exhibitor tags</string>
+    <string name="alley_exhibitor_tags_filter_content_description">Exhibitor tags filter expand</string>
+    <string name="alley_exhibitor_tags_filter_chip_state_content_description">Exhibitor tags chip state</string>
+    <string name="alley_exhibitor_tags_icon_content_description">Exhibitor tags info</string>
+    <string name="alley_exhibitor_tags_explanation">Provided by ANYC, not validated</string>
+
     <string name="alley_con_upcoming_suffix">, export data to your phone so your favorites are available at con</string>
     <string name="alley_con_upcoming_show_qr">Show QR</string>
 

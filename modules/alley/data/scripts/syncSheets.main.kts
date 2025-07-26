@@ -23,7 +23,7 @@ val ralliesAnimeExpo2025OutputFile = inputsFolder.resolve("animeExpo2025/rallies
 
 downloadUrl(sheetIdAnimeNyc2024, "Artists", artistsAnimeNyc2024OutputFile, "A1:Q")
 
-downloadUrl(sheetIdAnimeNyc2025, "Artists", artistsAnimeNyc2025OutputFile, "A1:Q")
+downloadUrl(sheetIdAnimeNyc2025, "Artists", artistsAnimeNyc2025OutputFile, "A1:R")
 downloadUrl(sheetIdAnimeNyc2025, "Series", seriesOutputFile)
 downloadUrl(sheetIdAnimeNyc2025, "Merch", merchOutputFile)
 

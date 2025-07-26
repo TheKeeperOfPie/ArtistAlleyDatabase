@@ -123,6 +123,7 @@ CREATE TABLE
         seriesConfirmed TEXT AS List<String> NOT NULL,
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
+        exhibitorTagFlags INTEGER NOT NULL DEFAULT 0,
         counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
@@ -140,6 +141,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2025_fts USING FTS5 (
     seriesConfirmed,
     merchInferred,
     merchConfirmed,
+    exhibitorTagFlags,
     counter,
     content=artistEntryAnimeNyc2025,
     tokenize="unicode61 remove_diacritics 2"

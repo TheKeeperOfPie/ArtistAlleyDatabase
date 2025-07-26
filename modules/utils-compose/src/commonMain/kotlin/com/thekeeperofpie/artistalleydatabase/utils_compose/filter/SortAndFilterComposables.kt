@@ -107,6 +107,32 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
+@Composable
+fun SortFilterHeaderText(
+    expanded: Boolean,
+    text: String,
+    modifier: Modifier = Modifier,
+    fillWidthOnExpand: Boolean = true,
+) {
+    Text(
+        // Use a zero width space to invalidate the Composable, or otherwise the width
+        // will not change in response to expanded. This might be a bug in Compose.
+        text = text + "\u200B".takeIf { expanded }.orEmpty(),
+        style = MaterialTheme.typography.titleMedium,
+        modifier = modifier
+            .run {
+                if (expanded && fillWidthOnExpand) {
+                    fillMaxWidth()
+                } else {
+                    wrapContentWidth()
+                }
+            }
+            .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
+            .heightIn(min = 32.dp)
+            .wrapContentHeight(Alignment.CenterVertically)
+    )
+}
+
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 object SortAndFilterComposables {
 
@@ -431,7 +457,7 @@ fun <FilterType> FilterSection(
     filterIn: Set<FilterType>,
     filterNotIn: Set<FilterType>,
     onFilterClick: (FilterType) -> Unit,
-    title: @Composable () -> String,
+    title: @Composable () -> Unit,
     titleDropdownContentDescriptionRes: StringResource,
     valueToText: @Composable (FilterType) -> String,
     valueToImage: (@Composable (FilterType, enabled: Boolean?) -> String?)? = null,
@@ -457,7 +483,7 @@ fun <FilterType> FilterSection(
                 .padding(start = 16.dp)
                 .animateContentSize()
         ) {
-            SortFilterHeaderText(expanded, title)
+            title()
 
             options.forEach {
                 val enabled = when {

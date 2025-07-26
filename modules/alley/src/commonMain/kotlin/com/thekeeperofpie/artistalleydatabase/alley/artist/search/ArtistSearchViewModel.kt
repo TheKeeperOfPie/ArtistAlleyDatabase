@@ -11,11 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -134,6 +134,7 @@ class ArtistSearchViewModel(
                         merchIn = setOfNotNull(lockedMerch),
                         commissionsIn = emptySet(),
                         linkTypesIn = emptySet(),
+                        exhibitorTagsIn = emptySet(),
                         showOnlyWithCatalog = false,
                         showOnlyConfirmedTags = false,
                         hideFavorited = false,

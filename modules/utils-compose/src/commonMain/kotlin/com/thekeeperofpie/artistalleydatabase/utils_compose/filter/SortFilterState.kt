@@ -158,7 +158,7 @@ sealed class SortFilterSectionState(val id: String) {
     @Stable
     class Filter<FilterType>(
         id: String,
-        private val title: @Composable () -> String,
+        private val title: @Composable (expanded: Boolean) -> Unit,
         private val titleDropdownContentDescription: StringResource,
         private val includeExcludeIconContentDescription: StringResource,
         private var options: StateFlow<List<FilterType>>,
@@ -181,7 +181,9 @@ sealed class SortFilterSectionState(val id: String) {
             valueToImage: (@Composable (FilterType, enabled: Boolean?) -> String?)? = null,
             selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
         ) : this(
-            title = { stringResource(title) },
+            title = { expanded ->
+                SortFilterHeaderText(expanded = expanded, text = stringResource(title))
+            },
             id = title.key,
             titleDropdownContentDescription = titleDropdownContentDescription,
             includeExcludeIconContentDescription = includeExcludeIconContentDescription,
@@ -253,7 +255,7 @@ sealed class SortFilterSectionState(val id: String) {
                         SelectionMethod.ONLY_INCLUDE_WITH_EXCLUSIVE_FIRST -> {
                             if (filterIn.contains(it)) {
                                 filterIn -= it
-                            } else if (it == options.first() ){
+                            } else if (it == options.first()) {
                                 filterIn = setOf(options.first())
                             } else {
                                 filterIn = filterIn + it - options.first()
@@ -271,7 +273,7 @@ sealed class SortFilterSectionState(val id: String) {
                         }
                     }
                 },
-                title = title,
+                title = { title(state.expandedState[id] == true) },
                 titleDropdownContentDescriptionRes = titleDropdownContentDescription,
                 valueToText = valueToText,
                 valueToImage = valueToImage,

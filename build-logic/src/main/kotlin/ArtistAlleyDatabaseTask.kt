@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
@@ -935,6 +936,14 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                     val (linkFlags, linkFlags2) = Link.parseFlags(linkTypes + storeLinkTypes)
                     val commissionFlags = CommissionType.parseFlags(commissions)
+
+                    val exhibitorTags = it["Exhibitor Tags"]
+                        ?.split("\n")
+                        ?.map { it.trim() }
+                        ?.filter { it.isNotBlank() }
+                        .orEmpty()
+                    val exhibitorTagFlags = AnimeNycExhibitorTags.parseFlags(exhibitorTags)
+
                     val artistEntry = ArtistEntryAnimeNyc2025(
                         id = id,
                         booth = booth?.takeIf { it.length == 3 },
@@ -953,6 +962,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         notes = notes,
                         commissions = commissions,
                         commissionFlags = commissionFlags,
+                        exhibitorTagFlags = exhibitorTagFlags,
                         counter = counter++,
                     )
 

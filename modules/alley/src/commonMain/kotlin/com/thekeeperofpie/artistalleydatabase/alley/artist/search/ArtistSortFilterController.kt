@@ -1,18 +1,45 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_chip_state_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_commission_type_filter_label
+import artistalleydatabase.modules.alley.generated.resources.alley_exhibitor_tags_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_exhibitor_tags_filter_chip_state_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_exhibitor_tags_filter_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_exhibitor_tags_filter_label
+import artistalleydatabase.modules.alley.generated.resources.alley_exhibitor_tags_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_advanced_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_filter_force_one_display_column
@@ -42,16 +69,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.AlleyTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.textRes
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.IncludeExcludeIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.TagEntry
@@ -278,6 +308,73 @@ class ArtistSortFilterController(
         }
     }
 
+    private val exhibitorTagsIn = savedStateHandle.getMutableStateFlow<String, Set<String>>(
+        scope = scope,
+        key = "exhibitorTagsIn",
+        initialValue = { emptySet() },
+        serialize = Json::encodeToString,
+        deserialize = Json::decodeFromString,
+    )
+    private val exhibitorTagsSection = SortFilterSectionState.Filter(
+        id = Res.string.alley_exhibitor_tags_filter_label.key,
+        title = { expanded ->
+            var showPopup by remember { mutableStateOf(false) }
+            Row(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .run {
+                        if (expanded) {
+                            fillMaxWidth()
+                        } else {
+                            wrapContentWidth()
+                        }
+                    }
+                    .clickable(interactionSource = null, indication = null) {
+                        showPopup = !showPopup
+                    }
+            ) {
+                SortFilterHeaderText(
+                    expanded = expanded,
+                    text = stringResource(Res.string.alley_exhibitor_tags_filter_label),
+                    fillWidthOnExpand = false,
+                    modifier = Modifier.alignByBaseline()
+                )
+
+                Box(modifier = Modifier.alignByBaseline()) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = stringResource(
+                            Res.string.alley_exhibitor_tags_icon_content_description
+                        ),
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .heightIn(max = 20.dp)
+                    )
+
+                    if (showPopup) {
+                        Popup(onDismissRequest = { showPopup = false }) {
+                            Text(
+                                text = stringResource(Res.string.alley_exhibitor_tags_explanation),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .widthIn(max = 200.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        titleDropdownContentDescription = Res.string.alley_exhibitor_tags_filter_content_description,
+        includeExcludeIconContentDescription = Res.string.alley_exhibitor_tags_filter_chip_state_content_description,
+        options = MutableStateFlow(AnimeNycExhibitorTags.TAGS.toList()),
+        filterIn = exhibitorTagsIn,
+        filterNotIn = MutableStateFlow(emptySet()),
+        valueToText = { it },
+        selectionMethod = SortFilterSectionState.Filter.SelectionMethod.ONLY_INCLUDE,
+    )
+
     val showOnlyWithCatalog = if (allowSettingsBasedToggles) {
         settings.showOnlyWithCatalog
     } else {
@@ -362,14 +459,17 @@ class ArtistSortFilterController(
         )
     )
 
-    private val sections = listOf(
-        sortSection,
-        seriesAutocompleteSection.section,
-        merchSection,
-        commissionsSection,
-        linkTypeSection,
-        advancedSection,
-    )
+    private val sections = dataYear.mapState(scope) { year ->
+        listOfNotNull(
+            sortSection,
+            seriesAutocompleteSection.section,
+            merchSection,
+            commissionsSection,
+            exhibitorTagsSection.takeIf { year == DataYear.ANIME_NYC_2025 },
+            linkTypeSection,
+            advancedSection,
+        )
+    }
 
     @Suppress("UNCHECKED_CAST")
     private val filterParams = combineStates(
@@ -380,6 +480,7 @@ class ArtistSortFilterController(
         merchIdIn,
         commissionsIn,
         linkTypeIdIn,
+        exhibitorTagsIn,
         showOnlyWithCatalog,
         showOnlyConfirmedTags,
         hideFavorited,
@@ -393,10 +494,11 @@ class ArtistSortFilterController(
             merchIn = (it[4] as Set<String>) + setOfNotNull(lockedMerchId),
             commissionsIn = it[5] as Set<CommissionType>,
             linkTypesIn = (it[6] as Set<String>).map(Link.Type::valueOf).toSet(),
-            showOnlyWithCatalog = it[7] as Boolean,
-            showOnlyConfirmedTags = it[8] as Boolean,
-            hideFavorited = it[9] as Boolean,
-            hideIgnored = it[10] as Boolean,
+            exhibitorTagsIn = it[7] as Set<String>,
+            showOnlyWithCatalog = it[8] as Boolean,
+            showOnlyConfirmedTags = it[9] as Boolean,
+            hideFavorited = it[10] as Boolean,
+            hideIgnored = it[11] as Boolean,
         )
     }
 
@@ -407,7 +509,7 @@ class ArtistSortFilterController(
     )
 
     fun clear() {
-        sections.forEach { it.clear() }
+        sections.value.forEach { it.clear() }
         showOnlyConfirmedTagsSection.clear()
         hideFavoritedSection.clear()
     }
@@ -419,6 +521,7 @@ class ArtistSortFilterController(
         val merchIn: Set<String>,
         val commissionsIn: Set<CommissionType>,
         val linkTypesIn: Set<Link.Type>,
+        val exhibitorTagsIn: Set<String>,
         val showOnlyWithCatalog: Boolean,
         val showOnlyConfirmedTags: Boolean,
         val hideFavorited: Boolean,

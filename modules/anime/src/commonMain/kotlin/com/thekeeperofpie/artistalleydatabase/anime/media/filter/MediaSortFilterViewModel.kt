@@ -52,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterExpandedState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
@@ -345,12 +346,13 @@ abstract class MediaSortFilterViewModel<SortType>(
         languageAndSites.map {
             SortFilterSectionState.Filter<LicensorsQuery.Data.ExternalLinkSourceCollection>(
                 id = "licensedBy-${it.language}",
-                title = @Composable {
-                    it.language ?: if (languageAndSites.size == 1) {
+                title = @Composable { expanded ->
+                    val text = it.language ?: if (languageAndSites.size == 1) {
                         stringResource(Res.string.anime_media_filter_licensed_by_label)
                     } else {
                         stringResource(Res.string.anime_media_filter_licensed_by_general_label)
                     }
+                    SortFilterHeaderText(expanded = expanded, text = text)
                 },
                 titleDropdownContentDescription = Res.string.anime_media_filter_licensed_by_content_description,
                 // TODO: Content description should include site?
