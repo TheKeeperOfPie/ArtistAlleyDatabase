@@ -17,6 +17,10 @@
         <item quantity="one">1 result filtered out</item>
         <item quantity="other">%1$d results filtered out</item>
     </plurals>
+    <plurals name="alley_search_title_results_suffix">
+        <item quantity="one">%1$s</item>
+        <item quantity="other">%1$s (%2$d results)</item>
+    </plurals>
 
     <string name="alley_favorite_icon_content_description">Mark as favorite</string>
     <string name="alley_artist_catalog_image">Artist catalog image</string>

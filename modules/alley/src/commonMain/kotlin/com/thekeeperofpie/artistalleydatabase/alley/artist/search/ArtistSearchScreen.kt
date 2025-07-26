@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.cash.paging.LoadStateLoading
 import app.cash.paging.PagingData
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_booth
@@ -51,6 +52,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
+import artistalleydatabase.modules.alley.generated.resources.alley_search_title_results_suffix
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -81,6 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSa
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -129,7 +132,22 @@ object ArtistSearchScreen {
             val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
             val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
             val unfilteredCount by state.unfilteredCount.collectAsStateWithLifecycle()
-            val seriesTitle = lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
+            val count = entries.itemCount
+            val title = (lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
+                ?: state.lockedMerch)
+                ?.let {
+                    @Suppress("USELESS_IS_CHECK")
+                    if (entries.loadState.refresh is LoadStateLoading) {
+                        it
+                    } else {
+                        pluralStringResource(
+                            Res.plurals.alley_search_title_results_suffix,
+                            count,
+                            it,
+                            count,
+                        )
+                    }
+                }
 
             SearchScreen(
                 state = state.searchState,
@@ -143,7 +161,7 @@ object ArtistSearchScreen {
                 scaffoldState = scaffoldState,
                 sortFilterState = sortFilterState,
                 gridState = gridState,
-                title = { seriesTitle ?: state.lockedMerch },
+                title = { title },
                 header = header,
                 itemToSharedElementId = { it.artist.id },
                 actions = actions,
