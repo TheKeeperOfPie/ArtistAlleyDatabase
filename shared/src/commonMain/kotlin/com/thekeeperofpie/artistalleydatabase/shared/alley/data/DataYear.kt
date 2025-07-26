@@ -5,10 +5,17 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.UtcOffset
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-@Serializable
+@Serializable(with = DataYearSerializer::class)
 enum class DataYear(
     val serializedName: String,
     val year: Int,
@@ -26,6 +33,7 @@ enum class DataYear(
         dates = LocalDate(year = 2023, Month.JULY, 1)..LocalDate(year = 2023, Month.JULY, 4),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
+
     @SerialName("AX2024")
     ANIME_EXPO_2024(
         serializedName = "AX2024",
@@ -35,6 +43,7 @@ enum class DataYear(
         dates = LocalDate(year = 2024, Month.JULY, 4)..LocalDate(year = 2024, Month.JULY, 7),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
+
     @SerialName("AX2025")
     ANIME_EXPO_2025(
         serializedName = "AX2025",
@@ -44,6 +53,7 @@ enum class DataYear(
         dates = LocalDate(year = 2025, Month.JULY, 3)..LocalDate(year = 2025, Month.JULY, 6),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
+
     @SerialName("ANYC2024")
     ANIME_NYC_2024(
         serializedName = "ANYC2024",
@@ -53,6 +63,7 @@ enum class DataYear(
         dates = LocalDate(year = 2024, Month.AUGUST, 23)..LocalDate(year = 2024, Month.AUGUST, 25),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
     ),
+
     @SerialName("ANYC2025")
     ANIME_NYC_2025(
         serializedName = "ANYC2025",
@@ -63,7 +74,34 @@ enum class DataYear(
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
     ),
     ;
+
     companion object {
         val LATEST = ANIME_NYC_2025
     }
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+class DataYearSerializer : KSerializer<DataYear> {
+    override val descriptor = PrimitiveSerialDescriptor(
+        serialName = "com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear",
+        kind = PrimitiveKind.STRING,
+    )
+
+    override fun serialize(
+        encoder: Encoder,
+        value: DataYear,
+    ) {
+        encoder.encodeString(value.serializedName)
+    }
+
+    override fun deserialize(decoder: Decoder): DataYear {
+        return when (val value = decoder.decodeString()) {
+            "YEAR_2023" -> DataYear.ANIME_EXPO_2023
+            "YEAR_2024" -> DataYear.ANIME_EXPO_2024
+            "YEAR_2025" -> DataYear.ANIME_EXPO_2025
+            else -> DataYear.entries.find { it.serializedName == value }
+                ?: throw SerializationException("$value is not a valid enum ${descriptor.serialName}}")
+        }
+    }
+
 }
