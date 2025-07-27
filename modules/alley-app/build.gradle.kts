@@ -235,7 +235,7 @@ dependencies {
     }
 }
 
-val buildBothWebVariants by tasks.registering(Copy::class) {
+val buildBothWebVariants by tasks.registering(Sync::class) {
     val wasmDist = "wasmJsBrowserDistribution"
     val jsDist = "jsBrowserDistribution"
 
