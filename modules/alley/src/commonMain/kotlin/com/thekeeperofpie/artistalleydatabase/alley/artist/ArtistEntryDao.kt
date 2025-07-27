@@ -188,13 +188,14 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(): ArtistWithUserData {
             seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
             merchInferred = getString(15)!!.let(Json::decodeFromString),
             merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-            counter = getLong(17)!!,
+            // Skip 1 for exhibitor tag flags
+            counter = getLong(18)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2025,
-            favorite = getBooleanFixed(18),
-            ignored = getBooleanFixed(19),
+            favorite = getBooleanFixed(19),
+            ignored = getBooleanFixed(20),
         )
     )
 }
