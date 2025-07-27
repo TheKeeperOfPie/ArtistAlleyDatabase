@@ -484,10 +484,11 @@ private fun FaqSection(onInstallClick: () -> Unit) {
             HorizontalDivider()
         }
 
+        val latestConvention = stringResource(DataYear.LATEST.fullName)
         QuestionAnswer(
             question = "I'm a tabling artist and my info is missing or incorrect",
             answer = {
-                append("Submit the ")
+                append("If you're tabling at the latest convention ($latestConvention), submit the ")
                 withStyle(
                     SpanStyle(
                         color = colorScheme.primary,
