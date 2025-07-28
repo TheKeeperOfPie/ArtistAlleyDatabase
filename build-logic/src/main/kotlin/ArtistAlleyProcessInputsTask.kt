@@ -82,7 +82,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         processed.copyRecursively(
                             output,
                             overwrite = false,
-                            onError = { file, exception ->
+                            onError = { _, exception ->
                                 if (exception is FileAlreadyExistsException) {
                                     OnErrorAction.SKIP
                                 } else {
@@ -134,7 +134,13 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogsAnimeNyc2025 = "catalogsAnimeNyc2025" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "animeNyc2025/catalogs",
-                    transformName = { it.substringBefore(" -") },
+                    transformName = {
+                        it.split("-").let {
+                            val booth = it.first().trim()
+                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
+                            "$booth - $uuid"
+                        }
+                    },
                 )
 
                 buildComposeFiles(
