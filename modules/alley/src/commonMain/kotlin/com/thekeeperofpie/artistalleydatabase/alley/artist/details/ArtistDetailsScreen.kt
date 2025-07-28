@@ -23,6 +23,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Map
@@ -37,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -60,6 +62,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
+import artistalleydatabase.modules.alley.generated.resources.alley_copy_link_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_year
@@ -588,15 +591,16 @@ object ArtistDetailsScreen {
             Alignment.BottomEnd,
             onClick = { link?.link?.let { uriHandler.openUri(it) } }) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .padding(
                         start = 16.dp,
-                        end = 16.dp,
                         top = 8.dp,
                         bottom = bottomPadding,
                     )
                     .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -637,6 +641,23 @@ object ArtistDetailsScreen {
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier
                         .weight(1f)
+                        .placeholder(
+                            visible = link == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                )
+
+                val clipboardManager = LocalClipboardManager.current
+                Icon(
+                    imageVector = Icons.Default.ContentCopy,
+                    contentDescription = stringResource(Res.string.alley_copy_link_icon_content_description),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .clickable(enabled = link != null) {
+                            clipboardManager.setText(buildAnnotatedString { append(link?.link) })
+                        }
+                        .heightIn(min = 24.dp)
+                        .padding(horizontal = 16.dp)
                         .placeholder(
                             visible = link == null,
                             highlight = PlaceholderHighlight.shimmer(),
