@@ -11,14 +11,14 @@ object Versions {
     object androidx {
         const val activity = "1.12.0-alpha04"
         const val annotation = "1.9.1"
-        const val browser = "1.9.0-beta01"
+        const val browser = "1.9.0-rc01"
         const val core = "1.17.0-beta01"
-        const val media3 = "1.8.0-beta01"
+        const val media3 = "1.8.0-rc02"
         const val paging = "3.4.0-alpha01"
         const val palette = "1.0.0"
-        const val room = "2.7.2"
+        const val room = "2.8.0-alpha01"
         const val securityCrypto = "1.1.0-beta01"
-        const val sqlite = "2.5.2"
+        const val sqlite = "2.6.0-alpha01"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
@@ -39,7 +39,7 @@ object Versions {
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.17.1"
     const val burst = "2.6.0"
-    const val coil = "3.2.0"
+    const val coil = "3.3.0"
     const val colormath = "3.6.1"
     const val cronetEmbedded = "119.6045.31"
     const val diffUtils = "0.7.0"
@@ -71,8 +71,8 @@ object Versions {
         }
 
         object composeMultiplatform {
-            const val plugin = "1.9.0-alpha03"
-            const val runtime = "1.9.0-alpha03"
+            const val plugin = "1.9.0-beta01"
+            const val runtime = "1.9.0-beta01"
         }
     }
 
@@ -113,7 +113,7 @@ object Versions {
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.1"
-    const val unityAds = "4.15.1"
+    const val unityAds = "4.16.0"
     const val uriKmp = "0.0.19"
     const val webpImageIo = "0.9.0"
     const val xmlUtil = "0.91.1"

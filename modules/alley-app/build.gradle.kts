@@ -250,7 +250,7 @@ val buildBothWebVariants by tasks.registering(Sync::class) {
 }
 
 val copyServiceWorkerOutput: TaskProvider<Copy> by tasks.registering(Copy::class) {
-    dependsOn("buildBothWebVariants")
+    dependsOn(buildBothWebVariants)
     from(serviceWorkerOutput)
     into(project.layout.buildDirectory.dir("dist/web/productionExecutable"))
 }
@@ -271,10 +271,8 @@ configurations.all {
 // Replicates Workbox InjectManifest since configuring that doesn't seem to work
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
-    dependsOn(
-        ":modules:alley:user:verifySqlDelightMigration",
-        "copyServiceWorkerOutput"
-    )
+    dependsOn(":modules:alley:user:verifySqlDelightMigration")
+    dependsOn(copyServiceWorkerOutput)
 
     val distDir = project.layout.buildDirectory.dir("dist/web/productionExecutable")
     doLast {
