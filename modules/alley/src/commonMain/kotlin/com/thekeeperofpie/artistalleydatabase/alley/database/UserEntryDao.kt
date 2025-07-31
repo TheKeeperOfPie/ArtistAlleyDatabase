@@ -23,7 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -108,7 +107,10 @@ class UserEntryDao(
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
                         .map { dataYear to it.map { it.toBoothWithFavorite() } }
-                    DataYear.ANIME_NYC_2025 -> flowOf(dataYear to emptyList()) // TODO: Add ANYC Map
+                    DataYear.ANIME_NYC_2025 -> getBoothsWithFavoritesAnimeNyc2025()
+                        .asFlow()
+                        .mapToList(PlatformDispatchers.IO)
+                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
                 }
             }
         }

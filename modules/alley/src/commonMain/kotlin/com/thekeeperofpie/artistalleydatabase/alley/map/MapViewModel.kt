@@ -49,9 +49,10 @@ class MapViewModel(
                     when (dataYear) {
                         DataYear.ANIME_EXPO_2023,
                         DataYear.ANIME_EXPO_2024,
-                        DataYear.ANIME_EXPO_2025 -> mapBooths(booths)
-                        DataYear.ANIME_NYC_2024,
-                        DataYear.ANIME_NYC_2025 -> mapAnimeNycBooths(booths)
+                        DataYear.ANIME_EXPO_2025,
+                            -> mapBooths(booths)
+                        DataYear.ANIME_NYC_2024 -> mapAnimeNyc2024Booths(booths)
+                        DataYear.ANIME_NYC_2025 -> mapAnimeNyc2025Booths(booths)
                     }
                 }
                 .flowOn(CustomDispatchers.IO)
@@ -137,20 +138,20 @@ class MapViewModel(
                             gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
                         )
                     }
-            }.also {
-                currentIndex++
-                if (letterIndex == 11) {
-                    // There's a large gap between the two halves of the map
-                    currentIndex += 4
-                } else if (letterIndex % 2 == 0) {
-                    // Skip an extra between every 2 tables
+                }.also {
                     currentIndex++
+                    if (letterIndex == 11) {
+                        // There's a large gap between the two halves of the map
+                        currentIndex += 4
+                    } else if (letterIndex % 2 == 0) {
+                        // Skip an extra between every 2 tables
+                        currentIndex++
+                    }
                 }
-            }
         }.flatten()
     }
 
-    private fun animeNycIndexX(letter: Char, booth: Int): Int {
+    private fun animeNyc2024IndexX(letter: Char, booth: Int): Int {
         val isEven = (booth % 2) == 0
         if (booth <= 4) {
             // These are irregular enough that they're just hardcoded
@@ -186,7 +187,7 @@ class MapViewModel(
         return (letter - 'A') * 3 + offset - 1
     }
 
-    private fun mapAnimeNycBooths(booths: List<BoothWithFavorite>): List<Table> {
+    private fun mapAnimeNyc2024Booths(booths: List<BoothWithFavorite>): List<Table> {
         @Suppress("UNCHECKED_CAST")
         val letterToBooths = (booths.groupBy { it.booth?.take(1) }
             .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
@@ -199,7 +200,7 @@ class MapViewModel(
                     booth ?: return@mapNotNull null
                     val tableNumber = booth.filter { it.isDigit() }.toInt()
                     val letter = booth[0]
-                    val gridX = animeNycIndexX(letter, tableNumber)
+                    val gridX = animeNyc2024IndexX(letter, tableNumber)
                     val gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1
                     val artist = artists.singleOrNull()
                     if (artist != null) {
@@ -250,7 +251,115 @@ class MapViewModel(
                             gridY = gridY,
                         )
                     }
-            }
+                }
+        }.flatten()
+    }
+
+    private fun animeNyc2025IndexFrontX(letter: Char, booth: Int): Int? {
+        if (booth > 4) return null
+        val isEven = (booth % 2) == 0
+        // These are irregular enough that they're just hardcoded
+        return when (letter) {
+            'A' -> -1 // This is okay because there are no odd As so this becomes 0 further down
+            'B' -> 1
+            'C' -> 5
+            'E' -> 11
+            'G' -> 16
+            'H' -> 20
+            'J' -> 26
+            'L' -> 32
+            'M' -> 34
+            'N' -> 38
+            'O' -> 40
+            'P' -> 44
+            'Q' -> 46
+            'R' -> 49
+            'S' -> 53
+            'U' -> 59
+            'W' -> 65
+            else -> return null
+        } + (if (isEven) 1 else 0)
+    }
+
+    private fun animeNyc2025IndexX(letter: Char, booth: Int): Int {
+        val frontIndex = animeNyc2025IndexFrontX(letter, booth)
+        if (frontIndex != null) return frontIndex
+        val isEven = (booth % 2) == 0
+
+        val offset = when {
+            booth <= 4 -> if (isEven) 0 else -1
+            isEven -> 1
+            else -> -1
+        }
+        return (letter - 'A') * 3 + offset - 1
+    }
+
+    private fun mapAnimeNyc2025Booths(booths: List<BoothWithFavorite>): List<Table> {
+        @Suppress("UNCHECKED_CAST")
+        val letterToBooths = (booths.groupBy { it.booth?.take(1) }
+            .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
+            .toList()
+            .sortedBy { it.first }
+        val showRandomCatalogImage = settings.showRandomCatalogImage.value
+        return letterToBooths.mapIndexed { letterIndex, pair ->
+            pair.second.groupBy { it.booth }
+                .mapNotNull { (booth, artists) ->
+                    booth ?: return@mapNotNull null
+                    val tableNumber = booth.filter { it.isDigit() }.toInt()
+                    val letter = booth[0]
+                    val gridX = animeNyc2025IndexX(letter, tableNumber)
+                    val gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) +
+                            (if (tableNumber > 16) 2 else 1)
+                    val artist = artists.singleOrNull()
+                    if (artist != null) {
+                        val images = AlleyDataUtils.getArtistImages(
+                            year = artist.year,
+                            artistId = artist.id,
+                            booth = booth,
+                            name = artist.name,
+                        )
+                        val imageIndex = if (showRandomCatalogImage) {
+                            images.indices.randomOrNull()
+                        } else {
+                            0
+                        }
+                        Table.Single(
+                            year = artist.year,
+                            artistId = artist.id,
+                            booth = booth,
+                            section = null,
+                            image = imageIndex?.let(images::getOrNull),
+                            imageIndex = imageIndex,
+                            favorite = artist.favorite,
+                            gridX = gridX,
+                            gridY = gridY,
+                        )
+                    } else {
+                        val primaryArtist = artists.first()
+                        val images = AlleyDataUtils.getArtistImages(
+                            year = primaryArtist.year,
+                            artistId = primaryArtist.id,
+                            booth = booth,
+                            name = primaryArtist.name,
+                        )
+                        val imageIndex = if (showRandomCatalogImage) {
+                            images.indices.randomOrNull()
+                        } else {
+                            0
+                        }
+                        Table.Shared(
+                            year = primaryArtist.year,
+                            artistIds = artists.map { it.id },
+                            booth = booth,
+                            section = null,
+                            image = imageIndex?.let(images::getOrNull),
+                            imageIndex = imageIndex,
+                            favorite = artists.any { it.favorite },
+                            gridX = gridX,
+                            gridY = gridY,
+                        )
+                    }
+                }
         }.flatten()
     }
 
@@ -262,21 +371,22 @@ class MapViewModel(
         mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
     }
 
-    suspend fun tableEntry(year: DataYear, artistId: String) = artistEntryDao.getEntry(year, artistId)?.let {
-        val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
-            randomSeed = randomSeed,
-            showOnlyConfirmedTags = false,
-            entry = it,
-            seriesEntryCache = seriesEntryCache,
-        )
-        ArtistEntryGridModel.buildFromEntry(
-            randomSeed = randomSeed,
-            showOnlyConfirmedTags = false, // This shouldn't matter here
-            entry = it,
-            series = series,
-            hasMoreSeries = hasMoreSeries,
-        )
-    }
+    suspend fun tableEntry(year: DataYear, artistId: String) =
+        artistEntryDao.getEntry(year, artistId)?.let {
+            val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
+                randomSeed = randomSeed,
+                showOnlyConfirmedTags = false,
+                entry = it,
+                seriesEntryCache = seriesEntryCache,
+            )
+            ArtistEntryGridModel.buildFromEntry(
+                randomSeed = randomSeed,
+                showOnlyConfirmedTags = false, // This shouldn't matter here
+                entry = it,
+                series = series,
+                hasMoreSeries = hasMoreSeries,
+            )
+        }
 
     data class GridData(
         val maxX: Int,
