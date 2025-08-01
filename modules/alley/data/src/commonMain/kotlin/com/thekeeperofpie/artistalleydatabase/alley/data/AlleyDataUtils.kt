@@ -22,17 +22,36 @@ object AlleyDataUtils {
         booth: String?,
         name: String?,
     ): List<CatalogImage> {
-        booth ?: return emptyList()
-        val targetName = fixName(booth)
-        val candidates = when (year) {
+        val targetName = when (year) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+                -> if (booth == null) {
+                return emptyList()
+            } else {
+                fixName(booth)
+            }
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> artistId
+        }
+        val catalogs = when (year) {
             DataYear.ANIME_EXPO_2023 -> ComposeFiles.catalogs2023
             DataYear.ANIME_EXPO_2024 -> ComposeFiles.catalogs2024
             DataYear.ANIME_EXPO_2025 -> ComposeFiles.catalogs2025
             DataYear.ANIME_NYC_2024 -> ComposeFiles.catalogsAnimeNyc2024
             DataYear.ANIME_NYC_2025 -> ComposeFiles.catalogsAnimeNyc2025
-        }.files
-            .filterIsInstance<ComposeFile.Folder>()
-            .filter { it.name.startsWith(targetName) }
+        }.files.filterIsInstance<ComposeFile.Folder>()
+
+        val candidates = when (year) {
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+                -> catalogs.filter { it.name.startsWith(targetName) }
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> catalogs.filter { it.name.endsWith(artistId) }
+        }
 
         val targetFolder = when (year) {
             DataYear.ANIME_EXPO_2023 -> name?.let { findName2023(candidates, name) }

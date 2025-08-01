@@ -243,15 +243,10 @@ function fixCatalogImageRows() {
 }
 
 function fixCatalogImageRow(sheet: Sheet, row: number) {
-    const booth = findValueForHeader(sheet, row, "Booth")
-    if (booth == undefined) return
-    const folder = findFolder(ROOT_FOLDER_ID, booth)
+    const uuid = findValueForHeader(sheet, row, "UUID")
+    if (uuid == undefined) return
+    const folder = findFolderByUuid(ROOT_FOLDER_ID, uuid)
     if (folder == undefined) return
-
-    if (!folder.getName().includes("-")) {
-        const artistName = findValueForHeader(sheet, row, "Artist")
-        folder.setName(booth + " - " + artistName)
-    }
 
     const driveColumn = findColumnForHeader(sheet, "Drive")!!
     sheet.getRange(row, driveColumn).setValue(folder.getUrl())
@@ -379,13 +374,13 @@ function validateActiveSheet(sheetName: string): Sheet {
     return sheet
 }
 
-function findFolder(rootFolderId: string, booth: string): Folder | undefined {
+function findFolderByUuid(rootFolderId: string, uuid: string): Folder | undefined {
     const rootFolder = DriveApp.getFolderById(rootFolderId)
     if (rootFolder == undefined) throw Error("Cannot find Drive folder")
     const folders = rootFolder.getFolders()
     while (folders.hasNext()) {
         const folder = folders.next()
-        if (folder.getName().startsWith(booth)) {
+        if (folder.getName().endsWith(uuid)) {
             return folder
         }
     }
