@@ -92,8 +92,6 @@ class MapViewModel(
                         val images = AlleyDataUtils.getArtistImages(
                             year = artist.year,
                             artistId = artist.id,
-                            booth = booth,
-                            name = artist.name,
                         )
                         val imageIndex = if (showRandomCatalogImage) {
                             images.indices.randomOrNull()
@@ -117,8 +115,6 @@ class MapViewModel(
                         val images = AlleyDataUtils.getArtistImages(
                             year = primaryArtist.year,
                             artistId = primaryArtist.id,
-                            booth = booth,
-                            name = primaryArtist.name,
                         )
                         val imageIndex = if (showRandomCatalogImage) {
                             images.indices.randomOrNull()
@@ -207,8 +203,6 @@ class MapViewModel(
                         val images = AlleyDataUtils.getArtistImages(
                             year = artist.year,
                             artistId = artist.id,
-                            booth = booth,
-                            name = artist.name,
                         )
                         val imageIndex = if (showRandomCatalogImage) {
                             images.indices.randomOrNull()
@@ -231,8 +225,6 @@ class MapViewModel(
                         val images = AlleyDataUtils.getArtistImages(
                             year = primaryArtist.year,
                             artistId = primaryArtist.id,
-                            booth = booth,
-                            name = primaryArtist.name,
                         )
                         val imageIndex = if (showRandomCatalogImage) {
                             images.indices.randomOrNull()
@@ -315,8 +307,6 @@ class MapViewModel(
                         val images = AlleyDataUtils.getArtistImages(
                             year = artist.year,
                             artistId = artist.id,
-                            booth = booth,
-                            name = artist.name,
                         )
                         val imageIndex = if (showRandomCatalogImage) {
                             images.indices.randomOrNull()
@@ -339,8 +329,6 @@ class MapViewModel(
                         val images = AlleyDataUtils.getArtistImages(
                             year = primaryArtist.year,
                             artistId = primaryArtist.id,
-                            booth = booth,
-                            name = primaryArtist.name,
                         )
                         val imageIndex = if (showRandomCatalogImage) {
                             images.indices.randomOrNull()

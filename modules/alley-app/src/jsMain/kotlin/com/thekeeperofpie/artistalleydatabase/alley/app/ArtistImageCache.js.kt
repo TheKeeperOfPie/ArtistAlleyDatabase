@@ -96,8 +96,6 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                         AlleyDataUtils.getArtistImages(
                             year = it.artist.year,
                             artistId = it.artist.id,
-                            booth = it.artist.booth,
-                            name = it.artist.name,
                         )
                     }
                     if (images.isEmpty()) return
@@ -135,8 +133,6 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                             val images = AlleyDataUtils.getArtistImages(
                                 year = it,
                                 artistId = artist.artist.id,
-                                booth = artist.artist.booth,
-                                name = artist.artist.name,
                             )
                             images.forEach { image ->
                                 var matchingKey: Request? = null

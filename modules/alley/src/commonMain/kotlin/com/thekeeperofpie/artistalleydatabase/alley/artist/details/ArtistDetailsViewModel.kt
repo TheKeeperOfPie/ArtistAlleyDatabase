@@ -73,8 +73,6 @@ class ArtistDetailsViewModel(
         AlleyDataUtils.getArtistImages(
             year = route.year,
             artistId = route.id,
-            booth = route.booth,
-            name = route.name,
         )
     )
 
@@ -140,8 +138,6 @@ class ArtistDetailsViewModel(
                 catalogImages = AlleyDataUtils.getArtistImages(
                     year = route.year,
                     artistId = artist.id,
-                    booth = artist.booth,
-                    name = artist.name,
                 )
             }
         }

@@ -4,10 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -74,8 +74,6 @@ class ArtistEntryGridModel(
                 images = AlleyDataUtils.getArtistImages(
                     year = entry.artist.year,
                     artistId = entry.artist.id,
-                    booth = entry.artist.booth,
-                    name = entry.artist.name,
                 ),
                 placeholderText = entry.artist.booth ?: entry.artist.name,
             )

@@ -21,8 +21,6 @@ class ImagesViewModel(
         is Destinations.Images.Type.Artist -> AlleyDataUtils.getArtistImages(
             year = route.year,
             artistId = type.id,
-            booth = type.booth,
-            name = type.name,
         )
         is Destinations.Images.Type.StampRally -> AlleyDataUtils.getRallyImages(
             year = route.year,

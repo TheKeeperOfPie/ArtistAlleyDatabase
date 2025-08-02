@@ -19,56 +19,23 @@ object AlleyDataUtils {
     fun getArtistImages(
         year: DataYear,
         artistId: String,
-        booth: String?,
-        name: String?,
     ): List<CatalogImage> {
-        val targetName = when (year) {
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-                -> if (booth == null) {
-                return emptyList()
-            } else {
-                fixName(booth)
-            }
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> artistId
-        }
-        val catalogs = when (year) {
+        val folder = when (year) {
             DataYear.ANIME_EXPO_2023 -> ComposeFiles.catalogs2023
             DataYear.ANIME_EXPO_2024 -> ComposeFiles.catalogs2024
             DataYear.ANIME_EXPO_2025 -> ComposeFiles.catalogs2025
             DataYear.ANIME_NYC_2024 -> ComposeFiles.catalogsAnimeNyc2024
             DataYear.ANIME_NYC_2025 -> ComposeFiles.catalogsAnimeNyc2025
         }.files.filterIsInstance<ComposeFile.Folder>()
-
-        val candidates = when (year) {
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-                -> catalogs.filter { it.name.startsWith(targetName) }
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> catalogs.filter { it.name.endsWith(artistId) }
-        }
-
-        val targetFolder = when (year) {
-            DataYear.ANIME_EXPO_2023 -> name?.let { findName2023(candidates, name) }
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-                -> null
-            DataYear.ANIME_NYC_2025 -> findAnimeNyc(candidates, artistId)
-        } ?: candidates.firstOrNull()
+            .find { it.name.endsWith(artistId) }
 
         @OptIn(ExperimentalResourceApi::class)
-        return targetFolder?.files
+        return folder?.files
             ?.filterIsInstance<ComposeFile.Image>()
             ?.sortedBy { it.name }
             ?.map {
                 CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/${year.folderName}/${Folder.CATALOGS.folderName}/${targetFolder.name}/${it.name}")),
+                    uri = Uri.parse(Res.getUri("files/${year.folderName}/${Folder.CATALOGS.folderName}/${folder.name}/${it.name}")),
                     width = it.width,
                     height = it.height,
                 )
@@ -129,9 +96,6 @@ object AlleyDataUtils {
             }
         }
     }
-
-    private fun findAnimeNyc(boothFolders: List<ComposeFile.Folder>, artistId: String) =
-        boothFolders.find { it.name.endsWith(artistId) }
 
     private fun fixName(name: String) = name.replace("'", "_")
         .replace("&", "_")

@@ -24,6 +24,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.extensions.stdlib.capitalized
 import java.io.File
+import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
@@ -96,7 +97,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogs2023 = "catalogs2023" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2023/catalogs",
-                    transformName = { it },
+                    transformName = {
+                        it.split("-").let {
+                            val booth = it.first().trim()
+                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
+                                .also { UUID.fromString(it) }
+                            "$booth - $uuid"
+                        }
+                    },
                 )
                 val rallies2023 = "rallies2023" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -109,7 +117,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogs2024 = "catalogs2024" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2024/catalogs",
-                    transformName = { it.substringBefore(" -") },
+                    transformName = {
+                        it.split("-").let {
+                            val booth = it.first().trim()
+                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
+                                .also { UUID.fromString(it) }
+                            "$booth - $uuid"
+                        }
+                    },
                 )
                 val rallies2024 = "rallies2024" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -119,7 +134,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogs2025 = "catalogs2025" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2025/catalogs",
-                    transformName = { it.substringBefore(" -") },
+                    transformName = {
+                        it.split("-").let {
+                            val booth = it.first().trim()
+                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
+                                .also { UUID.fromString(it) }
+                            "$booth - $uuid"
+                        }
+                    },
                 )
                 val rallies2025 = "rallies2025" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -138,6 +160,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         it.split("-").let {
                             val booth = it.first().trim()
                             val uuid = it.takeLast(5).joinToString(separator = "-").trim()
+                                .also { UUID.fromString(it) }
                             "$booth - $uuid"
                         }
                     },
