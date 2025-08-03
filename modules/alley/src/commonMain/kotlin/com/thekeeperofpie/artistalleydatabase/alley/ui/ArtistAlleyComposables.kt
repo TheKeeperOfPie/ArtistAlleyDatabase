@@ -188,7 +188,10 @@ fun <EntryModel : SearchEntryModel> ItemCard(
                 onClickPage = { onClick(entry, it) },
             )
             if (showingFallback) {
-                ImageFallbackBanner(entry.fallbackYear!!)
+                ImageFallbackBanner(
+                    sharedElementId = sharedElementId,
+                    fallbackYear = entry.fallbackYear!!,
+                )
             }
         }
 
@@ -250,7 +253,11 @@ fun <EntryModel : SearchEntryModel> ItemImage(
             )
 
             if (showingFallback) {
-                ImageFallbackBanner(entry.fallbackYear!!, Modifier.align(Alignment.BottomCenter))
+                ImageFallbackBanner(
+                    sharedElementId = sharedElementId,
+                    fallbackYear = entry.fallbackYear!!,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -320,11 +327,16 @@ private fun <EntryModel : SearchEntryModel> rememberPagerState(
 }
 
 @Composable
-internal fun ImageFallbackBanner(fallbackYear: DataYear, modifier: Modifier = Modifier) {
+internal fun ImageFallbackBanner(
+    sharedElementId: Any,
+    fallbackYear: DataYear,
+    modifier: Modifier = Modifier,
+) {
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier = modifier
             .fillMaxWidth()
+            .sharedElement("imageFallbackBanner", sharedElementId, fallbackYear)
             .background(MaterialTheme.colorScheme.errorContainer)
             .padding(vertical = 2.dp, horizontal = 16.dp)
     ) {

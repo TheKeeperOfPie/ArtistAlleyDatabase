@@ -121,6 +121,7 @@ object DetailsScreen {
                 val windowSizeClass = currentWindowSizeClass()
                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     ExpandedLayout(
+                        sharedElementId = sharedElementId,
                         images = images,
                         fallbackYear = fallbackYear,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
@@ -142,6 +143,7 @@ object DetailsScreen {
 
     @Composable
     private fun ExpandedLayout(
+        sharedElementId: Any,
         images: () -> List<CatalogImage>,
         fallbackYear: () -> DataYear?,
         onClickImage: (imageIndex: Int) -> Unit,
@@ -176,7 +178,7 @@ object DetailsScreen {
                 Column {
                     val fallbackYear = fallbackYear()
                     if (fallbackYear != null) {
-                        ImageFallbackBanner(fallbackYear)
+                        ImageFallbackBanner(sharedElementId, fallbackYear)
                     }
 
                     LazyVerticalStaggeredGrid(
@@ -322,7 +324,7 @@ object DetailsScreen {
                 )
                 val fallbackYear = fallbackYear()
                 if (fallbackYear != null) {
-                    ImageFallbackBanner(fallbackYear)
+                    ImageFallbackBanner(sharedElementId, fallbackYear)
                 }
             }
         }
