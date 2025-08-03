@@ -320,7 +320,7 @@ private fun <EntryModel : SearchEntryModel> rememberPagerState(
 }
 
 @Composable
-private fun ImageFallbackBanner(fallbackYear: DataYear, modifier: Modifier = Modifier) {
+internal fun ImageFallbackBanner(fallbackYear: DataYear, modifier: Modifier = Modifier) {
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier = modifier

@@ -17,18 +17,21 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
+import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -38,7 +41,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -58,6 +60,7 @@ class ArtistDetailsViewModel(
     private val userNotesDao: UserNotesDao,
     private val seriesImagesStore: SeriesImagesStore,
     private val seriesEntryDao: SeriesEntryDao,
+    private val settings: ArtistAlleySettings,
     private val userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -68,13 +71,11 @@ class ArtistDetailsViewModel(
     val id = route.id
     val initialImageIndex = route.imageIndex ?: 0
 
-    // Block main to load images as fast as possible so shared transition works
-    var catalogImages by mutableStateOf(
-        AlleyDataUtils.getArtistImages(
-            year = route.year,
-            artistId = route.id,
-        )
-    )
+    val catalog = settings.showOutdatedCatalogs
+        .mapLatest { loadCatalog(it) }
+        .flowOn(dispatchers.io)
+        // Block main to load images as fast as possible so shared transition works
+        .stateInForCompose(loadCatalog(settings.showOutdatedCatalogs.value))
 
     val entry = flowFromSuspend {
         val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
@@ -130,18 +131,6 @@ class ArtistDetailsViewModel(
     private val mutationUpdates = MutableSharedFlow<SeriesUserEntry>(5, 5)
 
     init {
-        val hasImages = catalogImages.isNotEmpty()
-        // Booth changes, so input route may not have booth, re-fetch using correct year's booth
-        if (!hasImages) {
-            viewModelScope.launch(dispatchers.io) {
-                val artist = entry.filterNotNull().first().artist
-                catalogImages = AlleyDataUtils.getArtistImages(
-                    year = route.year,
-                    artistId = artist.id,
-                )
-            }
-        }
-
         viewModelScope.launch(dispatchers.io) {
             otherYears = (DataYear.entries - year)
                 .filter { artistEntryDao.getEntry(it, id) != null }
@@ -177,6 +166,13 @@ class ArtistDetailsViewModel(
         mutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
     }
 
+    private fun loadCatalog(showOutdatedCatalogs: Boolean): Catalog {
+        val images = AlleyDataUtils.getArtistImages(year, id)
+        if (!showOutdatedCatalogs || images.isNotEmpty()) return Catalog(images, null)
+        val fallback = AlleyDataUtils.getArtistImagesFallback(year, id)
+        return Catalog(fallback?.second.orEmpty(), fallback?.first)
+    }
+
     @Stable
     class Entry(
         val artist: ArtistEntry,
@@ -185,4 +181,9 @@ class ArtistDetailsViewModel(
     ) {
         var favorite by mutableStateOf(userEntry.favorite)
     }
+
+    data class Catalog(
+        val images: List<CatalogImage>,
+        val fallbackYear: DataYear?,
+    )
 }

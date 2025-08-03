@@ -74,7 +74,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
@@ -112,7 +111,7 @@ object ArtistDetailsScreen {
         seriesConfirmed: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
         imagePagerState: PagerState,
-        catalogImages: () -> List<CatalogImage>,
+        catalog: () -> ArtistDetailsViewModel.Catalog,
         seriesImages: () -> Map<String, String>,
         otherYears: () -> List<DataYear>,
         eventSink: (Event) -> Unit,
@@ -134,7 +133,8 @@ object ArtistDetailsScreen {
             },
             sharedElementId = route.id,
             favorite = { entry()?.favorite },
-            images = catalogImages,
+            images = { catalog().images },
+            fallbackYear = { catalog().fallbackYear },
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
@@ -761,7 +761,7 @@ private fun PhoneLayout() = PreviewDark {
         userNotesTextState = rememberTextFieldState(),
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
-        catalogImages = { images },
+        catalog = { ArtistDetailsViewModel.Catalog(images, null) },
         seriesImages = { emptyMap() },
         otherYears = { listOf(DataYear.ANIME_EXPO_2024) },
     )

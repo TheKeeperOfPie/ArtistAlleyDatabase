@@ -102,7 +102,8 @@ object ArtistAlleyAppScreen {
                                 val viewModel = viewModel {
                                     component.artistDetailsViewModel(createSavedStateHandle())
                                 }
-                                val images = viewModel.catalogImages
+                                val catalog by viewModel.catalog.collectAsStateWithLifecycle()
+                                val images = catalog.images
                                 val pageCount = when {
                                     images.isEmpty() -> 0
                                     images.size == 1 -> 1
@@ -135,7 +136,7 @@ object ArtistAlleyAppScreen {
                                     seriesConfirmed = { seriesConfirmed },
                                     userNotesTextState = viewModel.userNotes,
                                     imagePagerState = imagePagerState,
-                                    catalogImages = viewModel::catalogImages,
+                                    catalog = { catalog },
                                     seriesImages = { seriesImages },
                                     otherYears = viewModel::otherYears,
                                     eventSink = {

@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -61,10 +62,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProv
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
+import com.thekeeperofpie.artistalleydatabase.alley.ui.ImageFallbackBanner
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
@@ -81,6 +84,7 @@ object DetailsScreen {
         sharedElementId: Any,
         favorite: () -> Boolean?,
         images: () -> List<CatalogImage>,
+        fallbackYear: () -> DataYear?,
         imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
         content: LazyListScope.() -> Unit,
@@ -118,6 +122,7 @@ object DetailsScreen {
                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     ExpandedLayout(
                         images = images,
+                        fallbackYear = fallbackYear,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
                         content = content,
                     )
@@ -125,6 +130,7 @@ object DetailsScreen {
                     CompactLayout(
                         sharedElementId = sharedElementId,
                         images = images,
+                        fallbackYear = fallbackYear,
                         imagePagerState = imagePagerState,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
                         content = content,
@@ -137,6 +143,7 @@ object DetailsScreen {
     @Composable
     private fun ExpandedLayout(
         images: () -> List<CatalogImage>,
+        fallbackYear: () -> DataYear?,
         onClickImage: (imageIndex: Int) -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
@@ -166,33 +173,41 @@ object DetailsScreen {
                 content()
             }
             if (hasImages) {
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(500.dp),
-                    contentPadding = PaddingValues(8.dp),
-                    verticalItemSpacing = 8.dp,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxHeight().weight(1f)
-                ) {
-                    itemsIndexed(images) { index, image ->
-                        val loadingColor = MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
-                        val placeholderPainter =
-                            remember(MaterialTheme.colorScheme) { ColorPainter(loadingColor) }
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalPlatformContext.current)
-                                .data(image.uri)
-                                .placeholderMemoryCacheKey(image.uri.toString())
-                                .build(),
-                            contentScale = ContentScale.FillWidth,
-                            contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                            placeholder = placeholderPainter,
-                            modifier = Modifier
-                                .clickable { onClickImage(if (images.size > 1) index + 1 else 0) }
-                                .sharedElement("image", image.uri)
-                                .fillMaxWidth()
-                                .conditionally(image.width != null && image.height != null) {
-                                    aspectRatio(image.width!!.toFloat() / image.height!!)
-                                }
-                        )
+                Column {
+                    val fallbackYear = fallbackYear()
+                    if (fallbackYear != null) {
+                        ImageFallbackBanner(fallbackYear)
+                    }
+
+                    LazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Adaptive(500.dp),
+                        contentPadding = PaddingValues(8.dp),
+                        verticalItemSpacing = 8.dp,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxHeight().weight(1f)
+                    ) {
+                        itemsIndexed(images) { index, image ->
+                            val loadingColor =
+                                MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
+                            val placeholderPainter =
+                                remember(MaterialTheme.colorScheme) { ColorPainter(loadingColor) }
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalPlatformContext.current)
+                                    .data(image.uri)
+                                    .placeholderMemoryCacheKey(image.uri.toString())
+                                    .build(),
+                                contentScale = ContentScale.FillWidth,
+                                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                                placeholder = placeholderPainter,
+                                modifier = Modifier
+                                    .clickable { onClickImage(if (images.size > 1) index + 1 else 0) }
+                                    .sharedElement("image", image.uri)
+                                    .fillMaxWidth()
+                                    .conditionally(image.width != null && image.height != null) {
+                                        aspectRatio(image.width!!.toFloat() / image.height!!)
+                                    }
+                            )
+                        }
                     }
                 }
             }
@@ -203,6 +218,7 @@ object DetailsScreen {
     private fun CompactLayout(
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
+        fallbackYear: () -> DataYear?,
         imagePagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
         content: LazyListScope.() -> Unit,
@@ -215,6 +231,7 @@ object DetailsScreen {
                 SmallImageHeader(
                     sharedElementId = sharedElementId,
                     images = images,
+                    fallbackYear = fallbackYear,
                     headerPagerState = imagePagerState,
                     onClickImage = onClickImage,
                 )
@@ -275,6 +292,7 @@ object DetailsScreen {
     private fun SmallImageHeader(
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
+        fallbackYear: () -> DataYear?,
         headerPagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
     ) {
@@ -295,12 +313,18 @@ object DetailsScreen {
                 )
             }
         } else {
-            ImagePager(
-                images = images,
-                pagerState = headerPagerState,
-                sharedElementId = sharedElementId,
-                onClickPage = onClickImage,
-            )
+            Column {
+                ImagePager(
+                    images = images,
+                    pagerState = headerPagerState,
+                    sharedElementId = sharedElementId,
+                    onClickPage = onClickImage,
+                )
+                val fallbackYear = fallbackYear()
+                if (fallbackYear != null) {
+                    ImageFallbackBanner(fallbackYear)
+                }
+            }
         }
     }
 
@@ -321,6 +345,7 @@ private fun DetailsScreen() = PreviewDark {
         sharedElementId = "sharedElementId",
         favorite = { true },
         images = { images },
+        fallbackYear = { null },
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
     ) {
