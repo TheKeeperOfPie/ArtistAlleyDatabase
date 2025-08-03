@@ -66,8 +66,11 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     private val composeFolderType = ClassName(PACKAGE_NAME, "ComposeFile.Folder")
     private val listComposeFileType =
         List::class.asClassName().parameterizedBy(composeFileType)
+    private val mapStringComposeFolderType =
+        Map::class.asClassName().parameterizedBy(String::class.asTypeName(), composeFolderType)
     private val nullableIntType = Int::class.asTypeName().copy(nullable = true)
 
+    @Suppress("NewApi")
     @TaskAction
     fun process() =
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
@@ -94,17 +97,25 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     }
                 }
 
+                val transformCatalogId: (String) -> String = {
+                    it.split("-")
+                        .takeLast(5)
+                        .joinToString(separator = "-")
+                        .trim()
+                        .also { UUID.fromString(it) }
+                }
+
+                val transformCatalogName: (String) -> String = {
+                    val booth = it.substringBefore("-").trim()
+                    val uuid = transformCatalogId(it)
+                    "$booth - $uuid"
+                }
+
                 val catalogs2023 = "catalogs2023" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2023/catalogs",
-                    transformName = {
-                        it.split("-").let {
-                            val booth = it.first().trim()
-                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
-                                .also { UUID.fromString(it) }
-                            "$booth - $uuid"
-                        }
-                    },
+                    transformName = transformCatalogName,
+                    transformId = transformCatalogId,
                 )
                 val rallies2023 = "rallies2023" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -117,14 +128,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogs2024 = "catalogs2024" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2024/catalogs",
-                    transformName = {
-                        it.split("-").let {
-                            val booth = it.first().trim()
-                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
-                                .also { UUID.fromString(it) }
-                            "$booth - $uuid"
-                        }
-                    },
+                    transformName = transformCatalogName,
+                    transformId = transformCatalogId,
                 )
                 val rallies2024 = "rallies2024" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -134,14 +139,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogs2025 = "catalogs2025" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2025/catalogs",
-                    transformName = {
-                        it.split("-").let {
-                            val booth = it.first().trim()
-                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
-                                .also { UUID.fromString(it) }
-                            "$booth - $uuid"
-                        }
-                    },
+                    transformName = transformCatalogName,
+                    transformId = transformCatalogId,
                 )
                 val rallies2025 = "rallies2025" to processFolder(
                     imageCacheDir = imageCacheDir,
@@ -151,19 +150,14 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 val catalogsAnimeNyc2024 = "catalogsAnimeNyc2024" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "animeNyc2024/catalogs",
-                    transformName = { it.substringBefore(" -") },
+                    transformName = transformCatalogName,
+                    transformId = transformCatalogId,
                 )
                 val catalogsAnimeNyc2025 = "catalogsAnimeNyc2025" to processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "animeNyc2025/catalogs",
-                    transformName = {
-                        it.split("-").let {
-                            val booth = it.first().trim()
-                            val uuid = it.takeLast(5).joinToString(separator = "-").trim()
-                                .also { UUID.fromString(it) }
-                            "$booth - $uuid"
-                        }
-                    },
+                    transformName = transformCatalogName,
+                    transformId = transformCatalogId,
                 )
 
                 buildComposeFiles(
@@ -183,6 +177,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         imageCacheDir: File,
         path: String,
         transformName: (String) -> String,
+        transformId: (String) -> String = transformName,
     ): List<CatalogFolder> {
         val input = inputFolder.dir(path).get().asFile
         val output = outputResources.dir("files/$path").get().asFile
@@ -191,6 +186,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             inputFolder = input,
             outputFolder = output,
             transformName = transformName,
+            transformId = transformId,
         )
     }
 
@@ -199,6 +195,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         inputFolder: File,
         outputFolder: File,
         transformName: (String) -> String,
+        transformId: (String) -> String = transformName,
     ): List<CatalogFolder> {
         val folders = inputFolder.listFiles()
             .orEmpty()
@@ -234,7 +231,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                             )
                         }
                     val name = transformName(it.name)
-                    CatalogFolder(name, it, images)
+                    val id = transformId(it.name)
+                    CatalogFolder(id, name, it, images)
                 }
             }
             .awaitAll()
@@ -335,15 +333,16 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         val chunks = folders.chunked(COMPOSE_FILES_CHUNK_SIZE)
             .map {
                 CodeBlock.Builder()
-                    .addStatement("listOf(")
+                    .addStatement("mapOf(")
                     .apply {
                         it.forEach { folder ->
                             add(
                                 """
-                                ComposeFile.Folder(
+                                %S to ComposeFile.Folder(
                                     name = %S,
                                     files = listOf(
                                 """.trimIndent(),
+                                folder.id,
                                 folder.name,
                             )
                             folder.images.forEach { image ->
@@ -364,7 +363,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             fileSpec.addType(
                 TypeSpec.objectBuilder("$name$index".capitalized())
                     .addProperty(
-                        PropertySpec.builder("files", listComposeFileType)
+                        PropertySpec.builder("files", mapStringComposeFolderType)
                             .initializer(
                                 CodeBlock.builder()
                                     .add(chunk)
@@ -377,26 +376,18 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         }
 
         addProperty(
-            PropertySpec.builder(name, composeFolderType)
+            PropertySpec.builder(name, mapStringComposeFolderType)
                 .initializer(
                     CodeBlock.builder()
                         .apply {
-                            add(
-                                """
-                                    ComposeFile.Folder(
-                                        name = %S,
-                                        files = 
-                                """.trimIndent(), name
-                            )
                             if (chunks.isEmpty()) {
-                                add("emptyList()")
+                                add("emptyMap()")
                             } else {
                                 chunks.indices.forEach { index ->
                                     add("$name$index".capitalized() + ".files ")
                                     if (index != chunks.lastIndex) add(" + ")
                                 }
                             }
-                            add(")")
                         }
                         .build()
                 )
@@ -543,6 +534,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     )
 
     data class CatalogFolder(
+        val id: String,
         val name: String,
         val folder: File,
         val images: List<Image>,

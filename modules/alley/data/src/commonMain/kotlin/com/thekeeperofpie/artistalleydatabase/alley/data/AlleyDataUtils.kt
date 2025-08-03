@@ -26,8 +26,7 @@ object AlleyDataUtils {
             DataYear.ANIME_EXPO_2025 -> ComposeFiles.catalogs2025
             DataYear.ANIME_NYC_2024 -> ComposeFiles.catalogsAnimeNyc2024
             DataYear.ANIME_NYC_2025 -> ComposeFiles.catalogsAnimeNyc2025
-        }.files.filterIsInstance<ComposeFile.Folder>()
-            .find { it.name.endsWith(artistId) }
+        }[artistId]
 
         @OptIn(ExperimentalResourceApi::class)
         return folder?.files
@@ -60,15 +59,15 @@ object AlleyDataUtils {
             DataYear.ANIME_NYC_2025,
                 -> id
         }
+
+        // TODO: Rename rally folders to also allow access by key
         val targetFolder = when (year) {
             DataYear.ANIME_EXPO_2023 -> ComposeFiles.rallies2023
             DataYear.ANIME_EXPO_2024 -> ComposeFiles.rallies2024
             DataYear.ANIME_EXPO_2025 -> ComposeFiles.rallies2025
-            DataYear.ANIME_NYC_2024 -> ComposeFile.Folder("ralliesAnimeNyc2024", emptyList())
-            DataYear.ANIME_NYC_2025 -> ComposeFile.Folder("ralliesAnimeNyc2025", emptyList())
-        }.files
-            .filterIsInstance<ComposeFile.Folder>()
-            .find { it.name.startsWith(targetName) }
+            DataYear.ANIME_NYC_2024 -> emptyMap()
+            DataYear.ANIME_NYC_2025 -> emptyMap()
+        }.values.find { it.name.startsWith(targetName) }
 
         @OptIn(ExperimentalResourceApi::class)
         return targetFolder?.files
@@ -82,19 +81,6 @@ object AlleyDataUtils {
                 )
             }
             .orEmpty()
-    }
-
-    fun findName2023(folders: List<ComposeFile.Folder>, name: String): ComposeFile.Folder? {
-        val escapedName = fixName(name).removeSuffix(".")
-        val exact = folders.find { it.name.contains(escapedName, ignoreCase = true) }
-        if (exact != null) return exact
-        val segments = escapedName.split(Regex(" - ")).reversed()
-        if (segments.isEmpty()) return null
-        return folders.find { folder ->
-            segments.any { segment ->
-                folder.name.contains(segment, ignoreCase = true)
-            }
-        }
     }
 
     private fun fixName(name: String) = name.replace("'", "_")
@@ -126,19 +112,15 @@ object AlleyDataUtils {
             }
             DataYear.ANIME_NYC_2024 -> when (folderType) {
                 Folder.CATALOGS -> ComposeFiles.catalogsAnimeNyc2024
-                Folder.RALLIES -> ComposeFile.Folder("ralliesAnimeNyc2024", emptyList())
+                Folder.RALLIES -> emptyMap()
             }
             DataYear.ANIME_NYC_2025 -> when (folderType) {
                 Folder.CATALOGS -> ComposeFiles.catalogsAnimeNyc2025
-                Folder.RALLIES -> ComposeFile.Folder("ralliesAnimeNyc2025", emptyList())
+                Folder.RALLIES -> emptyMap()
             }
         }
 
-        val fileFolder = targetFolder.files
-            .filterIsInstance<ComposeFile.Folder>()
-            .find { it.name == name }
-            ?: return false
-
+        val fileFolder = targetFolder.values.find { it.name == name } ?: return false
         val imageFile = fileFolder.files.find { (it as? ComposeFile.Image)?.name == imageName }
         return imageFile != null
     }
