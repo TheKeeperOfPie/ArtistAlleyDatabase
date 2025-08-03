@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlin.random.Random
 
 class ArtistEntryGridModel(
@@ -21,6 +22,8 @@ class ArtistEntryGridModel(
     val merch: List<String>,
     val hasMoreMerch: Boolean,
     override val images: List<CatalogImage>,
+    override val fallbackImages: List<CatalogImage>,
+    override val fallbackYear: DataYear?,
     override val placeholderText: String,
 ) : SearchScreen.SearchEntryModel {
 
@@ -58,12 +61,23 @@ class ArtistEntryGridModel(
             entry: ArtistWithUserData,
             series: List<SeriesEntry>,
             hasMoreSeries: Boolean,
+            showOutdatedCatalogs: Boolean,
         ): ArtistEntryGridModel {
             val random = Random(randomSeed)
             var merch = entry.artist.merchConfirmed.shuffled(random)
             if (!showOnlyConfirmedTags && merch.size < TAGS_TO_SHOW) {
                 merch = merch + entry.artist.merchInferred.shuffled(random)
             }
+            val images = AlleyDataUtils.getArtistImages(
+                year = entry.artist.year,
+                artistId = entry.artist.id,
+            )
+            val fallback = if (showOutdatedCatalogs) {
+                AlleyDataUtils.getArtistImagesFallback(
+                    year = entry.artist.year,
+                    artistId = entry.artist.id,
+                )
+            } else null
             return ArtistEntryGridModel(
                 artist = entry.artist,
                 userEntry = entry.userEntry,
@@ -71,10 +85,9 @@ class ArtistEntryGridModel(
                 hasMoreSeries = hasMoreSeries,
                 merch = merch,
                 hasMoreMerch = merch.size > TAGS_TO_SHOW,
-                images = AlleyDataUtils.getArtistImages(
-                    year = entry.artist.year,
-                    artistId = entry.artist.id,
-                ),
+                images = images,
+                fallbackImages = fallback?.second.orEmpty(),
+                fallbackYear = fallback?.first,
                 placeholderText = entry.artist.booth ?: entry.artist.name,
             )
         }

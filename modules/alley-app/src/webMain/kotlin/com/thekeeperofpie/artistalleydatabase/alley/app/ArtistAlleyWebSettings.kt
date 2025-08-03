@@ -95,6 +95,7 @@ class ArtistAlleyWebSettings(
                 ?: AniListLanguageOption.DEFAULT
         },
     )
+    override val showOutdatedCatalogs by registerBoolean(false)
 
     private fun <T> register(serialize: (T) -> String, deserialize: (String?) -> T) =
         object : ReadOnlyProperty<Any?, MutableStateFlow<T>> {

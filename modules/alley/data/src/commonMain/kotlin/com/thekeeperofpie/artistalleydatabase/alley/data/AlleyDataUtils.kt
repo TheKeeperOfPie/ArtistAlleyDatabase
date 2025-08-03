@@ -19,6 +19,23 @@ object AlleyDataUtils {
     fun getArtistImages(
         year: DataYear,
         artistId: String,
+    ): List<CatalogImage> = getArtistImagesWithoutFallback(year, artistId)
+
+    fun getArtistImagesFallback(
+        year: DataYear,
+        artistId: String,
+    ): Pair<DataYear, List<CatalogImage>>? =
+        DataYear.entries.asReversed()
+            .dropWhile { it != year }
+            .firstNotNullOfOrNull { year ->
+                getArtistImagesWithoutFallback(year, artistId)
+                    .ifEmpty { null }
+                    ?.let { year to it }
+            }
+
+    private fun getArtistImagesWithoutFallback(
+        year: DataYear,
+        artistId: String,
     ): List<CatalogImage> {
         val folder = when (year) {
             DataYear.ANIME_EXPO_2023 -> ComposeFiles.catalogs2023

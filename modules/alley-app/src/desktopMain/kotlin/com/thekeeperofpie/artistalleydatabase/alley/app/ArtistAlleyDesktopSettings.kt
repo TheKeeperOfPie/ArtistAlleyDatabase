@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -32,4 +32,5 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val forceOneDisplayColumn = MutableStateFlow(false)
     override val dataYear = MutableStateFlow(DataYear.LATEST)
     override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
+    override val showOutdatedCatalogs = MutableStateFlow(false)
 }

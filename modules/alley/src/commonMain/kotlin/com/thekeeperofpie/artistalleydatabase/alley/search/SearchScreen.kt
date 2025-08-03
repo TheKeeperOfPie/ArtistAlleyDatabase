@@ -74,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -584,6 +585,8 @@ object SearchScreen {
     interface SearchEntryModel : EntryGridModel {
         val booth: String?
         val images: List<CatalogImage>
+        val fallbackImages: List<CatalogImage>
+        val fallbackYear: DataYear?
         var favorite: Boolean
         var ignored: Boolean
     }

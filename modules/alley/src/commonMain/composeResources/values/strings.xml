@@ -24,6 +24,7 @@
 
     <string name="alley_favorite_icon_content_description">Mark as favorite</string>
     <string name="alley_artist_catalog_image">Artist catalog image</string>
+    <string name="alley_artist_catalog_image_showing_fallback">Old catalog from %1$s</string>
     <string name="alley_display_type_icon_content_description">Change display type</string>
     <string name="alley_details_close_image">Close image</string>
     <string name="alley_artist_details_booth_and_table_name">%1$s - %2$s</string>
@@ -60,7 +61,7 @@
     <string name="alley_filter_show_grid_by_default">Grid by default</string>
     <string name="alley_filter_show_random_catalog_image">Random catalog image</string>
     <string name="alley_filter_show_only_confirmed_tags">Only confirmed tags</string>
-    <string name="alley_filter_show_only_has_commissions">Has commissions</string>
+    <string name="alley_filter_show_outdated_catalogs">Show outdated catalogs</string>
     <string name="alley_filter_hide_favorited">Hide favorited</string>
     <string name="alley_filter_hide_ignored">Hide ignored (long press)</string>
     <string name="alley_filter_force_one_display_column">Force one display column</string>

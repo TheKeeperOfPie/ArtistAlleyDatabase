@@ -57,7 +57,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -104,6 +103,7 @@ import androidx.compose.ui.window.Popup
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_showing_fallback
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_show_qr
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_suffix
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
@@ -117,11 +117,11 @@ import coil3.compose.AsyncImage
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -165,7 +165,8 @@ fun <EntryModel : SearchEntryModel> ItemCard(
         modifier: Modifier,
     ) -> Unit,
 ) {
-    val images = entry.images
+    val showingFallback = entry.images.isEmpty() && entry.fallbackImages.isNotEmpty()
+    val images = if (showingFallback) entry.fallbackImages else entry.images
     val pagerState = rememberPagerState(
         entry = entry,
         images = images,
@@ -186,6 +187,9 @@ fun <EntryModel : SearchEntryModel> ItemCard(
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
             )
+            if (showingFallback) {
+                ImageFallbackBanner(entry.fallbackYear!!)
+            }
         }
 
         itemRow(entry, onFavoriteToggle, Modifier)
@@ -208,7 +212,8 @@ fun <EntryModel : SearchEntryModel> ItemImage(
         modifier: Modifier,
     ) -> Unit,
 ) {
-    val images = entry.images
+    val showingFallback = entry.images.isEmpty() && entry.fallbackImages.isNotEmpty()
+    val images = if (showingFallback) entry.fallbackImages else entry.images
     val pagerState = rememberPagerState(
         entry = entry,
         images = images,
@@ -244,6 +249,9 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                 clipCorners = false,
             )
 
+            if (showingFallback) {
+                ImageFallbackBanner(entry.fallbackYear!!, Modifier.align(Alignment.BottomCenter))
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -309,6 +317,26 @@ private fun <EntryModel : SearchEntryModel> rememberPagerState(
         },
         pageCount = { pageCount },
     )
+}
+
+@Composable
+private fun ImageFallbackBanner(fallbackYear: DataYear, modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.BottomCenter,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .padding(vertical = 2.dp, horizontal = 16.dp)
+    ) {
+        Text(
+            text = stringResource(
+                Res.string.alley_artist_catalog_image_showing_fallback,
+                stringResource(fallbackYear.fullName)
+            ),
+            color = MaterialTheme.colorScheme.onErrorContainer,
+            style = MaterialTheme.typography.labelSmallEmphasized,
+        )
+    }
 }
 
 internal class WrappedViewConfiguration(
@@ -573,7 +601,10 @@ class DataYearHeaderState(
 private val UPCOMING_PROMPT_DURATION = 15.days
 
 @Composable
-fun DataYearHeader(state: DataYearHeaderState, additionalActions: (@Composable () -> Unit)? = null) {
+fun DataYearHeader(
+    state: DataYearHeaderState,
+    additionalActions: (@Composable () -> Unit)? = null,
+) {
     Column {
         val year = state.year
         val windowSizeClass = currentWindowSizeClass()
@@ -632,7 +663,7 @@ fun DataYearHeader(state: DataYearHeaderState, additionalActions: (@Composable (
                         append("Thanks for attending ")
                         append(stringResource(year.shortName))
                         append("! If you have any feedback, please let us know ")
-                        withStyle(SpanStyle(color = colorScheme.primary)) {
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                             withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLink)) {
                                 append("here")
                             }

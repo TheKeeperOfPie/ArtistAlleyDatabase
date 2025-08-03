@@ -4,11 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 class StampRallyEntryGridModel(
     val stampRally: StampRallyEntry,
@@ -27,6 +28,9 @@ class StampRallyEntryGridModel(
     override var ignored by mutableStateOf(userEntry.ignored)
 
     override val booth get() = stampRally.hostTable
+
+    override val fallbackImages get() = emptyList<CatalogImage>()
+    override val fallbackYear: DataYear? get() = null
 
     companion object {
         fun buildFromEntry(entry: StampRallyWithUserData): StampRallyEntryGridModel {

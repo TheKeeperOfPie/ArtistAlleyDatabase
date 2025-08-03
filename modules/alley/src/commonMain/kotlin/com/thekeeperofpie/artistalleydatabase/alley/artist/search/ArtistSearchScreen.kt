@@ -478,6 +478,7 @@ object ArtistSearchScreen {
                     series = it.artist.seriesInferred.take(ArtistEntryGridModel.TAGS_TO_SHOW)
                         .map { previewSeriesWithUserData(it).series },
                     hasMoreSeries = true,
+                    showOutdatedCatalogs = true,
                 )
             }
         val state = State(

@@ -147,6 +147,7 @@ class FavoritesViewModel(
                         exhibitorTagsIn = emptySet(),
                         showOnlyWithCatalog = false,
                         showOnlyConfirmedTags = false,
+                        showOutdatedCatalogs = false,
                         hideFavorited = false,
                         hideIgnored = false,
                     ),
@@ -186,6 +187,7 @@ class FavoritesViewModel(
                         entry = it,
                         series = series,
                         hasMoreSeries = hasMoreSeries,
+                        showOutdatedCatalogs = filterParams.showOutdatedCatalogs,
                     )
                 }
             }

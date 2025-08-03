@@ -373,6 +373,7 @@ class MapViewModel(
                 entry = it,
                 series = series,
                 hasMoreSeries = hasMoreSeries,
+                showOutdatedCatalogs = false,
             )
         }
 

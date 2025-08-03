@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -41,8 +42,8 @@ class ArtistMapViewModel(
     private val route = savedStateHandle.toDestination<Destinations.ArtistMap>(navigationTypeMap)
     val id = route.id
 
-    val artist = settings.showOnlyConfirmedTags
-        .flatMapLatest { showOnlyConfirmedTags ->
+    val artist = combine(settings.showOnlyConfirmedTags, settings.showOutdatedCatalogs, ::Pair)
+        .flatMapLatest { (showOnlyConfirmedTags, showOutdatedCatalogs) ->
             // Need to observe updates since it's possible to
             // toggle favorite from inside the map
             artistEntryDao.getEntryFlow(id)
@@ -59,6 +60,7 @@ class ArtistMapViewModel(
                         entry = it,
                         series = series,
                         hasMoreSeries = hasMoreSeries,
+                        showOutdatedCatalogs = showOutdatedCatalogs,
                     )
                 }
         }

@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.settings
 
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -28,4 +28,5 @@ interface ArtistAlleySettings {
     val forceOneDisplayColumn: MutableStateFlow<Boolean>
     val dataYear: MutableStateFlow<DataYear>
     val languageOption: MutableStateFlow<AniListLanguageOption>
+    val showOutdatedCatalogs: MutableStateFlow<Boolean>
 }

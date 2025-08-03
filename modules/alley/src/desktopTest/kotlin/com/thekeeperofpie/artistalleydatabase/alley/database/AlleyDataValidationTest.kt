@@ -30,5 +30,6 @@ class AlleyDataValidationTest {
         override val forceOneDisplayColumn = MutableStateFlow(false)
         override val dataYear = MutableStateFlow(DataYear.ANIME_EXPO_2025)
         override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
+        override val showOutdatedCatalogs = MutableStateFlow(false)
     }
 }

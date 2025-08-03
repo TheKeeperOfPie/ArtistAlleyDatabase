@@ -137,6 +137,7 @@ class ArtistSearchViewModel(
                         exhibitorTagsIn = emptySet(),
                         showOnlyWithCatalog = false,
                         showOnlyConfirmedTags = false,
+                        showOutdatedCatalogs = false,
                         hideFavorited = false,
                         hideIgnored = false,
                     ),
@@ -185,6 +186,7 @@ class ArtistSearchViewModel(
                             entry = it,
                             series = series,
                             hasMoreSeries = hasMoreSeries,
+                            showOutdatedCatalogs = searchQuery.filterParams.showOutdatedCatalogs,
                         )
                     }
                 }
