@@ -2,6 +2,9 @@
   Cross-Origin-Embedder-Policy: require-corp
   Cross-Origin-Opener-Policy: same-origin
 
+/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/animeNyc2025/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=604800, immutable
+
 /composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/2025/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=604800, immutable
 
