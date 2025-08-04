@@ -71,7 +71,10 @@ class ArtistDetailsViewModel(
     val id = route.id
     val initialImageIndex = route.imageIndex ?: 0
 
-    val catalog = settings.showOutdatedCatalogs
+    val requestedShowFallback = savedStateHandle.getMutableStateFlow("requestedShowFallback", false)
+    val showFallbackImages = combine(requestedShowFallback, settings.showOutdatedCatalogs, Boolean::or)
+
+    val catalog = showFallbackImages
         .mapLatest { loadCatalog(it) }
         .flowOn(dispatchers.io)
         // Block main to load images as fast as possible so shared transition works
@@ -168,9 +171,21 @@ class ArtistDetailsViewModel(
 
     private fun loadCatalog(showOutdatedCatalogs: Boolean): Catalog {
         val images = AlleyDataUtils.getArtistImages(year, id)
-        if (!showOutdatedCatalogs || images.isNotEmpty()) return Catalog(images, null)
+        if (images.isNotEmpty()) return Catalog(images, null, null)
         val fallback = AlleyDataUtils.getArtistImagesFallback(year, id)
-        return Catalog(fallback?.second.orEmpty(), fallback?.first)
+        return Catalog(
+            images = if (showOutdatedCatalogs) fallback?.second.orEmpty() else emptyList(),
+            showOutdatedCatalogs = showOutdatedCatalogs,
+            fallbackYear = fallback?.first,
+        )
+    }
+
+    fun onShowFallback() {
+        requestedShowFallback.value = true
+    }
+
+    fun onAlwaysShowFallback() {
+        settings.showOutdatedCatalogs.value = true
     }
 
     @Stable
@@ -184,6 +199,7 @@ class ArtistDetailsViewModel(
 
     data class Catalog(
         val images: List<CatalogImage>,
+        val showOutdatedCatalogs: Boolean?,
         val fallbackYear: DataYear?,
     )
 }

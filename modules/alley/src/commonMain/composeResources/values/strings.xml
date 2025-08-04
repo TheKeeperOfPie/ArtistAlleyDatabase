@@ -46,6 +46,9 @@
     <string name="alley_artist_details_commissions">Commissions</string>
     <string name="alley_artist_details_other_artists">Other artists at table</string>
     <string name="alley_artist_catalog_image_none">No catalog image</string>
+    <string name="alley_artist_catalog_available_fallback_prompt">Old catalog from %1$s is available, show it?</string>
+    <string name="alley_artist_catalog_available_fallback_prompt_show">Show %1$s</string>
+    <string name="alley_artist_catalog_available_fallback_prompt_always_show">Always show</string>
     <string name="alley_sort_label">Sort</string>
     <string name="alley_sort_booth">Booth</string>
     <string name="alley_sort_host_table">Host table</string>

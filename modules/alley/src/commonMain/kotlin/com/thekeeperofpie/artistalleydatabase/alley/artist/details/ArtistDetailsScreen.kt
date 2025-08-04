@@ -133,6 +133,7 @@ object ArtistDetailsScreen {
             },
             sharedElementId = route.id,
             favorite = { entry()?.favorite },
+            showFallbackImages = { catalog().showOutdatedCatalogs },
             images = { catalog().images },
             fallbackYear = { catalog().fallbackYear },
             imagePagerState = imagePagerState,
@@ -761,7 +762,7 @@ private fun PhoneLayout() = PreviewDark {
         userNotesTextState = rememberTextFieldState(),
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
-        catalog = { ArtistDetailsViewModel.Catalog(images, null) },
+        catalog = { ArtistDetailsViewModel.Catalog(images, null, null) },
         seriesImages = { emptyMap() },
         otherYears = { listOf(DataYear.ANIME_EXPO_2024) },
     )

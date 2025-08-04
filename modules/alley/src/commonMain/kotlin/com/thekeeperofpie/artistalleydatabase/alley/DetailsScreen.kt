@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +52,9 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_always_show
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_show
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_none
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
@@ -84,6 +90,7 @@ object DetailsScreen {
         sharedElementId: Any,
         favorite: () -> Boolean?,
         images: () -> List<CatalogImage>,
+        showFallbackImages: () -> Boolean?,
         fallbackYear: () -> DataYear?,
         imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
@@ -123,17 +130,23 @@ object DetailsScreen {
                     ExpandedLayout(
                         sharedElementId = sharedElementId,
                         images = images,
+                        showFallbackImages = showFallbackImages,
                         fallbackYear = fallbackYear,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
+                        onShowFallback = { eventSink(Event.ShowFallback) },
+                        onAlwaysShowFallback = { eventSink(Event.AlwaysShowFallback) },
                         content = content,
                     )
                 } else {
                     CompactLayout(
                         sharedElementId = sharedElementId,
                         images = images,
+                        showFallbackImages = showFallbackImages,
                         fallbackYear = fallbackYear,
                         imagePagerState = imagePagerState,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
+                        onShowFallback = { eventSink(Event.ShowFallback) },
+                        onAlwaysShowFallback = { eventSink(Event.AlwaysShowFallback) },
                         content = content,
                     )
                 }
@@ -145,8 +158,11 @@ object DetailsScreen {
     private fun ExpandedLayout(
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
+        showFallbackImages: () -> Boolean?,
         fallbackYear: () -> DataYear?,
         onClickImage: (imageIndex: Int) -> Unit,
+        onShowFallback: () -> Unit,
+        onAlwaysShowFallback: () -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
         Row(
@@ -161,6 +177,9 @@ object DetailsScreen {
             } else {
                 0.dp
             }
+            val fallbackYear = fallbackYear()
+            val showFallbackPrompt = !hasImages && showFallbackImages() == false &&
+                    fallbackYear != null
             LazyColumn(
                 contentPadding = PaddingValues(
                     start = horizontalContentPadding,
@@ -172,6 +191,15 @@ object DetailsScreen {
                     .conditionally(hasImages) { width(400.dp) }
                     .conditionally(!hasImages) { fillMaxWidth() }
             ) {
+                if (showFallbackPrompt) {
+                    item("availableFallbackPrompt") {
+                        AvailableFallbackPrompt(
+                            fallbackYear = fallbackYear,
+                            onShowFallback = onShowFallback,
+                            onAlwaysShowFallback = onAlwaysShowFallback,
+                        )
+                    }
+                }
                 content()
             }
             if (hasImages) {
@@ -220,9 +248,12 @@ object DetailsScreen {
     private fun CompactLayout(
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
+        showFallbackImages: () -> Boolean?,
         fallbackYear: () -> DataYear?,
         imagePagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
+        onShowFallback: () -> Unit,
+        onAlwaysShowFallback: () -> Unit,
         content: LazyListScope.() -> Unit,
     ) {
         LazyColumn(
@@ -233,9 +264,12 @@ object DetailsScreen {
                 SmallImageHeader(
                     sharedElementId = sharedElementId,
                     images = images,
+                    showFallbackImages = showFallbackImages,
                     fallbackYear = fallbackYear,
                     headerPagerState = imagePagerState,
                     onClickImage = onClickImage,
+                    onShowFallback = onShowFallback,
+                    onAlwaysShowFallback = onAlwaysShowFallback,
                 )
             }
 
@@ -294,25 +328,37 @@ object DetailsScreen {
     private fun SmallImageHeader(
         sharedElementId: Any,
         images: () -> List<CatalogImage>,
+        showFallbackImages: () -> Boolean?,
         fallbackYear: () -> DataYear?,
         headerPagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
+        onShowFallback: () -> Unit,
+        onAlwaysShowFallback: () -> Unit,
     ) {
         val images = images()
         if (images.isEmpty()) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .height(200.dp)
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.BrokenImage,
-                    contentDescription = stringResource(
-                        Res.string.alley_artist_catalog_image_none
-                    )
+            val fallbackYear = fallbackYear()
+            if (showFallbackImages() == false && fallbackYear != null) {
+                AvailableFallbackPrompt(
+                    fallbackYear = fallbackYear,
+                    onShowFallback = onShowFallback,
+                    onAlwaysShowFallback = onAlwaysShowFallback,
                 )
+            } else {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .height(200.dp)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.BrokenImage,
+                        contentDescription = stringResource(
+                            Res.string.alley_artist_catalog_image_none
+                        )
+                    )
+                }
             }
         } else {
             Column {
@@ -330,11 +376,67 @@ object DetailsScreen {
         }
     }
 
+    @Composable
+    private fun AvailableFallbackPrompt(
+        fallbackYear: DataYear,
+        onShowFallback: () -> Unit,
+        onAlwaysShowFallback: () -> Unit,
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .heightIn(min = 200.dp)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.BrokenImage,
+                    contentDescription = stringResource(
+                        Res.string.alley_artist_catalog_image_none
+                    )
+                )
+                Text(
+                    text = stringResource(
+                        Res.string.alley_artist_catalog_available_fallback_prompt,
+                        stringResource(fallbackYear.fullName),
+                    )
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Button(onClick = onShowFallback) {
+                        Text(
+                            text = stringResource(
+                                Res.string.alley_artist_catalog_available_fallback_prompt_show,
+                                stringResource(fallbackYear.shortName),
+                            )
+                        )
+                    }
+                    Button(onClick = onAlwaysShowFallback) {
+                        Text(
+                            text = stringResource(
+                                Res.string.alley_artist_catalog_available_fallback_prompt_always_show
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     sealed interface Event {
         data class FavoriteToggle(val favorite: Boolean) : Event
         data object NavigateUp : Event
         data class OpenImage(val imageIndex: Int) : Event
         data object OpenMap : Event
+        data object ShowFallback : Event
+        data object AlwaysShowFallback : Event
     }
 }
 
@@ -347,6 +449,7 @@ private fun DetailsScreen() = PreviewDark {
         sharedElementId = "sharedElementId",
         favorite = { true },
         images = { images },
+        showFallbackImages = { false },
         fallbackYear = { null },
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},

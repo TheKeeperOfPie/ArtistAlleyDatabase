@@ -28,6 +28,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.toRoute
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Images.Type.StampRally
+import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyMap
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
@@ -203,6 +205,10 @@ object ArtistAlleyAppScreen {
                                                         navigationController.navigate(
                                                             Destinations.ArtistMap(route.id)
                                                         )
+                                                    DetailsScreen.Event.ShowFallback ->
+                                                        viewModel.onShowFallback()
+                                                    DetailsScreen.Event.AlwaysShowFallback ->
+                                                        viewModel.onAlwaysShowFallback()
                                                 }
                                         }
                                     },
@@ -328,7 +334,7 @@ object ArtistAlleyAppScreen {
                                                                 Destinations.Images(
                                                                     year = route.year,
                                                                     id = route.id,
-                                                                    type = Destinations.Images.Type.StampRally(
+                                                                    type = StampRally(
                                                                         id = it.id,
                                                                         hostTable = it.hostTable,
                                                                         fandom = it.fandom,
@@ -340,11 +346,13 @@ object ArtistAlleyAppScreen {
                                                     }
                                                     DetailsScreen.Event.OpenMap ->
                                                         navigationController.navigate(
-                                                            Destinations.StampRallyMap(
+                                                            StampRallyMap(
                                                                 year = route.year,
                                                                 id = route.id,
                                                             )
                                                         )
+                                                    DetailsScreen.Event.ShowFallback -> Unit
+                                                    DetailsScreen.Event.AlwaysShowFallback -> Unit
                                                 }
                                             is StampRallyDetailsScreen.Event.OpenArtist ->
                                                 navigationController.navigate(

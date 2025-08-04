@@ -97,6 +97,7 @@ object StampRallyDetailsScreen {
                 entry?.favorite?.takeIf { entry.stampRally.confirmed }
             },
             images = images,
+            showFallbackImages = { null },
             fallbackYear = { null },
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
