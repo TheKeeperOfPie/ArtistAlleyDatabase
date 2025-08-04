@@ -64,6 +64,7 @@ internal suspend fun BrowserWindow.bindToNavigationFixed(
                 val currentBackStack = navController.currentBackStack.value
                 val currentRoutes = currentBackStack.filter { it.destination !is NavGraph }
                     .mapNotNull { it.getRouteWithArgs() }
+                    .map(::decodeURIComponent)
 
                 var commonTail = -1
                 restoredRoutes.forEachIndexed { index, restoredRoute ->
