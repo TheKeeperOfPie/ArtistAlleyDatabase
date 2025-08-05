@@ -7,7 +7,6 @@ import app.cash.paging.PagingData
 import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
-import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
@@ -77,12 +76,6 @@ class ArtistSearchViewModel(
 
     private val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
 
-    val year = if (route.isRoot) {
-        settings.dataYear
-    } else {
-        savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
-    }
-
     val lockedYear = route.year
     val lockedSeries = route.series
     val lockedMerch = route.merch
@@ -102,6 +95,14 @@ class ArtistSearchViewModel(
         }
         booths
     }.orEmpty()
+
+    val year = if (lockedYear != null) {
+        MutableStateFlow(lockedYear)
+    } else if (route.isRoot) {
+        settings.dataYear
+    } else {
+        savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
+    }
 
     val searchState = SearchScreen.State(
         columns = ArtistSearchScreen.ArtistColumn.entries,

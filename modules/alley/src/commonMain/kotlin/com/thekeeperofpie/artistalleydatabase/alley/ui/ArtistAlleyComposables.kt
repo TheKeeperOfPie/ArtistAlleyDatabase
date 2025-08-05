@@ -697,7 +697,7 @@ fun DataYearHeader(
             Text(
                 text = stringResource(state.year.fullName),
                 style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
             )
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
