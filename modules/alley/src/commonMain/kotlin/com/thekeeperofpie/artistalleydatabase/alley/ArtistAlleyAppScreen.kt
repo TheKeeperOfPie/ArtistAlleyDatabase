@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -212,6 +213,18 @@ object ArtistAlleyAppScreen {
                                                 }
                                         }
                                     },
+                                )
+                            }
+
+                            sharedElementComposable<Destinations.ArtistsList>(navigationTypeMap) {
+                                val viewModel = viewModel {
+                                    component.artistSearchViewModel(createSavedStateHandle())
+                                }
+                                ArtistSearchScreen(
+                                    viewModel = viewModel,
+                                    sortFilterController = viewModel.sortFilterController,
+                                    onClickBack = navigationController::navigateUp,
+                                    scrollStateSaver = ScrollStateSaver(),
                                 )
                             }
 

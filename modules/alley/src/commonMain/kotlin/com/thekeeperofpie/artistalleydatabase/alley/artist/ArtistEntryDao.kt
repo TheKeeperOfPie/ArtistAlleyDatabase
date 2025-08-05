@@ -554,11 +554,20 @@ class ArtistEntryDao(
         query: String,
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
+        lockedBooths: Set<String> = emptySet(),
     ): Pair<String, String> {
         val tableName = year.artistTableName
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (onlyFavorites) this += "artistUserEntry.favorite = 1"
+            if (lockedBooths.isNotEmpty()) {
+                this += "$tableName.booth IN " +
+                        lockedBooths.joinToString(
+                            prefix = "(",
+                            separator = ",",
+                            postfix = ")"
+                        ) { "'$it'" }
+            }
 
             // Search for "http" as a simplification of logic, since checking
             // not empty would require a separate query template
@@ -605,7 +614,8 @@ class ArtistEntryDao(
             }
 
             if (year == DataYear.ANIME_NYC_2025) {
-                val exhibitorTagFlags = AnimeNycExhibitorTags.parseFlags(filterParams.exhibitorTagsIn)
+                val exhibitorTagFlags =
+                    AnimeNycExhibitorTags.parseFlags(filterParams.exhibitorTagsIn)
                 if (exhibitorTagFlags != 0L) {
                     this += "($tableName.exhibitorTagFlags & $exhibitorTagFlags) != 0"
                 }
@@ -760,8 +770,9 @@ class ArtistEntryDao(
         query: String,
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
+        lockedBooths: Set<String> = emptySet(),
     ): Flow<Int> {
-        val (countStatement, _) = search(year, query, searchQuery, onlyFavorites)
+        val (countStatement, _) = search(year, query, searchQuery, onlyFavorites, lockedBooths)
         return DaoUtils.makeQuery(
             driver(),
             statement = countStatement,
@@ -776,8 +787,15 @@ class ArtistEntryDao(
         query: String,
         searchQuery: ArtistSearchQuery,
         onlyFavorites: Boolean = false,
+        lockedBooths: Set<String> = emptySet(),
     ): PagingSource<Int, ArtistWithUserData> {
-        val (countStatement, searchStatement) = search(year, query, searchQuery, onlyFavorites)
+        val (countStatement, searchStatement) = search(
+            year = year,
+            query = query,
+            searchQuery = searchQuery,
+            onlyFavorites = onlyFavorites,
+            lockedBooths = lockedBooths,
+        )
 
         return DaoUtils.queryPagingSource(
             driver = driver,

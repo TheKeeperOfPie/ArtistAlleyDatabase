@@ -12,7 +12,18 @@ import me.tatarka.inject.annotations.Inject
 class DeepLinker(private val artistEntryDao: ArtistEntryDao) {
 
     suspend fun processRoute(navController: NavController, route: String): Boolean {
-        if (route.startsWith("artist")) {
+        if (route.startsWith("artists")) {
+            val pieces = route.split("/")
+            if (pieces.size < 3) return false
+            val targetConvention = pieces[1]
+            val year = DataYear.entries.find { it.serializedName == targetConvention }
+                ?: return false
+            val serializedBooths = pieces[2]
+            navController.navigate(
+                Destinations.ArtistsList(year, serializedBooths)
+            )
+            return true
+        } else if (route.startsWith("artist")) {
             val pieces = route.split("/")
             if (pieces.size < 3) return false
             val targetConvention = pieces[1]

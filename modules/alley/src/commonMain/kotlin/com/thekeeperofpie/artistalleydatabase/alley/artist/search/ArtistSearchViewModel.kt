@@ -7,6 +7,7 @@ import app.cash.paging.PagingData
 import app.cash.paging.cachedIn
 import app.cash.paging.createPager
 import app.cash.paging.createPagingConfig
+import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
@@ -71,6 +72,7 @@ class ArtistSearchViewModel(
         val series: String? = null,
         val merch: String? = null,
         val isRoot: Boolean = false,
+        val serializedBooths: String? = null,
     )
 
     private val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
@@ -84,6 +86,22 @@ class ArtistSearchViewModel(
     val lockedYear = route.year
     val lockedSeries = route.series
     val lockedMerch = route.merch
+    val lockedBooths = route.serializedBooths?.let { serializedBooths ->
+        val booths = mutableSetOf<String>()
+        var currentLetter = serializedBooths.first()
+        var firstNumber: Char? = null
+        serializedBooths.forEach {
+            if (it.isLetter()) {
+                currentLetter = it
+            } else if (firstNumber == null) {
+                firstNumber = it
+            } else {
+                booths += "$currentLetter$firstNumber$it"
+                firstNumber = null
+            }
+        }
+        booths
+    }.orEmpty()
 
     val searchState = SearchScreen.State(
         columns = ArtistSearchScreen.ArtistColumn.entries,
@@ -143,6 +161,7 @@ class ArtistSearchViewModel(
                     ),
                     randomSeed = randomSeed,
                 ),
+                lockedBooths = lockedBooths,
             )
         }
         .stateInForCompose(0)
@@ -161,6 +180,7 @@ class ArtistSearchViewModel(
                     year = year,
                     query = query,
                     searchQuery = searchQuery,
+                    lockedBooths = lockedBooths,
                 )
             }.flow
                 .map {

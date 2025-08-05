@@ -19,6 +19,7 @@ sealed interface Destinations : NavDestination {
             typeOf<DataYear?>() to CustomNavTypes.SerializableType<DataYear>(),
             typeOf<AlleyDataUtils.Folder>() to CustomNavTypes.SerializableType<AlleyDataUtils.Folder>(),
             typeOf<Images.Type>() to CustomNavTypes.SerializableType<Images.Type>(),
+            typeOf<Set<String>>() to CustomNavTypes.SerializableType<Set<String>>(),
         )
     }
 
@@ -44,6 +45,9 @@ sealed interface Destinations : NavDestination {
 
     @Serializable
     data class ArtistMap(val id: String) : Destinations
+
+    @Serializable
+    data class ArtistsList(val year: DataYear, val serializedBooths: String) : Destinations
 
     @Serializable
     data object Export : Destinations
