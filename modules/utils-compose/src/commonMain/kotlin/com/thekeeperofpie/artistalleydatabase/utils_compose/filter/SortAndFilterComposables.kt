@@ -912,7 +912,13 @@ fun SheetDragHandle(
                     .align(Alignment.CenterEnd)
                     .padding(end = 8.dp)
             ) {
-                val activatedCount = sections.count { !it.isDefault() }
+                val activatedCount = sections.sumOf {
+                    when {
+                        it is SortFilterSectionState.Group<*> -> it.activatedCount()
+                        it.allowClear && !it.isDefault() -> 1
+                        else -> 0
+                    }
+                }
                 AnimatedVisibility(
                     visible = activatedCount > 0,
                     enter = fadeIn() + scaleIn(),

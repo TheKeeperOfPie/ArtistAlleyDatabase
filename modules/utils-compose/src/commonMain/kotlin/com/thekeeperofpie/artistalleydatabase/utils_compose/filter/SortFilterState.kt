@@ -79,6 +79,8 @@ class SortFilterState<FilterParams>(
 @Stable
 sealed class SortFilterSectionState(val id: String) {
 
+    open val allowClear: Boolean = true
+
     abstract fun clear()
 
     @Composable
@@ -94,7 +96,7 @@ sealed class SortFilterSectionState(val id: String) {
         private val sortAscending: MutableStateFlow<Boolean>?,
         private val sortOption: MutableStateFlow<SortType>,
         var sortOptions: MutableStateFlow<List<SortType>>,
-        private val allowClear: Boolean = true,
+        override val allowClear: Boolean = true,
     ) : SortFilterSectionState(headerText.key) where SortType : SortOption, SortType : Enum<SortType> {
 
         companion object {
@@ -330,6 +332,10 @@ sealed class SortFilterSectionState(val id: String) {
         private val onlyShowChildIfSingle: Boolean = false,
     ) : SortFilterSectionState(title.key) {
 
+        @Composable
+        fun activatedCount() =
+            children.collectAsStateWithLifecycle().value.count { it.allowClear && !it.isDefault() }
+
         override fun clear() {
             children.value.forEach(SortFilterSectionState::clear)
         }
@@ -392,7 +398,7 @@ sealed class SortFilterSectionState(val id: String) {
         private val title: StringResource,
         val property: MutableStateFlow<Boolean>,
         val default: Boolean? = null,
-        val allowClear: Boolean = false,
+        override val allowClear: Boolean = false,
     ) : SortFilterSectionState(title.key) {
 
         @Composable
