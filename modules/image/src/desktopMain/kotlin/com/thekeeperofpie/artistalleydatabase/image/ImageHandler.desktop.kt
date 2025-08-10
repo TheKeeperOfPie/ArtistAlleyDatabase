@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import com.eygraber.uri.Uri
 
 @Composable
-actual fun rememberImageHandler(): ImageHandler = TODO()
+actual fun rememberImageHandler(): ImageHandler = ImageHandler()
 
 actual class ImageHandler {
     actual fun openImage(uri: Uri) {

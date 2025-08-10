@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogControll
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.news.NewsSettings
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSettings
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
@@ -30,6 +31,9 @@ interface AppComponent {
         @Provides get() = this
 
     val AppSettings.bindAnimeSettings: AnimeSettings
+        @Provides get() = this
+
+    val AppSettings.bindArtSettings: ArtSettings
         @Provides get() = this
 
     val AppSettings.bindCharacterSettings: CharacterSettings

@@ -9,6 +9,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListComponent
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
@@ -37,9 +40,10 @@ import kotlin.reflect.KType
 @Component
 abstract class DesktopComponent(
     @get:Provides val scope: ApplicationScope,
-) : AppComponent, AniListComponent, AnimeComponent, CdEntryComponent, NetworkComponent,
-    VgmdbComponent {
+) : AppComponent, AniListComponent, AnimeComponent, ArtEntryComponent, CdEntryComponent,
+    NetworkComponent, VgmdbComponent {
 
+    abstract val artEntryNavigator: ArtEntryNavigator
     abstract val cdEntryNavigator: CdEntryNavigator
     abstract val httpClient: HttpClient
     abstract val navigationTypeMap: NavigationTypeMap
@@ -53,6 +57,9 @@ abstract class DesktopComponent(
         @Provides get() = this
 
     val DesktopDatabase.bindAnimeDatabase: AnimeDatabase
+        @Provides get() = this
+
+    val DesktopDatabase.bindArtEntryDatabase: ArtEntryDatabase
         @Provides get() = this
 
     val DesktopDatabase.bindCdEntryDatabase: CdEntryDatabase

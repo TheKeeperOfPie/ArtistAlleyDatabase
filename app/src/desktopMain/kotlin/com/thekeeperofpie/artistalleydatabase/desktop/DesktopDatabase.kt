@@ -10,6 +10,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeMediaHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.AnimeMediaIgnoreEntry
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryFts
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryFts
@@ -21,6 +24,8 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 
 @Database(
     entities = [
+        ArtEntry::class,
+        ArtEntryFts::class,
         CdEntry::class,
         CdEntryFts::class,
         MediaEntry::class,
@@ -45,5 +50,5 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
         Converters.StringMapConverter::class,
     ]
 )
-abstract class DesktopDatabase : RoomDatabase(), AniListDatabase, AnimeDatabase, CdEntryDatabase,
-    VgmdbDatabase
+abstract class DesktopDatabase : RoomDatabase(), AniListDatabase, AnimeDatabase, ArtEntryDatabase,
+    CdEntryDatabase, VgmdbDatabase

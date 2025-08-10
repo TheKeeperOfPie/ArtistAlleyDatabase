@@ -28,7 +28,7 @@ class ArtSyncer(
         private const val FETCH_PAGE_SIZE = 15
     }
 
-    override fun getMaxProgress() = artEntryDao.getEntriesSize()
+    override suspend fun getMaxProgress() = artEntryDao.getEntriesSize()
 
     override suspend fun sync(
         initialProgress: Int,

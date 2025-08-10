@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.desktop
 
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.AppSettings
-import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaViewOption
@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
@@ -67,4 +68,5 @@ class DesktopSettingsProvider : AppSettings {
 
     override val networkLoggingLevel = MutableStateFlow(NetworkSettings.NetworkLoggingLevel.NONE)
     override val enableNetworkCaching = MutableStateFlow(false)
+    override val artEntryTemplate = MutableStateFlow<ArtEntry?>(null)
 }

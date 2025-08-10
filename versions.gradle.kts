@@ -16,7 +16,7 @@ object Versions {
         const val media3 = "1.8.0-rc02"
         const val paging = "3.4.0-alpha01"
         const val palette = "1.0.0"
-        const val room = "2.8.0-alpha01"
+        const val room = "2.7.2"
         const val securityCrypto = "1.1.0-beta01"
         const val sqlite = "2.6.0-alpha01"
         const val testExt = "1.2.1"

@@ -6,7 +6,7 @@ interface DatabaseSyncer {
         private const val DEFAULT_PAGE_SIZE = 50
     }
 
-    fun getMaxProgress(): Int
+    suspend fun getMaxProgress(): Int
 
     suspend fun sync(
         initialProgress: Int,

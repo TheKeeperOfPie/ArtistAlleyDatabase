@@ -163,6 +163,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.anime)
+            implementation(projects.modules.art)
             implementation(projects.modules.media)
             implementation(projects.modules.monetization)
             implementation(projects.modules.settings)
@@ -212,7 +213,6 @@ kotlin {
         androidMain.dependencies {
             implementation(projects.modules.anime2anime)
             implementation(projects.modules.anilist)
-            implementation(projects.modules.art)
             implementation(projects.modules.browse)
             implementation(projects.modules.cds)
             implementation(projects.modules.image)

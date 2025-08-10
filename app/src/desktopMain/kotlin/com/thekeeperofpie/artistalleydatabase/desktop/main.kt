@@ -39,12 +39,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CrashScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -117,6 +119,7 @@ fun main() {
                 )
             }
             ThemeAndSingletons(desktopComponent) {
+                val artEntryNavigator = desktopComponent.artEntryNavigator
                 val cdEntryNavigator = desktopComponent.cdEntryNavigator
                 val navHostController = rememberNavController()
 
@@ -138,7 +141,9 @@ fun main() {
                                     AnimeNavigator.initialize(
                                         navigationController = navigationController,
                                         navGraphBuilder = this,
-                                        upIconOption = null,
+                                        upIconOption = UpIconOption.NavDrawer {
+                                            navHostController.navigate(ArtNavDestinations.HOME.id)
+                                        },
                                         navigationTypeMap = navigationTypeMap,
                                         onClickAuth = { TODO() },
                                         onClickSettings = { TODO() },
@@ -156,6 +161,14 @@ fun main() {
                                             mediaGenreDialogController
                                                 .onLongClickGenre(it)
                                         },
+                                    )
+
+                                    artEntryNavigator.initialize(
+                                        onClickNav = { TODO() },
+                                        navigationController = navigationController,
+                                        navHostController = navHostController,
+                                        navGraphBuilder = this,
+                                        artEntryComponent = desktopComponent,
                                     )
 
                                     cdEntryNavigator.initialize(

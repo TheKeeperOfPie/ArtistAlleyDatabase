@@ -59,7 +59,7 @@ interface ArtEntryDao {
         FROM art_entries
         """
     )
-    fun getEntriesSize(): Int
+    suspend fun getEntriesSize(): Int
 
     @Transaction
     suspend fun iterateEntries(
