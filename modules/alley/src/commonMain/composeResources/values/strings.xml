@@ -276,6 +276,7 @@
     <string name="alley_series_filter_visual_novels">Visual novels</string>
     <string name="alley_series_filter_music">Music</string>
     <string name="alley_series_filter_multimedia">Multimedia</string>
+    <string name="alley_series_filter_vtubers">VTubers</string>
     <string name="alley_series_filter_other">Other</string>
 
     <string name="alley_series_filter_label">Series</string>

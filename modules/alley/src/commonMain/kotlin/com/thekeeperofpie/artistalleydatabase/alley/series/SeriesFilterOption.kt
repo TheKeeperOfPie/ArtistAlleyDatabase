@@ -11,6 +11,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_other
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_tv
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_visual_novels
+import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_vtubers
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_web_series
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
@@ -27,5 +28,6 @@ enum class SeriesFilterOption(val title: StringResource) {
     VISUAL_NOVELS(Res.string.alley_series_filter_visual_novels),
     MUSIC(Res.string.alley_series_filter_music),
     MULTIMEDIA(Res.string.alley_series_filter_multimedia),
+    VTUBERS(Res.string.alley_series_filter_vtubers),
     OTHER(Res.string.alley_series_filter_other),
 }

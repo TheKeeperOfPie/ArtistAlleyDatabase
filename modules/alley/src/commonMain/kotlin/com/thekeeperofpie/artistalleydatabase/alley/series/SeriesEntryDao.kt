@@ -411,6 +411,7 @@ class SeriesEntryDao(
                     SeriesFilterOption.VISUAL_NOVELS -> listOf(SeriesSource.VISUAL_NOVEL)
                     SeriesFilterOption.MUSIC -> listOf(SeriesSource.MUSIC)
                     SeriesFilterOption.MULTIMEDIA -> listOf(SeriesSource.MULTIMEDIA_PROJECT)
+                    SeriesFilterOption.VTUBERS -> listOf(SeriesSource.VTUBER)
                     SeriesFilterOption.OTHER -> listOf(SeriesSource.COMIC, SeriesSource.OTHER)
                 }
             }

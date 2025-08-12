@@ -15,6 +15,7 @@ enum class SeriesSource {
     TV,
     VIDEO_GAME,
     VISUAL_NOVEL,
+    VTUBER,
     WEB_NOVEL,
     WEB_SERIES,
     WEBTOON,
