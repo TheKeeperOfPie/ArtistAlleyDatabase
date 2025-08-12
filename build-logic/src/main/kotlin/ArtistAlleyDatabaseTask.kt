@@ -217,7 +217,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             val allValidSeriesIds = seriesEntries.map { it.id }.toSet()
             val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
             if (seriesDiff.isNotEmpty()) {
-                logger.warn("Entered series does not match valid series: $seriesDiff")
+                seriesDiff.forEach { badSeries ->
+                    logger.warn("Entered series does not match valid series: $badSeries")
+                    val brokenArtists = seriesConnections
+                        .filter { it.value.seriesId == badSeries }
+                        .map { it.value.artistId }
+                    logger.warn("Broken artists: $brokenArtists")
+                }
             }
             val seriesWithExtraSpaces = allValidSeriesIds.filter { it.endsWith(" ") }
             if (seriesWithExtraSpaces.isNotEmpty()) {
@@ -228,7 +234,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             val allValidMerchIds = merchEntries.map { it.name }.toSet()
             val merchDiff = allEnteredMerchIds - allValidMerchIds
             if (merchDiff.isNotEmpty()) {
-                logger.warn("Entered merch does not match valid merch: $merchDiff")
+                merchDiff.forEach { badSeries ->
+                    logger.warn("Entered merch does not match valid merch: $badSeries")
+                    val brokenArtists = merchConnections
+                        .filter { it.value.merchId == badSeries }
+                        .map { it.value.artistId }
+                    logger.warn("Broken artists: $brokenArtists")
+                }
             }
             val merchWithExtraSpaces = allValidMerchIds.filter { it.endsWith(" ") }
             if (merchWithExtraSpaces.isNotEmpty()) {
