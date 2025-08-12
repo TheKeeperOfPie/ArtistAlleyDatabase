@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -179,10 +178,12 @@ fun TableCell(
         Text(
             autoSize = TextAutoSize.StepBased(
                 minFontSize = 8.sp,
-                maxFontSize = LocalTextStyle.current.fontSize,
+                maxFontSize = MaterialTheme.typography.titleLarge.fontSize,
+                stepSize = 1.sp,
             ),
             text = table.booth,
             color = textColor,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
     }
