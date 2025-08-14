@@ -14,14 +14,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,19 +42,30 @@ import artistalleydatabase.modules.alley.generated.resources.alley_close_content
 import artistalleydatabase.modules.alley.generated.resources.alley_export_download_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_export_notes_warning
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_data_year_label
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_or_open_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_url_label
+import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ImportExportUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
+@OptIn(ExperimentalMaterial3Api::class)
 internal object QrCodeScreen {
 
+    private val DataYearSaver = StateUtils.jsonSaver<DataYear>()
+
     @Composable
-    operator fun invoke(data: () -> String?, onClickDownload: () -> Unit) {
+    operator fun invoke(
+        exportPartialForYear: suspend (DataYear) -> String,
+        onClickDownload: () -> Unit,
+    ) {
         OutlinedCard {
             Column {
                 Row {
@@ -55,7 +77,9 @@ internal object QrCodeScreen {
                         )
                     }
 
-                    OutlinedCard(Modifier.fillMaxWidth().padding(top = 16.dp, end = 16.dp, bottom = 12.dp)) {
+                    OutlinedCard(
+                        Modifier.fillMaxWidth().padding(top = 16.dp, end = 16.dp, bottom = 12.dp)
+                    ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -81,15 +105,29 @@ internal object QrCodeScreen {
                     modifier = Modifier.padding(16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    val data = data()
-                    val exportUrl = remember(data) { data?.let(ImportExportUtils::getImportUrl) }
-                    if (exportUrl == null) {
+                    var dataYear by rememberSaveable(stateSaver = DataYearSaver) {
+                        mutableStateOf(
+                            DataYear.LATEST
+                        )
+                    }
+
+                    DataYearDropdown(
+                        year = { dataYear },
+                        onYearChange = { dataYear = it },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    val exportUrl by produceState<String?>(null, dataYear) {
+                        value = ImportExportUtils.getImportUrl(exportPartialForYear(dataYear))
+                    }
+                    val exportUrlRead = exportUrl
+                    if (exportUrlRead == null) {
                         CircularProgressIndicator()
                     } else {
                         Text(stringResource(Res.string.alley_export_qr_code_explanation))
 
                         Image(
-                            painter = rememberQrCodePainter(exportUrl),
+                            painter = rememberQrCodePainter(exportUrlRead),
                             contentDescription = stringResource(Res.string.alley_export_qr_code_content_description),
                             modifier = Modifier.background(Color.White, RoundedCornerShape(16.dp))
                                 .padding(16.dp)
@@ -97,7 +135,7 @@ internal object QrCodeScreen {
 
                         Text(stringResource(Res.string.alley_export_qr_code_or_open_explanation))
                         OutlinedTextField(
-                            value = exportUrl,
+                            value = exportUrlRead,
                             label = { Text(stringResource(Res.string.alley_export_qr_code_url_label)) },
                             onValueChange = {},
                             readOnly = true,
@@ -116,4 +154,51 @@ internal object QrCodeScreen {
             }
         }
     }
+
+    @Composable
+    private fun DataYearDropdown(
+        year: () -> DataYear,
+        onYearChange: (DataYear) -> Unit,
+        modifier: Modifier,
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = modifier,
+        ) {
+            TextField(
+                readOnly = true,
+                value = stringResource(year().fullName),
+                onValueChange = {},
+                label = { Text(stringResource(Res.string.alley_export_qr_code_data_year_label)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier.fillMaxWidth()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                DataYear.entries.forEach {
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(it.fullName)) },
+                        onClick = {
+                            onYearChange(it)
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun QrCodeScreenPreview() {
+    QrCodeScreen(exportPartialForYear = { "EXPORT_DATA" }, onClickDownload = {})
 }

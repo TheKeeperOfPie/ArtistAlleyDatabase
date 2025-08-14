@@ -252,6 +252,7 @@
     <string name="alley_import_database_hash_mismatch">Database hash did not match, expected %1$s but got %2$s.\nYou may have to re-export this from the other device on the latest version of the site, or update this device's site version</string>
     <string name="alley_import_failed_to_read_schema_version">Failed to read schema version</string>
     <string name="alley_import_schema_version_mismatch">Schema version did not match, expected %1$s but got %2$s</string>
+    <string name="alley_import_unknown_data_year">Unknown data year %1$s</string>
     <string name="alley_import_failed_to_parse_chunk">Failed to parse chunk</string>
     <string name="alley_import_chunk_size_mismatch">Chunk size did not match, expected %1$d but got %2$d</string>
     <string name="alley_import_failed_to_read_user_data">Failed to read user data</string>
@@ -329,6 +330,7 @@
     <string name="alley_export_qr_code_content_description">Import link QR code</string>
     <string name="alley_export_qr_code_or_open_explanation">Or open this URL on the other device</string>
     <string name="alley_export_qr_code_url_label">URL</string>
+    <string name="alley_export_qr_code_data_year_label">Convention</string>
 
     <string name="alley_close_content_description">Close X</string>
     <string name="alley_generic_filter_content_description">Open filters</string>

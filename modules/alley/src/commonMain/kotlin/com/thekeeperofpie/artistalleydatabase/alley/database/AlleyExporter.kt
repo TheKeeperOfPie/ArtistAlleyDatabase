@@ -8,10 +8,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_import_failed
 import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_database_hash
 import artistalleydatabase.modules.alley.generated.resources.alley_import_failed_to_read_schema_version
 import artistalleydatabase.modules.alley.generated.resources.alley_import_schema_version_mismatch
+import artistalleydatabase.modules.alley.generated.resources.alley_import_unknown_data_year
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.CHARACTERS
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.SEPARATOR
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import kotlinx.coroutines.delay
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.indexOf
@@ -26,12 +28,17 @@ import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.time.Duration.Companion.seconds
 import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes
 
 /**
  * Export data format:
- * - Database version followed by [SEPARATOR]
- * - Schema version by [SEPARATOR]
+ * - Database version
+ * - [SEPARATOR]
+ * - Schema version
+ * - [SEPARATOR]
+ * - DataYear serializedName
+ * - [SEPARATOR]
  * - Artist data chunks (repeated for each DataYear)
  *     - Favorite
  *     - Ignored
@@ -55,7 +62,7 @@ class AlleyExporter(
     private val json: Json = Json { encodeDefaults = false },
 ) {
     companion object {
-        private const val SCHEMA_VERSION = "5"
+        private const val SCHEMA_VERSION = "6"
 
         private val CHARACTERS = listOf(
             '0'.rangeTo('9'),
@@ -74,63 +81,72 @@ class AlleyExporter(
         const val SEPARATOR = "="
     }
 
-    suspend fun exportPartial(sink: Sink) {
+    suspend fun exportPartial(sink: Sink, year: DataYear) {
         val databaseHash = AlleyDataRes.readBytes("files/databaseHash.txt")
             .decodeToString()
         sink.writeString(databaseHash)
         sink.writeString(SEPARATOR)
         sink.writeString(SCHEMA_VERSION)
         sink.writeString(SEPARATOR)
+        sink.writeString(year.serializedName)
+        sink.writeString(SEPARATOR)
 
-        sink.writeData(
-            source = importExportDao.getExportPartialArtists2023(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
-        sink.writeData(
-            source = importExportDao.getExportPartialArtists2024(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
-        sink.writeData(
-            source = importExportDao.getExportPartialArtists2025(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
-        sink.writeData(
-            source = importExportDao.getExportPartialArtistsAnimeNyc2024(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
-        sink.writeData(
-            source = importExportDao.getExportPartialArtistsAnimeNyc2025(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
+        when (year) {
+            DataYear.ANIME_EXPO_2023 -> sink.writeData(
+                source = importExportDao.getExportPartialArtists2023(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+            DataYear.ANIME_EXPO_2024 -> sink.writeData(
+                source = importExportDao.getExportPartialArtists2024(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+            DataYear.ANIME_EXPO_2025 -> sink.writeData(
+                source = importExportDao.getExportPartialArtists2025(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+            DataYear.ANIME_NYC_2024 -> sink.writeData(
+                source = importExportDao.getExportPartialArtistsAnimeNyc2024(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+            DataYear.ANIME_NYC_2025 -> sink.writeData(
+                source = importExportDao.getExportPartialArtistsAnimeNyc2025(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+        }
 
-        sink.writeData(
-            source = importExportDao.getExportPartialStampRallies2023(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
-        sink.writeData(
-            source = importExportDao.getExportPartialStampRallies2024(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
-        sink.writeData(
-            source = importExportDao.getExportPartialStampRallies2025(),
-            id = { it.id },
-            favorite = { it.favorite },
-            ignored = { it.ignored },
-        )
+        when (year) {
+            DataYear.ANIME_EXPO_2023 -> sink.writeData(
+                source = importExportDao.getExportPartialStampRallies2023(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+            DataYear.ANIME_EXPO_2024 -> sink.writeData(
+                source = importExportDao.getExportPartialStampRallies2024(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+            DataYear.ANIME_EXPO_2025 -> sink.writeData(
+                source = importExportDao.getExportPartialStampRallies2025(),
+                id = { it.id },
+                favorite = { it.favorite },
+                ignored = { it.ignored },
+            )
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> Unit // Doesn't have stamp rallies
+        }
     }
 
     // TODO: Remove usages of indexOf(ByteString) as it doesn't have a maximum read length
@@ -179,97 +195,112 @@ class AlleyExporter(
         }
         source.skip(1)
 
+        val dataYearSize = source.indexOf('='.code.toByte())
+        val dataYearName = source.readString(dataYearSize)
+        val dataYear = DataYear.deserialize(dataYearName)
+        if (dataYear == null) {
+            return LoadingResult.error<Unit>(
+                Res.string.alley_import_unknown_data_year,
+                dataYearName,
+            )
+        }
+        source.skip(1)
+
         importExportDao.database().transaction {
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialArtists2023(),
-                id = { it.id },
-                insert = { artistId, favorite, ignored ->
-                    importExportDao.importArtist(
-                        artistId = artistId,
-                        dataYear = DataYear.ANIME_EXPO_2023,
-                        favorite = favorite,
-                        ignored = ignored,
-                    )
-                },
-            )
+            when (dataYear) {
+                DataYear.ANIME_EXPO_2023 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialArtists2023(),
+                    id = { it.id },
+                    insert = { artistId, favorite, ignored ->
+                        importExportDao.importArtist(
+                            artistId = artistId,
+                            dataYear = DataYear.ANIME_EXPO_2023,
+                            favorite = favorite,
+                            ignored = ignored,
+                        )
+                    },
+                )
+                DataYear.ANIME_EXPO_2024 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialArtists2024(),
+                    id = { it.id },
+                    insert = { artistId, favorite, ignored ->
+                        importExportDao.importArtist(
+                            artistId = artistId,
+                            dataYear = DataYear.ANIME_EXPO_2024,
+                            favorite = favorite,
+                            ignored = ignored,
+                        )
+                    },
+                )
+                DataYear.ANIME_EXPO_2025 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialArtists2025(),
+                    id = { it.id },
+                    insert = { artistId, favorite, ignored ->
+                        importExportDao.importArtist(
+                            artistId = artistId,
+                            dataYear = DataYear.ANIME_EXPO_2025,
+                            favorite = favorite,
+                            ignored = ignored,
+                        )
+                    },
+                )
+                DataYear.ANIME_NYC_2024 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2024(),
+                    id = { it.id },
+                    insert = { artistId, favorite, ignored ->
+                        importExportDao.importArtist(
+                            artistId = artistId,
+                            dataYear = DataYear.ANIME_NYC_2024,
+                            favorite = favorite,
+                            ignored = ignored,
+                        )
+                    },
+                )
+                DataYear.ANIME_NYC_2025 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2025(),
+                    id = { it.id },
+                    insert = { artistId, favorite, ignored ->
+                        importExportDao.importArtist(
+                            artistId = artistId,
+                            dataYear = DataYear.ANIME_NYC_2025,
+                            favorite = favorite,
+                            ignored = ignored,
+                        )
+                    },
+                )
+            }
 
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialArtists2024(),
-                id = { it.id },
-                insert = { artistId, favorite, ignored ->
-                    importExportDao.importArtist(
-                        artistId = artistId,
-                        dataYear = DataYear.ANIME_EXPO_2024,
-                        favorite = favorite,
-                        ignored = ignored,
-                    )
-                },
-            )
+            when (dataYear) {
+                DataYear.ANIME_EXPO_2023 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialStampRallies2023(),
+                    id = { it.id },
+                    insert = importExportDao::importStampRally,
+                )
+                DataYear.ANIME_EXPO_2024 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialStampRallies2024(),
+                    id = { it.id },
+                    insert = importExportDao::importStampRally,
+                )
+                DataYear.ANIME_EXPO_2025 -> readData(
+                    source = source,
+                    databaseValues = importExportDao.getExportPartialStampRallies2025(),
+                    id = { it.id },
+                    insert = importExportDao::importStampRally,
+                )
+                DataYear.ANIME_NYC_2024,
+                DataYear.ANIME_NYC_2025,
+                    -> Unit // Doesn't have stamp rallies
+            }
 
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialArtists2025(),
-                id = { it.id },
-                insert = { artistId, favorite, ignored ->
-                    importExportDao.importArtist(
-                        artistId = artistId,
-                        dataYear = DataYear.ANIME_EXPO_2025,
-                        favorite = favorite,
-                        ignored = ignored,
-                    )
-                },
-            )
-
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2024(),
-                id = { it.id },
-                insert = { artistId, favorite, ignored ->
-                    importExportDao.importArtist(
-                        artistId = artistId,
-                        dataYear = DataYear.ANIME_NYC_2024,
-                        favorite = favorite,
-                        ignored = ignored,
-                    )
-                },
-            )
-
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialArtistsAnimeNyc2025(),
-                id = { it.id },
-                insert = { artistId, favorite, ignored ->
-                    importExportDao.importArtist(
-                        artistId = artistId,
-                        dataYear = DataYear.ANIME_NYC_2025,
-                        favorite = favorite,
-                        ignored = ignored,
-                    )
-                },
-            )
-
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialStampRallies2023(),
-                id = { it.id },
-                insert = importExportDao::importStampRally,
-            )
-
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialStampRallies2024(),
-                id = { it.id },
-                insert = importExportDao::importStampRally,
-            )
-
-            readData(
-                source = source,
-                databaseValues = importExportDao.getExportPartialStampRallies2025(),
-                id = { it.id },
-                insert = importExportDao::importStampRally,
-            )
+            delay(1.seconds)
+            importExportDao.notifyChange()
         }
 
         return LoadingResult.success(Unit)
@@ -466,7 +497,13 @@ class AlleyExporter(
             }
             if (dataYear != null) {
                 artists.forEach { (id, data) ->
-                    importExportDao.importArtist(id, dataYear, data.favorite, data.ignored, data.notes)
+                    importExportDao.importArtist(
+                        id,
+                        dataYear,
+                        data.favorite,
+                        data.ignored,
+                        data.notes
+                    )
                 }
             }
         }

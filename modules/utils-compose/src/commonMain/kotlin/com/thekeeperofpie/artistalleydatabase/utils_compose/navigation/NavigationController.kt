@@ -1,16 +1,27 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.navigation.NavHostController
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val LocalNavigationController =
-    staticCompositionLocalOf<NavigationController> { throw IllegalStateException("No NavigationController provided") }
+val LocalNavigationController = compositionLocalWithComputedDefaultOf<NavigationController> {
+    if (LocalInspectionMode.currentValue) {
+        object : NavigationController{
+            override fun navigateUp() = false
+            override fun navigate(navDestination: NavDestination) = Unit
+            override fun popBackStack() = false
+            override fun popBackStack(navDestination: NavDestination) = false
+        }
+    } else {
+        throw IllegalStateException("No NavigationController provided")
+    }
+}
 
 @Composable
 fun rememberNavigationController(navHostController: NavHostController): NavigationController =

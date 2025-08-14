@@ -518,8 +518,10 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel { component.qrCodeViewModel() }
-                                val data by viewModel.data.collectAsStateWithLifecycle()
-                                QrCodeScreen(data = { data }, onClickDownload = viewModel::download)
+                                QrCodeScreen(
+                                    exportPartialForYear = viewModel::exportPartialForYear,
+                                    onClickDownload = viewModel::download,
+                                )
                             }
                         }
                     }

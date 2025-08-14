@@ -104,6 +104,17 @@ class ImportExportDao(
         importMerchUserEntry(merchId, favorite)
     }
 
+    suspend fun notifyChange() {
+        driver().notifyListeners(
+            "artistNotes",
+            "artistUserEntry",
+            "stampRallyNotes",
+            "stampRallyUserEntry",
+            "seriesUserEntry",
+            "merchUserEntry",
+        )
+    }
+
     suspend fun deleteUserData() {
         database().userImportExportQueries.run {
             transaction {
@@ -117,6 +128,6 @@ class ImportExportDao(
         }
 
         delay(1.seconds)
-        driver().notifyListeners("artistNotes", "artistUserEntry", "stampRallyNotes", "stampRallyUserEntry", "seriesUserEntry", "merchUserEntry")
+        notifyChange()
     }
 }

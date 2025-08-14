@@ -77,6 +77,13 @@ enum class DataYear(
 
     companion object {
         val LATEST = ANIME_NYC_2025
+
+        fun deserialize(value: String) = when (value) {
+            "YEAR_2023" -> DataYear.ANIME_EXPO_2023
+            "YEAR_2024" -> DataYear.ANIME_EXPO_2024
+            "YEAR_2025" -> DataYear.ANIME_EXPO_2025
+            else -> DataYear.entries.find { it.serializedName == value }
+        }
     }
 }
 
@@ -95,13 +102,9 @@ class DataYearSerializer : KSerializer<DataYear> {
     }
 
     override fun deserialize(decoder: Decoder): DataYear {
-        return when (val value = decoder.decodeString()) {
-            "YEAR_2023" -> DataYear.ANIME_EXPO_2023
-            "YEAR_2024" -> DataYear.ANIME_EXPO_2024
-            "YEAR_2025" -> DataYear.ANIME_EXPO_2025
-            else -> DataYear.entries.find { it.serializedName == value }
-                ?: throw SerializationException("$value is not a valid enum ${descriptor.serialName}}")
-        }
+        val value = decoder.decodeString()
+        return DataYear.deserialize(value)
+            ?: throw SerializationException("$value is not a valid enum ${descriptor.serialName}}")
     }
 
 }

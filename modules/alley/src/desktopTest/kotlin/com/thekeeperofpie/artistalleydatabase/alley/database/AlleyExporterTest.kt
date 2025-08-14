@@ -52,7 +52,7 @@ class AlleyExporterTest {
     @Test
     fun exportPartial() = runTest {
         val buffer = Buffer()
-        exportPartial(buffer)
+        exportPartial(buffer, DataYear.ANIME_EXPO_2025)
 
         val output = buffer.copy().readString()
         println("Export length ${output.length}: $output")
@@ -81,11 +81,30 @@ class AlleyExporterTest {
         assertTrue(importResult.success, importResult.error?.message?.leftOrNull())
 
         val database = importResult.result!!
-        assertDataPartial(database)
+        assertAllDataYears(database)
         assertNotes(database)
     }
 
     private suspend fun assertDataPartial(database: AlleySqlDatabase) {
+        assertData(
+            database = database,
+            values = artists2025().take(TEST_COUNT_ARTISTS).toList(),
+            id = { it.id },
+            resultQuery = { getArtistUserData2025().awaitAsList() },
+            testFavoriteAndIgnored = { it.favorite to it.ignored },
+            testId = { it.id },
+        )
+        assertData(
+            database = database,
+            values = rallies2025().take(TEST_COUNT_RALLIES).toList(),
+            id = { it.id },
+            resultQuery = { getStampRallyUserData2025().awaitAsList() },
+            testFavoriteAndIgnored = { it.favorite to it.ignored },
+            testId = { it.id },
+        )
+    }
+
+    private suspend fun assertAllDataYears(database: AlleySqlDatabase) {
         assertData(
             database = database,
             values = artists2023().take(TEST_COUNT_ARTISTS).toList(),
@@ -249,14 +268,14 @@ class AlleyExporterTest {
         assertEquals(expected, actual)
     }
 
-    private suspend fun exportPartial(sink: Sink) {
+    private suspend fun exportPartial(sink: Sink, year: DataYear) {
         val driver = makeDriver()
         val database = makeDatabase(driver)
         addData(database, insertUserData = true)
 
         val importExportDao = ImportExportDao(driver = { driver }, database = { database })
         val exporter = AlleyExporter(importExportDao)
-        exporter.exportPartial(sink)
+        exporter.exportPartial(sink, year)
     }
 
     private suspend fun exportFull(sink: Sink) {
@@ -617,6 +636,7 @@ class AlleyExporterTest {
                     seriesConfirmed = emptyList(),
                     merchInferred = emptyList(),
                     merchConfirmed = emptyList(),
+                    exhibitorTagFlags = 0L,
                     counter = index.toLong(),
                 )
             }
