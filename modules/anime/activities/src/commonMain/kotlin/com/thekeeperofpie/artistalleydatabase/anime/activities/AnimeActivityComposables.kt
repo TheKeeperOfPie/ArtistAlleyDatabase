@@ -92,7 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes

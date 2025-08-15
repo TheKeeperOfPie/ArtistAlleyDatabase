@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news.cr
 
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.TrimmingStringSerializer
-import kotlinx.datetime.Instant
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.format
@@ -14,6 +13,7 @@ import kotlinx.serialization.encoding.Encoder
 import nl.adaptivity.xmlutil.serialization.XmlCData
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
+import kotlin.time.Instant
 
 internal const val CRUNCHYROLL_NEWS_RSS_URL =
     "https://cr-news-api-service.prd.crunchyrollsvc.com/v1/en-US/rss"

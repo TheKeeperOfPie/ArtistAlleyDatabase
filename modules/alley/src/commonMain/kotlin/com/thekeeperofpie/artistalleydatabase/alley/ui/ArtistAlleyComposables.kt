@@ -141,11 +141,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.atStartOfDayIn
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 

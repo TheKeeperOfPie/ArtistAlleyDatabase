@@ -2,10 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.utils_room
 
 import androidx.room.TypeConverter
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 object Converters {
 

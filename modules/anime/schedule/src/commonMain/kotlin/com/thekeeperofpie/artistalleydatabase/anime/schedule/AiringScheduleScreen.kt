@@ -50,15 +50,16 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object AiringScheduleScreen {
@@ -78,7 +79,7 @@ object AiringScheduleScreen {
     ) {
         val initialDayIndex = remember {
             6 + Clock.System.now()
-                .toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek.value
+                .toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek.isoDayNumber
         }
         val pagerState = rememberPagerState(initialPage = initialDayIndex, pageCount = { 21 })
 
@@ -123,7 +124,7 @@ object AiringScheduleScreen {
                                     val tomorrow = today.plus(1, DateTimeUnit.DAY)
                                     val startOfWeek =
                                         today.minus(
-                                            today.dayOfWeek.value.toLong() - 1,
+                                            today.dayOfWeek.isoDayNumber.toLong() - 1,
                                             DateTimeUnit.DAY
                                         )
                                     val endOfWeek = startOfWeek.plus(1, DateTimeUnit.WEEK)

@@ -55,9 +55,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 
 @Composable
 fun NotificationPlaceholderCard() {

@@ -18,7 +18,7 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.events.EventListener
 import org.w3c.dom.events.KeyboardEvent
 
-actual fun initWebSettings(onNewValue: (key: String, value: String?) -> Unit) {
+fun initWebSettings(onNewValue: (key: String, value: String?) -> Unit) {
     window.addEventListener("storage", object : EventListener {
         override fun handleEvent(event: Event) {
             event as StorageEvent

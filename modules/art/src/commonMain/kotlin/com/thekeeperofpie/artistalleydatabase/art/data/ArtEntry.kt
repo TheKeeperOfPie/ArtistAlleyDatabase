@@ -13,9 +13,9 @@ import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.BigDecimalSerializer
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @kotlin.OptIn(kotlin.uuid.ExperimentalUuidApi::class)

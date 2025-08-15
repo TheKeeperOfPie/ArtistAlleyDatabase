@@ -3,13 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose
 import androidx.compose.runtime.CompositionLocal
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import nl.jacobras.humanreadable.HumanReadable
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 actual val LocalDateTimeFormatter: CompositionLocal<DateTimeFormatter> =
     compositionLocalWithComputedDefaultOf { DateTimeFormatter() }

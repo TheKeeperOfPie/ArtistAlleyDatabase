@@ -4,7 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import io.github.vinceglb.filekit.utils.toBitsArray
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.dom.createElement

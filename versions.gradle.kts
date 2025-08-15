@@ -60,7 +60,7 @@ object Versions {
     const val graphQlJava = "24.1"
     const val htmlConverter = "1.1.0"
     const val htmlText = "1.6.0"
-    const val humanReadable = "1.11.0"
+    const val humanReadable = "1.12.0"
     const val jackson = "2.18.3"
     const val javaPoet = "1.13.0"
 
@@ -85,7 +85,7 @@ object Versions {
     object kotlin {
         const val core = "2.2.0"
         const val coroutines = "1.10.2"
-        const val datetime = "0.6.2"
+        const val datetime = "0.7.1-0.6.x-compat"
         const val io = "0.8.0"
         const val ksp = "2.2.0-2.0.2"
         const val serialization = "1.9.0"

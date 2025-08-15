@@ -16,8 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone

@@ -61,5 +61,6 @@ dependencies {
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-receivers")
+        optIn.add("kotlin.time.ExperimentalTime")
     }
 }

@@ -14,8 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -27,7 +25,9 @@ import kotlinx.serialization.json.io.encodeToSink
 import kotlinx.serialization.serializer
 import me.tatarka.inject.annotations.Inject
 import kotlin.reflect.KClass
+import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 @OptIn(
     ExperimentalSerializationApi::class,

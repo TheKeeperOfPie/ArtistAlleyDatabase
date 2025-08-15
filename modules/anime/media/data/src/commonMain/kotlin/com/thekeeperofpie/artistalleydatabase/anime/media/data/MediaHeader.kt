@@ -17,8 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsHeaderValues
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.maybeOverride
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 data class MediaHeaderParams(

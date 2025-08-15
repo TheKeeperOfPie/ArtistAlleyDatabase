@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ImageQueries
 import com.thekeeperofpie.artistalleydatabase.alley.user.ImageEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ImageEntryDao(

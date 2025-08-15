@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -22,11 +22,10 @@ import me.tatarka.inject.annotations.Inject
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-expect fun initWebSettings(onNewValue: (key: String, value: String?) -> Unit)
-
+// TODO: Merge into webMain, can't import kotlinx.browser for some reason
 @SingletonScope
 @Inject
-class ArtistAlleyWebSettings(
+actual class ArtistAlleyWebSettings(
     private val applicationScope: ApplicationScope,
 ) : ArtistAlleySettings {
 
@@ -36,66 +35,66 @@ class ArtistAlleyWebSettings(
         initWebSettings { key, value -> updates.tryEmit(key to value) }
     }
 
-    override val appTheme by register(
+    actual override val appTheme by register(
         serialize = { it.name },
         deserialize = {
             it?.let { theme -> AppThemeSetting.entries.find { it.name == theme } }
                 ?: AppThemeSetting.AUTO
         },
     )
-    override val lastKnownArtistsCsvSize by registerLong(-1L)
-    override val lastKnownStampRalliesCsvSize by registerLong(-1L)
-    override val displayType by register(
+    actual override val lastKnownArtistsCsvSize by registerLong(-1L)
+    actual override val lastKnownStampRalliesCsvSize by registerLong(-1L)
+    actual override val displayType by register(
         serialize = { it.name },
         deserialize = { value ->
             SearchScreen.DisplayType.entries.find { it.name == value }
                 ?: SearchScreen.DisplayType.CARD
         },
     )
-    override val artistsSortOption by register(
+    actual override val artistsSortOption by register(
         serialize = { it.name },
         deserialize = { value ->
             ArtistSearchSortOption.entries.find { it.name == value }
                 ?: ArtistSearchSortOption.RANDOM
         },
     )
-    override val artistsSortAscending by registerBoolean(true)
-    override val stampRalliesSortOption by register(
+    actual override val artistsSortAscending by registerBoolean(true)
+    actual override val stampRalliesSortOption by register(
         serialize = { it.name },
         deserialize = { value ->
             StampRallySearchSortOption.entries.find { it.name == value }
                 ?: StampRallySearchSortOption.RANDOM
         },
     )
-    override val stampRalliesSortAscending by registerBoolean(true)
-    override val seriesSortOption by register(
+    actual override val stampRalliesSortAscending by registerBoolean(true)
+    actual override val seriesSortOption by register(
         serialize = { it.name },
         deserialize = { value ->
             SeriesSearchSortOption.entries.find { it.name == value }
                 ?: SeriesSearchSortOption.RANDOM
         },
     )
-    override val seriesSortAscending by registerBoolean(true)
-    override val showGridByDefault by registerBoolean(false)
-    override val showRandomCatalogImage by registerBoolean(false)
-    override val showOnlyConfirmedTags by registerBoolean(false)
-    override val showOnlyWithCatalog by registerBoolean(false)
-    override val forceOneDisplayColumn by registerBoolean(false)
-    override val dataYear by register(
+    actual override val seriesSortAscending by registerBoolean(true)
+    actual override val showGridByDefault by registerBoolean(false)
+    actual override val showRandomCatalogImage by registerBoolean(false)
+    actual override val showOnlyConfirmedTags by registerBoolean(false)
+    actual override val showOnlyWithCatalog by registerBoolean(false)
+    actual override val forceOneDisplayColumn by registerBoolean(false)
+    actual override val dataYear by register(
         serialize = { it.serializedName },
         deserialize = {
             it?.let { serializedName -> DataYear.entries.find { it.serializedName == serializedName } }
                 ?: DataYear.LATEST
         },
     )
-    override val languageOption by register(
+    actual override val languageOption by register(
         serialize = { it.name },
         deserialize = { value ->
             AniListLanguageOption.entries.find { it.name == value }
                 ?: AniListLanguageOption.DEFAULT
         },
     )
-    override val showOutdatedCatalogs by registerBoolean(false)
+    actual override val showOutdatedCatalogs by registerBoolean(false)
 
     private fun <T> register(serialize: (T) -> String, deserialize: (String?) -> T) =
         object : ReadOnlyProperty<Any?, MutableStateFlow<T>> {

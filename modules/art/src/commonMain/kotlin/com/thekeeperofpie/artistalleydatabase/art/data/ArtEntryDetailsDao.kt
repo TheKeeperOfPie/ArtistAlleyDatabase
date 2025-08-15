@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.art.data
 import androidx.room.Dao
 import androidx.room.Query
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface ArtEntryDetailsDao : ArtEntryDao {

@@ -5,10 +5,10 @@ import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.navigation.NavHostController
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 val LocalNavigationController = compositionLocalWithComputedDefaultOf<NavigationController> {
     if (LocalInspectionMode.currentValue) {

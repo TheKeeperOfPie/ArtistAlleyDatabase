@@ -67,9 +67,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilIm
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ReviewDetailsScreen {

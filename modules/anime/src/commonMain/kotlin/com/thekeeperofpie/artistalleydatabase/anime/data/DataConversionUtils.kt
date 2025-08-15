@@ -6,7 +6,7 @@ import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.fragment.StaffDetailsStaffMediaPage
 import com.anilist.data.fragment.UserFavoriteMediaNode
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 // Temporary utils until all direct AniList GraphQL references are removed from the module
 

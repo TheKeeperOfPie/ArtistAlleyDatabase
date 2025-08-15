@@ -82,7 +82,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -90,6 +89,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 
 @Composable
 fun StartEndDateRow(

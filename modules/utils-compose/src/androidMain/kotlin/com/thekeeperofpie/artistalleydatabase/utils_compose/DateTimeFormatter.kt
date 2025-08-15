@@ -7,11 +7,11 @@ import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.ui.platform.LocalContext
 import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 actual val LocalDateTimeFormatter: CompositionLocal<DateTimeFormatter> =
     compositionLocalWithComputedDefaultOf {

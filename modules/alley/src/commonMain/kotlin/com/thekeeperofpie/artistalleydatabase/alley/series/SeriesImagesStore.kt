@@ -9,8 +9,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageType
 import com.thekeeperofpie.artistalleydatabase.alley.user.ImageEntry
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.days
 

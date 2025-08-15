@@ -41,7 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
@@ -49,6 +48,7 @@ import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 open class MangaSortFilterViewModel<SortType>(
     aniListApi: AuthedAniListApi,

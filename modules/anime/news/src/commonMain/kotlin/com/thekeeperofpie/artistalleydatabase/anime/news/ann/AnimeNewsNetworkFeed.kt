@@ -1,9 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news.ann
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
+import kotlin.time.Instant
 
 internal const val ANIME_NEWS_NETWORK_ATOM_URL_PREFIX =
     "https://www.animenewsnetwork.com/news/atom.xml?ann-edition="

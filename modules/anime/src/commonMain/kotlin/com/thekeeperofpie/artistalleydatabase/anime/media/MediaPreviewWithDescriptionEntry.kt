@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Immutable
 data class MediaPreviewWithDescriptionEntry(

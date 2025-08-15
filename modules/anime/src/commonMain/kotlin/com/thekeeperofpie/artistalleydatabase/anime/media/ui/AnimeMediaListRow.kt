@@ -76,8 +76,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilIm
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
-import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 import artistalleydatabase.modules.anime.recommendations.generated.resources.Res as RecommendationsRes
 
 @OptIn(

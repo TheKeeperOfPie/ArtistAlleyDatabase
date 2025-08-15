@@ -57,9 +57,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilIm
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
-import kotlinx.datetime.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 import artistalleydatabase.modules.anime.ui.generated.resources.Res as UiRes
 
 object ReviewComposables {

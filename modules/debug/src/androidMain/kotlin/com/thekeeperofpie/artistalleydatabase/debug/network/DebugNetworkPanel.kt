@@ -45,10 +45,10 @@ import com.thekeeperofpie.artistalleydatabase.debug.DebugComponent
 import com.thekeeperofpie.artistalleydatabase.debug.R
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.toggle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIconButton
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 object DebugNetworkPanel {
 

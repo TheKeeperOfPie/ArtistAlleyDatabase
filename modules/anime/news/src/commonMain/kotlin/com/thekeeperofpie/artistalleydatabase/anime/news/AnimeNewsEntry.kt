@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import androidx.compose.runtime.Immutable
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Immutable
 data class AnimeNewsEntry<Category>(

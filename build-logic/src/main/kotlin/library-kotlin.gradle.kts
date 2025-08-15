@@ -23,6 +23,7 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
         freeCompilerArgs.add("-Xjspecify-annotations=strict")
         freeCompilerArgs.add("-Xtype-enhancement-improvements-strict-mode")
+        optIn.add("kotlin.time.ExperimentalTime")
     }
 
     sourceSets {

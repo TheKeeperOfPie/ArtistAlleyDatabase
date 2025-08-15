@@ -1,13 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.utils.io
 
 import com.eygraber.uri.Uri
-import kotlinx.datetime.Instant
 import kotlinx.io.RawSink
 import kotlinx.io.RawSource
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.files.FileMetadata
 import kotlinx.io.files.Path
+import kotlin.time.Instant
 
 expect class AppFileSystem {
 

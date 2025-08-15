@@ -2,13 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.utils.io
 
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import kotlinx.datetime.Instant
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import me.tatarka.inject.annotations.Inject
+import kotlin.time.Instant
 
 // TODO
 @SingletonScope

@@ -42,7 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json

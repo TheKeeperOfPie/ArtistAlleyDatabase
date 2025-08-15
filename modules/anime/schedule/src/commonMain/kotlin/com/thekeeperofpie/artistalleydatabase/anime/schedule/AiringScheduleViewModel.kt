@@ -35,15 +35,16 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -63,7 +64,7 @@ class AiringScheduleViewModel<MediaEntry : Any>(
 
     private val startDay =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
-            it.minus(it.dayOfWeek.value.toLong() - 1, DateTimeUnit.DAY)
+            it.minus(it.dayOfWeek.isoDayNumber.toLong() - 1, DateTimeUnit.DAY)
                 .minus(1, DateTimeUnit.WEEK)
         }
 

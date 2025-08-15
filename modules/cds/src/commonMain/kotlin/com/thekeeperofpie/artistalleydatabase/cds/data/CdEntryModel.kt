@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.cds.data
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class CdEntryModel(
     val id: String,

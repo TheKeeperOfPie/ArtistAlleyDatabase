@@ -4,7 +4,6 @@ import com.eygraber.uri.Uri
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import kotlinx.datetime.toKotlinInstant
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.asInputStream
@@ -21,6 +20,7 @@ import java.nio.file.StandardOpenOption
 import javax.imageio.ImageIO
 import javax.imageio.stream.FileCacheImageInputStream
 import kotlin.io.path.pathString
+import kotlin.time.toKotlinInstant
 
 @SingletonScope
 @Inject

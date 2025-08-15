@@ -70,13 +70,13 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import me.tatarka.inject.annotations.Assisted
 import me.tatarka.inject.annotations.Inject
+import kotlin.time.Clock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject

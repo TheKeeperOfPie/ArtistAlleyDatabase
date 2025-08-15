@@ -16,7 +16,7 @@ import org.w3c.dom.StorageEvent
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 
-actual fun initWebSettings(onNewValue: (key: String, value: String?) -> Unit) {
+fun initWebSettings(onNewValue: (key: String, value: String?) -> Unit) {
     window.addEventListener("storage") {
         it as StorageEvent
         val key = it.key ?: return@addEventListener

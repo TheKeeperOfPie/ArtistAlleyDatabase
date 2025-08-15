@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
 import androidx.compose.runtime.CompositionLocal
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlin.time.Instant
 
 expect val LocalDateTimeFormatter: CompositionLocal<DateTimeFormatter>
 

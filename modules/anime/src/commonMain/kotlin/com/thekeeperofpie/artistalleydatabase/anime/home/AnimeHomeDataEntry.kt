@@ -14,8 +14,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
-import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.StringResource
+import kotlin.time.Instant
 
 data class AnimeHomeDataEntry(
     val lists: List<RowData>?,

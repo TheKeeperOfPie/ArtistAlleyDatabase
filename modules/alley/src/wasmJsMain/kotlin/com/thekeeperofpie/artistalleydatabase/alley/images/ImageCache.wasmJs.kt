@@ -9,7 +9,7 @@ import kotlinx.coroutines.await
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import me.tatarka.inject.annotations.Inject
 import org.w3c.fetch.Request
 import org.w3c.workers.Cache

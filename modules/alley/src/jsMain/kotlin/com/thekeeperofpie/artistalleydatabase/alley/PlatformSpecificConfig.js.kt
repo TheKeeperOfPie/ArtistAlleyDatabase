@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 import kotlinx.browser.window
 import org.w3c.dom.get
 
+// TODO: Merge into webMain, can't import kotlinx.browser for some reason
 actual object PlatformSpecificConfig {
     actual val type = PlatformType.WASM
     actual val defaultPageSize = 50

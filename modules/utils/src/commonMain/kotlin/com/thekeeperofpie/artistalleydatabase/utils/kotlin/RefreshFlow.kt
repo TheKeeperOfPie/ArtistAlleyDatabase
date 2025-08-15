@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 // TODO: Default throttle can only be used once this is aware of success/failure,
 //  or otherwise it would block retries on network failures

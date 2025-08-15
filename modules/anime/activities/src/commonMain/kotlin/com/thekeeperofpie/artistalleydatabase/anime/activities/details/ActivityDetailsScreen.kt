@@ -107,7 +107,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.remember
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

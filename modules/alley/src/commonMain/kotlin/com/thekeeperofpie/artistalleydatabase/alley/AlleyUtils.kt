@@ -12,7 +12,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_data_year_ani
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_anime_nyc_2025_full
 import artistalleydatabase.modules.alley.generated.resources.alley_data_year_anime_nyc_2025_short
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 

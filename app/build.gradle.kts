@@ -157,6 +157,7 @@ kotlin {
             }
         }
         freeCompilerArgs.add("-Xcontext-receivers")
+        optIn.add("kotlin.time.ExperimentalTime")
     }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)

@@ -47,5 +47,26 @@
 -dontwarn org.graalvm.nativeimage.hosted.Feature
 -dontwarn org.graalvm.nativeimage.hosted.RuntimeResourceAccess
 
+-dontwarn io.ktor.client.network.sockets.SocketTimeoutException
+-dontwarn io.ktor.client.plugins.HttpTimeout$HttpTimeoutCapabilityConfiguration
+-dontwarn io.ktor.client.plugins.HttpTimeout$Plugin
+-dontwarn io.ktor.client.plugins.HttpTimeout
+-dontwarn io.ktor.utils.io.CoroutinesKt
+-dontwarn javax.naming.InvalidNameException
+-dontwarn javax.naming.NamingException
+-dontwarn javax.naming.directory.Attribute
+-dontwarn javax.naming.directory.Attributes
+-dontwarn javax.naming.ldap.LdapName
+-dontwarn javax.naming.ldap.Rdn
+-dontwarn javax.servlet.ServletContainerInitializer
+-dontwarn libcore.icu.NativePluralRules
+-dontwarn okhttp3.internal.Util
+-dontwarn org.ietf.jgss.GSSContext
+-dontwarn org.ietf.jgss.GSSCredential
+-dontwarn org.ietf.jgss.GSSException
+-dontwarn org.ietf.jgss.GSSManager
+-dontwarn org.ietf.jgss.GSSName
+-dontwarn org.ietf.jgss.Oid
+
 # TODO: Crash when initializing Room database
 -keep class com.thekeeperofpie.artistalleydatabase.alley.app.** { *; }
