@@ -15,7 +15,6 @@
               <build path="$PROJECT_DIR$/shared" name="shared">
                 <projects>
                   <project path="$PROJECT_DIR$/shared" />
-                  <project path="$PROJECT_DIR$/shared/data" />
                 </projects>
               </build>
             </builds>

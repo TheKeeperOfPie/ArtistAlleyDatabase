@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "shared"
-include("data")
