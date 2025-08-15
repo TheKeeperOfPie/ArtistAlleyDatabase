@@ -9,27 +9,27 @@ object Versions {
     }
 
     object androidx {
-        const val activity = "1.12.0-alpha04"
+        const val activity = "1.12.0-alpha06"
         const val annotation = "1.9.1"
-        const val browser = "1.9.0-rc01"
-        const val core = "1.17.0-beta01"
-        const val media3 = "1.8.0-rc02"
-        const val paging = "3.4.0-alpha01"
+        const val browser = "1.10.0-alpha01"
+        const val core = "1.17.0"
+        const val media3 = "1.8.0"
+        const val paging = "3.4.0-alpha02"
         const val palette = "1.0.0"
         const val room = "2.7.2"
-        const val securityCrypto = "1.1.0-beta01"
-        const val sqlite = "2.6.0-alpha01"
+        const val securityCrypto = "1.1.0"
+        const val sqlite = "2.6.0-rc01"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0-alpha02"
-        const val work = "2.10.2"
+        const val work = "2.10.3"
     }
 
     const val androidyoutubeplayer = "12.1.2"
 
     object apache {
         const val commonsCompress = "1.27.1"
-        const val commonsCsv = "1.14.0"
+        const val commonsCsv = "1.14.1"
         const val commonsIo = "2.18.0"
     }
 
@@ -43,7 +43,7 @@ object Versions {
     const val colormath = "3.6.1"
     const val cronetEmbedded = "119.6045.31"
     const val diffUtils = "0.7.0"
-    const val fileKit = "0.10.0-beta04"
+    const val fileKit = "0.10.0"
     const val flowExt = "1.0.0"
     const val fluidI18n = "0.13.0"
 
@@ -71,8 +71,8 @@ object Versions {
         }
 
         object composeMultiplatform {
-            const val plugin = "1.9.0-beta01"
-            const val runtime = "1.9.0-beta01"
+            const val plugin = "1.9.0-beta03"
+            const val runtime = "1.9.0-beta03"
         }
     }
 
@@ -93,8 +93,8 @@ object Versions {
 
     const val kotlinInject = "0.8.0"
     const val kotlinPoet = "1.15.3"
-    const val ktor = "3.2.2"
-    const val ksoup = "0.2.4"
+    const val ktor = "3.2.3"
+    const val ksoup = "0.2.5"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2025.1.2"
     const val markwon = "4.6.2"
@@ -113,10 +113,10 @@ object Versions {
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val turbine = "1.2.1"
-    const val unityAds = "4.16.0"
-    const val uriKmp = "0.0.19"
+    const val unityAds = "4.16.1"
+    const val uriKmp = "0.0.20"
     const val webpImageIo = "0.9.0"
-    const val xmlUtil = "0.91.1"
+    const val xmlUtil = "0.91.2"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
