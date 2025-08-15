@@ -207,8 +207,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             merchConnectionsAnimeNyc2025.forEach { merchConnections.addMerchConnection(it) }
 
             val mutationQueries = database.mutationQueries
-            seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
-            merchConnections.values.forEach(mutationQueries::insertMerchConnection)
+            mutationQueries.transaction {
+                seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
+                merchConnections.values.forEach(mutationQueries::insertMerchConnection)
+            }
 
             val seriesEntries = parseSeries(database, seriesConnections)
             val merchEntries = parseMerch(database, merchConnections)
