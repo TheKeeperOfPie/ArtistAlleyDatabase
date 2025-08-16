@@ -1,3 +1,4 @@
+
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
@@ -27,13 +28,12 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import kotlinx.coroutines.runBlocking
-import kotlinx.io.Buffer
 import kotlinx.io.Source
+import kotlinx.io.asInputStream
 import kotlinx.io.asSource
 import kotlinx.io.buffered
-import kotlinx.io.readLine
-import kotlinx.io.readString
 import kotlinx.serialization.json.Json
+import org.apache.commons.csv.CSVFormat
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
@@ -1387,46 +1387,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
     private fun open(file: RegularFile) = file.asFile.inputStream().asSource().buffered()
 
-    private fun read(source: Source): Sequence<Map<String, String>> {
-        val header = source.readLine()!!
-        val columnNames = header.split(",").map { it.removePrefix("\"").removeSuffix("\"") }
-        val columnCount = columnNames.size
-        return sequence {
-            val buffer = Buffer()
-            while (!source.exhausted()) {
-                var fieldIndex = 0
-                val map = mutableMapOf<String, String>()
-                buffer.clear()
-                val commaByte = ','.code.toByte()
-                val quoteByte = '"'.code.toByte()
-                val newLineByte = '\n'.code.toByte()
-                var insideQuote = false
-                while (fieldIndex < columnCount && !source.exhausted()) {
-                    when (val byte = source.readByte()) {
-                        quoteByte -> insideQuote = !insideQuote
-                        commaByte,
-                        newLineByte,
-                            -> {
-                            if (insideQuote) {
-                                buffer.writeByte(byte)
-                            } else {
-                                map[columnNames[fieldIndex]] = buffer.readString()
-                                fieldIndex++
-                            }
-                        }
-                        else -> buffer.writeByte(byte)
-                    }
-                }
-                if (fieldIndex < columnCount && source.exhausted()) {
-                    map[columnNames[fieldIndex]] = buffer.readString()
-                }
-
-                yield(map)
-            }
-
-            buffer.close()
-        }
-    }
+    private fun read(source: Source): Sequence<Map<String, String>> = CSVFormat.RFC4180.builder()
+        .setHeader()
+        .setSkipHeaderRecord(true)
+        .get()
+        .parse(source.asInputStream().reader())
+        .asSequence()
+        .map { it.toMap() }
 
     fun MutableMap<Pair<String, String>, ArtistSeriesConnection>.addSeriesConnection(
         seriesConnection: ArtistSeriesConnection,

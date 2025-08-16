@@ -42,6 +42,7 @@ dependencies {
     implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
     implementation(libs.burst.gradle.plugin)
     implementation(libs.com.google.devtools.ksp.gradle.plugin)
+    implementation(libs.commons.csv)
     implementation(libs.commons.io)
     implementation(libs.compose.compiler.gradle.plugin)
     implementation(libs.gradle)
