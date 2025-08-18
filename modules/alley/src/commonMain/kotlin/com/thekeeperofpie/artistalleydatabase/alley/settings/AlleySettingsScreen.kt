@@ -135,7 +135,8 @@ private fun Header() {
     OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val colorScheme = MaterialTheme.colorScheme
-            val text = remember(colorScheme) {
+            val typography = MaterialTheme.typography
+            val text = remember(colorScheme, typography) {
                 buildAnnotatedString {
                     append("Built by ")
                     withStyle(SpanStyle(color = colorScheme.primary)) {
@@ -157,13 +158,18 @@ private fun Header() {
                     }
                     append(
                         "\n\nAnime NYC data provided by ${BuildKonfig.authorAnycOneName}, " +
-                                "${BuildKonfig.authorAnycTwoName}, " +
-                                "${BuildKonfig.authorAnycThreeName}, and "
+                                "${BuildKonfig.authorAnycTwoName}, and "
                     )
                     withStyle(SpanStyle(color = colorScheme.primary)) {
-                        withLink(LinkAnnotation.Url(BuildKonfig.authorAnycFourUrl)) {
-                            append(BuildKonfig.authorAnycFourName)
+                        withLink(LinkAnnotation.Url(BuildKonfig.authorAnycThreeUrl)) {
+                            append(BuildKonfig.authorAnycThreeName)
                         }
+                    }
+
+                    append("\n\n")
+
+                    withStyle(typography.labelMedium.toSpanStyle()) {
+                        append("Some ANYC data also provided by ${BuildKonfig.authorAnycHistoricalOneName} who has since been removed from the project")
                     }
                 }
             }
