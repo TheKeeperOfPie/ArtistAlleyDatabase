@@ -691,6 +691,33 @@ fun DataYearHeader(
                     }
                 }
             }
+        } else if (year == DataYear.ANIME_NYC_2025) {
+            ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    val text = buildAnnotatedString {
+                        append("Thanks for attending ")
+                        append(stringResource(year.shortName))
+                        append("! If you have any feedback, please let us know ")
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                            withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLinkAnimeNyc2025)) {
+                                append("here")
+                            }
+                        }
+                    }
+                    Text(
+                        text = text,
+                        modifier = Modifier.weight(1f)
+                    )
+                    val uriHandler = LocalUriHandler.current
+                    Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLinkAnimeNyc2025) }) {
+                        Text("Open")
+                    }
+                }
+            }
         }
 
         if (state.lockedYear) {
