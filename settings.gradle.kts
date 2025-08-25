@@ -25,7 +25,6 @@ dependencyResolutionManagement {
         maven("https://jitpack.io/")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev/")
 
         // https://youtrack.jetbrains.com/issue/KT-68533/Kotlin-2.0-WasmJs-error-when-using-RepositoriesMode.FAILONPROJECTREPOS#focus=Comments-27-10172670.0-0
         mavenCentral {
@@ -86,9 +85,7 @@ dependencyResolutionManagement {
                     "\u0037\u0066\u0066\u0036\u0030\u0039\u0033\u0066\u0032\u0037\u0033\u0036\u0033\u0037\u0064\u0036\u0037\u0066\u0038\u0030\u0034\u0039\u0062\u0030\u0039\u0038\u0039\u0038\u0066\u0034\u0066\u0034\u0031\u0064\u0062\u0033\u0064\u0033\u0038\u0065"
             }
             content {
-                includeGroup("app.cash.sqldelight")
                 includeGroup("app.cash.paging")
-                includeVersionByRegex("app.cash.sqldelight", ".*", ".*-(wasm|js).*")
                 includeVersionByRegex("app.cash.paging", ".*", ".*-(wasm|js).*")
             }
         }
@@ -104,8 +101,8 @@ apply(rootProject.projectDir.resolve("versions.gradle.kts"))
 plugins {
     id("com.autonomousapps.build-health").version("2.16.0")
     id("com.android.application").version("8.11.0-alpha10").apply(false)
-    id("org.jetbrains.kotlin.android").version("2.2.0").apply(false)
-    id("org.jetbrains.kotlin.jvm").version("2.2.0").apply(false)
+    id("org.jetbrains.kotlin.android").version("2.2.20-RC").apply(false)
+    id("org.jetbrains.kotlin.jvm").version("2.2.20-RC").apply(false)
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

@@ -28,7 +28,7 @@ object Versions {
     const val androidyoutubeplayer = "12.1.2"
 
     object apache {
-        const val commonsCompress = "1.27.1"
+        const val commonsCompress = "1.28.0"
         const val commonsCsv = "1.14.1"
         const val commonsIo = "2.18.0"
     }
@@ -66,8 +66,8 @@ object Versions {
 
     object jetBrains {
         object androidX {
-            const val lifecycle = "2.9.0"
-            const val navigation = "2.9.0-beta02"
+            const val lifecycle = "2.9.2"
+            const val navigation = "2.9.0-beta05"
         }
 
         object composeMultiplatform {
@@ -79,15 +79,15 @@ object Versions {
     const val jimfs = "1.3.1"
     const val jsonTree = "2.5.0"
 
-    const val kermit = "2.0.6"
+    const val kermit = "2.0.8"
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.2.0"
+        const val core = "2.2.20-RC"
         const val coroutines = "1.10.2"
         const val datetime = "0.7.1-0.6.x-compat"
         const val io = "0.8.0"
-        const val ksp = "2.2.0-2.0.2"
+        const val ksp = "2.2.20-RC-2.0.2"
         const val serialization = "1.9.0"
     }
 

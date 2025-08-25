@@ -264,7 +264,7 @@ configurations.all {
         }
         // com.eygraber:uri-kmp:0.0.19 bumps this to 0.3, which breaks CMP
         force("org.jetbrains.kotlinx:kotlinx-browser:0.1")
-        force("org.jetbrains.compose.material3:material3:1.9.0-alpha03")
+        force("org.jetbrains.compose.material3:material3:1.9.0-alpha04")
     }
 }
 

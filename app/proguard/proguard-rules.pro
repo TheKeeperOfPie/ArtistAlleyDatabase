@@ -408,6 +408,7 @@
 -dontwarn coil3.PlatformContext
 -dontwarn libcore.icu.NativePluralRules
 -dontwarn io.ktor.client.network.sockets.SocketTimeoutException
+-dontwarn com.github.luben.zstd.Zstd
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue

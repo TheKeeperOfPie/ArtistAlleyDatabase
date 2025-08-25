@@ -12,7 +12,7 @@ import androidx.annotation.CallSuper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.net.toUri
-import com.eygraber.uri.toUriOrNull
+import com.eygraber.uri.toKmpUriOrNull
 
 @Composable
 actual fun CropRequestDialog(cropController: CropController) {
@@ -52,7 +52,7 @@ actual fun CropRequestDialog(cropController: CropController) {
             }
         ) {
             it ?: return@rememberLauncherForActivityResult
-            cropController.onImageCropDocumentChosen(it.first, it.second.toUriOrNull())
+            cropController.onImageCropDocumentChosen(it.first, it.second.toKmpUriOrNull())
         }
     } else null
 

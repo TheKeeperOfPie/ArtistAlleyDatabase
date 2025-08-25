@@ -11,8 +11,8 @@ import androidx.annotation.CallSuper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.eygraber.uri.Uri
-import com.eygraber.uri.toUri
-import com.eygraber.uri.toUriOrNull
+import com.eygraber.uri.toKmpUri
+import com.eygraber.uri.toKmpUriOrNull
 
 @Composable
 actual fun rememberImageSelectController(
@@ -21,7 +21,7 @@ actual fun rememberImageSelectController(
 ): ImageSelectController {
     val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
         GetMultipleContentsChooser,
-    ) { onAddition(it.map { it.toUri() }) }
+    ) { onAddition(it.map { it.toKmpUri() }) }
     val contract = remember { GetImageContentWithIndexChooser() }
     val imageSelectSingleLauncher = rememberLauncherForActivityResult(
         contract,
@@ -67,5 +67,5 @@ private class GetImageContentWithIndexChooser : ActivityResultContract<Int, Pair
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?) =
-        chosenIndex to intent.takeIf { resultCode == Activity.RESULT_OK }?.data?.toUriOrNull()
+        chosenIndex to intent.takeIf { resultCode == Activity.RESULT_OK }?.data?.toKmpUriOrNull()
 }
