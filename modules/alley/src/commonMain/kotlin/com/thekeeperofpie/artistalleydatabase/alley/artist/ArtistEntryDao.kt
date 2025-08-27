@@ -59,17 +59,19 @@ private fun SqlCursor.toArtistWithUserData2023(): ArtistWithUserData {
             catalogLinks = getString(6)!!.let(Json::decodeFromString),
             driveLink = getString(7),
             notes = null,
+            commissions = emptyList(),
             seriesInferred = emptyList(),
             seriesConfirmed = emptyList(),
             merchInferred = emptyList(),
             merchConfirmed = emptyList(),
-            counter = getLong(8)!!,
+            images = getString(8)!!.let(Json::decodeFromString),
+            counter = getLong(9)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2023,
-            favorite = getBooleanFixed(9),
-            ignored = getBooleanFixed(10),
+            favorite = getBooleanFixed(10),
+            ignored = getBooleanFixed(11),
         )
     )
 }
@@ -88,17 +90,19 @@ private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
             catalogLinks = getString(6)!!.let(Json::decodeFromString),
             driveLink = getString(7),
             notes = getString(8),
+            commissions = emptyList(),
             seriesInferred = getString(9)!!.let(Json::decodeFromString),
             seriesConfirmed = getString(10)!!.let(Json::decodeFromString),
             merchInferred = getString(11)!!.let(Json::decodeFromString),
             merchConfirmed = getString(12)!!.let(Json::decodeFromString),
-            counter = getLong(13)!!,
+            images = getString(13)!!.let(Json::decodeFromString),
+            counter = getLong(14)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2024,
-            favorite = getBooleanFixed(14),
-            ignored = getBooleanFixed(15),
+            favorite = getBooleanFixed(15),
+            ignored = getBooleanFixed(16),
         )
     )
 }
@@ -124,13 +128,14 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
             seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
             merchInferred = getString(15)!!.let(Json::decodeFromString),
             merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-            counter = getLong(17)!!,
+            images = getString(17)!!.let(Json::decodeFromString),
+            counter = getLong(18)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2025,
-            favorite = getBooleanFixed(18),
-            ignored = getBooleanFixed(19),
+            favorite = getBooleanFixed(19),
+            ignored = getBooleanFixed(20),
         )
     )
 }
@@ -156,13 +161,14 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(): ArtistWithUserData {
             seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
             merchInferred = getString(15)!!.let(Json::decodeFromString),
             merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-            counter = getLong(17)!!,
+            images = getString(17)!!.let(Json::decodeFromString),
+            counter = getLong(18)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2024,
-            favorite = getBooleanFixed(18),
-            ignored = getBooleanFixed(19),
+            favorite = getBooleanFixed(19),
+            ignored = getBooleanFixed(20),
         )
     )
 }
@@ -189,13 +195,14 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(): ArtistWithUserData {
             merchInferred = getString(15)!!.let(Json::decodeFromString),
             merchConfirmed = getString(16)!!.let(Json::decodeFromString),
             // Skip 1 for exhibitor tag flags
-            counter = getLong(18)!!,
+            images = getString(18)!!.let(Json::decodeFromString),
+            counter = getLong(19)!!,
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2025,
-            favorite = getBooleanFixed(19),
-            ignored = getBooleanFixed(20),
+            favorite = getBooleanFixed(20),
+            ignored = getBooleanFixed(21),
         )
     )
 }
@@ -212,10 +219,12 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
         catalogLinks = catalogLinks,
         driveLink = driveLink,
         notes = null,
+        commissions = emptyList(),
         seriesInferred = emptyList(),
         seriesConfirmed = emptyList(),
         merchInferred = emptyList(),
         merchConfirmed = emptyList(),
+        images = emptyList(),
         counter = counter,
     ),
     userEntry = ArtistUserEntry(
@@ -238,10 +247,12 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
         catalogLinks = catalogLinks,
         driveLink = driveLink,
         notes = notes,
+        commissions = emptyList(),
         seriesInferred = seriesInferred,
         seriesConfirmed = seriesConfirmed,
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
+        images = images,
         counter = counter,
     ),
     userEntry = ArtistUserEntry(
@@ -269,6 +280,7 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
         seriesConfirmed = seriesConfirmed,
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
+        images = images,
         counter = counter,
     ),
     userEntry = ArtistUserEntry(
@@ -296,6 +308,7 @@ private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
         seriesConfirmed = seriesConfirmed,
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
+        images = images,
         counter = counter,
     ),
     userEntry = ArtistUserEntry(
@@ -323,6 +336,7 @@ private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
         seriesConfirmed = seriesConfirmed,
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
+        images = images,
         counter = counter,
     ),
     userEntry = ArtistUserEntry(
@@ -344,10 +358,12 @@ fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
     catalogLinks = catalogLinks,
     driveLink = driveLink,
     notes = null,
+    commissions = emptyList(),
     seriesInferred = emptyList(),
     seriesConfirmed = emptyList(),
     merchInferred = emptyList(),
     merchConfirmed = emptyList(),
+    images = images,
     counter = counter,
 )
 
@@ -362,10 +378,12 @@ fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
     catalogLinks = catalogLinks,
     driveLink = driveLink,
     notes = notes,
+    commissions = emptyList(),
     seriesInferred = seriesInferred,
     seriesConfirmed = seriesConfirmed,
     merchInferred = merchInferred,
     merchConfirmed = merchConfirmed,
+    images = images,
     counter = counter,
 )
 
@@ -385,6 +403,7 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
     seriesConfirmed = seriesConfirmed,
     merchInferred = merchInferred,
     merchConfirmed = merchConfirmed,
+    images = images,
     counter = counter,
 )
 
@@ -404,6 +423,7 @@ fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
     seriesConfirmed = seriesConfirmed,
     merchInferred = merchInferred,
     merchConfirmed = merchConfirmed,
+    images = images,
     counter = counter,
 )
 
@@ -423,6 +443,7 @@ fun ArtistEntryAnimeNyc2025.toArtistEntry() = ArtistEntry(
     seriesConfirmed = seriesConfirmed,
     merchInferred = merchInferred,
     merchConfirmed = merchConfirmed,
+    images = images,
     counter = counter,
 )
 

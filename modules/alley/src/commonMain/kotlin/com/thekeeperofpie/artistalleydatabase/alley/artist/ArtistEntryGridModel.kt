@@ -70,7 +70,7 @@ class ArtistEntryGridModel(
             }
             val images = AlleyDataUtils.getArtistImages(
                 year = entry.artist.year,
-                artistId = entry.artist.id,
+                images = entry.artist.images,
             )
             val fallback = if (showOutdatedCatalogs) {
                 AlleyDataUtils.getArtistImagesFallback(

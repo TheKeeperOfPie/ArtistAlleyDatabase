@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -58,12 +57,19 @@ android {
     }
 }
 
-tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase")
-val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs") {
-    dependsOn("generateArtistAlleyDatabase")
+val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
+val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase") {
+    inputImages.set(inputsTask.flatMap { it.outputResources })
+    mustRunAfter(inputsTask)
 }
 
 compose.resources {
     publicResClass = true
-    customDirectory("commonMain", inputsTask.map { it.outputResources.get() })
+    customDirectory(
+        sourceSetName = "commonMain",
+        // zip to force databaseTask to run
+        directoryProvider = inputsTask.zip(databaseTask) { first, _ ->
+            first.outputResources.get()
+        },
+    )
 }

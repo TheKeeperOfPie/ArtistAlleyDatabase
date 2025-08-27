@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
@@ -44,6 +45,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
@@ -67,13 +69,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputsDirectory: DirectoryProperty
 
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputImages: DirectoryProperty
+
     @get:OutputDirectory
     abstract val outputResources: DirectoryProperty
-
-    init {
-        inputsDirectory.convention(layout.projectDirectory.dir("inputs"))
-        outputResources.convention(layout.buildDirectory.dir("generated/composeResources"))
-    }
 
     private val listStringAdapter = object : ColumnAdapter<List<String>, String> {
         override fun decode(databaseValue: String) =
@@ -90,8 +91,21 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         override fun encode(value: DataYear) = value.serializedName
     }
 
+    private val listCatalogImageAdapter = object : ColumnAdapter<List<CatalogImage>, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<List<CatalogImage>>(databaseValue)
+
+        override fun encode(value: List<CatalogImage>) = Json.encodeToString(value)
+    }
+
+    init {
+        inputsDirectory.convention(layout.projectDirectory.dir("inputs"))
+        outputResources.convention(layout.buildDirectory.dir("generated/composeResources"))
+    }
+
     @TaskAction
     fun process() {
+        val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
         val dbFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
         if (dbFile.exists() && !dbFile.delete()) {
             throw IllegalStateException(
@@ -111,6 +125,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     artistNamesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
                     catalogLinksAdapter = listStringAdapter,
+                    imagesAdapter = listCatalogImageAdapter,
                 ),
                 artistEntry2024Adapter = ArtistEntry2024.Adapter(
                     linksAdapter = listStringAdapter,
@@ -120,6 +135,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     seriesConfirmedAdapter = listStringAdapter,
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
+                    imagesAdapter = listCatalogImageAdapter,
                 ),
                 artistEntry2025Adapter = ArtistEntry2025.Adapter(
                     linksAdapter = listStringAdapter,
@@ -130,6 +146,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
                     commissionsAdapter = listStringAdapter,
+                    imagesAdapter = listCatalogImageAdapter,
                 ),
                 artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
                     linksAdapter = listStringAdapter,
@@ -140,6 +157,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
                     commissionsAdapter = listStringAdapter,
+                    imagesAdapter = listCatalogImageAdapter,
                 ),
                 artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
                     linksAdapter = listStringAdapter,
@@ -150,6 +168,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     merchInferredAdapter = listStringAdapter,
                     merchConfirmedAdapter = listStringAdapter,
                     commissionsAdapter = listStringAdapter,
+                    imagesAdapter = listCatalogImageAdapter,
                 ),
                 stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
                     tablesAdapter = listStringAdapter,
@@ -184,25 +203,38 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             val seriesConnections = mutableMapOf<Pair<String, String>, ArtistSeriesConnection>()
             val merchConnections = mutableMapOf<Pair<String, String>, ArtistMerchConnection>()
 
-            val artists2023 = parseArtists2023(database)
+            val artists2023 = parseArtists2023(imageCacheDir, database)
 
             val (artists2024, seriesConnections2024, merchConnections2024) =
-                parseArtists2024(database)
+                parseArtists2024(imageCacheDir, database)
             seriesConnections2024.forEach { seriesConnections.addSeriesConnection(it) }
             merchConnections2024.forEach { merchConnections.addMerchConnection(it) }
 
             val (artists2025, seriesConnections2025, merchConnections2025) =
-                parseArtists2025(database, artists2023, artists2024)
+                parseArtists2025(imageCacheDir, database, artists2023, artists2024)
             seriesConnections2025.forEach { seriesConnections.addSeriesConnection(it) }
             merchConnections2025.forEach { merchConnections.addMerchConnection(it) }
 
             val (artistsAnimeNyc2024, seriesConnectionsAnimeNyc2024, merchConnectionsAnimeNyc2024) =
-                parseArtistsAnimeNyc2024(database, artists2023, artists2024, artists2025)
+                parseArtistsAnimeNyc2024(
+                    imageCacheDir,
+                    database,
+                    artists2023,
+                    artists2024,
+                    artists2025
+                )
             seriesConnectionsAnimeNyc2024.forEach { seriesConnections.addSeriesConnection(it) }
             merchConnectionsAnimeNyc2024.forEach { merchConnections.addMerchConnection(it) }
 
             val (_, seriesConnectionsAnimeNyc2025, merchConnectionsAnimeNyc2025) =
-                parseArtistsAnimeNyc2025(database, artists2023, artists2024, artistsAnimeNyc2024, artists2025)
+                parseArtistsAnimeNyc2025(
+                    imageCacheDir,
+                    database,
+                    artists2023,
+                    artists2024,
+                    artistsAnimeNyc2024,
+                    artists2025
+                )
             seriesConnectionsAnimeNyc2025.forEach { seriesConnections.addSeriesConnection(it) }
             merchConnectionsAnimeNyc2025.forEach { merchConnections.addMerchConnection(it) }
 
@@ -302,7 +334,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun parseArtists2023(database: BuildLogicDatabase): List<ArtistEntry2023> {
+    private fun parseArtists2023(
+        imageCacheDir: File,
+        database: BuildLogicDatabase,
+    ): List<ArtistEntry2023> {
         val artistsCsv2023 = inputsDirectory.file("2023/$ARTISTS_CSV_NAME").get()
         return open(artistsCsv2023).use {
             var counter = 1L
@@ -349,6 +384,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                     links.getOrElse(index) { emptyList() }).distinct(),
                             catalogLinks = catalogLinks.getOrElse(index) { emptyList() },
                             driveLink = driveLink,
+                            images = findImages(
+                                imageCacheDir = imageCacheDir,
+                                year = DataYear.ANIME_EXPO_2023,
+                                id = artistId,
+                                folderType = FolderType.CATALOGS,
+                            ),
                             counter = counter++,
                         )
                     }
@@ -366,7 +407,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
-    private fun parseArtists2024(database: BuildLogicDatabase): Triple<List<ArtistEntry2024>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
+    private fun parseArtists2024(
+        imageCacheDir: File,
+        database: BuildLogicDatabase,
+    ): Triple<List<ArtistEntry2024>, MutableList<ArtistSeriesConnection>, MutableList<ArtistMerchConnection>> {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsv2024 = inputsDirectory.file("2024/$ARTISTS_CSV_NAME").get()
@@ -423,6 +467,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         merchInferred = merchInferred,
                         merchConfirmed = merchConfirmed,
                         notes = notes,
+                        images = findImages(
+                            imageCacheDir = imageCacheDir,
+                            year = DataYear.ANIME_EXPO_2024,
+                            id = id,
+                            folderType = FolderType.CATALOGS
+                        ),
                         counter = counter++,
                     )
 
@@ -484,6 +534,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun parseArtists2025(
+        imageCacheDir: File,
         database: BuildLogicDatabase,
         artists2023: List<ArtistEntry2023>,
         artists2024: List<ArtistEntry2024>,
@@ -586,6 +637,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         notes = notes,
                         commissions = commissions,
                         commissionFlags = commissionFlags,
+                        images = findImages(
+                            imageCacheDir = imageCacheDir,
+                            year = DataYear.ANIME_EXPO_2025,
+                            id = id,
+                            folderType = FolderType.CATALOGS
+                        ),
                         counter = counter++,
                     )
 
@@ -654,6 +711,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun parseArtistsAnimeNyc2024(
+        imageCacheDir: File,
         database: BuildLogicDatabase,
         artists2023: List<ArtistEntry2023>,
         artists2024: List<ArtistEntry2024>,
@@ -711,7 +769,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     var seriesInferredRaw = it["Series - Inferred"].orEmpty().split(commaRegex)
                         .filter(String::isNotBlank)
                     if (artist2025 != null) {
-                        seriesInferredRaw = (seriesInferredRaw + artist2025.seriesConfirmed).distinct()
+                        seriesInferredRaw =
+                            (seriesInferredRaw + artist2025.seriesConfirmed).distinct()
                     }
                     if (seriesInferredRaw.isEmpty() && artist2024 != null) {
                         seriesInferredRaw = artist2024.seriesConfirmed.ifEmpty {
@@ -772,6 +831,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         notes = notes,
                         commissions = commissions,
                         commissionFlags = commissionFlags,
+                        images = findImages(
+                            imageCacheDir = imageCacheDir,
+                            year = DataYear.ANIME_NYC_2024,
+                            id = id,
+                            folderType = FolderType.CATALOGS,
+                        ),
                         counter = counter++,
                     )
 
@@ -840,6 +905,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun parseArtistsAnimeNyc2025(
+        imageCacheDir: File,
         database: BuildLogicDatabase,
         artists2023: List<ArtistEntry2023>,
         artists2024: List<ArtistEntry2024>,
@@ -875,13 +941,19 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val links = it["Links"]
                         ?.split(newLineRegex)
                         ?.filter(String::isNotBlank)
-                        ?.ifEmpty { artist2025?.links ?: artist2024?.links ?: artistAnimeNyc2024?.links ?: artist2023?.links }
+                        ?.ifEmpty {
+                            artist2025?.links ?: artist2024?.links ?: artistAnimeNyc2024?.links
+                            ?: artist2023?.links
+                        }
                         .orEmpty()
 
                     val storeLinks = it["Store"]
                         ?.split(newLineRegex)
                         ?.filter(String::isNotBlank)
-                        ?.ifEmpty { artist2025?.storeLinks ?: artistAnimeNyc2024?.storeLinks ?: artist2024?.storeLinks }
+                        ?.ifEmpty {
+                            artist2025?.storeLinks ?: artistAnimeNyc2024?.storeLinks
+                            ?: artist2024?.storeLinks
+                        }
                         .orEmpty()
                     val catalogLinks = it["Catalog - Confirmed"]
                         ?.ifEmpty { it["Catalog - Inferred"] }
@@ -977,6 +1049,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         commissions = commissions,
                         commissionFlags = commissionFlags,
                         exhibitorTagFlags = exhibitorTagFlags,
+                        images = findImages(
+                            imageCacheDir = imageCacheDir,
+                            year = DataYear.ANIME_NYC_2025,
+                            id = id,
+                            folderType = FolderType.CATALOGS,
+                        ),
                         counter = counter++,
                     )
 
@@ -1044,6 +1122,33 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         return Triple(artistsAnimeNyc2025, seriesConnections, merchConnections)
     }
 
+    private fun findImages(
+        imageCacheDir: File,
+        year: DataYear,
+        id: String,
+        folderType: FolderType,
+    ): List<CatalogImage> {
+        val folder = inputImages.get()
+            .dir("files")
+            .dir(year.folderName)
+            .dir(folderType.folderName)
+            .asFile
+            .listFiles()
+            ?.find { it.name.endsWith(id) }
+            ?: return emptyList()
+        return folder
+            .listFiles()
+            .filterNotNull()
+            .sortedBy { it.name.substringBefore("-").trim().toInt() }
+            .map {
+                val (width, height, _) = ArtistAlleyProcessInputsTask.parseScaledImageWidthHeight(
+                    imageCacheDir = imageCacheDir,
+                    file = it,
+                )
+                CatalogImage("${folder.name}/${it.name}", width, height)
+            }
+    }
+
     private fun parseSeries(
         database: BuildLogicDatabase,
         seriesConnections: MutableMap<Pair<String, String>, ArtistSeriesConnection>,
@@ -1080,10 +1185,16 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     val connections = seriesConnections.filter { it.value.seriesId == id }
 
                     val inferred2024 = connections.count {
-                        TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_EXPO_2024_INFERRED)
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_EXPO_2024_INFERRED
+                        )
                     }
                     val inferred2025 = connections.count {
-                        TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_EXPO_2025_INFERRED)
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_EXPO_2025_INFERRED
+                        )
                     }
                     val inferredAnimeNyc2024 = connections.count {
                         TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_NYC_2024_INFERRED)
@@ -1093,16 +1204,28 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     }
 
                     val confirmed2024 = connections.count {
-                        TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_EXPO_2024_CONFIRMED)
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_EXPO_2024_CONFIRMED
+                        )
                     }
                     val confirmed2025 = connections.count {
-                        TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_EXPO_2025_CONFIRMED)
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_EXPO_2025_CONFIRMED
+                        )
                     }
                     val confirmedAnimeNyc2024 = connections.count {
-                        TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_NYC_2024_CONFIRMED)
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_NYC_2024_CONFIRMED
+                        )
                     }
                     val confirmedAnimeNyc2025 = connections.count {
-                        TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_NYC_2025_CONFIRMED)
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_NYC_2025_CONFIRMED
+                        )
                     }
 
                     // TODO: Fully migrate series to UUID
@@ -1419,5 +1542,10 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 yearFlags = existing.yearFlags or merchConnection.yearFlags
             )
         }
+    }
+
+    enum class FolderType(val folderName: String) {
+        CATALOGS("catalogs"),
+        RALLIES("rallies"),
     }
 }

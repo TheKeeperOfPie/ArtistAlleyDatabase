@@ -23,6 +23,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 seriesConfirmed = listOf("Confirmed Series"),
                 merchInferred = listOf("Stickers", "Prints"),
                 merchConfirmed = listOf("Bags", "Shirts", "Stickers", "Prints"),
+                images = emptyList(),
                 counter = 1,
             ),
             userEntry = ArtistUserEntry(

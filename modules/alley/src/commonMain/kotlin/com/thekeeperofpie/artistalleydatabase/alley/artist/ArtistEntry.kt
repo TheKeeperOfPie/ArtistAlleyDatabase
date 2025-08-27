@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 data class ArtistEntry(
@@ -15,11 +16,12 @@ data class ArtistEntry(
     val catalogLinks: List<String>,
     val driveLink: String?,
     val notes: String?,
-    val commissions: List<String> = emptyList(),
+    val commissions: List<String>,
     val seriesInferred: List<String>,
     val seriesConfirmed: List<String>,
     val merchInferred: List<String>,
     val merchConfirmed: List<String>,
+    val images: List<CatalogImage>,
     val counter: Long,
 ) {
     val linkModels by lazy {

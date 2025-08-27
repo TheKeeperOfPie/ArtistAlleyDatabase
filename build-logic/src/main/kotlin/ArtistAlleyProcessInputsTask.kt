@@ -1,3 +1,4 @@
+
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
@@ -41,6 +42,48 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         private const val WEBP_TARGET_QUALITY = 80
         private const val WEBP_METHOD = 6
         private const val COMPOSE_FILES_CHUNK_SIZE = 50
+
+        internal fun parseScaledImageWidthHeight(
+            imageCacheDir: File,
+            file: File,
+        ): Triple<Int, Int, Boolean> =
+            file.extension
+                .let(ImageIO::getImageReadersBySuffix)
+                .asSequence()
+                .firstNotNullOf { reader ->
+                    try {
+                        file.inputStream().use {
+                            FileCacheImageInputStream(it, imageCacheDir).use {
+                                reader.setInput(it)
+                                val imageWidth = reader.getWidth(reader.minIndex)
+                                val imageHeight = reader.getHeight(reader.minIndex)
+
+                                val width: Int
+                                val height: Int
+                                val resized: Boolean
+                                if (imageWidth > imageHeight && imageWidth > RESIZE_TARGET) {
+                                    width = RESIZE_TARGET
+                                    height =
+                                        (RESIZE_TARGET.toFloat() / imageWidth * imageHeight).toInt()
+                                    resized = true
+                                } else if (imageHeight >= imageWidth && imageHeight > RESIZE_TARGET) {
+                                    width = (RESIZE_TARGET.toFloat() / imageHeight * imageWidth).toInt()
+                                    height = RESIZE_TARGET
+                                    resized = true
+                                } else {
+                                    width = imageWidth
+                                    height = imageHeight
+                                    resized = false
+                                }
+                                Triple(width, height, resized)
+                            }
+                        }
+                    } catch (_: Throwable) {
+                        null
+                    } finally {
+                        reader.dispose()
+                    }
+                }
     }
 
     @get:Inject
@@ -484,48 +527,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         } else {
             ComposeFile(name, file, emptyList())
         }
-
-    private fun parseScaledImageWidthHeight(
-        imageCacheDir: File,
-        file: File,
-    ): Triple<Int, Int, Boolean> =
-        file.extension
-            .let(ImageIO::getImageReadersBySuffix)
-            .asSequence()
-            .firstNotNullOf { reader ->
-                try {
-                    file.inputStream().use {
-                        FileCacheImageInputStream(it, imageCacheDir).use {
-                            reader.setInput(it)
-                            val imageWidth = reader.getWidth(reader.minIndex)
-                            val imageHeight = reader.getHeight(reader.minIndex)
-
-                            val width: Int
-                            val height: Int
-                            val resized: Boolean
-                            if (imageWidth > imageHeight && imageWidth > RESIZE_TARGET) {
-                                width = RESIZE_TARGET
-                                height =
-                                    (RESIZE_TARGET.toFloat() / imageWidth * imageHeight).toInt()
-                                resized = true
-                            } else if (imageHeight >= imageWidth && imageHeight > RESIZE_TARGET) {
-                                width = (RESIZE_TARGET.toFloat() / imageHeight * imageWidth).toInt()
-                                height = RESIZE_TARGET
-                                resized = true
-                            } else {
-                                width = imageWidth
-                                height = imageHeight
-                                resized = false
-                            }
-                            Triple(width, height, resized)
-                        }
-                    }
-                } catch (_: Throwable) {
-                    null
-                } finally {
-                    reader.dispose()
-                }
-            }
 
     data class ComposeFile(
         val name: String,

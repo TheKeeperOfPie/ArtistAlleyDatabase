@@ -21,6 +21,18 @@ object AlleyDataUtils {
         artistId: String,
     ): List<CatalogImage> = getArtistImagesWithoutFallback(year, artistId)
 
+    fun getArtistImages(
+        year: DataYear,
+        images: List<com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage>
+    ) = images.map {
+        val path = "files/${year.folderName}/${Folder.CATALOGS.folderName}/${it.name}"
+        CatalogImage(
+            uri = Uri.parse(Res.getUri(path)),
+            width = it.width,
+            height = it.height,
+        )
+    }
+
     fun getArtistImagesFallback(
         year: DataYear,
         artistId: String,

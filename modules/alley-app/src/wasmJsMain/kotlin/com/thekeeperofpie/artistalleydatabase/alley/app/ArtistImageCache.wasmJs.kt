@@ -96,7 +96,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                     val images = entriesForArtist.flatMap {
                         AlleyDataUtils.getArtistImages(
                             year = it.artist.year,
-                            artistId = it.artist.id,
+                            images = it.artist.images,
                         )
                     }
                     if (images.isEmpty()) return

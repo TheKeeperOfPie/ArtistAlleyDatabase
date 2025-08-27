@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -41,12 +42,20 @@ object DaoUtils {
         override fun encode(value: DataYear) = value.serializedName
     }
 
+    private val listCatalogImageAdapter = object : ColumnAdapter<List<CatalogImage>, String> {
+        override fun decode(databaseValue: String) =
+            Json.decodeFromString<List<CatalogImage>>(databaseValue)
+
+        override fun encode(value: List<CatalogImage>) = Json.encodeToString(value)
+    }
+
     fun createAlleySqlDatabase(driver: SqlDriver) = AlleySqlDatabase(
         driver = driver,
         artistEntry2023Adapter = ArtistEntry2023.Adapter(
             artistNamesAdapter = listStringAdapter,
             linksAdapter = listStringAdapter,
             catalogLinksAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         artistEntry2024Adapter = ArtistEntry2024.Adapter(
             linksAdapter = listStringAdapter,
@@ -56,6 +65,7 @@ object DaoUtils {
             seriesConfirmedAdapter = listStringAdapter,
             merchInferredAdapter = listStringAdapter,
             merchConfirmedAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         artistEntry2025Adapter = ArtistEntry2025.Adapter(
             linksAdapter = listStringAdapter,
@@ -66,6 +76,7 @@ object DaoUtils {
             merchInferredAdapter = listStringAdapter,
             merchConfirmedAdapter = listStringAdapter,
             commissionsAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
             linksAdapter = listStringAdapter,
@@ -76,6 +87,7 @@ object DaoUtils {
             merchInferredAdapter = listStringAdapter,
             merchConfirmedAdapter = listStringAdapter,
             commissionsAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
             linksAdapter = listStringAdapter,
@@ -86,6 +98,7 @@ object DaoUtils {
             merchInferredAdapter = listStringAdapter,
             merchConfirmedAdapter = listStringAdapter,
             commissionsAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
             tablesAdapter = listStringAdapter,
