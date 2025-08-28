@@ -80,6 +80,8 @@ import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_icon_content_description
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_home_activity_label
@@ -167,8 +169,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.HorizontalPage
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsIndexed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemsWithPlaceholderCount
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.rememberPagerState
@@ -239,9 +239,9 @@ object AnimeHomeScreen {
                 viewModel.refresh()
                 mediaViewModel.refresh()
             },
-            activity = viewModel.activity.collectAsLazyPagingItemsWithLifecycle(),
-            recommendations = viewModel.recommendations.collectAsLazyPagingItemsWithLifecycle(),
-            reviews = mediaViewModel.reviews.collectAsLazyPagingItemsWithLifecycle(),
+            activity = viewModel.activity.collectAsLazyPagingItems(),
+            recommendations = viewModel.recommendations.collectAsLazyPagingItems(),
+            reviews = mediaViewModel.reviews.collectAsLazyPagingItems(),
             news = { news },
             homeEntry = { mediaViewModel.entry },
             currentMedia = { mediaViewModel.currentMedia },

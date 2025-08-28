@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaHeaderData
 import com.anilist.data.fragment.MediaNavigationData
@@ -34,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlinx.serialization.Serializable
 
 object ReviewDestinations {

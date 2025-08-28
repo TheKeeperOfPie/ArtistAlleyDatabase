@@ -27,6 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.schedule.generated.resources.Res
 import artistalleydatabase.modules.anime.schedule.generated.resources.anime_airing_schedule_label
 import artistalleydatabase.modules.anime.schedule.generated.resources.anime_airing_schedule_today
@@ -48,7 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone

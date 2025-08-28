@@ -58,6 +58,10 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_card
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_image
@@ -83,10 +87,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.border
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -443,7 +443,7 @@ object SearchScreen {
                 header()
 
                 if (entries.itemCount == 0) {
-                    if (entries.loadState.refresh.isLoading) {
+                    if (entries.loadState.refresh is LoadState.Loading) {
                         item("searchLoadingIndicator", span = StaggeredGridItemSpan.FullLine) {
                             Box(
                                 contentAlignment = Alignment.Center,

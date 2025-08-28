@@ -39,8 +39,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.cash.paging.LoadStateLoading
-import app.cash.paging.PagingData
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_booth
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_commissions
@@ -78,7 +79,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -130,14 +130,14 @@ object ArtistSearchScreen {
 
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
             val lockedSeriesEntry by state.lockedSeriesEntry.collectAsStateWithLifecycle()
-            val entries = state.results.collectAsLazyPagingItemsWithLifecycle()
+            val entries = state.results.collectAsLazyPagingItems()
             val unfilteredCount by state.unfilteredCount.collectAsStateWithLifecycle()
             val count = entries.itemCount
             val title = (lockedSeriesEntry?.name(LocalLanguageOptionMedia.current)
                 ?: state.lockedMerch)
                 ?.let {
                     @Suppress("USELESS_IS_CHECK")
-                    if (entries.loadState.refresh is LoadStateLoading) {
+                    if (entries.loadState.refresh is LoadState.Loading) {
                         it
                     } else {
                         pluralStringResource(

@@ -41,7 +41,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.cash.paging.PagingData
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_empty_artists
@@ -88,11 +93,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
@@ -186,10 +186,10 @@ object FavoritesScreen {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
             var tab by state.tab.collectAsMutableStateWithLifecycle()
-            val artistsEntries = state.artistsEntries.collectAsLazyPagingItemsWithLifecycle()
-            val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItemsWithLifecycle()
-            val seriesEntries = state.seriesEntries.collectAsLazyPagingItemsWithLifecycle()
-            val merchEntries = state.merchEntries.collectAsLazyPagingItemsWithLifecycle()
+            val artistsEntries = state.artistsEntries.collectAsLazyPagingItems()
+            val ralliesEntries = state.ralliesEntries.collectAsLazyPagingItems()
+            val seriesEntries = state.seriesEntries.collectAsLazyPagingItems()
+            val merchEntries = state.merchEntries.collectAsLazyPagingItems()
             val entries = when (tab) {
                 EntryTab.ARTISTS -> artistsEntries
                 EntryTab.RALLIES -> ralliesEntries
@@ -485,7 +485,7 @@ object FavoritesScreen {
                 item("header") { header() }
 
                 if (series.itemCount == 0) {
-                    if (series.loadState.refresh.isLoading) {
+                    if (series.loadState.refresh is LoadState.Loading) {
                         item("loadingIndicator") {
                             Box(
                                 contentAlignment = Alignment.Center,
@@ -574,7 +574,7 @@ object FavoritesScreen {
                 item("header") { header() }
 
                 if (merch.itemCount == 0) {
-                    if (merch.loadState.refresh.isLoading) {
+                    if (merch.loadState.refresh is LoadState.Loading) {
                         item("loadingIndicator") {
                             Box(
                                 contentAlignment = Alignment.Center,

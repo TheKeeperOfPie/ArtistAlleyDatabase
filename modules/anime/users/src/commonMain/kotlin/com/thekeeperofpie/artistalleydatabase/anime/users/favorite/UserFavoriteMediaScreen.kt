@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import com.anilist.data.fragment.MediaNavigationData
@@ -26,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)

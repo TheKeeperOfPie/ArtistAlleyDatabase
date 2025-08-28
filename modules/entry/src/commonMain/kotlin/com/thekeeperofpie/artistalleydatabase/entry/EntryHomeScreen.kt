@@ -45,6 +45,7 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.entry_search_add_entry
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
@@ -63,7 +64,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 

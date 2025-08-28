@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import app.cash.burst.Burst
 import app.cash.burst.burstValues
 import artistalleydatabase.modules.anime.generated.resources.Res
@@ -40,7 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.users.UserDestinations
 import com.thekeeperofpie.artistalleydatabase.test_utils.ComposeTestRoot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -176,7 +176,7 @@ class HomeScreenTest {
                 reviews = PagingData.empty(),
                 news = LoadingResult.empty(),
                 homeEntry = LoadingResult.empty(),
-                currentMedia = LoadingResult.success(emptyList<UserMediaListController.MediaEntry>()),
+                currentMedia = LoadingResult.success(emptyList()),
                 isAnime = isAnime,
             )
         }

@@ -9,6 +9,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import com.anilist.data.StudioMediasQuery
 import com.anilist.data.fragment.MediaNavigationData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
@@ -18,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
 // TODO: Use the same year segmented view as staff screen
 @OptIn(ExperimentalMaterial3Api::class)

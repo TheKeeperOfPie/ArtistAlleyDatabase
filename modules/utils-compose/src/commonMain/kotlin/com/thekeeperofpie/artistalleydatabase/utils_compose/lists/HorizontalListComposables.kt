@@ -17,14 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.cash.paging.LoadStateError
-import app.cash.paging.LoadStateLoading
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.error_loading
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationHeader
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.getOrNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
@@ -84,7 +83,7 @@ fun <T : Any> HorizontalPagerItemsRow(
         contentPadding = contentPadding,
         loading = if (showLoadingBar) {
             {
-                val loading = refreshState is LoadStateLoading
+                val loading = refreshState is LoadState.Loading
                 if (loading) {
                     LinearProgressIndicator(
                         modifier = Modifier
@@ -94,7 +93,7 @@ fun <T : Any> HorizontalPagerItemsRow(
                 }
             }
         } else null,
-        error = if (refreshState is LoadStateError) {
+        error = if (refreshState is LoadState.Error) {
             {
                 Text(
                     text = refreshState.error.message ?: stringResource(Res.string.error_loading),

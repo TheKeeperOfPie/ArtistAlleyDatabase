@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.notifications.generated.resources.Res
 import artistalleydatabase.modules.anime.notifications.generated.resources.anime_notifications_title
 import com.anilist.data.NotificationMediaAndActivityQuery
@@ -28,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKeyScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)

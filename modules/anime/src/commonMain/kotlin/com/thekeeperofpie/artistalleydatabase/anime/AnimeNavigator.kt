@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_characters_label
 import artistalleydatabase.modules.anime.generated.resources.anime_media_details_staff_label
@@ -34,7 +35,6 @@ import artistalleydatabase.modules.anime.generated.resources.anime_media_details
 import com.anilist.data.NotificationMediaAndActivityQuery
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -129,7 +129,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.stringResource
@@ -224,12 +223,12 @@ object AnimeNavigator {
                 )
             }
             val charactersDeferred =
-                charactersViewModel.charactersDeferred.collectAsLazyPagingItemsWithLifecycle()
+                charactersViewModel.charactersDeferred.collectAsLazyPagingItems()
 
             val staffViewModel = viewModel {
                 component.animeMediaDetailsStaffViewModel(mediaDetailsViewModel.media())
             }
-            val staff = staffViewModel.staff.collectAsLazyPagingItemsWithLifecycle()
+            val staff = staffViewModel.staff.collectAsLazyPagingItems()
 
             val songsViewModel =
                 viewModel { component.animeSongsViewModel(mediaDetailsViewModel.media()) }
@@ -538,7 +537,7 @@ object AnimeNavigator {
                 MediaRecommendationsScreen(
                     sortFilterState = mediaRecommendationsSortFilterViewModel.state,
                     onRefresh = viewModel::refresh,
-                    items = viewModel.items.collectAsLazyPagingItemsWithLifecycle(),
+                    items = viewModel.items.collectAsLazyPagingItems(),
                     mediaHeader = { progress ->
                         val entry = viewModel.entry
                         val media = entry.result?.media

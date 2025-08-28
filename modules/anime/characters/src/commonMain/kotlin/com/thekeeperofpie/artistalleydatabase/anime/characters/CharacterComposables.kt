@@ -46,6 +46,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.anime.characters.data.generated.resources.anime_character_role_main
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_character_image_content_description
 import artistalleydatabase.modules.anime.ui.generated.resources.anime_voice_actor_image
@@ -85,10 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.image.request
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingErrorItem
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

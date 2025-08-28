@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_booth
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_fandom
@@ -28,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -48,7 +48,7 @@ object StampRallySearchScreen {
 
         CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
             val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, viewModel.lockedYear)
-            val entries = viewModel.results.collectAsLazyPagingItemsWithLifecycle()
+            val entries = viewModel.results.collectAsLazyPagingItems()
             val navigationController = LocalNavigationController.current
             val lockedSeriesEntry by viewModel.lockedSeriesEntry.collectAsStateWithLifecycle()
             val languageOptionMedia = LocalLanguageOptionMedia.current

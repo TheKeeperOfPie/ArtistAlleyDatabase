@@ -39,6 +39,9 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.entry_image_content_description
 import artistalleydatabase.modules.entry.generated.resources.entry_results_multiple
@@ -56,9 +59,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfigura
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 

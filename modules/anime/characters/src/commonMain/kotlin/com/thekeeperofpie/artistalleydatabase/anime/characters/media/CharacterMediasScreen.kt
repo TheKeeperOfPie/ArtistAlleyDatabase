@@ -9,6 +9,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.characters.generated.resources.Res
 import artistalleydatabase.modules.anime.characters.generated.resources.anime_character_medias_header
 import com.anilist.data.CharacterAndMediasQuery
@@ -24,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBot
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
 // TODO: Shared transition from CharacterDetails could be better
 @OptIn(ExperimentalMaterial3Api::class)

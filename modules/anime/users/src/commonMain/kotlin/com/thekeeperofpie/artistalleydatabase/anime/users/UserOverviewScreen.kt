@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.users.generated.resources.Res
 import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_label
 import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_characters_label
@@ -60,7 +61,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.data.NotificationMediaAndActivityQuery
 import com.anilist.data.fragment.ForumThread
 import com.anilist.data.fragment.ForumThreadComment
@@ -27,7 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlinx.serialization.Serializable
 import me.tatarka.inject.annotations.Assisted
 

@@ -9,35 +9,31 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewModelScope
-import app.cash.paging.LoadState
-import app.cash.paging.LoadStateLoading
-import app.cash.paging.LoadStateNotLoading
-import app.cash.paging.LoadStates
-import app.cash.paging.PagingData
-import app.cash.paging.filter
-import app.cash.paging.map
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
+import androidx.paging.filter
+import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ComposeUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmSynthetic
 
 object PagingUtils {
 
-    @Suppress("CAST_NEVER_SUCCEEDS")
     fun <T : Any> loading() = PagingData.empty<T>(
         sourceLoadStates = LoadStates(
-            refresh = LoadStateLoading as LoadState,
-            append = LoadStateNotLoading(false) as LoadState,
-            prepend = LoadStateNotLoading(true) as LoadState
+            refresh = LoadState.Loading,
+            append = LoadState.NotLoading(false),
+            prepend = LoadState.NotLoading(true)
         ),
         mediatorLoadStates = null,
     )
@@ -100,7 +96,7 @@ fun <T : Any> LazyListScope.items(
     itemContent: @Composable LazyItemScope.(item: T?) -> Unit,
 ) {
     val mockingPlaceholder =
-        data.loadState.refresh.isLoading && data.itemCount == 0
+        (data.loadState.refresh is LoadState.Loading) && data.itemCount == 0
     val itemCount = if (mockingPlaceholder) placeholderCount else data.itemCount
     val itemKey = data.itemKey { key(it) }
     val itemContentType = data.itemContentType { contentType(it) }
@@ -122,7 +118,7 @@ fun <T : Any> LazyGridScope.items(
     itemContent: @Composable LazyGridItemScope.(item: T?) -> Unit,
 ) {
     val mockingPlaceholder =
-        data.loadState.refresh.isLoading && data.itemCount == 0
+        (data.loadState.refresh is LoadState.Loading) && data.itemCount == 0
     val itemCount = if (mockingPlaceholder) placeholderCount else data.itemCount
     val itemKey = data.itemKey { key(it) }
     val itemContentType = data.itemContentType { contentType(it) }
@@ -151,7 +147,7 @@ fun <T : Any> LazyGridScope.items(
     contentType: (index: Int) -> Any?,
     itemContent: @Composable LazyGridItemScope.(item: T?) -> Unit,
 ) {
-    val mockingPlaceholder = refreshState.isLoading && itemCount() == 0
+    val mockingPlaceholder = (refreshState is LoadState.Loading) && itemCount() == 0
     val itemCount = if (mockingPlaceholder) placeholderCount else itemCount()
     items(
         count = itemCount,
@@ -183,7 +179,7 @@ fun <T : Any> LazyGridScope.itemsIndexed(
     itemContent: @Composable LazyGridItemScope.(index: Int, item: T?) -> Unit,
 ) {
     val mockingPlaceholder =
-        data.loadState.refresh.isLoading && data.itemCount == 0
+        (data.loadState.refresh is LoadState.Loading) && data.itemCount == 0
     val itemCount = if (mockingPlaceholder) placeholderCount else data.itemCount
     val itemKey = data.itemKey { key(it) }
     val itemContentType = data.itemContentType { contentType(it) }
@@ -271,7 +267,7 @@ fun <T : Any> LazyListScope.itemsIndexed(
 fun <T : Any> rememberPagerState(data: LazyPagingItems<T>, placeholderCount: Int): PagerState {
     return rememberPagerState(pageCount = {
         val mockingPlaceholder =
-            data.loadState.refresh.isLoading && data.itemCount == 0
+            (data.loadState.refresh is LoadState.Loading) && data.itemCount == 0
         if (mockingPlaceholder) placeholderCount else data.itemCount
     })
 }
@@ -283,47 +279,6 @@ fun <T : Any> rememberPagerState(data: List<T>?, placeholderCount: Int): PagerSt
 
 fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int) =
     if (index >= itemCount) null else get(index)
-
-@Composable
-fun <T : Any> Flow<PagingData<T>>.collectAsLazyPagingItemsWithLifecycle(
-    lifecycle: Lifecycle = LocalLifecycleOwner.current.lifecycle,
-    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
-    context: CoroutineContext = EmptyCoroutineContext,
-): LazyPagingItems<T> {
-    // TODO: Multiplatform paging doesn't support this
-    return collectAsLazyPagingItems()
-//    val lazyPagingItems = remember(this) { LazyPagingItems(this) }
-//
-//    LaunchedEffect(lazyPagingItems) {
-//        lifecycle.repeatOnLifecycle(minActiveState) {
-//            if (context == EmptyCoroutineContext) {
-//                lazyPagingItems.collectPagingData()
-//            } else {
-//                withContext(context) {
-//                    lazyPagingItems.collectPagingData()
-//                }
-//            }
-//        }
-//    }
-//
-//    LaunchedEffect(lazyPagingItems) {
-//        lifecycle.repeatOnLifecycle(minActiveState) {
-//            if (context == EmptyCoroutineContext) {
-//                lazyPagingItems.collectLoadState()
-//            } else {
-//                withContext(context) {
-//                    lazyPagingItems.collectLoadState()
-//                }
-//            }
-//        }
-//    }
-//
-//    return lazyPagingItems
-}
-
-@Suppress("USELESS_IS_CHECK")
-val LoadState.isLoading
-    get() = this is LoadStateLoading
 
 context(ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")

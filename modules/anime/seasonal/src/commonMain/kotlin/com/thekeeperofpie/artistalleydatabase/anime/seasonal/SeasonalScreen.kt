@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_view_option_icon_content_description
 import artistalleydatabase.modules.anime.seasonal.generated.resources.Res
 import artistalleydatabase.modules.anime.seasonal.generated.resources.anime_seasonal_season_year
@@ -51,7 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes

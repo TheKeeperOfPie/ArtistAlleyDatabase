@@ -5,6 +5,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.map
 import artistalleydatabase.modules.cds.generated.resources.Res
 import artistalleydatabase.modules.cds.generated.resources.cd_browse_tab_musical_artists
@@ -17,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.utils.Either
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbUtils
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import kotlinx.coroutines.Dispatchers

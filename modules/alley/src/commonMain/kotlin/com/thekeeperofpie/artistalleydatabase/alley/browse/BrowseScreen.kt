@@ -50,6 +50,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_browse_tab_series
@@ -76,11 +81,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.isLoading
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
@@ -153,8 +153,8 @@ object BrowseScreen {
                         }
                 ) {
                     val scrollPositions = ScrollStateSaver.scrollPositions()
-                    val series = tagsViewModel.series.collectAsLazyPagingItemsWithLifecycle()
-                    val merch = tagsViewModel.merch.collectAsLazyPagingItemsWithLifecycle()
+                    val series = tagsViewModel.series.collectAsLazyPagingItems()
+                    val merch = tagsViewModel.merch.collectAsLazyPagingItems()
                     AnimatedContent(
                         targetState = Tab.entries[selectedTabIndex],
                         transitionSpec = { fadeIn().togetherWith(fadeOut()) },
@@ -331,7 +331,7 @@ object BrowseScreen {
                     additionalHeader()
 
                     if (values.itemCount == 0) {
-                        if (values.loadState.refresh.isLoading) {
+                        if (values.loadState.refresh is LoadState.Loading) {
                             item("loadingIndicator") {
                                 Box(
                                     contentAlignment = Alignment.Center,

@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.anime.users.generated.resources.Res
 import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_user
 import artistalleydatabase.modules.anime.users.generated.resources.anime_user_favorite_anime_you
@@ -67,8 +69,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

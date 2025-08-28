@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.toRoute
 import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.anime.search.generated.resources.Res
 import artistalleydatabase.modules.anime.search.generated.resources.anime_home_last_added_screen_title
 import artistalleydatabase.modules.anime.search.generated.resources.anime_home_suggestion_popular_all_time
@@ -47,7 +48,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

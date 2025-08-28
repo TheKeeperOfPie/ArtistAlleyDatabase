@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
-import app.cash.paging.PagingSource
+import androidx.paging.PagingSource
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.SuspendingTransacter

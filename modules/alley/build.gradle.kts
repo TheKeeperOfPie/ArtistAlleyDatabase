@@ -49,6 +49,8 @@ kotlin {
             implementation(libs.human.readable)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlinx.serialization.json.io)
+            implementation(libs.paging.common)
+            implementation(libs.paging.compose)
             implementation(libs.qrose)
             implementation(libs.sqldelight.coroutines.extensions)
         }

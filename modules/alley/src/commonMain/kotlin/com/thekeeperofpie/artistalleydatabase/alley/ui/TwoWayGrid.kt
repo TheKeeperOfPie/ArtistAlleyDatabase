@@ -29,7 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
+import androidx.paging.compose.LazyPagingItems
 import org.jetbrains.compose.resources.StringResource
 import kotlin.enums.EnumEntries
 

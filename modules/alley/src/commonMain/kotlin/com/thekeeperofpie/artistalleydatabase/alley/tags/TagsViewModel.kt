@@ -8,10 +8,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
-import app.cash.paging.PagingData
-import app.cash.paging.cachedIn
-import app.cash.paging.createPager
-import app.cash.paging.createPagingConfig
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
@@ -86,7 +86,7 @@ class TagsViewModel(
                 if (year == DataYear.ANIME_EXPO_2023) {
                     flowOf(PagingData.empty())
                 } else {
-                    createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                    Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                         seriesEntryDao.searchSeries(
                             languageOption = languageOption,
                             year = year,
@@ -107,7 +107,7 @@ class TagsViewModel(
             if (year == DataYear.ANIME_EXPO_2023) {
                 flowOf(PagingData.empty())
             } else {
-                createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+                Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                     if (query.isBlank()) {
                         merchEntryDao.getMerch(year)
                     } else {

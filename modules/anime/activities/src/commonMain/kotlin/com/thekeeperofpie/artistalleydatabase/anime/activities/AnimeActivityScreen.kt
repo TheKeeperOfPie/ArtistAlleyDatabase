@@ -15,6 +15,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.activities.generated.resources.Res
 import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_tab_following
 import artistalleydatabase.modules.anime.activities.generated.resources.anime_activity_tab_global
@@ -32,7 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 

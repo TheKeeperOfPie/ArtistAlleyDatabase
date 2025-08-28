@@ -1,10 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
-import app.cash.paging.PagingSource
-import app.cash.paging.PagingSourceLoadParams
-import app.cash.paging.PagingSourceLoadResult
-import app.cash.paging.PagingSourceLoadResultPage
-import app.cash.paging.PagingState
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
@@ -499,13 +496,13 @@ class StampRallyEntryDao(
         if (statements == null) {
             return object : PagingSource<Int, StampRallyWithUserData>() {
                 override fun getRefreshKey(state: PagingState<Int, StampRallyWithUserData>) = null
-                override suspend fun load(params: PagingSourceLoadParams<Int>): PagingSourceLoadResult<Int, StampRallyWithUserData> {
+                override suspend fun load(params: LoadParams<Int>): LoadResult<Int, StampRallyWithUserData> {
                     @Suppress("CAST_NEVER_SUCCEEDS")
-                    return PagingSourceLoadResultPage<Int, StampRallyWithUserData>(
+                    return LoadResult.Page<Int, StampRallyWithUserData>(
                         data = emptyList(),
                         prevKey = null,
                         nextKey = null,
-                    ) as PagingSourceLoadResult<Int, StampRallyWithUserData>
+                    ) as LoadResult<Int, StampRallyWithUserData>
                 }
             }
         }

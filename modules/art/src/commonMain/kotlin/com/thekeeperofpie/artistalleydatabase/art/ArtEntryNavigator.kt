@@ -12,6 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.savedstate.read
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
@@ -30,8 +31,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
 import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalComposeUiApi::class)

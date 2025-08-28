@@ -127,7 +127,7 @@ fun Modifier.skipToLookaheadSize() = withSharedTransitionScopeOrDoNothingInPrevi
 fun Modifier.renderInSharedTransitionScopeOverlay(
     zIndexInOverlay: Float = 0f,
     renderInOverlay: (() -> Boolean)? = null,
-) = withSharedTransitionScopeOrDoNothingInPreview {
+): Modifier = withSharedTransitionScopeOrDoNothingInPreview {
     renderInSharedTransitionScopeOverlay(
         renderInOverlay = renderInOverlay ?: { isTransitionActive },
         zIndexInOverlay = zIndexInOverlay,

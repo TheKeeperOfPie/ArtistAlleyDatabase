@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.anime.history.generated.resources.Res
 import artistalleydatabase.modules.anime.history.generated.resources.anime_history_anime
 import artistalleydatabase.modules.anime.history.generated.resources.anime_history_header
@@ -48,7 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes

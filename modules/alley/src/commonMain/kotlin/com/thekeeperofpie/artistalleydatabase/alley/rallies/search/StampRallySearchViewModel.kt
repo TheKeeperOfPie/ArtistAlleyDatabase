@@ -2,16 +2,16 @@ package com.thekeeperofpie.artistalleydatabase.alley.rallies.search
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import app.cash.paging.cachedIn
-import app.cash.paging.createPager
-import app.cash.paging.createPagingConfig
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import com.hoc081098.flowext.defer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -146,7 +146,7 @@ class StampRallySearchViewModel(
         options: StampRallySearchQuery,
     ) = settings.dataYear
         .flatMapLatest {
-            createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+            Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 stampRallyEntryDao.searchPagingSource(
                     year = it,
                     query = query,

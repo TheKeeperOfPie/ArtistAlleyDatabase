@@ -32,6 +32,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_genre_info_content_description
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_info_content_description
 import artistalleydatabase.modules.anime.media.data.generated.resources.anime_media_tag_search_show_when_spoiler
@@ -49,7 +50,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.anime.media.data.generated.resources.Res as MediaDataRes

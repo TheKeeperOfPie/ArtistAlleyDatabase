@@ -49,6 +49,9 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.anime.generated.resources.Res
 import artistalleydatabase.modules.anime.generated.resources.anime_media_current_progress
 import artistalleydatabase.modules.anime.generated.resources.anime_media_current_progress_unknown_max
@@ -97,9 +100,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.rememberCoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.recomposeHighlighter
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource

@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.paging.LoadState
 import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.anime.forums.generated.resources.Res
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_search_error_loading
 import artistalleydatabase.modules.anime.forums.generated.resources.anime_forum_thread_default_title
@@ -70,7 +71,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingPlaceholderContentType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingPlaceholderKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.rememberPullRefreshState

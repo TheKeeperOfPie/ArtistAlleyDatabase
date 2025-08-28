@@ -14,7 +14,7 @@ object Versions {
         const val browser = "1.10.0-alpha01"
         const val core = "1.17.0"
         const val media3 = "1.8.0"
-        const val paging = "3.4.0-alpha02"
+        const val paging = "3.4.0-alpha03"
         const val palette = "1.0.0"
         const val room = "2.7.2"
         const val securityCrypto = "1.1.0"
@@ -105,7 +105,6 @@ object Versions {
     const val netflixDgsCodegen = "7.0.3"
     const val okhttp = "5.1.0"
     const val okio = "3.10.2"
-    const val pagingMultiplatform = "3.3.0-alpha02-0.6.0-wasm.1"
     const val placeholder = "1.0.11"
     const val qrose = "1.0.1"
     const val skrapeIt = "1.3.0-alpha.1"
@@ -176,9 +175,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                     withVersion(paging) {
                         library("androidx.paging:paging-common")
-                        library("androidx.paging:paging-common-jvm")
                         library("androidx.paging:paging-compose")
-                        library("androidx.paging:paging-compose-android")
                         library("androidx.paging:paging-runtime-ktx")
                         library("androidx.paging:paging-testing")
                     }
@@ -245,14 +242,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         "com.squareup.okhttp3:logging-interceptor:${Versions.okhttp}",
                         prefix = "okhttp3"
                     )
-                }
-
-                prefix("pagingMultiplatform") {
-                    withVersion(Versions.pagingMultiplatform) {
-                        library("app.cash.paging:paging-common")
-                        library("app.cash.paging:paging-compose-common")
-                        library("app.cash.paging:paging-testing")
-                    }
                 }
 
                 prefix("coil3") {

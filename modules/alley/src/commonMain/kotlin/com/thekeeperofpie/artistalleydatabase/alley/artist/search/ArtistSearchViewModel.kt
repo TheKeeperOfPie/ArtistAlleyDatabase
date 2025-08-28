@@ -3,10 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist.search
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.cash.paging.PagingData
-import app.cash.paging.cachedIn
-import app.cash.paging.createPager
-import app.cash.paging.createPagingConfig
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
@@ -176,7 +176,7 @@ class ArtistSearchViewModel(
         ::SearchParams
     )
         .flatMapLatest { (year, searchQuery, query) ->
-            createPager(createPagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
+            Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 artistEntryDao.searchPagingSource(
                     year = year,
                     query = query,

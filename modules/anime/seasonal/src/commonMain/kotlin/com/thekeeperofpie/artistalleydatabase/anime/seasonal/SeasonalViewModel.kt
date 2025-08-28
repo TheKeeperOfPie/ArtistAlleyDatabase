@@ -14,6 +14,8 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.data.MediaAdvancedSearchQuery
 import com.anilist.data.fragment.MediaPreview
 import com.anilist.data.fragment.MediaPreviewWithDescription
@@ -35,8 +37,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.collectAsLazyPagingItemsWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -102,7 +102,7 @@ class SeasonalViewModel<MediaEntry : Any>(
             pages.put(page, pageData)
         }
 
-        return pageData.content.collectAsLazyPagingItemsWithLifecycle()
+        return pageData.content.collectAsLazyPagingItems()
     }
 
     inner class Page(seasonYear: Pair<MediaSeason, Int>) {

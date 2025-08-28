@@ -9,6 +9,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.anime.reviews.generated.resources.Res
 import artistalleydatabase.modules.anime.reviews.generated.resources.anime_reviews_header
 import com.anilist.data.MediaAndReviewsQuery
@@ -26,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSta
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.CoilImageState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.lists.VerticalList
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaReviewsScreen {

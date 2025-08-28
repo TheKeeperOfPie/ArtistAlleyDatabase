@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.app.generated.resources.Res
 import artistalleydatabase.app.generated.resources.clear
 import artistalleydatabase.app.generated.resources.search_filter_content_description
@@ -43,7 +44,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
 import org.jetbrains.compose.resources.stringResource
 
 @Suppress("NAME_SHADOWING")

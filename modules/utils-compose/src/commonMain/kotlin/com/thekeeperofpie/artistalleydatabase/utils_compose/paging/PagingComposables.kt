@@ -5,6 +5,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.paging.compose.LazyPagingItems
 import artistalleydatabase.modules.utils_compose.generated.resources.error_loading
 import artistalleydatabase.modules.utils_compose.generated.resources.retry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings

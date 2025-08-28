@@ -30,10 +30,10 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import app.cash.paging.LoadState
-import app.cash.paging.LoadStateError
-import app.cash.paging.LoadStateLoading
-import app.cash.paging.LoadStateNotLoading
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.error_loading
 import artistalleydatabase.modules.utils_compose.generated.resources.no_results
@@ -41,9 +41,6 @@ import artistalleydatabase.modules.utils_compose.generated.resources.retry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GridUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemContentType
-import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.itemKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.items
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.pullrefresh.PullRefreshState
@@ -88,7 +85,7 @@ object VerticalList {
         contentPadding = contentPadding,
         placeholderCount = placeholderCount,
         pullRefreshState =
-            rememberPullRefreshState(items.loadState.refresh is LoadStateLoading, onRefresh),
+            rememberPullRefreshState(items.loadState.refresh is LoadState.Loading, onRefresh),
         pullRefreshIndicator = { refreshing, pullRefreshState ->
             PullRefreshIndicator(
                 refreshing = refreshing,
@@ -135,8 +132,8 @@ object VerticalList {
         placeholderCount = placeholderCount,
         pullRefreshState = null,
         pullRefreshIndicator = null,
-        refreshState = { (if (items == null) LoadStateLoading else LoadStateNotLoading(true)) as LoadState },
-        appendState = { LoadStateNotLoading(true) as LoadState },
+        refreshState = { (if (items == null) LoadState.Loading else LoadState.NotLoading(true)) },
+        appendState = { LoadState.NotLoading(true) },
         showScrollbar = showScrollbar,
         item = item,
     )
@@ -202,14 +199,14 @@ object VerticalList {
                 }
                 val refreshState = refreshState()
                 when {
-                    refreshState is LoadStateError && itemCount() == 0 ->
+                    refreshState is LoadState.Error && itemCount() == 0 ->
                         item(key = "errorLoading", span = GridUtils.maxSpanFunction) {
                             ErrorContent(
                                 errorText = stringResource(Res.string.error_loading),
                                 exception = refreshState.error,
                             )
                         }
-                    refreshState is LoadStateNotLoading && itemCount() == 0 ->
+                    refreshState is LoadState.NotLoading && itemCount() == 0 ->
                         item(key = "errorNoResults", span = GridUtils.maxSpanFunction) {
                             NoResults()
                         }
@@ -226,26 +223,25 @@ object VerticalList {
                         }
 
                         when (appendState()) {
-                            is LoadStateLoading -> item(
+                            is LoadState.Loading -> item(
                                 key = "load_more_append",
                                 span = GridUtils.maxSpanFunction
                             ) {
                                 LoadingMore()
                             }
-                            is LoadStateError -> item(
+                            is LoadState.Error -> item(
                                 key = "load_more_error",
                                 span = GridUtils.maxSpanFunction
                             ) {
                                 ErrorAppend(onRefresh)
                             }
-                            is LoadStateNotLoading -> Unit
-                            else -> Unit
+                            is LoadState.NotLoading -> Unit
                         }
                     }
                 }
             }
             if (pullRefreshState != null && pullRefreshIndicator != null) {
-                pullRefreshIndicator(this, refreshState() is LoadStateLoading, pullRefreshState)
+                pullRefreshIndicator(this, refreshState() is LoadState.Loading, pullRefreshState)
             }
 
             if (showScrollbar) {

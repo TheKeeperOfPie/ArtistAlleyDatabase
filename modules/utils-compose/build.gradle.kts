@@ -30,7 +30,6 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            api(libs.paging.compose.android)
             implementation(libs.activity.compose)
             implementation(libs.html.text)
             implementation(libs.palette.ktx)
@@ -42,7 +41,8 @@ kotlin {
             api(libs.jetBrainsAndroidX.lifecycle.runtime.compose)
             api(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
             api(libs.jetBrainsCompose.ui.backhandler)
-            api(libs.pagingMultiplatform.paging.common)
+            api(libs.paging.common)
+            api(libs.paging.compose)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
@@ -52,18 +52,7 @@ kotlin {
             implementation(projects.modules.utils)
         }
         desktopMain.dependencies {
-            api(libs.paging.common.jvm)
             implementation(libs.kmpalette.core)
-        }
-        val webMain by getting {
-            dependencies {
-                implementation(libs.pagingMultiplatform.paging.compose.common)
-            }
-        }
-        val androidAndDesktopMain by getting {
-            dependencies {
-                compileOnly(libs.paging.common.jvm)
-            }
         }
         val desktopAndWebMain by getting {
             dependencies {

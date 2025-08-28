@@ -17,11 +17,6 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
-        mavenLocal {
-            content {
-                includeGroup("io.coil-kt.coil3")
-            }
-        }
         maven("https://jitpack.io/")
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
@@ -73,21 +68,6 @@ dependencyResolutionManagement {
                 }
             }
             filter { includeGroup("com.github.webassembly") }
-        }
-
-        // https://github.com/cashapp/multiplatform-paging/pull/376
-        maven {
-            url = uri("https://maven.pkg.github.com/edna-aa/sqldelight")
-            credentials {
-                // Borrowed from https://github.com/0ffz/gpr-for-gradle
-                username = "token"
-                password =
-                    "\u0037\u0066\u0066\u0036\u0030\u0039\u0033\u0066\u0032\u0037\u0033\u0036\u0033\u0037\u0064\u0036\u0037\u0066\u0038\u0030\u0034\u0039\u0062\u0030\u0039\u0038\u0039\u0038\u0066\u0034\u0066\u0034\u0031\u0064\u0062\u0033\u0064\u0033\u0038\u0065"
-            }
-            content {
-                includeGroup("app.cash.paging")
-                includeVersionByRegex("app.cash.paging", ".*", ".*-(wasm|js).*")
-            }
         }
 
         flatDir { dirs = setOf(rootProject.projectDir.resolve("/libs")) }

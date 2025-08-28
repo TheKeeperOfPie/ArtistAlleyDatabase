@@ -23,6 +23,7 @@ kotlin {
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kotlin.multiplatform.diff)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.paging.compose)
             implementation(libs.uri.kmp)
         }
     }
