@@ -61,7 +61,8 @@ class ArtistEntryGridModel(
             entry: ArtistWithUserData,
             series: List<SeriesEntry>,
             hasMoreSeries: Boolean,
-            showOutdatedCatalogs: Boolean,
+            showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
+            fallbackCatalog: Pair<DataYear, List<CatalogImage>>?,
         ): ArtistEntryGridModel {
             val random = Random(randomSeed)
             var merch = entry.artist.merchConfirmed.shuffled(random)
@@ -72,12 +73,7 @@ class ArtistEntryGridModel(
                 year = entry.artist.year,
                 images = entry.artist.images,
             )
-            val fallback = if (showOutdatedCatalogs) {
-                AlleyDataUtils.getArtistImagesFallback(
-                    year = entry.artist.year,
-                    artistId = entry.artist.id,
-                )
-            } else null
+
             return ArtistEntryGridModel(
                 artist = entry.artist,
                 userEntry = entry.userEntry,
@@ -86,8 +82,8 @@ class ArtistEntryGridModel(
                 merch = merch,
                 hasMoreMerch = merch.size > TAGS_TO_SHOW,
                 images = images,
-                fallbackImages = fallback?.second.orEmpty(),
-                fallbackYear = fallback?.first,
+                fallbackImages = fallbackCatalog?.second?.takeIf { showOutdatedCatalogs }.orEmpty(),
+                fallbackYear = fallbackCatalog?.first?.takeIf { showOutdatedCatalogs },
                 placeholderText = entry.artist.booth ?: entry.artist.name,
             )
         }

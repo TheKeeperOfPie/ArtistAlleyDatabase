@@ -44,11 +44,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_series
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
+import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
@@ -62,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMe
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
@@ -96,9 +98,7 @@ object StampRallyDetailsScreen {
                 val entry = entry()
                 entry?.favorite?.takeIf { entry.stampRally.confirmed }
             },
-            images = images,
-            showFallbackImages = { null },
-            fallbackYear = { null },
+            catalog = { LoadingResult.success(DetailsScreenCatalog(images(), null, null)) },
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {

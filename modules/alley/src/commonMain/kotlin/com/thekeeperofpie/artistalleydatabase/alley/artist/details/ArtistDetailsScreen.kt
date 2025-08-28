@@ -70,11 +70,12 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
+import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
+import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -93,6 +94,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMe
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
 import org.jetbrains.compose.resources.StringResource
@@ -111,7 +113,7 @@ object ArtistDetailsScreen {
         seriesConfirmed: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
         imagePagerState: PagerState,
-        catalog: () -> ArtistDetailsViewModel.Catalog,
+        catalog: () -> LoadingResult<DetailsScreenCatalog>,
         seriesImages: () -> Map<String, String>,
         otherYears: () -> List<DataYear>,
         eventSink: (Event) -> Unit,
@@ -133,9 +135,7 @@ object ArtistDetailsScreen {
             },
             sharedElementId = route.id,
             favorite = { entry()?.favorite },
-            showFallbackImages = { catalog().showOutdatedCatalogs },
-            images = { catalog().images },
-            fallbackYear = { catalog().fallbackYear },
+            catalog = catalog,
             imagePagerState = imagePagerState,
             eventSink = { eventSink(Event.DetailsEvent(it)) }
         ) {
@@ -762,7 +762,7 @@ private fun PhoneLayout() = PreviewDark {
         userNotesTextState = rememberTextFieldState(),
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
-        catalog = { ArtistDetailsViewModel.Catalog(images, null, null) },
+        catalog = { LoadingResult.success(DetailsScreenCatalog(images, null, null)) },
         seriesImages = { emptyMap() },
         otherYears = { listOf(DataYear.ANIME_EXPO_2024) },
     )

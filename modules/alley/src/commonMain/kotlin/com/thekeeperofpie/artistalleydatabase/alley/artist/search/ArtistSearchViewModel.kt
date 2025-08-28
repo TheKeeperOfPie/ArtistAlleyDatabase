@@ -208,6 +208,7 @@ class ArtistSearchViewModel(
                             series = series,
                             hasMoreSeries = hasMoreSeries,
                             showOutdatedCatalogs = searchQuery.filterParams.showOutdatedCatalogs,
+                            fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                         )
                     }
                 }

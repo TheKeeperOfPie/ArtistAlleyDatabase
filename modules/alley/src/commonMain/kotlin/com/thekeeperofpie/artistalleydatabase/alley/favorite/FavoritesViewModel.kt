@@ -188,6 +188,7 @@ class FavoritesViewModel(
                         series = series,
                         hasMoreSeries = hasMoreSeries,
                         showOutdatedCatalogs = filterParams.showOutdatedCatalogs,
+                        fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                     )
                 }
             }

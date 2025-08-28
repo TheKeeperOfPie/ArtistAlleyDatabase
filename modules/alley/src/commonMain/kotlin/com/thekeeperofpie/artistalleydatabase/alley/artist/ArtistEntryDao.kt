@@ -22,12 +22,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025Queri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
@@ -481,6 +483,25 @@ class ArtistEntryDao(
                 .awaitAsOneOrNull()
                 ?.toArtistWithUserData()
         }
+
+    suspend fun getFallbackImages(entry: ArtistEntry) =
+        getFallbackImages(entry.year, entry.id, entry.images)
+
+    suspend fun getFallbackImages(
+        year: DataYear,
+        id: String,
+        images: List<CatalogImage>,
+    ): Pair<DataYear, List<com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage>>? {
+        // This check is required in every use case, so it's moved into this method
+        if (images.isNotEmpty()) return null
+        return DataYear.entries.asReversed()
+            .dropWhile { it != year }
+            .firstNotNullOfOrNull { year ->
+                getEntry(year, id)
+                    ?.artist?.images?.takeIf { it.isNotEmpty() }
+                    ?.let { year to AlleyDataUtils.getArtistImages(year, it) }
+            }
+    }
 
     suspend fun getEntriesByBooth(year: DataYear, booth: String) =
         when (year) {

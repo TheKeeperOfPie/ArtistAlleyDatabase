@@ -17,9 +17,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
+import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -29,6 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
@@ -72,13 +74,45 @@ class ArtistDetailsViewModel(
     val initialImageIndex = route.imageIndex ?: 0
 
     val requestedShowFallback = savedStateHandle.getMutableStateFlow("requestedShowFallback", false)
-    val showFallbackImages = combine(requestedShowFallback, settings.showOutdatedCatalogs, Boolean::or)
+    val showFallbackImages =
+        combineStates(requestedShowFallback, settings.showOutdatedCatalogs, Boolean::or)
 
-    val catalog = showFallbackImages
-        .mapLatest { loadCatalog(it) }
-        .flowOn(dispatchers.io)
-        // Block main to load images as fast as possible so shared transition works
-        .stateInForCompose(loadCatalog(settings.showOutdatedCatalogs.value))
+    private val imagesOrFallback = flow {
+        if (route.images.isNullOrEmpty()) {
+            artistEntryDao.getFallbackImages(year, route.id, emptyList())
+                ?.let { emit(LoadingResult.success(it)) }
+        }
+    }.stateInForCompose(
+        if (route.images == null) {
+            LoadingResult.loading()
+        } else {
+            LoadingResult.success(
+                route.year to AlleyDataUtils.getArtistImages(
+                    route.year,
+                    route.images,
+                )
+            )
+        }
+    )
+
+    val catalog =
+        combineStates(
+            showFallbackImages,
+            imagesOrFallback
+        ) { showFallbackImages, imagesOrFallback ->
+            imagesOrFallback.transformResult {
+                val (imagesYear, images) = it
+                if (imagesYear == route.year) {
+                    DetailsScreenCatalog(images, null, null)
+                } else {
+                    DetailsScreenCatalog(
+                        images = images.takeIf { showFallbackImages }.orEmpty(),
+                        showOutdatedCatalogs = showFallbackImages,
+                        fallbackYear = imagesYear,
+                    )
+                }
+            }
+        }
 
     val entry = flowFromSuspend {
         val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
@@ -169,17 +203,6 @@ class ArtistDetailsViewModel(
         mutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
     }
 
-    private fun loadCatalog(showOutdatedCatalogs: Boolean): Catalog {
-        val images = AlleyDataUtils.getArtistImages(year, id)
-        if (images.isNotEmpty()) return Catalog(images, null, null)
-        val fallback = AlleyDataUtils.getArtistImagesFallback(year, id)
-        return Catalog(
-            images = if (showOutdatedCatalogs) fallback?.second.orEmpty() else emptyList(),
-            showOutdatedCatalogs = showOutdatedCatalogs,
-            fallbackYear = fallback?.first,
-        )
-    }
-
     fun onShowFallback() {
         requestedShowFallback.value = true
     }
@@ -196,10 +219,4 @@ class ArtistDetailsViewModel(
     ) {
         var favorite by mutableStateOf(userEntry.favorite)
     }
-
-    data class Catalog(
-        val images: List<CatalogImage>,
-        val showOutdatedCatalogs: Boolean?,
-        val fallbackYear: DataYear?,
-    )
 }

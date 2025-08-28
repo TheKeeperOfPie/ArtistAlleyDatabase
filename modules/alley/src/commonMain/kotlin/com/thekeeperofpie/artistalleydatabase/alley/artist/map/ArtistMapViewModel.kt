@@ -61,6 +61,7 @@ class ArtistMapViewModel(
                         series = series,
                         hasMoreSeries = hasMoreSeries,
                         showOutdatedCatalogs = showOutdatedCatalogs,
+                        fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                     )
                 }
         }

@@ -36,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -106,7 +107,7 @@ object ArtistAlleyAppScreen {
                                     component.artistDetailsViewModel(createSavedStateHandle())
                                 }
                                 val catalog by viewModel.catalog.collectAsStateWithLifecycle()
-                                val images = catalog.images
+                                val images = catalog.result?.images.orEmpty()
                                 val pageCount = when {
                                     images.isEmpty() -> 0
                                     images.size == 1 -> 1
@@ -151,6 +152,8 @@ object ArtistAlleyAppScreen {
                                                         id = it.artistId,
                                                         booth = null,
                                                         name = null,
+                                                        images = null,
+                                                        imageIndex = null,
                                                     )
                                                 )
                                             is ArtistDetailsScreen.Event.OpenMerch ->
@@ -172,6 +175,7 @@ object ArtistAlleyAppScreen {
                                                             year = it.year,
                                                             booth = null,
                                                             name = null,
+                                                            images = null,
                                                         )
                                                     )
                                             is ArtistDetailsScreen.Event.SeriesFavoriteToggle ->
@@ -188,8 +192,8 @@ object ArtistAlleyAppScreen {
                                                     is DetailsScreen.Event.OpenImage -> {
                                                         val artist = viewModel.entry.value?.artist
                                                         if (artist != null && artist.booth != null) {
-                                                            val year = catalog.fallbackYear
-                                                                ?.takeIf { catalog.showOutdatedCatalogs == true }
+                                                            val year = catalog.result?.fallbackYear
+                                                                ?.takeIf { catalog.result?.showOutdatedCatalogs == true }
                                                                 ?: route.year
                                                             navigationController.navigate(
                                                                 Destinations.Images(
@@ -199,6 +203,7 @@ object ArtistAlleyAppScreen {
                                                                         id = artist.id,
                                                                         booth = artist.booth,
                                                                         name = artist.name,
+                                                                        images = artist.images,
                                                                     ),
                                                                     initialImageIndex = event.imageIndex,
                                                                 )

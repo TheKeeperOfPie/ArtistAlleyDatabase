@@ -479,6 +479,7 @@ object ArtistSearchScreen {
                         .map { previewSeriesWithUserData(it).series },
                     hasMoreSeries = true,
                     showOutdatedCatalogs = true,
+                    fallbackCatalog = null,
                 )
             }
         val state = State(

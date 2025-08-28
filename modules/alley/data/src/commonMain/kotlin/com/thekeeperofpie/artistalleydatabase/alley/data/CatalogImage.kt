@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.data
 
 import com.eygraber.uri.Uri
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
+@Serializable
 data class CatalogImage(
     val uri: Uri,
     val width: Int?,

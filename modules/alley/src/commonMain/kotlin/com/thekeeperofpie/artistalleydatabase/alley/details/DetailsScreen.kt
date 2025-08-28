@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley
+package com.thekeeperofpie.artistalleydatabase.alley.details
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -32,8 +32,10 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,11 +65,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_di
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
+import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ImageFallbackBanner
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
@@ -75,13 +78,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 object DetailsScreen {
 
     @Composable
@@ -89,9 +95,7 @@ object DetailsScreen {
         title: @Composable () -> Unit,
         sharedElementId: Any,
         favorite: () -> Boolean?,
-        images: () -> List<CatalogImage>,
-        showFallbackImages: () -> Boolean?,
-        fallbackYear: () -> DataYear?,
+        catalog: () -> LoadingResult<DetailsScreenCatalog>,
         imagePagerState: PagerState,
         eventSink: (Event) -> Unit,
         content: LazyListScope.() -> Unit,
@@ -129,9 +133,7 @@ object DetailsScreen {
                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     ExpandedLayout(
                         sharedElementId = sharedElementId,
-                        images = images,
-                        showFallbackImages = showFallbackImages,
-                        fallbackYear = fallbackYear,
+                        catalog = catalog,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
                         onShowFallback = { eventSink(Event.ShowFallback) },
                         onAlwaysShowFallback = { eventSink(Event.AlwaysShowFallback) },
@@ -140,9 +142,7 @@ object DetailsScreen {
                 } else {
                     CompactLayout(
                         sharedElementId = sharedElementId,
-                        images = images,
-                        showFallbackImages = showFallbackImages,
-                        fallbackYear = fallbackYear,
+                        catalog = catalog,
                         imagePagerState = imagePagerState,
                         onClickImage = { eventSink(Event.OpenImage(it)) },
                         onShowFallback = { eventSink(Event.ShowFallback) },
@@ -157,9 +157,7 @@ object DetailsScreen {
     @Composable
     private fun ExpandedLayout(
         sharedElementId: Any,
-        images: () -> List<CatalogImage>,
-        showFallbackImages: () -> Boolean?,
-        fallbackYear: () -> DataYear?,
+        catalog: () -> LoadingResult<DetailsScreenCatalog>,
         onClickImage: (imageIndex: Int) -> Unit,
         onShowFallback: () -> Unit,
         onAlwaysShowFallback: () -> Unit,
@@ -169,7 +167,8 @@ object DetailsScreen {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            val images = images()
+            val catalog = catalog()
+            val images = catalog.result?.images.orEmpty()
             val hasImages = images.isNotEmpty()
             val width = LocalWindowConfiguration.current.screenWidthDp
             val horizontalContentPadding = if (!hasImages && width > 800.dp) {
@@ -177,8 +176,9 @@ object DetailsScreen {
             } else {
                 0.dp
             }
-            val fallbackYear = fallbackYear()
-            val showFallbackPrompt = !hasImages && showFallbackImages() == false &&
+            val fallbackYear = catalog.result?.fallbackYear
+            val showFallbackImages = catalog.result?.showOutdatedCatalogs
+            val showFallbackPrompt = !hasImages && showFallbackImages == false &&
                     fallbackYear != null
             LazyColumn(
                 contentPadding = PaddingValues(
@@ -191,8 +191,10 @@ object DetailsScreen {
                     .conditionally(hasImages) { width(400.dp) }
                     .conditionally(!hasImages) { fillMaxWidth() }
             ) {
-                if (showFallbackPrompt) {
-                    item("availableFallbackPrompt") {
+                item("availableFallbackPrompt") {
+                    if (catalog.loading) {
+                        LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    } else if (showFallbackPrompt) {
                         AvailableFallbackPrompt(
                             fallbackYear = fallbackYear,
                             onShowFallback = onShowFallback,
@@ -204,7 +206,6 @@ object DetailsScreen {
             }
             if (hasImages) {
                 Column {
-                    val fallbackYear = fallbackYear()
                     if (fallbackYear != null) {
                         ImageFallbackBanner(sharedElementId, fallbackYear)
                     }
@@ -247,9 +248,7 @@ object DetailsScreen {
     @Composable
     private fun CompactLayout(
         sharedElementId: Any,
-        images: () -> List<CatalogImage>,
-        showFallbackImages: () -> Boolean?,
-        fallbackYear: () -> DataYear?,
+        catalog: () -> LoadingResult<DetailsScreenCatalog>,
         imagePagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
         onShowFallback: () -> Unit,
@@ -263,9 +262,7 @@ object DetailsScreen {
             item("detailsHeader") {
                 SmallImageHeader(
                     sharedElementId = sharedElementId,
-                    images = images,
-                    showFallbackImages = showFallbackImages,
-                    fallbackYear = fallbackYear,
+                    catalog = catalog,
                     headerPagerState = imagePagerState,
                     onClickImage = onClickImage,
                     onShowFallback = onShowFallback,
@@ -327,18 +324,18 @@ object DetailsScreen {
     @Composable
     private fun SmallImageHeader(
         sharedElementId: Any,
-        images: () -> List<CatalogImage>,
-        showFallbackImages: () -> Boolean?,
-        fallbackYear: () -> DataYear?,
+        catalog: () -> LoadingResult<DetailsScreenCatalog>,
         headerPagerState: PagerState,
         onClickImage: (imageIndex: Int) -> Unit,
         onShowFallback: () -> Unit,
         onAlwaysShowFallback: () -> Unit,
     ) {
-        val images = images()
-        if (images.isEmpty()) {
-            val fallbackYear = fallbackYear()
-            if (showFallbackImages() == false && fallbackYear != null) {
+        val catalog = catalog()
+        val images = catalog.result?.images
+        val fallbackYear = catalog.result?.fallbackYear
+        if (images.isNullOrEmpty()) {
+            val showFallbackImages = catalog.result?.showOutdatedCatalogs
+            if (showFallbackImages == false && fallbackYear != null) {
                 AvailableFallbackPrompt(
                     fallbackYear = fallbackYear,
                     onShowFallback = onShowFallback,
@@ -368,7 +365,6 @@ object DetailsScreen {
                     sharedElementId = sharedElementId,
                     onClickPage = onClickImage,
                 )
-                val fallbackYear = fallbackYear()
                 if (fallbackYear != null) {
                     ImageFallbackBanner(sharedElementId, fallbackYear)
                 }
@@ -448,9 +444,7 @@ private fun DetailsScreen() = PreviewDark {
         title = { Text("Details title") },
         sharedElementId = "sharedElementId",
         favorite = { true },
-        images = { images },
-        showFallbackImages = { false },
-        fallbackYear = { null },
+        catalog = { LoadingResult.success(DetailsScreenCatalog(images, false, null)) },
         imagePagerState = rememberImagePagerState(images, 1),
         eventSink = {},
     ) {

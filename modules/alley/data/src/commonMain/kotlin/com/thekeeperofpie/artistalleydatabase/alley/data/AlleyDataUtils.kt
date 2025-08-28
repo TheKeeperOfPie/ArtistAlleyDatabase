@@ -18,11 +18,6 @@ object AlleyDataUtils {
 
     fun getArtistImages(
         year: DataYear,
-        artistId: String,
-    ): List<CatalogImage> = getArtistImagesWithoutFallback(year, artistId)
-
-    fun getArtistImages(
-        year: DataYear,
         images: List<com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage>
     ) = images.map {
         val path = "files/${year.folderName}/${Folder.CATALOGS.folderName}/${it.name}"
@@ -31,44 +26,6 @@ object AlleyDataUtils {
             width = it.width,
             height = it.height,
         )
-    }
-
-    fun getArtistImagesFallback(
-        year: DataYear,
-        artistId: String,
-    ): Pair<DataYear, List<CatalogImage>>? =
-        DataYear.entries.asReversed()
-            .dropWhile { it != year }
-            .firstNotNullOfOrNull { year ->
-                getArtistImagesWithoutFallback(year, artistId)
-                    .ifEmpty { null }
-                    ?.let { year to it }
-            }
-
-    private fun getArtistImagesWithoutFallback(
-        year: DataYear,
-        artistId: String,
-    ): List<CatalogImage> {
-        val folder = when (year) {
-            DataYear.ANIME_EXPO_2023 -> ComposeFiles.catalogs2023
-            DataYear.ANIME_EXPO_2024 -> ComposeFiles.catalogs2024
-            DataYear.ANIME_EXPO_2025 -> ComposeFiles.catalogs2025
-            DataYear.ANIME_NYC_2024 -> ComposeFiles.catalogsAnimeNyc2024
-            DataYear.ANIME_NYC_2025 -> ComposeFiles.catalogsAnimeNyc2025
-        }[artistId]
-
-        @OptIn(ExperimentalResourceApi::class)
-        return folder?.files
-            ?.filterIsInstance<ComposeFile.Image>()
-            ?.sortedBy { it.name }
-            ?.map {
-                CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/${year.folderName}/${Folder.CATALOGS.folderName}/${folder.name}/${it.name}")),
-                    width = it.width,
-                    height = it.height,
-                )
-            }
-            .orEmpty()
     }
 
     fun getRallyImages(

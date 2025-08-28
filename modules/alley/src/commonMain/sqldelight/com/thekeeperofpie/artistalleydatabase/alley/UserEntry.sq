@@ -11,27 +11,27 @@ SELECT * FROM artistUserEntry
 WHERE artistId = :artistId AND dataYear = :dataYear;
 
 getBoothsWithFavorites2023:
-SELECT artistEntry2023.id, artistEntry2023.booth, artistEntry2023.name, artistUserEntry.favorite FROM artistEntry2023
+SELECT artistEntry2023.id, artistEntry2023.booth, artistEntry2023.name, artistEntry2023.images, artistUserEntry.favorite FROM artistEntry2023
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry2023.id = artistUserEntry.artistId AND 'AX2023' = artistUserEntry.dataYear;
 
 getBoothsWithFavorites2024:
-SELECT artistEntry2024.id, artistEntry2024.booth, artistEntry2024.name, artistUserEntry.favorite FROM artistEntry2024
+SELECT artistEntry2024.id, artistEntry2024.booth, artistEntry2024.name, artistEntry2024.images, artistUserEntry.favorite FROM artistEntry2024
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry2024.id = artistUserEntry.artistId AND 'AX2024' = artistUserEntry.dataYear;
 
 getBoothsWithFavorites2025:
-SELECT artistEntry2025.id, artistEntry2025.booth, artistEntry2025.name, artistUserEntry.favorite FROM artistEntry2025
+SELECT artistEntry2025.id, artistEntry2025.booth, artistEntry2025.name, artistEntry2025.images, artistUserEntry.favorite FROM artistEntry2025
 LEFT OUTER JOIN artistUserEntry
 ON artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear;
 
 getBoothsWithFavoritesAnimeNyc2024:
-SELECT artistEntryAnimeNyc2024.id, artistEntryAnimeNyc2024.booth, artistEntryAnimeNyc2024.name, artistUserEntry.favorite FROM artistEntryAnimeNyc2024
+SELECT artistEntryAnimeNyc2024.id, artistEntryAnimeNyc2024.booth, artistEntryAnimeNyc2024.name, artistEntryAnimeNyc2024.images, artistUserEntry.favorite FROM artistEntryAnimeNyc2024
 LEFT OUTER JOIN artistUserEntry
 ON artistEntryAnimeNyc2024.id = artistUserEntry.artistId AND 'ANYC2024' = artistUserEntry.dataYear;
 
 getBoothsWithFavoritesAnimeNyc2025:
-SELECT artistEntryAnimeNyc2025.id, artistEntryAnimeNyc2025.booth, artistEntryAnimeNyc2025.name, artistUserEntry.favorite FROM artistEntryAnimeNyc2025
+SELECT artistEntryAnimeNyc2025.id, artistEntryAnimeNyc2025.booth, artistEntryAnimeNyc2025.name, artistEntryAnimeNyc2025.images, artistUserEntry.favorite FROM artistEntryAnimeNyc2025
 LEFT OUTER JOIN artistUserEntry
 ON artistEntryAnimeNyc2025.id = artistUserEntry.artistId AND 'ANYC2025' = artistUserEntry.dataYear;
 

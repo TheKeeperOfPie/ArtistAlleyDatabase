@@ -32,6 +32,7 @@ private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
         id = id,
         booth = booth,
         name = name,
+        images = images,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -41,6 +42,7 @@ private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
         id = id,
         booth = booth,
         name = name,
+        images = images,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -50,6 +52,7 @@ private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
         id = id,
         booth = booth,
         name = name,
+        images = images,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -59,6 +62,7 @@ private fun GetBoothsWithFavoritesAnimeNyc2024.toBoothWithFavorite() =
         id = id,
         booth = booth,
         name = name,
+        images = images,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -68,6 +72,7 @@ private fun GetBoothsWithFavoritesAnimeNyc2025.toBoothWithFavorite() =
         id = id,
         booth = booth,
         name = name,
+        images = images,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 

@@ -4,10 +4,12 @@ import androidx.navigation.NavType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -20,6 +22,12 @@ sealed interface Destinations : NavDestination {
             typeOf<AlleyDataUtils.Folder>() to CustomNavTypes.SerializableType<AlleyDataUtils.Folder>(),
             typeOf<Images.Type>() to CustomNavTypes.SerializableType<Images.Type>(),
             typeOf<Set<String>>() to CustomNavTypes.SerializableType<Set<String>>(),
+            typeOf<List<CatalogImage>>() to CustomNavTypes.SerializableType<List<CatalogImage>>(
+                serializer = { ListSerializer(CatalogImage.serializer()) },
+            ),
+            typeOf<List<CatalogImage>?>() to CustomNavTypes.SerializableType<List<CatalogImage>>(
+                serializer = { ListSerializer(CatalogImage.serializer()) },
+            ),
         )
     }
 
@@ -32,6 +40,7 @@ sealed interface Destinations : NavDestination {
         val id: String,
         val booth: String?,
         val name: String?,
+        val images: List<CatalogImage>? = null,
         val imageIndex: Int? = null,
     ) : Destinations {
         constructor(entry: ArtistEntry, imageIndex: Int? = null) : this(
@@ -40,6 +49,7 @@ sealed interface Destinations : NavDestination {
             booth = entry.booth,
             name = entry.name,
             imageIndex = imageIndex,
+            images = entry.images,
         )
     }
 
@@ -63,7 +73,12 @@ sealed interface Destinations : NavDestination {
         @Serializable
         sealed interface Type {
             @Serializable
-            data class Artist(val id: String, val booth: String, val name: String?) : Type
+            data class Artist(
+                val id: String,
+                val booth: String,
+                val name: String?,
+                val images: List<CatalogImage>,
+            ) : Type
 
             @Serializable
             data class StampRally(

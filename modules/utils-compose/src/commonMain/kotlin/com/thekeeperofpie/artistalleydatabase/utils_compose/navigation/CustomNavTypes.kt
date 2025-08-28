@@ -7,6 +7,7 @@ import androidx.savedstate.write
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageState
 import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
@@ -93,15 +94,19 @@ object CustomNavTypes {
     }
 
     @OptIn(InternalSerializationApi::class)
-    class SerializableType<Type : Any>(private val type: KClass<Type>) : NavType<Type?>(true) {
+    class SerializableType<Type : Any>(
+        private val type: KClass<Type>,
+        serializer: () -> KSerializer<Type> = { type.serializer() },
+    ) : NavType<Type?>(true) {
         companion object {
-            inline operator fun <reified T : Any> invoke() =
-                SerializableType(T::class)
+            inline operator fun <reified T : Any> invoke(
+                noinline serializer: () -> KSerializer<T> = { T::class.serializer() },
+            ) = SerializableType(type = T::class, serializer = serializer)
         }
 
         override val name: String = type.simpleName!!
 
-        private val serializer by lazy { type.serializer() }
+        private val serializer by lazy { serializer() }
 
         override fun put(bundle: SavedState, key: String, value: Type?) {
             value?.let { bundle.write { putString(key, Json.encodeToString(serializer, value)) } }
