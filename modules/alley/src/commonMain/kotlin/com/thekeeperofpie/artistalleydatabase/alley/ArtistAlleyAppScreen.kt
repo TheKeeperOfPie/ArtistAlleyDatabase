@@ -203,8 +203,8 @@ object ArtistAlleyAppScreen {
                                                                         id = artist.id,
                                                                         booth = artist.booth,
                                                                         name = artist.name,
-                                                                        images = artist.images,
                                                                     ),
+                                                                    images = artist.images,
                                                                     initialImageIndex = event.imageIndex,
                                                                 )
                                                             )
@@ -360,6 +360,7 @@ object ArtistAlleyAppScreen {
                                                                         hostTable = it.hostTable,
                                                                         fandom = it.fandom,
                                                                     ),
+                                                                    images = it.images,
                                                                     initialImageIndex = event.imageIndex,
                                                                 )
                                                             )

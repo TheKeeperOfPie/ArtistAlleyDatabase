@@ -103,15 +103,18 @@ object DaoUtils {
         stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
             tablesAdapter = listStringAdapter,
             linksAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
             tablesAdapter = listStringAdapter,
             linksAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
             tablesAdapter = listStringAdapter,
             linksAdapter = listStringAdapter,
             seriesAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
         ),
         artistNotesAdapter = ArtistNotes.Adapter(
             dataYearAdapter = dataYearAdapter,

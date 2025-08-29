@@ -40,9 +40,7 @@ class StampRallyEntryGridModel(
                 userEntry = entry.userEntry,
                 images = AlleyDataUtils.getRallyImages(
                     year = stampRally.year,
-                    id = stampRally.id,
-                    hostTable = stampRally.hostTable,
-                    fandom = stampRally.fandom,
+                    images = stampRally.images,
                 ),
                 placeholderText = stampRally.fandom,
             )

@@ -21,6 +21,7 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 series = emptyList(),
                 notes = null,
                 counter = 1,
+                images = emptyList(),
                 confirmed = true,
             ),
             userEntry = StampRallyUserEntry(

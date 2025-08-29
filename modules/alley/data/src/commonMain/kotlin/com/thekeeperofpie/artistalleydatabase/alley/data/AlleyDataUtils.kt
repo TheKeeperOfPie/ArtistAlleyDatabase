@@ -6,7 +6,6 @@ import com.thekeeperofpie.artistalleydatabase.generated.ComposeFile
 import com.thekeeperofpie.artistalleydatabase.generated.ComposeFiles
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 object AlleyDataUtils {
 
@@ -20,7 +19,7 @@ object AlleyDataUtils {
         year: DataYear,
         images: List<com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage>
     ) = images.map {
-        val path = "files/${year.folderName}/${Folder.CATALOGS.folderName}/${it.name}"
+        val path = "files/${year.folderName}/catalogs/${it.name}"
         CatalogImage(
             uri = Uri.parse(Res.getUri(path)),
             width = it.width,
@@ -30,47 +29,15 @@ object AlleyDataUtils {
 
     fun getRallyImages(
         year: DataYear,
-        id: String,
-        hostTable: String?,
-        fandom: String?,
-    ): List<CatalogImage> {
-        hostTable ?: fandom ?: return emptyList()
-        val file = "$hostTable$fandom"
-        val targetName = when (year) {
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-                -> fixName(file)
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> id
-        }
-
-        // TODO: Rename rally folders to also allow access by key
-        val targetFolder = when (year) {
-            DataYear.ANIME_EXPO_2023 -> ComposeFiles.rallies2023
-            DataYear.ANIME_EXPO_2024 -> ComposeFiles.rallies2024
-            DataYear.ANIME_EXPO_2025 -> ComposeFiles.rallies2025
-            DataYear.ANIME_NYC_2024 -> emptyMap()
-            DataYear.ANIME_NYC_2025 -> emptyMap()
-        }.values.find { it.name.startsWith(targetName) }
-
-        @OptIn(ExperimentalResourceApi::class)
-        return targetFolder?.files
-            ?.filterIsInstance<ComposeFile.Image>()
-            ?.sortedBy { it.name }
-            ?.map {
-                CatalogImage(
-                    uri = Uri.parse(Res.getUri("files/${year.folderName}/${Folder.RALLIES.folderName}/${targetFolder.name}/${it.name}")),
-                    width = it.width,
-                    height = it.height,
-                )
-            }
-            .orEmpty()
+        images: List<com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage>
+    ) = images.map {
+        val path = "files/${year.folderName}/rallies/${it.name}"
+        CatalogImage(
+            uri = Uri.parse(Res.getUri(path)),
+            width = it.width,
+            height = it.height,
+        )
     }
-
-    private fun fixName(name: String) = name.replace("'", "_")
-        .replace("&", "_")
 
     fun exists(path: String): Boolean {
         val parts = path.substringAfter("generated.resources/files/").split("/")

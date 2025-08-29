@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.rallies
 
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 
@@ -16,6 +17,7 @@ data class StampRallyEntry(
     val prizeLimit: Long?,
     val series: List<String>,
     val notes: String?,
+    val images: List<CatalogImage>,
     val counter: Long,
     val confirmed: Boolean,
 ) {

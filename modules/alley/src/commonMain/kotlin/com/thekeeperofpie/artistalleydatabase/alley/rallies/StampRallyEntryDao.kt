@@ -47,13 +47,14 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
             prizeLimit = null,
             series = emptyList(),
             notes = null,
-            counter = getLong(5)!!,
+            images = getString(5)!!.let(Json::decodeFromString),
+            counter = getLong(6)!!,
             confirmed = true,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(6),
-            ignored = getBooleanFixed(7),
+            favorite = getBooleanFixed(7),
+            ignored = getBooleanFixed(8),
         )
     )
 }
@@ -74,13 +75,14 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
             prizeLimit = getLong(7),
             series = emptyList(),
             notes = getString(8),
-            counter = getLong(9)!!,
+            images = getString(9)!!.let(Json::decodeFromString),
+            counter = getLong(10)!!,
             confirmed = true,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(10),
-            ignored = getBooleanFixed(11),
+            favorite = getBooleanFixed(11),
+            ignored = getBooleanFixed(12),
         )
     )
 }
@@ -101,13 +103,14 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             prizeLimit = getLong(8),
             series = getString(9)!!.let(Json::decodeFromString),
             notes = getString(10),
-            counter = getLong(11)!!,
-            confirmed = getBooleanFixed(12),
+            images = getString(11)!!.let(Json::decodeFromString),
+            counter = getLong(12)!!,
+            confirmed = getBooleanFixed(13),
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(13),
-            ignored = getBooleanFixed(14),
+            favorite = getBooleanFixed(14),
+            ignored = getBooleanFixed(15),
         )
     )
 }
@@ -126,6 +129,7 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
         prizeLimit = null,
         series = emptyList(),
         notes = null,
+        images = images,
         counter = counter,
         confirmed = true,
     ),
@@ -150,6 +154,7 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
         prizeLimit = prizeLimit,
         series = emptyList(),
         notes = notes,
+        images = images,
         counter = counter,
         confirmed = true,
     ),
@@ -174,6 +179,7 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
         prizeLimit = prizeLimit,
         series = series,
         notes = notes,
+        images = images,
         counter = counter,
         confirmed = confirmed,
     ),
@@ -197,6 +203,7 @@ fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
     prizeLimit = null,
     series = emptyList(),
     notes = null,
+    images = images,
     counter = counter,
     confirmed = true,
 )
@@ -214,6 +221,7 @@ fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
     prizeLimit = prizeLimit,
     series = emptyList(),
     notes = notes,
+    images = images,
     counter = counter,
     confirmed = true,
 )
@@ -231,6 +239,7 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
     prizeLimit = prizeLimit,
     series = series,
     notes = notes,
+    images = images,
     counter = counter,
     confirmed = confirmed,
 )

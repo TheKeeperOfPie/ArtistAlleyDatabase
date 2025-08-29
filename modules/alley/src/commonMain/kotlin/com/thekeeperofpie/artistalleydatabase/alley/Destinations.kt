@@ -67,6 +67,7 @@ sealed interface Destinations : NavDestination {
         val year: DataYear,
         val id: String,
         val type: Type,
+        val images: List<CatalogImage>,
         val initialImageIndex: Int?,
     ) : Destinations {
 
@@ -77,7 +78,6 @@ sealed interface Destinations : NavDestination {
                 val id: String,
                 val booth: String,
                 val name: String?,
-                val images: List<CatalogImage>,
             ) : Type
 
             @Serializable
@@ -116,6 +116,7 @@ sealed interface Destinations : NavDestination {
         val id: String,
         val hostTable: String?,
         val fandom: String?,
+        val images: List<CatalogImage>,
         val initialImageIndex: String? = null,
     ) : Destinations {
         constructor(entry: StampRallyEntry, initialImageIndex: String? = null) : this(
@@ -123,6 +124,7 @@ sealed interface Destinations : NavDestination {
             id = entry.id,
             hostTable = entry.hostTable,
             fandom = entry.fandom,
+            images = entry.images,
             initialImageIndex = initialImageIndex,
         )
     }

@@ -65,9 +65,7 @@ class StampRallyDetailsViewModel(
     // Block main to load images as fast as possible so shared transition works
     val images = AlleyDataUtils.getRallyImages(
         year = route.year,
-        id = route.id,
-        hostTable = route.hostTable,
-        fandom = route.fandom,
+        images = route.images,
     )
 
     val entry = flowFromSuspend {
