@@ -120,7 +120,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                         val path = request.url
                             .let(Uri::parseOrNull)
                             ?.path
-                        if (path == null || !AlleyDataUtils.exists(path)) {
+                        if (path == null || !AlleyImageUtils.artistImageExists(artistEntryDao, path)) {
                             ConsoleLogger.log("Remove stale image = $path")
                             stale += request
                         }

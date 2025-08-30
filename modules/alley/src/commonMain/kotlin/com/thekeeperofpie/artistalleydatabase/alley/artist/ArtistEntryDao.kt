@@ -854,4 +854,12 @@ class ArtistEntryDao(
             },
         )
     }
+
+    suspend fun getImagesById(year: DataYear, artistId: String) = when (year) {
+        DataYear.ANIME_EXPO_2023 -> dao2023().getImagesById(artistId).awaitAsOneOrNull()
+        DataYear.ANIME_EXPO_2024 -> dao2024().getImagesById(artistId).awaitAsOneOrNull()
+        DataYear.ANIME_EXPO_2025 -> dao2025().getImagesById(artistId).awaitAsOneOrNull()
+        DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024().getImagesById(artistId).awaitAsOneOrNull()
+        DataYear.ANIME_NYC_2025 -> daoAnimeNyc2025().getImagesById(artistId).awaitAsOneOrNull()
+    }
 }

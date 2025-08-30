@@ -13,3 +13,7 @@ getEntriesRandom:
 SELECT *
 FROM artistEntryAnimeNyc2024
 ORDER BY substr(artistEntryAnimeNyc2024.counter * ?, length(artistEntryAnimeNyc2024.counter) + 2);
+
+getImagesById:
+SELECT artistEntryAnimeNyc2024.images FROM artistEntryAnimeNyc2024
+WHERE artistEntryAnimeNyc2024.id = :artistId;

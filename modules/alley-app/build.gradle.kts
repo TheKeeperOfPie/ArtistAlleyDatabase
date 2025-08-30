@@ -1,8 +1,8 @@
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import java.util.zip.CRC32
 
 plugins {
@@ -122,9 +122,6 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp-wasm.js"
-                devServer = null
-                mode = KotlinWebpackConfig.Mode.PRODUCTION
-                sourceMaps = false
             }
         }
         binaries.executable()
@@ -135,9 +132,6 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp-js.js"
-                devServer = null
-                mode = KotlinWebpackConfig.Mode.PRODUCTION
-                sourceMaps = false
             }
         }
         binaries.executable()
