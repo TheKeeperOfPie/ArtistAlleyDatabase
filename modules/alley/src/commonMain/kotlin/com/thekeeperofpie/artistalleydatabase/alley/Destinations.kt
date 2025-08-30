@@ -19,7 +19,6 @@ sealed interface Destinations : NavDestination {
         val typeMap: Map<KType, NavType<*>> = mapOf(
             typeOf<DataYear>() to CustomNavTypes.SerializableType<DataYear>(),
             typeOf<DataYear?>() to CustomNavTypes.SerializableType<DataYear>(),
-            typeOf<AlleyDataUtils.Folder>() to CustomNavTypes.SerializableType<AlleyDataUtils.Folder>(),
             typeOf<Images.Type>() to CustomNavTypes.SerializableType<Images.Type>(),
             typeOf<Set<String>>() to CustomNavTypes.SerializableType<Set<String>>(),
             typeOf<List<CatalogImage>>() to CustomNavTypes.SerializableType<List<CatalogImage>>(

@@ -62,7 +62,6 @@ object Versions {
     const val htmlText = "1.6.0"
     const val humanReadable = "1.12.0"
     const val jackson = "2.18.3"
-    const val javaPoet = "1.13.0"
 
     object jetBrains {
         object androidX {
@@ -92,7 +91,6 @@ object Versions {
     }
 
     const val kotlinInject = "0.8.0"
-    const val kotlinPoet = "1.15.3"
     const val ktor = "3.2.3"
     const val ksoup = "0.2.5"
     const val leakCanary = "3.0-alpha-8"
@@ -358,8 +356,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     alias = "androidyoutubeplayer"
                 )
                 library("com.sebastianneubauer.jsontree:jsontree:${Versions.jsonTree}")
-                library("com.squareup:javapoet:${Versions.javaPoet}")
-                library("com.squareup:kotlinpoet:${Versions.kotlinPoet}")
                 library("com.squareup.okio:okio-fakefilesystem:${Versions.okio}")
                 library("com.unity3d.ads:unity-ads:${Versions.unityAds}")
                 library("de.charlex.compose:html-text:${Versions.htmlText}")

@@ -1,14 +1,4 @@
 
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
-import com.squareup.kotlinpoet.asTypeName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -23,7 +13,6 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.internal.extensions.stdlib.capitalized
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -36,12 +25,10 @@ import javax.inject.Inject
 abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     companion object {
-        private const val PACKAGE_NAME = "com.thekeeperofpie.artistalleydatabase.generated"
         private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "bmp", "webp")
         private const val RESIZE_TARGET = 1200
         private const val WEBP_TARGET_QUALITY = 80
         private const val WEBP_METHOD = 6
-        private const val COMPOSE_FILES_CHUNK_SIZE = 50
 
         internal fun parseScaledImageWidthHeight(
             imageCacheDir: File,
@@ -105,14 +92,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         outputSource.convention(layout.buildDirectory.dir("generated/source"))
     }
 
-    private val composeFileType = ClassName(PACKAGE_NAME, "ComposeFile")
-    private val composeFolderType = ClassName(PACKAGE_NAME, "ComposeFile.Folder")
-    private val listComposeFileType =
-        List::class.asClassName().parameterizedBy(composeFileType)
-    private val mapStringComposeFolderType =
-        Map::class.asClassName().parameterizedBy(String::class.asTypeName(), composeFolderType)
-    private val nullableIntType = Int::class.asTypeName().copy(nullable = true)
-
     @Suppress("NewApi")
     @TaskAction
     fun process() =
@@ -154,13 +133,13 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     "$booth - $uuid"
                 }
 
-                val catalogs2023 = "catalogs2023" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2023/catalogs",
                     transformName = transformCatalogName,
                     transformId = transformCatalogId,
                 )
-                val rallies2023 = "rallies2023" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2023/rallies",
                     transformName = {
@@ -168,50 +147,39 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                         "${parts[1]}${parts[0]}${parts[2]}"
                     },
                 )
-                val catalogs2024 = "catalogs2024" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2024/catalogs",
                     transformName = transformCatalogName,
                     transformId = transformCatalogId,
                 )
-                val rallies2024 = "rallies2024" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2024/rallies",
                     transformName = { it.replace(" - ", "").replace("'", "_") },
                 )
-                val catalogs2025 = "catalogs2025" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2025/catalogs",
                     transformName = transformCatalogName,
                     transformId = transformCatalogId,
                 )
-                val rallies2025 = "rallies2025" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "2025/rallies",
                     transformName = { it.replace(" - ", "").replace("'", "_") },
                 )
-                val catalogsAnimeNyc2024 = "catalogsAnimeNyc2024" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "animeNyc2024/catalogs",
                     transformName = transformCatalogName,
                     transformId = transformCatalogId,
                 )
-                val catalogsAnimeNyc2025 = "catalogsAnimeNyc2025" to processFolder(
+                processFolder(
                     imageCacheDir = imageCacheDir,
                     path = "animeNyc2025/catalogs",
                     transformName = transformCatalogName,
                     transformId = transformCatalogId,
-                )
-
-                buildComposeFiles(
-                    catalogs2023,
-                    rallies2023,
-                    catalogs2024,
-                    rallies2024,
-                    catalogs2025,
-                    rallies2025,
-                    catalogsAnimeNyc2024,
-                    catalogsAnimeNyc2025,
                 )
             }
         }
@@ -344,195 +312,6 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             throw IllegalStateException("Failed to compress $input")
         }
     }
-
-    private fun buildComposeFiles(
-        vararg folders: Pair<String, List<CatalogFolder>>,
-    ) {
-        FileSpec.builder(PACKAGE_NAME, "ComposeFiles")
-            .apply {
-                addType(accessorType(this, *folders))
-            }
-            .addType(folderType())
-            .build()
-            .writeTo(outputSource.asFile.get())
-    }
-
-    private fun accessorType(
-        fileSpec: FileSpec.Builder,
-        vararg folders: Pair<String, List<CatalogFolder>>,
-    ) = TypeSpec.objectBuilder("ComposeFiles")
-        .apply {
-            folders.forEach { (name, folders) ->
-                addChunkedFolder(fileSpec, name, folders)
-            }
-        }
-        .build()
-
-    private fun TypeSpec.Builder.addChunkedFolder(
-        fileSpec: FileSpec.Builder,
-        name: String,
-        folders: List<CatalogFolder>,
-    ) = apply {
-        val chunks = folders.chunked(COMPOSE_FILES_CHUNK_SIZE)
-            .map {
-                CodeBlock.Builder()
-                    .addStatement("mapOf(")
-                    .apply {
-                        it.forEach { folder ->
-                            add(
-                                """
-                                %S to ComposeFile.Folder(
-                                    name = %S,
-                                    files = listOf(
-                                """.trimIndent(),
-                                folder.id,
-                                folder.name,
-                            )
-                            folder.images.forEach { image ->
-                                addStatement(
-                                    "ComposeFile.Image(name = %S, width = %L, height = %L),",
-                                    image.name,
-                                    image.width,
-                                    image.height,
-                                )
-                            }
-                            addStatement("),),")
-                        }
-                    }
-                    .addStatement(")")
-                    .build()
-            }
-        chunks.forEachIndexed { index, chunk ->
-            fileSpec.addType(
-                TypeSpec.objectBuilder("$name$index".capitalized())
-                    .addProperty(
-                        PropertySpec.builder("files", mapStringComposeFolderType)
-                            .initializer(
-                                CodeBlock.builder()
-                                    .add(chunk)
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .build()
-            )
-        }
-
-        addProperty(
-            PropertySpec.builder(name, mapStringComposeFolderType)
-                .initializer(
-                    CodeBlock.builder()
-                        .apply {
-                            if (chunks.isEmpty()) {
-                                add("emptyMap()")
-                            } else {
-                                chunks.indices.forEach { index ->
-                                    add("$name$index".capitalized() + ".files ")
-                                    if (index != chunks.lastIndex) add(" + ")
-                                }
-                            }
-                        }
-                        .build()
-                )
-                .build()
-        )
-    }
-
-    private fun folderType() = TypeSpec.interfaceBuilder("ComposeFile")
-        .addModifiers(KModifier.SEALED)
-        .addType(
-            TypeSpec.classBuilder("Folder")
-                .addModifiers(KModifier.DATA)
-                .addSuperinterface(composeFileType)
-                .primaryConstructor(
-                    FunSpec.constructorBuilder()
-                        .addParameter("name", String::class)
-                        .addParameter("files", listComposeFileType)
-                        .build()
-                )
-                .addProperty(
-                    PropertySpec.builder("name", String::class)
-                        .initializer("name")
-                        .build()
-                )
-                .addProperty(
-                    PropertySpec.builder("files", listComposeFileType)
-                        .initializer("files")
-                        .build()
-                )
-                .build()
-        )
-        .addType(
-            TypeSpec.classBuilder("File")
-                .addModifiers(KModifier.DATA)
-                .addSuperinterface(composeFileType)
-                .primaryConstructor(
-                    FunSpec.constructorBuilder()
-                        .addParameter("name", String::class)
-                        .build()
-                )
-                .addProperty(
-                    PropertySpec.builder("name", String::class)
-                        .initializer("name")
-                        .build()
-                )
-                .build()
-        )
-        .addType(
-            TypeSpec.classBuilder("Image")
-                .addModifiers(KModifier.DATA)
-                .addSuperinterface(composeFileType)
-                .primaryConstructor(
-                    FunSpec.constructorBuilder()
-                        .addParameter("name", String::class)
-                        .addParameter("width", nullableIntType)
-                        .addParameter("height", nullableIntType)
-                        .build()
-                )
-                .addProperty(
-                    PropertySpec.builder("name", String::class)
-                        .initializer("name")
-                        .build()
-                )
-                .addProperty(
-                    PropertySpec.builder("width", nullableIntType)
-                        .initializer("width")
-                        .build()
-                )
-                .addProperty(
-                    PropertySpec.builder("height", nullableIntType)
-                        .initializer("height")
-                        .build()
-                )
-                .build()
-        )
-        .build()
-
-    private fun parseFile(file: File, name: String = file.name): ComposeFile =
-        if (file.isDirectory) {
-            ComposeFile(
-                name = name,
-                file = file,
-                files = file.listFiles().orEmpty().sorted().mapIndexed { index, child ->
-                    parseFile(
-                        file = child,
-                        name = if (child.isDirectory) {
-                            child.name
-                        } else {
-                            "$index.${child.extension}"
-                        }
-                    )
-                },
-            )
-        } else {
-            ComposeFile(name, file, emptyList())
-        }
-
-    data class ComposeFile(
-        val name: String,
-        val file: File,
-        val files: List<ComposeFile>,
-    )
 
     data class CatalogFolder(
         val id: String,

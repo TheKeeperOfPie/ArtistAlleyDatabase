@@ -7,12 +7,6 @@ import kotlinx.serialization.Serializable
 
 object AlleyDataUtils {
 
-    @Serializable
-    enum class Folder(val folderName: String) {
-        CATALOGS("catalogs"),
-        RALLIES("rallies"),
-    }
-
     fun getArtistImages(
         year: DataYear,
         images: List<com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage>
