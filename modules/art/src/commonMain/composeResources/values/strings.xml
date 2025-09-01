@@ -15,9 +15,14 @@
     <string name="art_entry_locations_header_zero">Location</string>
     <string name="art_entry_locations_header_one">Location</string>
     <string name="art_entry_locations_header_many">Locations</string>
+
+    <plurals name="art_entry_series_header">
+        <item quantity="other">Series</item>
+    </plurals>
     <string name="art_entry_series_header_zero">Series</string>
     <string name="art_entry_series_header_one">Series</string>
     <string name="art_entry_series_header_many">Series</string>
+
     <string name="art_entry_characters_header_zero">Character</string>
     <string name="art_entry_characters_header_one">Character</string>
     <string name="art_entry_characters_header_many">Characters</string>

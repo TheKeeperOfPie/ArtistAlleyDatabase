@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +17,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.savedstate.read
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
@@ -31,9 +33,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
 import me.tatarka.inject.annotations.Inject
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @SingletonScope
 @Inject
 class ArtEntryNavigator : BrowseSelectionNavigator {
@@ -43,7 +47,9 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
         navigationController: NavigationController,
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
+        navigationTypeMap: NavigationTypeMap,
         artEntryComponent: ArtEntryComponent,
+        useDetails2: Boolean = false,
     ) {
         navGraphBuilder.sharedElementComposable(ArtNavDestinations.HOME.id) {
             val viewModel = viewModel { artEntryComponent.artSearchViewModel() }
@@ -67,10 +73,14 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 },
                 onLongClickEntry = viewModel::selectEntry,
                 onClickAddFab = {
-                    navHostController.navToEntryDetails(
-                        route = ArtNavDestinations.ENTRY_DETAILS.id,
-                        emptyList(),
-                    )
+                    if (useDetails2) {
+                        navigationController.navigate(ArtDestinations.Details())
+                    } else {
+                        navHostController.navToEntryDetails(
+                            route = ArtNavDestinations.ENTRY_DETAILS.id,
+                            emptyList(),
+                        )
+                    }
                 },
                 onClickClear = viewModel::clearSelected,
                 onClickEdit = {
@@ -184,6 +194,10 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 onExitConfirm = viewModel::onExitConfirm,
                 onNavigate = navHostController::navigate,
             )
+        }
+
+        navGraphBuilder.sharedElementComposable<ArtDestinations.Details>(navigationTypeMap) {
+            ArtEntryDetailsScreen(artEntryComponent)
         }
     }
 

@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import me.tatarka.inject.annotations.Inject
 
@@ -42,6 +43,28 @@ class AniListDataConverter(
                 MediaType.MANGA -> Res.string.aniList_entry_manga_indicator_content_description
                 else -> null
             },
+            image = media.coverImage?.medium,
+            imageLink = media.type?.let { AniListDataUtils.mediaUrl(it, media.id.toString()) },
+            serializedValue = serializedValue,
+            searchableValue = (listOf(
+                media.title?.romaji,
+                media.title?.english,
+                media.title?.native,
+            ) + media.synonyms.orEmpty())
+                .filterNot(String?::isNullOrBlank)
+                .mapNotNull { it?.trim() }
+                .joinToString()
+        )
+    }
+
+    fun seriesEntry2(media: AniListMedia): EntryFormSection.MultiText.Entry.Prefilled<AniListMedia> {
+        val title = media.title?.romaji ?: media.id.toString()
+        val serializedValue =
+            aniListJson.toJson(MediaColumnEntry(media.id.toString(), title.trim()))
+        return EntryFormSection.MultiText.Entry.Prefilled(
+            value = media,
+            id = mediaEntryId(media.id.toString()),
+            text = title,
             image = media.coverImage?.medium,
             imageLink = media.type?.let { AniListDataUtils.mediaUrl(it, media.id.toString()) },
             serializedValue = serializedValue,
@@ -89,9 +112,43 @@ class AniListDataConverter(
         )
     }
 
+    fun seriesEntry2(entry: MediaEntry): EntryFormSection.MultiText.Entry.Prefilled<*> {
+        val title = entry.title
+        val nonNullTitle = title?.romaji ?: entry.id
+        val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, nonNullTitle))
+        return EntryFormSection.MultiText.Entry.Prefilled(
+            value = entry,
+            id = mediaEntryId(entry.id),
+            text = nonNullTitle,
+            image = entry.image?.medium,
+            imageLink = AniListUtils.mediaUrl(entry.type, entry.id),
+            serializedValue = serializedValue,
+            searchableValue = (listOf(
+                title?.romaji,
+                title?.english,
+                title?.native
+            ) + entry.synonyms.orEmpty())
+                .filterNot(String?::isNullOrBlank)
+                .joinToString()
+        )
+    }
+
     fun seriesEntry(entry: MediaColumnEntry): Entry.Prefilled<MediaColumnEntry> {
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, entry.title))
         return Entry.Prefilled(
+            value = entry,
+            id = mediaEntryId(entry.id),
+            text = entry.title,
+            image = null,
+            imageLink = null,
+            serializedValue = serializedValue,
+            searchableValue = entry.title.trim()
+        )
+    }
+
+    fun seriesEntry2(entry: MediaColumnEntry): EntryFormSection.MultiText.Entry.Prefilled<MediaColumnEntry> {
+        val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, entry.title))
+        return EntryFormSection.MultiText.Entry.Prefilled(
             value = entry,
             id = mediaEntryId(entry.id),
             text = entry.title,

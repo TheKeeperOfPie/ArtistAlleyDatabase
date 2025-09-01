@@ -176,6 +176,10 @@ fun Modifier.optionalClickable(
 inline fun Modifier.conditionally(apply: Boolean, block: @Composable Modifier.() -> Modifier) =
     if (apply) block() else this
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun Modifier.conditionally(apply: Boolean, modifier: Modifier) =
+    if (apply) then(modifier) else this
+
 @Composable
 inline fun <T> Modifier.conditionallyNonNull(
     target: T?,

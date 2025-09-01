@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabSeries
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabTags
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel2
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtExporter
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtImporter
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSyncer
@@ -24,6 +25,7 @@ interface ArtEntryComponent {
     val artSearchViewModel: () -> ArtSearchViewModel
     val artBrowseSelectionViewModel: () -> ArtBrowseSelectionViewModel
     val artEntryDetailsViewModel: () -> ArtEntryDetailsViewModel
+    val artEntryDetailsViewModel2: () -> ArtEntryDetailsViewModel2
 
     @SingletonScope
     @Provides

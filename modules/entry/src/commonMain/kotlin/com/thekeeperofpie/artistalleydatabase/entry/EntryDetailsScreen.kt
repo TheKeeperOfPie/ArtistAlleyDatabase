@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -119,6 +120,18 @@ object EntryDetailsScreen {
         onClickSaveTemplate: (() -> Unit)? = null,
         onExitConfirm: () -> Unit = {},
         onNavigate: (String) -> Unit,
+        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+        bottomSheet: @Composable ColumnScope.() -> Unit ={
+            val scope = rememberCoroutineScope()
+            BottomSheet(
+                viewModel = viewModel,
+                bottomSheetState = scaffoldState.bottomSheetState,
+                onNavigate = onNavigate,
+                onAnySectionFocused = {
+                    scope.launch { scaffoldState.bottomSheetState.expand() }
+                },
+            )
+        },
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
         val navigationController = LocalNavigationController.current
@@ -130,7 +143,6 @@ object EntryDetailsScreen {
 
         val density = LocalDensity.current
         val offsetY = density.run { pullRefreshState.position.toDp() }
-        val scaffoldState = rememberBottomSheetScaffoldState()
         val sectionsLoading = viewModel.sectionsLoading
         var previousValue by remember { mutableStateOf(sectionsLoading) }
         LaunchedEffect(sectionsLoading) {
@@ -180,16 +192,7 @@ object EntryDetailsScreen {
                             .coerceAtLeast(sheetPeekHeight).toDp()
                     },
                     sheetDragHandle = null,
-                    sheetContent = {
-                        BottomSheet(
-                            viewModel = viewModel,
-                            bottomSheetState = scaffoldState.bottomSheetState,
-                            onNavigate = onNavigate,
-                            onAnySectionFocused = {
-                                coroutineScope.launch { scaffoldState.bottomSheetState.expand() }
-                            },
-                        )
-                    },
+                    sheetContent = bottomSheet,
                     snackbarHost = {
                         val errorRes = viewModel.errorResource
                         SnackbarErrorText(

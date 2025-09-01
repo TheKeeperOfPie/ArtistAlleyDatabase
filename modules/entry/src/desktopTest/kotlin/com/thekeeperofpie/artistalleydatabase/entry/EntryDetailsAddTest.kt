@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.Snapshot
 import app.cash.turbine.turbineScope
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.test_utils.await
@@ -19,9 +18,6 @@ class EntryDetailsAddTest : EntryDetailsTestBase() {
         turbineScope {
             val viewModel = testViewModel()
 
-            Snapshot.takeSnapshot {
-
-            }.hasPendingChanges()
             snapshotFlow { viewModel.sectionsLoading }.await { !it }
             val navigateUpEvents = viewModel.navigateUpEvents.testIn(backgroundScope)
             val entries = viewModel.entries.filter { it.isNotEmpty() }.testIn(backgroundScope)

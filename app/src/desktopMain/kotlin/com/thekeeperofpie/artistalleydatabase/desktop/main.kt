@@ -34,7 +34,6 @@ import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.SharedInfra
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
@@ -136,7 +135,7 @@ fun main() {
                                     LocalMediaGenreDialogController.current
                                 NavHost(
                                     navController = navHostController,
-                                    startDestination = AnimeNavDestinations.HOME.id,
+                                    startDestination = ArtNavDestinations.HOME.id,
                                 ) {
                                     AnimeNavigator.initialize(
                                         navigationController = navigationController,
@@ -168,7 +167,9 @@ fun main() {
                                         navigationController = navigationController,
                                         navHostController = navHostController,
                                         navGraphBuilder = this,
+                                        navigationTypeMap = navigationTypeMap,
                                         artEntryComponent = desktopComponent,
+                                        useDetails2 = true,
                                     )
 
                                     cdEntryNavigator.initialize(
