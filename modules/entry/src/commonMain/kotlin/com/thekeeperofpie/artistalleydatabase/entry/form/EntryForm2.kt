@@ -411,12 +411,12 @@ private fun OpenSectionField(
 private fun SectionField(
     index: Int,
     entry: EntryFormSection.MultiText.Entry,
-    onValueChange: (value: String) -> Unit = {},
-    onClickMore: () -> Unit = {},
-    onDone: () -> Unit = {},
-    lockState: () -> EntryFormSection.LockState? = { null },
+    onValueChange: (value: String) -> Unit,
+    onClickMore: () -> Unit,
+    onDone: () -> Unit,
+    lockState: () -> EntryFormSection.LockState?,
     trailingIcon: (EntryFormSection.MultiText.Entry) -> Pair<ImageVector, StringResource>?,
-    onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)? = null,
+    onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)?,
 ) {
     when (entry) {
         is EntryFormSection.MultiText.Entry.Custom -> {
@@ -437,6 +437,7 @@ private fun SectionField(
                 lockState = lockState(),
                 trailingIcon = trailingIcon(entry),
                 onClickMore = onClickMore,
+                onNavigate = onNavigate,
             )
         EntryFormSection.MultiText.Entry.Different ->
             DifferentText(lockState = lockState, index = index, onClickMore = onClickMore)
@@ -517,6 +518,7 @@ private fun PrefilledText(
     lockState: EntryFormSection.LockState?,
     trailingIcon: Pair<ImageVector, StringResource>?,
     onClickMore: () -> Unit,
+    onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)?,
 ) {
     val shape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
@@ -561,6 +563,17 @@ private fun PrefilledText(
                 imageVector = trailingIcon.first,
                 contentDescription = stringResource(trailingIcon.second),
             )
+        }
+
+        if (onNavigate != null) {
+            IconButton(onClick = { onNavigate(entry) }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = stringResource(
+                        Res.string.entry_open_more_content_description
+                    ),
+                )
+            }
         }
 
         val secondaryImage = entry.secondaryImage
