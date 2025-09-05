@@ -197,7 +197,10 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
         }
 
         navGraphBuilder.sharedElementComposable<ArtDestinations.Details>(navigationTypeMap) {
-            ArtEntryDetailsScreen(artEntryComponent)
+            ArtEntryDetailsScreen(
+                artEntryComponent = artEntryComponent,
+                onEvent = { /* TODO */ },
+            )
         }
     }
 

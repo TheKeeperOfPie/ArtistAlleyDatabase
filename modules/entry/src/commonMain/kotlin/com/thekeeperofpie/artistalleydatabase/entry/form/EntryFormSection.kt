@@ -99,6 +99,38 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
         }
     }
 
+    class LongText(
+        value: String = "",
+        lockState: LockState? = LockState.UNLOCKED,
+        initialLockState: LockState? = lockState,
+    ) : EntryFormSection(initialLockState) {
+        var lockState by mutableStateOf(lockState)
+        var value by mutableStateOf(value)
+
+        override fun clearSection() {
+            this@LongText.value = ""
+        }
+
+        fun toSavedState() = SavedState(
+            value = this@LongText.value,
+            initialLockState = initialLockState,
+            lockState = lockState,
+        )
+
+        @Serializable
+        data class SavedState(
+            val value: String,
+            val initialLockState: LockState?,
+            val lockState: LockState?,
+        ) {
+            fun toLongText() = LongText(
+                value = value,
+                initialLockState = initialLockState,
+                lockState = lockState,
+            )
+        }
+    }
+
     enum class LockState(
         val editable: Boolean,
         val icon: ImageVector,

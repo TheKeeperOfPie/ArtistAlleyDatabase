@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import me.tatarka.inject.annotations.Inject
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @SingletonScope
 @Inject
 class CdEntryNavigator : BrowseSelectionNavigator {

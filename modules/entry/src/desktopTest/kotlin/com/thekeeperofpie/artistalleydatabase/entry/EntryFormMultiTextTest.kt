@@ -220,6 +220,30 @@ class EntryFormMultiTextTest {
         assertEquals(navigationEvents, listOf(generateEntry("itemOne"), generateEntry("itemTwo")))
     }
 
+    @Test
+    fun lockSavesPendingEntry(entryType: EntryType = EntryType.CUSTOM) = runComposeUiTest {
+        setUpAndAssertTwoExistingItems(entryType)
+
+        onAllNodes(hasSetTextAction()).onLast().performTextInput("itemThree")
+
+        onNodeWithText("Header").performClick() // Lock
+        onNodeWithText("Header").performClick() // Unlock
+
+        onAllNodes(hasSetTextAction()).onLast().run {
+            assert(hasText(""))
+            performTextInput("itemFour")
+        }
+
+        onAllNodesWithText("", substring = true).run {
+            get(0).assert(hasText("Header"))
+            get(1).assert(hasText("itemOne"))
+            get(2).assert(hasText("itemTwo"))
+            get(3).assert(hasText("itemThree"))
+            get(4).assert(hasText("itemFour"))
+            assertTrue(fetchSemanticsNodes().size == 5)
+        }
+    }
+
     @Composable
     private fun Content(
         state: EntryFormSection.MultiText = EntryFormSection.MultiText(),

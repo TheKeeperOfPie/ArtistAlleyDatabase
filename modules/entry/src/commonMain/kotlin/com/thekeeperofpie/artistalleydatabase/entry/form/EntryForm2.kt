@@ -166,6 +166,7 @@ fun EntryFormScope.MultiTextSection(
     state.content.forEachIndexed { index, value ->
         var showOverflow by remember { mutableStateOf(false) }
         Box {
+            val iconPair = trailingIcon(value)
             SectionField(
                 index = index,
                 entry = value,
@@ -177,7 +178,14 @@ fun EntryFormScope.MultiTextSection(
                 onClickMore = { showOverflow = !showOverflow },
                 onDone = { focusManager.moveFocus(FocusDirection.Next) },
                 lockState = { state.lockState },
-                trailingIcon = trailingIcon,
+                trailingIcon = if (iconPair != null) {
+                    {
+                        Icon(
+                            imageVector = iconPair.first,
+                            contentDescription = stringResource(iconPair.second),
+                        )
+                    }
+                } else null,
                 onNavigate = { onNavigate(value) },
             )
 
@@ -214,7 +222,15 @@ fun EntryFormScope.MultiTextSection(
             predictions = { predictions },
             showPredictions = { state.lockState?.editable != false && state.pendingNewValue.text.isNotBlank() },
             onPredictionChosen = onNewEntry,
-            trailingIcon = trailingIcon,
+            trailingIcon = {
+                val iconPair = trailingIcon(it)
+                if (iconPair != null) {
+                    Icon(
+                        imageVector = iconPair.first,
+                        contentDescription = stringResource(iconPair.second),
+                    )
+                }
+            },
         ) { bringIntoViewRequester ->
             OpenSectionField(
                 value = { state.pendingNewValue },
@@ -395,7 +411,7 @@ private fun OpenSectionField(
                 if (it.type == KeyEventType.KeyUp) {
                     return@onKeyEvent when (it.key) {
                         Key.Backspace -> onBackspace()
-                        Key.Enter -> {
+                        Key.Tab, Key.Enter -> {
                             onDone()
                             true
                         }
@@ -415,30 +431,27 @@ private fun SectionField(
     onClickMore: () -> Unit,
     onDone: () -> Unit,
     lockState: () -> EntryFormSection.LockState?,
-    trailingIcon: (EntryFormSection.MultiText.Entry) -> Pair<ImageVector, StringResource>?,
+    trailingIcon: @Composable (() -> Unit)?,
     onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)?,
 ) {
     when (entry) {
-        is EntryFormSection.MultiText.Entry.Custom -> {
-            CustomText(
-                entry = entry,
-                index = index,
-                lockState = lockState,
-                onValueChange = onValueChange,
-                onDone = onDone,
-                onClickMore = onClickMore,
-                onNavigate = onNavigate,
-            )
-        }
-        is EntryFormSection.MultiText.Entry.Prefilled<*> ->
-            PrefilledText(
-                entry = entry,
-                index = index,
-                lockState = lockState(),
-                trailingIcon = trailingIcon(entry),
-                onClickMore = onClickMore,
-                onNavigate = onNavigate,
-            )
+        is EntryFormSection.MultiText.Entry.Custom -> CustomText(
+            entry = entry,
+            index = index,
+            lockState = lockState,
+            onValueChange = onValueChange,
+            onDone = onDone,
+            onClickMore = onClickMore,
+            onNavigate = onNavigate,
+        )
+        is EntryFormSection.MultiText.Entry.Prefilled<*> -> PrefilledText(
+            entry = entry,
+            index = index,
+            lockState = lockState(),
+            trailingIcon = trailingIcon,
+            onClickMore = onClickMore,
+            onNavigate = onNavigate,
+        )
         EntryFormSection.MultiText.Entry.Different ->
             DifferentText(lockState = lockState, index = index, onClickMore = onClickMore)
     }
@@ -516,7 +529,7 @@ private fun PrefilledText(
     entry: EntryFormSection.MultiText.Entry.Prefilled<*>,
     index: Int,
     lockState: EntryFormSection.LockState?,
-    trailingIcon: Pair<ImageVector, StringResource>?,
+    trailingIcon: @Composable (() -> Unit)?,
     onClickMore: () -> Unit,
     onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)?,
 ) {
@@ -558,12 +571,7 @@ private fun PrefilledText(
             }
         }
 
-        if (trailingIcon != null) {
-            Icon(
-                imageVector = trailingIcon.first,
-                contentDescription = stringResource(trailingIcon.second),
-            )
-        }
+        trailingIcon?.invoke()
 
         if (onNavigate != null) {
             IconButton(onClick = { onNavigate(entry) }) {
@@ -693,7 +701,7 @@ private fun EntryPrefilledAutocompleteDropdown(
     showPredictions: () -> Boolean,
     onPredictionChosen: (EntryFormSection.MultiText.Entry) -> Unit,
     modifier: Modifier = Modifier,
-    trailingIcon: (EntryFormSection.MultiText.Entry) -> Pair<ImageVector, StringResource>?,
+    trailingIcon: @Composable ((EntryFormSection.MultiText.Entry) -> Unit)?,
     textField: @Composable ExposedDropdownMenuBoxScope.(BringIntoViewRequester) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -794,13 +802,7 @@ private fun EntryPrefilledAutocompleteDropdown(
                                         }
                                     }
 
-                                    val icon = trailingIcon(entry)
-                                    if (icon != null) {
-                                        Icon(
-                                            imageVector = icon.first,
-                                            contentDescription = stringResource(icon.second),
-                                        )
-                                    }
+                                    trailingIcon?.invoke(entry)
 
                                     if (secondaryImage != null) {
                                         EntryImage(
@@ -823,4 +825,36 @@ private fun EntryPrefilledAutocompleteDropdown(
             }
         }
     }
+}
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+fun EntryFormScope.LongTextSection(
+    state: EntryFormSection.LongText,
+    headerText: @Composable () -> Unit,
+    focusRequester: FocusRequester,
+    onFocusChanged: (Boolean) -> Unit,
+) {
+    SectionHeader(
+        text = headerText,
+        lockState = state.lockState,
+        onClick = {
+            state.lockState = state.lockState.rotateLockState(
+                wasEverDifferent = state.initialLockState == EntryFormSection.LockState.DIFFERENT,
+            )
+        }
+    )
+
+    val editable = state.lockState?.editable
+    OutlinedTextField(
+        value = state.value,
+        onValueChange = { state.value = it },
+        readOnly = editable == false,
+        modifier = Modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged { onFocusChanged(it.isFocused) }
+            .focusable(editable != false)
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp)
+    )
 }
