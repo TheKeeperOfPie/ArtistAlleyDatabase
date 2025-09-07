@@ -28,10 +28,11 @@ kotlin {
             implementation(libs.apollo.normalized.cache)
             implementation(libs.apollo.normalized.cache.sqlite)
 
-            implementation(libs.ktor.client.core)
-            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
-            implementation(libs.uri.kmp)
             implementation(libs.human.readable)
+            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
+            implementation(libs.ktor.client.core)
+            implementation(libs.stately.concurrent.collections)
+            implementation(libs.uri.kmp)
         }
     }
 }

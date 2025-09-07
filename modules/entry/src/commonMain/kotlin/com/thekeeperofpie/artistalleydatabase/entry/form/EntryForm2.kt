@@ -240,7 +240,10 @@ fun EntryFormScope.MultiTextSection(
                 onLock = { state.lockState = EntryFormSection.LockState.LOCKED },
                 bringIntoViewRequester = bringIntoViewRequester,
                 focusRequester = focusRequester,
-                onFocusChanged = { onFocusChanged(it) },
+                onFocusChanged = {
+                    state.pendingFocused = it
+                    onFocusChanged(it)
+                },
                 onRemove = {
                     Snapshot.withMutableSnapshot {
                         val removed = state.content.removeLastOrNull()

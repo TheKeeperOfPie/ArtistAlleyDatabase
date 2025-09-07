@@ -5,7 +5,9 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
@@ -24,6 +26,7 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
 
     abstract fun clearSection()
 
+    @Stable
     class MultiText(
         content: List<Entry> = emptyList(),
         pendingNewValue: String = "",
@@ -33,6 +36,7 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
         val content = content.toMutableStateList()
         var pendingNewValue by mutableStateOf(TextFieldValue(pendingNewValue))
         var lockState by mutableStateOf(lockState)
+        var pendingFocused by mutableStateOf(false)
 
         override fun clearSection() {
             Snapshot.withMutableSnapshot {
@@ -99,6 +103,7 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
         }
     }
 
+    @Stable
     class LongText(
         value: String = "",
         lockState: LockState? = LockState.UNLOCKED,
@@ -108,11 +113,11 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
         var value by mutableStateOf(value)
 
         override fun clearSection() {
-            this@LongText.value = ""
+            value = ""
         }
 
         fun toSavedState() = SavedState(
-            value = this@LongText.value,
+            value = value,
             initialLockState = initialLockState,
             lockState = lockState,
         )

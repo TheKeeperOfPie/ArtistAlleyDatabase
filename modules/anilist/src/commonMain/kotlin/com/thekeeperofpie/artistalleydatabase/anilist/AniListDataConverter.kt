@@ -179,8 +179,45 @@ class AniListDataConverter(
         )
     }
 
+    fun characterEntry2(character: AniListCharacter): EntryFormSection.MultiText.Entry.Prefilled<AniListCharacter> {
+        val firstMedia = character.media?.nodes?.firstOrNull()
+        val voiceActor = CharacterUtils.findVoiceActor(character, firstMedia)
+        return characterEntry2(
+            value = character,
+            id = character.id.toString(),
+            image = character.image?.medium,
+            first = character.name?.first,
+            middle = character.name?.middle,
+            last = character.name?.last,
+            full = character.name?.full,
+            native = character.name?.native,
+            alternative = character.name?.alternative?.filterNotNull(),
+            mediaTitle = firstMedia?.title?.romaji,
+            staffId = voiceActor?.id,
+            staffName = voiceActor?.name?.full,
+            staffImage = voiceActor?.image?.medium,
+        )
+    }
+
     fun characterEntry(entry: CharacterColumnEntry): Entry.Prefilled<CharacterColumnEntry> =
         characterEntry(
+            value = entry,
+            id = entry.id,
+            image = null,
+            first = entry.name?.first,
+            middle = entry.name?.middle,
+            last = entry.name?.last,
+            full = entry.name?.full,
+            native = entry.name?.native,
+            alternative = emptyList(),
+            mediaTitle = null,
+            staffId = null,
+            staffName = null,
+            staffImage = null,
+        )
+
+    fun characterEntry2(entry: CharacterColumnEntry): EntryFormSection.MultiText.Entry.Prefilled<CharacterColumnEntry> =
+        characterEntry2(
             value = entry,
             id = entry.id,
             image = null,
@@ -202,6 +239,28 @@ class AniListDataConverter(
         val voiceActor =
             CharacterUtils.findVoiceActor(aniListJson.json, entry, entry.mediaIds?.firstOrNull())
         return characterEntry(
+            value = entry,
+            id = entry.id,
+            image = entry.image?.medium,
+            first = entry.name?.first,
+            middle = entry.name?.middle,
+            last = entry.name?.last,
+            full = entry.name?.full,
+            native = entry.name?.native,
+            alternative = entry.name?.alternative,
+            mediaTitle = entry.mediaTitle,
+            staffId = voiceActor?.id,
+            staffName = voiceActor?.name?.full,
+            staffImage = voiceActor?.image?.medium
+        )
+    }
+
+    fun characterEntry2(
+        entry: CharacterEntry,
+    ): EntryFormSection.MultiText.Entry.Prefilled<CharacterEntry> {
+        val voiceActor =
+            CharacterUtils.findVoiceActor(aniListJson.json, entry, entry.mediaIds?.firstOrNull())
+        return characterEntry2(
             value = entry,
             id = entry.id,
             image = entry.image?.medium,
@@ -254,6 +313,60 @@ class AniListDataConverter(
         )
 
         return Entry.Prefilled(
+            value = value,
+            id = characterEntryId(id),
+            text = canonicalName,
+            image = image,
+            imageLink = AniListUtils.characterUrl(id),
+            secondaryImage = staffImage,
+            secondaryImageLink = staffId?.let(AniListUtils::staffUrl),
+            titleText = displayName,
+            subtitleText = listOfNotNull(mediaTitle, staffName).joinToString(separator = " / ")
+                .ifEmpty { null },
+            serializedValue = serializedValue,
+            searchableValue = (listOf(last, middle, first) + alternative.orEmpty())
+                .filterNot(String?::isNullOrBlank)
+                .mapNotNull { it?.trim() }
+                .joinToString(),
+        )
+    }
+
+    private inline fun <reified T> characterEntry2(
+        value: T,
+        id: String,
+        image: String?,
+        first: String?,
+        middle: String?,
+        last: String?,
+        full: String?,
+        native: String?,
+        alternative: List<String>?,
+        mediaTitle: String?,
+        staffId: String?,
+        staffName: String?,
+        staffImage: String?,
+    ): EntryFormSection.MultiText.Entry.Prefilled<T> {
+        val canonicalName = CharacterUtils.buildCanonicalName(
+            first = first,
+            middle = middle,
+            last = last,
+        ) ?: id
+
+        val displayName = CharacterUtils.buildDisplayName(canonicalName, alternative)
+
+        val serializedValue = aniListJson.toJson(
+            CharacterColumnEntry(
+                id, CharacterColumnEntry.Name(
+                    first = first?.trim(),
+                    middle = middle?.trim(),
+                    last = last?.trim(),
+                    full = full?.trim(),
+                    native = native?.trim(),
+                )
+            )
+        )
+
+        return EntryFormSection.MultiText.Entry.Prefilled(
             value = value,
             id = characterEntryId(id),
             text = canonicalName,

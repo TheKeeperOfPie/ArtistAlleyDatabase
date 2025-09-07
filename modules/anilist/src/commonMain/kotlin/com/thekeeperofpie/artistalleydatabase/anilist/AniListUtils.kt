@@ -13,17 +13,18 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
-import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import nl.jacobras.humanreadable.HumanReadable
 import kotlin.math.absoluteValue
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 object AniListUtils {
 
@@ -50,6 +51,13 @@ object AniListUtils {
         "${AniListDataUtils.ANILIST_BASE_URL}/forum/thread/$threadId/comment/$commentId"
 
     fun mediaId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
+        is AniListMedia -> value.id.toString()
+        is MediaEntry -> value.id
+        is MediaColumnEntry -> value.id
+        else -> null
+    }
+
+    fun mediaId(entry: EntryFormSection.MultiText.Entry.Prefilled<*>) = when (val value = entry.value) {
         is AniListMedia -> value.id.toString()
         is MediaEntry -> value.id
         is MediaColumnEntry -> value.id

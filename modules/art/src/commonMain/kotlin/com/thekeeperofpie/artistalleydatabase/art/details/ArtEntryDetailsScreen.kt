@@ -18,13 +18,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.art.generated.resources.Res
+import artistalleydatabase.modules.art.generated.resources.art_entry_characters_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_notes_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_series_header
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
@@ -47,7 +48,7 @@ object ArtEntryDetailsScreen {
         artEntryComponent: ArtEntryComponent,
         onEvent: (Event) -> Unit,
     ) {
-        val viewModel = viewModel { artEntryComponent.artEntryDetailsViewModel2() }
+        val viewModel = viewModel { artEntryComponent.artEntryDetailsViewModel2(createSavedStateHandle()) }
         val scaffoldState = rememberBottomSheetScaffoldState()
         BottomSheetScaffold(sheetContent = {
             BottomSheet(
@@ -87,7 +88,7 @@ object ArtEntryDetailsScreen {
                 .weight(1f, fill = false)
                 .verticalScroll(scrollState)
         ) {
-            val state = rememberSaveable(saver = State.Saver) { State() }
+            val state = viewModel.state
             EntryForm2 {
                 val focusRequester = remember { FocusRequester() }
                 MultiTextSection(
@@ -107,6 +108,23 @@ object ArtEntryDetailsScreen {
                     onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                 )
 
+                MultiTextSection(
+                    state = state.characters,
+                    headerText = {
+                        Text(
+                            pluralStringResource(
+                                Res.plurals.art_entry_characters_header,
+                                state.characters.content.size,
+                            )
+                        )
+                    },
+                    focusRequester = focusRequester,
+                    trailingIcon = { /* TODO */ null },
+                    entryPredictions = { _ -> viewModel.characterPredictions },
+                    onNavigate = { onEvent(Event.Navigate(it)) },
+                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
+                )
+
                 LongTextSection(
                     state = state.notes,
                     headerText = { Text(stringResource(Res.string.art_entry_notes_header)) },
@@ -120,12 +138,14 @@ object ArtEntryDetailsScreen {
     @Stable
     class State(
         val series: EntryFormSection.MultiText = EntryFormSection.MultiText(),
+        val characters: EntryFormSection.MultiText = EntryFormSection.MultiText(),
         val notes: EntryFormSection.LongText = EntryFormSection.LongText(),
     ) {
         companion object {
             @Serializable
             data class SavedState(
                 val series: EntryFormSection.MultiText.SavedState,
+                val characters: EntryFormSection.MultiText.SavedState,
                 val notes: EntryFormSection.LongText.SavedState,
             )
 
@@ -133,14 +153,19 @@ object ArtEntryDetailsScreen {
                 save = {
                     Json.encodeToString(
                         SavedState(
-                            it.series.toSavedState(),
-                            it.notes.toSavedState(),
+                            series = it.series.toSavedState(),
+                            characters = it.characters.toSavedState(),
+                            notes = it.notes.toSavedState(),
                         )
                     )
                 },
                 restore = {
                     val savedState = Json.decodeFromString<SavedState>(it)
-                    State(savedState.series.toMultiText(), savedState.notes.toLongText())
+                    State(
+                        series = savedState.series.toMultiText(),
+                        characters = savedState.characters.toMultiText(),
+                        notes = savedState.notes.toLongText(),
+                    )
                 },
             )
         }

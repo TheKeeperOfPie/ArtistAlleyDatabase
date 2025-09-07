@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
+import androidx.lifecycle.SavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabArtists
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabCharacters
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabSeries
@@ -25,7 +26,7 @@ interface ArtEntryComponent {
     val artSearchViewModel: () -> ArtSearchViewModel
     val artBrowseSelectionViewModel: () -> ArtBrowseSelectionViewModel
     val artEntryDetailsViewModel: () -> ArtEntryDetailsViewModel
-    val artEntryDetailsViewModel2: () -> ArtEntryDetailsViewModel2
+    val artEntryDetailsViewModel2: (SavedStateHandle) -> ArtEntryDetailsViewModel2
 
     @SingletonScope
     @Provides
