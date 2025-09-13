@@ -24,6 +24,7 @@ kotlin {
         freeCompilerArgs.add("-Xjspecify-annotations=strict")
         freeCompilerArgs.add("-Xtype-enhancement-improvements-strict-mode")
         optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
     }
 
     sourceSets {

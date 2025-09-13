@@ -45,6 +45,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuBoxScope
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -207,7 +208,7 @@ fun EntryFormScope.MultiTextSection(
 
     AnimatedVisibility(
         // TODO: Allow showing open field even when locked in search panel
-        visible = state.lockState?.editable != false,
+        visible = state.lockState.editable,
         enter = expandVertically(),
         exit = shrinkVertically(),
     ) {
@@ -220,7 +221,7 @@ fun EntryFormScope.MultiTextSection(
         EntryPrefilledAutocompleteDropdown(
             text = { state.pendingNewValue },
             predictions = { predictions },
-            showPredictions = { state.lockState?.editable != false && state.pendingNewValue.text.isNotBlank() },
+            showPredictions = { state.lockState.editable && state.pendingNewValue.text.isNotBlank() },
             onPredictionChosen = onNewEntry,
             trailingIcon = {
                 val iconPair = trailingIcon(it)
@@ -339,6 +340,23 @@ private fun SectionHeader(
             )
         }
     }
+}
+
+@Composable
+private fun SectionHeader(
+    text: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    state: EntryFormSection,
+) {
+    SectionHeader(
+        text = text, lockState = state.lockState,
+        onClick = {
+            state.lockState = state.lockState.rotateLockState(
+                wasEverDifferent = state.initialLockState == EntryFormSection.LockState.DIFFERENT,
+            )
+        },
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -838,26 +856,86 @@ fun EntryFormScope.LongTextSection(
     focusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
 ) {
-    SectionHeader(
-        text = headerText,
-        lockState = state.lockState,
-        onClick = {
-            state.lockState = state.lockState.rotateLockState(
-                wasEverDifferent = state.initialLockState == EntryFormSection.LockState.DIFFERENT,
-            )
-        }
-    )
+    SectionHeader(text = headerText, state = state)
 
-    val editable = state.lockState?.editable
+    val editable = state.lockState.editable
     OutlinedTextField(
         value = state.value,
         onValueChange = { state.value = it },
-        readOnly = editable == false,
+        readOnly = !editable,
         modifier = Modifier
             .focusRequester(focusRequester)
             .onFocusChanged { onFocusChanged(it.isFocused) }
-            .focusable(editable != false)
+            .focusable(editable)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
     )
+}
+
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+fun <T> EntryFormScope.DropdownSection(
+    state: EntryFormSection.Dropdown,
+    headerText: @Composable () -> Unit,
+    options: List<T>,
+    optionToText: @Composable (T) -> String,
+    focusRequester: FocusRequester,
+    onFocusChanged: (Boolean) -> Unit,
+) {
+    SectionHeader(text = headerText, state = state)
+
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp)
+    ) {
+        val editable = state.lockState.editable
+        var expanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(
+            expanded = expanded && editable,
+            onExpandedChange = {
+                if (state.lockState.editable) {
+                    expanded = !expanded
+                }
+            },
+            Modifier.fillMaxWidth()
+        ) {
+            TextField(
+                readOnly = true,
+                value = options.getOrNull(state.selectedIndex)?.let { optionToText(it) }.orEmpty(),
+                onValueChange = {},
+                trailingIcon = {
+                    @Suppress("RemoveRedundantQualifierName")
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = editable,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                    }
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { onFocusChanged(it.isFocused) }
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                options.forEachIndexed { index, item ->
+                    DropdownMenuItem(
+                        onClick = {
+                            expanded = false
+                            state.selectedIndex = index
+                        },
+                        text = { Text(optionToText(item)) },
+                    )
+                }
+            }
+        }
+    }
 }

@@ -7,8 +7,8 @@ import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.toMutableStateList
@@ -20,9 +20,12 @@ import artistalleydatabase.modules.entry.generated.resources.lock_state_locked_c
 import artistalleydatabase.modules.entry.generated.resources.lock_state_unlocked_content_description
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.StringResource
 
-sealed class EntryFormSection(val initialLockState: LockState? = null) {
+sealed class EntryFormSection(val initialLockState: LockState) {
+
+    abstract var lockState: LockState
 
     abstract fun clearSection()
 
@@ -30,12 +33,12 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
     class MultiText(
         content: List<Entry> = emptyList(),
         pendingNewValue: String = "",
-        lockState: LockState? = LockState.UNLOCKED,
-        initialLockState: LockState? = lockState,
+        lockState: LockState = LockState.UNLOCKED,
+        initialLockState: LockState = lockState,
     ) : EntryFormSection(initialLockState) {
         val content = content.toMutableStateList()
         var pendingNewValue by mutableStateOf(TextFieldValue(pendingNewValue))
-        var lockState by mutableStateOf(lockState)
+        override var lockState by mutableStateOf(lockState)
         var pendingFocused by mutableStateOf(false)
 
         override fun clearSection() {
@@ -56,8 +59,8 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
         data class SavedState(
             val content: List<Entry>,
             val pendingNewValue: String,
-            val initialLockState: LockState?,
-            val lockState: LockState?,
+            val initialLockState: LockState,
+            val lockState: LockState,
         ) {
             fun toMultiText() = MultiText(
                 content = content,
@@ -106,10 +109,10 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
     @Stable
     class LongText(
         value: String = "",
-        lockState: LockState? = LockState.UNLOCKED,
-        initialLockState: LockState? = lockState,
+        lockState: LockState = LockState.UNLOCKED,
+        initialLockState: LockState = lockState,
     ) : EntryFormSection(initialLockState) {
-        var lockState by mutableStateOf(lockState)
+        override var lockState by mutableStateOf(lockState)
         var value by mutableStateOf(value)
 
         override fun clearSection() {
@@ -125,13 +128,53 @@ sealed class EntryFormSection(val initialLockState: LockState? = null) {
         @Serializable
         data class SavedState(
             val value: String,
-            val initialLockState: LockState?,
-            val lockState: LockState?,
+            val initialLockState: LockState,
+            val lockState: LockState,
         ) {
             fun toLongText() = LongText(
                 value = value,
                 initialLockState = initialLockState,
                 lockState = lockState,
+            )
+        }
+    }
+
+    @Stable
+    class Dropdown(
+        selectedIndex: Int = 0,
+        lockState: LockState = LockState.UNLOCKED,
+        initialLockState: LockState = lockState,
+    ) : EntryFormSection(initialLockState) {
+        override var lockState by mutableStateOf(lockState)
+        var selectedIndex by mutableStateOf(selectedIndex)
+
+        override fun clearSection() {
+            selectedIndex = 0
+        }
+
+        fun toSavedState() = SavedState(
+            selectedIndex = selectedIndex,
+            initialLockState = initialLockState,
+            lockState = lockState,
+        )
+
+        @Serializable
+        data class SavedState(
+            val selectedIndex: Int,
+            val initialLockState: LockState,
+            val lockState: LockState,
+        ) {
+            fun toDropdown() = Dropdown(
+                selectedIndex = selectedIndex,
+                initialLockState = initialLockState,
+                lockState = lockState,
+            )
+        }
+
+        companion object {
+            val Saver = Saver<Dropdown, String>(
+                save = { Json.encodeToString(it.toSavedState()) },
+                restore = { Json.decodeFromString<SavedState>(it).toDropdown() },
             )
         }
     }

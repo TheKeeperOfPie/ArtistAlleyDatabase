@@ -3,23 +3,21 @@ package com.thekeeperofpie.artistalleydatabase.art.details
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.lifecycle.createSavedStateHandle
@@ -29,18 +27,21 @@ import artistalleydatabase.modules.art.generated.resources.art_entry_characters_
 import artistalleydatabase.modules.art.generated.resources.art_entry_notes_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_series_header
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
+import com.thekeeperofpie.artistalleydatabase.art.details.SourceDropdown.rememberState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 object ArtEntryDetailsScreen {
 
     @Composable
@@ -48,13 +49,17 @@ object ArtEntryDetailsScreen {
         artEntryComponent: ArtEntryComponent,
         onEvent: (Event) -> Unit,
     ) {
-        val viewModel = viewModel { artEntryComponent.artEntryDetailsViewModel2(createSavedStateHandle()) }
+        val viewModel =
+            viewModel { artEntryComponent.artEntryDetailsViewModel2(createSavedStateHandle()) }
         val scaffoldState = rememberBottomSheetScaffoldState()
         BottomSheetScaffold(sheetContent = {
             BottomSheet(
-                viewModel = viewModel,
+                state = viewModel.state,
+                seriesPredictions = viewModel::series,
+                characterPredictions = { _ -> viewModel.characterPredictions },
                 bottomSheetState = scaffoldState.bottomSheetState,
                 onEvent = onEvent,
+                modifier = Modifier.weight(1f, fill = false)
             )
         }) {
             // TODO
@@ -63,10 +68,13 @@ object ArtEntryDetailsScreen {
 
 
     @Composable
-    private fun ColumnScope.BottomSheet(
-        viewModel: ArtEntryDetailsViewModel2,
+    internal fun BottomSheet(
+        state: State,
+        seriesPredictions: suspend (String) -> Flow<List<EntryFormSection.MultiText.Entry>>,
+        characterPredictions: suspend (String) -> Flow<List<EntryFormSection.MultiText.Entry>>,
         bottomSheetState: SheetState,
         onEvent: (Event) -> Unit,
+        modifier: Modifier = Modifier,
     ) {
         val scrollState = rememberScrollState()
         val bottomSheetTargetValue = bottomSheetState.targetValue
@@ -77,7 +85,7 @@ object ArtEntryDetailsScreen {
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
+            modifier = modifier
                 .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
                 .animateEnterExit(
                     enter = slideInVertically { it * 2 },
@@ -85,10 +93,8 @@ object ArtEntryDetailsScreen {
                     exit = slideOutVertically { it * 2 },
                 )
                 .fillMaxWidth()
-                .weight(1f, fill = false)
                 .verticalScroll(scrollState)
         ) {
-            val state = viewModel.state
             EntryForm2 {
                 val focusRequester = remember { FocusRequester() }
                 MultiTextSection(
@@ -103,7 +109,7 @@ object ArtEntryDetailsScreen {
                     },
                     focusRequester = focusRequester,
                     trailingIcon = { /* TODO */ null },
-                    entryPredictions = viewModel::series,
+                    entryPredictions = seriesPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
                     onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                 )
@@ -120,8 +126,14 @@ object ArtEntryDetailsScreen {
                     },
                     focusRequester = focusRequester,
                     trailingIcon = { /* TODO */ null },
-                    entryPredictions = { _ -> viewModel.characterPredictions },
+                    entryPredictions = characterPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
+                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
+                )
+
+                SourceDropdown(
+                    state = rememberState(),
+                    focusRequester = focusRequester,
                     onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                 )
 
@@ -175,4 +187,16 @@ object ArtEntryDetailsScreen {
         data object SectionFocused : Event
         data class Navigate(val entry: EntryFormSection.MultiText.Entry) : Event
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ArtEntryDetailsScreenPreview() {
+    ArtEntryDetailsScreen.BottomSheet(
+        state = ArtEntryDetailsScreen.State(),
+        seriesPredictions = { flowOf(emptyList()) },
+        characterPredictions = { flowOf(emptyList()) },
+        bottomSheetState = rememberStandardBottomSheetState(),
+        onEvent = {},
+    )
 }
