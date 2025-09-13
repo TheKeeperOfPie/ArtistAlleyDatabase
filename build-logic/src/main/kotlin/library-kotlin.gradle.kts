@@ -19,7 +19,7 @@ kotlin {
                 languageSettings.optIn("kotlin.RequiresOptIn")
             }
         }
-        freeCompilerArgs.add("-Xcontext-receivers")
+        freeCompilerArgs.add("-Xcontext-parameters")
         freeCompilerArgs.add("-Xexpect-actual-classes")
         freeCompilerArgs.add("-Xjspecify-annotations=strict")
         freeCompilerArgs.add("-Xtype-enhancement-improvements-strict-mode")

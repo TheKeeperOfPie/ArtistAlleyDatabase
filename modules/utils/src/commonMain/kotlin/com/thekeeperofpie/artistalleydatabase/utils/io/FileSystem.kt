@@ -19,11 +19,11 @@ fun AppFileSystem.walk(path: Path) = sequence<Path> {
     recursiveWalk(path)
 }
 
-context(AppFileSystem)
+context(appFileSystem: AppFileSystem)
 private suspend fun SequenceScope<Path>.recursiveWalk(path: Path) {
-    val metadata = metadataOrNull(path)
+    val metadata = appFileSystem.metadataOrNull(path)
     if (metadata?.isDirectory == true) {
-        list(path).forEach {
+        appFileSystem.list(path).forEach {
             recursiveWalk(it)
         }
     }

@@ -18,7 +18,7 @@ fun <T> SavedStateHandle.getOrPut(key: String, defaultValue: () -> T): T {
     return value
 }
 
-context(ViewModel)
+context(viewModel: ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
     key: String,
@@ -26,7 +26,7 @@ inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
     noinline serialize: (Output) -> Input,
     noinline deserialize: (Input) -> Output,
 ): MutableStateFlow<Output> =
-    getMutableStateFlow(viewModelScope, key, initialValue, serialize, deserialize)
+    getMutableStateFlow(viewModel.viewModelScope, key, initialValue, serialize, deserialize)
 
 inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
     scope: CoroutineScope,
@@ -37,13 +37,13 @@ inline fun <reified Input, Output> SavedStateHandle.getMutableStateFlow(
 ): MutableStateFlow<Output> = getMutableStateFlow(key, serialize(initialValue()))
     .mapMutableState(scope, deserialize, serialize)
 
-context(ViewModel)
+context(viewModel: ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     json: Json,
     key: String,
     initialValue: () -> T,
-): MutableStateFlow<T> = getMutableStateFlow(viewModelScope, json, key, initialValue)
+): MutableStateFlow<T> = getMutableStateFlow(viewModel.viewModelScope, json, key, initialValue)
 
 inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     scope: CoroutineScope,
@@ -53,11 +53,11 @@ inline fun <reified T> SavedStateHandle.getMutableStateFlow(
 ): MutableStateFlow<T> = getMutableStateFlow(key, json.encodeToString(initialValue()))
     .mapMutableState(scope, json::decodeFromString, json::encodeToString)
 
-context(ViewModel)
+context(viewModel: ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 inline fun <reified T> SavedStateHandle.getMutableStateFlow(
     json: Json,
     key: String,
     initialValue: T,
 ): MutableStateFlow<T> = getMutableStateFlow(key, json.encodeToString(initialValue))
-    .mapMutableState(viewModelScope, json::decodeFromString, json::encodeToString)
+    .mapMutableState(viewModel.viewModelScope, json::decodeFromString, json::encodeToString)

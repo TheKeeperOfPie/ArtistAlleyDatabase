@@ -280,7 +280,7 @@ fun <T : Any> rememberPagerState(data: List<T>?, placeholderCount: Int): PagerSt
 fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int) =
     if (index >= itemCount) null else get(index)
 
-context(ViewModel)
+context(viewModel: ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 fun <T : Any> Flow<PagingData<T>>.stateInForCompose() =
-    stateIn(viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, PagingUtils.loading())
+    stateIn(viewModel.viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, PagingUtils.loading())

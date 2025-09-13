@@ -25,15 +25,15 @@ object ComposeUtils {
         SharingStarted.WhileSubscribed(5.seconds.inWholeMilliseconds)
 }
 
-context(ViewModel)
+context(viewModel: ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 fun <T : Any> Flow<LoadingResult<T>>.stateInForCompose() =
-    stateIn(viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, LoadingResult.loading())
+    stateIn(viewModel.viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, LoadingResult.loading())
 
-context(ViewModel)
+context(viewModel: ViewModel)
 @Suppress("CONTEXT_RECEIVERS_DEPRECATED")
 fun <T> Flow<T>.stateInForCompose(initial: T) =
-    stateIn(viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, initial)
+    stateIn(viewModel.viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, initial)
 
 fun <T> Flow<T>.stateInForCompose(viewModel: ViewModel, initial: T) =
     stateIn(viewModel.viewModelScope, ComposeUtils.whileSubscribedFiveSeconds, initial)
