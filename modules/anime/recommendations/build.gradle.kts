@@ -24,8 +24,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anime.recommendations"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.anime.recommendations"
+    }
 }
 
 compose.resources {

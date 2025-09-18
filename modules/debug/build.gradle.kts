@@ -6,6 +6,14 @@ plugins {
 }
 
 kotlin {
+    android {
+        androidResources {
+            enable = true
+        }
+    }
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.debug"
+    }
     sourceSets {
         commonMain.dependencies {
             implementation(projects.modules.utils)
@@ -18,8 +26,4 @@ kotlin {
             implementation(libs.jsontree)
         }
     }
-}
-
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.debug"
 }

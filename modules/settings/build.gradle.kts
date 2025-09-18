@@ -29,9 +29,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.settings"
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.settings"
+    }
 }
 
 compose.resources {

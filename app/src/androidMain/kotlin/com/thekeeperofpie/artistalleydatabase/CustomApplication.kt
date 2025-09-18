@@ -31,6 +31,7 @@ import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfigProxy
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
@@ -65,7 +66,7 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
             try {
                 applicationComponent.settingsProvider.writeLastCrash(throwable)
             } catch (t: Throwable) {
-                if (BuildConfig.DEBUG) {
+                if (BuildConfigProxy.DEBUG) {
                     Log.e(TAG, "Error writing last crash", t)
                 }
             }

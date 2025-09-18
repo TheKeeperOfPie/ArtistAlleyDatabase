@@ -23,6 +23,8 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anime2anime"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.anime2anime"
+    }
 }

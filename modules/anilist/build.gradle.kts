@@ -8,6 +8,14 @@ plugins {
 }
 
 kotlin {
+    android {
+        androidResources {
+            enable = true
+        }
+    }
+}
+
+kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.androidx.security.crypto)
@@ -37,9 +45,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
+    }
 }
 
 compose.resources {

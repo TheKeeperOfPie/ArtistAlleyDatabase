@@ -21,8 +21,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anime.search"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.anime.search"
+    }
 }
 
 compose.resources {

@@ -395,6 +395,7 @@ class MainActivity : ComponentActivity() {
                                 navigationController = navigationController,
                                 navHostController = navHostController,
                                 navGraphBuilder = this,
+                                navigationTypeMap = navigationTypeMap,
                                 artEntryComponent = applicationComponent,
                             )
                             cdEntryNavigator.initialize(

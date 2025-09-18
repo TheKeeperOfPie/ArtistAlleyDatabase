@@ -1,3 +1,4 @@
+
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -6,7 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
-    id("com.android.library")
+    id("com.android.kotlin.multiplatform.library")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
@@ -15,9 +16,16 @@ kotlin {
         jvmToolchain(18)
     }
 
-    androidTarget {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_18
+    androidLibrary {
+        compileSdk = 36
+        minSdk = 28
+
+        compilations.configureEach {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget = JvmTarget.JVM_18
+                }
+            }
         }
     }
     jvm()
@@ -49,10 +57,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.alley.data"
-    compileSdk = 36
-    defaultConfig {
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.alley.data"
+        compileSdk = 36
         minSdk = 28
     }
 }

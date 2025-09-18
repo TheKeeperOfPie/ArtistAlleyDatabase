@@ -9,13 +9,17 @@ plugins {
 }
 
 kotlin {
+    android {
+        androidResources {
+            enable = true
+        }
+    }
+}
+
+kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
-            group("androidAndDesktop") {
-                withAndroidTarget()
-                withJvm()
-            }
             group("desktopAndWeb") {
                 withJvm()
                 withJs()
@@ -29,11 +33,17 @@ kotlin {
     }
 
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.activity.compose)
-            implementation(libs.html.text)
-            implementation(libs.palette.ktx)
-            runtimeOnly(libs.paging.runtime.ktx)
+        val androidAndDesktopMain by creating {
+            dependsOn(commonMain.get())
+        }
+        androidMain {
+            dependsOn(androidAndDesktopMain)
+            dependencies {
+                implementation(libs.activity.compose)
+                implementation(libs.html.text)
+                implementation(libs.palette.ktx)
+                runtimeOnly(libs.paging.runtime.ktx)
+            }
         }
         commonMain.dependencies {
             api(compose.components.resources)
@@ -51,8 +61,11 @@ kotlin {
             implementation(libs.molecule.runtime)
             implementation(projects.modules.utils)
         }
-        desktopMain.dependencies {
-            implementation(libs.kmpalette.core)
+        desktopMain {
+            dependsOn(androidAndDesktopMain)
+            dependencies {
+                implementation(libs.kmpalette.core)
+            }
         }
         val desktopAndWebMain by getting {
             dependencies {
@@ -62,8 +75,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.utils_compose"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.utils_compose"
+    }
 }
 
 compose.resources {

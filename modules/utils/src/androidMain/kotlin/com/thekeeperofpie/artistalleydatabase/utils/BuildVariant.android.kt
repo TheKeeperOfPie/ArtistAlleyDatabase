@@ -1,3 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.utils
 
-actual fun BuildVariant.isDebug(): Boolean = BuildConfig.DEBUG
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfigProxy
+
+actual fun BuildVariant.isDebug(): Boolean = BuildConfigProxy.DEBUG

@@ -8,8 +8,10 @@ plugins {
     alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.secrets"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.secrets"
+    }
 }
 
 val properties = Properties().apply {

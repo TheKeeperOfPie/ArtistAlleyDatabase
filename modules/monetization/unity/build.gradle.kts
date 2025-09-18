@@ -4,8 +4,10 @@ plugins {
     id("library-inject")
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.monetization.unity"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.monetization.unity"
+    }
 }
 
 kotlin {

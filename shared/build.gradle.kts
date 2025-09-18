@@ -1,3 +1,4 @@
+
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -9,7 +10,7 @@ repositories {
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform") version "2.2.0"
-    id("com.android.library") version "8.11.0-alpha10"
+    id("com.android.library") version "8.13.0"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.0"
 }
 

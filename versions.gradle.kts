@@ -5,7 +5,7 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.11.0-alpha10"
+        const val gradle = "8.13.0"
     }
 
     object androidx {
@@ -132,7 +132,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("app.cash.burst").version(Versions.burst)
                 plugin("app.cash.sqldelight").version(Versions.sqldelight)
                 plugin("com.android.application").version(Versions.android.gradle)
-                plugin("com.android.library").version(Versions.android.gradle)
+                plugin("com.android.kotlin.multiplatform.library").version(Versions.android.gradle)
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
                 plugin("com.codingfeline.buildkonfig").version(Versions.buildKonfig)
                 plugin("com.github.ben-manes.versions").version(Versions.benManesVersions)
@@ -151,7 +151,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     withVersion(core) {
                         library("org.jetbrains.kotlin:kotlin-reflect")
                         library("org.jetbrains.kotlin:kotlin-test")
-                        library("org.jetbrains.kotlin.plugin.parcelize:org.jetbrains.kotlin.plugin.parcelize.gradle.plugin")
                         library("org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin")
                     }
                 }

@@ -1,6 +1,7 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 buildscript {
+    val kotlin_version by extra("2.2.0")
     repositories {
         gradlePluginPortal()
         mavenCentral()
@@ -8,6 +9,7 @@ buildscript {
     }
     dependencies {
         classpath("app.cash.burst:burst-gradle-plugin:2.6.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
 
@@ -20,7 +22,7 @@ plugins {
     alias(libs.plugins.org.jetbrains.kotlin.plugin.compose).apply(false)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization).apply(false)
     id(libs.plugins.com.android.application.get().pluginId).apply(false)
-    id(libs.plugins.com.android.library.get().pluginId).apply(false)
+    id(libs.plugins.com.android.kotlin.multiplatform.library.get().pluginId).apply(false)
     id(libs.plugins.org.jetbrains.kotlin.android.get().pluginId).apply(false)
 
     alias(libs.plugins.com.github.ben.manes.versions)

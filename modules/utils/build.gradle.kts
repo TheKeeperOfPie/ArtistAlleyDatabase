@@ -8,6 +8,17 @@ plugins {
 }
 
 kotlin {
+    android {
+        localDependencySelection {
+            selectBuildTypeFrom.set(listOf("debug"))
+        }
+        androidResources {
+            enable = true
+        }
+    }
+}
+
+kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
@@ -21,6 +32,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.androidx.security.crypto)
+            implementation(projects.modules.utilsBuildConfig)
         }
         commonMain.dependencies {
             api(libs.bignum)
@@ -34,10 +46,8 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.utils"
-
-    buildFeatures {
-        buildConfig = true
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.utils"
     }
 }

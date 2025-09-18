@@ -6,8 +6,10 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.musical_artists"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.musical_artists"
+    }
 }
 
 kotlin {

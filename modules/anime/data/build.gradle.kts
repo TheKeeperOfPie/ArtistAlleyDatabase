@@ -4,6 +4,8 @@ plugins {
     id("library-desktop")
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anime.data"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.anime.data"
+    }
 }

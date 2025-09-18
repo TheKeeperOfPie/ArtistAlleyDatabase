@@ -12,10 +12,6 @@ plugins {
     id("org.jetbrains.compose")
 }
 
-dependencies {
-    debugImplementation(compose.uiTooling)
-}
-
 kotlin {
     sourceSets {
         commonMain {

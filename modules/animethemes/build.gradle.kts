@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     id("library-android")
     id("library-desktop")
@@ -16,7 +18,8 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.animethemes"
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+kotlin{
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.animethemes"
+    }
 }

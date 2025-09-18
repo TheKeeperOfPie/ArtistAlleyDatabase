@@ -220,6 +220,7 @@ kotlin {
             implementation(projects.modules.data)
             implementation(projects.modules.entry)
             implementation(projects.modules.markdown)
+            implementation(projects.modules.utilsBuildConfig)
 
             implementation(libs.activity.compose)
             implementation(libs.androidx.core.ktx)

@@ -51,7 +51,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
-    implementation(libs.org.jetbrains.kotlin.plugin.parcelize.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
     implementation(libs.sqldelight.sqlite.driver)
     implementation(libs.webp.imageio)

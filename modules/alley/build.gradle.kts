@@ -17,10 +17,6 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
-            group("jvm") {
-                withAndroidTarget()
-                withJvm()
-            }
             group("web") {
                 withJs()
                 withWasmJs()
@@ -29,6 +25,12 @@ kotlin {
     }
 
     sourceSets {
+        val jvmMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.commons.csv)
+            }
+        }
         commonMain.dependencies {
             api(projects.modules.alley.data)
             api(projects.modules.alley.user)
@@ -54,12 +56,16 @@ kotlin {
             implementation(libs.qrose)
             implementation(libs.sqldelight.coroutines.extensions)
         }
-        androidMain.dependencies {
-            implementation(libs.androidx.sqlite)
-            implementation(libs.androidx.sqlite.bundled)
-            implementation(libs.sqldelight.androidx.driver)
+        androidMain {
+            dependsOn(jvmMain)
+            dependencies {
+                implementation(libs.androidx.sqlite)
+                implementation(libs.androidx.sqlite.bundled)
+                implementation(libs.sqldelight.androidx.driver)
+            }
         }
         val desktopMain by getting {
+            dependsOn(jvmMain)
             dependencies {
                 implementation(libs.sqldelight.sqlite.driver)
             }
@@ -68,11 +74,6 @@ kotlin {
             dependencies {
                 // TODO: Multiplatform variant doesn't resolve
                 implementation(libs.paging.testing)
-            }
-        }
-        val jvmMain by getting {
-            dependencies {
-                implementation(libs.commons.csv)
             }
         }
         val jsMain by getting {
@@ -97,8 +98,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.alley"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.alley"
+    }
 }
 
 val properties = Properties().apply {

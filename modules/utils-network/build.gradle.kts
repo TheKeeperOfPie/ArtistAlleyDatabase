@@ -11,10 +11,6 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
-            group("jvm") {
-                withAndroidTarget()
-                withJvm()
-            }
             group("web") {
                 withJs()
                 withWasmJs()
@@ -23,16 +19,24 @@ kotlin {
     }
 
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.cronet.okhttp)
-        }
-        val jvmMain by getting {
+        val jvmMain by creating {
+            dependsOn(commonMain.get())
             dependencies {
                 implementation(libs.apollo.engine.ktor)
                 implementation(libs.okhttp3.logging.interceptor)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.skrapeit)
             }
+        }
+        androidMain {
+            dependsOn(jvmMain)
+            dependencies {
+                implementation(libs.cronet.okhttp)
+                implementation(projects.modules.utilsBuildConfig)
+            }
+        }
+        val desktopMain by getting {
+            dependsOn(jvmMain)
         }
         commonMain.dependencies {
             api(libs.apollo.runtime)
@@ -44,11 +48,8 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.utils_network"
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-
-    buildFeatures {
-        buildConfig = true
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.utils_network"
     }
 }

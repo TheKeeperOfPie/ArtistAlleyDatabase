@@ -66,7 +66,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
 
                     val keysForBooth = mutableListOf<Request>()
                     entriesForArtist.forEach {
-                        val identifier = "${it.artist.year.folderName}/${AlleyDataUtils.Folder.CATALOGS.folderName}/${it.artist.booth}"
+                        val identifier = "${it.artist.year.folderName}/catalogs/${it.artist.booth}"
                         for (index in 0 until existingKeys.size) {
                             val request = existingKeys[index]
                             if (request.url.contains(identifier)) {
@@ -84,7 +84,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
 
                     val keysForBooth = mutableListOf<Request>()
                     entriesForArtist.forEach {
-                        val identifier = "${it.artist.year.folderName}/${AlleyDataUtils.Folder.CATALOGS.folderName}/${it.artist.booth}"
+                        val identifier = "${it.artist.year.folderName}/catalogs/${it.artist.booth}"
                         for (index in 0 until existingKeys.size) {
                             val request = existingKeys[index]
                             if (request.url.contains(identifier)) {

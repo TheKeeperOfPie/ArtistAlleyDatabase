@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.utils_network
 import android.app.Application
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfigProxy
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.Cache
 import java.io.File
@@ -15,7 +16,7 @@ fun buildNetworkClient(
 ): NetworkClient {
     @Suppress("KotlinConstantConditions")
     val loggingInterceptor =
-        if (BuildConfig.BUILD_TYPE == "debug" || BuildConfig.BUILD_TYPE == "internal") {
+        if (BuildConfigProxy.BUILD_TYPE == "debug" || BuildConfigProxy.BUILD_TYPE == "internal") {
             LoggingInterceptor(scope, networkSettings, "Network")
         } else null
 //    val cronetEngine = CronetEngine.Builder(application)

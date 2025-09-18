@@ -4,8 +4,10 @@ plugins {
     id("library-inject")
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.play"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.play"
+    }
 }
 
 kotlin {

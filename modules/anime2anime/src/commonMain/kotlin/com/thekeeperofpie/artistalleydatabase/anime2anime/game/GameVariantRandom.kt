@@ -37,7 +37,7 @@ class GameVariantRandom(
     companion object {
         private const val MIN_MEDIA_POPULARITY = 10000
 
-        context (GameVariant<*>)
+        context (_: GameVariant<*>)
         suspend fun loadRandom(
             random: Random,
             totalAnimeCount: Int,
@@ -58,7 +58,7 @@ class GameVariantRandom(
                 ?: LoadingResult.error(Res.string.anime2anime_error_could_not_fetch_media)
         }
 
-        context (GameVariant<*>)
+        context (gameVariant: GameVariant<*>)
         private suspend fun randomAnime(
             random: Random,
             totalAnimeCount: Int,
@@ -71,7 +71,7 @@ class GameVariantRandom(
             var randomAnime: Anime2AnimeRandomAnimeQuery.Data.Page.Medium? = null
             while (randomAnime == null && attempts++ < 5) {
                 val randomPage = random.nextInt(1, totalAnimeCount / 25)
-                randomAnime = api.anime2AnimeRandomAnime(randomPage, 5).getOrNull()
+                randomAnime = gameVariant.api.anime2AnimeRandomAnime(randomPage, 5).getOrNull()
                     ?.asSequence()
                     ?.filterNotNull()
                     ?.filter {

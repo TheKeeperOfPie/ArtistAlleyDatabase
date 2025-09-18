@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.androidLibrary
+
 plugins {
     id("library-android")
     id("library-compose")
@@ -19,6 +21,8 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.anime.history"
+kotlin {
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase.anime.history"
+    }
 }
