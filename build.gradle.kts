@@ -1,15 +1,13 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 buildscript {
-    val kotlin_version by extra("2.2.0")
     repositories {
         gradlePluginPortal()
         mavenCentral()
         google()
     }
     dependencies {
-        classpath("app.cash.burst:burst-gradle-plugin:2.6.0")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+        classpath("app.cash.burst:burst-gradle-plugin:2.9.0")
     }
 }
 
