@@ -20,12 +20,9 @@ kotlin {
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.runtime)
                 implementation(compose.foundation)
+                 implementation(compose.material3)
                 implementation(compose.materialIconsExtended)
                 implementation(compose.ui)
-
-                // https://github.com/JetBrains/compose-multiplatform/releases/tag/v1.8.0-alpha04
-                implementation("org.jetbrains.compose.material3:material3:1.9.0-alpha04")
-                // implementation(compose.material3)
             }
         }
         commonTest.dependencies {
@@ -46,10 +43,4 @@ composeCompiler {
         ComposeFeatureFlag.OptimizeNonSkippingGroups,
     )
     includeSourceInformation = true
-}
-
-configurations.all {
-    resolutionStrategy {
-        force("org.jetbrains.compose.material3:material3:1.9.0-alpha04")
-    }
 }

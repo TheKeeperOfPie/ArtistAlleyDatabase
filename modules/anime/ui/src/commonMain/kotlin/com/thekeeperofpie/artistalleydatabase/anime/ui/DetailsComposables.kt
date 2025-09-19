@@ -1,12 +1,14 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
+    ExperimentalSharedTransitionApi::class
 )
 @file:Suppress("NAME_SHADOWING")
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState

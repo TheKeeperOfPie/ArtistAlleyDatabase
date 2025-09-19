@@ -10,6 +10,11 @@ plugins {
 }
 
 kotlin {
+    android {
+        androidResources {
+            enable = true // Required for CMP resources to work, probably a bug?
+        }
+    }
     androidLibrary {
         compileSdk = 36
         minSdk = 28

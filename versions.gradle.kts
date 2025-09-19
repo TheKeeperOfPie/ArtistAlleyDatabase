@@ -14,7 +14,7 @@ object Versions {
         const val browser = "1.10.0-alpha01"
         const val core = "1.17.0"
         const val media3 = "1.8.0"
-        const val paging = "3.4.0-alpha04"
+        const val paging = "3.4.0-alpha03"
         const val palette = "1.0.0"
         const val room = "2.7.2"
         const val securityCrypto = "1.1.0"

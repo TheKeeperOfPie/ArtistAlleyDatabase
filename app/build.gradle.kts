@@ -344,6 +344,5 @@ configurations.all {
         capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
             select("com.google.guava:guava:0")
         }
-        force("org.jetbrains.compose.material3:material3:1.9.0-alpha04")
     }
 }
