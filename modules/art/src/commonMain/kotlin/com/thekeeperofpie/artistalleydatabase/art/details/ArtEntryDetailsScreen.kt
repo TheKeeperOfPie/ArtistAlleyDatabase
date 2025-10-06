@@ -17,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -28,17 +30,13 @@ import artistalleydatabase.modules.art.generated.resources.art_entry_characters_
 import artistalleydatabase.modules.art.generated.resources.art_entry_notes_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_series_header
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
-import com.thekeeperofpie.artistalleydatabase.art.details.SourceDropdown.rememberState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
-import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -57,7 +55,9 @@ object ArtEntryDetailsScreen {
         BottomSheetScaffold(sheetContent = {
             BottomSheet(
                 state = viewModel.state,
+                series = viewModel.series,
                 seriesPredictions = viewModel::series,
+                characters = viewModel.characters,
                 characterPredictions = { _ -> viewModel.characterPredictions },
                 bottomSheetState = scaffoldState.bottomSheetState,
                 onEvent = onEvent,
@@ -72,8 +72,10 @@ object ArtEntryDetailsScreen {
     @Composable
     internal fun BottomSheet(
         state: State,
-        seriesPredictions: suspend (String) -> Flow<List<EntryFormSection.MultiText.Entry>>,
-        characterPredictions: suspend (String) -> Flow<List<EntryFormSection.MultiText.Entry>>,
+        series: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
+        seriesPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
+        characters: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
+        characterPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
         bottomSheetState: SheetState,
         onEvent: (Event) -> Unit,
         modifier: Modifier = Modifier,
@@ -105,15 +107,18 @@ object ArtEntryDetailsScreen {
                         Text(
                             pluralStringResource(
                                 Res.plurals.art_entry_series_header,
-                                state.series.content.size,
+                                series.size,
                             )
                         )
                     },
                     focusRequester = focusRequester,
+                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                     trailingIcon = { /* TODO */ null },
                     entryPredictions = seriesPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
+                    items = series,
+                    onItemCommitted = { series += it },
+                    removeLastItem = { series.removeLastOrNull()?.text },
                 )
 
                 MultiTextSection(
@@ -122,19 +127,22 @@ object ArtEntryDetailsScreen {
                         Text(
                             pluralStringResource(
                                 Res.plurals.art_entry_characters_header,
-                                state.characters.content.size,
+                                characters.size,
                             )
                         )
                     },
                     focusRequester = focusRequester,
+                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                     trailingIcon = { /* TODO */ null },
                     entryPredictions = characterPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
+                    items = characters,
+                    onItemCommitted = { characters += it },
+                    removeLastItem = { characters.removeLastOrNull()?.text },
                 )
 
                 SourceDropdown(
-                    state = rememberState(),
+                    state = SourceDropdown.rememberState(),
                     focusRequester = focusRequester,
                     onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                 )
@@ -149,45 +157,38 @@ object ArtEntryDetailsScreen {
         }
     }
 
+    @Composable
+    fun rememberState() = rememberSaveable(saver = State.Saver) { State() }
+
     @Stable
     class State(
-        val series: EntryFormSection.MultiText = EntryFormSection.MultiText(),
-        val characters: EntryFormSection.MultiText = EntryFormSection.MultiText(),
-        val notes: EntryFormSection.LongText = EntryFormSection.LongText(),
+        val series: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
+        val characters: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
+        val notes: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
     ) {
-        companion object {
-            @Serializable
-            data class SavedState(
-                val series: EntryFormSection.MultiText.SavedState,
-                val characters: EntryFormSection.MultiText.SavedState,
-                val notes: EntryFormSection.LongText.SavedState,
-            )
+        object Saver : androidx.compose.runtime.saveable.Saver<State, Any> {
+            override fun SaverScope.save(value: State): Any? {
+                return listOf(
+                    with(EntryForm2.PendingTextState.Saver) { save(value.series) },
+                    with(EntryForm2.PendingTextState.Saver) { save(value.characters) },
+                    with(EntryForm2.PendingTextState.Saver) { save(value.notes) },
+                )
+            }
 
-            val Saver = Saver<State, String>(
-                save = {
-                    Json.encodeToString(
-                        SavedState(
-                            series = it.series.toSavedState(),
-                            characters = it.characters.toSavedState(),
-                            notes = it.notes.toSavedState(),
-                        )
-                    )
-                },
-                restore = {
-                    val savedState = Json.decodeFromString<SavedState>(it)
-                    State(
-                        series = savedState.series.toMultiText(),
-                        characters = savedState.characters.toMultiText(),
-                        notes = savedState.notes.toLongText(),
-                    )
-                },
-            )
+            override fun restore(value: Any): State? {
+                val (series, characters, notes) = value as List<*>
+                return State(
+                    series = with(EntryForm2.PendingTextState.Saver) { restore(series!!) }!!,
+                    characters = with(EntryForm2.PendingTextState.Saver) { restore(characters!!) }!!,
+                    notes = with(EntryForm2.PendingTextState.Saver) { restore(notes!!) }!!,
+                )
+            }
         }
     }
 
     sealed interface Event {
         data object SectionFocused : Event
-        data class Navigate(val entry: EntryFormSection.MultiText.Entry) : Event
+        data class Navigate(val entry: EntryForm2.MultiTextState.Entry) : Event
     }
 }
 
@@ -195,8 +196,10 @@ object ArtEntryDetailsScreen {
 @Composable
 private fun ArtEntryDetailsScreenPreview() {
     ArtEntryDetailsScreen.BottomSheet(
-        state = ArtEntryDetailsScreen.State(),
+        state = ArtEntryDetailsScreen.rememberState(),
+        series = remember { SnapshotStateList() },
         seriesPredictions = { flowOf(emptyList()) },
+        characters = remember { SnapshotStateList() },
         characterPredictions = { flowOf(emptyList()) },
         bottomSheetState = rememberStandardBottomSheetState(),
         onEvent = {},

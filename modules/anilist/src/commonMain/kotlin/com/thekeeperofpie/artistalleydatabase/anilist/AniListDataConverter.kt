@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import me.tatarka.inject.annotations.Inject
 
@@ -57,11 +57,11 @@ class AniListDataConverter(
         )
     }
 
-    fun seriesEntry2(media: AniListMedia): EntryFormSection.MultiText.Entry.Prefilled<AniListMedia> {
+    fun seriesEntry2(media: AniListMedia): EntryForm2.MultiTextState.Entry.Prefilled<AniListMedia> {
         val title = media.title?.romaji ?: media.id.toString()
         val serializedValue =
             aniListJson.toJson(MediaColumnEntry(media.id.toString(), title.trim()))
-        return EntryFormSection.MultiText.Entry.Prefilled(
+        return EntryForm2.MultiTextState.Entry.Prefilled(
             value = media,
             id = mediaEntryId(media.id.toString()),
             text = title,
@@ -112,11 +112,11 @@ class AniListDataConverter(
         )
     }
 
-    fun seriesEntry2(entry: MediaEntry): EntryFormSection.MultiText.Entry.Prefilled<*> {
+    fun seriesEntry2(entry: MediaEntry): EntryForm2.MultiTextState.Entry.Prefilled<*> {
         val title = entry.title
         val nonNullTitle = title?.romaji ?: entry.id
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, nonNullTitle))
-        return EntryFormSection.MultiText.Entry.Prefilled(
+        return EntryForm2.MultiTextState.Entry.Prefilled(
             value = entry,
             id = mediaEntryId(entry.id),
             text = nonNullTitle,
@@ -146,9 +146,9 @@ class AniListDataConverter(
         )
     }
 
-    fun seriesEntry2(entry: MediaColumnEntry): EntryFormSection.MultiText.Entry.Prefilled<MediaColumnEntry> {
+    fun seriesEntry2(entry: MediaColumnEntry): EntryForm2.MultiTextState.Entry.Prefilled<MediaColumnEntry> {
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, entry.title))
-        return EntryFormSection.MultiText.Entry.Prefilled(
+        return EntryForm2.MultiTextState.Entry.Prefilled(
             value = entry,
             id = mediaEntryId(entry.id),
             text = entry.title,
@@ -179,7 +179,7 @@ class AniListDataConverter(
         )
     }
 
-    fun characterEntry2(character: AniListCharacter): EntryFormSection.MultiText.Entry.Prefilled<AniListCharacter> {
+    fun characterEntry2(character: AniListCharacter): EntryForm2.MultiTextState.Entry.Prefilled<AniListCharacter> {
         val firstMedia = character.media?.nodes?.firstOrNull()
         val voiceActor = CharacterUtils.findVoiceActor(character, firstMedia)
         return characterEntry2(
@@ -216,7 +216,7 @@ class AniListDataConverter(
             staffImage = null,
         )
 
-    fun characterEntry2(entry: CharacterColumnEntry): EntryFormSection.MultiText.Entry.Prefilled<CharacterColumnEntry> =
+    fun characterEntry2(entry: CharacterColumnEntry): EntryForm2.MultiTextState.Entry.Prefilled<CharacterColumnEntry> =
         characterEntry2(
             value = entry,
             id = entry.id,
@@ -257,7 +257,7 @@ class AniListDataConverter(
 
     fun characterEntry2(
         entry: CharacterEntry,
-    ): EntryFormSection.MultiText.Entry.Prefilled<CharacterEntry> {
+    ): EntryForm2.MultiTextState.Entry.Prefilled<CharacterEntry> {
         val voiceActor =
             CharacterUtils.findVoiceActor(aniListJson.json, entry, entry.mediaIds?.firstOrNull())
         return characterEntry2(
@@ -345,7 +345,7 @@ class AniListDataConverter(
         staffId: String?,
         staffName: String?,
         staffImage: String?,
-    ): EntryFormSection.MultiText.Entry.Prefilled<T> {
+    ): EntryForm2.MultiTextState.Entry.Prefilled<T> {
         val canonicalName = CharacterUtils.buildCanonicalName(
             first = first,
             middle = middle,
@@ -366,7 +366,7 @@ class AniListDataConverter(
             )
         )
 
-        return EntryFormSection.MultiText.Entry.Prefilled(
+        return EntryForm2.MultiTextState.Entry.Prefilled(
             value = value,
             id = characterEntryId(id),
             text = canonicalName,

@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsActions
@@ -32,7 +34,6 @@ import androidx.compose.ui.test.waitUntilExactlyOneExists
 import androidx.compose.ui.text.TextRange
 import app.cash.burst.Burst
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
-import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -47,8 +48,9 @@ class EntryFormMultiTextTest {
 
     @Test
     fun autocomplete() = runComposeUiTest {
-        val state = EntryFormSection.MultiText()
-        setContent { Content(state) }
+        val state = EntryForm2.PendingTextState()
+        val contents = SnapshotStateList<EntryForm2.MultiTextState.Entry>()
+        setContent { Content(state, contents) }
         onNode(hasSetTextAction()).performTextInput("inputOn")
         onNodeWithText("predictionOne").assertDoesNotExist()
         onNode(hasSetTextAction()).performTextInput("e")
@@ -121,12 +123,19 @@ class EntryFormMultiTextTest {
     }
 
     @Test
-    fun nextMovesDownwards(entryType: EntryType = EntryType.CUSTOM) = runComposeUiTest {
+    fun keyboardActionMovesDownwards(
+        entryType: EntryType = EntryType.CUSTOM,
+        imeNextAction: ImeNextAction,
+    ) = runComposeUiTest {
         setUpAndAssertTwoExistingItems(entryType)
 
         onAllNodes(hasSetTextAction()).onLast().run {
             performTextInput("itemThree")
-            performImeAction()
+            when (imeNextAction) {
+                ImeNextAction.NEXT -> performImeAction()
+                ImeNextAction.TAB -> performKeyInput { pressKey(Key.Tab) }
+                ImeNextAction.ENTER -> performKeyInput { pressKey(Key.Enter) }
+            }
             assert(hasText(""))
             performTextInput("itemFour")
         }
@@ -143,8 +152,8 @@ class EntryFormMultiTextTest {
 
     @Test
     fun clear(entryType: EntryType = EntryType.CUSTOM) = runComposeUiTest {
-        val state = setUpAndAssertTwoExistingItems(entryType)
-        state.clearSection()
+        val (_, contents) = setUpAndAssertTwoExistingItems(entryType)
+        contents.clear()
 
         onNodeWithText("itemOne").assertDoesNotExist()
         onNodeWithText("itemTwo").assertDoesNotExist()
@@ -200,14 +209,14 @@ class EntryFormMultiTextTest {
 
     @Test
     fun openInNewNavigation(entryType: EntryType = EntryType.CUSTOM) = runComposeUiTest {
-        val generateEntry: (String) -> EntryFormSection.MultiText.Entry = {
+        val generateEntry: (String) -> EntryForm2.MultiTextState.Entry = {
             when (entryType) {
-                EntryType.CUSTOM -> EntryFormSection.MultiText.Entry.Custom(it)
+                EntryType.CUSTOM -> EntryForm2.MultiTextState.Entry.Custom(it)
                 EntryType.PREFILLED -> testPrefilled(it)
             }
         }
 
-        val navigationEvents = mutableListOf<EntryFormSection.MultiText.Entry>()
+        val navigationEvents = mutableListOf<EntryForm2.MultiTextState.Entry>()
         setUpAndAssertTwoExistingItems(entryType, onNavigate = { navigationEvents += it })
 
         // Test while this is locked, since that's the majority use case
@@ -246,43 +255,46 @@ class EntryFormMultiTextTest {
 
     @Composable
     private fun Content(
-        state: EntryFormSection.MultiText = EntryFormSection.MultiText(),
-        onNavigate: (EntryFormSection.MultiText.Entry) -> Unit = {},
+        state: EntryForm2.PendingTextState,
+        contents: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
+        onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
     ) {
         EntryForm2 {
             MultiTextSection(
                 state = state,
                 headerText = { Text("Header") },
                 focusRequester = remember { FocusRequester() },
+                onFocusChanged = {},
                 trailingIcon = { null },
                 entryPredictions = ::predictions,
                 onNavigate = onNavigate,
-                onFocusChanged = {},
+                items = contents,
+                onItemCommitted = { contents += it },
+                removeLastItem = { contents.removeLastOrNull()?.text },
             )
         }
     }
 
     private fun ComposeUiTest.setUpAndAssertTwoExistingItems(
         entryType: EntryType,
-        onNavigate: (EntryFormSection.MultiText.Entry) -> Unit = {},
-    ): EntryFormSection.MultiText {
-        val generateEntry: (String) -> EntryFormSection.MultiText.Entry = {
+        onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
+    ): Pair<EntryForm2.PendingTextState, SnapshotStateList<EntryForm2.MultiTextState.Entry>> {
+        val generateEntry: (String) -> EntryForm2.MultiTextState.Entry = {
             when (entryType) {
-                EntryType.CUSTOM -> EntryFormSection.MultiText.Entry.Custom(it)
+                EntryType.CUSTOM -> EntryForm2.MultiTextState.Entry.Custom(it)
                 EntryType.PREFILLED -> testPrefilled(it)
             }
         }
-        val state = EntryFormSection.MultiText().apply {
-            content.add(generateEntry("itemOne"))
-            content.add(generateEntry("itemTwo"))
-        }
-        setContent { Content(state = state, onNavigate = onNavigate) }
+        val state = EntryForm2.PendingTextState()
+        val contents =
+            mutableListOf(generateEntry("itemOne"), generateEntry("itemTwo")).toMutableStateList()
+        setContent { Content(state = state, contents = contents, onNavigate = onNavigate) }
 
         onAllNodesWithText("item", substring = true).run {
             onFirst().assert(hasText("itemOne"))
             onLast().assert(hasText("itemTwo"))
         }
-        return state
+        return state to contents
     }
 
     private fun predictions(input: String) = when (input) {
@@ -292,7 +304,7 @@ class EntryFormMultiTextTest {
         else -> emptyFlow()
     }
 
-    private fun testPrefilled(text: String) = EntryFormSection.MultiText.Entry.Prefilled(
+    private fun testPrefilled(text: String) = EntryForm2.MultiTextState.Entry.Prefilled(
         value = text,
         id = text,
         text = text,
@@ -301,4 +313,6 @@ class EntryFormMultiTextTest {
     )
 
     enum class EntryType { CUSTOM, PREFILLED, }
+
+    enum class ImeNextAction { NEXT, TAB, ENTER }
 }

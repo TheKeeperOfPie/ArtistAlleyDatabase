@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import androidx.collection.LruCache
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import co.touchlab.kermit.Logger
 import com.anilist.data.fragment.AniListCharacter
 import com.anilist.data.fragment.AniListMedia
@@ -10,7 +12,8 @@ import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
-import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
+import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -52,24 +55,24 @@ class AniListAutocompleter2(
     }
 
     private val charactersBySeriesCache =
-        LruCache<String, List<EntryFormSection.MultiText.Entry.Prefilled<AniListCharacter>>>(50)
+        LruCache<String, List<EntryForm2.MultiTextState.Entry.Prefilled<AniListCharacter>>>(50)
     private val charactersBySeriesKnownEmpty = LruCache<String, Unit>(1000)
     private val charactersNetworkCache =
-        LruCache<String, List<EntryFormSection.MultiText.Entry.Prefilled<AniListCharacter>>>(50)
+        LruCache<String, List<EntryForm2.MultiTextState.Entry.Prefilled<AniListCharacter>>>(50)
     private val charactersNetworkKnownEmpty = LruCache<String, Unit>(1000)
 
     suspend fun series(
         query: String,
         queryLocal: suspend (query: String) -> List<String>,
-    ): Flow<List<EntryFormSection.MultiText.Entry>> =
+    ): Flow<List<EntryForm2.MultiTextState.Entry>> =
         combine(
             // TODO: Flatten this
             combine(
                 querySeriesLocal(query, queryLocal),
-                Array<EntryFormSection.MultiText.Entry>::toList,
+                Array<EntryForm2.MultiTextState.Entry>::toList,
             ).startWith(item = emptyList()),
             querySeriesNetwork(query),
-            List<EntryFormSection.MultiText.Entry>::plus,
+            List<EntryForm2.MultiTextState.Entry>::plus,
         )
             .flowOn(dispatchers.io)
 
@@ -84,14 +87,14 @@ class AniListAutocompleter2(
                 .map(aniListDataConverter::seriesEntry2)
                 .startWith(item = aniListDataConverter.seriesEntry2(either.value))
         } else {
-            flowOf(EntryFormSection.MultiText.Entry.Custom(it.trim()))
+            flowOf(EntryForm2.MultiTextState.Entry.Custom(it.trim()))
         }
     }
 
     fun querySeriesNetwork(
         query: String,
         type: MediaType? = null,
-    ): Flow<List<EntryFormSection.MultiText.Entry.Prefilled<AniListMedia>>> {
+    ): Flow<List<EntryForm2.MultiTextState.Entry.Prefilled<AniListMedia>>> {
         val search = aniListApi.searchSeries(query, type).mapNotNull {
             it?.page?.media
                 ?.filterNotNull()
@@ -116,7 +119,7 @@ class AniListAutocompleter2(
     private suspend fun queryEntryCharactersLocal(
         query: String,
         queryEntryLocal: suspend (query: String) -> List<String>,
-    ): Flow<List<EntryFormSection.MultiText.Entry>> {
+    ): Flow<List<EntryForm2.MultiTextState.Entry>> {
         if (query.isBlank()) return flowOf(emptyList())
         return combine(
             queryEntryLocal(query).map {
@@ -128,7 +131,7 @@ class AniListAutocompleter2(
                         .startWith(item = aniListDataConverter.characterEntry2(either.value))
                         .filterNotNull()
                 } else {
-                    flowOf(EntryFormSection.MultiText.Entry.Custom(it))
+                    flowOf(EntryForm2.MultiTextState.Entry.Custom(it))
                 }
             }.ifEmpty { listOf(flowOf(null)) }
         ) { it.toList() }
@@ -136,7 +139,7 @@ class AniListAutocompleter2(
             .startWith(emptyList())
     }
 
-    private fun queryCharactersLocal(query: String): Flow<List<EntryFormSection.MultiText.Entry.Prefilled<CharacterEntry>>> {
+    private fun queryCharactersLocal(query: String): Flow<List<EntryForm2.MultiTextState.Entry.Prefilled<CharacterEntry>>> {
         if (query.isBlank()) return flowOf(emptyList())
         return characterRepository.search(query)
             .map {
@@ -147,7 +150,7 @@ class AniListAutocompleter2(
 
     private fun queryCharactersNetwork(
         query: String,
-    ): Flow<List<EntryFormSection.MultiText.Entry.Prefilled<*>>> {
+    ): Flow<List<EntryForm2.MultiTextState.Entry.Prefilled<*>>> {
         if (query.isBlank()) return flowOf(emptyList())
         val cached = charactersNetworkCache[query]
         if (cached != null) return flowOf(cached)
@@ -171,7 +174,7 @@ class AniListAutocompleter2(
 
     private fun queryCharactersNetworkQueryAsId(
         query: String,
-    ): Flow<List<EntryFormSection.MultiText.Entry.Prefilled<*>>> {
+    ): Flow<List<EntryForm2.MultiTextState.Entry.Prefilled<*>>> {
         // AniList IDs are integers
         val queryAsId = query.toIntOrNull()
         return if (queryAsId == null) {
@@ -186,7 +189,7 @@ class AniListAutocompleter2(
         }
     }
 
-    fun charactersBySeries(mediaId: String): Flow<List<EntryFormSection.MultiText.Entry.Prefilled<AniListCharacter>>> {
+    fun charactersBySeries(mediaId: String): Flow<List<EntryForm2.MultiTextState.Entry.Prefilled<AniListCharacter>>> {
         val cached = charactersBySeriesCache[mediaId]
         if (cached != null) return flowOf(cached)
         if (charactersBySeriesKnownEmpty[mediaId] != null) return flowOf(emptyList())
@@ -209,15 +212,15 @@ class AniListAutocompleter2(
 
     fun combineCharacters(
         query: String,
-        bySeries: List<EntryFormSection.MultiText.Entry.Prefilled<*>>,
-        entry: List<EntryFormSection.MultiText.Entry>,
-        network: List<EntryFormSection.MultiText.Entry.Prefilled<*>>,
-        networkAsId: List<EntryFormSection.MultiText.Entry.Prefilled<*>>,
-        local: List<EntryFormSection.MultiText.Entry.Prefilled<*>>,
-    ): List<EntryFormSection.MultiText.Entry> {
+        bySeries: List<EntryForm2.MultiTextState.Entry.Prefilled<*>>,
+        entry: List<EntryForm2.MultiTextState.Entry>,
+        network: List<EntryForm2.MultiTextState.Entry.Prefilled<*>>,
+        networkAsId: List<EntryForm2.MultiTextState.Entry.Prefilled<*>>,
+        local: List<EntryForm2.MultiTextState.Entry.Prefilled<*>>,
+    ): List<EntryForm2.MultiTextState.Entry> {
         // Sorts values by entryResult, localResult, networkResult,
         // while overwriting with more specific objects in the latter lists
-        val tempMap = LinkedHashMap<String, EntryFormSection.MultiText.Entry>()
+        val tempMap = LinkedHashMap<String, EntryForm2.MultiTextState.Entry>()
         networkAsId.forEach { tempMap[it.id] = it }
         entry.forEach { tempMap[it.id] = it }
         local.forEach { tempMap[it.id] = it }
@@ -230,17 +233,17 @@ class AniListAutocompleter2(
     }
 
     fun characters(
-        charactersState: EntryFormSection.MultiText,
-        seriesState: EntryFormSection.MultiText,
+        charactersState: EntryForm2.PendingTextState,
+        seriesContent: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
         entryCharactersLocal: suspend (query: String) -> List<String>,
     ) = snapshotFlow { charactersState.lockState }
         .flatMapLatest { lockState ->
-            if (lockState == EntryFormSection.LockState.LOCKED) {
+            if (lockState == EntryLockState.LOCKED) {
                 emptyFlow()
             } else {
-                val charactersBySeries = snapshotFlow { seriesState.content.toList() }
+                val charactersBySeries = snapshotFlow { seriesContent.toList() }
                     .mapLatest {
-                        it.filterIsInstance<EntryFormSection.MultiText.Entry.Prefilled<*>>()
+                        it.filterIsInstance<EntryForm2.MultiTextState.Entry.Prefilled<*>>()
                             .mapNotNull(AniListUtils::mediaId)
                             .singleOrNull()
                     }
@@ -255,7 +258,7 @@ class AniListAutocompleter2(
                     .startWith(item = emptyList())
 
                 val characters =
-                    snapshotFlow { charactersState.pendingFocused to charactersState.pendingNewValue.text }
+                    snapshotFlow { charactersState.pendingFocused to charactersState.pendingValue.text.toString() }
                         .debounce(500.milliseconds)
                         .filter { it.first }
                         .flatMapLatest { (_, query) ->
@@ -285,9 +288,9 @@ class AniListAutocompleter2(
 
     private data class CharactersQueryResult(
         val query: String = "",
-        val entry: List<EntryFormSection.MultiText.Entry> = emptyList(),
-        val network: List<EntryFormSection.MultiText.Entry.Prefilled<*>> = emptyList(),
-        val networkAsId: List<EntryFormSection.MultiText.Entry.Prefilled<*>> = emptyList(),
-        val local: List<EntryFormSection.MultiText.Entry.Prefilled<*>> = emptyList(),
+        val entry: List<EntryForm2.MultiTextState.Entry> = emptyList(),
+        val network: List<EntryForm2.MultiTextState.Entry.Prefilled<*>> = emptyList(),
+        val networkAsId: List<EntryForm2.MultiTextState.Entry.Prefilled<*>> = emptyList(),
+        val local: List<EntryForm2.MultiTextState.Entry.Prefilled<*>> = emptyList(),
     )
 }

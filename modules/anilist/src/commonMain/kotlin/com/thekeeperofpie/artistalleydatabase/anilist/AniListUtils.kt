@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormSection
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
@@ -57,7 +57,7 @@ object AniListUtils {
         else -> null
     }
 
-    fun mediaId(entry: EntryFormSection.MultiText.Entry.Prefilled<*>) = when (val value = entry.value) {
+    fun mediaId(entry: EntryForm2.MultiTextState.Entry.Prefilled<*>) = when (val value = entry.value) {
         is AniListMedia -> value.id.toString()
         is MediaEntry -> value.id
         is MediaColumnEntry -> value.id

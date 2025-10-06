@@ -32,9 +32,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.delete
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.MoreVert
@@ -57,14 +59,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -79,12 +87,11 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.delete
@@ -95,6 +102,7 @@ import artistalleydatabase.modules.entry.generated.resources.move_down
 import artistalleydatabase.modules.entry.generated.resources.move_up
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
+import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.swap
@@ -106,6 +114,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
@@ -130,41 +139,163 @@ object EntryForm2 {
             Spacer(Modifier.height(80.dp))
         }
     }
+
+    abstract class State {
+        abstract var lockState: EntryLockState
+        protected abstract val wasEverDifferent: Boolean
+
+        fun rotateLockState() {
+            lockState = lockState.rotateLockState(wasEverDifferent)
+        }
+    }
+
+    @Stable
+    class PendingTextState(
+        val pendingValue: TextFieldState = TextFieldState(),
+        initialPendingFocused: Boolean = false,
+        initialLockState: EntryLockState = EntryLockState.UNLOCKED,
+        override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
+    ) : State() {
+        var pendingFocused by mutableStateOf(initialPendingFocused)
+        override var lockState by mutableStateOf(initialLockState)
+
+        object Saver : androidx.compose.runtime.saveable.Saver<PendingTextState, Any> {
+            override fun SaverScope.save(value: PendingTextState): Any? {
+                return listOf(
+                    with(TextFieldState.Saver) { save(value.pendingValue) },
+                    value.pendingFocused,
+                    value.lockState,
+                    value.wasEverDifferent,
+                )
+            }
+
+            override fun restore(value: Any): PendingTextState? {
+                val (pendingValue, pendingFocused, lockState, wasEverDifferent) = value as List<*>
+                return PendingTextState(
+                    pendingValue = with(TextFieldState.Saver) { restore(pendingValue!!) }!!,
+                    initialPendingFocused = pendingFocused as Boolean,
+                    initialLockState = lockState as EntryLockState,
+                    wasEverDifferent = wasEverDifferent as Boolean,
+                )
+            }
+        }
+    }
+
+    object MultiTextState {
+
+        @Serializable
+        @Immutable
+        sealed interface Entry {
+            val id: String
+            val text: String
+            val serializedValue: String get() = text
+            val searchableValue: String get() = text
+
+            @Serializable
+            data class Custom(override val text: String) : Entry {
+                override val id = "custom_$text"
+            }
+
+            @Serializable
+            data object Different : Entry {
+                override val id = "different"
+                override val text = ""
+            }
+
+            @Serializable
+            data class Prefilled<T>(
+                val value: T,
+                override val id: String,
+                override val text: String,
+                val image: String? = null,
+                val imageLink: String? = null,
+                val secondaryImage: String? = null,
+                val secondaryImageLink: String? = null,
+                val titleText: String = text,
+                val subtitleText: String? = null,
+                override val serializedValue: String,
+                override val searchableValue: String,
+            ) : Entry
+        }
+    }
+
+    @Stable
+    class DropdownState(
+        initialSelectedIndex: Int = 0,
+        initialLockState: EntryLockState = EntryLockState.UNLOCKED,
+        override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
+    ) : State() {
+        var selectedIndex by mutableIntStateOf(initialSelectedIndex)
+        override var lockState by mutableStateOf(initialLockState)
+
+        object Saver : androidx.compose.runtime.saveable.Saver<DropdownState, Any> {
+            override fun SaverScope.save(value: DropdownState): Any? {
+                return listOf(
+                    value.selectedIndex,
+                    value.lockState,
+                    value.wasEverDifferent,
+                )
+            }
+
+            override fun restore(value: Any): DropdownState? {
+                val (selectedIndex, lockState, wasEverDifferent) = value as List<*>
+                return DropdownState(
+                    initialSelectedIndex = selectedIndex as Int,
+                    initialLockState = lockState as EntryLockState,
+                    wasEverDifferent = wasEverDifferent as Boolean,
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun rememberDropdownState(
+        initialSelectedIndex: Int = 0,
+        initialLockState: EntryLockState = EntryLockState.UNLOCKED,
+    ): DropdownState {
+        return rememberSaveable(saver = DropdownState.Saver) {
+            DropdownState(
+                initialSelectedIndex = initialSelectedIndex,
+                initialLockState = initialLockState,
+            )
+        }
+    }
 }
 
 @Composable
 fun EntryFormScope.MultiTextSection(
-    state: EntryFormSection.MultiText,
+    state: EntryForm2.PendingTextState,
     headerText: @Composable () -> Unit,
     focusRequester: FocusRequester,
-    trailingIcon: (EntryFormSection.MultiText.Entry) -> Pair<ImageVector, StringResource>?,
-    entryPredictions: suspend (String) -> Flow<List<EntryFormSection.MultiText.Entry>>,
-    onNavigate: (EntryFormSection.MultiText.Entry) -> Unit,
     onFocusChanged: (Boolean) -> Unit,
+    entryPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
+    trailingIcon: (EntryForm2.MultiTextState.Entry) -> Pair<ImageVector, StringResource>?,
+    onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit,
+    items: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
+    onItemCommitted: (EntryForm2.MultiTextState.Entry) -> Unit,
+    removeLastItem: () -> String?,
 ) {
-    val onNewEntry: (EntryFormSection.MultiText.Entry) -> Unit = {
+    val onNewEntry: (EntryForm2.MultiTextState.Entry) -> Unit = {
         Snapshot.withMutableSnapshot {
-            state.content += it
-            state.pendingNewValue = TextFieldValue("")
+            onItemCommitted(it)
+            state.pendingValue.edit { this.delete(0, length) }
         }
     }
     SectionHeader(
         text = headerText,
         lockState = state.lockState,
         onClick = {
-            val newValue = state.pendingNewValue.text
+            val newValue = state.pendingValue.text
             if (newValue.isNotBlank()) {
                 // TODO: Unify trim logic somewhere
-                onNewEntry(EntryFormSection.MultiText.Entry.Custom(newValue.trim()))
+                onNewEntry(EntryForm2.MultiTextState.Entry.Custom(newValue.trim().toString()))
             }
-            state.lockState = state.lockState.rotateLockState(
-                wasEverDifferent = state.initialLockState == EntryFormSection.LockState.DIFFERENT,
-            )
+            state.rotateLockState()
         }
     )
 
     val focusManager = LocalFocusManager.current
-    state.content.forEachIndexed { index, value ->
+    items.forEachIndexed { index, value ->
         var showOverflow by remember { mutableStateOf(false) }
         Box {
             val iconPair = trailingIcon(value)
@@ -173,7 +304,7 @@ fun EntryFormScope.MultiTextSection(
                 entry = value,
                 onValueChange = {
                     if (value.text != it) {
-                        state.content[index] = EntryFormSection.MultiText.Entry.Custom(it.trim())
+                        items[index] = EntryForm2.MultiTextState.Entry.Custom(it.trim())
                     }
                 },
                 onClickMore = { showOverflow = !showOverflow },
@@ -194,10 +325,10 @@ fun EntryFormScope.MultiTextSection(
                 show = { showOverflow },
                 onDismiss = { showOverflow = false },
                 index = index,
-                totalSize = { state.content.size },
-                onDelete = { state.content.removeAt(index) },
-                onMoveUp = { state.content.swap(index, index - 1) },
-                onMoveDown = { state.content.swap(index, index + 1) },
+                totalSize = { items.size },
+                onDelete = { items.removeAt(index) },
+                onMoveUp = { items.swap(index, index - 1) },
+                onMoveDown = { items.swap(index, index + 1) },
                 modifier = Modifier
                     .width(48.dp)
                     .align(Alignment.BottomEnd)
@@ -213,15 +344,15 @@ fun EntryFormScope.MultiTextSection(
         exit = shrinkVertically(),
     ) {
         val predictions by produceState(emptyList(), state, entryPredictions) {
-            snapshotFlow { state.pendingNewValue.text }
+            snapshotFlow { state.pendingValue.text.toString() }
                 .debounce(1.seconds)
                 .flatMapLatest(entryPredictions)
                 .collectLatest { value = it }
         }
         EntryPrefilledAutocompleteDropdown(
-            text = { state.pendingNewValue },
+            text = { state.pendingValue.text },
             predictions = { predictions },
-            showPredictions = { state.lockState.editable && state.pendingNewValue.text.isNotBlank() },
+            showPredictions = { state.lockState.editable && state.pendingValue.text.isNotBlank() },
             onPredictionChosen = onNewEntry,
             trailingIcon = {
                 val iconPair = trailingIcon(it)
@@ -234,11 +365,10 @@ fun EntryFormScope.MultiTextSection(
             },
         ) { bringIntoViewRequester ->
             OpenSectionField(
-                value = { state.pendingNewValue },
-                onValueChange = { state.pendingNewValue = it },
+                state = state.pendingValue,
                 lockState = { state.lockState },
-                totalSize = { state.content.size },
-                onLock = { state.lockState = EntryFormSection.LockState.LOCKED },
+                totalSize = { items.size },
+                onLock = { state.lockState = EntryLockState.LOCKED },
                 bringIntoViewRequester = bringIntoViewRequester,
                 focusRequester = focusRequester,
                 onFocusChanged = {
@@ -247,19 +377,20 @@ fun EntryFormScope.MultiTextSection(
                 },
                 onRemove = {
                     Snapshot.withMutableSnapshot {
-                        val removed = state.content.removeLastOrNull()
+                        val removed = removeLastItem()
                         if (removed != null) {
-                            state.pendingNewValue = TextFieldValue(
-                                text = removed.text,
-                                selection = TextRange(removed.text.length)
-                            )
+                            state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
                         }
                     }
                 },
                 onDone = {
-                    val newValue = state.pendingNewValue.text
+                    val newValue = state.pendingValue.text
                     if (newValue.isNotBlank()) {
-                        onNewEntry(EntryFormSection.MultiText.Entry.Custom(newValue.trim()))
+                        onNewEntry(
+                            EntryForm2.MultiTextState.Entry.Custom(
+                                newValue.trim().toString()
+                            )
+                        )
                     }
                 },
                 modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
@@ -317,7 +448,7 @@ private fun EntryItemDropdown(
 private fun SectionHeader(
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    lockState: EntryFormSection.LockState?,
+    lockState: EntryLockState?,
     onClick: () -> Unit = {},
 ) {
     Row(modifier.clickable(lockState != null, onClick = onClick)) {
@@ -346,24 +477,19 @@ private fun SectionHeader(
 private fun SectionHeader(
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    state: EntryFormSection,
+    state: EntryForm2.State,
 ) {
     SectionHeader(
         text = text, lockState = state.lockState,
-        onClick = {
-            state.lockState = state.lockState.rotateLockState(
-                wasEverDifferent = state.initialLockState == EntryFormSection.LockState.DIFFERENT,
-            )
-        },
+        onClick = { state.rotateLockState() },
         modifier = modifier
     )
 }
 
 @Composable
 private fun OpenSectionField(
-    value: () -> TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    lockState: () -> EntryFormSection.LockState?,
+    state: TextFieldState,
+    lockState: () -> EntryLockState?,
     totalSize: () -> Int,
     onLock: () -> Unit,
     bringIntoViewRequester: BringIntoViewRequester,
@@ -373,12 +499,9 @@ private fun OpenSectionField(
     onDone: () -> Unit,
     modifier: Modifier,
 ) {
-    // TODO: There must be a better way to intercept previous value
-    var previousValue by remember { mutableStateOf(value()) }
     val focusManager = LocalFocusManager.current
     OpenSectionField(
-        value = value,
-        onValueChange = onValueChange,
+        state = state,
         onNext = {
             if (totalSize() > 0) {
                 onLock()
@@ -386,16 +509,15 @@ private fun OpenSectionField(
             focusManager.moveFocus(FocusDirection.Next)
         },
         onBackspace = {
-            if (totalSize() > 0) {
-                if (previousValue.text.isBlank() && value().text.isBlank()) {
+            if (state.text.isBlank()) {
+                if (totalSize() > 0) {
                     onRemove()
+                    true
                 } else {
-                    // Set the next value to ensure empty eventually propagates to previous
-                    previousValue = value()
+                    focusManager.moveFocus(FocusDirection.Previous)
                 }
-                true
             } else {
-                focusManager.moveFocus(FocusDirection.Previous)
+                false
             }
         },
         onDone = onDone,
@@ -409,28 +531,35 @@ private fun OpenSectionField(
 
 @Composable
 private fun OpenSectionField(
-    value: () -> TextFieldValue,
-    onValueChange: (value: TextFieldValue) -> Unit,
-    lockState: () -> EntryFormSection.LockState?,
+    state: TextFieldState,
+    lockState: () -> EntryLockState?,
     modifier: Modifier = Modifier,
-    onNext: KeyboardActionScope.() -> Unit,
+    onNext: () -> Unit,
     onBackspace: () -> Boolean,
     onDone: () -> Unit,
 ) {
-    @Suppress("NAME_SHADOWING")
-    val value = value()
+    val isBlank by remember { derivedStateOf { state.text.isBlank() } }
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
+        state = state,
         readOnly = lockState()?.editable == false,
-        keyboardOptions = KeyboardOptions(imeAction = if (value.text.isBlank()) ImeAction.Next else ImeAction.Done),
-        keyboardActions = KeyboardActions(onNext = onNext, onDone = { onDone() }),
+        keyboardOptions = KeyboardOptions(imeAction = if (isBlank) ImeAction.Next else ImeAction.Done),
+        onKeyboardAction = {
+            if (isBlank) {
+                onNext()
+            } else {
+                onDone()
+            }
+        },
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
-            .onKeyEvent {
-                if (it.type == KeyEventType.KeyUp) {
-                    return@onKeyEvent when (it.key) {
+            .onPreviewKeyEvent {
+                if (it.type == KeyEventType.KeyDown) {
+                    when (it.key) {
+                        Key.NavigateNext -> {
+                            onNext()
+                            true
+                        }
                         Key.Backspace -> onBackspace()
                         Key.Tab, Key.Enter -> {
                             onDone()
@@ -443,20 +572,19 @@ private fun OpenSectionField(
     )
 }
 
-
 @Composable
 private fun SectionField(
     index: Int,
-    entry: EntryFormSection.MultiText.Entry,
+    entry: EntryForm2.MultiTextState.Entry,
     onValueChange: (value: String) -> Unit,
     onClickMore: () -> Unit,
     onDone: () -> Unit,
-    lockState: () -> EntryFormSection.LockState?,
+    lockState: () -> EntryLockState?,
     trailingIcon: @Composable (() -> Unit)?,
-    onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)?,
+    onNavigate: ((EntryForm2.MultiTextState.Entry) -> Unit)?,
 ) {
     when (entry) {
-        is EntryFormSection.MultiText.Entry.Custom -> CustomText(
+        is EntryForm2.MultiTextState.Entry.Custom -> CustomText(
             entry = entry,
             index = index,
             lockState = lockState,
@@ -465,7 +593,7 @@ private fun SectionField(
             onClickMore = onClickMore,
             onNavigate = onNavigate,
         )
-        is EntryFormSection.MultiText.Entry.Prefilled<*> -> PrefilledText(
+        is EntryForm2.MultiTextState.Entry.Prefilled<*> -> PrefilledText(
             entry = entry,
             index = index,
             lockState = lockState(),
@@ -473,20 +601,20 @@ private fun SectionField(
             onClickMore = onClickMore,
             onNavigate = onNavigate,
         )
-        EntryFormSection.MultiText.Entry.Different ->
+        EntryForm2.MultiTextState.Entry.Different ->
             DifferentText(lockState = lockState, index = index, onClickMore = onClickMore)
     }
 }
 
 @Composable
 private fun CustomText(
-    entry: EntryFormSection.MultiText.Entry.Custom,
+    entry: EntryForm2.MultiTextState.Entry.Custom,
     index: Int,
-    lockState: () -> EntryFormSection.LockState?,
+    lockState: () -> EntryLockState?,
     onValueChange: (String) -> Unit,
     onDone: () -> Unit,
     onClickMore: () -> Unit,
-    onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)? = null,
+    onNavigate: ((EntryForm2.MultiTextState.Entry) -> Unit)? = null,
 ) {
     val shape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
@@ -547,12 +675,12 @@ private fun CustomText(
 
 @Composable
 private fun PrefilledText(
-    entry: EntryFormSection.MultiText.Entry.Prefilled<*>,
+    entry: EntryForm2.MultiTextState.Entry.Prefilled<*>,
     index: Int,
-    lockState: EntryFormSection.LockState?,
+    lockState: EntryLockState?,
     trailingIcon: @Composable (() -> Unit)?,
     onClickMore: () -> Unit,
-    onNavigate: ((EntryFormSection.MultiText.Entry) -> Unit)?,
+    onNavigate: ((EntryForm2.MultiTextState.Entry) -> Unit)?,
 ) {
     val shape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
@@ -673,7 +801,7 @@ private fun PrefilledText(
 
 @Composable
 private fun DifferentText(
-    lockState: () -> EntryFormSection.LockState?,
+    lockState: () -> EntryLockState?,
     index: Int,
     onClickMore: () -> Unit,
 ) {
@@ -717,12 +845,12 @@ private fun DifferentText(
 
 @Composable
 private fun EntryPrefilledAutocompleteDropdown(
-    text: () -> TextFieldValue?,
-    predictions: () -> List<EntryFormSection.MultiText.Entry>,
+    text: () -> CharSequence?,
+    predictions: () -> List<EntryForm2.MultiTextState.Entry>,
     showPredictions: () -> Boolean,
-    onPredictionChosen: (EntryFormSection.MultiText.Entry) -> Unit,
+    onPredictionChosen: (EntryForm2.MultiTextState.Entry) -> Unit,
     modifier: Modifier = Modifier,
-    trailingIcon: @Composable ((EntryFormSection.MultiText.Entry) -> Unit)?,
+    trailingIcon: @Composable ((EntryForm2.MultiTextState.Entry) -> Unit)?,
     textField: @Composable ExposedDropdownMenuBoxScope.(BringIntoViewRequester) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -766,10 +894,10 @@ private fun EntryPrefilledAutocompleteDropdown(
                                 var secondaryImage: (() -> String?)? = null
                                 var secondaryImageLink: () -> String? = { null }
                                 when (entry) {
-                                    is EntryFormSection.MultiText.Entry.Custom -> {
+                                    is EntryForm2.MultiTextState.Entry.Custom -> {
                                         titleText = { entry.text }
                                     }
-                                    is EntryFormSection.MultiText.Entry.Prefilled<*> -> {
+                                    is EntryForm2.MultiTextState.Entry.Prefilled<*> -> {
                                         titleText = { entry.titleText }
                                         subtitleText = { entry.subtitleText }
                                         image = { entry.image }
@@ -777,7 +905,7 @@ private fun EntryPrefilledAutocompleteDropdown(
                                         secondaryImage = entry.secondaryImage?.let { { it } }
                                         secondaryImageLink = { entry.secondaryImageLink }
                                     }
-                                    EntryFormSection.MultiText.Entry.Different -> {
+                                    EntryForm2.MultiTextState.Entry.Different -> {
                                         titleText = { stringResource(Res.string.different) }
                                     }
                                 }.run { /*exhaust*/ }
@@ -851,7 +979,7 @@ private fun EntryPrefilledAutocompleteDropdown(
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun EntryFormScope.LongTextSection(
-    state: EntryFormSection.LongText,
+    state: EntryForm2.PendingTextState,
     headerText: @Composable () -> Unit,
     focusRequester: FocusRequester,
     onFocusChanged: (Boolean) -> Unit,
@@ -860,8 +988,7 @@ fun EntryFormScope.LongTextSection(
 
     val editable = state.lockState.editable
     OutlinedTextField(
-        value = state.value,
-        onValueChange = { state.value = it },
+        state = state.pendingValue,
         readOnly = !editable,
         modifier = Modifier
             .focusRequester(focusRequester)
@@ -876,7 +1003,7 @@ fun EntryFormScope.LongTextSection(
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun <T> EntryFormScope.DropdownSection(
-    state: EntryFormSection.Dropdown,
+    state: EntryForm2.DropdownState,
     headerText: @Composable () -> Unit,
     options: List<T>,
     optionToText: @Composable (T) -> String,
