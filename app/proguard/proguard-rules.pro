@@ -409,6 +409,12 @@
 -dontwarn libcore.icu.NativePluralRules
 -dontwarn io.ktor.client.network.sockets.SocketTimeoutException
 -dontwarn com.github.luben.zstd.Zstd
+-dontwarn internal.org.chromium.build.NativeLibraries
+-dontwarn org.chromium.base.FeatureList
+-dontwarn org.chromium.base.FeatureMap
+-dontwarn org.chromium.base.FeatureOverrides
+-dontwarn org.chromium.base.FeatureParam
+-dontwarn org.chromium.base.version_info.VersionConstantsBridgeJni
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue

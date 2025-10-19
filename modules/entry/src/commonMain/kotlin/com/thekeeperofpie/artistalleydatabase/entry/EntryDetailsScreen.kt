@@ -93,7 +93,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -247,7 +247,7 @@ object EntryDetailsScreen {
                                 }
                             },
                             modifier = Modifier
-                                .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                                .renderMaybeInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
                                 .animateEnterExit()
                                 .align(Alignment.TopStart)
                                 .background(
@@ -301,7 +301,7 @@ object EntryDetailsScreen {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                .renderMaybeInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
                 .animateEnterExit(
                     enter = slideInVertically { it * 2 },
                     // TODO: Exit doesn't work
@@ -342,7 +342,7 @@ object EntryDetailsScreen {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier
-                    .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                    .renderMaybeInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
                     .animateEnterExit(
                         enter = slideInVertically { it },
                         exit = slideOutVertically { it },

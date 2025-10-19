@@ -34,7 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.resources.pluralStringResource
@@ -90,7 +90,7 @@ object ArtEntryDetailsScreen {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
-                .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                .renderMaybeInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
                 .animateEnterExit(
                     enter = slideInVertically { it * 2 },
                     // TODO: Exit doesn't work

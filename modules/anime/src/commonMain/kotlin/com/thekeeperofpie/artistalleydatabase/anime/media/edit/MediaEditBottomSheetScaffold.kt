@@ -25,7 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeComponent
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaEditBottomSheetScaffoldComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -131,7 +131,7 @@ object MediaEditBottomSheetScaffold {
                                 .invokeOnCompletion { state.showing = false }
                         },
                         modifier = Modifier
-                            .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1.1f)
+                            .renderMaybeInSharedTransitionScopeOverlay(zIndexInOverlay = 1.1f)
                             .padding(bottom = bottomPadding),
                     )
                 }

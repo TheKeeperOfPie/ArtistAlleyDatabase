@@ -74,7 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.fadingEdgeBottom
@@ -189,7 +189,7 @@ fun CoverAndBannerHeader(
                 UpIconButton(
                     option = upIconOption,
                     modifier = Modifier
-                        .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
+                        .renderMaybeInSharedTransitionScopeOverlay(zIndexInOverlay = 1f)
                         .align(Alignment.TopStart)
                         .alpha((1f - progress).coerceAtMost(maxAlpha))
                         .clip(RoundedCornerShape(bottomEnd = 12.dp))

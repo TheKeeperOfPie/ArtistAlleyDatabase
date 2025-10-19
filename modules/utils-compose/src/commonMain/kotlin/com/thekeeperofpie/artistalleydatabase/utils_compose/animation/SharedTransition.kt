@@ -124,9 +124,9 @@ fun Modifier.skipToLookaheadSize() = withSharedTransitionScopeOrDoNothingInPrevi
 }
 
 @Composable
-fun Modifier.renderInSharedTransitionScopeOverlay(
+fun Modifier.renderMaybeInSharedTransitionScopeOverlay(
     zIndexInOverlay: Float = 0f,
-    renderInOverlay: (SharedTransitionScope.() -> Boolean)? = null,
+    renderInOverlay: (() -> Boolean)? = null,
 ): Modifier = withSharedTransitionScopeOrDoNothingInPreview {
     renderInSharedTransitionScopeOverlay(
         renderInOverlay = renderInOverlay ?: { isTransitionActive },

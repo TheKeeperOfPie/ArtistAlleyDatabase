@@ -344,5 +344,13 @@ configurations.all {
         capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
             select("com.google.guava:guava:0")
         }
+
+        // https://github.com/Kotlin/kotlinx.serialization/issues/2968#issuecomment-3356075918
+        eachDependency {
+            if (requested.module.group == "org.jetbrains.kotlinx" &&
+                requested.module.name.startsWith("kotlinx-serialization")) {
+                useVersion("1.9.0")
+            }
+        }
     }
 }

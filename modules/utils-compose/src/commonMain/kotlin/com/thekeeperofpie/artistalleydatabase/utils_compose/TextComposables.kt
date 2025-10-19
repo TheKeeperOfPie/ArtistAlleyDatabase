@@ -901,7 +901,7 @@ fun MinWidthTextField(
             enabled = enabled,
             readOnly = readOnly,
             textStyle = mergedTextStyle,
-            cursorBrush = SolidColor(colors.cursorColor(isError).value),
+            cursorBrush = SolidColor(colors.cursorColor(isError)),
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,

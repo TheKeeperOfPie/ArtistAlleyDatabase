@@ -134,7 +134,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTransitionKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.isImeVisibleKmp
@@ -267,7 +267,7 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                         color = MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.5f),
                         shape = RoundedCornerShape(topEnd = 12.dp)
                     )
-                    .renderInSharedTransitionScopeOverlay()
+                    .renderMaybeInSharedTransitionScopeOverlay()
             ) {
                 val booth = entry.booth
                 if (booth != null) {
