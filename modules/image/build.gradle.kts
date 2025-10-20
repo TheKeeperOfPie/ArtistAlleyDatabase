@@ -9,15 +9,6 @@ plugins {
 }
 
 kotlin {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyDefaultHierarchyTemplate {
-        common {
-            group("web") {
-                withJs()
-                withWasmJs()
-            }
-        }
-    }
     sourceSets {
         androidMain.dependencies {
             implementation(projects.modules.utils)

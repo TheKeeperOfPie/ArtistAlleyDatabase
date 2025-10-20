@@ -11,6 +11,7 @@ plugins {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         jvmToolchain(18)

@@ -19,16 +19,6 @@ kotlin {
 }
 
 kotlin {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyDefaultHierarchyTemplate {
-        common {
-            group("web") {
-                withJs()
-                withWasmJs()
-            }
-        }
-    }
-
     sourceSets {
         androidMain.dependencies {
             api(libs.androidx.security.crypto)

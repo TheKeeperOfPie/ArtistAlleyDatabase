@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     id("library-android")
     id("library-compose")
@@ -10,16 +8,6 @@ plugins {
 }
 
 kotlin {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyDefaultHierarchyTemplate {
-        common {
-            group("web") {
-                withJs()
-                withWasmJs()
-            }
-        }
-    }
-
     sourceSets {
         commonMain.dependencies {
             api(projects.modules.alley.data)

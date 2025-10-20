@@ -146,10 +146,6 @@ kotlin {
                 withJs()
                 withWasmJs()
             }
-            group("web") {
-                withJs()
-                withWasmJs()
-            }
         }
     }
 

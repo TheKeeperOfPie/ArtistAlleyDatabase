@@ -15,14 +15,7 @@ plugins {
 
 kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    applyDefaultHierarchyTemplate {
-        common {
-            group("web") {
-                withJs()
-                withWasmJs()
-            }
-        }
-    }
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
         val jvmMain by creating {
