@@ -10,15 +10,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
-import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,22 +35,20 @@ import artistalleydatabase.modules.art.generated.resources.art_entry_source_conv
 import artistalleydatabase.modules.art.generated.resources.art_entry_source_custom
 import artistalleydatabase.modules.art.generated.resources.art_entry_source_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_source_unknown
-import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.ForceEnabledTextField
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 object SourceDropdown {
-    private val DigitOnlyInputTransformation = object : InputTransformation {
-        override fun TextFieldBuffer.transformInput() {
-            if (!asCharSequence().all { it.isDigit() }) {
-                revertAllChanges()
-            }
+    private val DigitOnlyInputTransformation = InputTransformation {
+        if (!asCharSequence().all { it.isDigit() }) {
+            revertAllChanges()
         }
     }
 
@@ -70,7 +67,7 @@ object SourceDropdown {
     ) {
         Column {
             entryFormScope.DropdownSection(
-                state = state.dropdown,
+                state = state.dropdownState,
                 options = Option.entries,
                 headerText = { Text(stringResource(Res.string.art_entry_source_header)) },
                 optionToText = { stringResource(it.text) },
@@ -177,56 +174,68 @@ object SourceDropdown {
 
     @Stable
     class State(
-        val dropdown: EntryForm2.DropdownState,
-        val conventionState: ConventionState,
-        val customTextState: TextFieldState,
+        val dropdownState: EntryForm2.DropdownState = EntryForm2.DropdownState(),
+        val conventionState: ConventionState = ConventionState(name = ""),
+        val customTextState: TextFieldState = TextFieldState(),
     ) {
-        val lockState get() = dropdown.lockState
-        val selectedOption get() = Option.entries[dropdown.selectedIndex]
-    }
+        val lockState get() = dropdownState.lockState
+        val selectedOption get() = Option.entries[dropdownState.selectedIndex]
 
-    @Composable
-    fun rememberState(
-        initialConventionData: SourceType.Convention = SourceType.Convention(),
-        initialCustomText: String = "",
-        initialSelectedIndex: Int = 0,
-    ): State {
-        val conventionState = rememberConventionState(initialConventionData)
-        val dropdownState = EntryForm2.rememberDropdownState(initialSelectedIndex)
-        val customTextState = rememberTextFieldState(initialText = initialCustomText)
-        return remember(dropdownState, conventionState) {
-            State(
-                dropdown = dropdownState,
-                conventionState = conventionState,
-                customTextState = customTextState,
+        object Saver : ComposeSaver<State, Any> {
+            override fun SaverScope.save(value: State) = listOf(
+                with(EntryForm2.DropdownState.Saver) { save(value.dropdownState) },
+                with(ConventionState.Saver) { save(value.conventionState) },
+                with(TextFieldState.Saver) { save(value.customTextState) },
             )
+
+            override fun restore(value: Any): State {
+                val (dropdown, conventionState, customTextState) = value as List<*>
+                return State(
+                    dropdownState = with(EntryForm2.DropdownState.Saver) { restore(dropdown!!) }!!,
+                    conventionState = with(ConventionState.Saver) { restore(conventionState!!) },
+                    customTextState = with(TextFieldState.Saver) { restore(customTextState!!) }!!,
+                )
+            }
         }
     }
 
     @Stable
     class ConventionState(
-        val name: TextFieldState,
-        val year: TextFieldState,
-        val hall: TextFieldState,
-        val booth: TextFieldState,
-    )
-}
-
-@Composable
-private fun rememberConventionState(
-    initialConventionData: SourceType.Convention,
-): SourceDropdown.ConventionState {
-    val name = rememberTextFieldState(initialConventionData.name)
-    val year = rememberTextFieldState(initialConventionData.year?.toString().orEmpty())
-    val hall = rememberTextFieldState(initialConventionData.hall)
-    val booth = rememberTextFieldState(initialConventionData.booth)
-    return remember(name, year, hall, booth) {
-        SourceDropdown.ConventionState(
-            name = name,
-            year = year,
-            hall = hall,
-            booth = booth,
+        val name: TextFieldState = TextFieldState(),
+        val year: TextFieldState = TextFieldState(),
+        val hall: TextFieldState = TextFieldState(),
+        val booth: TextFieldState = TextFieldState(),
+    ) {
+        constructor(
+            name: String = "",
+            year: String = "",
+            hall: String = "",
+            booth: String = "",
+        ) : this(
+            name = TextFieldState(name),
+            year = TextFieldState(year),
+            hall = TextFieldState(hall),
+            booth = TextFieldState(booth),
         )
+
+        object Saver : ComposeSaver<ConventionState, Any> {
+            override fun SaverScope.save(value: ConventionState) = listOf(
+                with(TextFieldState.Saver) { save(value.name) },
+                with(TextFieldState.Saver) { save(value.year) },
+                with(TextFieldState.Saver) { save(value.hall) },
+                with(TextFieldState.Saver) { save(value.booth) },
+            )
+
+            override fun restore(value: Any): ConventionState {
+                val (name, year, hall, booth) = value as List<*>
+                return ConventionState(
+                    name = with(TextFieldState.Saver) { restore(name!!) }!!,
+                    year = with(TextFieldState.Saver) { restore(year!!) }!!,
+                    hall = with(TextFieldState.Saver) { restore(hall!!) }!!,
+                    booth = with(TextFieldState.Saver) { restore(booth!!) }!!,
+                )
+            }
+        }
     }
 }
 
@@ -235,11 +244,15 @@ private fun rememberConventionState(
 private fun Convention() {
     EntryForm2 {
         SourceDropdown(
-            state = SourceDropdown.rememberState(
-                initialSelectedIndex = SourceDropdown.Option.entries.indexOf(SourceDropdown.Option.CONVENTION),
-                initialConventionData = SourceType.Convention(),
-                initialCustomText = "",
-            ),
+            state = remember {
+                SourceDropdown.State(
+                    dropdownState = EntryForm2.DropdownState(
+                        initialSelectedIndex = SourceDropdown.Option.entries.indexOf(
+                            SourceDropdown.Option.CONVENTION
+                        )
+                    )
+                )
+            },
             focusRequester = remember { FocusRequester() },
             onFocusChanged = {},
         )
@@ -250,7 +263,10 @@ private fun Convention() {
 @Composable
 private fun ConventionLocked() {
     SourceDropdown.ConventionSection(
-        state = rememberConventionState(SourceType.Convention(name = "Anime Expo", year = 2025)),
+        state = SourceDropdown.ConventionState(
+            name = "Anime Expo",
+            year = "2025",
+        ),
         lockState = { EntryLockState.LOCKED },
     )
 }
@@ -259,9 +275,7 @@ private fun ConventionLocked() {
 @Composable
 private fun ConventionLockedSecondRow() {
     SourceDropdown.ConventionSection(
-        state = rememberConventionState(
-            SourceType.Convention(hall = "Artist Alley", booth = "C39")
-        ),
+        state = SourceDropdown.ConventionState(hall = "Artist Alley", booth = "C39"),
         lockState = { EntryLockState.LOCKED },
     )
 }
@@ -271,11 +285,16 @@ private fun ConventionLockedSecondRow() {
 private fun Custom() {
     EntryForm2 {
         SourceDropdown(
-            state = SourceDropdown.rememberState(
-                initialConventionData = SourceType.Convention(),
-                initialSelectedIndex = SourceDropdown.Option.entries.indexOf(SourceDropdown.Option.CUSTOM),
-                initialCustomText = "Some custom source entry",
-            ),
+            state = remember {
+                SourceDropdown.State(
+                    dropdownState = EntryForm2.DropdownState(
+                        initialSelectedIndex = SourceDropdown.Option.entries.indexOf(
+                            SourceDropdown.Option.CUSTOM
+                        )
+                    ),
+                    customTextState = TextFieldState("Some custom source entry")
+                )
+            },
             focusRequester = remember { FocusRequester() },
             onFocusChanged = {},
         )

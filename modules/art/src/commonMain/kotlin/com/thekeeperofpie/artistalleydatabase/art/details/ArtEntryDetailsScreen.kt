@@ -26,15 +26,18 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.art.generated.resources.Res
+import artistalleydatabase.modules.art.generated.resources.art_entry_artists_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_characters_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_notes_header
 import artistalleydatabase.modules.art.generated.resources.art_entry_series_header
+import artistalleydatabase.modules.art.generated.resources.art_entry_tags_header
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryComponent
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.animateEnterExit
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.resources.pluralStringResource
@@ -59,6 +62,11 @@ object ArtEntryDetailsScreen {
                 seriesPredictions = viewModel::series,
                 characters = viewModel.characters,
                 characterPredictions = { _ -> viewModel.characterPredictions },
+                artists = viewModel.artists,
+                artistPredictions = { _ -> viewModel.artistPredictions },
+                tags = viewModel.tags,
+                tagPredictions = { _ -> viewModel.tagPredictions },
+                sourceState = viewModel.sourceState,
                 bottomSheetState = scaffoldState.bottomSheetState,
                 onEvent = onEvent,
                 modifier = Modifier.weight(1f, fill = false)
@@ -76,6 +84,11 @@ object ArtEntryDetailsScreen {
         seriesPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
         characters: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
         characterPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
+        artists: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
+        artistPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
+        tags: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
+        tagPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
+        sourceState: SourceDropdown.State,
         bottomSheetState: SheetState,
         onEvent: (Event) -> Unit,
         modifier: Modifier = Modifier,
@@ -141,10 +154,50 @@ object ArtEntryDetailsScreen {
                     removeLastItem = { characters.removeLastOrNull()?.text },
                 )
 
-                SourceDropdown(
-                    state = SourceDropdown.rememberState(),
+                MultiTextSection(
+                    state = state.artists,
+                    headerText = {
+                        Text(
+                            pluralStringResource(
+                                Res.plurals.art_entry_artists_header,
+                                artists.size,
+                            )
+                        )
+                    },
                     focusRequester = focusRequester,
                     onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
+                    trailingIcon = { null },
+                    entryPredictions = artistPredictions,
+                    onNavigate = { onEvent(Event.Navigate(it)) },
+                    items = artists,
+                    onItemCommitted = { artists += it },
+                    removeLastItem = { artists.removeLastOrNull()?.text },
+                )
+
+                SourceDropdown(
+                    state = sourceState,
+                    focusRequester = focusRequester,
+                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
+                )
+
+                MultiTextSection(
+                    state = state.tags,
+                    headerText = {
+                        Text(
+                            pluralStringResource(
+                                Res.plurals.art_entry_tags_header,
+                                tags.size,
+                            )
+                        )
+                    },
+                    focusRequester = focusRequester,
+                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
+                    trailingIcon = { null },
+                    entryPredictions = tagPredictions,
+                    onNavigate = { onEvent(Event.Navigate(it)) },
+                    items = tags,
+                    onItemCommitted = { tags += it },
+                    removeLastItem = { tags.removeLastOrNull()?.text },
                 )
 
                 LongTextSection(
@@ -164,22 +217,28 @@ object ArtEntryDetailsScreen {
     class State(
         val series: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
         val characters: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
+        val artists: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
+        val tags: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
         val notes: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
     ) {
-        object Saver : androidx.compose.runtime.saveable.Saver<State, Any> {
-            override fun SaverScope.save(value: State): Any? {
+        object Saver : ComposeSaver<State, Any> {
+            override fun SaverScope.save(value: State): List<Any?> {
                 return listOf(
                     with(EntryForm2.PendingTextState.Saver) { save(value.series) },
                     with(EntryForm2.PendingTextState.Saver) { save(value.characters) },
+                    with(EntryForm2.PendingTextState.Saver) { save(value.artists) },
+                    with(EntryForm2.PendingTextState.Saver) { save(value.tags) },
                     with(EntryForm2.PendingTextState.Saver) { save(value.notes) },
                 )
             }
 
-            override fun restore(value: Any): State? {
-                val (series, characters, notes) = value as List<*>
+            override fun restore(value: Any): State {
+                val (series, characters, artists, tags, notes) = value as List<*>
                 return State(
                     series = with(EntryForm2.PendingTextState.Saver) { restore(series!!) }!!,
                     characters = with(EntryForm2.PendingTextState.Saver) { restore(characters!!) }!!,
+                    artists = with(EntryForm2.PendingTextState.Saver) { restore(artists!!) }!!,
+                    tags = with(EntryForm2.PendingTextState.Saver) { restore(tags!!) }!!,
                     notes = with(EntryForm2.PendingTextState.Saver) { restore(notes!!) }!!,
                 )
             }
@@ -201,6 +260,11 @@ private fun ArtEntryDetailsScreenPreview() {
         seriesPredictions = { flowOf(emptyList()) },
         characters = remember { SnapshotStateList() },
         characterPredictions = { flowOf(emptyList()) },
+        artists = remember { SnapshotStateList() },
+        artistPredictions = { flowOf(emptyList()) },
+        tags = remember { SnapshotStateList() },
+        tagPredictions = { flowOf(emptyList()) },
+        sourceState = remember { SourceDropdown.State() },
         bottomSheetState = rememberStandardBottomSheetState(),
         onEvent = {},
     )

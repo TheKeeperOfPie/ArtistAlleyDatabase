@@ -11,6 +11,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.enums.enumEntries
 
+typealias ComposeSaver<Original, Saveable> = androidx.compose.runtime.saveable.Saver<Original, Saveable>
+
 @OptIn(InternalSerializationApi::class)
 object StateUtils {
 

@@ -105,6 +105,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.swap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -159,15 +160,13 @@ object EntryForm2 {
         var pendingFocused by mutableStateOf(initialPendingFocused)
         override var lockState by mutableStateOf(initialLockState)
 
-        object Saver : androidx.compose.runtime.saveable.Saver<PendingTextState, Any> {
-            override fun SaverScope.save(value: PendingTextState): Any? {
-                return listOf(
-                    with(TextFieldState.Saver) { save(value.pendingValue) },
-                    value.pendingFocused,
-                    value.lockState,
-                    value.wasEverDifferent,
-                )
-            }
+        object Saver : ComposeSaver<PendingTextState, Any> {
+            override fun SaverScope.save(value: PendingTextState) = listOf(
+                with(TextFieldState.Saver) { save(value.pendingValue) },
+                value.pendingFocused,
+                value.lockState,
+                value.wasEverDifferent,
+            )
 
             override fun restore(value: Any): PendingTextState? {
                 val (pendingValue, pendingFocused, lockState, wasEverDifferent) = value as List<*>
@@ -228,7 +227,7 @@ object EntryForm2 {
         var selectedIndex by mutableIntStateOf(initialSelectedIndex)
         override var lockState by mutableStateOf(initialLockState)
 
-        object Saver : androidx.compose.runtime.saveable.Saver<DropdownState, Any> {
+        object Saver : ComposeSaver<DropdownState, Any> {
             override fun SaverScope.save(value: DropdownState): Any? {
                 return listOf(
                     value.selectedIndex,
@@ -581,7 +580,7 @@ private fun SectionField(
     onDone: () -> Unit,
     lockState: () -> EntryLockState?,
     trailingIcon: @Composable (() -> Unit)?,
-    onNavigate: ((EntryForm2.MultiTextState.Entry) -> Unit)?,
+    onNavigate: (() -> Unit)?,
 ) {
     when (entry) {
         is EntryForm2.MultiTextState.Entry.Custom -> CustomText(
@@ -614,7 +613,7 @@ private fun CustomText(
     onValueChange: (String) -> Unit,
     onDone: () -> Unit,
     onClickMore: () -> Unit,
-    onNavigate: ((EntryForm2.MultiTextState.Entry) -> Unit)? = null,
+    onNavigate: (() -> Unit)? = null,
 ) {
     val shape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
@@ -630,7 +629,7 @@ private fun CustomText(
         trailingIcon = {
             Row {
                 if (onNavigate != null) {
-                    IconButton(onClick = { onNavigate(entry) }) {
+                    IconButton(onClick = onNavigate) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                             contentDescription = stringResource(
@@ -680,7 +679,7 @@ private fun PrefilledText(
     lockState: EntryLockState?,
     trailingIcon: @Composable (() -> Unit)?,
     onClickMore: () -> Unit,
-    onNavigate: ((EntryForm2.MultiTextState.Entry) -> Unit)?,
+    onNavigate: (() -> Unit)?,
 ) {
     val shape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
@@ -723,7 +722,7 @@ private fun PrefilledText(
         trailingIcon?.invoke()
 
         if (onNavigate != null) {
-            IconButton(onClick = { onNavigate(entry) }) {
+            IconButton(onClick = onNavigate) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                     contentDescription = stringResource(
