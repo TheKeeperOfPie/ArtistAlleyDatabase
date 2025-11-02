@@ -119,21 +119,13 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("ArtistAlleyWasm")
-        browser {
-            commonWebpackConfig {
-                outputFileName = "composeApp-wasm.js"
-            }
-        }
+        browser()
         binaries.executable()
     }
 
     js {
         outputModuleName.set("ArtistAlleyJs")
-        browser {
-            commonWebpackConfig {
-                outputFileName = "composeApp-js.js"
-            }
-        }
+        browser()
         binaries.executable()
     }
 
@@ -151,11 +143,6 @@ kotlin {
 
     compilerOptions {
         jvmToolchain(18)
-        sourceSets.all {
-            languageSettings {
-                languageSettings.optIn("kotlin.RequiresOptIn")
-            }
-        }
         freeCompilerArgs.add("-Xcontext-receivers")
 //        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
@@ -206,6 +193,12 @@ kotlin {
                 implementation(projects.modules.alley.data)
             }
         }
+        jsMain.dependencies {
+            implementation(libs.jetBrainsCompose.ui.backhandler)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.jetBrainsCompose.ui.backhandler)
+        }
     }
 }
 
@@ -226,21 +219,18 @@ dependencies {
 }
 
 val buildBothWebVariants by tasks.registering(Sync::class) {
-    val wasmDist = "wasmJsBrowserDistribution"
-    val jsDist = "jsBrowserDistribution"
+    val taskName = "composeCompatibilityBrowserDistribution"
 
-    dependsOn(wasmDist, jsDist)
+    dependsOn(taskName)
 
-    from(tasks.named(jsDist).get().outputs.files)
-    from(tasks.named(wasmDist).get().outputs.files)
-
+    from(tasks.named(taskName).get().outputs.files)
     into(layout.buildDirectory.dir("dist/web/productionExecutable"))
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 val copyServiceWorkerOutput: TaskProvider<Copy> by tasks.registering(Copy::class) {
-    dependsOn(buildBothWebVariants)
+    dependsOn("buildBothWebVariants")
     from(serviceWorkerOutput)
     into(project.layout.buildDirectory.dir("dist/web/productionExecutable"))
 }

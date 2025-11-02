@@ -70,8 +70,8 @@ object Versions {
         }
 
         object composeMultiplatform {
-            const val plugin = "1.10.0-alpha02"
-            const val runtime = "1.10.0-alpha02"
+            const val plugin = "1.10.0-alpha03"
+            const val runtime = "1.10.0-alpha03"
         }
     }
 

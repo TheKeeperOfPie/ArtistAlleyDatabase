@@ -15,17 +15,21 @@ kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         jvmToolchain(18)
-        sourceSets.all {
-            languageSettings {
-                languageSettings.optIn("kotlin.RequiresOptIn")
-            }
-        }
-        freeCompilerArgs.add("-Xcontext-parameters")
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-        freeCompilerArgs.add("-Xjspecify-annotations=strict")
-        freeCompilerArgs.add("-Xtype-enhancement-improvements-strict-mode")
-        optIn.add("kotlin.time.ExperimentalTime")
-        optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
+        freeCompilerArgs.addAll(
+            listOf(
+                "-Xcontext-parameters",
+                "-Xexpect-actual-classes",
+                "-Xjspecify-annotations=strict",
+                "-Xtype-enhancement-improvements-strict-mode",
+            )
+        )
+        optIn.addAll(
+            listOf(
+                "androidx.compose.material3.ExperimentalMaterial3Api",
+                "kotlin.js.ExperimentalWasmJsInterop",
+                "kotlin.time.ExperimentalTime",
+            )
+        )
     }
 
     sourceSets {

@@ -151,11 +151,6 @@ kotlin {
     jvm("desktop")
     compilerOptions {
         jvmToolchain(18)
-        sourceSets.all {
-            languageSettings {
-                languageSettings.optIn("kotlin.RequiresOptIn")
-            }
-        }
         freeCompilerArgs.add("-Xcontext-receivers")
         optIn.add("kotlin.time.ExperimentalTime")
     }

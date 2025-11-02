@@ -9,8 +9,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.backhandler.BackGestureDispatcher
-import androidx.compose.ui.backhandler.LocalBackGestureDispatcher
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -30,14 +28,12 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
-import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 
@@ -107,18 +103,18 @@ private fun Content(
 
         val navHostController = rememberNavController()
         val navigationController = rememberNavigationController(navHostController)
-        val backGestureDispatcher = remember { WasmJsBackGestureDispatcher() }
-        LaunchedEffect(backGestureDispatcher, keyEvents) {
-            while (isActive) {
+        LaunchedEffect(keyEvents) {
+            while (true) {
                 val event = keyEvents.receive()
-                backGestureDispatcher.onKeyboardEvent(event)
+                if (event.key == "Escape") {
+                    navigationController.popBackStack()
+                }
             }
         }
 
         CompositionLocalProvider(
             LocalWindowConfiguration provides windowConfiguration,
             LocalNavigationController provides navigationController,
-            LocalBackGestureDispatcher provides backGestureDispatcher,
         ) {
             val rootSnackbarHostState = remember { SnackbarHostState() }
             val waitingMessage = stringResource(Res.string.service_worker_waiting_for_reload)
@@ -153,22 +149,6 @@ private fun Content(
             LaunchedEffect(navHostController, deepLinker) {
                 bindToNavigationFixed(navHostController, deepLinker)
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-private class WasmJsBackGestureDispatcher : BackGestureDispatcher() {
-    fun onKeyboardEvent(event: WrappedKeyboardEvent) {
-        if (event.key == "Escape") {
-            onBack()
-        }
-    }
-
-    private fun onBack() {
-        activeListener?.let {
-            it.onStarted()
-            it.onCompleted()
         }
     }
 }
