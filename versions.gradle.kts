@@ -67,6 +67,7 @@ object Versions {
         object androidX {
             const val lifecycle = "2.10.0-alpha02"
             const val navigation = "2.9.1"
+            const val navigationevent = "1.0.0-alpha02"
         }
 
         object composeMultiplatform {
@@ -292,9 +293,10 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 prefix("jetBrainsAndroidX") {
                     with(Versions.jetBrains.androidX) {
-                        library("org.jetbrains.androidx.navigation:navigation-compose:$navigation")
                         library("org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:$lifecycle")
                         library("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle")
+                        library("org.jetbrains.androidx.navigation:navigation-compose:$navigation")
+                        library("org.jetbrains.androidx.navigationevent:navigationevent-compose:$navigationevent")
                     }
                 }
 

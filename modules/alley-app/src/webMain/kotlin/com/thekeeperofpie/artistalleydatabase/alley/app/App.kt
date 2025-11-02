@@ -32,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfigura
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
@@ -45,7 +44,7 @@ expect suspend fun bindToNavigationFixed(
 private lateinit var artistImageCache: ArtistImageCache
 
 @Composable
-fun App(component: ArtistAlleyWebComponent, keyEvents: Channel<WrappedKeyboardEvent>) {
+fun App(component: ArtistAlleyWebComponent) {
     artistImageCache = component.artistImageCache
 
     SingletonImageLoader.setSafe { context ->
@@ -80,15 +79,12 @@ fun App(component: ArtistAlleyWebComponent, keyEvents: Channel<WrappedKeyboardEv
         }
     }
 
-    Content(component, keyEvents)
+    Content(component)
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalBrowserHistoryApi::class)
 @Composable
-private fun Content(
-    component: ArtistAlleyWebComponent,
-    keyEvents: Channel<WrappedKeyboardEvent>,
-) {
+private fun Content(component: ArtistAlleyWebComponent) {
     val deepLinker = component.deepLinker
     val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
     AlleyAppTheme(appTheme = { appTheme }) {
@@ -103,14 +99,6 @@ private fun Content(
 
         val navHostController = rememberNavController()
         val navigationController = rememberNavigationController(navHostController)
-        LaunchedEffect(keyEvents) {
-            while (true) {
-                val event = keyEvents.receive()
-                if (event.key == "Escape") {
-                    navigationController.popBackStack()
-                }
-            }
-        }
 
         CompositionLocalProvider(
             LocalWindowConfiguration provides windowConfiguration,

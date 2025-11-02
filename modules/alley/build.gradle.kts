@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.human.readable)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
+            implementation(libs.jetBrainsAndroidX.navigationevent.compose)
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.paging.common)
             implementation(libs.paging.compose)

@@ -172,6 +172,7 @@ kotlin {
 
                 implementation(libs.coil3.coil.compose)
                 implementation(libs.jetBrainsAndroidX.navigation.compose)
+                implementation(libs.jetBrainsAndroidX.navigationevent.compose)
                 implementation(libs.kermit)
                 implementation(libs.kotlin.inject.runtime.kmp)
             }
