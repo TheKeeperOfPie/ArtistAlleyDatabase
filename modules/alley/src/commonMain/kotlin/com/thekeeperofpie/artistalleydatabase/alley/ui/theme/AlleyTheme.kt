@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.app
+package com.thekeeperofpie.artistalleydatabase.alley.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -87,7 +87,7 @@ private val darkScheme = darkColorScheme(
 )
 
 @Composable
-fun AlleyAppTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit) {
+fun AlleyTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit) {
     val systemInDarkTheme = isSystemInDarkTheme()
     val appTheme = appTheme()
     val colorScheme = when (appTheme) {

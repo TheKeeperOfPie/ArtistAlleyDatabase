@@ -25,6 +25,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
+import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
-            AlleyAppTheme(appTheme = { appTheme }) {
+            AlleyTheme(appTheme = { appTheme }) {
                 val navHostController = rememberNavController()
                 val navigationController = rememberNavigationController(navHostController)
                 CompositionLocalProvider(

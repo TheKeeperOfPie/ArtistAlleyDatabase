@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.commons.csv)
     implementation(libs.commons.io)
     implementation(libs.compose.compiler.gradle.plugin)
+    implementation(libs.dev.zacsweers.metro.gradle.plugin)
     implementation(libs.gradle)
     implementation(libs.jetBrainsCompose.compose.gradle.plugin)
     implementation(libs.kotlinx.io.core)

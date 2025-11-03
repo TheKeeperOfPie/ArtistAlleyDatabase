@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.app
+package com.thekeeperofpie.artistalleydatabase.alley.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

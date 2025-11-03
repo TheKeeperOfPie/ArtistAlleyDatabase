@@ -97,6 +97,7 @@ object Versions {
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2025.1.27"
     const val markwon = "4.6.2"
+    const val metro = "0.7.3"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.2.0"
     const val multiplatformMarkdown = "0.38.0-b01"
@@ -140,6 +141,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.google.devtools.ksp").version(Versions.kotlin.ksp)
                 plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
                 plugin("dev.iurysouza.modulegraph").version(Versions.moduleGraph)
+                plugin("dev.zacsweers.metro").version(Versions.metro)
                 plugin("io.ktor.plugin").version(Versions.ktor)
                 plugin("org.jetbrains.compose").version(Versions.jetBrains.composeMultiplatform.plugin)
                 plugin("org.jetbrains.kotlin.android").version(Versions.kotlin.core)
@@ -360,6 +362,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.squareup.okio:okio-fakefilesystem:${Versions.okio}")
                 library("com.unity3d.ads:unity-ads:${Versions.unityAds}")
                 library("de.charlex.compose:html-text:${Versions.htmlText}")
+                library("dev.zacsweers.metro:dev.zacsweers.metro.gradle.plugin:${Versions.metro}")
                 library("io.fluidsonic.country:fluid-country:${Versions.fluidI18n}")
                 library("io.fluidsonic.i18n:fluid-i18n:${Versions.fluidI18n}")
                 library("io.github.hoc081098:FlowExt:${Versions.flowExt}")

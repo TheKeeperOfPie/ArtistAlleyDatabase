@@ -10,10 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.platform.Font
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.ExperimentalBrowserHistoryApi
 import androidx.navigation.NavHostController
@@ -28,6 +25,8 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
+import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
+import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -64,21 +63,7 @@ fun App(component: ArtistAlleyWebComponent) {
             .build()
     }
 
-    val fontFamilyResolver = LocalFontFamilyResolver.current
-    LaunchedEffect(Unit) {
-        try {
-            val fonts = listOf(
-                "NotoSansJP-VariableFont_wght.ttf",
-                "NotoSansKR-VariableFont_wght.ttf",
-                "NotoSansSC-VariableFont_wght.ttf",
-            ).map {
-                Font(it, Res.readBytes("font/$it"))
-            }
-            fontFamilyResolver.preload(FontFamily(fonts))
-        } catch (_: Throwable) {
-        }
-    }
-
+    VariableFontEffect()
     Content(component)
 }
 
@@ -87,7 +72,7 @@ fun App(component: ArtistAlleyWebComponent) {
 private fun Content(component: ArtistAlleyWebComponent) {
     val deepLinker = component.deepLinker
     val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
-    AlleyAppTheme(appTheme = { appTheme }) {
+    AlleyTheme(appTheme = { appTheme }) {
         val windowSize = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current
         val windowConfiguration = remember(windowSize, density) {

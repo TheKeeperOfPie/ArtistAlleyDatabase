@@ -32,6 +32,7 @@
             <option value="$PROJECT_DIR$/modules/alley" />
             <option value="$PROJECT_DIR$/modules/alley-app" />
             <option value="$PROJECT_DIR$/modules/alley-app/service-worker" />
+            <option value="$PROJECT_DIR$/modules/alley-edit" />
             <option value="$PROJECT_DIR$/modules/alley/data" />
             <option value="$PROJECT_DIR$/modules/alley/user" />
             <option value="$PROJECT_DIR$/modules/anilist" />
