@@ -53,6 +53,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUnique
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -74,8 +78,6 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Clock
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -476,8 +478,8 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
         }
     }
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val mediaListStatusController: MediaListStatusController,
         private val activityStatusController: ActivityStatusController,
@@ -508,5 +510,10 @@ class AniListUserViewModel<ActivityEntry : Any, MediaWithListStatusEntry : Any, 
             mediaCompactWithTagsEntryProvider = mediaCompactWithTagsEntryProvider,
             studioEntryProvider = studioEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(savedStateHandle: SavedStateHandle): TypedFactory
+        }
     }
 }

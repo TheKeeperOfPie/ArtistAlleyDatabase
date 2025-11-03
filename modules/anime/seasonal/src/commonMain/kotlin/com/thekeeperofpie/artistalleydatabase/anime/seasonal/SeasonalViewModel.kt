@@ -39,6 +39,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -50,8 +54,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @Inject
@@ -160,8 +162,8 @@ class SeasonalViewModel<MediaEntry : Any>(
         }
     }
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val settings: MediaDataSettings,
         private val ignoreController: IgnoreController,
@@ -187,5 +189,10 @@ class SeasonalViewModel<MediaEntry : Any>(
             filterMedia = filterMedia,
             mediaEntryProvider = mediaEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(savedStateHandle: SavedStateHandle): TypedFactory
+        }
     }
 }

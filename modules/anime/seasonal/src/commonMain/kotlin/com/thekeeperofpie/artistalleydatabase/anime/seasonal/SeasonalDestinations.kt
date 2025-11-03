@@ -61,7 +61,7 @@ object SeasonalDestinations {
         navGraphBuilder.sharedElementComposable<Seasonal>(navigationTypeMap) {
             val sortFilterViewModel = sortFilterViewModelProvider()
             val viewModel = viewModel {
-                component.seasonalViewModelFactory(createSavedStateHandle())
+                component.seasonalViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(
                         mediaEntryProvider = mediaEntryProvider,
                         filterParams = filterParams(sortFilterViewModel),

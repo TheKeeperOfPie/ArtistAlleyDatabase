@@ -12,6 +12,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
@@ -20,10 +23,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class ArtistSeriesViewModel(
     dispatchers: CustomDispatchers,
     navigationTypeMap: NavigationTypeMap,
@@ -73,5 +74,10 @@ class ArtistSeriesViewModel(
 
     fun onFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
         mutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): ArtistSeriesViewModel
     }
 }

@@ -7,13 +7,14 @@ import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListResponseCodeCoercingInterceptor
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
 @Inject
-@SingletonScope
+@SingleIn(AppScope::class)
 class AlleyAniListApi(networkClient: NetworkClient) {
 
     private val client = ApolloClient.Builder()

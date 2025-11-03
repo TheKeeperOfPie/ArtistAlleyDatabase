@@ -12,15 +12,17 @@ import com.anilist.data.MediaDetailsQuery
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class AnimeSongsViewModel(
     private val animeSongsProvider: AnimeSongsProvider? = null,
     val mediaPlayer: MediaPlayer,
@@ -112,5 +114,10 @@ class AnimeSongsViewModel(
     fun animeSongsCollapseAll() {
         animeSongStates.forEach { it.value.setExpanded(false) }
         mediaPlayer.pause(null)
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(media: Flow<MediaDetailsQuery.Data.Media?>): AnimeSongsViewModel
     }
 }

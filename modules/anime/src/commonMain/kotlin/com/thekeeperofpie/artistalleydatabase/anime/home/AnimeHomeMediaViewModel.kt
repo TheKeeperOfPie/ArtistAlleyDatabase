@@ -45,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,8 +57,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import artistalleydatabase.modules.anime.search.generated.resources.Res as SearchRes
 

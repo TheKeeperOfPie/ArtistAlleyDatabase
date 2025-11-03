@@ -16,6 +16,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,11 +31,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class AnimeMediaDetailsForumThreadsViewModel(
     private val aniListApi: AuthedAniListApi,
     private val threadStatusController: ForumThreadStatusController,
@@ -92,4 +93,11 @@ class AnimeMediaDetailsForumThreadsViewModel(
     }
 
     fun requestLoad() = barrier.tryEmit(true)
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            media: Flow<MediaDetailsQuery.Data.Media?>
+        ): AnimeMediaDetailsForumThreadsViewModel
+    }
 }

@@ -15,12 +15,12 @@ import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import dev.zacsweers.metro.Inject
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 import kotlinx.io.writeString
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 
 @Inject

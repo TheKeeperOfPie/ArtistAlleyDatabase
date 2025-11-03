@@ -28,8 +28,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementComposable
+import dev.zacsweers.metro.Assisted
 import kotlinx.serialization.Serializable
-import me.tatarka.inject.annotations.Assisted
 
 object NotificationDestinations {
 

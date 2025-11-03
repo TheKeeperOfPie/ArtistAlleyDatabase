@@ -10,16 +10,17 @@ import com.eygraber.uri.toAndroidUri
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.toUri
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UtilsStrings
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.io.asOutputStream
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 // TODO: Use viewModelScope
-@Inject
+@AssistedInject
 actual class CropController(
     private val application: Application,
     private val appFileSystem: AppFileSystem,
@@ -29,6 +30,16 @@ actual class CropController(
     companion object {
         private const val TAG = "CropController"
     }
+
+    actual constructor(
+        params: CropControllerParams,
+        scope: CoroutineScope,
+    ) : this(
+        application = params.application,
+        appFileSystem = params.appFileSystem,
+        settings = params.settings,
+        scope = scope,
+    )
 
     val cropState = CropStateImpl()
 
@@ -161,3 +172,10 @@ actual class CropController(
         }
     }
 }
+
+@Inject
+actual class CropControllerParams(
+    internal val application: Application,
+    internal val appFileSystem: AppFileSystem,
+    internal val settings: CropSettings,
+)

@@ -23,9 +23,11 @@ object AnimeNewsDestinations {
         navGraphBuilder.sharedElementComposable<AnimeNewsDestinations.News>(navigationTypeMap) {
             val navigationController = LocalNavigationController.current
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
-            val newsSortFilterViewModel =
-                viewModel { component.newsSortFilterViewModel(createSavedStateHandle()) }
-            val viewModel = viewModel { component.animeNewsViewModel(newsSortFilterViewModel) }
+            val newsSortFilterViewModel = viewModel {
+                component.newsSortFilterViewModelFactory.create(createSavedStateHandle())
+            }
+            val viewModel =
+                viewModel { component.animeNewsViewModelFactory.create(newsSortFilterViewModel) }
             AnimeNewsScreen(
                 viewModel = viewModel,
                 sortFilterState = newsSortFilterViewModel.state,

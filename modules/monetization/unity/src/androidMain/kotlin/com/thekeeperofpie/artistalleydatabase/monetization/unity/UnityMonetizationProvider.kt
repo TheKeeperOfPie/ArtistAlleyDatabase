@@ -22,7 +22,7 @@ import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.UnityAds
 import com.unity3d.services.banners.BannerView
 import com.unity3d.services.banners.UnityBannerSize
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 import org.jetbrains.compose.resources.StringResource
 
 @Inject

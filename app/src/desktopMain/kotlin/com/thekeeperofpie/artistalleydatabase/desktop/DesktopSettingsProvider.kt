@@ -12,13 +12,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkCat
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class DesktopSettingsProvider : AppSettings {
 

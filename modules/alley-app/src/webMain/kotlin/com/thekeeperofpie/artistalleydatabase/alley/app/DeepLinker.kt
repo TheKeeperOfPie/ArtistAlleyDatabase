@@ -3,11 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.app
 import androidx.navigation.NavController
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class DeepLinker(private val artistEntryDao: ArtistEntryDao) {
 

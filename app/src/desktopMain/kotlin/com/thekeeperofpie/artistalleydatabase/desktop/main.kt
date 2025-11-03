@@ -52,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
+import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
@@ -82,7 +83,7 @@ fun main() {
             }
         }
         val scope = rememberCoroutineScope { Dispatchers.Main }
-        val desktopComponent = DesktopComponent::class.create(scope)
+        val desktopComponent = createGraphFactory<DesktopComponent.Factory>().create(scope)
         val settings = desktopComponent.settingsProvider
 
         SingletonImageLoader.setSafe { context ->

@@ -23,11 +23,12 @@ import androidx.compose.ui.window.Dialog
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.full_image_content_description
 import coil3.compose.AsyncImage
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import org.jetbrains.compose.resources.stringResource
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class FullscreenImageHandler {
 

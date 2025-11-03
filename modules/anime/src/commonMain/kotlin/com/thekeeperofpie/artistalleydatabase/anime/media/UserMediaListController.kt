@@ -29,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
@@ -39,6 +38,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,7 +64,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Clock
 
 /**
@@ -73,7 +74,7 @@ import kotlin.time.Clock
  * implemented.
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class UserMediaListController(
     private val appFileSystem: AppFileSystem,

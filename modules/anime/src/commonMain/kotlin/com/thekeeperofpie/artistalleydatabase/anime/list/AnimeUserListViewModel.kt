@@ -30,6 +30,10 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -42,20 +46,18 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class AnimeUserListViewModel(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     val ignoreController: IgnoreController,
     private val userMediaListController: UserMediaListController,
     private val mediaListStatusController: MediaListStatusController,
-    @Assisted val userId: String?,
-    @Assisted userName: String?,
+    @Assisted("userId") val userId: String?,
+    @Assisted("userName") userName: String?,
     @Assisted val mediaType: MediaType,
     @Assisted val mediaListStatus: MediaListStatus?,
     @Assisted val mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
@@ -378,4 +380,15 @@ class AnimeUserListViewModel(
         val all: List<MediaEntry>,
         val lists: List<ListEntry>,
     )
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("userId") userId: String?,
+            @Assisted("userName") userName: String?,
+            mediaType: MediaType,
+            mediaListStatus: MediaListStatus?,
+            mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
+        ): AnimeUserListViewModel
+    }
 }

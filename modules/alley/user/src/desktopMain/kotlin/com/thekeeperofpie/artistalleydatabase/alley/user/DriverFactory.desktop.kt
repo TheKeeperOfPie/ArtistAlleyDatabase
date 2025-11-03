@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.user
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import artistalleydatabase.modules.alley.data.generated.resources.Res
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import java.nio.file.Files
 

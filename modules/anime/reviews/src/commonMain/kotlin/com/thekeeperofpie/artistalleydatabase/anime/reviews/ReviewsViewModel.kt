@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.reviews
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -18,6 +19,10 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -26,8 +31,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
@@ -106,15 +109,15 @@ class ReviewsViewModel<MediaEntry>(
         }
     }
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val settings: MediaDataSettings,
         private val featureOverrideProvider: FeatureOverrideProvider,
         private val mediaListStatusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
-        @Assisted private val animeSortFilterViewModel: ReviewsSortFilterViewModel,
-        @Assisted private val mangaSortFilterViewModel: ReviewsSortFilterViewModel,
+        @Assisted("anime") private val animeSortFilterViewModel: ReviewsSortFilterViewModel,
+        @Assisted("manga") private val mangaSortFilterViewModel: ReviewsSortFilterViewModel,
     ) {
         fun <MediaEntry> create(
             mediaEntryProvider: MediaEntryProvider<MediaCompactWithTags, MediaEntry>,
@@ -128,5 +131,13 @@ class ReviewsViewModel<MediaEntry>(
             animeSortFilterViewModel = animeSortFilterViewModel,
             mangaSortFilterViewModel = mangaSortFilterViewModel,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(
+                @Assisted("anime") animeSortFilterViewModel: ReviewsSortFilterViewModel,
+                @Assisted("manga") mangaSortFilterViewModel: ReviewsSortFilterViewModel,
+            ): TypedFactory
+        }
     }
 }

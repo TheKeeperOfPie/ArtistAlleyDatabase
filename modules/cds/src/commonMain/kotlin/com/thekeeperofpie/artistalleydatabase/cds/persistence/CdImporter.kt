@@ -6,12 +6,12 @@ import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImporter
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.decodeSequenceIgnoreEndOfFile
+import dev.zacsweers.metro.Inject
 import kotlinx.io.Source
 import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.io.indexOf
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class CdImporter(

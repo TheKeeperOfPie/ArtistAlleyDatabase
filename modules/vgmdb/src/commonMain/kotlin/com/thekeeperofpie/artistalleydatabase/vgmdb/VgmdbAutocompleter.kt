@@ -3,19 +3,20 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 import androidx.annotation.WorkerThread
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class VgmdbAutocompleter(
     private val vgmdbApi: VgmdbApi,

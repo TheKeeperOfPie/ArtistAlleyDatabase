@@ -7,18 +7,19 @@ import com.anilist.data.fragment.MediaCompactWithTags
 import com.anilist.data.fragment.MediaPreview
 import com.anilist.data.fragment.MediaWithListStatus
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class IgnoreController(
     private val scope: ApplicationScope,

@@ -14,14 +14,17 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbUtils
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -29,9 +32,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class CdBrowseTabMusicalArtists(
     musicalArtistDao: MusicalArtistDao,

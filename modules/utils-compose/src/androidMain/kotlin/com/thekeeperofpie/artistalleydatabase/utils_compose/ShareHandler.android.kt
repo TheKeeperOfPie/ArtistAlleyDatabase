@@ -9,9 +9,9 @@ import com.eygraber.uri.Uri
 import com.eygraber.uri.toAndroidUriOrNull
 import com.thekeeperofpie.artistalleydatabase.inject.ActivityScope
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import dev.zacsweers.metro.Inject
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
-import me.tatarka.inject.annotations.Inject
 import java.io.File
 
 @ActivityScope

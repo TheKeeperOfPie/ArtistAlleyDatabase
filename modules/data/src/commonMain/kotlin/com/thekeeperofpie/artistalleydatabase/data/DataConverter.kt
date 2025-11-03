@@ -2,10 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.data
 
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class DataConverter(
     private val aniListDataConverter: AniListDataConverter

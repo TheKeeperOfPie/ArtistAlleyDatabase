@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionContr
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -28,7 +29,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 import java.util.WeakHashMap
 
 @Inject

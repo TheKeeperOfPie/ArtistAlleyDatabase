@@ -5,13 +5,15 @@ import artistalleydatabase.modules.anime.news.generated.resources.anime_news_err
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.anime.news.ann.ANIME_NEWS_NETWORK_ATOM_URL_PREFIX
 import com.thekeeperofpie.artistalleydatabase.anime.news.cr.CRUNCHYROLL_NEWS_RSS_URL
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
@@ -24,10 +26,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class AnimeNewsController(
     private val scope: ApplicationScope,

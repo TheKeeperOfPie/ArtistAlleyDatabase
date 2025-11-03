@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusCo
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.utils.SimpleResult
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,7 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Clock
 import kotlin.time.Instant
 

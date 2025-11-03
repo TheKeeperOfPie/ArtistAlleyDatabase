@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.Provides
 
 interface AppComponent {
     val settings: AnimeSettings
@@ -27,39 +27,39 @@ interface AppComponent {
     val markdown: Markdown
     val fullscreenImageHandler: FullscreenImageHandler
 
-    val AppSettings.bindAniListSettings: AniListSettings
-        @Provides get() = this
+    @Provides
+    fun bindAniListSettings(appSettings: AppSettings): AniListSettings = appSettings
 
-    val AppSettings.bindAnimeSettings: AnimeSettings
-        @Provides get() = this
+    @Provides
+    fun bindAnimeSettings(appSettings: AppSettings): AnimeSettings = appSettings
 
-    val AppSettings.bindArtSettings: ArtSettings
-        @Provides get() = this
+    @Provides
+    fun bindArtSettings(appSettings: AppSettings): ArtSettings = appSettings
 
-    val AppSettings.bindCharacterSettings: CharacterSettings
-        @Provides get() = this
+    @Provides
+    fun bindCharacterSettings(appSettings: AppSettings): CharacterSettings = appSettings
 
-    val AppSettings.bindCropSettings: CropSettings
-        @Provides get() = this
+    @Provides
+    fun bindCropSettings(appSettings: AppSettings): CropSettings = appSettings
 
-    val AppSettings.bindHistorySettings: HistorySettings
-        @Provides get() = this
+    @Provides
+    fun bindHistorySettings(appSettings: AppSettings): HistorySettings = appSettings
 
-    val AppSettings.bindIgnoreSettings: IgnoreSettings
-        @Provides get() = this
+    @Provides
+    fun bindIgnoreSettings(appSettings: AppSettings): IgnoreSettings = appSettings
 
-    val AppSettings.bindMediaDataSettings: MediaDataSettings
-        @Provides get() = this
+    @Provides
+    fun bindMediaDataSettings(appSettings: AppSettings): MediaDataSettings = appSettings
 
-    val AppSettings.bindMonetizationSettings: MonetizationSettings
-        @Provides get() = this
+    @Provides
+    fun bindMonetizationSettings(appSettings: AppSettings): MonetizationSettings = appSettings
 
-    val AppSettings.bindNewsSettings: NewsSettings
-        @Provides get() = this
+    @Provides
+    fun bindNewsSettings(appSettings: AppSettings): NewsSettings = appSettings
 
-    val AppSettings.bindNetworkSettings: NetworkSettings
-        @Provides get() = this
+    @Provides
+    fun bindNetworkSettings(appSettings: AppSettings): NetworkSettings = appSettings
 
-    val AppSettings.bindStaffSettings: StaffSettings
-        @Provides get() = this
+    @Provides
+    fun bindStaffSettings(appSettings: AppSettings): StaffSettings = appSettings
 }

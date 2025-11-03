@@ -15,6 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -23,13 +26,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class ArtistMapViewModel(
     artistEntryDao: ArtistEntryDao,
     seriesEntryCache: SeriesEntryCache,
@@ -82,5 +83,10 @@ class ArtistMapViewModel(
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
         mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): ArtistMapViewModel
     }
 }

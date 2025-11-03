@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class AnimeRootViewModel(

@@ -11,6 +11,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.paging.AniListPager
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +24,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class UserSocialViewModel<T : Any>(
@@ -58,7 +59,7 @@ abstract class UserSocialViewModel<T : Any>(
         return data
     }
 
-    @Inject
+    @AssistedInject
     class Following(aniListApi: AuthedAniListApi, @Assisted userId: String?) :
         UserSocialViewModel<UserSocialFollowingQuery.Data.Page.Following>(
             aniListApi = aniListApi,
@@ -69,9 +70,15 @@ abstract class UserSocialViewModel<T : Any>(
                 }
             },
             userId,
-        )
+        ) {
 
-    @Inject
+        @AssistedFactory
+        interface Factory {
+            fun create(userId: String?): Following
+        }
+    }
+
+    @AssistedInject
     class Followers(aniListApi: AuthedAniListApi, @Assisted userId: String?) :
         UserSocialViewModel<UserSocialFollowersQuery.Data.Page.Follower>(
             aniListApi = aniListApi,
@@ -82,5 +89,11 @@ abstract class UserSocialViewModel<T : Any>(
                 }
             },
             userId,
-        )
+        ) {
+
+        @AssistedFactory
+        interface Factory {
+            fun create(userId: String?): Followers
+        }
+    }
 }

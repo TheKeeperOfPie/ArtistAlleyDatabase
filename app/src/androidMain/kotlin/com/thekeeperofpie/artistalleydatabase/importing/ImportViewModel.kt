@@ -17,13 +17,13 @@ import artistalleydatabase.app.generated.resources.import_last_canceled
 import artistalleydatabase.app.generated.resources.import_last_failed
 import artistalleydatabase.app.generated.resources.invalid_import_source
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 
 @Inject

@@ -8,14 +8,15 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityOptionsCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class PlatformOAuthStore(
     application: Application,

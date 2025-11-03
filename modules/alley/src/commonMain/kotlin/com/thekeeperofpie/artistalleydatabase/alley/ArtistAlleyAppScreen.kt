@@ -104,7 +104,7 @@ object ArtistAlleyAppScreen {
                             ) {
                                 val route = it.toRoute<Destinations.ArtistDetails>()
                                 val viewModel = viewModel {
-                                    component.artistDetailsViewModel(createSavedStateHandle())
+                                    component.artistDetailsViewModelFactory.create(createSavedStateHandle())
                                 }
                                 val catalog by viewModel.catalog.collectAsStateWithLifecycle()
                                 val images = catalog.result?.images.orEmpty()
@@ -226,7 +226,9 @@ object ArtistAlleyAppScreen {
 
                             sharedElementComposable<Destinations.ArtistsList>(navigationTypeMap) {
                                 val viewModel = viewModel {
-                                    component.artistSearchViewModel(createSavedStateHandle())
+                                    component.artistSearchViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 ArtistSearchScreen(
                                     viewModel = viewModel,
@@ -240,10 +242,13 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel {
-                                    component.artistMapViewModel(createSavedStateHandle())
+                                    component.artistMapViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
-                                val mapViewModel =
-                                    viewModel { component.mapViewModel(createSavedStateHandle()) }
+                                val mapViewModel = viewModel {
+                                    component.mapViewModelFactory.create(createSavedStateHandle())
+                                }
                                 ArtistMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
@@ -256,7 +261,9 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel {
-                                    component.imagesViewModel(createSavedStateHandle())
+                                    component.imagesViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 val route = it.toRoute<Destinations.Images>()
                                 val imagePagerState = rememberImagePagerState(
@@ -291,7 +298,9 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel {
-                                    component.stampRallySearchViewModel(createSavedStateHandle())
+                                    component.stampRallySearchViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 StampRallySearchScreen(
                                     viewModel = viewModel,
@@ -306,7 +315,7 @@ object ArtistAlleyAppScreen {
                             ) {
                                 val route = it.toRoute<Destinations.StampRallyDetails>()
                                 val viewModel = viewModel {
-                                    component.stampRallyDetailsViewModel(
+                                    component.stampRallyDetailsViewModelFactory.create(
                                         createSavedStateHandle()
                                     )
                                 }
@@ -398,10 +407,13 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel {
-                                    component.stampRallyMapViewModel(createSavedStateHandle())
+                                    component.stampRallyMapViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
-                                val mapViewModel =
-                                    viewModel { component.mapViewModel(createSavedStateHandle()) }
+                                val mapViewModel = viewModel {
+                                    component.mapViewModelFactory.create(createSavedStateHandle())
+                                }
                                 StampRallyMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
@@ -419,10 +431,14 @@ object ArtistAlleyAppScreen {
                             ) {
                                 val route = it.toRoute<Destinations.Series>()
                                 val viewModel = viewModel {
-                                    component.artistSearchViewModel(createSavedStateHandle())
+                                    component.artistSearchViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 val seriesViewModel = viewModel {
-                                    component.artistSeriesViewModel(createSavedStateHandle())
+                                    component.artistSeriesViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 val hasRallies by viewModel.hasRallies.collectAsStateWithLifecycle()
                                 ArtistSeriesScreen(
@@ -456,10 +472,14 @@ object ArtistAlleyAppScreen {
                             ) {
                                 val route = it.toRoute<Destinations.Merch>()
                                 val viewModel = viewModel {
-                                    component.artistSearchViewModel(createSavedStateHandle())
+                                    component.artistSearchViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 val merchViewModel = viewModel {
-                                    component.artistMerchViewModel(createSavedStateHandle())
+                                    component.artistMerchViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 ArtistMerchScreen(
                                     artistSearchViewModel = viewModel,
@@ -479,10 +499,12 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel {
-                                    component.tagMapViewModel(createSavedStateHandle())
+                                    component.tagMapViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 val mapViewModel = viewModel {
-                                    component.mapViewModel(createSavedStateHandle())
+                                    component.mapViewModelFactory.create(createSavedStateHandle())
                                 }
                                 TagMapScreen(
                                     viewModel = viewModel,
@@ -496,10 +518,13 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel {
-                                    component.tagMapViewModel(createSavedStateHandle())
+                                    component.tagMapViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
-                                val mapViewModel =
-                                    viewModel { component.mapViewModel(createSavedStateHandle()) }
+                                val mapViewModel = viewModel {
+                                    component.mapViewModelFactory.create(createSavedStateHandle())
+                                }
                                 TagMapScreen(
                                     viewModel = viewModel,
                                     mapViewModel = mapViewModel,
@@ -512,7 +537,9 @@ object ArtistAlleyAppScreen {
                                 navigationTypeMap = navigationTypeMap,
                             ) {
                                 val viewModel = viewModel {
-                                    component.importViewModel(createSavedStateHandle())
+                                    component.importViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 val navigationController = LocalNavigationController.current
                                 ImportScreen(

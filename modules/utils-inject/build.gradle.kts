@@ -2,14 +2,7 @@ plugins {
     id("library-android")
     id("library-desktop")
     id("library-web")
-}
-
-kotlin {
-    sourceSets {
-        commonMain.dependencies {
-            implementation(libs.kotlin.inject.runtime.kmp)
-        }
-    }
+    alias(libs.plugins.dev.zacsweers.metro)
 }
 
 kotlin {

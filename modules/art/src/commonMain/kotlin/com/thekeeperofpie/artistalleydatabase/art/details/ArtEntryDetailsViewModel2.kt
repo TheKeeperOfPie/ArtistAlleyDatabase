@@ -11,15 +11,17 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class, SavedStateHandleSaveableApi::class)
-@Inject
+@AssistedInject
 class ArtEntryDetailsViewModel2(
     private val artEntryDao: ArtEntryDetailsDao,
     internal val autocompleter: AniListAutocompleter2,
@@ -61,4 +63,9 @@ class ArtEntryDetailsViewModel2(
 
     suspend fun series(query: String) =
         autocompleter.series(query, artEntryDao::querySeries)
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): ArtEntryDetailsViewModel2
+    }
 }

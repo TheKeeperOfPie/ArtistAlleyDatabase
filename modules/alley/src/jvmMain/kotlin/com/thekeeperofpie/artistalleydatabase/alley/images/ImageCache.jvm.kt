@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.images
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class ImageCache {
     actual suspend fun cache(urls: Collection<String>) {

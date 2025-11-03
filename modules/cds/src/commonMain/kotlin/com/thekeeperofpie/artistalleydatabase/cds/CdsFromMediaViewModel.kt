@@ -9,13 +9,14 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class CdsFromMediaViewModel(
     appFileSystem: AppFileSystem,
     cdEntryDao: CdEntryDao,
@@ -32,5 +33,10 @@ class CdsFromMediaViewModel(
                     .map { CdEntryGridModel.buildFromEntry(appFileSystem, it) }
             }
         }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(mediaId: String): CdsFromMediaViewModel
     }
 }

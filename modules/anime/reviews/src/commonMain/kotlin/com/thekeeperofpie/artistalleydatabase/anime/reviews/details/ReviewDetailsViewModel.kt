@@ -20,6 +20,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableCo
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,11 +33,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class ReviewDetailsViewModel(
     private val aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
@@ -105,5 +107,10 @@ class ReviewDetailsViewModel(
             null -> ReviewRating.NO_VOTE
         }
         userRatingUpdates.tryEmit(rating)
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): ReviewDetailsViewModel
     }
 }

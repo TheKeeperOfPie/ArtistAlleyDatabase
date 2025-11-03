@@ -1,10 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class PlatformOAuthStore {
     // TODO

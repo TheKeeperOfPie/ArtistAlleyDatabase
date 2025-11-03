@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +41,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.DateTimePeriod
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Duration.Companion.seconds
 

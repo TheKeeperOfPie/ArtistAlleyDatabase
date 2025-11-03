@@ -20,6 +20,9 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
@@ -29,8 +32,6 @@ import kotlinx.io.files.Path
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import okhttp3.internal.closeQuietly
 import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
@@ -41,7 +42,7 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.AbstractExecutorService
 import java.util.concurrent.TimeUnit
 
-@Inject
+@AssistedInject
 class ExportWorker(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
@@ -183,5 +184,10 @@ class ExportWorker(
                 privateExportDir.deleteRecursively()
             }
         }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(appContext: Context, params: WorkerParameters): ExportWorker
     }
 }

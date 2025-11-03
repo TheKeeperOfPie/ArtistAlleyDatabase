@@ -8,13 +8,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.ImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageType
 import com.thekeeperofpie.artistalleydatabase.alley.user.ImageEntry
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlin.time.Clock
-import kotlin.time.Instant
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class SeriesImagesStore(
     private val aniListApi: AlleyAniListApi,

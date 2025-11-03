@@ -1,7 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyComponent
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 interface ArtistAlleyAppComponent : ArtistAlleyComponent

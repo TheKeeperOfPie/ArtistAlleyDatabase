@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
@@ -25,6 +26,10 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.PagingUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -42,8 +47,6 @@ import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -191,8 +194,8 @@ class AiringScheduleViewModel<MediaEntry : Any>(
 
     fun refresh() = refresh.refresh()
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val settings: MediaDataSettings,
         private val statusController: MediaListStatusController,
@@ -211,5 +214,12 @@ class AiringScheduleViewModel<MediaEntry : Any>(
             airingScheduleSortFilterViewModel = airingScheduleSortFilterViewModel,
             mediaEntryProvider = mediaEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(
+                airingScheduleSortFilterViewModel: AiringScheduleSortFilterViewModel
+            ): TypedFactory
+        }
     }
 }

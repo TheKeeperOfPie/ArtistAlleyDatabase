@@ -27,6 +27,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -34,8 +36,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject

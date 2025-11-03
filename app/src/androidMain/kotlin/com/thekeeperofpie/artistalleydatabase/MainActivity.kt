@@ -102,6 +102,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
+import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -130,7 +131,7 @@ class MainActivity : ComponentActivity() {
     private val workManager by lazy { applicationComponent.workManager }
 
     private val activityComponent by lazy {
-        ActivityComponent::class.create(applicationComponent, this)
+        applicationComponent.activityComponentFactory.create(this)
     }
     private val appUpdateChecker by lazy { activityComponent.injector.appUpdateChecker }
     private val monetizationProvider by lazy { activityComponent.injector.monetizationProvider }

@@ -9,13 +9,15 @@ import artistalleydatabase.modules.anilist.generated.resources.Res
 import artistalleydatabase.modules.anilist.generated.resources.aniList_oAuth_error
 import artistalleydatabase.modules.anilist.generated.resources.aniList_oAuth_error_bad_url
 import com.eygraber.uri.Uri
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 
-@Inject
+@AssistedInject
 class AniListOAuthViewModel(
     private val oAuthStore: PlatformOAuthStore,
     @Assisted text: String?,
@@ -72,5 +74,10 @@ class AniListOAuthViewModel(
         data object Loading : State
         data object Done : State
         data class Error(val textRes: StringResource, val exception: Exception? = null) : State
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(text: String?): AniListOAuthViewModel
     }
 }

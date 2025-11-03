@@ -70,9 +70,7 @@ kotlin {
 }
 
 metro {
-    interop {
-        includeKotlinInject()
-    }
+    generateAssistedFactories.set(true)
 }
 
 configurations.all {

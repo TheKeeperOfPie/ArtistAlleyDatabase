@@ -1,11 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.musical_artists
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 
 interface MusicalArtistComponent {
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideMusicalArtistDao(database: MusicalArtistDatabase) = database.musicalArtistDao()
+    fun provideMusicalArtistDao(database: MusicalArtistDatabase): MusicalArtistDao =
+        database.musicalArtistDao()
 }

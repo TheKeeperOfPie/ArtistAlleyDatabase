@@ -15,13 +15,14 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 
-@Inject
+@AssistedInject
 class MediaRecommendationsSortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
@@ -69,4 +70,9 @@ class MediaRecommendationsSortFilterViewModel(
         val sort: RecommendationSortOption,
         val sortAscending: Boolean,
     )
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): MediaRecommendationsSortFilterViewModel
+    }
 }

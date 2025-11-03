@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.createGraph
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -9,7 +10,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class EntryDetailsTestBase {
 
-    private val component = EntryTestComponent::class.create()
+    private val component = createGraph<EntryTestComponent>()
 
     internal fun TestScope.testViewModel(
         hasError: Boolean = false,

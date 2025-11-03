@@ -7,27 +7,17 @@ val Project.kspProcessors: VersionCatalog
 plugins {
     id("library-kotlin")
     id("library-desktop")
-    id("com.google.devtools.ksp")
+    id("dev.zacsweers.metro")
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":modules:utils-inject"))
-            libs.find(
-                "libs.kotlin.inject.runtime.kmp",
-            ).forEach(::implementation)
         }
     }
 }
 
-dependencies {
-    kspProcessors.find(
-        "kspProcessors.kotlin.inject.compiler.ksp",
-    ).forEach {
-        add("kspCommonMainMetadata", it)
-
-        // KSP doesn't work for commonTest, so all tests will be under desktopTest
-        add("kspDesktopTest", it)
-    }
+metro {
+    generateAssistedFactories.set(true)
 }

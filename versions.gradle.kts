@@ -91,7 +91,6 @@ object Versions {
         const val serialization = "1.9.0"
     }
 
-    const val kotlinInject = "0.8.0"
     const val ktor = "3.3.1"
     const val ksoup = "0.2.5"
     const val leakCanary = "3.0-alpha-8"
@@ -125,7 +124,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 with(Versions.androidx) {
                     library("androidx.room:room-compiler:$room")
                 }
-                library("me.tatarka.inject:kotlin-inject-compiler-ksp:${Versions.kotlinInject}")
             }
 
             create("libs") {
@@ -370,7 +368,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.github.vinceglb:filekit-dialogs-compose:${Versions.fileKit}")
                 library("io.github.alexzhirkevich:qrose:${Versions.qrose}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
-                library("me.tatarka.inject:kotlin-inject-runtime-kmp:${Versions.kotlinInject}")
                 library("nl.jacobras:Human-Readable:${Versions.humanReadable}")
                 library("org.awaitility:awaitility:${Versions.awaitility}")
                 library("org.chromium.net:cronet-embedded:${Versions.cronetEmbedded}")

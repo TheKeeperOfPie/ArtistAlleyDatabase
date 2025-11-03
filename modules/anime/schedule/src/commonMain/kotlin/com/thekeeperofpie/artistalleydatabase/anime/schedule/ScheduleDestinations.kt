@@ -40,10 +40,11 @@ object ScheduleDestinations {
     ) {
         navGraphBuilder.sharedElementComposable<AiringSchedule>(navigationTypeMap) {
             val airingScheduleSortFilterViewModel = viewModel {
-                component.airingScheduleSortFilterViewModel(createSavedStateHandle())
+                component.airingScheduleSortFilterViewModelFactory.create(createSavedStateHandle())
             }
             val viewModel = viewModel {
-                component.airingScheduleViewModelFactory(airingScheduleSortFilterViewModel)
+                component.airingScheduleViewModelFactoryFactory
+                    .create(airingScheduleSortFilterViewModel)
                     .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()

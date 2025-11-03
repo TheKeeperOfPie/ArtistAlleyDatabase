@@ -11,8 +11,8 @@ import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ShareHandler
+import dev.zacsweers.metro.Inject
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ChooserViewModel(

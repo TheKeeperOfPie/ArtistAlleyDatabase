@@ -17,10 +17,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class AniListDataConverter(
     private val aniListJson: AniListJson

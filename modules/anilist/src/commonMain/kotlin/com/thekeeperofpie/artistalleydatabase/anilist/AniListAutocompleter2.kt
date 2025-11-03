@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import androidx.collection.LruCache
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import co.touchlab.kermit.Logger
@@ -14,9 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -35,11 +36,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class AniListAutocompleter2(
     private val aniListJson: AniListJson,

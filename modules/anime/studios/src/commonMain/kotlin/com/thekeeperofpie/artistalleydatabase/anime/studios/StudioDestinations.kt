@@ -65,10 +65,11 @@ object StudioDestinations {
         ) {
             val destination = it.toRoute<StudioMedias>()
             val studioMediaSortFilterViewModel = viewModel {
-                component.studioMediaSortFilterViewModel(createSavedStateHandle())
+                component.studioMediaSortFilterViewModelFactory.create(createSavedStateHandle())
             }
             val viewModel = viewModel {
-                component.studioMediasViewModelFactory(createSavedStateHandle(), studioMediaSortFilterViewModel)
+                component.studioMediasViewModelFactoryFactory
+                    .create(createSavedStateHandle(), studioMediaSortFilterViewModel)
                     .create(mediaEntryProvider)
             }
 

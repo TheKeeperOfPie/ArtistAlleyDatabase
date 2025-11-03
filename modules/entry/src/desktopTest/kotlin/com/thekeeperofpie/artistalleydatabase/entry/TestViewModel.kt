@@ -3,10 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

@@ -15,6 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.characters.data.CharacterUti
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,11 +27,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class AnimeMediaDetailsCharactersViewModel(
     private val aniListApi: AuthedAniListApi,
     @Assisted mediaId: String,
@@ -77,5 +78,13 @@ class AnimeMediaDetailsCharactersViewModel(
                 .cachedIn(viewModelScope)
                 .collectLatest(charactersDeferred::emit)
         }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            mediaId: String,
+            characters: Flow<MediaDetailsQuery.Data.Media.Characters?>,
+        ): AnimeMediaDetailsCharactersViewModel
     }
 }

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendations
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.data.MediaDetailsQuery
@@ -14,6 +15,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.applyMediaFilteri
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,8 +26,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
@@ -116,8 +119,8 @@ class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
         val entry: MediaEntry,
     )
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val mediaListStatusController: MediaListStatusController,
         private val recommendationStatusController: RecommendationStatusController,
@@ -138,5 +141,10 @@ class AnimeMediaDetailsRecommendationsViewModel<MediaEntry>(
             recommendations = recommendations,
             mediaEntryProvider = mediaEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(mediaId: String): TypedFactory
+        }
     }
 }

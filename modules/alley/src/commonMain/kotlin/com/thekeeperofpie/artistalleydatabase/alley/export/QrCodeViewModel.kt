@@ -6,11 +6,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ImportExportUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.readString
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class QrCodeViewModel(

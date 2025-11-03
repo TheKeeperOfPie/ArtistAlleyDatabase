@@ -1,16 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Provides
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 interface VgmdbComponent {
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideAlbumEntryDao(database: VgmdbDatabase) = database.albumEntryDao()
+    fun provideAlbumEntryDao(database: VgmdbDatabase): AlbumEntryDao = database.albumEntryDao()
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideArtistEntryDao(database: VgmdbDatabase) = database.artistEntryDao()
+    fun provideArtistEntryDao(database: VgmdbDatabase): VgmdbArtistDao = database.artistEntryDao()
 }

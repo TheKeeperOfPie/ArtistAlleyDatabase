@@ -6,9 +6,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetArtistFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -18,11 +20,10 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 import org.w3c.fetch.Request
 import org.w3c.workers.Cache
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, private val userEntryDao: UserEntryDao) {
 

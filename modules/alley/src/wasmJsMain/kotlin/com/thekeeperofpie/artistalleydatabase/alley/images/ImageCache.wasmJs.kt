@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.images
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -9,15 +11,14 @@ import kotlinx.coroutines.await
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
-import me.tatarka.inject.annotations.Inject
 import org.w3c.fetch.Request
 import org.w3c.workers.Cache
+import kotlin.time.Clock
 
 // Must keep in sync with ServiceWorker.kt
 private const val MEDIA_IMAGE_CACHE = "media-image-v1"
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class ImageCache(
     private val imageEntryDao: ImageEntryDao,

@@ -34,6 +34,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -50,12 +53,10 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(SavedStateHandleSaveableApi::class, FlowPreview::class, ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class ArtistDetailsViewModel(
     private val artistEntryDao: ArtistEntryDao,
     private val dispatchers: CustomDispatchers,
@@ -218,5 +219,10 @@ class ArtistDetailsViewModel(
         val stampRallies: List<StampRallyEntry>,
     ) {
         var favorite by mutableStateOf(userEntry.favorite)
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): ArtistDetailsViewModel
     }
 }

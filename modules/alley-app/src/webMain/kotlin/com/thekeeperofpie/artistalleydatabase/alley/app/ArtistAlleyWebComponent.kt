@@ -10,9 +10,9 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import dev.zacsweers.metro.DependencyGraph
+import dev.zacsweers.metro.Provides
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.tatarka.inject.annotations.Component
-import me.tatarka.inject.annotations.Provides
 
 expect class ArtistAlleyWebSettings : ArtistAlleySettings {
     override val appTheme: MutableStateFlow<AppThemeSetting>
@@ -35,14 +35,17 @@ expect class ArtistAlleyWebSettings : ArtistAlleySettings {
     override val showOutdatedCatalogs: MutableStateFlow<Boolean>
 }
 
-@Component
-abstract class ArtistAlleyWebComponent(
-    @get:Provides val scope: ApplicationScope,
-) : ArtistAlleyAppComponent {
-    abstract val appFileSystem: AppFileSystem
-    abstract val artistImageCache: ArtistImageCache
-    abstract val deepLinker: DeepLinker
+@DependencyGraph
+interface ArtistAlleyWebComponent : ArtistAlleyAppComponent {
+    val appFileSystem: AppFileSystem
+    val artistImageCache: ArtistImageCache
+    val deepLinker: DeepLinker
 
-    val ArtistAlleyWebSettings.bindArtistAlleySettings: ArtistAlleySettings
-        @Provides get() = this
+    @Provides
+    fun bindArtistAlleySettings(settings: ArtistAlleyWebSettings): ArtistAlleySettings = settings
+
+    @DependencyGraph.Factory
+    interface Factory {
+        fun create(@Provides scope: ApplicationScope): ArtistAlleyWebComponent
+    }
 }

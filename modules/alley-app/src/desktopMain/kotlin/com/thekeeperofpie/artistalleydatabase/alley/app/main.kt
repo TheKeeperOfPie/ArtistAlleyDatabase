@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfigura
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
+import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.io.asInputStream
 import okio.FileSystem
@@ -37,7 +38,7 @@ import okio.source
 fun main() {
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
-        val component = ArtistAlleyDesktopComponent::class.create(scope)
+        val component = createGraphFactory<ArtistAlleyDesktopComponent.Factory>().create(scope)
 
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)

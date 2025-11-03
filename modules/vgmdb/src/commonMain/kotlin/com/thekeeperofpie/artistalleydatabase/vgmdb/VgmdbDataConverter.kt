@@ -1,16 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
-import kotlinx.serialization.encodeToString
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class VgmdbDataConverter(
     private val vgmdbJson: VgmdbJson,

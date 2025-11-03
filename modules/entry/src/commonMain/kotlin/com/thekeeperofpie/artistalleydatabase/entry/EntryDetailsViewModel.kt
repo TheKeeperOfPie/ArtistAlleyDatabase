@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropControllerFactory
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
@@ -13,7 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import io.github.petertrr.diffutils.text.DiffRow
 import io.github.petertrr.diffutils.text.DiffRowGenerator
 import io.github.petertrr.diffutils.text.DiffTagGenerator
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,11 +31,11 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
     protected val scopedIdType: String,
     private val json: Json,
     settings: CropSettings,
-    cropControllerFunction: (CoroutineScope) -> CropController,
+    cropControllerFactory: CropControllerFactory,
     protected val customDispatchers: CustomDispatchers,
 ) : ViewModel() {
 
-    val cropController = cropControllerFunction(viewModelScope)
+    val cropController = cropControllerFactory.create(viewModelScope)
 
     val navigateUpEvents = MutableSharedFlow<Unit>()
 

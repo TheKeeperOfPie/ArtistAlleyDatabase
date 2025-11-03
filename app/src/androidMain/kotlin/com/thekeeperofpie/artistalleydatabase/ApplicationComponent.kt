@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import androidx.navigation.NavType
 import androidx.room.Room
+import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
@@ -23,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.chooser.ChooserViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.media.MediaPlayer
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
@@ -45,85 +45,93 @@ import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.work.WorkerComponent
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.DependencyGraph
+import dev.zacsweers.metro.IntoSet
+import dev.zacsweers.metro.Provider
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Component
-import me.tatarka.inject.annotations.IntoSet
-import me.tatarka.inject.annotations.Provides
 import okhttp3.OkHttpClient
 import kotlin.reflect.KType
 
-@SingletonScope
-@Component
-abstract class ApplicationComponent(
-    @get:Provides val application: Application,
-) : AppComponent, AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent,
+@SingleIn(AppScope::class)
+@DependencyGraph
+interface ApplicationComponent : AppComponent, AniListComponent, AnimeComponent, Anime2AnimeComponent, ArtEntryComponent,
     BrowseComponent, CdEntryComponent, MusicalArtistComponent, NetworkComponent, SettingsComponent,
     ApplicationVariantComponent, VgmdbComponent, WorkerComponent {
 
-    abstract val chooserViewModel: () -> ChooserViewModel
-    abstract val exportViewModel: () -> ExportViewModel
-    abstract val importViewModel: () -> ImportViewModel
+    val activityComponentFactory: ActivityComponent.Factory
 
-    abstract val appMetadataProvider: AppMetadataProvider
-    abstract val artEntryNavigator: ArtEntryNavigator
-    abstract val cdEntryNavigator: CdEntryNavigator
-    abstract val featureOverrideProvider: FeatureOverrideProvider
-    abstract val monetizationController: MonetizationController
-    abstract val navigationTypeMap: NavigationTypeMap
-    abstract val notificationsController: NotificationsController
-    abstract val platformOAuthStore: PlatformOAuthStore
-    abstract val settingsProvider: SettingsProvider
-    abstract val workManager: WorkManager
+    val chooserViewModel: Provider<ChooserViewModel>
+    val exportViewModel: Provider<ExportViewModel>
+    val importViewModel: Provider<ImportViewModel>
 
-    val AndroidSettingsProvider.bindSettingsProvider: SettingsProvider
-        @Provides get() = this
+    val appMetadataProvider: AppMetadataProvider
+    val artEntryNavigator: ArtEntryNavigator
+    val cdEntryNavigator: CdEntryNavigator
+    val featureOverrideProvider: FeatureOverrideProvider
+    val monetizationController: MonetizationController
+    val navigationTypeMap: NavigationTypeMap
+    val notificationsController: NotificationsController
+    val platformOAuthStore: PlatformOAuthStore
+    val settingsProvider: SettingsProvider
+    val workManager: WorkManager
 
-    val AndroidSettingsProvider.bindAppSettings: AppSettings
-        @Provides get() = this
-
-    val AppMonetizationOverrideProvider.bind: MonetizationOverrideProvider
-        @Provides get() = this
-
-    val AppFeatureOverrideProvider.bind: FeatureOverrideProvider
-        @Provides get() = this
-
-    val AppDatabase.bindAniListDatabase: AniListDatabase
-        @Provides get() = this
-
-    val AppDatabase.bindAnimeDatabase: AnimeDatabase
-        @Provides get() = this
-
-    val AppDatabase.bindArtEntryDatabase: ArtEntryDatabase
-        @Provides get() = this
-
-    val AppDatabase.bindCdEntryDatabase: CdEntryDatabase
-        @Provides get() = this
-
-    val AppDatabase.bindMusicalArtistDatabase: MusicalArtistDatabase
-        @Provides get() = this
-
-    val AppDatabase.bindVgmdbDatabase: VgmdbDatabase
-        @Provides get() = this
-
-    @SingletonScope
     @Provides
-    fun provideMasterKey(application: Application) =
+    fun bindSettingsProvider(settingsProvider: AndroidSettingsProvider): SettingsProvider =
+        settingsProvider
+
+    @Provides
+    fun bindAppSettings(settingsProvider: AndroidSettingsProvider): AppSettings = settingsProvider
+
+    @Provides
+    fun bindMonetizationOverrideProvider(
+        monetizationOverrideProvider: AppMonetizationOverrideProvider,
+    ): MonetizationOverrideProvider = monetizationOverrideProvider
+
+    @Provides
+    fun bindFeatureOverrideProvider(
+        featureOverrideProvider: AppFeatureOverrideProvider
+    ): FeatureOverrideProvider = featureOverrideProvider
+
+    @Provides
+    fun bindAniListDatabase(database: AppDatabase): AniListDatabase = database
+
+    @Provides
+    fun bindAnimeDatabase(database: AppDatabase): AnimeDatabase = database
+
+    @Provides
+    fun bindArtEntryDatabase(database: AppDatabase): ArtEntryDatabase = database
+
+    @Provides
+    fun bindCdEntryDatabase(database: AppDatabase): CdEntryDatabase = database
+
+    @Provides
+    fun bindMusicalArtistDatabase(database: AppDatabase): MusicalArtistDatabase = database
+
+    @Provides
+    fun bindVgmdbDatabase(database: AppDatabase): VgmdbDatabase = database
+
+    @SingleIn(AppScope::class)
+    @Provides
+    fun provideMasterKey(application: Application): MasterKey =
         CryptoUtils.masterKey(application, "AnichiveMasterKey")
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun provideApplicationScope(application: Application): ApplicationScope =
         (application as CustomApplication).scope
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideAppDatabase(application: Application) =
+    fun provideAppDatabase(application: Application): AppDatabase =
         Room.databaseBuilder(application, AppDatabase::class.java, "appDatabase")
             .fallbackToDestructiveMigrationOnDowngrade(true)
             .addMigrations(Migration_6_7)
             .build()
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider {
         override val versionCode = BuildConfig.VERSION_CODE
@@ -132,53 +140,58 @@ abstract class ApplicationComponent(
     }
 
     // TODO: Move this somewhere shared?
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideJson() = Json {
+    fun provideJson(): Json = Json {
         isLenient = true
         ignoreUnknownKeys = true
         prettyPrint = true
     }
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun provideNetworkClient(
         scope: ApplicationScope,
         application: Application,
         networkSettings: NetworkSettings,
         networkAuthProvider: NetworkAuthProvider,
-    ) = buildNetworkClient(
+    ): NetworkClient = buildNetworkClient(
         scope = scope,
         application = application,
         networkSettings = networkSettings,
         authProviders = mapOf(networkAuthProvider.host to networkAuthProvider),
     )
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideOkHttpClient(networkClient: NetworkClient) = networkClient.okHttpClient
+    fun provideOkHttpClient(networkClient: NetworkClient): OkHttpClient = networkClient.okHttpClient
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun provideMediaPlayer(
         scope: ApplicationScope,
         application: Application,
         okHttpClient: OkHttpClient,
         featureOverrideProvider: FeatureOverrideProvider,
-    ) = MediaPlayer(
+    ): MediaPlayer = MediaPlayer(
         scope = scope,
         application = application,
         okHttpClient = okHttpClient,
         enableCache = featureOverrideProvider.enableAppMediaPlayerCache,
     )
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     @IntoSet
     fun provideBaseTypeMap(): Map<KType, NavType<*>> = CustomNavTypes.baseTypeMap
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun bindsTypeMap(typeMaps: @JvmSuppressWildcards Set<Map<KType, NavType<*>>>): NavigationTypeMap =
         NavigationTypeMap(typeMaps.fold(mapOf<KType, NavType<*>>()) { acc, map -> acc + map })
+
+    @DependencyGraph.Factory
+    interface Factory {
+        fun create(@Provides application: Application): ApplicationComponent
+    }
 }

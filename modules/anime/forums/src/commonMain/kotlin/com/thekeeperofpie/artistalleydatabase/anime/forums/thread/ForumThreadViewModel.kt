@@ -37,6 +37,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -47,8 +51,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
@@ -251,8 +253,8 @@ class ForumThreadViewModel<MediaEntry>(
         }
     }
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val navigationTypeMap: NavigationTypeMap,
         private val markdown: Markdown,
@@ -279,5 +281,10 @@ class ForumThreadViewModel<MediaEntry>(
             savedStateHandle = savedStateHandle,
             mediaEntryProvider = mediaEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(savedStateHandle: SavedStateHandle): TypedFactory
+        }
     }
 }

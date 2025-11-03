@@ -97,10 +97,10 @@ object StaffDestinations {
             navigationTypeMap = navigationTypeMap,
         ) {
             val staffCharactersSortFilterViewModel = viewModel {
-                component.staffCharactersSortFilterViewModel(createSavedStateHandle())
+                component.staffCharactersSortFilterViewModelFactory.create(createSavedStateHandle())
             }
             val viewModel = viewModel {
-                component.staffCharactersViewModelFactory(
+                component.staffCharactersViewModelFactoryFactory.create(
                     createSavedStateHandle(),
                     staffCharactersSortFilterViewModel
                 ).create(characterEntryProvider, mediaEntryProvider)
@@ -141,7 +141,7 @@ object StaffDestinations {
             ),
         ) {
             val viewModel = viewModel {
-                component.staffDetailsViewModelFactory(createSavedStateHandle())
+                component.staffDetailsViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(mediaEntryProvider)
             }
             val destination = it.toRoute<StaffDetails>()

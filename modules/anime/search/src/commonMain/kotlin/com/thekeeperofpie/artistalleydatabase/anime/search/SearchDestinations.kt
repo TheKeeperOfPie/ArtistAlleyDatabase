@@ -155,25 +155,26 @@ object SearchDestinations {
             val destination = it.toRoute<SearchMedia>()
             val sortFilterStates = sortFilterStates(destination)
             val viewModel = viewModel {
-                component.animeSearchViewModelFactory(
-                    createSavedStateHandle(),
-                    unlocked,
-                    sortFilterStates.animeSortFilterState.filterParams,
-                    sortFilterStates.mangaSortFilterState.filterParams,
-                    sortFilterStates.characterSortFilterState.filterParams,
-                    sortFilterStates.staffSortFilterState.filterParams,
-                    sortFilterStates.studiosSortFilterState.filterParams,
-                    sortFilterStates.usersSortFilterState.filterParams,
-                ).create(
-                    sortFilterStates.animeFilterMedia,
-                    sortFilterStates.mangaFilterMedia,
-                    mediaPreviewWithDescriptionEntryProvider,
-                    mediaWithListStatusEntryProvider,
-                    characterEntryProvider,
-                    staffEntryProvider,
-                    studioEntryProvider,
-                    userEntryProvider,
-                )
+                component.animeSearchViewModelFactoryFactory
+                    .create(
+                        createSavedStateHandle(),
+                        unlocked,
+                        sortFilterStates.animeSortFilterState.filterParams,
+                        sortFilterStates.mangaSortFilterState.filterParams,
+                        sortFilterStates.characterSortFilterState.filterParams,
+                        sortFilterStates.staffSortFilterState.filterParams,
+                        sortFilterStates.studiosSortFilterState.filterParams,
+                        sortFilterStates.usersSortFilterState.filterParams,
+                    ).create(
+                        sortFilterStates.animeFilterMedia,
+                        sortFilterStates.mangaFilterMedia,
+                        mediaPreviewWithDescriptionEntryProvider,
+                        mediaWithListStatusEntryProvider,
+                        characterEntryProvider,
+                        staffEntryProvider,
+                        studioEntryProvider,
+                        userEntryProvider,
+                    )
             }
             val state = remember {
                 MediaSearchScreen.State(

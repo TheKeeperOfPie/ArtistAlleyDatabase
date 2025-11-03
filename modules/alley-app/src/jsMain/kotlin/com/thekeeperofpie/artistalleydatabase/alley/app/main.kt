@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventInput
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import dev.zacsweers.metro.createGraphFactory
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -49,7 +50,7 @@ fun main() {
     onWasmReady {
         ComposeViewport(document.body!!) {
             val scope = rememberCoroutineScope()
-            val component = ArtistAlleyWebComponent::class.create(scope)
+            val component = createGraphFactory<ArtistAlleyWebComponent.Factory>().create(scope)
             KeyboardEventEffect()
             App(component = component)
         }

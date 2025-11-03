@@ -5,9 +5,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -40,7 +40,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KProperty0
 
-//@SingletonScope
+//@SingleIn(AppScope::class)
 //@Inject
 open class SettingsProvider(
     scope: ApplicationScope,

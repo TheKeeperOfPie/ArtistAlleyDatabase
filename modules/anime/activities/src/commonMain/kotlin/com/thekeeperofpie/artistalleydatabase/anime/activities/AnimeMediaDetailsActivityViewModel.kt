@@ -10,6 +10,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -17,11 +20,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class AnimeMediaDetailsActivityViewModel(
     private val aniListApi: AuthedAniListApi,
     private val activityStatusController: ActivityStatusController,
@@ -81,5 +82,10 @@ class AnimeMediaDetailsActivityViewModel(
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { activities = it }
         }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(mediaId: String): AnimeMediaDetailsActivityViewModel
     }
 }

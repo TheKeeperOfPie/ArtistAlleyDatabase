@@ -1,9 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.monetization.unity
 
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.Provides
 
 interface UnityComponent {
-    val UnityMonetizationProvider.bind: MonetizationProvider?
-        @Provides get() = this
+    @Provides
+    fun provideMonetizationProvider(provider: UnityMonetizationProvider): MonetizationProvider? =
+        provider
 }

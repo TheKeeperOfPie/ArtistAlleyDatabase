@@ -14,12 +14,13 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Duration.Companion.seconds
 
-@Inject
+@AssistedInject
 class StudiosSortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
@@ -51,4 +52,9 @@ class StudiosSortFilterViewModel(
         filterParams = filterParams,
         collapseOnClose = mediaDataSettings.collapseAnimeFiltersOnClose,
     )
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): StudiosSortFilterViewModel
+    }
 }

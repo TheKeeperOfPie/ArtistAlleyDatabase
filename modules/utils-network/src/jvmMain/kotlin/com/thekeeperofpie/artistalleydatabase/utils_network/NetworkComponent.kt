@@ -1,12 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.utils_network
 
+import dev.zacsweers.metro.Provides
 import io.ktor.client.HttpClient
-import me.tatarka.inject.annotations.Provides
 
 interface NetworkComponent {
 
-    val NetworkClient.bindAsWebScraper: WebScraper
-        @Provides get() = webScraper
-    val NetworkClient.bindAsHttpClient: HttpClient
-        @Provides get() = httpClient
+    @Provides
+    fun provideWebScraper(networkClient: NetworkClient): WebScraper = networkClient.webScraper
+
+    @Provides
+    fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient
 }

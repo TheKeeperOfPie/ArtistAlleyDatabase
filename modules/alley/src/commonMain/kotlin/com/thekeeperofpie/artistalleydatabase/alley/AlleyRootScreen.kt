@@ -83,7 +83,7 @@ object AlleyRootScreen {
                     when (currentDestination) {
                         Destination.ARTISTS -> {
                             val viewModel = viewModel {
-                                component.artistSearchViewModel(
+                                component.artistSearchViewModelFactory.create(
                                     createSavedStateHandle().apply { this["isRoot"] = true },
                                 )
                             }
@@ -99,7 +99,7 @@ object AlleyRootScreen {
                         }
                         Destination.BROWSE -> {
                             val viewModel = viewModel {
-                                component.tagsViewModel(createSavedStateHandle())
+                                component.tagsViewModelFactory.create(createSavedStateHandle())
                             }
                             val dataYearHeaderState =
                                 rememberDataYearHeaderState(viewModel.dataYear, null)
@@ -114,7 +114,7 @@ object AlleyRootScreen {
                         }
                         Destination.FAVORITES -> {
                             val favoritesViewModel = viewModel {
-                                component.favoritesViewModel(createSavedStateHandle())
+                                component.favoritesViewModelFactory.create(createSavedStateHandle())
                             }
                             FavoritesScreen(
                                 favoritesViewModel = favoritesViewModel,
@@ -152,10 +152,13 @@ object AlleyRootScreen {
                         }
                         Destination.MAP -> {
                             val viewModel = viewModel {
-                                component.favoritesSortFilterViewModel(createSavedStateHandle())
+                                component.favoritesSortFilterViewModelFactory.create(
+                                    createSavedStateHandle()
+                                )
                             }
-                            val mapViewModel =
-                                viewModel { component.mapViewModel(createSavedStateHandle()) }
+                            val mapViewModel = viewModel {
+                                component.mapViewModelFactory.create(createSavedStateHandle())
+                            }
                             FavoritesMapScreen(
                                 viewModel = viewModel,
                                 mapViewModel = mapViewModel,
@@ -165,7 +168,9 @@ object AlleyRootScreen {
                         }
                         Destination.STAMP_RALLIES -> {
                             val viewModel = viewModel {
-                                component.stampRallySearchViewModel(createSavedStateHandle())
+                                component.stampRallySearchViewModelFactory.create(
+                                    createSavedStateHandle()
+                                )
                             }
                             StampRallySearchScreen(
                                 viewModel = viewModel,

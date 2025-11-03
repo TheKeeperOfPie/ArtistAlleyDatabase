@@ -146,7 +146,7 @@ object ForumDestinations {
         ) {
             val destination = it.toRoute<ForumSearch>()
             val forumSubsectionSortFilterViewModel = viewModel {
-                component.forumSubsectionSortFilterViewModel(
+                component.forumSubsectionSortFilterViewModelFactory.create(
                     createSavedStateHandle(),
                     mediaDetailsRoute, ForumSubsectionSortFilterViewModel.InitialParams(
                         defaultSort = destination.sort,
@@ -156,7 +156,7 @@ object ForumDestinations {
                 )
             }
             val viewModel = viewModel {
-                component.forumSearchViewModel(
+                component.forumSearchViewModelFactory.create(
                     createSavedStateHandle(),
                     forumSubsectionSortFilterViewModel,
                 )
@@ -186,7 +186,7 @@ object ForumDestinations {
             ),
         ) {
             val viewModel = viewModel {
-                component.forumThreadViewModel(createSavedStateHandle())
+                component.forumThreadViewModelFactory.create(createSavedStateHandle())
                     .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
@@ -232,7 +232,8 @@ object ForumDestinations {
             ),
         ) {
             val viewModel = viewModel {
-                component.forumThreadCommentTreeViewModelFactory(createSavedStateHandle())
+                component.forumThreadCommentTreeViewModelFactoryFactory
+                    .create(createSavedStateHandle())
                     .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()

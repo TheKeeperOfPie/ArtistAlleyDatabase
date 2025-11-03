@@ -31,6 +31,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -44,11 +47,9 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class MediaActivitiesViewModel(
     aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
@@ -249,4 +250,12 @@ class MediaActivitiesViewModel(
         override val liked: Boolean,
         override val subscribed: Boolean,
     ) : ActivityStatusAware
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            savedStateHandle: SavedStateHandle,
+            activitySortFilterViewModel: ActivitySortFilterViewModel,
+        ): MediaActivitiesViewModel
+    }
 }

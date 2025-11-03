@@ -13,6 +13,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.multiplatform")
     id("androidx.room")
+    alias(libs.plugins.dev.zacsweers.metro)
 }
 
 ksp {
@@ -179,7 +180,6 @@ kotlin {
             implementation(libs.coil3.coil.compose)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kermit)
-            implementation(libs.kotlin.inject.runtime.kmp)
         }
         invokeWhenCreated("androidDebug") {
             dependencies {
@@ -245,10 +245,8 @@ kotlin {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
     arrayOf(
         kspProcessors.room.compiler,
-        kspProcessors.kotlin.inject.compiler.ksp,
     ).forEach {
         add("kspAndroid", it)
         add("kspDesktop", it)

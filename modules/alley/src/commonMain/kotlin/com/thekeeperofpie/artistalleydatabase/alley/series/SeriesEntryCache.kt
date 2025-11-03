@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import androidx.collection.LruCache
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 
 @Inject
 class SeriesEntryCache(

@@ -1,13 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.WebScraper
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.ktor.client.HttpClient
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class VgmdbApi(
     private val albumEntryDao: AlbumEntryDao,

@@ -18,11 +18,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.Flow
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class MediaCharactersViewModel(
     private val aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
@@ -32,7 +33,8 @@ class MediaCharactersViewModel(
 ) : SortFilteredViewModel<MediaCharactersScreen.Entry, CharacterWithRole, CharacterDetails, MediaCharactersSortFilterViewModel.FilterParams>(
     loadingErrorTextRes = Res.string.anime_characters_error_loading,
 ) {
-    private val destination = savedStateHandle.toDestination<AnimeDestination.MediaCharacters>(navigationTypeMap)
+    private val destination =
+        savedStateHandle.toDestination<AnimeDestination.MediaCharacters>(navigationTypeMap)
     val mediaId = destination.mediaId
     val viewer = aniListApi.authedUser
 
@@ -73,4 +75,13 @@ class MediaCharactersViewModel(
                 role = filterParams.role,
             ).media.characters.run { pageInfo to edges }
         }
+
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            savedStateHandle: SavedStateHandle,
+            mediaCharactersSortFilterViewModel: MediaCharactersSortFilterViewModel,
+        ): MediaCharactersViewModel
+    }
 }

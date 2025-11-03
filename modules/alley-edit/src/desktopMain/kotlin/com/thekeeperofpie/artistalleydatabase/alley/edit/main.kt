@@ -8,18 +8,70 @@ import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.decode.DataSource
+import coil3.decode.ImageSource
+import coil3.fetch.FetchResult
+import coil3.fetch.Fetcher
+import coil3.fetch.SourceFetchResult
+import coil3.memory.MemoryCache
+import coil3.request.Options
+import coil3.request.crossfade
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.io.asInputStream
+import okio.FileSystem
+import okio.buffer
+import okio.source
 
 fun main() {
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
         val graph = createGraphFactory<ArtistAlleyEditGraph.Factory>()
             .create(scope)
+
+        SingletonImageLoader.setSafe { context ->
+            ImageLoader.Builder(context)
+                .components {
+                    add(object : Fetcher.Factory<Uri> {
+                        override fun create(
+                            data: Uri,
+                            options: Options,
+                            imageLoader: ImageLoader,
+                        ): Fetcher? {
+                            if (data.scheme != "jar") return null
+                            return object : Fetcher {
+                                override suspend fun fetch(): FetchResult? {
+                                    val source =
+                                        graph.appFileSystem.openUriSource(Uri.parse(data.toString()))
+                                            ?.asInputStream()?.source()?.buffer() ?: return null
+                                    return SourceFetchResult(
+                                        source = ImageSource(
+                                            source = source,
+                                            fileSystem = FileSystem.SYSTEM
+                                        ),
+                                        mimeType = null,
+                                        dataSource = DataSource.DISK,
+                                    )
+                                }
+                            }
+                        }
+                    })
+                }
+                .memoryCache {
+                    MemoryCache.Builder()
+                        .maxSizeBytes(1000 * 1024 * 1024)
+                        .build()
+                }
+                .crossfade(true)
+                .build()
+        }
 
         val windowState = rememberWindowState()
         Window(

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import androidx.lifecycle.SavedStateHandle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
@@ -29,61 +28,66 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Provider
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 
 interface ArtistAlleyComponent {
 
-    val artistDetailsViewModel: (SavedStateHandle) -> ArtistDetailsViewModel
-    val artistMapViewModel: (SavedStateHandle) -> ArtistMapViewModel
-    val artistMerchViewModel: (SavedStateHandle) -> ArtistMerchViewModel
-    val artistSearchViewModel: (SavedStateHandle) -> ArtistSearchViewModel
-    val artistSeriesViewModel: (SavedStateHandle) -> ArtistSeriesViewModel
-    val favoritesViewModel: (SavedStateHandle) -> FavoritesViewModel
-    val favoritesSortFilterViewModel: (SavedStateHandle) -> FavoritesSortFilterViewModel
-    val imagesViewModel: (SavedStateHandle) -> ImagesViewModel
-    val importViewModel: (SavedStateHandle) -> ImportViewModel
-    val mapViewModel: (SavedStateHandle) -> MapViewModel
-    val alleySettingsViewModel: () -> AlleySettingsViewModel
-    val qrCodeViewModel: () -> QrCodeViewModel
-    val stampRallyDetailsViewModel: (SavedStateHandle) -> StampRallyDetailsViewModel
-    val stampRallyMapViewModel: (SavedStateHandle) -> StampRallyMapViewModel
-    val stampRallySearchViewModel: (SavedStateHandle) -> StampRallySearchViewModel
-    val tagMapViewModel: (SavedStateHandle) -> TagMapViewModel
-    val tagsViewModel: (SavedStateHandle) -> TagsViewModel
+    val artistDetailsViewModelFactory: ArtistDetailsViewModel.Factory
+    val artistMapViewModelFactory: ArtistMapViewModel.Factory
+    val artistMerchViewModelFactory: ArtistMerchViewModel.Factory
+    val artistSearchViewModelFactory: ArtistSearchViewModel.Factory
+    val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
+    val favoritesViewModelFactory: FavoritesViewModel.Factory
+    val favoritesSortFilterViewModelFactory: FavoritesSortFilterViewModel.Factory
+    val imagesViewModelFactory: ImagesViewModel.Factory
+    val importViewModelFactory: ImportViewModel.Factory
+    val mapViewModelFactory: MapViewModel.Factory
+    val stampRallyDetailsViewModelFactory: StampRallyDetailsViewModel.Factory
+    val stampRallyMapViewModelFactory: StampRallyMapViewModel.Factory
+    val stampRallySearchViewModelFactory: StampRallySearchViewModel.Factory
+    val tagMapViewModelFactory: TagMapViewModel.Factory
+    val tagsViewModelFactory: TagsViewModel.Factory
 
-    val ArtistAlleyDatabase.bindArtistEntryDao: ArtistEntryDao
-        @Provides get() = this.artistEntryDao
+    val alleySettingsViewModel: Provider<AlleySettingsViewModel>
+    val qrCodeViewModel: Provider<QrCodeViewModel>
 
-    val ArtistAlleyDatabase.bindStampRallyEntryDao: StampRallyEntryDao
-        @Provides get() = this.stampRallyEntryDao
+    @Provides
+    fun bindArtistEntryDao(database: ArtistAlleyDatabase): ArtistEntryDao = database.artistEntryDao
 
-    val ArtistAlleyDatabase.bindImportExportDao: ImportExportDao
-        @Provides get() = this.importExportDao
+    @Provides
+    fun bindStampRallyEntryDao(database: ArtistAlleyDatabase): StampRallyEntryDao =
+        database.stampRallyEntryDao
 
-    val ArtistAlleyDatabase.bindImageEntryDao: ImageEntryDao
-        @Provides get() = this.imageEntryDao
+    @Provides
+    fun bindImportExportDao(database: ArtistAlleyDatabase): ImportExportDao =
+        database.importExportDao
 
-    val ArtistAlleyDatabase.bindMerchEntryDao: MerchEntryDao
-        @Provides get() = this.merchEntryDao
+    @Provides
+    fun bindImageEntryDao(database: ArtistAlleyDatabase): ImageEntryDao = database.imageEntryDao
 
-    val ArtistAlleyDatabase.bindSeriesEntryDao: SeriesEntryDao
-        @Provides get() = this.seriesEntryDao
+    @Provides
+    fun bindMerchEntryDao(database: ArtistAlleyDatabase): MerchEntryDao = database.merchEntryDao
 
-    val ArtistAlleyDatabase.bindTagEntryDao: TagEntryDao
-        @Provides get() = this.tagEntryDao
+    @Provides
+    fun bindSeriesEntryDao(database: ArtistAlleyDatabase): SeriesEntryDao = database.seriesEntryDao
 
-    val ArtistAlleyDatabase.bindUserEntryDao: UserEntryDao
-        @Provides get() = this.userEntryDao
+    @Provides
+    fun bindTagEntryDao(database: ArtistAlleyDatabase): TagEntryDao = database.tagEntryDao
 
-    val ArtistAlleyDatabase.bindNotesDao: UserNotesDao
-        @Provides get() = this.userNotesDao
+    @Provides
+    fun bindUserEntryDao(database: ArtistAlleyDatabase): UserEntryDao = database.userEntryDao
+
+    @Provides
+    fun bindUserNotesDao(database: ArtistAlleyDatabase): UserNotesDao = database.userNotesDao
 
     val navigationTypeMap: NavigationTypeMap
     val settings: ArtistAlleySettings
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideNavigationTypeMap() = NavigationTypeMap(Destinations.typeMap)
+    fun provideNavigationTypeMap(): NavigationTypeMap = NavigationTypeMap(Destinations.typeMap)
 }

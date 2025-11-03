@@ -296,7 +296,7 @@ object AnimeRootScreen {
                         )
                         AnimeRootNavDestination.SEARCH -> {
                             val animeSortFilterViewModel = viewModel {
-                                component.animeSearchSortFilterViewModelFactory(
+                                component.animeSearchSortFilterViewModelFactoryFactory.create(
                                     createSavedStateHandle()
                                 )
                                     .create(
@@ -308,7 +308,7 @@ object AnimeRootScreen {
                                     )
                             }
                             val mangaSortFilterViewModel = viewModel {
-                                component.mangaSearchSortFilterViewModelFactory(
+                                component.mangaSearchSortFilterViewModelFactoryFactory.create(
                                     createSavedStateHandle()
                                 )
                                     .create(
@@ -320,43 +320,46 @@ object AnimeRootScreen {
                                     )
                             }
                             val characterSortFilterViewModel = viewModel {
-                                component.characterSortFilterViewModel(
+                                component.characterSortFilterViewModelFactory.create(
                                     createSavedStateHandle(),
                                     CharacterSortFilterViewModel.InitialParams()
                                 )
                             }
                             val staffSortFilterViewModel = viewModel {
-                                component.staffSortFilterViewModel(
+                                component.staffSortFilterViewModelFactory.create(
                                     createSavedStateHandle(),
                                     StaffSortFilterViewModel.InitialParams()
                                 )
                             }
                             val studiosSortFilterViewModel = viewModel {
-                                component.studiosSortFilterViewModel(createSavedStateHandle())
+                                component.studiosSortFilterViewModelFactory
+                                    .create(createSavedStateHandle())
                             }
                             val usersSortFilterViewModel = viewModel {
-                                component.usersSortFilterViewModel(createSavedStateHandle())
+                                component.usersSortFilterViewModelFactory
+                                    .create(createSavedStateHandle())
                             }
                             val viewModel = viewModel {
-                                component.animeSearchViewModelFactory(
-                                    createSavedStateHandle(),
-                                    unlockedFlow,
-                                    animeSortFilterViewModel.state.filterParams,
-                                    mangaSortFilterViewModel.state.filterParams,
-                                    characterSortFilterViewModel.state.filterParams,
-                                    staffSortFilterViewModel.state.filterParams,
-                                    studiosSortFilterViewModel.state.filterParams,
-                                    usersSortFilterViewModel.state.filterParams,
-                                ).create(
-                                    animeSortFilterViewModel::filterMedia,
-                                    mangaSortFilterViewModel::filterMedia,
-                                    MediaPreviewWithDescriptionEntry.Provider,
-                                    MediaWithListStatusEntry.Provider,
-                                    CharacterListRow.Entry.SearchProvider(),
-                                    StaffListRow.Entry.SearchProvider(),
-                                    StudioListRowFragmentEntry.Provider(),
-                                    UserListRow.Entry.Provider(),
-                                )
+                                component.animeSearchViewModelFactoryFactory
+                                    .create(
+                                        createSavedStateHandle(),
+                                        unlockedFlow,
+                                        animeSortFilterViewModel.state.filterParams,
+                                        mangaSortFilterViewModel.state.filterParams,
+                                        characterSortFilterViewModel.state.filterParams,
+                                        staffSortFilterViewModel.state.filterParams,
+                                        studiosSortFilterViewModel.state.filterParams,
+                                        usersSortFilterViewModel.state.filterParams,
+                                    ).create(
+                                        animeSortFilterViewModel::filterMedia,
+                                        mangaSortFilterViewModel::filterMedia,
+                                        MediaPreviewWithDescriptionEntry.Provider,
+                                        MediaWithListStatusEntry.Provider,
+                                        CharacterListRow.Entry.SearchProvider(),
+                                        StaffListRow.Entry.SearchProvider(),
+                                        StudioListRowFragmentEntry.Provider(),
+                                        UserListRow.Entry.Provider(),
+                                    )
                             }
                             val state = AnimeSearchScreen.State(
                                 unlocked = unlockedFlow,
@@ -370,7 +373,9 @@ object AnimeRootScreen {
                             val viewer by viewModel.viewer.collectAsStateWithLifecycle()
                             val selectedType by viewModel.selectedType.collectAsStateWithLifecycle()
                             AnimeSearchScreen(
-                                mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(component),
+                                mediaEditBottomSheetScaffold = MediaEditBottomSheetScaffold.fromComponent(
+                                    component
+                                ),
                                 upIconOption = upIconOption,
                                 onRefresh = viewModel::onRefresh,
                                 content = viewModel.content.collectAsLazyPagingItems(),
@@ -410,7 +415,10 @@ object AnimeRootScreen {
                                             },
                                         )
                                         is AnimeSearchEntry.Staff<*> ->
-                                            SharedTransitionKeyScope("staff_list_row", entry.staffId) {
+                                            SharedTransitionKeyScope(
+                                                "staff_list_row",
+                                                entry.staffId
+                                            ) {
                                                 StaffListRow(
                                                     entry = entry.entry as StaffListRow.Entry<MediaWithListStatusEntry>,
                                                     charactersSection = { horizontalCharactersRow(it) },
@@ -424,7 +432,10 @@ object AnimeRootScreen {
                                                 )
                                             }
                                         is AnimeSearchEntry.Studio<*> ->
-                                            SharedTransitionKeyScope("studio_list_row", entry.studioId) {
+                                            SharedTransitionKeyScope(
+                                                "studio_list_row",
+                                                entry.studioId
+                                            ) {
                                                 StudioListRow(
                                                     entry = entry.entry as StudioListRowFragmentEntry<MediaWithListStatusEntry>,
                                                     mediaRow = { media ->
@@ -513,7 +524,7 @@ object AnimeRootScreen {
                                 activityEntryProvider = activityEntryProvider,
                                 activitySortFilterViewModelProvider = {
                                     viewModel {
-                                        component.activitySortFilterViewModel(
+                                        component.activitySortFilterViewModelFactory.create(
                                             createSavedStateHandle(),
                                             AnimeDestination.MediaDetails.route,
                                             ActivitySortFilterViewModel.InitialParams(

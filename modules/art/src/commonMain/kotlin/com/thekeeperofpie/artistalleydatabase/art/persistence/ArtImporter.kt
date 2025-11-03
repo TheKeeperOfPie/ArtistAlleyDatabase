@@ -4,18 +4,19 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImporter
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.decodeSequenceIgnoreEndOfFile
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.io.Source
 import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.io.indexOf
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalSerializationApi::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class ArtImporter(
     appFileSystem: AppFileSystem,

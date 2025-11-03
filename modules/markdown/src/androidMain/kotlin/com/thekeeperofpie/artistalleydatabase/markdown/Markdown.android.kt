@@ -4,7 +4,9 @@ import android.app.Application
 import android.text.Spanned
 import android.widget.TextView
 import androidx.compose.runtime.Immutable
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.noties.markwon.Markwon
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import io.noties.markwon.core.CorePlugin
@@ -14,9 +16,8 @@ import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.movement.MovementMethodPlugin
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class Markdown(application: Application) {
 

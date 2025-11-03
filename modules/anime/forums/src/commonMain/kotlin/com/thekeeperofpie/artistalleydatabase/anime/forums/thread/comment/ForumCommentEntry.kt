@@ -5,7 +5,7 @@ import com.anilist.data.fragment.UserNavigationData
 import com.thekeeperofpie.artistalleydatabase.anime.forums.data.ForumCommentEntryProvider
 import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.markdown.MarkdownText
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 
 data class ForumCommentEntry(
     val comment: ForumThreadComment,

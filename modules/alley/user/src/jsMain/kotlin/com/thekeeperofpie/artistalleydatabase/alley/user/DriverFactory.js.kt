@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.user
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.worker.WebWorkerDriver
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 import org.w3c.dom.Worker
 
 private fun createCustomWorker(): Worker =

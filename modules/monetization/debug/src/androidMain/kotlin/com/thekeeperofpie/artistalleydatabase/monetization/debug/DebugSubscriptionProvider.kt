@@ -1,20 +1,21 @@
 package com.thekeeperofpie.artistalleydatabase.monetization.debug
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionDetails
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Duration.Companion.seconds
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class DebugSubscriptionProvider(
     private val scope: ApplicationScope,

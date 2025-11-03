@@ -144,7 +144,7 @@ object AniListViewerProfileScreen {
         } else {
             val activitySortFilterViewModel = activitySortFilterViewModelProvider()
             val viewModel = viewModel {
-                component.aniListUserViewModelFactory(createSavedStateHandle())
+                component.aniListUserViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(
                         activityEntryProvider,
                         activitySortFilterViewModel,
@@ -157,9 +157,9 @@ object AniListViewerProfileScreen {
             val entry by viewModel.entry.collectAsState()
             val headerValues = UserHeaderValues(null) { entry.result?.user }
             val followingViewModel =
-                viewModel { component.userSocialViewModelFollowing(viewModel.userId) }
+                viewModel { component.userSocialViewModelFollowingFactory.create(viewModel.userId) }
             val followersViewModel =
-                viewModel { component.userSocialViewModelFollowers(viewModel.userId) }
+                viewModel { component.userSocialViewModelFollowersFactory.create(viewModel.userId) }
             val viewer by viewModel.viewer.collectAsState()
             val activities = viewModel.activities.collectAsLazyPagingItems()
             UserScreen(

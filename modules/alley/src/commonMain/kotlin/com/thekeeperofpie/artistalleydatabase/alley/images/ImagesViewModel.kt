@@ -6,10 +6,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 
-@Inject
+@AssistedInject
 class ImagesViewModel(
     navigationTypeMap: NavigationTypeMap,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -20,5 +21,10 @@ class ImagesViewModel(
     val images = when (val type = route.type) {
         is Destinations.Images.Type.Artist -> AlleyDataUtils.getArtistImages(route.year, route.images)
         is Destinations.Images.Type.StampRally -> AlleyDataUtils.getRallyImages(route.year, route.images)
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): ImagesViewModel
     }
 }

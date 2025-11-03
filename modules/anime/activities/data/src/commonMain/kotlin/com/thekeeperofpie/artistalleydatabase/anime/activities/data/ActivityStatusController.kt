@@ -7,13 +7,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilterableDa
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaFilteringData
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.toMediaListStatus
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.runningFold
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class ActivityStatusController {
 

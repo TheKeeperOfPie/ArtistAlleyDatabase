@@ -16,6 +16,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIntIds
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -23,11 +26,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class ForumSearchViewModel(
     aniListApi: AuthedAniListApi,
     navigationTypeMap: NavigationTypeMap,
@@ -67,5 +68,13 @@ class ForumSearchViewModel(
                 .cachedIn(viewModelScope)
                 .collectLatest(content::emit)
         }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            savedStateHandle: SavedStateHandle,
+            forumSubsectionSortFilterViewModel: ForumSubsectionSortFilterViewModel,
+        ): ForumSearchViewModel
     }
 }

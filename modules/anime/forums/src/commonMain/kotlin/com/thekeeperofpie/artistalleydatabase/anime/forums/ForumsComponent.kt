@@ -1,21 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forums
 
-import androidx.lifecycle.SavedStateHandle
-import com.anilist.data.MediaDetailsQuery
-import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumSubsectionSortFilterViewModel.InitialParams
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.ForumThreadViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forums.thread.comment.ForumThreadCommentTreeViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDetailsRoute
-import kotlinx.coroutines.flow.Flow
+import dev.zacsweers.metro.Provider
 
 interface ForumsComponent {
-    val animeMediaDetailsForumThreadsViewModel: (Flow<MediaDetailsQuery.Data.Media?>) -> AnimeMediaDetailsForumThreadsViewModel
-    val forumRootScreenViewModel: () -> ForumRootScreenViewModel
-    val forumSubsectionSortFilterViewModel: (SavedStateHandle, MediaDetailsRoute, InitialParams) -> ForumSubsectionSortFilterViewModel
-    val forumSearchViewModel: (SavedStateHandle, ForumSubsectionSortFilterViewModel) -> ForumSearchViewModel
-    val forumThreadCommentTreeViewModelFactory: (SavedStateHandle) -> ForumThreadCommentTreeViewModel.Factory
-    val forumThreadViewModel: (SavedStateHandle) -> ForumThreadViewModel.Factory
+    val animeMediaDetailsForumThreadsViewModelFactory: AnimeMediaDetailsForumThreadsViewModel.Factory
+    val forumRootScreenViewModel: Provider<ForumRootScreenViewModel>
+    val forumSubsectionSortFilterViewModelFactory: ForumSubsectionSortFilterViewModel.Factory
+    val forumSearchViewModelFactory: ForumSearchViewModel.Factory
+    val forumThreadCommentTreeViewModelFactoryFactory: ForumThreadCommentTreeViewModel.TypedFactory.Factory
+    val forumThreadViewModelFactory: ForumThreadViewModel.TypedFactory.Factory
 
     val forumCommentEntryProvider: ForumCommentEntry.Provider
 }

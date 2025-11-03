@@ -272,7 +272,7 @@ object AnimeMediaDetailsScreen {
     operator fun invoke(
         animeComponent: AnimeComponent = LocalAnimeComponent.current,
         viewModel: AnimeMediaDetailsViewModel = viewModel {
-            animeComponent.animeMediaDetailsViewModel(createSavedStateHandle())
+            animeComponent.animeMediaDetailsViewModelFactory.create(createSavedStateHandle())
         },
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,

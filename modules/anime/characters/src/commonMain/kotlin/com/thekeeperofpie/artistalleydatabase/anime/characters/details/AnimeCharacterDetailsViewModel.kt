@@ -34,6 +34,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -45,8 +49,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
@@ -187,8 +189,8 @@ class AnimeCharacterDetailsViewModel<MediaEntry>(
         val characterRole: CharacterRole?,
     )
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val statusController: MediaListStatusController,
         private val favoritesController: FavoritesController,
@@ -210,5 +212,10 @@ class AnimeCharacterDetailsViewModel<MediaEntry>(
                 savedStateHandle = savedStateHandle,
                 mediaEntryProvider = mediaEntryProvider,
             )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(savedStateHandle: SavedStateHandle): TypedFactory
+        }
     }
 }

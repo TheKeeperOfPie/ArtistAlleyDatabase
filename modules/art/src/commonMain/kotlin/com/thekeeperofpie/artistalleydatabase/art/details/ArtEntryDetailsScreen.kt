@@ -52,8 +52,9 @@ object ArtEntryDetailsScreen {
         artEntryComponent: ArtEntryComponent,
         onEvent: (Event) -> Unit,
     ) {
-        val viewModel =
-            viewModel { artEntryComponent.artEntryDetailsViewModel2(createSavedStateHandle()) }
+        val viewModel = viewModel {
+            artEntryComponent.artEntryDetailsViewModel2Factory.create(createSavedStateHandle())
+        }
         val scaffoldState = rememberBottomSheetScaffoldState()
         BottomSheetScaffold(sheetContent = {
             BottomSheet(

@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Compa
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter.Companion.SEPARATOR
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.delay
 import kotlinx.io.Sink
 import kotlinx.io.Source
@@ -26,7 +27,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.time.Duration.Companion.seconds
 import artistalleydatabase.modules.alley.data.generated.resources.Res as AlleyDataRes

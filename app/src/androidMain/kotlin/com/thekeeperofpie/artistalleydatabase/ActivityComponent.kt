@@ -6,24 +6,17 @@ import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ShareHandler
-import me.tatarka.inject.annotations.Component
-import me.tatarka.inject.annotations.Inject
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.GraphExtension
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.Provides
 
 @ActivityScope
-@Component
-abstract class ActivityComponent(
-    @Component val applicationComponent: ApplicationComponent,
-    @get:Provides val activity: ComponentActivity,
-) : ActivityVariantComponent {
+@GraphExtension
+interface ActivityComponent : ActivityVariantComponent {
 
-    abstract val injector: Injector
+    val injector: Injector
 
-    // For some reason kotlin-inject fails to find these
-    val application get() = applicationComponent.application
-    val featureOverrideProvider get() = applicationComponent.featureOverrideProvider
-    fun provideJson() = applicationComponent.provideJson()
-
+    // TODO: Does this work now with Metro?
     // Doesn't seem to be an easy way to provide optional dependencies directly on the component
     @Inject
     class Injector(
@@ -32,4 +25,9 @@ abstract class ActivityComponent(
         val subscriptionProvider: SubscriptionProvider? = null,
         val shareHandler: ShareHandler? = null,
     )
+
+    @GraphExtension.Factory
+    interface Factory {
+        fun create(@Provides activity: ComponentActivity): ActivityComponent
+    }
 }

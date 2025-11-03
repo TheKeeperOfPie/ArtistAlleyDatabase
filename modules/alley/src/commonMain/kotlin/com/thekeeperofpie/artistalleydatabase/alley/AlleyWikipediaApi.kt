@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.readBuffer
@@ -9,11 +11,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.decodeFromSource
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalSerializationApi::class)
 @Inject
-@SingletonScope
+@SingleIn(AppScope::class)
 class AlleyWikipediaApi(private val networkClient: NetworkClient) {
 
     private val json = Json {

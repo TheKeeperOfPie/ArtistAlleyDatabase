@@ -74,7 +74,7 @@ class AniListOAuthShareTargetActivity : ComponentActivity() {
                             val viewModel = viewModel {
                                 (applicationContext as ComponentProvider)
                                     .singletonComponent<AniListComponent>()
-                                    .aniListOAuthViewModel(text)
+                                    .aniListOAuthViewModelFactory.create(text)
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 val state = viewModel.state

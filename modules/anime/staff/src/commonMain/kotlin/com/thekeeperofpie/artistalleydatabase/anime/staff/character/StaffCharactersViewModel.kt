@@ -26,12 +26,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredV
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
@@ -117,8 +119,8 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
             }
         }
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val mediaListStatusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
@@ -143,5 +145,13 @@ class StaffCharactersViewModel<CharacterEntry : Any, MediaEntry>(
             characterEntryProvider = characterEntryProvider,
             mediaEntryProvider = mediaEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(
+                savedStateHandle: SavedStateHandle,
+                staffCharactersSortFilterViewModel: StaffCharactersSortFilterViewModel,
+            ): TypedFactory
+        }
     }
 }

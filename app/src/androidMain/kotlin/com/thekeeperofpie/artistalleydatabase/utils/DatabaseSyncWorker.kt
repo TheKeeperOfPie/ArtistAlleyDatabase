@@ -15,12 +15,13 @@ import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class DatabaseSyncWorker(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
@@ -77,5 +78,10 @@ class DatabaseSyncWorker(
         }
 
         return Result.success()
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(appContext: Context, params: WorkerParameters): DatabaseSyncWorker
     }
 }

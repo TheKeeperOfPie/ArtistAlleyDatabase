@@ -16,13 +16,13 @@ import artistalleydatabase.app.generated.resources.Res
 import artistalleydatabase.app.generated.resources.export_last_canceled
 import artistalleydatabase.app.generated.resources.export_last_failed
 import artistalleydatabase.app.generated.resources.invalid_export_destination
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 
 @Inject

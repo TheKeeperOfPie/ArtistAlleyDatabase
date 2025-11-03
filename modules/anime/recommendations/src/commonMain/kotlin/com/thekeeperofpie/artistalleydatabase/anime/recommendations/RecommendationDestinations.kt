@@ -47,10 +47,12 @@ object RecommendationDestinations {
     ) {
         navGraphBuilder.sharedElementComposable<Recommendations>(navigationTypeMap) {
             val recommendationsSortFilterViewModel = viewModel {
-                component.recommendationsSortFilterViewModel(createSavedStateHandle(), mediaDetailsRoute)
+                component.recommendationsSortFilterViewModelFactory
+                    .create(createSavedStateHandle(), mediaDetailsRoute)
             }
             val viewModel = viewModel {
-                component.recommendationsViewModelFactory(recommendationsSortFilterViewModel)
+                component.recommendationsViewModelFactoryFactory
+                    .create(recommendationsSortFilterViewModel)
                     .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()

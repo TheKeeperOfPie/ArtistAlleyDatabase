@@ -4,9 +4,11 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryExporter
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.io.Sink
@@ -15,10 +17,9 @@ import kotlinx.io.writeString
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.encodeToSink
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalSerializationApi::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class CdExporter(
     appFileSystem: AppFileSystem,

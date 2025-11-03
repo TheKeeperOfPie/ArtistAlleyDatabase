@@ -1,10 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.markdown
 
 import androidx.compose.runtime.Immutable
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class Markdown {
     actual fun convertMarkdownText(markdown: String): MarkdownText? {

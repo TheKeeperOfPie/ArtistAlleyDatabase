@@ -12,6 +12,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.multiplatform")
+    alias(libs.plugins.dev.zacsweers.metro)
 }
 
 android {
@@ -174,7 +175,6 @@ kotlin {
                 implementation(libs.jetBrainsAndroidX.navigation.compose)
                 implementation(libs.jetBrainsAndroidX.navigationevent.compose)
                 implementation(libs.kermit)
-                implementation(libs.kotlin.inject.runtime.kmp)
             }
         }
         androidMain.dependencies {
@@ -209,11 +209,6 @@ val serviceWorkerOutput: Configuration by configurations.creating {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", kspProcessors.kotlin.inject.compiler.ksp)
-    add("kspAndroid", kspProcessors.kotlin.inject.compiler.ksp)
-    add("kspDesktop", kspProcessors.kotlin.inject.compiler.ksp)
-    add("kspWasmJs", kspProcessors.kotlin.inject.compiler.ksp)
-    add("kspJs", kspProcessors.kotlin.inject.compiler.ksp)
     serviceWorkerOutput(project(":modules:alley-app:service-worker")) {
         targetConfiguration = "distribution"
     }

@@ -22,11 +22,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.data.mediaFilteringDat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.Flow
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class CharacterMediasViewModel<MediaEntry : Any>(
     private val aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
@@ -88,8 +89,8 @@ class CharacterMediasViewModel<MediaEntry : Any>(
             copy = { mediaEntryProvider.copyMediaEntry(this, it) },
         )
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val statusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
@@ -99,7 +100,6 @@ class CharacterMediasViewModel<MediaEntry : Any>(
         @Assisted private val savedStateHandle: SavedStateHandle,
         @Assisted private val characterMediaSortFilterViewModel: CharacterMediaSortFilterViewModel,
     ) {
-
         fun <MediaEntry : Any> create(
             mediaEntryProvider: MediaEntryProvider<MediaPreview, MediaEntry>,
         ) = CharacterMediasViewModel<MediaEntry>(
@@ -113,5 +113,13 @@ class CharacterMediasViewModel<MediaEntry : Any>(
             characterMediaSortFilterViewModel = characterMediaSortFilterViewModel,
             mediaEntryProvider = mediaEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(
+                savedStateHandle: SavedStateHandle,
+                characterMediaSortFilterViewModel: CharacterMediaSortFilterViewModel,
+            ): TypedFactory
+        }
     }
 }

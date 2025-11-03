@@ -43,7 +43,7 @@ object HistoryDestinations {
     ) {
         navGraphBuilder.sharedElementComposable<MediaHistory>(navigationTypeMap) {
             val viewModel = viewModel {
-                component.mediaHistoryViewModel(createSavedStateHandle())
+                component.mediaHistoryViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(mediaEntryProvider)
             }
             val state = remember {

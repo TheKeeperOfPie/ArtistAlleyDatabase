@@ -30,6 +30,7 @@ import com.google.android.play.core.ktx.requestUpdateFlow
 import com.google.android.play.core.ktx.updatePriority
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
@@ -37,7 +38,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 
 @Inject

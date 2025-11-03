@@ -7,35 +7,41 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.artistalleydatabase.export.ExportWorker
 import com.thekeeperofpie.artistalleydatabase.importing.ImportWorker
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
-import me.tatarka.inject.annotations.IntoMap
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ClassKey
+import dev.zacsweers.metro.IntoMap
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 
 typealias WorkerCreator = (Context, WorkerParameters) -> ListenableWorker
 
 interface WorkerComponent {
     val injectedWorkerFactory: InjectedWorkerFactory
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
+    fun provideWorkManager(application: Application): WorkManager =
+        WorkManager.getInstance(application)
 
     @Provides
     @IntoMap
+    @ClassKey(ImportWorker::class)
     fun provideImportWorker(
-        workerCreator: (context: Context, params: WorkerParameters) -> ImportWorker,
-    ): Pair<String, WorkerCreator> = ImportWorker::class.qualifiedName!! to workerCreator
+        workerCreator: ImportWorker.Factory,
+    ): WorkerCreator = { context, parameters -> workerCreator.create(context, parameters) }
 
     @Provides
     @IntoMap
+    @ClassKey(ExportWorker::class)
     fun provideExportWorker(
-        workerCreator: (context: Context, params: WorkerParameters) -> ExportWorker,
-    ): Pair<String, WorkerCreator> = ExportWorker::class.qualifiedName!! to workerCreator
+        workerCreator: ExportWorker.Factory,
+    ): WorkerCreator = { context, parameters -> workerCreator.create(context, parameters) }
 
     @Provides
     @IntoMap
+    @ClassKey(DatabaseSyncWorker::class)
     fun provideDatabaseSyncWorker(
-        workerCreator: (context: Context, params: WorkerParameters) -> DatabaseSyncWorker,
-    ): Pair<String, WorkerCreator> = DatabaseSyncWorker::class.qualifiedName!! to workerCreator
+        workerCreator: DatabaseSyncWorker.Factory,
+    ): WorkerCreator = { context, parameters -> workerCreator.create(context, parameters) }
 }

@@ -231,7 +231,7 @@ object UserDestinations {
 
             val activitySortFilterViewModel = activitySortFilterViewModelProvider()
             val viewModel = viewModel {
-                component.aniListUserViewModelFactory(createSavedStateHandle())
+                component.aniListUserViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(
                         activityEntryProvider = activityEntryProvider,
                         activitySortFilterViewModel = activitySortFilterViewModel,
@@ -246,9 +246,9 @@ object UserDestinations {
                 user = { entry.result?.user },
             )
             val followingViewModel =
-                viewModel { component.userSocialViewModelFollowing(viewModel.userId) }
+                viewModel { component.userSocialViewModelFollowingFactory.create(viewModel.userId) }
             val followersViewModel =
-                viewModel { component.userSocialViewModelFollowers(viewModel.userId) }
+                viewModel { component.userSocialViewModelFollowersFactory.create(viewModel.userId) }
             val viewer by viewModel.viewer.collectAsState()
             val activities = viewModel.activities.collectAsLazyPagingItems()
 
@@ -296,10 +296,10 @@ object UserDestinations {
         navGraphBuilder.sharedElementComposable<UserFollowing>(navigationTypeMap) {
             val destination = it.toRoute<UserFollowing>()
             val userFollowSortFilterViewModel = viewModel {
-                component.userFollowSortFilterViewModel(createSavedStateHandle())
+                component.userFollowSortFilterViewModelFactory.create(createSavedStateHandle())
             }
             val viewModel = viewModel {
-                component.userListViewModelFollowingFactory(
+                component.userListViewModelFollowingFactoryFactory.create(
                     createSavedStateHandle(),
                     userFollowSortFilterViewModel,
                 ).create(mediaWithListStatusEntryProvider)
@@ -329,10 +329,10 @@ object UserDestinations {
         navGraphBuilder.sharedElementComposable<UserFollowers>(navigationTypeMap) {
             val destination = it.toRoute<UserFollowers>()
             val userFollowSortFilterViewModel = viewModel {
-                component.userFollowSortFilterViewModel(createSavedStateHandle())
+                component.userFollowSortFilterViewModelFactory.create(createSavedStateHandle())
             }
             val viewModel = viewModel {
-                component.userListViewModelFollowersFactory(
+                component.userListViewModelFollowersFactoryFactory.create(
                     createSavedStateHandle(),
                     userFollowSortFilterViewModel
                 ).create(mediaWithListStatusEntryProvider)
@@ -364,7 +364,7 @@ object UserDestinations {
         ) {
             val destination = it.toRoute<UserFavoriteMedia>()
             val viewModel = viewModel {
-                component.userFavoriteMediaViewModelFactory(createSavedStateHandle())
+                component.userFavoriteMediaViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(mediaPreviewWithDescriptionEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
@@ -409,7 +409,8 @@ object UserDestinations {
         ) {
             val destination = it.toRoute<UserFavoriteCharacters>()
             val viewModel = viewModel {
-                component.userFavoriteCharactersViewModelFactory(createSavedStateHandle())
+                component.userFavoriteCharactersViewModelFactoryFactory
+                    .create(createSavedStateHandle())
                     .create(characterEntryProvider, mediaWithListStatusEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
@@ -441,7 +442,7 @@ object UserDestinations {
         ) {
             val destination = it.toRoute<UserFavoriteStaff>()
             val viewModel = viewModel {
-                component.userFavoriteStaffViewModelFactory(createSavedStateHandle())
+                component.userFavoriteStaffViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(staffEntryProvider, mediaWithListStatusEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()
@@ -473,7 +474,8 @@ object UserDestinations {
         ) {
             val destination = it.toRoute<UserFavoriteStudios>()
             val viewModel = viewModel {
-                component.userFavoriteStudiosViewModelFactory(createSavedStateHandle())
+                component.userFavoriteStudiosViewModelFactoryFactory
+                    .create(createSavedStateHandle())
                     .create(mediaWithListStatusEntryProvider, studioEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()

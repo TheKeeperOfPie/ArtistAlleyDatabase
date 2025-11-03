@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.utils.kotlin
 
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class CustomDispatchers(

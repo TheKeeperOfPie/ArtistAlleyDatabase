@@ -23,9 +23,11 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropControllerFactory
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropSettings
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -33,7 +35,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -50,7 +51,7 @@ class ArtEntryDetailsViewModel(
     private val aniListAutocompleter: AniListAutocompleter,
     private val artSettings: ArtSettings,
     settings: CropSettings,
-    cropController: (CoroutineScope) -> CropController,
+    cropControllerFactory: CropControllerFactory,
     customDispatchers: CustomDispatchers,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
     entryClass = ArtEntry::class,
@@ -58,7 +59,7 @@ class ArtEntryDetailsViewModel(
     scopedIdType = ArtEntryUtils.SCOPED_ID_TYPE,
     json = json,
     settings = settings,
-    cropControllerFunction = cropController,
+    cropControllerFactory = cropControllerFactory,
     customDispatchers = customDispatchers,
 ) {
     private val entrySections = ArtEntrySections()

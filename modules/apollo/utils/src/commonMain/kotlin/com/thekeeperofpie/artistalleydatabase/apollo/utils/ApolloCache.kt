@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.io.deleteRecursively
 import com.thekeeperofpie.artistalleydatabase.utils.io.resolve
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.launch
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -23,7 +24,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
 import kotlinx.serialization.serializer
-import me.tatarka.inject.annotations.Inject
 import kotlin.reflect.KClass
 import kotlin.time.Clock
 import kotlin.time.Duration

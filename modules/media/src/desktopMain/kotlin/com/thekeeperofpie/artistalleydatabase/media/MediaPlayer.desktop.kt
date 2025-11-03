@@ -2,10 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class MediaPlayer {
     // TODO

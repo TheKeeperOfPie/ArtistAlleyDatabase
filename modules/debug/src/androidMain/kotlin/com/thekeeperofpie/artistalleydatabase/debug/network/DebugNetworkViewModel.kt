@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.debug.network
 
 import androidx.lifecycle.ViewModel
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 
 @Inject
 class DebugNetworkViewModel(

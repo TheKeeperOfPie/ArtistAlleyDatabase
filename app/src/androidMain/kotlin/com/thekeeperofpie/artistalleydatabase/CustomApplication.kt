@@ -32,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.PlatformOAuthStore
 import com.thekeeperofpie.artistalleydatabase.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
 import com.thekeeperofpie.artistalleydatabase.utils.buildconfig.BuildConfigProxy
+import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
@@ -47,7 +48,7 @@ class CustomApplication : Application(), Configuration.Provider, SingletonImageL
     val scope = MainScope()
 
     private val applicationComponent by lazy {
-        ApplicationComponent::class.create(this)
+        createGraphFactory<ApplicationComponent.Factory>().create(this)
     }
 
     private lateinit var audioManager: AudioManager

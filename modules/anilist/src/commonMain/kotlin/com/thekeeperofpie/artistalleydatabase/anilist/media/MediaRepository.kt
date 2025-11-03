@@ -4,12 +4,13 @@ import artistalleydatabase.modules.anilist.generated.resources.Res
 import artistalleydatabase.modules.anilist.generated.resources.aniList_error_fetching_series
 import com.anilist.data.fragment.AniListMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class MediaRepository(
     scope: ApplicationScope,

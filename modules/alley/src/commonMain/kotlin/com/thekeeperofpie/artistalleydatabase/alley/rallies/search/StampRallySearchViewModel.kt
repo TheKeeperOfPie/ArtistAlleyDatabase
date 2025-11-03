@@ -27,6 +27,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -38,13 +41,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@Inject
+@AssistedInject
 class StampRallySearchViewModel(
     dispatchers: CustomDispatchers,
     navigationTypeMap: NavigationTypeMap,
@@ -182,4 +183,9 @@ class StampRallySearchViewModel(
                 is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
             }
         }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): StampRallySearchViewModel
+    }
 }

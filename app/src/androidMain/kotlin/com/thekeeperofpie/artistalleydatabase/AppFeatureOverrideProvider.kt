@@ -2,17 +2,18 @@ package com.thekeeperofpie.artistalleydatabase
 
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.secrets.Secrets
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class AppFeatureOverrideProvider : FeatureOverrideProvider {
     // TODO: Use BuildVariant
@@ -21,7 +22,7 @@ class AppFeatureOverrideProvider : FeatureOverrideProvider {
     override val enableAppMediaPlayerCache = true
 }
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class AppMonetizationOverrideProvider(
     scope: ApplicationScope,

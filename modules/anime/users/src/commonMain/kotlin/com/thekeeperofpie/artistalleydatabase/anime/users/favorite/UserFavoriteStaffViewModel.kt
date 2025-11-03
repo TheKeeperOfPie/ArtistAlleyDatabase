@@ -24,6 +24,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestina
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -31,8 +35,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Inject
@@ -111,8 +113,8 @@ class UserFavoriteStaffViewModel<StaffEntry : Any, MediaEntry>(
 
     fun refresh() = refresh.refresh()
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val mediaListStatusController: MediaListStatusController,
         private val ignoreController: IgnoreController,
@@ -133,5 +135,10 @@ class UserFavoriteStaffViewModel<StaffEntry : Any, MediaEntry>(
             staffEntryProvider = staffEntryProvider,
             mediaEntryProvider = mediaEntryProvider,
         )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(savedStateHandle: SavedStateHandle): TypedFactory
+        }
     }
 }

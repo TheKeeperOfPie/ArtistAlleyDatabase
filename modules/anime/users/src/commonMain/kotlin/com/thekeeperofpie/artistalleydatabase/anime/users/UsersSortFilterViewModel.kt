@@ -13,11 +13,12 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class UsersSortFilterViewModel(
     featureOverrideProvider: FeatureOverrideProvider,
     json: Json,
@@ -59,4 +60,9 @@ class UsersSortFilterViewModel(
         filterParams = filterParams,
         collapseOnClose = mediaDataSettings.collapseAnimeFiltersOnClose,
     )
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): UsersSortFilterViewModel
+    }
 }

@@ -43,7 +43,7 @@ object IgnoreDestinations {
     ) {
         navGraphBuilder.sharedElementComposable<Ignored>(navigationTypeMap) {
             val viewModel = viewModel {
-                component.animeMediaIgnoreViewModelFactory(createSavedStateHandle())
+                component.animeMediaIgnoreViewModelFactoryFactory.create(createSavedStateHandle())
                     .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsStateWithLifecycle()

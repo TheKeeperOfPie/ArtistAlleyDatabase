@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.browse
 
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 
 @Inject
 class BrowseViewModel(

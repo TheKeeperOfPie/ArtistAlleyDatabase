@@ -7,6 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -14,10 +17,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class AnimeNewsViewModel(
     private val animeNewsController: AnimeNewsController,
     @Assisted newsSortFilterViewModel: NewsSortFilterViewModel,
@@ -49,4 +50,9 @@ class AnimeNewsViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, LoadingResult.loading())
 
     fun refresh() = refresh.refresh()
+
+    @AssistedFactory
+    interface Factory {
+        fun create(newsSortFilterViewModel: NewsSortFilterViewModel): AnimeNewsViewModel
+    }
 }

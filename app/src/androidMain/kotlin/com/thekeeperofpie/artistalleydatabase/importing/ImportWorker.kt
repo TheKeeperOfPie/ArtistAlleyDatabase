@@ -21,6 +21,9 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsData
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -30,13 +33,11 @@ import kotlinx.io.buffered
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import okio.use
 import org.apache.commons.compress.archivers.zip.ZipFile
 import java.nio.channels.FileChannel
 
-@Inject
+@AssistedInject
 class ImportWorker(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
@@ -159,4 +160,9 @@ class ImportWorker(
 
             return@withContext Result.success()
         }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(appContext: Context, params: WorkerParameters): ImportWorker
+    }
 }

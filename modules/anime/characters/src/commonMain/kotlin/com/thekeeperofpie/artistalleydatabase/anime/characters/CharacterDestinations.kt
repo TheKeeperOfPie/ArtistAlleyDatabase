@@ -87,7 +87,8 @@ object CharacterDestinations {
             ),
         ) {
             val viewModel = viewModel {
-                component.animeCharacterDetailsViewModelFactory(createSavedStateHandle())
+                component.animeCharacterDetailsViewModelFactoryFactory
+                    .create(createSavedStateHandle())
                     .create(mediaEntryProvider)
             }
             val destination = it.toRoute<CharacterDestinations.CharacterDetails>()
@@ -143,13 +144,13 @@ object CharacterDestinations {
         ) {
             val destination = it.toRoute<CharacterMedias>()
             val characterMediaSortFilterViewModel = viewModel {
-                component.characterMediaSortFilterViewModel(
+                component.characterMediaSortFilterViewModelFactory.create(
                     createSavedStateHandle(),
                     CharacterMediaSortFilterViewModel.InitialParams()
                 )
             }
             val viewModel = viewModel {
-                component.characterMediasViewModelFactory(
+                component.characterMediasViewModelFactoryFactory.create(
                     createSavedStateHandle(),
                     characterMediaSortFilterViewModel
                 ).create(mediaEntryProvider)

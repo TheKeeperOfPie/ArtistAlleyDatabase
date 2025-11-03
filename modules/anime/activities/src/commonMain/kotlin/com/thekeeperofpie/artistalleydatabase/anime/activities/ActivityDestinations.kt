@@ -84,7 +84,8 @@ object ActivityDestinations {
             SharedTransitionKeyScope(destination.sharedTransitionScopeKey) {
                 val navigationController = LocalNavigationController.current
                 val viewModel = viewModel {
-                    component.activityDetailsViewModelFactory(createSavedStateHandle())
+                    component.activityDetailsViewModelFactoryFactory
+                        .create(createSavedStateHandle())
                         .create(mediaEntryProvider)
                 }
                 val viewer by viewModel.viewer.collectAsState()
@@ -105,7 +106,7 @@ object ActivityDestinations {
 
         navGraphBuilder.sharedElementComposable<Activity>(navigationTypeMap) {
             val activitySortFilterViewModel = viewModel {
-                component.activitySortFilterViewModel(
+                component.activitySortFilterViewModelFactory.create(
                     createSavedStateHandle(),
                     mediaDetailsRoute,
                     ActivitySortFilterViewModel.InitialParams(
@@ -115,7 +116,7 @@ object ActivityDestinations {
                 )
             }
             val viewModel = viewModel {
-                component.animeActivityViewModelFactory(activitySortFilterViewModel)
+                component.animeActivityViewModelFactoryFactory.create(activitySortFilterViewModel)
                     .create(mediaEntryProvider)
             }
             val viewer by viewModel.viewer.collectAsState()

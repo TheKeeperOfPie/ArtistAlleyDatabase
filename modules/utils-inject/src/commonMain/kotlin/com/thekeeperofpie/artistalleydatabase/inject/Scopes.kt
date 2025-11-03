@@ -1,11 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.inject
 
-import me.tatarka.inject.annotations.Qualifier
-import me.tatarka.inject.annotations.Scope
-
-@Scope
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER)
-annotation class SingletonScope
+import dev.zacsweers.metro.Qualifier
+import dev.zacsweers.metro.Scope
 
 @Scope
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER)

@@ -26,17 +26,18 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.image.rememberImageHandler
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.sharedElementComposable
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class CdEntryNavigator : BrowseSelectionNavigator {
 

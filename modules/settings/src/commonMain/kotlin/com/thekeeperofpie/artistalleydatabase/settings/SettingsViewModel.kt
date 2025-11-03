@@ -76,9 +76,9 @@ import artistalleydatabase.modules.settings.generated.resources.settings_subsect
 import artistalleydatabase.modules.settings.generated.resources.settings_unlock_all_features
 import co.touchlab.kermit.Logger
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -102,10 +102,11 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 
 @Inject

@@ -3,13 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
-import kotlinx.serialization.encodeToString
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class AniListJson(val json: Json) {
 

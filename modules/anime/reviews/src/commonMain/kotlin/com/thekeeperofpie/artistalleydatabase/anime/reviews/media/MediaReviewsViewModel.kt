@@ -18,11 +18,13 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilteredViewModel
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
-@Inject
+@AssistedInject
 class MediaReviewsViewModel(
     private val aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
@@ -69,5 +71,13 @@ class MediaReviewsViewModel(
             sort = filterParams!!.sort.toApiValue(filterParams.sortAscending),
             page = page,
         ).media.reviews.run { pageInfo to nodes }
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            savedStateHandle: SavedStateHandle,
+            mediaReviewsSortFilterViewModel: MediaReviewsSortFilterViewModel,
+        ): MediaReviewsViewModel
     }
 }

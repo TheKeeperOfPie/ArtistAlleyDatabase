@@ -11,11 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.utils_compose.foldPreviousResult
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class ForumRootScreenViewModel(

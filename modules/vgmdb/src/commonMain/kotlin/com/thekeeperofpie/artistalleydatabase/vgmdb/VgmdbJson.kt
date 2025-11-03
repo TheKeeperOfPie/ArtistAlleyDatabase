@@ -1,15 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import co.touchlab.kermit.Logger
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class VgmdbJson(val json: Json) {
 

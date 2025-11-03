@@ -25,12 +25,12 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbUtils
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class CdSearchViewModel(

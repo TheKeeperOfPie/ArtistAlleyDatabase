@@ -8,7 +8,9 @@ import androidx.security.crypto.MasterKey
 import co.touchlab.kermit.Logger
 import com.eygraber.uri.Uri
 import com.eygraber.uri.toAndroidUri
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.io.Sink
 import kotlinx.io.asInputStream
 import kotlinx.io.asSink
@@ -16,12 +18,11 @@ import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
-import me.tatarka.inject.annotations.Inject
 import java.io.File
 import java.net.URL
 import kotlin.time.Instant
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class AppFileSystem(private val application: Application, private val masterKey: MasterKey) {
 

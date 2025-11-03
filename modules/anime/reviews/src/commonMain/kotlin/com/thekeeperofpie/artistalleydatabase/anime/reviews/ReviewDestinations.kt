@@ -85,21 +85,21 @@ object ReviewDestinations {
     ) {
         navGraphBuilder.sharedElementComposable<Reviews>(navigationTypeMap) {
             val animeSortFilterViewModel = viewModel(key = "anime") {
-                component.reviewsSortFilterViewModel(
+                component.reviewsSortFilterViewModelFactory.create(
                     createSavedStateHandle(),
                     mediaDetailsRoute,
                     MediaType.ANIME,
                 )
             }
             val mangaSortFilterViewModel = viewModel(key = "manga") {
-                component.reviewsSortFilterViewModel(
+                component.reviewsSortFilterViewModelFactory.create(
                     createSavedStateHandle(),
                     mediaDetailsRoute,
                     MediaType.MANGA,
                 )
             }
             val viewModel = viewModel {
-                component.reviewsViewModelFactory(
+                component.reviewsViewModelFactoryFactory.create(
                     animeSortFilterViewModel,
                     mangaSortFilterViewModel,
                 ).create(mediaEntryProvider)
@@ -130,14 +130,17 @@ object ReviewDestinations {
         navGraphBuilder.sharedElementComposable<ReviewDetails>(
             navigationTypeMap = navigationTypeMap,
             deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/review/{reviewId}" },
+                navDeepLink {
+                    uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/review/{reviewId}"
+                },
                 navDeepLink {
                     uriPattern = "${AniListDataUtils.ANILIST_BASE_URL}/review/{reviewId}/.*"
                 },
             ),
         ) {
-            val viewModel =
-                viewModel { component.reviewDetailsViewModel(createSavedStateHandle()) }
+            val viewModel = viewModel {
+                component.reviewDetailsViewModelFactory.create(createSavedStateHandle())
+            }
             val destination = it.toRoute<ReviewDetails>()
             val entry by viewModel.entry.collectAsState()
             val headerValues = MediaHeaderValues(
@@ -183,10 +186,10 @@ object ReviewDestinations {
             navigationTypeMap = navigationTypeMap,
         ) {
             val mediaReviewsSortFilterViewModel = viewModel {
-                component.mediaReviewsSortFilterViewModel(createSavedStateHandle())
+                component.mediaReviewsSortFilterViewModelFactory.create(createSavedStateHandle())
             }
             val viewModel = viewModel {
-                component.mediaReviewsViewModel(
+                component.mediaReviewsViewModelFactory.create(
                     createSavedStateHandle(),
                     mediaReviewsSortFilterViewModel,
                 )

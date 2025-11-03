@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.animethemes
 
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.Provides
 
 interface AnimeThemesComponent {
 
-    val AnimeThemesSongsProvider.bind: AnimeSongsProvider?
-        @Provides get() = this
+    @Provides
+    fun bindAnimeSongsProvider(provider: AnimeThemesSongsProvider): AnimeSongsProvider? = provider
 }

@@ -1,19 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavType
 import com.anilist.data.type.MediaListStatus
 import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeActivitiesComponent
 import com.thekeeperofpie.artistalleydatabase.anime.activities.AnimeMediaDetailsActivityViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.activities.data.ActivitySortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.characters.CharactersComponent
 import com.thekeeperofpie.artistalleydatabase.anime.forums.ForumsComponent
+import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeHistoryDao
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryComponent
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeMediaViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreComponent
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.data.AnimeIgnoreDao
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListSortFilterViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.MangaUserListSortFilterViewModel
@@ -40,10 +40,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.songs.SongsComponent
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffComponent
 import com.thekeeperofpie.artistalleydatabase.anime.studios.StudiosComponent
 import com.thekeeperofpie.artistalleydatabase.anime.users.UsersComponent
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreenViewModel
-import me.tatarka.inject.annotations.IntoSet
-import me.tatarka.inject.annotations.Provides
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.IntoSet
+import dev.zacsweers.metro.Provider
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 import kotlin.reflect.KType
 
 val LocalAnimeComponent = staticCompositionLocalOf<AnimeComponent> {
@@ -55,42 +57,37 @@ interface AnimeComponent : AnimeNewsComponent, AnimeActivitiesComponent, Charact
     RecommendationsComponent, ReviewsComponent, ScheduleComponent, SearchComponent,
     SeasonalComponent, SongsComponent, StaffComponent, StudiosComponent, UsersComponent {
 
-    val animeHomeMediaViewModelAnime: () -> AnimeHomeMediaViewModel.Anime
-    val animeHomeMediaViewModelManga: () -> AnimeHomeMediaViewModel.Manga
-    val animeHomeViewModel: () -> AnimeHomeViewModel
-    val animeMediaDetailsActivityViewModel: (mediaId: String) -> AnimeMediaDetailsActivityViewModel
-    val animeMediaDetailsViewModel: (SavedStateHandle) -> AnimeMediaDetailsViewModel
-    val animeRootViewModel: () -> AnimeRootViewModel
-    val animeSearchSortFilterViewModelFactory: (SavedStateHandle) -> AnimeSearchSortFilterViewModel.Factory
-    val mangaSearchSortFilterViewModelFactory: (SavedStateHandle) -> MangaSearchSortFilterViewModel.Factory
-    val animeUserListSortFilterViewModelFactory: (SavedStateHandle, targetUserId: String?) -> AnimeUserListSortFilterViewModel.Factory
-    val mangaUserListSortFilterViewModelFactory: (SavedStateHandle, targetUserId: String?) -> MangaUserListSortFilterViewModel.Factory
+    val animeMediaDetailsActivityViewModelFactory: AnimeMediaDetailsActivityViewModel.Factory
+    val animeMediaDetailsViewModelFactory: AnimeMediaDetailsViewModel.Factory
+    val animeSearchSortFilterViewModelFactoryFactory: AnimeSearchSortFilterViewModel.TypedFactory.Factory
+    val mangaSearchSortFilterViewModelFactoryFactory: MangaSearchSortFilterViewModel.TypedFactory.Factory
+    val animeUserListSortFilterViewModelFactoryFactory: AnimeUserListSortFilterViewModel.TypedFactory.Factory
+    val mangaUserListSortFilterViewModelFactoryFactory: MangaUserListSortFilterViewModel.TypedFactory.Factory
+    val mediaActivitiesViewModelFactory: MediaActivitiesViewModel.Factory
+    val mediaCharactersSortFilterViewModelFactory: MediaCharactersSortFilterViewModel.Factory
+    val mediaCharactersViewModelFactory: MediaCharactersViewModel.Factory
+    val mediaRecommendationsSortFilterViewModelFactory: MediaRecommendationsSortFilterViewModel.Factory
+    val mediaRecommendationsViewModelFactoryFactory: MediaRecommendationsViewModel.TypedFactory.Factory
+    val animeSortFilterViewModelFactoryFactory: AnimeSortFilterViewModel.TypedFactory.Factory
+
+    val animeHomeMediaViewModelAnime: Provider<AnimeHomeMediaViewModel.Anime>
+    val animeHomeMediaViewModelManga: Provider<AnimeHomeMediaViewModel.Manga>
+    val animeHomeViewModel: Provider<AnimeHomeViewModel>
+    val animeRootViewModel: Provider<AnimeRootViewModel>
+    val mediaEditViewModel: Provider<MediaEditViewModel>
+    val unlockScreenViewModel: Provider<UnlockScreenViewModel>
 
     // TODO; Move into users module?
-    val animeUserListViewModel: (
-        userId: String?,
-        userName: String?,
-        mediaType: MediaType,
-        status: MediaListStatus?,
-        mediaSortFilterViewModel: MediaSortFilterViewModel<MediaListSortOption>,
-    ) -> AnimeUserListViewModel
-    val mediaActivitiesViewModel: (SavedStateHandle, ActivitySortFilterViewModel) -> MediaActivitiesViewModel
-    val mediaCharactersSortFilterViewModel: (SavedStateHandle) -> MediaCharactersSortFilterViewModel
-    val mediaCharactersViewModel: (SavedStateHandle, MediaCharactersSortFilterViewModel) -> MediaCharactersViewModel
-    val mediaEditViewModel: () -> MediaEditViewModel
-    val mediaRecommendationsSortFilterViewModel: (SavedStateHandle) -> MediaRecommendationsSortFilterViewModel
-    val mediaRecommendationsViewModelFactory: (mediaId: String, MediaRecommendationsSortFilterViewModel) -> MediaRecommendationsViewModel.Factory
-    val unlockScreenViewModel: () -> UnlockScreenViewModel
+    val animeUserListViewModelFactory: AnimeUserListViewModel.Factory
 
-    val animeSortFilterViewModelFactory: (SavedStateHandle) -> AnimeSortFilterViewModel.Factory
-
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideAnimeHistoryDao(database: AnimeDatabase) = database.animeHistoryDao()
+    fun provideAnimeHistoryDao(database: AnimeDatabase): AnimeHistoryDao =
+        database.animeHistoryDao()
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideAnimeIgnoreDao(database: AnimeDatabase) = database.animeIgnoreDao()
+    fun provideAnimeIgnoreDao(database: AnimeDatabase): AnimeIgnoreDao = database.animeIgnoreDao()
 
     @Provides
     @IntoSet

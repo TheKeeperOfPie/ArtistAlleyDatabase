@@ -39,13 +39,13 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSec
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant

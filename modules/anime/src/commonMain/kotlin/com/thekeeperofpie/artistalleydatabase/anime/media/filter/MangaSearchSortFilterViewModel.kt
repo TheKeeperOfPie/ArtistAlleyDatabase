@@ -5,10 +5,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.MediaDataSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.data.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 
 class MangaSearchSortFilterViewModel(
     aniListApi: AuthedAniListApi,
@@ -32,8 +33,8 @@ class MangaSearchSortFilterViewModel(
     initialParams = initialParams,
     savedStateHandle = savedStateHandle,
 ) {
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val featureOverrideProvider: FeatureOverrideProvider,
         private val json: Json,
@@ -55,5 +56,10 @@ class MangaSearchSortFilterViewModel(
                 initialParams = initialParams,
                 savedStateHandle = savedStateHandle,
             )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(savedStateHandle: SavedStateHandle) : TypedFactory
+        }
     }
 }

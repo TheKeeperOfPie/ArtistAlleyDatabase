@@ -13,11 +13,12 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import org.jetbrains.compose.resources.stringResource
 
-@Inject
+@AssistedInject
 class FavoritesSortFilterViewModel(
     val settings: ArtistAlleySettings,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -55,4 +56,9 @@ class FavoritesSortFilterViewModel(
     data class FilterParams(
         val showRandomCatalogImage: Boolean,
     )
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): FavoritesSortFilterViewModel
+    }
 }

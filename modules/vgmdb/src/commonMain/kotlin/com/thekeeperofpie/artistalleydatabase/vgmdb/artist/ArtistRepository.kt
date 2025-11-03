@@ -2,17 +2,19 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb.artist
 
 import artistalleydatabase.modules.vgmdb.generated.resources.Res
 import artistalleydatabase.modules.vgmdb.generated.resources.vgmdb_error_fetching_artist
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ApiRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import me.tatarka.inject.annotations.Inject
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class ArtistRepository(
     scope: ApplicationScope,

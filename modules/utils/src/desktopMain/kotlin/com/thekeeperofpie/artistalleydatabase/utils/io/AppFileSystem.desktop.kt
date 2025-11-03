@@ -3,7 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.utils.io
 import com.eygraber.uri.Uri
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.asInputStream
@@ -12,7 +14,6 @@ import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.io.files.FileMetadata
 import kotlinx.io.files.Path
-import me.tatarka.inject.annotations.Inject
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.OpenOption
@@ -22,7 +23,7 @@ import javax.imageio.stream.FileCacheImageInputStream
 import kotlin.io.path.pathString
 import kotlin.time.toKotlinInstant
 
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 actual class AppFileSystem {
     private val fileSystem = Jimfs.newFileSystem(Configuration.unix())

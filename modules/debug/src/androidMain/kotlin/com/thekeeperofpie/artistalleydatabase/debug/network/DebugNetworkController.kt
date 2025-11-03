@@ -6,10 +6,12 @@ import com.apollographql.apollo3.api.http.HttpRequest
 import com.apollographql.apollo3.api.http.HttpResponse
 import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_network.ApolloRateLimitUtils
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import graphql.language.AstPrinter
 import graphql.parser.Parser
 import kotlinx.coroutines.channels.BufferOverflow
@@ -20,7 +22,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import me.tatarka.inject.annotations.Inject
 import okio.Buffer
 import java.nio.charset.Charset
 import kotlin.time.Clock
@@ -29,7 +30,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class DebugNetworkController(scope: ApplicationScope) {
 

@@ -1,18 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.DependencyGraph
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Component
-import me.tatarka.inject.annotations.Provides
 
-@SingletonScope
-@Component
-abstract class EntryTestComponent {
-    @get:Provides
-    val json: Json = Json.Default
+@SingleIn(AppScope::class)
+@DependencyGraph
+interface EntryTestComponent {
+    @Provides
+    fun provideJson(): Json = Json.Default
 
-    abstract val appFileSystem: AppFileSystem
-    abstract val cropController: CropController
+    val appFileSystem: AppFileSystem
+    val cropController: CropController
 }

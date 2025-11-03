@@ -34,12 +34,12 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.stateInForCompose
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
-import me.tatarka.inject.annotations.Inject
 
 @Inject
 class AnimeHomeViewModel(

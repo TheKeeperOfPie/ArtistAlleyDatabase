@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryComponent
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
@@ -24,65 +23,66 @@ import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.CustomNavTypes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkComponent
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.DependencyGraph
+import dev.zacsweers.metro.IntoSet
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Component
-import me.tatarka.inject.annotations.IntoSet
-import me.tatarka.inject.annotations.Provides
 import kotlin.reflect.KType
 
-@SingletonScope
-@Component
-abstract class DesktopComponent(
-    @get:Provides val scope: ApplicationScope,
-) : AppComponent, AniListComponent, AnimeComponent, ArtEntryComponent, CdEntryComponent,
-    NetworkComponent, VgmdbComponent {
+@SingleIn(AppScope::class)
+@DependencyGraph
+interface DesktopComponent : AppComponent, AniListComponent, AnimeComponent, ArtEntryComponent,
+    CdEntryComponent, NetworkComponent, VgmdbComponent {
 
-    abstract val artEntryNavigator: ArtEntryNavigator
-    abstract val cdEntryNavigator: CdEntryNavigator
-    abstract val httpClient: HttpClient
-    abstract val navigationTypeMap: NavigationTypeMap
-    abstract val settingsProvider: DesktopSettingsProvider
-    abstract val monetizationController: MonetizationController
+    val artEntryNavigator: ArtEntryNavigator
+    val cdEntryNavigator: CdEntryNavigator
+    val httpClient: HttpClient
+    val navigationTypeMap: NavigationTypeMap
+    val settingsProvider: DesktopSettingsProvider
+    val monetizationController: MonetizationController
 
-    val DesktopSettingsProvider.bindAppSettings: AppSettings
-        @Provides get() = this
+    @Provides
+    fun bindAppSettings(settingsProvider: DesktopSettingsProvider): AppSettings = settingsProvider
 
-    val DesktopDatabase.bindAniListDatabase: AniListDatabase
-        @Provides get() = this
+    @Provides
+    fun bindAniListDatabase(database: DesktopDatabase): AniListDatabase = database
 
-    val DesktopDatabase.bindAnimeDatabase: AnimeDatabase
-        @Provides get() = this
+    @Provides
+    fun bindAnimeDatabase(database: DesktopDatabase): AnimeDatabase = database
 
-    val DesktopDatabase.bindArtEntryDatabase: ArtEntryDatabase
-        @Provides get() = this
+    @Provides
+    fun bindArtEntryDatabase(database: DesktopDatabase): ArtEntryDatabase = database
 
-    val DesktopDatabase.bindCdEntryDatabase: CdEntryDatabase
-        @Provides get() = this
+    @Provides
+    fun bindCdEntryDatabase(database: DesktopDatabase): CdEntryDatabase = database
 
-    val DesktopDatabase.bindVgmdbDatabase: VgmdbDatabase
-        @Provides get() = this
+    @Provides
+    fun bindVgmdbDatabase(database: DesktopDatabase): VgmdbDatabase = database
 
     // Remove this once SettingsProvider is unified
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun provideSettingsProvider(
         scope: ApplicationScope,
         json: Json,
         featureOverrideProvider: FeatureOverrideProvider,
         settingsStore: SettingsStore,
-    ) = SettingsProvider(scope, json, featureOverrideProvider, settingsStore)
+    ): SettingsProvider = SettingsProvider(scope, json, featureOverrideProvider, settingsStore)
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideNetworkClient() = buildNetworkClient()
+    fun provideNetworkClient(): NetworkClient = buildNetworkClient()
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun provideFeatureOverrideProvider(): FeatureOverrideProvider =
         object : FeatureOverrideProvider {
@@ -91,35 +91,40 @@ abstract class DesktopComponent(
             override val enableAppMediaPlayerCache = false
         }
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideDesktopDatabase() = Room.inMemoryDatabaseBuilder<DesktopDatabase>()
+    fun provideDesktopDatabase(): DesktopDatabase = Room.inMemoryDatabaseBuilder<DesktopDatabase>()
         .setDriver(BundledSQLiteDriver())
         .fallbackToDestructiveMigrationOnDowngrade(true)
         .build()
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     @IntoSet
     fun provideBaseTypeMap(): Map<KType, NavType<*>> = CustomNavTypes.baseTypeMap
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun bindsTypeMap(typeMaps: @JvmSuppressWildcards Set<Map<KType, NavType<*>>>): NavigationTypeMap =
         NavigationTypeMap(typeMaps.fold(mapOf<KType, NavType<*>>()) { acc, map -> acc + map })
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
-    fun provideJson() = Json {
+    fun provideJson(): Json = Json {
         isLenient = true
         ignoreUnknownKeys = true
         prettyPrint = true
     }
 
-    @SingletonScope
+    @SingleIn(AppScope::class)
     @Provides
     fun provideMonetizationOverrideProvider(): MonetizationOverrideProvider =
         object : MonetizationOverrideProvider {
             override val overrideUnlock = MutableStateFlow(false)
         }
+
+    @DependencyGraph.Factory
+    interface Factory {
+        fun create(@Provides scope: ApplicationScope): DesktopComponent
+    }
 }

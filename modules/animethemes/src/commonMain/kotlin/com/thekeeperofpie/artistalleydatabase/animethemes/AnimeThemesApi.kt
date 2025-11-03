@@ -4,7 +4,9 @@ import com.thekeeperofpie.artistalleydatabase.animethemes.models.Anime
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistWithAniList
-import com.thekeeperofpie.artistalleydatabase.inject.SingletonScope
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
@@ -12,10 +14,9 @@ import io.ktor.utils.io.readBuffer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.io.decodeFromSource
-import me.tatarka.inject.annotations.Inject
 
 @OptIn(ExperimentalSerializationApi::class)
-@SingletonScope
+@SingleIn(AppScope::class)
 @Inject
 class AnimeThemesApi(
     private val json: Json,

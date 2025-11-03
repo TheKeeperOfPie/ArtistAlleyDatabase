@@ -22,10 +22,11 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.debounceState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterSectionState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.Json
-import me.tatarka.inject.annotations.Assisted
-import me.tatarka.inject.annotations.Inject
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
@@ -166,8 +167,8 @@ class AnimeSearchSortFilterViewModel(
         override fun text() = stringResource(textRes)
     }
 
-    @Inject
-    class Factory(
+    @AssistedInject
+    class TypedFactory(
         private val aniListApi: AuthedAniListApi,
         private val featureOverrideProvider: FeatureOverrideProvider,
         private val json: Json,
@@ -189,5 +190,10 @@ class AnimeSearchSortFilterViewModel(
                 initialParams = initialParams,
                 savedStateHandle = savedStateHandle,
             )
+
+        @AssistedFactory
+        interface Factory {
+            fun create(savedStateHandle: SavedStateHandle) : TypedFactory
+        }
     }
 }

@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.monetization
 
 import androidx.lifecycle.ViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
-import me.tatarka.inject.annotations.Inject
+import dev.zacsweers.metro.Inject
 
 @Inject
 class UnlockScreenViewModel(
