@@ -85,7 +85,7 @@ fun main() {
         } else {
             event.respondWith(
                 promise {
-                    if (urlPath == "/") {
+                    val response = if (urlPath == "/") {
                         val cachedRevision = filesToCacheAndRevisions["index.html"]
                         fetchCacheFirst(
                             "/index.html?__REVISION__=$cachedRevision",
@@ -100,6 +100,27 @@ fun main() {
                         } else {
                             fetchCacheFirst(request, request, urlPath)
                         }
+                    }
+
+                    // Fix a bug with Pages serving the wrong Content-Type
+                    val url = request.url
+                    val contentType = when {
+                        url.endsWith(".wasm") -> "application/wasm"
+                        else -> null
+                    }
+                    if (contentType != null && contentType != response.headers.get("Content-Type")) {
+                        Response(
+                            response.body,
+                            ResponseInit(
+                                headers = response.headers,
+                                status = response.status,
+                                statusText = response.statusText,
+                            )
+                                ).apply {
+                            headers.set("Content-Type", contentType)
+                        }
+                    } else {
+                        response
                     }
                 }
             )
