@@ -1,4 +1,3 @@
-
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -208,18 +207,25 @@ val serviceWorkerOutput: Configuration by configurations.creating {
     isCanBeResolved = true
 }
 
+val alleyEditOutput: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     serviceWorkerOutput(project(":modules:alley-app:service-worker")) {
+        targetConfiguration = "distribution"
+    }
+    alleyEditOutput(project(":modules:alley-edit")) {
         targetConfiguration = "distribution"
     }
 }
 
 val buildBothWebVariants by tasks.registering(Sync::class) {
-    val taskName = "composeCompatibilityBrowserDistribution"
+    val alleyAppTaskName = "composeCompatibilityBrowserDistribution"
+    dependsOn(alleyAppTaskName)
 
-    dependsOn(taskName)
-
-    from(tasks.named(taskName).get().outputs.files)
+    from(tasks.named(alleyAppTaskName).get().outputs.files)
     into(layout.buildDirectory.dir("dist/web/productionExecutable"))
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -229,6 +235,14 @@ val copyServiceWorkerOutput: TaskProvider<Copy> by tasks.registering(Copy::class
     dependsOn("buildBothWebVariants")
     from(serviceWorkerOutput)
     into(project.layout.buildDirectory.dir("dist/web/productionExecutable"))
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+val copyAlleyEdit by tasks.registering(Copy::class) {
+    dependsOn("buildBothWebVariants")
+    from(alleyEditOutput)
+    into(layout.buildDirectory.dir("dist/web/productionExecutable"))
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
@@ -247,7 +261,7 @@ configurations.all {
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
     dependsOn(":modules:alley:user:verifySqlDelightMigration")
-    dependsOn(copyServiceWorkerOutput)
+    dependsOn(copyServiceWorkerOutput, copyAlleyEdit)
 
     val distDir = project.layout.buildDirectory.dir("dist/web/productionExecutable")
     doLast {

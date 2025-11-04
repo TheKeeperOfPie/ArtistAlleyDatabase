@@ -82,3 +82,12 @@ configurations.all {
         force("org.jetbrains.kotlinx:kotlinx-browser:0.1")
     }
 }
+
+val distribution: NamedDomainObjectProvider<Configuration> by configurations.registering {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+
+artifacts {
+    add(distribution.name, tasks.named("wasmJsBrowserDistribution"))
+}
