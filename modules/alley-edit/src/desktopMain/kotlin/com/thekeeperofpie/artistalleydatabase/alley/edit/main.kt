@@ -1,8 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.PointerMatcher
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.onClick
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
@@ -30,6 +36,7 @@ import okio.FileSystem
 import okio.buffer
 import okio.source
 
+@OptIn(ExperimentalFoundationApi::class)
 fun main() {
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
@@ -91,7 +98,18 @@ fun main() {
                 CompositionLocalProvider(
                     LocalWindowConfiguration provides windowConfiguration,
                 ) {
-                    App(graph)
+                    val twoWayStack = rememberArtistAlleyEditTwoWayStack()
+                    Box(
+                        modifier = Modifier.onClick(
+                            matcher = PointerMatcher.mouse(PointerButton.Back),
+                            onClick = twoWayStack::onBack,
+                        ).onClick(
+                            matcher = PointerMatcher.mouse(PointerButton.Forward),
+                            onClick = twoWayStack::onForward,
+                        )
+                    ) {
+                        ArtistAlleyEditApp(graph = graph, twoWayStack = twoWayStack)
+                    }
                 }
             }
         }

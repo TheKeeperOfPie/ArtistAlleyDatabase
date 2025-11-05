@@ -25,9 +25,11 @@ kotlin {
         )
         optIn.addAll(
             listOf(
+                "androidx.compose.foundation.ExperimentalFoundationApi",
                 "androidx.compose.material3.ExperimentalMaterial3Api",
                 "kotlin.js.ExperimentalWasmJsInterop",
                 "kotlin.time.ExperimentalTime",
+                "kotlin.uuid.ExperimentalUuidApi",
             )
         )
     }

@@ -12,6 +12,7 @@ import dev.zacsweers.metro.SingleIn
 interface ArtistAlleyEditGraph {
 
     val appFileSystem: AppFileSystem
+    val artistDetailsViewModelFactory: ArtistDetailsViewModel.Factory
 
     @DependencyGraph.Factory
     fun interface Factory {

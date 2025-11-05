@@ -65,14 +65,15 @@ object Versions {
 
     object jetBrains {
         object androidX {
-            const val lifecycle = "2.10.0-alpha02"
+            const val lifecycle = "2.10.0-alpha04"
             const val navigation = "2.9.1"
-            const val navigationevent = "1.0.0-alpha02"
+            const val navigation3 = "1.0.0-alpha04"
+            const val navigationevent = "1.0.0-beta01"
         }
 
         object composeMultiplatform {
-            const val plugin = "1.10.0-alpha03"
-            const val runtime = "1.10.0-alpha03"
+            const val plugin = "1.10.0-beta01"
+            const val runtime = "1.10.0-beta01"
         }
     }
 
@@ -295,7 +296,9 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     with(Versions.jetBrains.androidX) {
                         library("org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:$lifecycle")
                         library("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle")
+                        library("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3:$lifecycle")
                         library("org.jetbrains.androidx.navigation:navigation-compose:$navigation")
+                        library("org.jetbrains.androidx.navigation3:navigation3-ui:$navigation3")
                         library("org.jetbrains.androidx.navigationevent:navigationevent-compose:$navigationevent")
                     }
                 }

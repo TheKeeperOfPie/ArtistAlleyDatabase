@@ -42,23 +42,14 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.components.resources)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.preview)
             implementation(compose.runtime)
             implementation(compose.ui)
 
             implementation(libs.coil3.coil.compose)
-            implementation(libs.kermit)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
-
             implementation(projects.modules.alley)
+            implementation(projects.modules.alley.edit)
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
-            implementation(projects.modules.utilsInject)
         }
         val desktopMain by getting {
             dependencies {
