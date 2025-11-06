@@ -27,9 +27,11 @@ kotlin {
             listOf(
                 "androidx.compose.foundation.ExperimentalFoundationApi",
                 "androidx.compose.material3.ExperimentalMaterial3Api",
+                "androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi",
                 "kotlin.js.ExperimentalWasmJsInterop",
                 "kotlin.time.ExperimentalTime",
                 "kotlin.uuid.ExperimentalUuidApi",
+                "kotlinx.coroutines.ExperimentalCoroutinesApi",
             )
         )
     }

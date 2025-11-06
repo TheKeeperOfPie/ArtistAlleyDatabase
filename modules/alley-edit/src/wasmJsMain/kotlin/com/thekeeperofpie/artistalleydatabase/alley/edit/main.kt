@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
@@ -31,12 +32,18 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.WebResourcesConfiguration
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
+        SideEffect {
+            WebResourcesConfiguration.resourcePathMapping { "${window.location.origin}/$it" }
+        }
+
         val scope = rememberCoroutineScope()
-        val graph = createGraphFactory<ArtistAlleyEditGraph.Factory>()
+        val graph = createGraphFactory<ArtistAlleyEditWasmJsGraph.Factory>()
             .create(scope)
 
         SingletonImageLoader.setSafe {
@@ -61,6 +68,7 @@ fun main() {
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun Content(graph: ArtistAlleyEditGraph) {
     AlleyTheme(appTheme = { AppThemeSetting.AUTO }) {

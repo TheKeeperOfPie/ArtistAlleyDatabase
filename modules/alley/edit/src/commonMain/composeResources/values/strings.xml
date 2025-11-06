@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alley_artist_edit_booth">Booth</string>
+    <string name="alley_artist_edit_name">Name</string>
+    <string name="alley_artist_edit_summary">Summary</string>
+    <string name="alley_artist_edit_links">Social links</string>
+    <string name="alley_artist_edit_store_links">Store links</string>
+    <string name="alley_artist_edit_catalog_links">Catalog links</string>
+    <string name="alley_artist_edit_notes">Notes</string>
+    <string name="alley_artist_edit_commissions">Commissions</string>
+    <string name="alley_artist_edit_series_inferred">Series - Inferred</string>
+    <string name="alley_artist_edit_series_confirmed">Series - Confirmed</string>
+    <string name="alley_artist_edit_merch_inferred">Merch - Inferred</string>
+    <string name="alley_artist_edit_merch_confirmed">Merch - Confirmed</string>
+</resources>

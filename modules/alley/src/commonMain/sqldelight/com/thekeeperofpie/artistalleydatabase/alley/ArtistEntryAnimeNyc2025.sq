@@ -9,10 +9,9 @@ SELECT artistEntryAnimeNyc2025.*
 FROM artistEntryAnimeNyc2025
 WHERE booth = :booth;
 
-getEntriesRandom:
-SELECT *
-FROM artistEntryAnimeNyc2025
-ORDER BY substr(artistEntryAnimeNyc2025.counter * ?, length(artistEntryAnimeNyc2025.counter) + 2);
+getAllEntries:
+SELECT artistEntryAnimeNyc2025.id, artistEntryAnimeNyc2025.booth, artistEntryAnimeNyc2025.name
+FROM artistEntryAnimeNyc2025;
 
 getImagesById:
 SELECT artistEntryAnimeNyc2025.images FROM artistEntryAnimeNyc2025

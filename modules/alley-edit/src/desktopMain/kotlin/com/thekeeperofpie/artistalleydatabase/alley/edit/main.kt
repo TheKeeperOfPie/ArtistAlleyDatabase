@@ -40,7 +40,7 @@ import okio.source
 fun main() {
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
-        val graph = createGraphFactory<ArtistAlleyEditGraph.Factory>()
+        val graph = createGraphFactory<ArtistAlleyEditDesktopGraph.Factory>()
             .create(scope)
 
         SingletonImageLoader.setSafe { context ->

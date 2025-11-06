@@ -28,7 +28,7 @@ private val savedStateConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(baseClass = NavKey::class) {
             subclass(serializer = AlleyEditDestination.Home.serializer())
-            subclass(serializer = AlleyEditDestination.ArtistDetails.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistEdit.serializer())
         }
     }
 }

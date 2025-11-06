@@ -615,6 +615,7 @@ private val UPCOMING_PROMPT_DURATION = 15.days
 @Composable
 fun DataYearHeader(
     state: DataYearHeaderState,
+    showFeedbackReminder: Boolean = true,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
     Column {
@@ -664,57 +665,61 @@ fun DataYearHeader(
             }
         }
 
-        if (year == DataYear.ANIME_EXPO_2025) {
-            ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
-                ) {
-                    val text = buildAnnotatedString {
-                        append("Thanks for attending ")
-                        append(stringResource(year.shortName))
-                        append("! If you have any feedback, please let us know ")
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                            withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLink)) {
-                                append("here")
+        if (showFeedbackReminder) {
+            if (year == DataYear.ANIME_EXPO_2025) {
+                ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    ) {
+                        val text = buildAnnotatedString {
+                            append("Thanks for attending ")
+                            append(stringResource(year.shortName))
+                            append("! If you have any feedback, please let us know ")
+                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                                withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLink)) {
+                                    append("here")
+                                }
                             }
                         }
-                    }
-                    Text(
-                        text = text,
-                        modifier = Modifier.weight(1f)
-                    )
-                    val uriHandler = LocalUriHandler.current
-                    Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLink) }) {
-                        Text("Open")
+                        Text(
+                            text = text,
+                            modifier = Modifier.weight(1f)
+                        )
+                        val uriHandler = LocalUriHandler.current
+                        Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLink) }) {
+                            Text("Open")
+                        }
                     }
                 }
-            }
-        } else if (year == DataYear.ANIME_NYC_2025) {
-            ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
-                ) {
-                    val text = buildAnnotatedString {
-                        append("Thanks for attending ")
-                        append(stringResource(year.shortName))
-                        append("! If you have any feedback, please let us know ")
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                            withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLinkAnimeNyc2025)) {
-                                append("here")
+            } else if (year == DataYear.ANIME_NYC_2025) {
+                ThemeAwareElevatedCard(Modifier.fillMaxWidth()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    ) {
+                        val text = buildAnnotatedString {
+                            append("Thanks for attending ")
+                            append(stringResource(year.shortName))
+                            append("! If you have any feedback, please let us know ")
+                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                                withLink(LinkAnnotation.Url(BuildKonfig.feedbackFormLinkAnimeNyc2025)) {
+                                    append("here")
+                                }
                             }
                         }
-                    }
-                    Text(
-                        text = text,
-                        modifier = Modifier.weight(1f)
-                    )
-                    val uriHandler = LocalUriHandler.current
-                    Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLinkAnimeNyc2025) }) {
-                        Text("Open")
+                        Text(
+                            text = text,
+                            modifier = Modifier.weight(1f)
+                        )
+                        val uriHandler = LocalUriHandler.current
+                        Button(onClick = { uriHandler.openUri(BuildKonfig.feedbackFormLinkAnimeNyc2025) }) {
+                            Text("Open")
+                        }
                     }
                 }
             }
@@ -811,7 +816,10 @@ fun DisplayTypeSearchBar(
     ) {
         var query by query.collectAsMutableStateWithLifecycle()
         val isNotEmpty by remember { derivedStateOf { query.isNotEmpty() } }
-        NavigationBackHandler(rememberNavigationEventState(NavigationEventInfo.None)) {
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = isNotEmpty,
+        ) {
             query = ""
         }
 

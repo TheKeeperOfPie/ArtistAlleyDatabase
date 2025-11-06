@@ -9,10 +9,9 @@ SELECT artistEntry2023.*
 FROM artistEntry2023
 WHERE booth = :booth;
 
-getEntriesRandom:
-SELECT *
-FROM artistEntry2023
-ORDER BY substr(artistEntry2023.counter * ?, length(artistEntry2023.counter) + 2);
+getAllEntries:
+SELECT artistEntry2023.id, artistEntry2023.booth, artistEntry2023.name
+FROM artistEntry2023;
 
 getStampRallyEntries:
 SELECT stampRallyEntry2023.* FROM stampRallyArtistConnection

@@ -105,6 +105,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.swap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -113,6 +114,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -150,6 +152,7 @@ object EntryForm2 {
         }
     }
 
+    // TODO: Should this be collapsed into SingleTextState?
     @Stable
     class PendingTextState(
         val pendingValue: TextFieldState = TextFieldState(),
@@ -175,6 +178,30 @@ object EntryForm2 {
                     initialPendingFocused = pendingFocused as Boolean,
                     initialLockState = lockState as EntryLockState,
                     wasEverDifferent = wasEverDifferent as Boolean,
+                )
+            }
+        }
+    }
+
+    @Stable
+    class SingleTextState(
+        val value: TextFieldState = TextFieldState(),
+        initialLockState: EntryLockState = EntryLockState.UNLOCKED,
+    ) : State() {
+        override var lockState by mutableStateOf(initialLockState)
+        override val wasEverDifferent get() = false
+
+        object Saver : ComposeSaver<SingleTextState, Any> {
+            override fun SaverScope.save(value: SingleTextState) = listOf(
+                with(TextFieldState.Saver) { save(value.value) },
+                value.lockState,
+            )
+
+            override fun restore(value: Any): SingleTextState? {
+                val (value, lockState) = value as List<*>
+                return SingleTextState(
+                    value = with(TextFieldState.Saver) { restore(value!!) }!!,
+                    initialLockState = lockState as EntryLockState,
                 )
             }
         }
@@ -261,15 +288,38 @@ object EntryForm2 {
     }
 }
 
+@Suppress("UnusedReceiverParameter")
+@Composable
+fun EntryFormScope.SingleTextSection(
+    state: EntryForm2.SingleTextState,
+    headerText: @Composable () -> Unit,
+) {
+    Column {
+        SectionHeader(
+            text = headerText,
+            lockState = state.lockState,
+            onClick = state::rotateLockState,
+        )
+
+        OpenSectionField(
+            state = state.value,
+            lockState = { state.lockState },
+            totalSize = { 0 },
+            onLock = { state.lockState = EntryLockState.LOCKED },
+        )
+    }
+}
+
+
 @Composable
 fun EntryFormScope.MultiTextSection(
     state: EntryForm2.PendingTextState,
     headerText: @Composable () -> Unit,
-    focusRequester: FocusRequester,
-    onFocusChanged: (Boolean) -> Unit,
-    entryPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>>,
-    trailingIcon: (EntryForm2.MultiTextState.Entry) -> Pair<ImageVector, StringResource>?,
-    onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit,
+    focusRequester: FocusRequester? = null,
+    onFocusChanged: (Boolean) -> Unit = {},
+    entryPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>> = { emptyFlow() },
+    trailingIcon: (EntryForm2.MultiTextState.Entry) -> Pair<ImageVector, StringResource>? = { null },
+    onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
     items: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
     onItemCommitted: (EntryForm2.MultiTextState.Entry) -> Unit,
     removeLastItem: () -> String?,
@@ -491,12 +541,12 @@ private fun OpenSectionField(
     lockState: () -> EntryLockState?,
     totalSize: () -> Int,
     onLock: () -> Unit,
-    bringIntoViewRequester: BringIntoViewRequester,
-    focusRequester: FocusRequester,
-    onFocusChanged: (Boolean) -> Unit,
-    onRemove: () -> Unit,
-    onDone: () -> Unit,
-    modifier: Modifier,
+    bringIntoViewRequester: BringIntoViewRequester? = null,
+    focusRequester: FocusRequester? = null,
+    onFocusChanged: (Boolean) -> Unit = {},
+    onRemove: () -> Unit = {},
+    onDone: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
     OpenSectionField(
@@ -522,9 +572,13 @@ private fun OpenSectionField(
         onDone = onDone,
         lockState = lockState,
         modifier = modifier
-            .focusRequester(focusRequester)
+            .conditionallyNonNull(focusRequester) {
+                focusRequester(it)
+            }
             .onFocusChanged { onFocusChanged(it.isFocused) }
-            .bringIntoViewRequester(bringIntoViewRequester)
+            .conditionallyNonNull(bringIntoViewRequester) {
+                bringIntoViewRequester(it)
+            }
     )
 }
 
@@ -980,8 +1034,8 @@ private fun EntryPrefilledAutocompleteDropdown(
 fun EntryFormScope.LongTextSection(
     state: EntryForm2.PendingTextState,
     headerText: @Composable () -> Unit,
-    focusRequester: FocusRequester,
-    onFocusChanged: (Boolean) -> Unit,
+    focusRequester: FocusRequester? = null,
+    onFocusChanged: (Boolean) -> Unit = {},
 ) {
     SectionHeader(text = headerText, state = state)
 
@@ -990,7 +1044,7 @@ fun EntryFormScope.LongTextSection(
         state = state.pendingValue,
         readOnly = !editable,
         modifier = Modifier
-            .focusRequester(focusRequester)
+            .conditionallyNonNull(focusRequester) { focusRequester(it) }
             .onFocusChanged { onFocusChanged(it.isFocused) }
             .focusable(editable)
             .fillMaxWidth()

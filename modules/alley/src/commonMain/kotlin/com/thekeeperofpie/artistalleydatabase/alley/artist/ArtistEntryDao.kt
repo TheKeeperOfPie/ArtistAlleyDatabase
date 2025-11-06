@@ -40,7 +40,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlin.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2025.GetEntry as GetEntry2025
@@ -861,5 +863,33 @@ class ArtistEntryDao(
         DataYear.ANIME_EXPO_2025 -> dao2025().getImagesById(artistId).awaitAsOneOrNull()
         DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024().getImagesById(artistId).awaitAsOneOrNull()
         DataYear.ANIME_NYC_2025 -> daoAnimeNyc2025().getImagesById(artistId).awaitAsOneOrNull()
+    }
+
+    suspend fun getAllEntries(year: DataYear) = withContext(PlatformDispatchers.IO) {
+        when (year) {
+            DataYear.ANIME_EXPO_2023 -> dao2023().getAllEntries().awaitAsList()
+                .map {
+                    if (it.id.isBlank()) {
+                        println(it)
+                    }
+                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                }
+            DataYear.ANIME_EXPO_2024 -> dao2024().getAllEntries().awaitAsList()
+                .map {
+                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                }
+            DataYear.ANIME_EXPO_2025 -> dao2025().getAllEntries().awaitAsList()
+                .map {
+                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                }
+            DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024().getAllEntries().awaitAsList()
+                .map {
+                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                }
+            DataYear.ANIME_NYC_2025 -> daoAnimeNyc2025().getAllEntries().awaitAsList()
+                .map {
+                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                }
+        }
     }
 }
