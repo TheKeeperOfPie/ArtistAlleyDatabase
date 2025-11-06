@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
@@ -47,37 +47,45 @@ fun ArtistAlleyEditApp(
                             twoWayStack.onBack()
                         }
                     }
+                    val entryProvider = entryProvider<NavKey> {
+                        sharedElementEntry<AlleyEditDestination.Home> {
+                            HomeScreen(
+                                graph = graph,
+                                onEditArtist = { dataYear, artistId ->
+                                    twoWayStack.navigate(
+                                        AlleyEditDestination.ArtistEdit(
+                                            dataYear,
+                                            artistId
+                                        )
+                                    )
+                                },
+                            )
+                        }
+                        sharedElementEntry<AlleyEditDestination.ArtistEdit> {
+                            ArtistEditScreen(
+                                route = it,
+                                graph = graph,
+                                onClickBack = onClickBack,
+                            )
+                        }
+                    }
+
+                    val decoratedNavEntries =
+                        (twoWayStack.navBackStack + twoWayStack.navForwardStack)
+                            .flatMap {
+                                key(it.toString()) {
+                                    rememberDecoratedNavEntries(
+                                        backStack = listOf(it),
+                                        entryDecorators = listOf(
+                                            rememberSaveableStateHolderNavEntryDecorator(),
+                                            rememberViewModelStoreNavEntryDecorator()
+                                        ),
+                                        entryProvider = entryProvider,
+                                    )
+                                }
+                            }
                     NavDisplay(
-                        entries = rememberDecoratedNavEntries(
-                            backStack = twoWayStack.navBackStack + twoWayStack.navForwardStack,
-                            entryDecorators = listOf<NavEntryDecorator<NavKey>>(
-                                rememberSaveableStateHolderNavEntryDecorator(),
-                                rememberViewModelStoreNavEntryDecorator()
-                            ),
-                            entryProvider = entryProvider<NavKey> {
-                                sharedElementEntry<AlleyEditDestination.Home> {
-                                    HomeScreen(
-                                        graph = graph,
-                                        onEditArtist = { dataYear, artistId ->
-                                            twoWayStack.navigate(
-                                                AlleyEditDestination.ArtistEdit(
-                                                    dataYear,
-                                                    artistId
-                                                )
-                                            )
-                                        },
-                                    )
-                                }
-                                sharedElementEntry<AlleyEditDestination.ArtistEdit> {
-                                    ArtistEditScreen(
-                                        route = it,
-                                        graph = graph,
-                                        onClickBack = onClickBack,
-                                    )
-                                }
-                            },
-                        ),
-                        sceneStrategy = twoWayStack.sceneStrategy,
+                        entries = decoratedNavEntries.take(twoWayStack.navBackStack.size),
                         onBack = twoWayStack::onBack,
                         transitionSpec = {
                             slideInHorizontally(initialOffsetX = { it }) togetherWith
