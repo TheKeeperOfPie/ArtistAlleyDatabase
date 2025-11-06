@@ -8,3 +8,8 @@ internal actual fun NavigationControllerImpl.navigateBack(): Boolean {
     window.history.back()
     return canGoBack
 }
+
+actual fun interceptNavigateBack(): Boolean {
+    window.history.back()
+    return true
+}

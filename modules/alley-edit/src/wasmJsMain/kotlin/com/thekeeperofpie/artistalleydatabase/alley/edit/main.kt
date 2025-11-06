@@ -127,12 +127,14 @@ private suspend fun attachToBrowserHistory(twoWayStack: ArtistAlleyEditTwoWaySta
                         }
                     }
 
-                    if (commonTail == -1 || commonTail == 0) {
-                        val root = currentRoutes.removeFirst()
-                        twoWayStack.navBackStack.clear()
-                        twoWayStack.navBackStack += root
-                    } else {
-                        ((currentRoutes.size - 1) downTo commonTail + 1).forEach {
+                    when (commonTail) {
+                        currentRoutes.size - 2 -> twoWayStack.onBack()
+                        -1, 0 -> {
+                            val root = currentRoutes.removeFirst()
+                            twoWayStack.navBackStack.clear()
+                            twoWayStack.navBackStack += root
+                        }
+                        else -> ((currentRoutes.size - 1) downTo commonTail + 1).forEach {
                             currentRoutes.removeAt(it)
                         }
                     }

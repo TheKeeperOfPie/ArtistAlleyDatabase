@@ -67,3 +67,4 @@ class NavigationControllerImpl(
 }
 
 internal expect fun NavigationControllerImpl.navigateBack(): Boolean
+expect fun interceptNavigateBack(): Boolean

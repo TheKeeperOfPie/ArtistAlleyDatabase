@@ -15,24 +15,29 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.serialization.decodeArguments
 import androidx.navigation.serialization.generateNavArguments
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer
+import kotlin.jvm.JvmSuppressWildcards
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 class NavigationTypeMap(val typeMap: Map<KType, NavType<*>>)
 
-inline fun <reified T : Any> SavedStateHandle.toDestination(typeMap: NavigationTypeMap) = toRoute<T>(typeMap.typeMap)
+inline fun <reified T : Any> SavedStateHandle.toDestination(typeMap: NavigationTypeMap) =
+    toRoute<T>(typeMap.typeMap)
 
 inline fun <reified T : Any> SavedStateHandle.toRoute(
-    typeMap: Map<KType, NavType<*>> = emptyMap()
+    typeMap: Map<KType, NavType<*>> = emptyMap(),
 ): T = internalToRoute(T::class, typeMap)
 
 @OptIn(InternalSerializationApi::class)
 fun <T : Any> SavedStateHandle.internalToRoute(
     route: KClass<T>,
-    typeMap: Map<KType, NavType<*>>
+    typeMap: Map<KType, NavType<*>>,
 ): T {
     val map: MutableMap<String, NavType<*>> = mutableMapOf()
     val serializer = route.serializer()
@@ -62,6 +67,18 @@ inline fun <reified T : NavDestination> NavGraphBuilder.sharedElementComposable(
 ) {
     CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
         content(it)
+    }
+}
+
+inline fun <reified K : NavKey> EntryProviderScope<in K>.sharedElementEntry(
+    noinline clazzContentKey: (key: @JvmSuppressWildcards K) -> Any = { it.toString() },
+    metadata: Map<String, Any> = emptyMap(),
+    noinline content: @Composable (K) -> Unit,
+) {
+    addEntryProvider(K::class, clazzContentKey, metadata) {
+        CompositionLocalProvider(LocalAnimatedVisibilityScope provides LocalNavAnimatedContentScope.current) {
+            content(it)
+        }
     }
 }
 

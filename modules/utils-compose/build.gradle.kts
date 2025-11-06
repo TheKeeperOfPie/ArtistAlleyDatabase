@@ -46,6 +46,7 @@ kotlin {
             api(libs.compose.placeholder.material3)
             api(libs.jetBrainsAndroidX.lifecycle.runtime.compose)
             api(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
+            api(libs.jetBrainsAndroidX.navigation3.ui)
             api(libs.jetBrainsCompose.ui.backhandler)
             api(libs.paging.common)
             api(libs.paging.compose)

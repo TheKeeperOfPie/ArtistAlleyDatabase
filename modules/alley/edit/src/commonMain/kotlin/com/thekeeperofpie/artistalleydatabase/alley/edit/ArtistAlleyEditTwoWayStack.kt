@@ -3,28 +3,18 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.NavEntryDecorator
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.serialization.NavBackStackSerializer
-import androidx.savedstate.SavedState
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.scene.Scene
+import androidx.navigation3.scene.SceneStrategy
 import androidx.savedstate.serialization.SavedStateConfiguration
-import androidx.savedstate.serialization.decodeFromSavedState
-import androidx.savedstate.serialization.encodeToSavedState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-private val savedStateConfig = SavedStateConfiguration {
+private val SavedStateConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(baseClass = NavKey::class) {
             subclass(serializer = AlleyEditDestination.Home.serializer())
@@ -33,89 +23,85 @@ private val savedStateConfig = SavedStateConfiguration {
     }
 }
 
+@Composable
+fun rememberArtistAlleyEditTwoWayStack(): ArtistAlleyEditTwoWayStack {
+    val backStack = rememberNavBackStack(
+        SavedStateConfig,
+        AlleyEditDestination.Home,
+    )
+    val forwardStack = rememberNavBackStack(SavedStateConfig)
+    return remember(backStack, forwardStack) {
+        ArtistAlleyEditTwoWayStack(backStack, forwardStack)
+    }
+}
+
 @Stable
 class ArtistAlleyEditTwoWayStack internal constructor(
-    private val data: Data,
-    internal val saveableStateHolder: SaveableStateHolder,
+    val navBackStack: NavBackStack<NavKey>,
+    val navForwardStack: NavBackStack<NavKey>,
 ) {
-    val navBackStack get() = data.navBackStack
-    val forwardNavStack get() = data.forwardNavStack
-    val forwardStateKeys get() = data.forwardStateKeys
-
     fun navigate(destination: AlleyEditDestination) {
-        if (destination == forwardNavStack.lastOrNull()) {
+        if (destination == navForwardStack.lastOrNull()) {
             onForward()
         } else {
-            forwardNavStack.clear()
-            forwardStateKeys.forEach {
-                saveableStateHolder.removeState(it)
-            }
-            forwardStateKeys.clear()
+            navForwardStack.clear()
             navBackStack += destination
         }
     }
 
     fun onBack() {
         if (navBackStack.size > 1) {
-            forwardNavStack += navBackStack.removeLast()
+            navForwardStack += navBackStack.removeLast()
         }
     }
 
     fun onForward() {
-        if (forwardNavStack.isNotEmpty()) {
-            navBackStack += forwardNavStack.removeLast()
+        if (navForwardStack.isNotEmpty()) {
+            navBackStack += navForwardStack.removeLast()
         }
     }
 
-    internal class Data(
-        internal val navBackStack: NavBackStack<NavKey> = NavBackStack(AlleyEditDestination.Home),
-        internal val forwardNavStack: NavBackStack<NavKey> = NavBackStack(),
-        internal val forwardStateKeys: SnapshotStateList<Any> = SnapshotStateList(),
-    ) {
-        object Saver : ComposeSaver<Data, Any> {
-            private val serializer = NavBackStackSerializer(PolymorphicSerializer(NavKey::class))
-            private val backStackSaver: ComposeSaver<NavBackStack<NavKey>, SavedState> = Saver(
-                save = { encodeToSavedState(serializer, it, savedStateConfig) },
-                restore = { decodeFromSavedState(serializer, it, savedStateConfig) },
-            )
+    val sceneStrategy = SceneStrategy<NavKey> { entries ->
+        val (visible, invisible) = entries.partition { entry -> navBackStack.any { entry.contentKey == it.toString() } }
+        if (visible.isEmpty()) return@SceneStrategy null
+        SinglePaneScene(
+            key = visible.last().contentKey,
+            entry = visible.last(),
+            previousEntries = visible.dropLast(1),
+        )
+    }
 
-            override fun SaverScope.save(value: Data) = listOf(
-                with(backStackSaver) { save(value.navBackStack) },
-                with(backStackSaver) { save(value.forwardNavStack) },
-                value.forwardStateKeys,
-            )
+    /** Copy of Compose class since it's marked internal */
+    private data class SinglePaneScene<T : Any>(
+        override val key: Any,
+        val entry: NavEntry<T>,
+        override val previousEntries: List<NavEntry<T>>,
+    ) : Scene<T> {
+        override val entries: List<NavEntry<T>> = listOf(entry)
 
-            override fun restore(value: Any): Data {
-                val (navBackStack, forwardStack, forwardStateKeyStack) = value as List<*>
-                @Suppress("UNCHECKED_CAST")
-                return Data(
-                    navBackStack = with(backStackSaver) { restore(navBackStack as SavedState) }!!,
-                    forwardNavStack = with(backStackSaver) { restore(forwardStack as SavedState) }!!,
-                    forwardStateKeys = (forwardStateKeyStack as List<Any>).toMutableStateList(),
-                )
-            }
+        override val content: @Composable () -> Unit = { entry.Content() }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as SinglePaneScene<*>
+
+            return key == other.key &&
+                    entry == other.entry &&
+                    previousEntries == other.previousEntries &&
+                    entries == other.entries
+        }
+
+        override fun hashCode(): Int {
+            return key.hashCode() * 31 +
+                    entry.hashCode() * 31 +
+                    previousEntries.hashCode() * 31 +
+                    entries.hashCode() * 31
+        }
+
+        override fun toString(): String {
+            return "SinglePaneScene(key=$key, entry=$entry, previousEntries=$previousEntries, entries=$entries)"
         }
     }
-}
-
-@Composable
-fun rememberArtistAlleyEditTwoWayStack(): ArtistAlleyEditTwoWayStack {
-    val data =
-        rememberSaveable(ArtistAlleyEditTwoWayStack.Data.Saver) { ArtistAlleyEditTwoWayStack.Data() }
-    val saveableStateHolder = rememberSaveableStateHolder()
-    return remember(data, saveableStateHolder) {
-        ArtistAlleyEditTwoWayStack(data, saveableStateHolder)
-    }
-}
-
-@Composable
-internal fun <T : Any> rememberTwoWaySaveableStateHolder(
-    twoWayStack: ArtistAlleyEditTwoWayStack,
-) = remember(twoWayStack) {
-    NavEntryDecorator<T>(
-        onPop = { twoWayStack.forwardStateKeys += it },
-        decorate = {
-            twoWayStack.saveableStateHolder.SaveableStateProvider(it.contentKey) { it.Content() }
-        },
-    )
 }

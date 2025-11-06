@@ -42,8 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlin.uuid.Uuid
 
 internal object HomeScreen {
@@ -70,7 +70,7 @@ internal object HomeScreen {
     operator fun invoke(
         query: MutableStateFlow<String>,
         dataYear: MutableStateFlow<DataYear>,
-        entries: Flow<List<ArtistSummary>>,
+        entries: StateFlow<List<ArtistSummary>>,
         onEditArtist: (id: Uuid) -> Unit,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -102,7 +102,7 @@ internal object HomeScreen {
                 },
                 modifier = Modifier.widthIn(max = 1200.dp)
             ) {
-                val entries by entries.collectAsStateWithLifecycle(emptyList())
+                val entries by entries.collectAsStateWithLifecycle()
                 val dataYearHeaderState = rememberDataYearHeaderState(dataYear, null)
                 LazyColumn(
                     contentPadding = PaddingValues(bottom = 72.dp),

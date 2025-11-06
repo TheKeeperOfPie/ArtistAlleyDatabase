@@ -11,16 +11,20 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntryDecorator
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.home.HomeScreen
-import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.interceptNavigateBack
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
 
 @Composable
 fun ArtistAlleyEditApp(
@@ -38,36 +42,43 @@ fun ArtistAlleyEditApp(
         }) {
             SharedTransitionLayout {
                 CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                    val onClickBack = {
+                        if (!interceptNavigateBack()) {
+                            twoWayStack.onBack()
+                        }
+                    }
                     NavDisplay(
-                        entryDecorators = listOf(
-                            rememberTwoWaySaveableStateHolder(twoWayStack),
-                            rememberViewModelStoreNavEntryDecorator(),
-                        ),
-                        backStack = twoWayStack.navBackStack,
-                        onBack = twoWayStack::onBack,
-                        entryProvider = entryProvider {
-                            entry<AlleyEditDestination.Home> {
-                                CompositionLocalProvider(LocalAnimatedVisibilityScope provides LocalNavAnimatedContentScope.current) {
-                                    HomeScreen(graph = graph, onEditArtist = { dataYear, artistId ->
-                                        twoWayStack.navigate(
-                                            AlleyEditDestination.ArtistEdit(
-                                                dataYear,
-                                                artistId
+                        entries = rememberDecoratedNavEntries(
+                            backStack = twoWayStack.navBackStack + twoWayStack.navForwardStack,
+                            entryDecorators = listOf<NavEntryDecorator<NavKey>>(
+                                rememberSaveableStateHolderNavEntryDecorator(),
+                                rememberViewModelStoreNavEntryDecorator()
+                            ),
+                            entryProvider = entryProvider<NavKey> {
+                                sharedElementEntry<AlleyEditDestination.Home> {
+                                    HomeScreen(
+                                        graph = graph,
+                                        onEditArtist = { dataYear, artistId ->
+                                            twoWayStack.navigate(
+                                                AlleyEditDestination.ArtistEdit(
+                                                    dataYear,
+                                                    artistId
+                                                )
                                             )
-                                        )
-                                    })
+                                        },
+                                    )
                                 }
-                            }
-                            entry<AlleyEditDestination.ArtistEdit> {
-                                CompositionLocalProvider(LocalAnimatedVisibilityScope provides LocalNavAnimatedContentScope.current) {
+                                sharedElementEntry<AlleyEditDestination.ArtistEdit> {
                                     ArtistEditScreen(
                                         route = it,
                                         graph = graph,
-                                        onClickBack = twoWayStack::onBack
+                                        onClickBack = onClickBack,
                                     )
                                 }
-                            }
-                        },
+                            },
+                        ),
+                        sceneStrategy = twoWayStack.sceneStrategy,
+                        onBack = twoWayStack::onBack,
                         transitionSpec = {
                             slideInHorizontally(initialOffsetX = { it }) togetherWith
                                     slideOutHorizontally(targetOffsetX = { -it })
