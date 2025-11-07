@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
@@ -54,10 +55,10 @@ class ArtistSeriesViewModel(
         seriesEntry.filterNotNull()
             .map { it.series }
             .map {
-                val cachedResult = seriesImagesStore.getCachedImages(listOf(it))
+                val cachedResult = seriesImagesStore.getCachedImages(listOf(it.toImageInfo()))
                 val cachedImage = cachedResult.seriesIdsToImages[it.id]
                 if (cachedImage != null) return@map cachedImage
-                seriesImagesStore.getAllImages(listOf(it), cachedResult)[it.id]
+                seriesImagesStore.getAllImages(listOf(it.toImageInfo()), cachedResult)[it.id]
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
     }

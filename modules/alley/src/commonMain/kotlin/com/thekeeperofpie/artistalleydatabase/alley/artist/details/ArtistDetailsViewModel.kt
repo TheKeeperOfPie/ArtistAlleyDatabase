@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
@@ -153,7 +154,7 @@ class ArtistDetailsViewModel(
         combine(seriesInferred.filterNotNull(), seriesConfirmed.filterNotNull(), ::Pair)
             .flatMapLatest { (seriesInferred, seriesConfirmed) ->
                 flow {
-                    val series = (seriesInferred + seriesConfirmed).map { it.series }
+                    val series = (seriesInferred + seriesConfirmed).map { it.series.toImageInfo() }
                     val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
                     emit(seriesImagesCacheResult.seriesIdsToImages)
                     emit(seriesImagesStore.getAllImages(series, seriesImagesCacheResult))

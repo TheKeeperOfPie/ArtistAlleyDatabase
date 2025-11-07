@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -104,7 +105,7 @@ class StampRallyDetailsViewModel(
     val seriesImages = series.filterNotNull()
         .flatMapLatest {
             flow {
-                val series = it.map { it.series }
+                val series = it.map { it.series.toImageInfo() }
                 val seriesImagesCacheResult = seriesImagesStore.getCachedImages(series)
                 emit(seriesImagesCacheResult.seriesIdsToImages)
                 emit(seriesImagesStore.getAllImages(series, seriesImagesCacheResult))

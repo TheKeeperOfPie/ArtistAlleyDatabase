@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -13,7 +12,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import dev.zacsweers.metro.Assisted
@@ -29,7 +31,9 @@ import kotlinx.coroutines.launch
 
 @AssistedInject
 class ArtistEditViewModel(
+    dispatchers: CustomDispatchers,
     database: AlleyEditDatabase,
+    seriesImagesStore: SeriesImagesStore,
     @Assisted route: AlleyEditDestination.ArtistEdit,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -82,42 +86,48 @@ class ArtistEditViewModel(
 
     init {
         if (!hasLoaded) {
-            viewModelScope.launch {
+            viewModelScope.launch(PlatformDispatchers.IO) {
                 val artist = database.loadArtist(route.dataYear, route.artistId) ?: return@launch
                 val seriesById = seriesById.first()
                 val merchById = merchById.first()
-                Snapshot.withMutableSnapshot {
-                    // TODO: Fill out other fields and store lock state in database
-                    val textState = state.textState
-                    artist.booth?.ifBlank { null }?.let {
-                        textState.booth.value.setTextAndPlaceCursorAtEnd(it)
-                        textState.booth.lockState = EntryLockState.LOCKED
-                    }
 
-                    textState.name.value.setTextAndPlaceCursorAtEnd(artist.name)
-                    textState.name.lockState = EntryLockState.LOCKED
+                val links = artist.links.map(LinkModel::parse).sortedBy { it.logo }
+                val storeLinks = artist.storeLinks.map(LinkModel::parse).sortedBy { it.logo }
 
-                    artist.summary?.ifBlank { null }?.let {
-                        textState.summary.value.setTextAndPlaceCursorAtEnd(it)
-                        textState.summary.lockState = EntryLockState.LOCKED
-                    }
+                val seriesInferred = artist.seriesInferred.mapNotNull { seriesById[it] }
+                val seriesConfirmed = artist.seriesConfirmed.mapNotNull { seriesById[it] }
+                val merchInferred = artist.merchInferred.mapNotNull { merchById[it] }
+                val merchConfirmed = artist.merchConfirmed.mapNotNull { merchById[it] }
 
-                    artist.notes?.ifBlank { null }?.let {
-                        textState.notes.pendingValue.setTextAndPlaceCursorAtEnd(it)
-                        textState.notes.lockState = EntryLockState.LOCKED
-                    }
-
-                    state.links += artist.links.map(LinkModel::parse).sortedBy { it.logo }
-                    state.storeLinks += artist.storeLinks.map(LinkModel::parse).sortedBy { it.logo }
-                    state.catalogLinks += artist.catalogLinks.map(LinkModel::parse)
-                        .sortedBy { it.logo }
-                    state.commissions += artist.commissions
-
-                    state.seriesInferred += artist.seriesInferred.mapNotNull { seriesById[it] }
-                    state.seriesConfirmed += artist.seriesConfirmed.mapNotNull { seriesById[it] }
-                    state.merchInferred += artist.merchInferred.mapNotNull { merchById[it] }
-                    state.merchConfirmed += artist.merchConfirmed.mapNotNull { merchById[it] }
+                // TODO: Fill out other fields and store lock state in database
+                val textState = state.textState
+                artist.booth?.ifBlank { null }?.let {
+                    textState.booth.value.setTextAndPlaceCursorAtEnd(it)
+                    textState.booth.lockState = EntryLockState.LOCKED
                 }
+
+                textState.name.value.setTextAndPlaceCursorAtEnd(artist.name)
+                textState.name.lockState = EntryLockState.LOCKED
+
+                artist.summary?.ifBlank { null }?.let {
+                    textState.summary.value.setTextAndPlaceCursorAtEnd(it)
+                    textState.summary.lockState = EntryLockState.LOCKED
+                }
+
+                artist.notes?.ifBlank { null }?.let {
+                    textState.notes.pendingValue.setTextAndPlaceCursorAtEnd(it)
+                    textState.notes.lockState = EntryLockState.LOCKED
+                }
+
+                state.links += links
+                state.storeLinks += storeLinks
+                state.catalogLinks += artist.catalogLinks
+                state.commissions += artist.commissions
+
+                state.seriesInferred += seriesInferred
+                state.seriesConfirmed += seriesConfirmed
+                state.merchInferred += merchInferred
+                state.merchConfirmed += merchConfirmed
                 hasLoaded = true
             }
         }
@@ -150,6 +160,9 @@ class ArtistEditViewModel(
                     .sortedBy { it.name }
             }
             .flowOn(PlatformDispatchers.IO)
+
+    private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
+    fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
     @AssistedFactory
     interface Factory {

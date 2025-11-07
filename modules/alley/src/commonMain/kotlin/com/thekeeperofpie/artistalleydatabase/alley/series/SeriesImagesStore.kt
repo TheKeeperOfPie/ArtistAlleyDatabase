@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyAniListApi
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyWikipediaApi
 import com.thekeeperofpie.artistalleydatabase.alley.GetImageEntries
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageType
@@ -40,7 +39,7 @@ class SeriesImagesStore(
             .associate { it }
     }
 
-    suspend fun getCachedImages(series: List<SeriesEntry>): CacheResult {
+    suspend fun getCachedImages(series: List<SeriesImageInfo>): CacheResult {
         val seriesIdToAniListIds = series.filter { it.aniListId != null }
             .associate { it.id to it.aniListId!!.toString() }
         val seriesIdToWikipediaIds = series.filter { it.wikipediaId != null }
@@ -71,7 +70,7 @@ class SeriesImagesStore(
     }
 
     suspend fun getAllImages(
-        series: List<SeriesEntry>,
+        series: List<SeriesImageInfo>,
         cacheResult: CacheResult,
     ): Map<String, String> {
         val seriesIdToAniListIds = series.filter { it.aniListId != null }
@@ -120,7 +119,7 @@ class SeriesImagesStore(
             if (newWikipediaImages.isNotEmpty()) {
                 imageEntryDao.insertImageEntries(newWikipediaImages.map {
                     ImageEntry(
-                        imageId = it.key.toString(),
+                        imageId = it.key,
                         type = ImageType.WIKIPEDIA.name,
                         url = it.value,
                         createdAtSecondsUtc = now.epochSeconds,
@@ -130,7 +129,7 @@ class SeriesImagesStore(
                     imageCache.cache(newWikipediaImages.values)
                 } catch (_: Throwable) {
                 }
-                allWikipediaImages += newWikipediaImages.mapKeys { it.key.toString() }
+                allWikipediaImages += newWikipediaImages.mapKeys { it.key }
             }
         }
 

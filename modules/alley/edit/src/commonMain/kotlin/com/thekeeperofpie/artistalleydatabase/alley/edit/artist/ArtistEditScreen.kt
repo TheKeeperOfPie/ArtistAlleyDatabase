@@ -3,22 +3,32 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -29,6 +39,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,12 +63,21 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_e
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_summary
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
+import coil3.compose.AsyncImage
+import com.anilist.data.type.MediaType
+import com.eygraber.compose.placeholder.PlaceholderHighlight
+import com.eygraber.compose.placeholder.material3.placeholder
+import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.name
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
+import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
@@ -84,6 +109,7 @@ object ArtistEditScreen {
             seriesPredictions = viewModel::seriesPredictions,
             merchPredictions = viewModel::merchPredictions,
             onClickBack = onClickBack,
+            seriesImage = viewModel::seriesImage,
         )
     }
 
@@ -94,6 +120,7 @@ object ArtistEditScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         onClickBack: () -> Unit,
+        seriesImage: (SeriesInfo) -> String?,
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             val textState = state.textState
@@ -124,10 +151,11 @@ object ArtistEditScreen {
                         title = Res.string.alley_artist_edit_store_links,
                         items = state.storeLinks,
                     )
-                    LinksSection(
+                    MultiTextSection(
                         state = textState.catalogLinks,
                         title = Res.string.alley_artist_edit_catalog_links,
                         items = state.catalogLinks,
+                        itemToText = { it },
                     )
                     MultiTextSection(
                         state = textState.commissions,
@@ -135,19 +163,19 @@ object ArtistEditScreen {
                         items = state.commissions,
                         itemToText = { it },
                     )
-                    MultiTextSection(
+                    SeriesSection(
                         state = textState.seriesInferred,
                         title = Res.string.alley_artist_edit_series_inferred,
                         items = state.seriesInferred,
                         predictions = seriesPredictions,
-                        itemToText = { it.titlePreferred },
+                        image = seriesImage,
                     )
-                    MultiTextSection(
+                    SeriesSection(
                         state = textState.seriesConfirmed,
                         title = Res.string.alley_artist_edit_series_confirmed,
                         items = state.seriesConfirmed,
                         predictions = seriesPredictions,
-                        itemToText = { it.titlePreferred },
+                        image = seriesImage,
                     )
                     MultiTextSection(
                         state = textState.merchInferred,
@@ -192,13 +220,10 @@ object ArtistEditScreen {
     ) {
         MultiTextSection(
             state = state,
-            headerText = { Text(stringResource(title)) },
-            entryPredictions = predictions,
+            title = title,
             items = items,
-            onItemCommitted = { },
+            predictions = predictions,
             removeLastItem = { items.removeLastOrNull()?.let { itemToText(it) } },
-            prediction = { Text(text = itemToText(it)) },
-            preferPrediction = true,
             item = { item ->
                 Box {
                     TextField(
@@ -231,6 +256,49 @@ object ArtistEditScreen {
                     )
                 }
             },
+            prediction = { Text(text = itemToText(it)) },
+        )
+    }
+
+    @Composable
+    private fun <T> EntryFormScope.MultiTextSection(
+        state: EntryForm2.PendingTextState,
+        title: StringResource,
+        items: SnapshotStateList<T>,
+        predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
+        removeLastItem: () -> String?,
+        item: @Composable (T) -> Unit,
+        prediction: @Composable (T) -> Unit,
+    ) {
+        MultiTextSection(
+            state = state,
+            headerText = { Text(stringResource(title)) },
+            entryPredictions = predictions,
+            items = items,
+            onItemCommitted = { },
+            removeLastItem = removeLastItem,
+            prediction = prediction,
+            preferPrediction = true,
+            item = item,
+        )
+    }
+
+    @Composable
+    private fun EntryFormScope.SeriesSection(
+        state: EntryForm2.PendingTextState,
+        title: StringResource,
+        items: SnapshotStateList<SeriesInfo>,
+        predictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        image: (SeriesInfo) -> String?,
+    ) {
+        MultiTextSection(
+            state = state,
+            title = title,
+            items = items,
+            predictions = predictions,
+            removeLastItem = { items.removeLastOrNull()?.titlePreferred },
+            prediction = { Text(it.titlePreferred) },
+            item = { SeriesRow(series = it, image = { image(it) }) },
         )
     }
 
@@ -268,11 +336,90 @@ object ArtistEditScreen {
         )
     }
 
+    @Composable
+    fun SeriesRow(
+        series: SeriesInfo,
+        image: () -> String?,
+        modifier: Modifier = Modifier,
+        textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier.height(IntrinsicSize.Min)
+        ) {
+            AsyncImage(
+                model = image(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxHeight()
+                    .width(56.dp)
+                    .height(80.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+
+            val languageOptionMedia = LocalLanguageOptionMedia.current
+            val colorScheme = MaterialTheme.colorScheme
+            val title = remember(series, languageOptionMedia, colorScheme) {
+                val name = series.name(languageOptionMedia)
+                val otherTitles = listOf(
+                    series.titlePreferred,
+                    series.titleEnglish,
+                    series.titleRomaji,
+                    series.titleNative,
+                ).distinct() - name
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = colorScheme.secondary)) {
+                        append(name)
+                    }
+                    if (otherTitles.isNotEmpty()) {
+                        otherTitles.forEach {
+                            append(" / ")
+                            append(it)
+                        }
+                    }
+                }
+            }
+            Text(
+                text = title,
+                style = textStyle,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .weight(1f)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .placeholder(
+                        visible = series == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+
+            val uriHandler = LocalUriHandler.current
+            if (series.aniListId != null) {
+                val mediaType = when (series.aniListType) {
+                    "ANIME" -> MediaType.ANIME
+                    "MANGA" -> MediaType.MANGA
+                    else -> MediaType.UNKNOWN__
+                }
+                val icon = when (series.aniListType) {
+                    "ANIME" -> Icons.Default.Monitor
+                    "MANGA" -> Icons.Default.Book
+                    else -> Icons.Default.Monitor
+                }
+                val aniListUrl = AniListDataUtils.mediaUrl(mediaType, series.aniListId.toString())
+                IconButtonWithTooltip(
+                    imageVector = icon,
+                    tooltipText = aniListUrl,
+                    onClick = { uriHandler.openUri(aniListUrl) },
+                    allowPopupHover = false,
+                )
+            }
+        }
+    }
+
     @Stable
     class State(
         val links: SnapshotStateList<LinkModel>,
         val storeLinks: SnapshotStateList<LinkModel>,
-        val catalogLinks: SnapshotStateList<LinkModel>,
+        val catalogLinks: SnapshotStateList<String>,
         val commissions: SnapshotStateList<String>,
         val seriesInferred: SnapshotStateList<SeriesInfo>,
         val seriesConfirmed: SnapshotStateList<SeriesInfo>,
@@ -312,18 +459,18 @@ object ArtistEditScreen {
                 )
 
                 override fun restore(value: List<Any>) = TextState(
-                    booth = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) }!!,
-                    name = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) }!!,
-                    summary = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) }!!,
-                    links = with(EntryForm2.PendingTextState.Saver) { restore(value[3]) }!!,
-                    storeLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[4]) }!!,
-                    catalogLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[5]) }!!,
-                    commissions = with(EntryForm2.PendingTextState.Saver) { restore(value[6]) }!!,
-                    seriesInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[7]) }!!,
-                    seriesConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[8]) }!!,
-                    merchInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[9]) }!!,
-                    merchConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[10]) }!!,
-                    notes = with(EntryForm2.PendingTextState.Saver) { restore(value[11]) }!!,
+                    booth = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
+                    name = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
+                    summary = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+                    links = with(EntryForm2.PendingTextState.Saver) { restore(value[3]) },
+                    storeLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[4]) },
+                    catalogLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[5]) },
+                    commissions = with(EntryForm2.PendingTextState.Saver) { restore(value[6]) },
+                    seriesInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[7]) },
+                    seriesConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[8]) },
+                    merchInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[9]) },
+                    merchConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[10]) },
+                    notes = with(EntryForm2.PendingTextState.Saver) { restore(value[11]) },
                 )
             }
         }

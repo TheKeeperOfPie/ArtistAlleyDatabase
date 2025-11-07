@@ -46,6 +46,7 @@ kotlin {
             implementation(compose.ui)
 
             implementation(libs.coil3.coil.compose)
+            implementation(libs.coil3.coil.network.ktor3)
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.edit)
             implementation(projects.modules.utils)
@@ -55,6 +56,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.ktor.client.java)
             }
         }
     }

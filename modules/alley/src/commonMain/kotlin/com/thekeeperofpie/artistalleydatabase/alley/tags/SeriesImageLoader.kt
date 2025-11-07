@@ -3,7 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.tags
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.Snapshot
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -22,7 +24,7 @@ class SeriesImageLoader(
 
     private val requests = mutableStateMapOf<String, Request>()
 
-    private val requestChannel = Channel<SeriesEntry>(100, BufferOverflow.DROP_OLDEST)
+    private val requestChannel = Channel<SeriesImageInfo>(100, BufferOverflow.DROP_OLDEST)
 
     init {
         scope.launch(dispatchers.io) {
@@ -66,12 +68,14 @@ class SeriesImageLoader(
     }
 
     private sealed interface Request {
-        data class Pending(val series: SeriesEntry) : Request
+        data class Pending(val series: SeriesImageInfo) : Request
         data class Done(val url: String) : Request
         data object Failed : Request
     }
 
-    fun getSeriesImage(series: SeriesEntry): String? {
+    fun getSeriesImage(series: SeriesEntry) = getSeriesImage(series.toImageInfo())
+
+    fun getSeriesImage(series: SeriesImageInfo): String? {
         val cached = requests[series.id]
         if (cached == null) {
             requestChannel.trySend(series)
