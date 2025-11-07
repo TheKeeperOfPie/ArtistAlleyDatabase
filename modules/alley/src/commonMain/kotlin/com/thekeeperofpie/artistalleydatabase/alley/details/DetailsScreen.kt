@@ -4,14 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,9 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
@@ -50,24 +45,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_always_show
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_available_fallback_prompt_show
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_none
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text_generic
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImagePreviewProvider
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
@@ -85,7 +75,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
     ExperimentalMaterial3ExpressiveApi::class
 )
 object DetailsScreen {
@@ -210,36 +201,14 @@ object DetailsScreen {
                         ImageFallbackBanner(sharedElementId, fallbackYear)
                     }
 
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Adaptive(500.dp),
-                        contentPadding = PaddingValues(8.dp),
-                        verticalItemSpacing = 8.dp,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ImageGrid(
+                        images = images,
+                        onClickImage = {
+                            // Adjust by 1 to account for grid on full screen
+                            onClickImage(it + 1)
+                        },
                         modifier = Modifier.fillMaxHeight().weight(1f)
-                    ) {
-                        itemsIndexed(images) { index, image ->
-                            val loadingColor =
-                                MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
-                            val placeholderPainter =
-                                remember(MaterialTheme.colorScheme) { ColorPainter(loadingColor) }
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalPlatformContext.current)
-                                    .data(image.uri)
-                                    .placeholderMemoryCacheKey(image.uri.toString())
-                                    .build(),
-                                contentScale = ContentScale.FillWidth,
-                                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                                placeholder = placeholderPainter,
-                                modifier = Modifier
-                                    .clickable { onClickImage(if (images.size > 1) index + 1 else 0) }
-                                    .sharedElement("image", image.uri)
-                                    .fillMaxWidth()
-                                    .conditionally(image.width != null && image.height != null) {
-                                        aspectRatio(image.width!!.toFloat() / image.height!!)
-                                    }
-                            )
-                        }
-                    }
+                    )
                 }
             }
         }

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.navigation.NavType
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear

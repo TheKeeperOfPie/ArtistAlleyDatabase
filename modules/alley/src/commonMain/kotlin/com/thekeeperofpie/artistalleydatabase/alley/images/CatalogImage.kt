@@ -1,15 +1,18 @@
-package com.thekeeperofpie.artistalleydatabase.alley.data
+package com.thekeeperofpie.artistalleydatabase.alley.images
 
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 @Serializable
 data class CatalogImage(
     val uri: Uri,
-    val width: Int?,
-    val height: Int?,
-)
+    override val width: Int?,
+    override val height: Int?,
+) : ImageWithDimensions {
+    override val coilImageModel: Uri get() = uri
+}
 
 object CatalogImagePreviewProvider : PreviewParameterProvider<CatalogImage> {
     override val values = generateSequence<Pair<Int, CatalogImage?>>(0 to null) { (count, value) ->

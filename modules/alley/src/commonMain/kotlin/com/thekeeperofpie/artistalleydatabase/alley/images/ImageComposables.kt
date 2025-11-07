@@ -12,8 +12,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +23,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -35,6 +40,7 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -50,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -70,11 +77,11 @@ import coil3.decode.BlackholeDecoder
 import coil3.request.CachePolicy
 import coil3.request.Disposable
 import coil3.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.WrappedViewConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomPanState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
@@ -109,7 +116,7 @@ private val blackholeFactory = BlackholeDecoder.Factory()
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ImagePager(
-    images: List<CatalogImage>,
+    images: List<ImageWithDimensions>,
     pagerState: PagerState,
     sharedElementId: Any,
     onClickPage: ((Int) -> Unit)?,
@@ -190,8 +197,8 @@ fun ImagePager(
                             val isFillWidth = imageContentScale == ContentScale.FillWidth
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalPlatformContext.current)
-                                    .data(image.uri)
-                                    .memoryCacheKey(image.uri.toString())
+                                    .data(image.coilImageModel)
+                                    .memoryCacheKey(image.coilImageModel.toString())
                                     .build(),
                                 contentScale = imageContentScale,
                                 onSuccess = { anySuccess = true },
@@ -212,7 +219,7 @@ fun ImagePager(
                                             }
                                         )
                                     }
-                                    .sharedElement("image", image.uri)
+                                    .sharedElement("image", image.coilImageModel)
                                     .conditionally(isFillWidth) {
                                         fillMaxWidth()
                                     }
@@ -253,7 +260,7 @@ fun ImagePager(
                 images.forEach {
                     disposables += imageLoader.enqueue(
                         ImageRequest.Builder(context)
-                            .data(it.uri)
+                            .data(it.coilImageModel)
                             .memoryCachePolicy(CachePolicy.DISABLED)
                             .decoderFactory(blackholeFactory)
                             .build()
@@ -268,7 +275,7 @@ fun ImagePager(
 @Composable
 private fun BoxScope.ImagePagerActions(
     sharedElementId: Any,
-    images: List<CatalogImage>,
+    images: List<ImageWithDimensions>,
     pagerState: PagerState,
     userScrollEnabled: () -> Boolean,
 ) {
@@ -373,6 +380,44 @@ private fun BoxScope.ImagePagerActions(
                             .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
                         shape = CircleShape,
                     )
+            )
+        }
+    }
+}
+
+@Composable
+fun ImageGrid(
+    images: List<ImageWithDimensions>,
+    onClickImage: (imageIndex: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(500.dp),
+        contentPadding = PaddingValues(8.dp),
+        verticalItemSpacing = 8.dp,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+    ) {
+        itemsIndexed(images) { index, image ->
+            val loadingColor =
+                MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
+            val placeholderPainter =
+                remember(MaterialTheme.colorScheme) { ColorPainter(loadingColor) }
+            AsyncImage(
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(image.coilImageModel)
+                    .placeholderMemoryCacheKey(image.coilImageModel.toString())
+                    .build(),
+                contentScale = ContentScale.FillWidth,
+                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                placeholder = placeholderPainter,
+                modifier = Modifier
+                    .clickable { onClickImage(index) }
+                    .sharedElement("image", image.coilImageModel)
+                    .fillMaxWidth()
+                    .conditionally(image.width != null && image.height != null) {
+                        aspectRatio(image.width!!.toFloat() / image.height!!)
+                    }
             )
         }
     }

@@ -74,6 +74,7 @@ object Versions {
         object composeMultiplatform {
             const val plugin = "1.10.0-beta01"
             const val runtime = "1.10.0-beta01"
+            const val windowSizeClass = "1.10.0-alpha04"
         }
     }
 
@@ -252,6 +253,11 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                 }
 
+                withVersion(Versions.fileKit) {
+                    library("io.github.vinceglb:filekit-dialogs-compose")
+                    library("io.github.vinceglb:filekit-coil")
+                }
+
                 withVersion(Versions.ktor) {
                     library("io.ktor:ktor-client-android")
                     library("io.ktor:ktor-client-core")
@@ -289,6 +295,10 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("org.jetbrains.compose:compose-gradle-plugin:$plugin")
                         library("org.jetbrains.compose.runtime:runtime:$runtime")
                         library("org.jetbrains.compose.ui:ui-backhandler:$runtime")
+                        library(
+                            gav = "org.jetbrains.compose.material3:material3-window-size-class:$windowSizeClass",
+                            alias = "jetBrainsCompose.material3.windowSizeClass",
+                        )
                     }
                 }
 
@@ -368,7 +378,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.fluidsonic.i18n:fluid-i18n:${Versions.fluidI18n}")
                 library("io.github.hoc081098:FlowExt:${Versions.flowExt}")
                 library("io.github.petertrr:kotlin-multiplatform-diff:${Versions.diffUtils}")
-                library("io.github.vinceglb:filekit-dialogs-compose:${Versions.fileKit}")
                 library("io.github.alexzhirkevich:qrose:${Versions.qrose}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
                 library("nl.jacobras:Human-Readable:${Versions.humanReadable}")

@@ -4,8 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -38,7 +38,7 @@ class StampRallyEntryGridModel(
             return StampRallyEntryGridModel(
                 stampRally = stampRally,
                 userEntry = entry.userEntry,
-                images = AlleyDataUtils.getRallyImages(
+                images = AlleyImageUtils.getRallyImages(
                     year = stampRally.year,
                     images = stampRally.images,
                 ),

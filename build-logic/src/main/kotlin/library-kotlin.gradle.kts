@@ -27,6 +27,8 @@ kotlin {
             listOf(
                 "androidx.compose.foundation.ExperimentalFoundationApi",
                 "androidx.compose.material3.ExperimentalMaterial3Api",
+                "androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
+                "androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi",
                 "androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi",
                 "kotlin.js.ExperimentalWasmJsInterop",
                 "kotlin.time.ExperimentalTime",

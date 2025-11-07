@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -69,7 +69,7 @@ class ArtistEntryGridModel(
             if (!showOnlyConfirmedTags && merch.size < TAGS_TO_SHOW) {
                 merch = merch + entry.artist.merchInferred.shuffled(random)
             }
-            val images = AlleyDataUtils.getArtistImages(
+            val images = AlleyImageUtils.getArtistImages(
                 year = entry.artist.year,
                 images = entry.artist.images,
             )

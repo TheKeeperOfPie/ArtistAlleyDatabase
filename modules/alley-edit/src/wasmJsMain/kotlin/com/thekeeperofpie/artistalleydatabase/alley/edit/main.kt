@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import dev.zacsweers.metro.createGraphFactory
+import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -53,6 +54,7 @@ fun main() {
                     add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                         data.toString().toUri()
                     })
+                    addPlatformFileSupport()
                 }
                 .memoryCache {
                     MemoryCache.Builder()

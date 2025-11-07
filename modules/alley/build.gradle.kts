@@ -35,15 +35,14 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
 
-            // TODO: This import doesn't work since 1.8.0-alpha01 isn't published for this artifact
             implementation(compose.material3AdaptiveNavigationSuite)
-            implementation("org.jetbrains.compose.material3:material3-window-size-class:1.10.0-alpha04")
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.human.readable)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.jetBrainsAndroidX.navigationevent.compose)
+            implementation(libs.jetBrainsCompose.material3.windowSizeClass)
             implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.paging.common)
             implementation(libs.paging.compose)

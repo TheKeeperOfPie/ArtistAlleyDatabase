@@ -23,7 +23,9 @@ kotlin {
             implementation(compose.ui)
 
             implementation(libs.coil3.coil.compose)
+            implementation(libs.filekit.dialogs.compose)
             implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.navigation3)
+            implementation(libs.jetBrainsCompose.material3.windowSizeClass)
             implementation(libs.kermit)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)

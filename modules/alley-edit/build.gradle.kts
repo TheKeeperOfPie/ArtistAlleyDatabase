@@ -47,6 +47,8 @@ kotlin {
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.coil3.coil.network.ktor3)
+            implementation(libs.filekit.coil)
+
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.edit)
             implementation(projects.modules.utils)

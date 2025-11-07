@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditInfo
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -64,4 +66,9 @@ class AlleyEditDatabase(
                 notes = it.notes,
             )
         }
+
+    suspend fun loadArtistImages(year: DataYear, artistId: Uuid) =
+        artistEntryDao.getImagesById(year, artistId.toString())
+            ?.let { AlleyImageUtils.getArtistImages(year, it) }
+            ?.map(EditImage::DatabaseImage)
 }

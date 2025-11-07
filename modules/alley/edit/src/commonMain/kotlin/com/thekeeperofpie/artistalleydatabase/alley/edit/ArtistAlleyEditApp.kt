@@ -19,6 +19,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.home.HomeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
@@ -61,12 +62,20 @@ fun ArtistAlleyEditApp(
                                 },
                             )
                         }
-                        sharedElementEntry<AlleyEditDestination.ArtistEdit> {
+                        sharedElementEntry<AlleyEditDestination.ArtistEdit> { route ->
                             ArtistEditScreen(
-                                route = it,
+                                route = route,
                                 graph = graph,
                                 onClickBack = onClickBack,
+                                onClickEditImages = { displayName, images ->
+                                    twoWayStack.navigate(
+                                        AlleyEditDestination.ImagesEdit(route.dataYear, displayName, images)
+                                    )
+                                },
                             )
+                        }
+                        sharedElementEntry<AlleyEditDestination.ImagesEdit> {
+                            ImagesEditScreen(route = it, graph = graph, onClickBack = onClickBack)
                         }
                     }
 

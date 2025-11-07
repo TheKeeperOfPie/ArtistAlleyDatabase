@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -90,7 +90,7 @@ class MapViewModel(
                     val tableNumber = booth.filter { it.isDigit() }.toInt()
                     val artist = artists.singleOrNull()
                     if (artist != null) {
-                        val images = AlleyDataUtils.getArtistImages(
+                        val images = AlleyImageUtils.getArtistImages(
                             year = artist.year,
                             images = artist.images,
                         )
@@ -113,7 +113,7 @@ class MapViewModel(
                         )
                     } else {
                         val primaryArtist = artists.first()
-                        val images = AlleyDataUtils.getArtistImages(
+                        val images = AlleyImageUtils.getArtistImages(
                             year = primaryArtist.year,
                             images = primaryArtist.images,
                         )
@@ -201,7 +201,7 @@ class MapViewModel(
                     val gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1
                     val artist = artists.singleOrNull()
                     if (artist != null) {
-                        val images = AlleyDataUtils.getArtistImages(
+                        val images = AlleyImageUtils.getArtistImages(
                             year = artist.year,
                             images = artist.images,
                         )
@@ -223,7 +223,7 @@ class MapViewModel(
                         )
                     } else {
                         val primaryArtist = artists.first()
-                        val images = AlleyDataUtils.getArtistImages(
+                        val images = AlleyImageUtils.getArtistImages(
                             year = primaryArtist.year,
                             images = primaryArtist.images,
                         )
@@ -305,7 +305,7 @@ class MapViewModel(
                             (if (tableNumber > 16) 2 else 1)
                     val artist = artists.singleOrNull()
                     if (artist != null) {
-                        val images = AlleyDataUtils.getArtistImages(
+                        val images = AlleyImageUtils.getArtistImages(
                             year = artist.year,
                             images = artist.images,
                         )
@@ -327,7 +327,7 @@ class MapViewModel(
                         )
                     } else {
                         val primaryArtist = artists.first()
-                        val images = AlleyDataUtils.getArtistImages(
+                        val images = AlleyImageUtils.getArtistImages(
                             year = primaryArtist.year,
                             images = primaryArtist.images,
                         )

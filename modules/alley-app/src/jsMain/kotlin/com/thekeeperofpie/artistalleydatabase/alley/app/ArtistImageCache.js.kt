@@ -4,8 +4,8 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.GetArtistFavorites
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
@@ -94,7 +94,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                         }
                     }
                     val images = entriesForArtist.flatMap {
-                        AlleyDataUtils.getArtistImages(
+                        AlleyImageUtils.getArtistImages(
                             year = it.artist.year,
                             images = it.artist.images,
                         )
@@ -131,7 +131,7 @@ actual class ArtistImageCache(private val artistEntryDao: ArtistEntryDao, privat
                         DataYear.entries.forEach {
                             val artist = artistEntryDao.getEntry(it, artist.artistId)
                                 ?: return@forEach
-                            val images = AlleyDataUtils.getArtistImages(
+                            val images = AlleyImageUtils.getArtistImages(
                                 year = it,
                                 images = artist.artist.images,
                             )

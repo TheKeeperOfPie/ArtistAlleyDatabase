@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
@@ -14,6 +15,13 @@ sealed interface AlleyEditDestination : NavKey {
 
     @Serializable
     data class ArtistEdit(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
+
+    @Serializable
+    data class ImagesEdit(
+        val dataYear: DataYear,
+        val displayName: String,
+        val images: List<EditImage>,
+    ) : AlleyEditDestination
 
     companion object {
         fun parseRoute(route: String) = if (route.isEmpty() || route.startsWith("home")) {
@@ -34,8 +42,12 @@ sealed interface AlleyEditDestination : NavKey {
         fun toEncodedRoute(destination: NavKey) = if (destination !is AlleyEditDestination) {
             null
         } else when (destination) {
-            is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/${Uri.encode(destination.artistId.toString())}"
-            Home -> ""
+            is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/${
+                Uri.encode(
+                    destination.artistId.toString()
+                )
+            }"
+            is ImagesEdit, Home -> ""
         }
     }
 }

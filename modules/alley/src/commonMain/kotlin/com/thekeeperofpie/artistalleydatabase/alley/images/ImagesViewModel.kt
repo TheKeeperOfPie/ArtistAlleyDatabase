@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.images
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import dev.zacsweers.metro.Assisted
@@ -19,8 +18,8 @@ class ImagesViewModel(
     val route = savedStateHandle.toDestination<Destinations.Images>(navigationTypeMap)
 
     val images = when (val type = route.type) {
-        is Destinations.Images.Type.Artist -> AlleyDataUtils.getArtistImages(route.year, route.images)
-        is Destinations.Images.Type.StampRally -> AlleyDataUtils.getRallyImages(route.year, route.images)
+        is Destinations.Images.Type.Artist -> AlleyImageUtils.getArtistImages(route.year, route.images)
+        is Destinations.Images.Type.StampRally -> AlleyImageUtils.getRallyImages(route.year, route.images)
     }
 
     @AssistedFactory

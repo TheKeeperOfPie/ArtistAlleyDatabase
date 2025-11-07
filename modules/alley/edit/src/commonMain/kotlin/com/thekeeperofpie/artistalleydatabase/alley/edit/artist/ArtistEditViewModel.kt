@@ -42,6 +42,10 @@ class ArtistEditViewModel(
 
     private val textState by savedStateHandle.saveable(saver = ArtistEditScreen.State.TextState.Saver) { ArtistEditScreen.State.TextState() }
     val state = ArtistEditScreen.State(
+        images = savedStateHandle.saveable(
+            "images",
+            saver = StateUtils.snapshotListJsonSaver()
+        ) { SnapshotStateList() },
         links = savedStateHandle.saveable(
             "links",
             saver = StateUtils.snapshotListJsonSaver()
@@ -128,6 +132,12 @@ class ArtistEditViewModel(
                 state.seriesConfirmed += seriesConfirmed
                 state.merchInferred += merchInferred
                 state.merchConfirmed += merchConfirmed
+
+                val images = database.loadArtistImages(route.dataYear, route.artistId)
+                if (images != null) {
+                    state.images += images
+                }
+
                 hasLoaded = true
             }
         }

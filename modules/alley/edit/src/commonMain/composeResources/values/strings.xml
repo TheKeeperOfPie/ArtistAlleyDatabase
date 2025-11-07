@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alley_artist_edit_title">Editing %1$s - %2$s</string>
     <string name="alley_artist_edit_booth">Booth</string>
     <string name="alley_artist_edit_name">Name</string>
     <string name="alley_artist_edit_summary">Summary</string>
@@ -14,4 +15,13 @@
     <string name="alley_artist_edit_merch_confirmed">Merch - Confirmed</string>
 
     <string name="alley_artist_edit_action_delete">Delete</string>
+    <string name="alley_artist_edit_action_images">Edit images</string>
+
+    <string name="alley_edit_image_title">Editing images for %1$s - %2$s</string>
+    <string name="alley_edit_image_width_and_height">Width: %1$d - Height: %2$d</string>
+    <string name="alley_edit_image_action_delete">Delete image</string>
+    <string name="alley_edit_image_action_change">Change image</string>
+    <string name="alley_edit_image_action_add">Add image</string>
+
+    <string name="alley_edit_drag_handle_content_description">Drag handle</string>
 </resources>

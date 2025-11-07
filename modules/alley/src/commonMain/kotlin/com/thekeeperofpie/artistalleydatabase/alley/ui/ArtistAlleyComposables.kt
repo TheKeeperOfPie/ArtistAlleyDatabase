@@ -60,7 +60,6 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -118,14 +117,15 @@ import coil3.compose.AsyncImage
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
@@ -414,10 +414,10 @@ fun HorizontalPagerIndicator(pagerState: PagerState, modifier: Modifier = Modifi
 }
 
 @Composable
-internal fun SmallImageGrid(
+internal fun <Image : ImageWithDimensions> SmallImageGrid(
     targetHeight: Int? = null,
-    images: List<CatalogImage>,
-    onImageClick: (index: Int, image: Uri) -> Unit = { _, _ -> },
+    images: List<Image>,
+    onImageClick: (index: Int, image: Image) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -439,12 +439,12 @@ internal fun SmallImageGrid(
     ) {
         itemsIndexed(images) { index, image ->
             AsyncImage(
-                model = image.uri,
+                model = image.coilImageModel,
                 contentScale = ContentScale.FillWidth,
                 contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                 modifier = Modifier
-                    .clickable { onImageClick(index, image.uri) }
-                    .sharedElement("gridImage", image.uri)
+                    .clickable { onImageClick(index, image) }
+                    .sharedElement("gridImage", image.coilImageModel)
                     .fillMaxWidth()
                     .conditionally(image.width != null && image.height != null) {
                         aspectRatio(image.width!! / image.height!!.toFloat())
@@ -454,9 +454,8 @@ internal fun SmallImageGrid(
     }
 }
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-internal fun currentWindowSizeClass(): WindowSizeClass {
+fun currentWindowSizeClass(): WindowSizeClass {
     val density = LocalDensity.current
     val windowConfiguration = LocalWindowConfiguration.current
     val width = windowConfiguration.screenWidthDp

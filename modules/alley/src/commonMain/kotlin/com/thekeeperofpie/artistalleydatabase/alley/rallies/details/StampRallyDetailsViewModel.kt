@@ -15,9 +15,9 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -65,7 +65,7 @@ class StampRallyDetailsViewModel(
     val initialImageIndex = route.initialImageIndex?.toIntOrNull() ?: 0
 
     // Block main to load images as fast as possible so shared transition works
-    val images = AlleyDataUtils.getRallyImages(
+    val images = AlleyImageUtils.getRallyImages(
         year = route.year,
         images = route.images,
     )

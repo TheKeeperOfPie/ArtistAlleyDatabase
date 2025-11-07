@@ -4,15 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,6 +25,7 @@ import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,9 +34,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaverScope
@@ -50,6 +57,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_action_delete
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_action_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_commissions
@@ -62,20 +70,23 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_e
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_summary
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import coil3.compose.AsyncImage
 import com.anilist.data.type.MediaType
-import com.eygraber.compose.placeholder.PlaceholderHighlight
-import com.eygraber.compose.placeholder.material3.placeholder
-import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.name
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
+import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -84,6 +95,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -99,106 +111,200 @@ object ArtistEditScreen {
         route: AlleyEditDestination.ArtistEdit,
         graph: ArtistAlleyEditGraph,
         onClickBack: () -> Unit,
+        onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
         viewModel: ArtistEditViewModel = viewModel {
             graph.artistEditViewModelFactory.create(route, createSavedStateHandle())
         },
     ) {
         ArtistEditScreen(
-            artistId = route.artistId,
+            route = route,
             state = viewModel.state,
             seriesPredictions = viewModel::seriesPredictions,
             merchPredictions = viewModel::merchPredictions,
-            onClickBack = onClickBack,
             seriesImage = viewModel::seriesImage,
+            onClickBack = onClickBack,
+            onClickEditImages = { onClickEditImages(viewModel.artist.value?.name.orEmpty(), it) },
         )
     }
 
     @Composable
     operator fun invoke(
-        artistId: Uuid,
+        route: AlleyEditDestination.ArtistEdit,
         state: State,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
-        onClickBack: () -> Unit,
         seriesImage: (SeriesInfo) -> String?,
+        onClickBack: () -> Unit,
+        onClickEditImages: (List<EditImage>) -> Unit,
     ) {
-        Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
-            val textState = state.textState
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text("Editing ${textState.name.value.text.ifBlank { artistId }}") },
-                        navigationIcon = { ArrowBackIconButton(onClick = onClickBack) }
-                    )
-                },
-                modifier = Modifier.widthIn(max = 960.dp)
-            ) {
-                EntryForm2(
+        val windowSizeClass = currentWindowSizeClass()
+        val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            stringResource(
+                                Res.string.alley_artist_edit_title,
+                                stringResource(route.dataYear.shortName),
+                                state.textState.name.value.text.ifBlank { route.artistId })
+                        )
+                    },
+                    navigationIcon = { ArrowBackIconButton(onClick = onClickBack) },
                     modifier = Modifier
-                        .padding(it)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    SingleTextSection(textState.booth, Res.string.alley_artist_edit_booth)
-                    SingleTextSection(textState.name, Res.string.alley_artist_edit_name)
-                    SingleTextSection(textState.summary, Res.string.alley_artist_edit_summary)
-                    LinksSection(
-                        state = textState.links,
-                        title = Res.string.alley_artist_edit_links,
-                        items = state.links,
-                    )
-                    LinksSection(
-                        state = textState.storeLinks,
-                        title = Res.string.alley_artist_edit_store_links,
-                        items = state.storeLinks,
-                    )
-                    MultiTextSection(
-                        state = textState.catalogLinks,
-                        title = Res.string.alley_artist_edit_catalog_links,
-                        items = state.catalogLinks,
-                        itemToText = { it },
-                    )
-                    MultiTextSection(
-                        state = textState.commissions,
-                        title = Res.string.alley_artist_edit_commissions,
-                        items = state.commissions,
-                        itemToText = { it },
-                    )
-                    SeriesSection(
-                        state = textState.seriesInferred,
-                        title = Res.string.alley_artist_edit_series_inferred,
-                        items = state.seriesInferred,
-                        predictions = seriesPredictions,
-                        image = seriesImage,
-                    )
-                    SeriesSection(
-                        state = textState.seriesConfirmed,
-                        title = Res.string.alley_artist_edit_series_confirmed,
-                        items = state.seriesConfirmed,
-                        predictions = seriesPredictions,
-                        image = seriesImage,
-                    )
-                    MultiTextSection(
-                        state = textState.merchInferred,
-                        title = Res.string.alley_artist_edit_merch_inferred,
-                        items = state.merchInferred,
-                        predictions = merchPredictions,
-                        itemToText = { it.name },
-                    )
-                    MultiTextSection(
-                        state = textState.merchConfirmed,
-                        title = Res.string.alley_artist_edit_merch_confirmed,
-                        items = state.merchConfirmed,
-                        predictions = merchPredictions,
-                        itemToText = { it.name },
-                    )
-                    LongTextSection(
-                        textState.notes,
-                        headerText = {
-                            Text(stringResource(Res.string.alley_artist_edit_notes))
-                        },
+                        .conditionally(!isExpanded, Modifier.widthIn(max = 960.dp))
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val form = remember {
+                movableContentOf { modifier: Modifier ->
+                    Form(
+                        state = state,
+                        seriesPredictions = seriesPredictions,
+                        merchPredictions = merchPredictions,
+                        seriesImage = seriesImage,
+                        modifier = modifier,
                     )
                 }
             }
+            if (isExpanded) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                        .padding(it)
+                ) {
+                    form(
+                        Modifier.fillMaxHeight()
+                            .width(800.dp)
+                            .verticalScroll(rememberScrollState())
+                    )
+                    Column {
+                        EditImagesButton(
+                            onClick = { onClickEditImages(state.images.toList()) },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                        ImageGrid(images = state.images, onClickImage = {})
+                    }
+                }
+            } else {
+                Box(
+                    contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
+                        .padding(it)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .widthIn(max = 960.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        EditImagesButton(
+                            onClick = { onClickEditImages(state.images.toList()) },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                        ImagesPager(
+                            artistId = route.artistId,
+                            images = state.images,
+                            onClickImage = {},
+                        )
+                        form(Modifier.fillMaxWidth())
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun EditImagesButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+        FilledTonalButton(onClick = onClick, modifier = modifier.padding(16.dp)) {
+            Text(stringResource(Res.string.alley_artist_edit_action_images))
+        }
+    }
+
+    @Composable
+    private fun ImagesPager(
+        artistId: Uuid,
+        images: List<EditImage>,
+        onClickImage: (EditImage) -> Unit,
+    ) {
+        ImagePager(
+            images = images,
+            pagerState = rememberPagerState { images.size },
+            sharedElementId = artistId.toString(),
+            onClickPage = { onClickImage(images[it]) },
+            imageContentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxWidth().height(400.dp)
+        )
+    }
+
+    @Composable
+    private fun Form(
+        state: State,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+        modifier: Modifier = Modifier,
+    ) {
+        val textState = state.textState
+        EntryForm2(modifier = modifier) {
+            SingleTextSection(textState.booth, Res.string.alley_artist_edit_booth)
+            SingleTextSection(textState.name, Res.string.alley_artist_edit_name)
+            SingleTextSection(textState.summary, Res.string.alley_artist_edit_summary)
+            LinksSection(
+                state = textState.links,
+                title = Res.string.alley_artist_edit_links,
+                items = state.links,
+            )
+            LinksSection(
+                state = textState.storeLinks,
+                title = Res.string.alley_artist_edit_store_links,
+                items = state.storeLinks,
+            )
+            MultiTextSection(
+                state = textState.catalogLinks,
+                title = Res.string.alley_artist_edit_catalog_links,
+                items = state.catalogLinks,
+                itemToText = { it },
+            )
+            MultiTextSection(
+                state = textState.commissions,
+                title = Res.string.alley_artist_edit_commissions,
+                items = state.commissions,
+                itemToText = { it },
+            )
+            SeriesSection(
+                state = textState.seriesInferred,
+                title = Res.string.alley_artist_edit_series_inferred,
+                items = state.seriesInferred,
+                predictions = seriesPredictions,
+                image = seriesImage,
+            )
+            SeriesSection(
+                state = textState.seriesConfirmed,
+                title = Res.string.alley_artist_edit_series_confirmed,
+                items = state.seriesConfirmed,
+                predictions = seriesPredictions,
+                image = seriesImage,
+            )
+            MultiTextSection(
+                state = textState.merchInferred,
+                title = Res.string.alley_artist_edit_merch_inferred,
+                items = state.merchInferred,
+                predictions = merchPredictions,
+                itemToText = { it.name },
+            )
+            MultiTextSection(
+                state = textState.merchConfirmed,
+                title = Res.string.alley_artist_edit_merch_confirmed,
+                items = state.merchConfirmed,
+                predictions = merchPredictions,
+                itemToText = { it.name },
+            )
+            LongTextSection(
+                textState.notes,
+                headerText = {
+                    Text(stringResource(Res.string.alley_artist_edit_notes))
+                },
+            )
         }
     }
 
@@ -386,10 +492,6 @@ object ArtistEditScreen {
                     .minimumInteractiveComponentSize()
                     .weight(1f)
                     .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .placeholder(
-                        visible = series == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
             )
 
             val uriHandler = LocalUriHandler.current
@@ -417,6 +519,7 @@ object ArtistEditScreen {
 
     @Stable
     class State(
+        val images: SnapshotStateList<EditImage>,
         val links: SnapshotStateList<LinkModel>,
         val storeLinks: SnapshotStateList<LinkModel>,
         val catalogLinks: SnapshotStateList<String>,

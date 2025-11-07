@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import dev.zacsweers.metro.createGraphFactory
+import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.io.asInputStream
 import okio.FileSystem
@@ -70,6 +71,7 @@ fun main() {
                             }
                         }
                     })
+                    addPlatformFileSupport()
                 }
                 .memoryCache {
                     MemoryCache.Builder()
