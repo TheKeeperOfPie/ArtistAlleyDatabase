@@ -1,4 +1,3 @@
-/** Generic get is unused, but generates the object and cursor code for easy copy-paste */
 getSeries:
 SELECT * FROM seriesEntry;
 

@@ -12,4 +12,6 @@
     <string name="alley_artist_edit_series_confirmed">Series - Confirmed</string>
     <string name="alley_artist_edit_merch_inferred">Merch - Inferred</string>
     <string name="alley_artist_edit_merch_confirmed">Merch - Confirmed</string>
+
+    <string name="alley_artist_edit_action_delete">Delete</string>
 </resources>

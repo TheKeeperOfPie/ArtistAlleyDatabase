@@ -172,4 +172,6 @@ class MerchEntryDao(
             mapper = SqlCursor::toMerchWithUserData,
         )
     }
+
+    suspend fun getMerch() = merchDao().getMerch().awaitAsList()
 }

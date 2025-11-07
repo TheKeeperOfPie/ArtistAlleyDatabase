@@ -36,6 +36,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_we
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_x
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_you_tube
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 
 val Link.Type.textRes: StringResource
@@ -76,6 +77,7 @@ val Link.Type.textRes: StringResource
         Link.Type.OTHER_STORE -> Res.string.alley_link_label_other_store
     }
 
+@Serializable
 data class LinkModel(
     val link: String,
     val logo: Logo?,

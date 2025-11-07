@@ -382,6 +382,8 @@ class SeriesEntryDao(
     suspend fun hasRallies(series: String) = seriesDao().getRallyCount(series)
         .awaitAsOne() > 0
 
+    suspend fun getSeries() = seriesDao().getSeries().awaitAsList()
+
     private fun getFilteredSourcesStatement(
         seriesFilterParams: SeriesSortFilterController.FilterParams,
         sourceKey: String = "source",

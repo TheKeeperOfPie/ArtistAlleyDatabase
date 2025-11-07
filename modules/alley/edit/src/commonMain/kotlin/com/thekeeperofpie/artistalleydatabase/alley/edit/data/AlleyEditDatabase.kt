@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditInfo
+import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -12,6 +14,8 @@ import kotlin.uuid.Uuid
 @Inject
 class AlleyEditDatabase(
     private val artistEntryDao: ArtistEntryDao,
+    private val merchEntryDao: MerchEntryDao,
+    private val seriesEntryDao: SeriesEntryDao,
 ) {
     suspend fun loadArtists(dataYear: DataYear) = artistEntryDao.getAllEntries(dataYear)
 
@@ -35,4 +39,29 @@ class AlleyEditDatabase(
                     merchConfirmed = it.merchConfirmed,
                 )
             }
+
+    suspend fun loadSeries() = seriesEntryDao.getSeries()
+        .associate {
+            it.id to SeriesInfo(
+                id = it.id,
+                uuid = it.uuid,
+                notes = it.notes,
+                aniListId = it.aniListId,
+                aniListType = it.aniListType,
+                wikipediaId = it.wikipediaId,
+                titlePreferred = it.titlePreferred,
+                titleEnglish = it.titleEnglish,
+                titleRomaji = it.titleRomaji,
+                titleNative = it.titleNative,
+            )
+        }
+
+    suspend fun loadMerch() = merchEntryDao.getMerch()
+        .associate {
+            it.name to MerchInfo(
+                name = it.name,
+                uuid = it.uuid,
+                notes = it.notes,
+            )
+        }
 }

@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
@@ -68,7 +69,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
@@ -103,6 +103,7 @@ import artistalleydatabase.modules.entry.generated.resources.move_up
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
@@ -116,6 +117,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
@@ -171,7 +173,7 @@ object EntryForm2 {
                 value.wasEverDifferent,
             )
 
-            override fun restore(value: Any): PendingTextState? {
+            override fun restore(value: Any): PendingTextState {
                 val (pendingValue, pendingFocused, lockState, wasEverDifferent) = value as List<*>
                 return PendingTextState(
                     pendingValue = with(TextFieldState.Saver) { restore(pendingValue!!) }!!,
@@ -197,7 +199,7 @@ object EntryForm2 {
                 value.lockState,
             )
 
-            override fun restore(value: Any): SingleTextState? {
+            override fun restore(value: Any): SingleTextState {
                 val (value, lockState) = value as List<*>
                 return SingleTextState(
                     value = with(TextFieldState.Saver) { restore(value!!) }!!,
@@ -255,7 +257,7 @@ object EntryForm2 {
         override var lockState by mutableStateOf(initialLockState)
 
         object Saver : ComposeSaver<DropdownState, Any> {
-            override fun SaverScope.save(value: DropdownState): Any? {
+            override fun SaverScope.save(value: DropdownState): Any {
                 return listOf(
                     value.selectedIndex,
                     value.lockState,
@@ -263,7 +265,7 @@ object EntryForm2 {
                 )
             }
 
-            override fun restore(value: Any): DropdownState? {
+            override fun restore(value: Any): DropdownState {
                 val (selectedIndex, lockState, wasEverDifferent) = value as List<*>
                 return DropdownState(
                     initialSelectedIndex = selectedIndex as Int,
@@ -271,19 +273,6 @@ object EntryForm2 {
                     wasEverDifferent = wasEverDifferent as Boolean,
                 )
             }
-        }
-    }
-
-    @Composable
-    fun rememberDropdownState(
-        initialSelectedIndex: Int = 0,
-        initialLockState: EntryLockState = EntryLockState.UNLOCKED,
-    ): DropdownState {
-        return rememberSaveable(saver = DropdownState.Saver) {
-            DropdownState(
-                initialSelectedIndex = initialSelectedIndex,
-                initialLockState = initialLockState,
-            )
         }
     }
 }
@@ -301,15 +290,21 @@ fun EntryFormScope.SingleTextSection(
             onClick = state::rotateLockState,
         )
 
-        OpenSectionField(
-            state = state.value,
-            lockState = { state.lockState },
-            totalSize = { 0 },
-            onLock = { state.lockState = EntryLockState.LOCKED },
-        )
+        val modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        if (state.lockState == EntryLockState.UNLOCKED) {
+            OutlinedTextField(
+                state = state.value,
+                modifier = modifier
+            )
+        } else {
+            TextField(
+                state = state.value,
+                readOnly = true,
+                modifier = modifier
+            )
+        }
     }
 }
-
 
 @Composable
 fun EntryFormScope.MultiTextSection(
@@ -449,6 +444,125 @@ fun EntryFormScope.MultiTextSection(
 }
 
 @Composable
+fun <T> EntryFormScope.MultiTextSection(
+    state: EntryForm2.PendingTextState,
+    headerText: @Composable () -> Unit,
+    entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
+    items: SnapshotStateList<T>,
+    onItemCommitted: (String) -> Unit,
+    removeLastItem: () -> String?,
+    item: @Composable (T) -> Unit,
+    prediction: @Composable (T) -> Unit = item,
+    preferPrediction: Boolean = false,
+) {
+    SectionHeader(
+        text = headerText,
+        lockState = state.lockState,
+        onClick = {
+            val newValue = state.pendingValue.text
+            if (newValue.isNotBlank()) {
+                onItemCommitted(newValue.trim().toString())
+            }
+            state.rotateLockState()
+        }
+    )
+
+    items.forEachIndexed { index, value ->
+        var showOverflow by remember { mutableStateOf(false) }
+        Box {
+            val shape =
+                if (index == 0) RoundedCornerShape(
+                    topStart = 4.dp,
+                    topEnd = 4.dp
+                ) else RectangleShape
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp)
+                    .height(IntrinsicSize.Min)
+                    .background(color = MaterialTheme.colorScheme.surfaceVariant, shape = shape)
+                    .bottomBorder(MaterialTheme.colorScheme.onSurfaceVariant)
+                    .animateContentSize()
+            ) {
+                item(value)
+            }
+
+            EntryItemDropdown(
+                show = { showOverflow },
+                onDismiss = { showOverflow = false },
+                index = index,
+                totalSize = { items.size },
+                onDelete = { items.removeAt(index) },
+                onMoveUp = { items.swap(index, index - 1) },
+                onMoveDown = { items.swap(index, index + 1) },
+                modifier = Modifier
+                    .width(48.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp)
+            )
+        }
+    }
+
+    AnimatedVisibility(
+        // TODO: Allow showing open field even when locked in search panel
+        visible = state.lockState.editable,
+        enter = expandVertically(),
+        exit = shrinkVertically(),
+    ) {
+        val predictions by produceState(emptyList(), state, entryPredictions) {
+            snapshotFlow { state.pendingValue.text.toString() }
+                .debounce(1.seconds)
+                .flatMapLatest(entryPredictions)
+                .flowOn(PlatformDispatchers.IO)
+                .collectLatest { value = it }
+        }
+        EntryAutocompleteDropdown(
+            text = { state.pendingValue.text },
+            predictions = { predictions },
+            showPredictions = { state.lockState.editable && state.pendingValue.text.isNotBlank() },
+            onPredictionChosen = {
+                Snapshot.withMutableSnapshot {
+                    items += it
+                    state.pendingValue.clearText()
+                }
+            },
+            item = prediction,
+        ) { bringIntoViewRequester ->
+            OpenSectionField(
+                state = state.pendingValue,
+                lockState = { state.lockState },
+                totalSize = { items.size },
+                onLock = { state.lockState = EntryLockState.LOCKED },
+                bringIntoViewRequester = bringIntoViewRequester,
+                onFocusChanged = { state.pendingFocused = it },
+                onRemove = {
+                    Snapshot.withMutableSnapshot {
+                        val removed = removeLastItem()
+                        if (removed != null) {
+                            state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
+                        }
+                    }
+                },
+                onDone = {
+                    if (preferPrediction && predictions.isNotEmpty()) {
+                        Snapshot.withMutableSnapshot {
+                            items += predictions.first()
+                            state.pendingValue.clearText()
+                        }
+                    } else {
+                        val newValue = state.pendingValue.text
+                        if (newValue.isNotBlank()) {
+                            onItemCommitted(newValue.trim().toString())
+                        }
+                    }
+                },
+                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
+            )
+        }
+    }
+}
+
+@Composable
 private fun EntryItemDropdown(
     show: () -> Boolean,
     onDismiss: () -> Unit,
@@ -563,7 +677,7 @@ private fun OpenSectionField(
                     onRemove()
                     true
                 } else {
-                    focusManager.moveFocus(FocusDirection.Previous)
+                    false
                 }
             } else {
                 false
@@ -906,6 +1020,108 @@ private fun EntryPrefilledAutocompleteDropdown(
     trailingIcon: @Composable ((EntryForm2.MultiTextState.Entry) -> Unit)?,
     textField: @Composable ExposedDropdownMenuBoxScope.(BringIntoViewRequester) -> Unit,
 ) {
+    // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
+    val uriHandler = LocalUriHandler.current
+    EntryAutocompleteDropdown(
+        text = text,
+        predictions = predictions,
+        showPredictions = showPredictions,
+        onPredictionChosen = onPredictionChosen,
+        textField = textField,
+        modifier = modifier,
+        item = { entry ->
+            val titleText: @Composable () -> String
+            var subtitleText: () -> String? = { null }
+            var image: () -> String? = { null }
+            var imageLink: () -> String? = { null }
+            var secondaryImage: (() -> String?)? = null
+            var secondaryImageLink: () -> String? = { null }
+            when (entry) {
+                is EntryForm2.MultiTextState.Entry.Custom -> {
+                    titleText = { entry.text }
+                }
+                is EntryForm2.MultiTextState.Entry.Prefilled<*> -> {
+                    titleText = { entry.titleText }
+                    subtitleText = { entry.subtitleText }
+                    image = { entry.image }
+                    imageLink = { entry.imageLink }
+                    secondaryImage = entry.secondaryImage?.let { { it } }
+                    secondaryImageLink = { entry.secondaryImageLink }
+                }
+                EntryForm2.MultiTextState.Entry.Different -> {
+                    titleText = { stringResource(Res.string.different) }
+                }
+            }.run { /*exhaust*/ }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.animateContentSize(),
+            ) {
+                EntryImage(
+                    image = image,
+                    link = imageLink,
+                    uriHandler = uriHandler,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .heightIn(min = 54.dp)
+                        .width(42.dp)
+                )
+                Column(
+                    Modifier
+                        .weight(1f, true)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 8.dp,
+                        )
+                ) {
+                    Text(
+                        text = titleText(),
+                        maxLines = 1,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                    )
+
+                    @Suppress("NAME_SHADOWING")
+                    val subtitleText = subtitleText()
+                    if (subtitleText != null) {
+                        Text(
+                            text = subtitleText,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(start = 24.dp)
+                        )
+                    }
+                }
+
+                trailingIcon?.invoke(entry)
+
+                if (secondaryImage != null) {
+                    EntryImage(
+                        image = secondaryImage,
+                        link = secondaryImageLink,
+                        uriHandler = uriHandler,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .heightIn(min = 54.dp)
+                            .width(42.dp)
+                    )
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun <T> EntryAutocompleteDropdown(
+    text: () -> CharSequence?,
+    predictions: () -> List<T>,
+    showPredictions: () -> Boolean,
+    onPredictionChosen: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    item: @Composable (T) -> Unit,
+    textField: @Composable ExposedDropdownMenuBoxScope.(BringIntoViewRequester) -> Unit,
+) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -921,15 +1137,13 @@ private fun EntryPrefilledAutocompleteDropdown(
                 LaunchedEffect(text(), predictions) {
                     expanded = true
                 }
-                // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
-                val uriHandler = LocalUriHandler.current
                 val coroutineScope = rememberCoroutineScope()
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.heightIn(max = 240.dp)
                 ) {
-                    predictions.forEachIndexed { index, entry ->
+                    predictions.forEach { entry ->
                         DropdownMenuItem(
                             onClick = {
                                 onPredictionChosen(entry)
@@ -939,86 +1153,7 @@ private fun EntryPrefilledAutocompleteDropdown(
                                     bringIntoViewRequester.bringIntoView()
                                 }
                             },
-                            text = {
-                                val titleText: @Composable () -> String
-                                var subtitleText: () -> String? = { null }
-                                var image: () -> String? = { null }
-                                var imageLink: () -> String? = { null }
-                                var secondaryImage: (() -> String?)? = null
-                                var secondaryImageLink: () -> String? = { null }
-                                when (entry) {
-                                    is EntryForm2.MultiTextState.Entry.Custom -> {
-                                        titleText = { entry.text }
-                                    }
-                                    is EntryForm2.MultiTextState.Entry.Prefilled<*> -> {
-                                        titleText = { entry.titleText }
-                                        subtitleText = { entry.subtitleText }
-                                        image = { entry.image }
-                                        imageLink = { entry.imageLink }
-                                        secondaryImage = entry.secondaryImage?.let { { it } }
-                                        secondaryImageLink = { entry.secondaryImageLink }
-                                    }
-                                    EntryForm2.MultiTextState.Entry.Different -> {
-                                        titleText = { stringResource(Res.string.different) }
-                                    }
-                                }.run { /*exhaust*/ }
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.animateContentSize(),
-                                ) {
-                                    EntryImage(
-                                        image = image,
-                                        link = imageLink,
-                                        uriHandler = uriHandler,
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .heightIn(min = 54.dp)
-                                            .width(42.dp)
-                                    )
-                                    Column(
-                                        Modifier
-                                            .weight(1f, true)
-                                            .padding(
-                                                start = 16.dp,
-                                                end = 16.dp,
-                                                top = 8.dp,
-                                                bottom = 8.dp,
-                                            )
-                                    ) {
-                                        Text(
-                                            text = titleText(),
-                                            maxLines = 1,
-                                            style = MaterialTheme.typography.labelLarge,
-                                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
-                                        )
-
-                                        @Suppress("NAME_SHADOWING")
-                                        val subtitleText = subtitleText()
-                                        if (subtitleText != null) {
-                                            Text(
-                                                text = subtitleText,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                modifier = Modifier.padding(start = 24.dp)
-                                            )
-                                        }
-                                    }
-
-                                    trailingIcon?.invoke(entry)
-
-                                    if (secondaryImage != null) {
-                                        EntryImage(
-                                            image = secondaryImage,
-                                            link = secondaryImageLink,
-                                            uriHandler = uriHandler,
-                                            modifier = Modifier
-                                                .fillMaxHeight()
-                                                .heightIn(min = 54.dp)
-                                                .width(42.dp)
-                                        )
-                                    }
-                                }
-                            },
+                            text = { item(entry) },
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
