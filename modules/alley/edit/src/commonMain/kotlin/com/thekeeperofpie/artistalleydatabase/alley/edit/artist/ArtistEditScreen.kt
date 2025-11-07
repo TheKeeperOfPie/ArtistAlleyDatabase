@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.name
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -94,11 +96,15 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
@@ -116,6 +122,15 @@ object ArtistEditScreen {
             graph.artistEditViewModelFactory.create(route, createSavedStateHandle())
         },
     ) {
+        NavigationResultEffect(ImagesEditScreen.RESULT_KEY) {
+            val images = withContext(PlatformDispatchers.IO) {
+                Json.decodeFromString<List<EditImage>>(it)
+            }
+            Snapshot.withMutableSnapshot {
+                viewModel.state.images.clear()
+                viewModel.state.images += images
+            }
+        }
         ArtistEditScreen(
             route = route,
             state = viewModel.state,
@@ -184,7 +199,11 @@ object ArtistEditScreen {
                             onClick = { onClickEditImages(state.images.toList()) },
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
-                        ImageGrid(images = state.images, onClickImage = {})
+                        ImageGrid(
+                            images = state.images,
+                            onClickImage = {},
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             } else {

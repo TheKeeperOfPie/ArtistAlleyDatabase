@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -43,6 +44,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_dra
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_add
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_change
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_delete
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_save_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_width_and_height
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
@@ -54,14 +56,18 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DraggableItem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.dragContainer
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDragDropState
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 object ImagesEditScreen {
+
+    const val RESULT_KEY = "ImagesEditScreen"
 
     @Composable
     operator fun invoke(
@@ -72,10 +78,17 @@ object ImagesEditScreen {
             graph.imagesEditViewModelFactory.create(route, createSavedStateHandle())
         },
     ) {
+        val navigationResults = LocalNavigationResults.current
         ImagesEditScreen(
             route = route,
             images = viewModel.images,
             onClickBack = onClickBack,
+            onClickSave = {
+                navigationResults.launchSave(RESULT_KEY) {
+                    Json.encodeToString(viewModel.images.toList())
+                }
+                onClickBack()
+            },
         )
     }
 
@@ -84,6 +97,7 @@ object ImagesEditScreen {
         route: AlleyEditDestination.ImagesEdit,
         images: SnapshotStateList<EditImage>,
         onClickBack: () -> Unit,
+        onClickSave: () -> Unit,
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             Scaffold(
@@ -99,6 +113,15 @@ object ImagesEditScreen {
                             )
                         },
                         navigationIcon = { ArrowBackIconButton(onClick = onClickBack) },
+                        actions = {
+                            // TODO: Also add a BackHandler
+                            IconButton(onClick = onClickSave) {
+                                Icon(
+                                    imageVector = Icons.Default.Save,
+                                    contentDescription = stringResource(Res.string.alley_edit_image_action_save_content_description),
+                                )
+                            }
+                        },
                         modifier = Modifier.widthIn(max = 960.dp)
                     )
                 },

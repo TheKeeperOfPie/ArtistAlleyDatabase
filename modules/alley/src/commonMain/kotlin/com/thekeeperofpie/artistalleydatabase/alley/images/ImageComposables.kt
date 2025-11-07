@@ -52,17 +52,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
@@ -391,6 +392,16 @@ fun ImageGrid(
     onClickImage: (imageIndex: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Cache dimensions for images without them so that item height is preserved when scrolling
+    val cachedDimensions = remember(images) {
+        SnapshotStateMap<ImageWithDimensions, IntSize>().apply {
+            this += images.mapNotNull {
+                val width = it.width ?: return@mapNotNull null
+                val height = it.height ?: return@mapNotNull null
+                it to IntSize(width, height)
+            }
+        }
+    }
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Adaptive(500.dp),
         contentPadding = PaddingValues(8.dp),
@@ -401,8 +412,7 @@ fun ImageGrid(
         itemsIndexed(images) { index, image ->
             val loadingColor =
                 MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
-            val placeholderPainter =
-                remember(MaterialTheme.colorScheme) { ColorPainter(loadingColor) }
+            val size = cachedDimensions[image]
             AsyncImage(
                 model = ImageRequest.Builder(LocalPlatformContext.current)
                     .data(image.coilImageModel)
@@ -410,13 +420,19 @@ fun ImageGrid(
                     .build(),
                 contentScale = ContentScale.FillWidth,
                 contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                placeholder = placeholderPainter,
+                onSuccess = {
+                    val width = it.result.image.width
+                    val height = it.result.image.height
+                    if (width > 0 && height > 0) {
+                        cachedDimensions[image] = IntSize(width, height)
+                    }
+                },
                 modifier = Modifier
                     .clickable { onClickImage(index) }
                     .sharedElement("image", image.coilImageModel)
                     .fillMaxWidth()
-                    .conditionally(image.width != null && image.height != null) {
-                        aspectRatio(image.width!!.toFloat() / image.height!!)
+                    .conditionallyNonNull(size) {
+                        aspectRatio(it.width.toFloat() / it.height)
                     }
             )
         }

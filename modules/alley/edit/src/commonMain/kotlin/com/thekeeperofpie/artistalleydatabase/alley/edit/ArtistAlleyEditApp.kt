@@ -22,9 +22,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.home.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.interceptNavigateBack
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
 
 @Composable
@@ -42,7 +44,10 @@ fun ArtistAlleyEditApp(
             }
         }) {
             SharedTransitionLayout {
-                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                CompositionLocalProvider(
+                    LocalSharedTransitionScope provides this,
+                    LocalNavigationResults provides rememberNavigationResults(),
+                ) {
                     val onClickBack = {
                         if (!interceptNavigateBack()) {
                             twoWayStack.onBack()
