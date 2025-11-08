@@ -1,14 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.PointerMatcher
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.onClick
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
@@ -29,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.mouseNavigationEvents
 import dev.zacsweers.metro.createGraphFactory
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.coroutines.Dispatchers
@@ -100,17 +98,8 @@ fun main() {
                 CompositionLocalProvider(
                     LocalWindowConfiguration provides windowConfiguration,
                 ) {
-                    val twoWayStack = rememberArtistAlleyEditTwoWayStack()
-                    Box(
-                        modifier = Modifier.onClick(
-                            matcher = PointerMatcher.mouse(PointerButton.Back),
-                            onClick = twoWayStack::onBack,
-                        ).onClick(
-                            matcher = PointerMatcher.mouse(PointerButton.Forward),
-                            onClick = twoWayStack::onForward,
-                        )
-                    ) {
-                        ArtistAlleyEditApp(graph = graph, twoWayStack = twoWayStack)
+                    Box(modifier = Modifier.mouseNavigationEvents()) {
+                        ArtistAlleyEditApp(graph = graph)
                     }
                 }
             }

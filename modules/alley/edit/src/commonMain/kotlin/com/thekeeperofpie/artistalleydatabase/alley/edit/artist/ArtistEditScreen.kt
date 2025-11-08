@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -84,6 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
+import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
@@ -172,6 +173,7 @@ object ArtistEditScreen {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
+            val imagePagerState = rememberImagePagerState(state.images, 0)
             val form = remember {
                 movableContentOf { modifier: Modifier ->
                     Form(
@@ -223,6 +225,7 @@ object ArtistEditScreen {
                         ImagesPager(
                             artistId = route.artistId,
                             images = state.images,
+                            imagePagerState = imagePagerState,
                             onClickImage = {},
                         )
                         form(Modifier.fillMaxWidth())
@@ -243,11 +246,12 @@ object ArtistEditScreen {
     private fun ImagesPager(
         artistId: Uuid,
         images: List<EditImage>,
+        imagePagerState: PagerState,
         onClickImage: (EditImage) -> Unit,
     ) {
         ImagePager(
             images = images,
-            pagerState = rememberPagerState { images.size },
+            pagerState = imagePagerState,
             sharedElementId = artistId.toString(),
             onClickPage = { onClickImage(images[it]) },
             imageContentScale = ContentScale.Fit,

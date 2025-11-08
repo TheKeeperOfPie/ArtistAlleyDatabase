@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -17,6 +18,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigationevent.DirectNavigationEventInput
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.home.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
@@ -25,7 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavi
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.interceptNavigateBack
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
 
@@ -48,11 +50,21 @@ fun ArtistAlleyEditApp(
                     LocalSharedTransitionScope provides this,
                     LocalNavigationResults provides rememberNavigationResults(),
                 ) {
-                    val onClickBack = {
-                        if (!interceptNavigateBack()) {
-                            twoWayStack.onBack()
-                        }
+                    val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
+                    val onClickBackInput = remember { DirectNavigationEventInput() }
+                    DisposableEffect(onClickBackInput) {
+                        val dispatcher = navigationEventDispatcherOwner?.navigationEventDispatcher
+                            ?: return@DisposableEffect onDispose {}
+                        dispatcher.addInput(onClickBackInput)
+                        onDispose { dispatcher.removeInput(onClickBackInput) }
                     }
+                    DisposableEffect(navigationEventDispatcherOwner, twoWayStack) {
+                        navigationEventDispatcherOwner?.navigationEventDispatcher
+                            ?.addHandler(twoWayStack)
+                        onDispose { twoWayStack.remove() }
+                    }
+
+                    val onClickBack = { onClickBackInput.backCompleted() }
                     val entryProvider = entryProvider<NavKey> {
                         sharedElementEntry<AlleyEditDestination.Home> {
                             HomeScreen(
@@ -74,7 +86,11 @@ fun ArtistAlleyEditApp(
                                 onClickBack = onClickBack,
                                 onClickEditImages = { displayName, images ->
                                     twoWayStack.navigate(
-                                        AlleyEditDestination.ImagesEdit(route.dataYear, displayName, images)
+                                        AlleyEditDestination.ImagesEdit(
+                                            route.dataYear,
+                                            displayName,
+                                            images
+                                        )
                                     )
                                 },
                             )
@@ -98,6 +114,7 @@ fun ArtistAlleyEditApp(
                                     )
                                 }
                             }
+
                     NavDisplay(
                         entries = decoratedNavEntries.take(twoWayStack.navBackStack.size),
                         onBack = twoWayStack::onBack,

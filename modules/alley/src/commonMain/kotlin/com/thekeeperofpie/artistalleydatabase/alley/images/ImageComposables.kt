@@ -40,7 +40,6 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -93,7 +92,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun rememberImagePagerState(images: List<CatalogImage>, initialImageIndex: Int): PagerState {
+fun rememberImagePagerState(images: List<ImageWithDimensions>, initialImageIndex: Int): PagerState {
     val pageCount = when {
         images.isEmpty() -> 0
         images.size == 1 -> 1
@@ -410,8 +409,6 @@ fun ImageGrid(
         modifier = modifier
     ) {
         itemsIndexed(images) { index, image ->
-            val loadingColor =
-                MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
             val size = cachedDimensions[image]
             AsyncImage(
                 model = ImageRequest.Builder(LocalPlatformContext.current)

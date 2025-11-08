@@ -41,4 +41,30 @@ sealed interface EditImage : ImageWithDimensions {
         override val name = uri.toString()
         override val coilImageModel: Uri get() = uri
     }
+
+    data class Diff(
+        val added: List<EditImage>,
+        val deleted: List<EditImage>,
+        val moved: List<Pair<IndexChange, EditImage>>,
+    ) {
+        data class IndexChange(val fromIndex: Int, val toIndex: Int)
+    }
+
+    companion object {
+        fun generateDiffs(before: List<EditImage>, after: List<EditImage>): Diff {
+            val (kept, added) = after.partition { it in before }
+            val moved = kept.mapNotNull {
+                val fromIndex = before.indexOf(it)
+                val toIndex = after.indexOf(it)
+                if (fromIndex == toIndex) {
+                    null
+                } else {
+                    Diff.IndexChange(fromIndex, toIndex) to it
+                }
+            }
+
+            val deleted = before.filter { it !in after }
+            return Diff(added = added, deleted = deleted, moved = moved)
+        }
+    }
 }

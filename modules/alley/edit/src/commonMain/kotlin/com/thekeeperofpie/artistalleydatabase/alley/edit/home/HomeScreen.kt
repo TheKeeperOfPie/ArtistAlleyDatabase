@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
@@ -44,7 +50,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
+import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 internal object HomeScreen {
 
@@ -95,6 +103,18 @@ internal object HomeScreen {
                                 query = query,
                                 onQueryChange = { query = it },
                                 onSearch = {},
+                                trailingIcon = {
+                                    AnimatedVisibility(isNotEmpty) {
+                                        IconButton(onClick = { query = "" }) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Clear,
+                                                contentDescription = stringResource(
+                                                    EntryRes.string.entry_search_clear
+                                                ),
+                                            )
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.padding(top = 4.dp),
                             )
                         }

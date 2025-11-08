@@ -39,15 +39,14 @@ sealed interface AlleyEditDestination : NavKey {
             null
         }
 
-        fun toEncodedRoute(destination: NavKey) = if (destination !is AlleyEditDestination) {
-            null
-        } else when (destination) {
+        fun toEncodedRoute(destination: AlleyEditDestination) = when (destination) {
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/${
                 Uri.encode(
                     destination.artistId.toString()
                 )
             }"
-            is ImagesEdit, Home -> ""
+            is ImagesEdit -> null
+            Home -> ""
         }
     }
 }

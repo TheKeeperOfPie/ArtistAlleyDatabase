@@ -24,5 +24,13 @@
     <string name="alley_edit_image_action_add">Add image</string>
     <string name="alley_edit_image_action_save_content_description">Save image edits</string>
 
+    <string name="alley_edit_image_save_changes_title">Save changes?</string>
+    <string name="alley_edit_image_save_changes_action_save">Save</string>
+    <string name="alley_edit_image_save_changes_action_exit">Exit</string>
+    <string name="alley_edit_image_save_changes_header_added">Added</string>
+    <string name="alley_edit_image_save_changes_header_deleted">Deleted</string>
+    <string name="alley_edit_image_save_changes_header_moved">Moved</string>
+    <string name="alley_edit_image_save_changes_moved">%1$s: %2$d -> %3$d</string>
+
     <string name="alley_edit_drag_handle_content_description">Drag handle</string>
 </resources>

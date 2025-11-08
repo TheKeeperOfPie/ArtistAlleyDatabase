@@ -13,10 +13,14 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -26,11 +30,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -39,12 +47,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_drag_handle_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_add
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_change
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_save_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_exit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_added
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_deleted
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_moved
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_moved
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_width_and_height
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
@@ -114,7 +132,6 @@ object ImagesEditScreen {
                         },
                         navigationIcon = { ArrowBackIconButton(onClick = onClickBack) },
                         actions = {
-                            // TODO: Also add a BackHandler
                             IconButton(onClick = onClickSave) {
                                 Icon(
                                     imageVector = Icons.Default.Save,
@@ -260,6 +277,86 @@ object ImagesEditScreen {
                         }
                     }
                 }
+            }
+
+            val hasEdited by remember { derivedStateOf { route.images != images } }
+            var showBackDialog by rememberSaveable { mutableStateOf(false) }
+            var hasConfirmedExit by remember { mutableStateOf(false) }
+            NavigationBackHandler(
+                state = rememberNavigationEventState(NavigationEventInfo.None),
+                isBackEnabled = hasEdited && !hasConfirmedExit,
+            ) {
+                showBackDialog = true
+            }
+            if (showBackDialog) {
+                val diff by produceState<EditImage.Diff?>(null, key1 = images) {
+                    value = EditImage.generateDiffs(route.images, images)
+                }
+                AlertDialog(
+                    onDismissRequest = { showBackDialog = false },
+                    title = {
+                        Text(stringResource(Res.string.alley_edit_image_save_changes_title))
+                    },
+                    text = {
+                        val diff = diff
+                        if (diff == null) {
+                            Box(
+                                contentAlignment = Alignment.TopCenter,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                                if (diff.added.isNotEmpty()) {
+                                    Text(stringResource(Res.string.alley_edit_image_save_changes_header_added))
+                                    diff.added.forEach {
+                                        Text(it.name)
+                                    }
+                                }
+                                if (diff.deleted.isNotEmpty()) {
+                                    Text(stringResource(Res.string.alley_edit_image_save_changes_header_deleted))
+                                    diff.deleted.forEach {
+                                        Text(it.name)
+                                    }
+                                }
+                                if (diff.moved.isNotEmpty()) {
+                                    Text(stringResource(Res.string.alley_edit_image_save_changes_header_moved))
+                                    diff.moved.forEach { (indexDiff, image) ->
+                                        Text(
+                                            stringResource(
+                                                Res.string.alley_edit_image_save_changes_moved,
+                                                image.name,
+                                                indexDiff.fromIndex,
+                                                indexDiff.toIndex,
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                hasConfirmedExit = true
+                                showBackDialog = false
+                                onClickSave()
+                            },
+                        ) {
+                            Text(stringResource(Res.string.alley_edit_image_save_changes_action_save))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            hasConfirmedExit = true
+                            showBackDialog = false
+                            onClickBack()
+                        }) {
+                            Text(stringResource(Res.string.alley_edit_image_save_changes_action_exit))
+                        }
+                    }
+                )
             }
         }
     }

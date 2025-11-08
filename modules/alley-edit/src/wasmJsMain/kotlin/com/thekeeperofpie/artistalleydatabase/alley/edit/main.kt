@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -12,6 +12,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.ComposeViewport
+import androidx.navigationevent.NavigationEventInput
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.map.Mapper
@@ -27,9 +29,9 @@ import dev.zacsweers.metro.createGraphFactory
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
@@ -89,84 +91,96 @@ private fun Content(graph: ArtistAlleyEditGraph) {
             val twoWayStack = rememberArtistAlleyEditTwoWayStack()
             ArtistAlleyEditApp(graph = graph, twoWayStack = twoWayStack)
 
-            LaunchedEffect(twoWayStack) {
-                attachToBrowserHistory(twoWayStack)
+            val scope = rememberCoroutineScope()
+            val browserInput = remember(scope, twoWayStack) { BrowserInput(scope, twoWayStack) }
+            val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
+            DisposableEffect(navigationEventDispatcherOwner, browserInput) {
+                val dispatcher = navigationEventDispatcherOwner?.navigationEventDispatcher
+                    ?: return@DisposableEffect onDispose {}
+                dispatcher.addInput(browserInput)
+                onDispose { dispatcher.removeInput(browserInput) }
             }
         }
     }
 }
 
-private suspend fun attachToBrowserHistory(twoWayStack: ArtistAlleyEditTwoWayStack) =
-    coroutineScope {
-        @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-        val localWindow = window as BrowserWindow
-        val baseUrl = localWindow.location.run { origin + pathname }
+class BrowserInput(scope: CoroutineScope, twoWayStack: ArtistAlleyEditTwoWayStack) :
+    NavigationEventInput() {
+    init {
+        scope.launch {
 
-        launch {
-            localWindow.popStateEvents().collect { event ->
-                val state = event.state
-                if (state == null) {
-                    val route = localWindow.location.pathname.substringAfter("edit/")
-                    val destination = AlleyEditDestination.parseRoute(route)
-                    if (destination != null) {
-                        twoWayStack.navigate(destination)
-                    }
-                    return@collect
-                }
+            @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+            val localWindow = window as BrowserWindow
+            val baseUrl = localWindow.location.run { origin + pathname }
 
-                Snapshot.withMutableSnapshot {
-                    val restoredRoutes = state.lines()
-                        .map(AlleyEditDestination::parseRoute)
-                    val currentRoutes = twoWayStack.navBackStack
-
-                    var commonTail = -1
-                    restoredRoutes.forEachIndexed { index, restoredRoute ->
-                        if (index >= currentRoutes.size) {
-                            return@forEachIndexed
+            launch {
+                localWindow.popStateEvents().collect { event ->
+                    val state = event.state
+                    if (state == null) {
+                        val route = localWindow.location.pathname.substringAfter("edit/")
+                        val destination = AlleyEditDestination.parseRoute(route)
+                        if (destination != null) {
+                            twoWayStack.navigate(destination)
                         }
-                        if (restoredRoute == currentRoutes[index]) {
-                            commonTail = index
-                        }
+                        return@collect
                     }
 
-                    when (commonTail) {
-                        currentRoutes.size - 2 -> twoWayStack.onBack()
-                        -1, 0 -> {
-                            val root = currentRoutes.removeFirst()
-                            twoWayStack.navBackStack.clear()
-                            twoWayStack.navBackStack += root
-                        }
-                        else -> ((currentRoutes.size - 1) downTo commonTail + 1).forEach {
-                            currentRoutes.removeAt(it)
-                        }
-                    }
+                    Snapshot.withMutableSnapshot {
+                        val restoredRoutes = state.lines()
+                            .map(AlleyEditDestination::parseRoute)
+                        val currentRoutes = twoWayStack.navBackStack
 
-                    if (commonTail < restoredRoutes.size - 1) {
-                        restoredRoutes.subList(commonTail + 1, restoredRoutes.size)
-                            .filterNotNull()
-                            .forEach(twoWayStack::navigate)
+                        var commonTail = -1
+                        restoredRoutes.forEachIndexed { index, restoredRoute ->
+                            if (index >= currentRoutes.size) {
+                                return@forEachIndexed
+                            }
+                            if (restoredRoute == currentRoutes[index]) {
+                                commonTail = index
+                            }
+                        }
+
+                        when (commonTail) {
+                            currentRoutes.size - 2 -> dispatchOnBackCompleted()
+                            -1, 0 -> {
+                                val root = currentRoutes.removeFirst()
+                                twoWayStack.navBackStack.clear()
+                                twoWayStack.navBackStack += root
+                            }
+                            else -> ((currentRoutes.size - 1) downTo commonTail + 1).forEach {
+                                currentRoutes.removeAt(it)
+                            }
+                        }
+
+                        if (commonTail < restoredRoutes.size - 1) {
+                            restoredRoutes.subList(commonTail + 1, restoredRoutes.size)
+                                .filterNotNull()
+                                .forEach(twoWayStack::navigate)
+                        }
                     }
                 }
             }
-        }
 
-        launch {
-            snapshotFlow { twoWayStack.navBackStack.toList() }
-                .collect {
-                    val routes = it.mapNotNull(AlleyEditDestination::toEncodedRoute)
-                    val currentRoute = routes.last()
-                    val newUri = "$baseUrl/$currentRoute"
-                    val state = routes.joinToString("\n")
+            launch {
+                snapshotFlow { twoWayStack.navBackStack.toList() }
+                    .collect {
+                        val routes =
+                            it.mapNotNull { AlleyEditDestination.toEncodedRoute(it as AlleyEditDestination) }
+                        val currentRoute = routes.last()
+                        val newUri = "$baseUrl/$currentRoute"
+                        val state = routes.joinToString("\n")
 
-                    val currentState = localWindow.history.state
-                    if (currentState == null || currentState == state) {
-                        localWindow.history.replaceState(state, "", newUri)
-                    } else {
-                        localWindow.history.pushState(state, "", newUri)
+                        val currentState = localWindow.history.state
+                        if (currentState == null || currentState == state) {
+                            localWindow.history.replaceState(state, "", newUri)
+                        } else {
+                            localWindow.history.pushState(state, "", newUri)
+                        }
                     }
-                }
+            }
         }
     }
+}
 
 @OptIn(DelicateCoroutinesApi::class)
 private fun BrowserWindow.popStateEvents(): Flow<BrowserPopStateEvent> = callbackFlow {
