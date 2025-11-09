@@ -20,14 +20,6 @@ LEFT OUTER JOIN seriesUserEntry
 ON seriesEntry.uuid = seriesUserEntry.seriesId
 WHERE id IN :ids;
 
-getSeriesSize2024:
-SELECT COUNT(*) FROM seriesEntry
-WHERE inferred2024 > 0;
-
-getSeriesSize2025:
-SELECT COUNT(*) FROM seriesEntry
-WHERE inferred2025 > 0;
-
 getBoothsBySeriesId2024:
 SELECT artistEntry2024.booth FROM artistSeriesConnection
 INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)
@@ -52,29 +44,41 @@ INNER JOIN artistEntry2025 ON (artistSeriesConnection.artistId = artistEntry2025
 WHERE artistSeriesConnection.seriesId = :seriesId
 AND (artistSeriesConnection.yearFlags & 8) != 0;
 
+getBoothsBySeriesIdAnimeExpo2026:
+SELECT artistEntryAnimeExpo2026.booth FROM artistSeriesConnection
+INNER JOIN artistEntryAnimeExpo2026 ON (artistSeriesConnection.artistId = artistEntryAnimeExpo2026.id)
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND (artistSeriesConnection.yearFlags & 16) != 0;
+
+getBoothsBySeriesIdConfirmedAnimeExpo2026:
+SELECT artistEntryAnimeExpo2026.booth FROM artistSeriesConnection
+INNER JOIN artistEntryAnimeExpo2026 ON (artistSeriesConnection.artistId = artistEntryAnimeExpo2026.id)
+WHERE artistSeriesConnection.seriesId = :seriesId
+AND (artistSeriesConnection.yearFlags & 32) != 0;
+
 getBoothsBySeriesIdAnimeNyc2024:
 SELECT artistEntryAnimeNyc2024.booth FROM artistSeriesConnection
 INNER JOIN artistEntryAnimeNyc2024 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2024.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
-AND (artistSeriesConnection.yearFlags & 16) != 0;
+AND (artistSeriesConnection.yearFlags & 64) != 0;
 
 getBoothsBySeriesIdConfirmedAnimeNyc2024:
 SELECT artistEntryAnimeNyc2024.booth FROM artistSeriesConnection
 INNER JOIN artistEntryAnimeNyc2024 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2024.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
-AND (artistSeriesConnection.yearFlags & 32) != 0;
+AND (artistSeriesConnection.yearFlags & 128) != 0;
 
 getBoothsBySeriesIdAnimeNyc2025:
 SELECT artistEntryAnimeNyc2025.booth FROM artistSeriesConnection
 INNER JOIN artistEntryAnimeNyc2025 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2025.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
-AND (artistSeriesConnection.yearFlags & 64) != 0;
+AND (artistSeriesConnection.yearFlags & 256) != 0;
 
 getBoothsBySeriesIdConfirmedAnimeNyc2025:
 SELECT artistEntryAnimeNyc2025.booth FROM artistSeriesConnection
 INNER JOIN artistEntryAnimeNyc2025 ON (artistSeriesConnection.artistId = artistEntryAnimeNyc2025.id)
 WHERE artistSeriesConnection.seriesId = :seriesId
-AND (artistSeriesConnection.yearFlags & 128) != 0;
+AND (artistSeriesConnection.yearFlags & 512) != 0;
 
 getRallyCount:
 SELECT COUNT(*) FROM stampRallySeriesConnection

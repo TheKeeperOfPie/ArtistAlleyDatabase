@@ -3,6 +3,7 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistMerchConnection
@@ -13,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyArtistConnection
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallySeriesConnection
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -147,6 +149,17 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     commissionsAdapter = listStringAdapter,
                     imagesAdapter = listCatalogImageAdapter,
                 ),
+                artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
+                    linksAdapter = listStringAdapter,
+                    storeLinksAdapter = listStringAdapter,
+                    catalogLinksAdapter = listStringAdapter,
+                    seriesInferredAdapter = listStringAdapter,
+                    seriesConfirmedAdapter = listStringAdapter,
+                    merchInferredAdapter = listStringAdapter,
+                    merchConfirmedAdapter = listStringAdapter,
+                    commissionsAdapter = listStringAdapter,
+                    imagesAdapter = listCatalogImageAdapter,
+                ),
                 artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
                     linksAdapter = listStringAdapter,
                     storeLinksAdapter = listStringAdapter,
@@ -180,6 +193,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     imagesAdapter = listCatalogImageAdapter,
                 ),
                 stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
+                    tablesAdapter = listStringAdapter,
+                    linksAdapter = listStringAdapter,
+                    seriesAdapter = listStringAdapter,
+                    imagesAdapter = listCatalogImageAdapter,
+                ),
+                stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
                     tablesAdapter = listStringAdapter,
                     linksAdapter = listStringAdapter,
                     seriesAdapter = listStringAdapter,
@@ -1162,6 +1181,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             DataYear.ANIME_EXPO_2024,
                 -> fixRallyName(file)
             DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_EXPO_2026,
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> id
@@ -1234,6 +1254,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                             TagYearFlag.ANIME_EXPO_2025_INFERRED
                         )
                     }
+                    val inferredAnimeExpo2026 = connections.count {
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_EXPO_2026_INFERRED
+                        )
+                    }
                     val inferredAnimeNyc2024 = connections.count {
                         TagYearFlag.hasFlag(it.value.yearFlags, TagYearFlag.ANIME_NYC_2024_INFERRED)
                     }
@@ -1251,6 +1277,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         TagYearFlag.hasFlag(
                             it.value.yearFlags,
                             TagYearFlag.ANIME_EXPO_2025_CONFIRMED
+                        )
+                    }
+                    val confirmedAnimeExpo2026 = connections.count {
+                        TagYearFlag.hasFlag(
+                            it.value.yearFlags,
+                            TagYearFlag.ANIME_EXPO_2026_CONFIRMED
                         )
                     }
                     val confirmedAnimeNyc2024 = connections.count {
@@ -1284,10 +1316,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         link = link,
                         inferred2024 = inferred2024.toLong(),
                         inferred2025 = inferred2025.toLong(),
+                        inferredAnimeExpo2026 = inferredAnimeExpo2026.toLong(),
                         inferredAnimeNyc2024 = inferredAnimeNyc2024.toLong(),
                         inferredAnimeNyc2025 = inferredAnimeNyc2025.toLong(),
                         confirmed2024 = confirmed2024.toLong(),
                         confirmed2025 = confirmed2025.toLong(),
+                        confirmedAnimeExpo2026 = confirmedAnimeExpo2026.toLong(),
                         confirmedAnimeNyc2024 = confirmedAnimeNyc2024.toLong(),
                         confirmedAnimeNyc2025 = confirmedAnimeNyc2025.toLong(),
                         counter = counter++,

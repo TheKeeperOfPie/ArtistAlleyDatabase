@@ -51,6 +51,7 @@ class MapViewModel(
                         DataYear.ANIME_EXPO_2023,
                         DataYear.ANIME_EXPO_2024,
                         DataYear.ANIME_EXPO_2025,
+                        DataYear.ANIME_EXPO_2026,
                             -> mapBooths(booths)
                         DataYear.ANIME_NYC_2024 -> mapAnimeNyc2024Booths(booths)
                         DataYear.ANIME_NYC_2025 -> mapAnimeNyc2025Booths(booths)

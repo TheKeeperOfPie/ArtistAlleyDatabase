@@ -32,6 +32,12 @@ LEFT OUTER JOIN artistUserEntry
 ON (artistEntry2025.id = artistUserEntry.artistId AND 'AX2025' = artistUserEntry.dataYear)
 ORDER BY artistEntry2025.id ASC;
 
+getExportPartialArtistsAnimeExpo2026:
+SELECT artistEntryAnimeExpo2026.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeExpo2026
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntryAnimeExpo2026.id = artistUserEntry.artistId AND 'AX2026' = artistUserEntry.dataYear)
+ORDER BY artistEntryAnimeExpo2026.id ASC;
+
 getExportPartialArtistsAnimeNyc2024:
 SELECT artistEntryAnimeNyc2024.id, artistUserEntry.favorite, artistUserEntry.ignored FROM artistEntryAnimeNyc2024
 LEFT OUTER JOIN artistUserEntry
@@ -68,6 +74,14 @@ LEFT OUTER JOIN artistNotes
 ON (artistEntry2025.id = artistNotes.artistId AND 'AX2025' = artistNotes.dataYear)
 WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
 
+getExportFullArtistsAnimeExpo2026:
+SELECT artistEntryAnimeExpo2026.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeExpo2026
+LEFT OUTER JOIN artistUserEntry
+ON (artistEntryAnimeExpo2026.id = artistUserEntry.artistId AND 'AX2026' = artistUserEntry.dataYear)
+LEFT OUTER JOIN artistNotes
+ON (artistEntryAnimeExpo2026.id = artistNotes.artistId AND 'AX2026' = artistNotes.dataYear)
+WHERE (artistUserEntry.favorite == 1 OR artistUserEntry.ignored == 1 OR artistNotes.notes IS NOT NULL);
+
 getExportFullArtistsAnimeNyc2024:
 SELECT artistEntryAnimeNyc2024.id, artistUserEntry.favorite, artistUserEntry.ignored, artistNotes.notes FROM artistEntryAnimeNyc2024
 LEFT OUTER JOIN artistUserEntry
@@ -102,6 +116,12 @@ LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId
 ORDER BY stampRallyEntry2025.id ASC;
 
+getExportPartialStampRalliesAnimeExpo2026:
+SELECT stampRallyEntryAnimeExpo2026.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntryAnimeExpo2026
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntryAnimeExpo2026.id = stampRallyUserEntry.stampRallyId
+ORDER BY stampRallyEntryAnimeExpo2026.id ASC;
+
 getExportFullStampRallies2023:
 SELECT stampRallyEntry2023.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntry2023
 LEFT OUTER JOIN stampRallyUserEntry
@@ -124,6 +144,14 @@ LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry2025.id = stampRallyUserEntry.stampRallyId
 LEFT OUTER JOIN stampRallyNotes
 ON stampRallyEntry2025.id = stampRallyNotes.stampRallyId
+WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
+
+getExportFullStampRalliesAnimeExpo2026:
+SELECT stampRallyEntryAnimeExpo2026.id, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored, stampRallyNotes.notes FROM stampRallyEntryAnimeExpo2026
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntryAnimeExpo2026.id = stampRallyUserEntry.stampRallyId
+LEFT OUTER JOIN stampRallyNotes
+ON stampRallyEntryAnimeExpo2026.id = stampRallyNotes.stampRallyId
 WHERE (stampRallyUserEntry.favorite == 1 OR stampRallyUserEntry.ignored == 1 OR stampRallyNotes.notes IS NOT NULL);
 
 getExportFullSeries:

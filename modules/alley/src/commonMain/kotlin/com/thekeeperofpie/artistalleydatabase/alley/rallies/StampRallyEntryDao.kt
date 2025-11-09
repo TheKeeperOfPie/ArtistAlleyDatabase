@@ -15,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025Queries
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryAnimeExpo2026Queries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.toArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
@@ -30,6 +32,7 @@ import kotlinx.serialization.json.Json
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2025.GetEntry as GetEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntryAnimeExpo2026.GetEntry as GetEntryAnimeExpo2026
 
 fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
@@ -92,6 +95,34 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
     return StampRallyWithUserData(
         stampRally = StampRallyEntry(
             year = DataYear.ANIME_EXPO_2025,
+            id = stampRallyId,
+            fandom = getString(1)!!,
+            hostTable = getString(2)!!,
+            tables = getString(3)!!.let(Json::decodeFromString),
+            links = getString(4)!!.let(Json::decodeFromString),
+            _tableMin = getLong(5),
+            totalCost = getLong(6),
+            prize = getString(7),
+            prizeLimit = getLong(8),
+            series = getString(9)!!.let(Json::decodeFromString),
+            notes = getString(10),
+            images = getString(11)!!.let(Json::decodeFromString),
+            counter = getLong(12)!!,
+            confirmed = getBooleanFixed(13),
+        ),
+        userEntry = StampRallyUserEntry(
+            stampRallyId = stampRallyId,
+            favorite = getBooleanFixed(14),
+            ignored = getBooleanFixed(15),
+        )
+    )
+}
+
+fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
+    val stampRallyId = getString(0)!!
+    return StampRallyWithUserData(
+        stampRally = StampRallyEntry(
+            year = DataYear.ANIME_EXPO_2026,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
@@ -190,6 +221,31 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
     )
 )
 
+private fun GetEntryAnimeExpo2026.toStampRallyWithUserData() = StampRallyWithUserData(
+    stampRally = StampRallyEntry(
+        year = DataYear.ANIME_EXPO_2026,
+        id = id,
+        fandom = fandom,
+        hostTable = hostTable,
+        tables = tables,
+        links = links,
+        _tableMin = tableMin,
+        totalCost = totalCost,
+        prize = prize,
+        prizeLimit = prizeLimit,
+        series = series,
+        notes = notes,
+        images = images,
+        counter = counter,
+        confirmed = confirmed,
+    ),
+    userEntry = StampRallyUserEntry(
+        stampRallyId = id,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
 fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
     year = DataYear.ANIME_EXPO_2023,
     id = id,
@@ -244,12 +300,31 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
     confirmed = confirmed,
 )
 
+fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyEntry(
+    year = DataYear.ANIME_EXPO_2026,
+    id = id,
+    fandom = fandom,
+    hostTable = hostTable,
+    tables = tables,
+    links = links,
+    _tableMin = tableMin,
+    totalCost = totalCost,
+    prize = prize,
+    prizeLimit = prizeLimit,
+    series = series,
+    notes = notes,
+    images = images,
+    counter = counter,
+    confirmed = confirmed,
+)
+
 class StampRallyEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val dao2023: suspend () -> StampRallyEntry2023Queries = { database().stampRallyEntry2023Queries },
     private val dao2024: suspend () -> StampRallyEntry2024Queries = { database().stampRallyEntry2024Queries },
     private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
+    private val daoAnimeExpo2026: suspend () -> StampRallyEntryAnimeExpo2026Queries = { database().stampRallyEntryAnimeExpo2026Queries },
 ) {
     suspend fun getEntry(year: DataYear, stampRallyId: String) =
         when (year) {
@@ -262,6 +337,10 @@ class StampRallyEntryDao(
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
             DataYear.ANIME_EXPO_2025 -> dao2025()
+                .getEntry(stampRallyId)
+                .awaitAsOneOrNull()
+                ?.toStampRallyWithUserData()
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026()
                 .getEntry(stampRallyId)
                 .awaitAsOneOrNull()
                 ?.toStampRallyWithUserData()
@@ -297,6 +376,14 @@ class StampRallyEntryDao(
                         .map { it.toArtistEntry() }
                 StampRallyWithArtistsEntry(stampRally, artists)
             }
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().transactionWithResult {
+                val stampRally =
+                    getEntry(year, stampRallyId) ?: return@transactionWithResult null
+                val artists =
+                    daoAnimeExpo2026().getArtistEntries(stampRallyId).awaitAsList()
+                        .map { it.toArtistEntry() }
+                StampRallyWithArtistsEntry(stampRally, artists)
+            }
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> throw IllegalStateException("ANYC shouldn't have rallies")
@@ -308,18 +395,12 @@ class StampRallyEntryDao(
         searchQuery: StampRallySearchQuery,
         onlyFavorites: Boolean = false,
     ): Pair<String, String>? {
-        val tableName = when (year) {
-            DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
-            DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
-            DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025 -> return null
-        }
+        val tableName = year.stampRallyTableName ?: return null
         val filterParams = searchQuery.filterParams
         val andClauses = mutableListOf<String>().apply {
             if (onlyFavorites) this += "stampRallyUserEntry.favorite = 1"
 
-            if (year == DataYear.ANIME_EXPO_2025 || year == DataYear.ANIME_EXPO_2024) {
+            if (year.year >= 2024) {
                 val totalCost = filterParams.totalCost
                 if (totalCost.isOnlyStart) {
                     this += "$tableName.totalCost = 0"
@@ -357,14 +438,14 @@ class StampRallyEntryDao(
                 }
             }
 
-            if (year == DataYear.ANIME_EXPO_2025) {
+            if (year.year >= 2025) {
                 if (!filterParams.showUnconfirmed) {
                     this += "$tableName.confirmed = 1"
                 }
             }
 
             // TODO: Locked series/merch doesn't enforce AND
-            if (year == DataYear.ANIME_EXPO_2025 && filterParams.seriesIn.isNotEmpty()) {
+            if (year.year >= 2025 && filterParams.seriesIn.isNotEmpty()) {
                 val seriesList = filterParams.seriesIn.joinToString(separator = ",") {
                     DatabaseUtils.sqlEscapeString(it)
                 }
@@ -422,8 +503,8 @@ class StampRallyEntryDao(
             "fandom",
             "tables",
             "notes".takeIf { year != DataYear.ANIME_EXPO_2023 },
-            "series".takeIf { year == DataYear.ANIME_EXPO_2025 },
-            "prize".takeIf { year == DataYear.ANIME_EXPO_2025 },
+            "series".takeIf { year.year >= 2025 },
+            "prize".takeIf { year.year >= 2025 },
         )
         val matchQuery = buildString {
             append("'")
@@ -475,17 +556,8 @@ class StampRallyEntryDao(
         onlyFavorites: Boolean = false,
     ): Flow<Int> {
         val statements = search(year, query, searchQuery, onlyFavorites)
-        if (statements == null) {
-            return flowOf(0)
-        }
-        val tableName = when (year) {
-            DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
-            DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
-            DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> throw IllegalStateException("ANYC shouldn't have rallies")
-        }
+            ?: return flowOf(0)
+        val tableName = year.stampRallyTableNameOrThrow
         return DaoUtils.makeQuery(
             driver(),
             statement = statements.first,
@@ -502,8 +574,8 @@ class StampRallyEntryDao(
         onlyFavorites: Boolean = false,
     ): PagingSource<Int, StampRallyWithUserData> {
         val statements = search(year, query, searchQuery, onlyFavorites)
-        if (statements == null) {
-            return object : PagingSource<Int, StampRallyWithUserData>() {
+            ?: return object :
+                PagingSource<Int, StampRallyWithUserData>() {
                 override fun getRefreshKey(state: PagingState<Int, StampRallyWithUserData>) = null
                 override suspend fun load(params: LoadParams<Int>): LoadResult<Int, StampRallyWithUserData> {
                     @Suppress("CAST_NEVER_SUCCEEDS")
@@ -514,17 +586,9 @@ class StampRallyEntryDao(
                     ) as LoadResult<Int, StampRallyWithUserData>
                 }
             }
-        }
 
         val (countStatement, searchStatement) = statements
-        val tableName = when (year) {
-            DataYear.ANIME_EXPO_2023 -> "stampRallyEntry2023"
-            DataYear.ANIME_EXPO_2024 -> "stampRallyEntry2024"
-            DataYear.ANIME_EXPO_2025 -> "stampRallyEntry2025"
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> throw IllegalStateException("ANYC shouldn't have rallies")
-        }
+        val tableName = year.stampRallyTableNameOrThrow
 
         return DaoUtils.queryPagingSource(
             driver = driver,
@@ -536,6 +600,7 @@ class StampRallyEntryDao(
                 DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
                 DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
                 DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
+                DataYear.ANIME_EXPO_2026 -> SqlCursor::toStampRallyWithUserDataAnimeExpo2026
                 DataYear.ANIME_NYC_2024,
                 DataYear.ANIME_NYC_2025,
                     -> throw IllegalStateException("ANYC shouldn't have rallies")

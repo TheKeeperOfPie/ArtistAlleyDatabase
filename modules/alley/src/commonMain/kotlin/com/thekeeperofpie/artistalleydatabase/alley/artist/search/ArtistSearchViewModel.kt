@@ -222,6 +222,7 @@ class ArtistSearchViewModel(
         ReadOnlyStateFlow(false)
     } else {
         year.mapLatest {
+            // TODO: Add 2026 support
             if (it == DataYear.ANIME_EXPO_2025) {
                 seriesEntryDao.hasRallies(lockedSeries)
             } else {

@@ -414,6 +414,7 @@ private fun FaqSection(onInstallClick: () -> Unit) {
         val animeNyc2024 = stringResource(DataYear.ANIME_NYC_2024.fullName)
         val animeNyc2025 = stringResource(DataYear.ANIME_NYC_2025.fullName)
         val colorScheme = MaterialTheme.colorScheme
+        // TODO: Add 2026
         QuestionAnswer(
             question = "Can I access the raw data?",
             answer = {

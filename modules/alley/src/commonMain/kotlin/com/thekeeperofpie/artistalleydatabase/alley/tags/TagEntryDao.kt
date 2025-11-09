@@ -31,6 +31,9 @@ class TagEntryDao(
                         DataYear.ANIME_EXPO_2025 -> seriesDao.getBoothsBySeriesIdConfirmed2025(seriesId)
                             .awaitAsList()
                             .map { it.booth }
+                        DataYear.ANIME_EXPO_2026 -> seriesDao.getBoothsBySeriesIdConfirmedAnimeExpo2026(seriesId)
+                            .awaitAsList()
+                            .map { it.booth }
                         DataYear.ANIME_NYC_2024 -> seriesDao.getBoothsBySeriesIdConfirmedAnimeNyc2024(seriesId)
                             .awaitAsList()
                             .map { it.booth }
@@ -44,6 +47,9 @@ class TagEntryDao(
                         DataYear.ANIME_EXPO_2024 -> seriesDao.getBoothsBySeriesId2024(seriesId)
                             .awaitAsList()
                         DataYear.ANIME_EXPO_2025 -> seriesDao.getBoothsBySeriesId2025(seriesId)
+                            .awaitAsList()
+                            .map { it.booth }
+                        DataYear.ANIME_EXPO_2026 -> seriesDao.getBoothsBySeriesIdAnimeExpo2026(seriesId)
                             .awaitAsList()
                             .map { it.booth }
                         DataYear.ANIME_NYC_2024 -> seriesDao.getBoothsBySeriesIdAnimeNyc2024(seriesId)
@@ -64,6 +70,9 @@ class TagEntryDao(
                         DataYear.ANIME_EXPO_2025 -> merchDao.getBoothsByMerchIdConfirmed2025(merchId)
                             .awaitAsList()
                             .map { it.booth }
+                        DataYear.ANIME_EXPO_2026 -> merchDao.getBoothsByMerchIdConfirmedAnimeExpo2026(merchId)
+                            .awaitAsList()
+                            .map { it.booth }
                         DataYear.ANIME_NYC_2024 -> merchDao.getBoothsByMerchIdConfirmedAnimeNyc2024(merchId)
                             .awaitAsList()
                             .map { it.booth }
@@ -77,6 +86,9 @@ class TagEntryDao(
                         DataYear.ANIME_EXPO_2024 -> merchDao.getBoothsByMerchId2024(merchId)
                             .awaitAsList()
                         DataYear.ANIME_EXPO_2025 -> merchDao.getBoothsByMerchId2025(merchId)
+                            .awaitAsList()
+                            .map { it.booth }
+                        DataYear.ANIME_EXPO_2026 -> merchDao.getBoothsByMerchIdAnimeExpo2026(merchId)
                             .awaitAsList()
                             .map { it.booth }
                         DataYear.ANIME_NYC_2024 -> merchDao.getBoothsByMerchIdAnimeNyc2024(merchId)

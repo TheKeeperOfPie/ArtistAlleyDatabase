@@ -5,6 +5,8 @@ enum class TagYearFlag(year: DataYear) {
     ANIME_EXPO_2024_CONFIRMED(DataYear.ANIME_EXPO_2024),
     ANIME_EXPO_2025_INFERRED(DataYear.ANIME_EXPO_2025),
     ANIME_EXPO_2025_CONFIRMED(DataYear.ANIME_EXPO_2025),
+    ANIME_EXPO_2026_INFERRED(DataYear.ANIME_EXPO_2026),
+    ANIME_EXPO_2026_CONFIRMED(DataYear.ANIME_EXPO_2026),
     ANIME_NYC_2024_INFERRED(DataYear.ANIME_NYC_2024),
     ANIME_NYC_2024_CONFIRMED(DataYear.ANIME_NYC_2024),
     ANIME_NYC_2025_INFERRED(DataYear.ANIME_NYC_2025),
@@ -17,6 +19,8 @@ enum class TagYearFlag(year: DataYear) {
             hasAnimeExpo2024Confirmed: Boolean = false,
             hasAnimeExpo2025Inferred: Boolean = false,
             hasAnimeExpo2025Confirmed: Boolean = false,
+            hasAnimeExpo2026Inferred: Boolean = false,
+            hasAnimeExpo2026Confirmed: Boolean = false,
             hasAnimeNyc2024Inferred: Boolean = false,
             hasAnimeNyc2024Confirmed: Boolean = false,
             hasAnimeNyc2025Inferred: Boolean = false,
@@ -27,6 +31,8 @@ enum class TagYearFlag(year: DataYear) {
                 ANIME_EXPO_2024_CONFIRMED.takeIf { hasAnimeExpo2024Confirmed },
                 ANIME_EXPO_2025_INFERRED.takeIf { hasAnimeExpo2025Inferred || hasAnimeExpo2025Confirmed },
                 ANIME_EXPO_2025_CONFIRMED.takeIf { hasAnimeExpo2025Confirmed },
+                ANIME_EXPO_2026_INFERRED.takeIf { hasAnimeExpo2026Inferred || hasAnimeExpo2026Confirmed },
+                ANIME_EXPO_2026_CONFIRMED.takeIf { hasAnimeExpo2026Confirmed },
                 ANIME_NYC_2024_INFERRED.takeIf { hasAnimeNyc2024Inferred || hasAnimeNyc2024Confirmed },
                 ANIME_NYC_2024_CONFIRMED.takeIf { hasAnimeNyc2024Confirmed },
                 ANIME_NYC_2025_INFERRED.takeIf { hasAnimeNyc2025Inferred || hasAnimeNyc2025Confirmed },
@@ -47,6 +53,7 @@ enum class TagYearFlag(year: DataYear) {
                 DataYear.ANIME_EXPO_2023 -> return 0L
                 DataYear.ANIME_EXPO_2024 -> if (confirmed) ANIME_EXPO_2024_CONFIRMED else ANIME_EXPO_2024_INFERRED
                 DataYear.ANIME_EXPO_2025 -> if (confirmed) ANIME_EXPO_2025_CONFIRMED else ANIME_EXPO_2025_INFERRED
+                DataYear.ANIME_EXPO_2026 -> if (confirmed) ANIME_EXPO_2026_CONFIRMED else ANIME_EXPO_2026_INFERRED
                 DataYear.ANIME_NYC_2024 -> if (confirmed) ANIME_NYC_2024_CONFIRMED else ANIME_NYC_2024_INFERRED
                 DataYear.ANIME_NYC_2025 -> if (confirmed) ANIME_NYC_2025_CONFIRMED else ANIME_NYC_2025_INFERRED
             }

@@ -1,0 +1,10 @@
+getEntry:
+SELECT stampRallyEntryAnimeExpo2026.*, stampRallyUserEntry.favorite, stampRallyUserEntry.ignored FROM stampRallyEntryAnimeExpo2026
+LEFT OUTER JOIN stampRallyUserEntry
+ON stampRallyEntryAnimeExpo2026.id = stampRallyUserEntry.stampRallyId
+WHERE id = :id;
+
+getArtistEntries:
+SELECT artistEntryAnimeExpo2026.* FROM stampRallyArtistConnection
+INNER JOIN artistEntryAnimeExpo2026 ON (stampRallyArtistConnection.artistId = artistEntryAnimeExpo2026.id)
+WHERE stampRallyArtistConnection.stampRallyId = :stampRallyId;

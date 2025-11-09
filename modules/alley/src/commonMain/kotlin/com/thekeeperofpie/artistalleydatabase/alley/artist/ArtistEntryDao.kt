@@ -15,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025Queries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeExpo2026Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
@@ -46,6 +48,7 @@ import kotlin.uuid.Uuid
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2024.GetEntry as GetEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntry2025.GetEntry as GetEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeExpo2026.GetEntry as GetEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2024.GetEntry as GetEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2025.GetEntry as GetEntryAnimeNyc2025
 
@@ -138,6 +141,39 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2025,
+            favorite = getBooleanFixed(19),
+            ignored = getBooleanFixed(20),
+        )
+    )
+}
+
+private fun SqlCursor.toArtistWithUserDataAnimeExpo2026(): ArtistWithUserData {
+    val artistId = getString(0)!!
+    return ArtistWithUserData(
+        artist = ArtistEntry(
+            year = DataYear.ANIME_EXPO_2026,
+            id = artistId,
+            booth = getString(1),
+            name = getString(2)!!,
+            summary = getString(3),
+            links = getString(4)!!.let(Json::decodeFromString),
+            storeLinks = getString(5)!!.let(Json::decodeFromString),
+            catalogLinks = getString(6)!!.let(Json::decodeFromString),
+            // Skip 2 for link flags
+            driveLink = getString(9),
+            notes = getString(10),
+            commissions = getString(11)!!.let(Json::decodeFromString),
+            // Skip 1 for commission flags
+            seriesInferred = getString(13)!!.let(Json::decodeFromString),
+            seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
+            merchInferred = getString(15)!!.let(Json::decodeFromString),
+            merchConfirmed = getString(16)!!.let(Json::decodeFromString),
+            images = getString(17)!!.let(Json::decodeFromString),
+            counter = getLong(18)!!,
+        ),
+        userEntry = ArtistUserEntry(
+            artistId = artistId,
+            dataYear = DataYear.ANIME_EXPO_2026,
             favorite = getBooleanFixed(19),
             ignored = getBooleanFixed(20),
         )
@@ -295,6 +331,34 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
     )
 )
 
+private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        year = DataYear.ANIME_EXPO_2026,
+        id = id,
+        booth = booth,
+        name = name,
+        summary = summary,
+        links = links,
+        storeLinks = storeLinks,
+        catalogLinks = catalogLinks,
+        driveLink = driveLink,
+        notes = notes,
+        commissions = commissions,
+        seriesInferred = seriesInferred,
+        seriesConfirmed = seriesConfirmed,
+        merchInferred = merchInferred,
+        merchConfirmed = merchConfirmed,
+        images = images,
+        counter = counter,
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        dataYear = DataYear.ANIME_EXPO_2026,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
 private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
         year = DataYear.ANIME_NYC_2024,
@@ -411,6 +475,26 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
     counter = counter,
 )
 
+fun ArtistEntryAnimeExpo2026.toArtistEntry() = ArtistEntry(
+    year = DataYear.ANIME_EXPO_2026,
+    id = id,
+    booth = booth,
+    name = name,
+    summary = summary,
+    links = links,
+    storeLinks = storeLinks,
+    catalogLinks = catalogLinks,
+    driveLink = driveLink,
+    notes = notes,
+    commissions = commissions,
+    seriesInferred = seriesInferred,
+    seriesConfirmed = seriesConfirmed,
+    merchInferred = merchInferred,
+    merchConfirmed = merchConfirmed,
+    images = images,
+    counter = counter,
+)
+
 fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
     year = DataYear.ANIME_NYC_2024,
     id = id,
@@ -459,6 +543,7 @@ class ArtistEntryDao(
     private val dao2023: suspend () -> ArtistEntry2023Queries = { database().artistEntry2023Queries },
     private val dao2024: suspend () -> ArtistEntry2024Queries = { database().artistEntry2024Queries },
     private val dao2025: suspend () -> ArtistEntry2025Queries = { database().artistEntry2025Queries },
+    private val daoAnimeExpo2026: suspend () -> ArtistEntryAnimeExpo2026Queries = { database().artistEntryAnimeExpo2026Queries },
     private val daoAnimeNyc2024: suspend () -> ArtistEntryAnimeNyc2024Queries = { database().artistEntryAnimeNyc2024Queries },
     private val daoAnimeNyc2025: suspend () -> ArtistEntryAnimeNyc2025Queries = { database().artistEntryAnimeNyc2025Queries },
 ) {
@@ -473,6 +558,10 @@ class ArtistEntryDao(
                 .awaitAsOneOrNull()
                 ?.toArtistWithUserData()
             DataYear.ANIME_EXPO_2025 -> dao2025()
+                .getEntry(id)
+                .awaitAsOneOrNull()
+                ?.toArtistWithUserData()
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026()
                 .getEntry(id)
                 .awaitAsOneOrNull()
                 ?.toArtistWithUserData()
@@ -519,6 +608,10 @@ class ArtistEntryDao(
                 .getEntriesByBooth(booth)
                 .awaitAsList()
                 .map { it.toArtistEntry() }
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026()
+                .getEntriesByBooth(booth)
+                .awaitAsList()
+                .map { it.toArtistEntry() }
             DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024()
                 .getEntriesByBooth(booth)
                 .awaitAsList()
@@ -543,6 +636,11 @@ class ArtistEntryDao(
                     .mapToOne(PlatformDispatchers.IO)
                     .mapLatest { it.toArtistWithUserData() }
                 DataYear.ANIME_EXPO_2025 -> dao2025()
+                    .getEntry(id)
+                    .asFlow()
+                    .mapToOne(PlatformDispatchers.IO)
+                    .mapLatest { it.toArtistWithUserData() }
+                DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026()
                     .getEntry(id)
                     .asFlow()
                     .mapToOne(PlatformDispatchers.IO)
@@ -580,6 +678,12 @@ class ArtistEntryDao(
             DataYear.ANIME_EXPO_2025 -> dao2025().transactionWithResult {
                 val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
                 val stampRallies = dao2025().getStampRallyEntries(artistId).awaitAsList()
+                    .map { it.toStampRallyEntry() }
+                ArtistWithStampRalliesEntry(artist, stampRallies)
+            }
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().transactionWithResult {
+                val artist = getEntry(dataYear, artistId) ?: return@transactionWithResult null
+                val stampRallies = daoAnimeExpo2026().getStampRallyEntries(artistId).awaitAsList()
                     .map { it.toStampRallyEntry() }
                 ArtistWithStampRalliesEntry(artist, stampRallies)
             }
@@ -851,6 +955,7 @@ class ArtistEntryDao(
                 DataYear.ANIME_EXPO_2023 -> SqlCursor::toArtistWithUserData2023
                 DataYear.ANIME_EXPO_2024 -> SqlCursor::toArtistWithUserData2024
                 DataYear.ANIME_EXPO_2025 -> SqlCursor::toArtistWithUserData2025
+                DataYear.ANIME_EXPO_2026 -> SqlCursor::toArtistWithUserDataAnimeExpo2026
                 DataYear.ANIME_NYC_2024 -> SqlCursor::toArtistWithUserDataAnimeNyc2024
                 DataYear.ANIME_NYC_2025 -> SqlCursor::toArtistWithUserDataAnimeNyc2025
             },
@@ -861,6 +966,7 @@ class ArtistEntryDao(
         DataYear.ANIME_EXPO_2023 -> dao2023().getImagesById(artistId).awaitAsOneOrNull()
         DataYear.ANIME_EXPO_2024 -> dao2024().getImagesById(artistId).awaitAsOneOrNull()
         DataYear.ANIME_EXPO_2025 -> dao2025().getImagesById(artistId).awaitAsOneOrNull()
+        DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getImagesById(artistId).awaitAsOneOrNull()
         DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024().getImagesById(artistId).awaitAsOneOrNull()
         DataYear.ANIME_NYC_2025 -> daoAnimeNyc2025().getImagesById(artistId).awaitAsOneOrNull()
     }
@@ -879,6 +985,10 @@ class ArtistEntryDao(
                     ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
                 }
             DataYear.ANIME_EXPO_2025 -> dao2025().getAllEntries().awaitAsList()
+                .map {
+                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                }
+            DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
                 .map {
                     ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
                 }

@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2023
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavorites2025
+import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
@@ -49,6 +50,16 @@ private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
 private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
     BoothWithFavorite(
         year = DataYear.ANIME_EXPO_2025,
+        id = id,
+        booth = booth,
+        name = name,
+        images = images,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+    )
+
+private fun GetBoothsWithFavoritesAnimeExpo2026.toBoothWithFavorite() =
+    BoothWithFavorite(
+        year = DataYear.ANIME_EXPO_2026,
         id = id,
         booth = booth,
         name = name,
@@ -105,6 +116,10 @@ class UserEntryDao(
                         .mapToList(PlatformDispatchers.IO)
                         .map { dataYear to it.map { it.toBoothWithFavorite() } }
                     DataYear.ANIME_EXPO_2025 -> getBoothsWithFavorites2025()
+                        .asFlow()
+                        .mapToList(PlatformDispatchers.IO)
+                        .map { dataYear to it.map { it.toBoothWithFavorite() } }
+                    DataYear.ANIME_EXPO_2026 -> getBoothsWithFavoritesAnimeExpo2026()
                         .asFlow()
                         .mapToList(PlatformDispatchers.IO)
                         .map { dataYear to it.map { it.toBoothWithFavorite() } }

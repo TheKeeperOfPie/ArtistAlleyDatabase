@@ -20,6 +20,7 @@ enum class DataYear(
     val serializedName: String,
     val year: Int,
     val artistTableName: String,
+    val stampRallyTableName: String?,
     val folderName: String,
     val dates: ClosedRange<LocalDate>,
     val timeZone: TimeZone,
@@ -29,6 +30,7 @@ enum class DataYear(
         serializedName = "AX2023",
         year = 2023,
         artistTableName = "artistEntry2023",
+        stampRallyTableName = "stampRallyEntry2023",
         folderName = "2023",
         dates = LocalDate(year = 2023, Month.JULY, 1)..LocalDate(year = 2023, Month.JULY, 4),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
@@ -39,6 +41,7 @@ enum class DataYear(
         serializedName = "AX2024",
         year = 2024,
         artistTableName = "artistEntry2024",
+        stampRallyTableName = "stampRallyEntry2024",
         folderName = "2024",
         dates = LocalDate(year = 2024, Month.JULY, 4)..LocalDate(year = 2024, Month.JULY, 7),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
@@ -49,8 +52,20 @@ enum class DataYear(
         serializedName = "AX2025",
         year = 2025,
         artistTableName = "artistEntry2025",
+        stampRallyTableName = "stampRallyEntry2025",
         folderName = "2025",
         dates = LocalDate(year = 2025, Month.JULY, 3)..LocalDate(year = 2025, Month.JULY, 6),
+        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
+    ),
+
+    @SerialName("AX2026")
+    ANIME_EXPO_2026(
+        serializedName = "AX2026",
+        year = 2026,
+        artistTableName = "artistEntryAnimeExpo2026",
+        stampRallyTableName = "stampRallyEntryAnimeExpo2026",
+        folderName = "animeExpo2026",
+        dates = LocalDate(year = 2026, Month.JULY, 2)..LocalDate(year = 2026, Month.JULY, 5),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
     ),
 
@@ -59,6 +74,7 @@ enum class DataYear(
         serializedName = "ANYC2024",
         year = 2024,
         artistTableName = "artistEntryAnimeNyc2024",
+        stampRallyTableName = null,
         folderName = "animeNyc2024",
         dates = LocalDate(year = 2024, Month.AUGUST, 23)..LocalDate(year = 2024, Month.AUGUST, 25),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
@@ -69,14 +85,19 @@ enum class DataYear(
         serializedName = "ANYC2025",
         year = 2025,
         artistTableName = "artistEntryAnimeNyc2025",
+        stampRallyTableName = null,
         folderName = "animeNyc2025",
         dates = LocalDate(year = 2025, Month.AUGUST, 21)..LocalDate(year = 2025, Month.AUGUST, 24),
         timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
     ),
     ;
 
+    val stampRallyTableNameOrThrow: String
+        get() = this.stampRallyTableName
+            ?: throw IllegalStateException("$serializedName shouldn't have rallies")
+
     companion object {
-        val LATEST = ANIME_NYC_2025
+        val LATEST = ANIME_EXPO_2026
 
         fun deserialize(value: String) = when (value) {
             "YEAR_2023" -> DataYear.ANIME_EXPO_2023

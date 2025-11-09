@@ -44,13 +44,15 @@ fun SqlCursor.toSeriesEntry(): SeriesEntry {
         link = getString(11),
         inferred2024 = getLong(12)!!,
         inferred2025 = getLong(13)!!,
-        inferredAnimeNyc2024 = getLong(14)!!,
-        inferredAnimeNyc2025 = getLong(15)!!,
-        confirmed2024 = getLong(16)!!,
-        confirmed2025 = getLong(17)!!,
-        confirmedAnimeNyc2024 = getLong(18)!!,
-        confirmedAnimeNyc2025 = getLong(19)!!,
-        counter = getLong(20)!!,
+        inferredAnimeExpo2026 = getLong(14)!!,
+        inferredAnimeNyc2024 = getLong(15)!!,
+        inferredAnimeNyc2025 = getLong(16)!!,
+        confirmed2024 = getLong(17)!!,
+        confirmed2025 = getLong(18)!!,
+        confirmedAnimeExpo2026 = getLong(19)!!,
+        confirmedAnimeNyc2024 = getLong(20)!!,
+        confirmedAnimeNyc2025 = getLong(21)!!,
+        counter = getLong(22)!!,
     )
 }
 
@@ -73,13 +75,15 @@ fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
             link = getString(11),
             inferred2024 = getLong(12)!!,
             inferred2025 = getLong(13)!!,
-            inferredAnimeNyc2025 = getLong(14)!!,
-            inferredAnimeNyc2024 = getLong(15)!!,
-            confirmed2024 = getLong(16)!!,
-            confirmed2025 = getLong(17)!!,
-            confirmedAnimeNyc2024 = getLong(18)!!,
-            confirmedAnimeNyc2025 = getLong(19)!!,
-            counter = getLong(20)!!,
+            inferredAnimeExpo2026 = getLong(14)!!,
+            inferredAnimeNyc2025 = getLong(15)!!,
+            inferredAnimeNyc2024 = getLong(16)!!,
+            confirmed2024 = getLong(17)!!,
+            confirmed2025 = getLong(18)!!,
+            confirmedAnimeExpo2026 = getLong(19)!!,
+            confirmedAnimeNyc2024 = getLong(20)!!,
+            confirmedAnimeNyc2025 = getLong(21)!!,
+            counter = getLong(22)!!,
         ),
         userEntry = SeriesUserEntry(
             seriesId = uuid,
@@ -104,10 +108,12 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
         link = link,
         inferred2024 = inferred2024,
         inferred2025 = inferred2025,
+        inferredAnimeExpo2026 = inferredAnimeExpo2026,
         inferredAnimeNyc2024 = inferredAnimeNyc2024,
         inferredAnimeNyc2025 = inferredAnimeNyc2025,
         confirmed2024 = confirmed2024,
         confirmed2025 = confirmed2025,
+        confirmedAnimeExpo2026 = confirmedAnimeExpo2026,
         confirmedAnimeNyc2024 = confirmedAnimeNyc2024,
         confirmedAnimeNyc2025 = confirmedAnimeNyc2025,
         counter = counter,
@@ -134,10 +140,12 @@ fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
         link = link,
         inferred2024 = inferred2024,
         inferred2025 = inferred2025,
+        inferredAnimeExpo2026 = inferredAnimeExpo2026,
         inferredAnimeNyc2024 = inferredAnimeNyc2024,
         inferredAnimeNyc2025 = inferredAnimeNyc2025,
         confirmed2024 = confirmed2024,
         confirmed2025 = confirmed2025,
+        confirmedAnimeExpo2026 = confirmedAnimeExpo2026,
         confirmedAnimeNyc2024 = confirmedAnimeNyc2024,
         confirmedAnimeNyc2025 = confirmedAnimeNyc2025,
         counter = counter,
@@ -216,6 +224,11 @@ class SeriesEntryDao(
                 "confirmed2025"
             } else {
                 "inferred2025"
+            }
+            DataYear.ANIME_EXPO_2026 -> if (seriesFilterParams.showOnlyConfirmedTags) {
+                "confirmedAnimeExpo2026"
+            } else {
+                "inferredAnimeExpo2026"
             }
             DataYear.ANIME_NYC_2024 -> if (seriesFilterParams.showOnlyConfirmedTags) {
                 "confirmedAnimeNyc2024"
@@ -455,10 +468,12 @@ class SeriesEntryDao(
             link = null,
             inferred2024 = 1,
             inferred2025 = 1,
+            inferredAnimeExpo2026 = 1,
             inferredAnimeNyc2024 = 1,
             inferredAnimeNyc2025 = 1,
             confirmed2024 = 0,
             confirmed2025 = 0,
+            confirmedAnimeExpo2026 = 0,
             confirmedAnimeNyc2024 = 0,
             confirmedAnimeNyc2025 = 0,
             counter = 1,

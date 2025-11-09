@@ -112,6 +112,49 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntry2025_fts USING FTS5 (
 );
 
 CREATE TABLE
+    IF NOT EXISTS artistEntryAnimeExpo2026 (
+        id TEXT NOT NULL,
+        booth TEXT COLLATE NOCASE,
+        name TEXT NOT NULL COLLATE NOCASE,
+        summary TEXT,
+        links TEXT AS List<String> NOT NULL,
+        storeLinks TEXT AS List<String> NOT NULL,
+        catalogLinks TEXT AS List<String> NOT NULL,
+        linkFlags INTEGER NOT NULL DEFAULT 0,
+        linkFlags2 INTEGER NOT NULL DEFAULT 0,
+        driveLink TEXT,
+        notes TEXT,
+        commissions TEXT AS List<String> NOT NULL,
+        commissionFlags INTEGER NOT NULL DEFAULT 0,
+        seriesInferred TEXT AS List<String> NOT NULL,
+        seriesConfirmed TEXT AS List<String> NOT NULL,
+        merchInferred TEXT AS List<String> NOT NULL,
+        merchConfirmed TEXT AS List<String> NOT NULL,
+        images TEXT AS List<CatalogImage> NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 1,
+        PRIMARY KEY (id)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeExpo2026_fts USING FTS5 (
+    id,
+    booth,
+    name,
+    summary,
+    driveLink,
+    notes,
+    commissions,
+    commissionFlags,
+    seriesInferred,
+    seriesConfirmed,
+    merchInferred,
+    merchConfirmed,
+    images,
+    counter,
+    content=artistEntryAnimeExpo2026,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE TABLE
     IF NOT EXISTS artistEntryAnimeNyc2025 (
         id TEXT NOT NULL,
         booth TEXT COLLATE NOCASE,
@@ -311,6 +354,44 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2025_fts USING FTS5 (
 );
 
 CREATE TABLE
+    IF NOT EXISTS stampRallyEntryAnimeExpo2026 (
+        id TEXT NOT NULL,
+        fandom TEXT NOT NULL COLLATE NOCASE,
+        hostTable TEXT NOT NULL COLLATE NOCASE,
+        tables TEXT AS List<String> NOT NULL,
+        links TEXT AS List<String> NOT NULL,
+        tableMin INTEGER,
+        totalCost INTEGER,
+        prize TEXT,
+        prizeLimit INTEGER,
+        series TEXT AS List<String> NOT NULL,
+        notes TEXT,
+        images TEXT AS List<CatalogImage> NOT NULL,
+        counter INTEGER NOT NULL DEFAULT 1,
+        confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (id)
+    );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026_fts USING FTS5 (
+    id,
+    fandom,
+    hostTable,
+    tables,
+    links,
+    tableMin,
+    totalCost,
+    prize,
+    prizeLimit,
+    series,
+    notes,
+    images,
+    counter,
+    confirmed,
+    content=stampRallyEntryAnimeExpo2026,
+    tokenize="unicode61 remove_diacritics 2"
+);
+
+CREATE TABLE
     IF NOT EXISTS stampRallyArtistConnection (
         stampRallyId TEXT NOT NULL,
         artistId TEXT NOT NULL,
@@ -346,10 +427,12 @@ CREATE TABLE
         link TEXT,
         inferred2024 INTEGER NOT NULL DEFAULT 0,
         inferred2025 INTEGER NOT NULL DEFAULT 0,
+        inferredAnimeExpo2026 INTEGER NOT NULL DEFAULT 0,
         inferredAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         inferredAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
         confirmed2024 INTEGER NOT NULL DEFAULT 0,
         confirmed2025 INTEGER NOT NULL DEFAULT 0,
+        confirmedAnimeExpo2026 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
         counter INTEGER NOT NULL DEFAULT 1,
@@ -367,10 +450,12 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     titleNative,
     inferred2024,
     inferred2025,
+    inferredAnimeExpo2026,
     inferredAnimeNyc2024,
     inferredAnimeNyc2025,
     confirmed2024,
     confirmed2025,
+    confirmedAnimeExpo2026,
     confirmedAnimeNyc2024,
     confirmedAnimeNyc2025,
     counter,

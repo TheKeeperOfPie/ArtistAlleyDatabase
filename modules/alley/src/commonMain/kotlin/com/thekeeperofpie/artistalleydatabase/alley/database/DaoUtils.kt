@@ -11,12 +11,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntry2025
+import com.thekeeperofpie.artistalleydatabase.alley.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
@@ -78,6 +80,17 @@ object DaoUtils {
             commissionsAdapter = listStringAdapter,
             imagesAdapter = listCatalogImageAdapter,
         ),
+        artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
+            linksAdapter = listStringAdapter,
+            storeLinksAdapter = listStringAdapter,
+            catalogLinksAdapter = listStringAdapter,
+            seriesInferredAdapter = listStringAdapter,
+            seriesConfirmedAdapter = listStringAdapter,
+            merchInferredAdapter = listStringAdapter,
+            merchConfirmedAdapter = listStringAdapter,
+            commissionsAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
+        ),
         artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
             linksAdapter = listStringAdapter,
             storeLinksAdapter = listStringAdapter,
@@ -111,6 +124,12 @@ object DaoUtils {
             imagesAdapter = listCatalogImageAdapter,
         ),
         stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
+            tablesAdapter = listStringAdapter,
+            linksAdapter = listStringAdapter,
+            seriesAdapter = listStringAdapter,
+            imagesAdapter = listCatalogImageAdapter,
+        ),
+        stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
             tablesAdapter = listStringAdapter,
             linksAdapter = listStringAdapter,
             seriesAdapter = listStringAdapter,
