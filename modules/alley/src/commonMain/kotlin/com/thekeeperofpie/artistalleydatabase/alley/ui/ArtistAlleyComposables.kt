@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,12 +52,12 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -109,12 +110,12 @@ import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_settings
-import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year
+import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_convention
+import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_year
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import coil3.compose.AsyncImage
-import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
@@ -732,57 +733,16 @@ fun DataYearHeader(
             )
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                var expanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    ) {
-                        Text(
-                            text = stringResource(state.year.fullName),
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
+                ConventionDropdown(
+                    dataYear = { state.year },
+                    onDataYearChange = { state.year = it },
+                )
+                YearDropdown(
+                    dataYear = { state.year },
+                    onDataYearChange = { state.year = it },
+                )
 
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.minimumInteractiveComponentSize()
-                        ) {
-                            TrailingDropdownIcon(
-                                expanded = expanded,
-                                contentDescription = stringResource(Res.string.alley_switch_data_year),
-                            )
-                        }
-                    }
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                    ) {
-                        DataYear.entries.forEach {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(it.fullName)) },
-                                leadingIcon = {
-                                    RadioButton(
-                                        selected = state.year == it,
-                                        onClick = { state.year = it },
-                                    )
-                                },
-                                onClick = {
-                                    state.year = it
-                                    expanded = false
-                                },
-                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                            )
-                        }
-                    }
-                }
+                Spacer(Modifier.weight(1f))
 
                 if (additionalActions != null) {
                     additionalActions()
@@ -796,6 +756,117 @@ fun DataYearHeader(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ConventionDropdown(
+    dataYear: () -> DataYear,
+    onDataYearChange: (DataYear) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+        ) {
+            Text(
+                text = stringResource(dataYear().convention.fullName),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .padding(start = 12.dp, top = 8.dp, bottom = 8.dp)
+            )
+
+            TrailingDropdownIcon(
+                expanded = expanded,
+                contentDescription = stringResource(Res.string.alley_switch_data_year_convention),
+            )
+        }
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            fun onSelectConvention(convention: DataYear.Convention) {
+                val dataYear = dataYear()
+                val newYear = DataYear.entries.find {
+                    dataYear.convention == convention && dataYear.year == it.year
+                } ?: DataYear.entries.filter { it.convention == convention }
+                    .asReversed()
+                    .first()
+                onDataYearChange(newYear)
+            }
+            DataYear.Convention.entries.forEach { convention ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(convention.fullName)) },
+                    onClick = {
+                        onSelectConvention(convention)
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun YearDropdown(
+    dataYear: () -> DataYear,
+    onDataYearChange: (DataYear) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+        ) {
+            Text(
+                text = dataYear().year.toString(),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .padding(start = 12.dp, top = 8.dp, bottom = 8.dp)
+            )
+
+            TrailingDropdownIcon(
+                expanded = expanded,
+                contentDescription = stringResource(Res.string.alley_switch_data_year_year),
+            )
+        }
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            fun onSelectYear(year: Int) {
+                val dataYear = dataYear()
+                val newYear = DataYear.entries.first {
+                    it.convention == dataYear.convention && it.year == year
+                }
+                onDataYearChange(newYear)
+            }
+
+            val convention = dataYear().convention
+            DataYear.entries
+                .filter { it.convention == convention }
+                .map { it.year }
+                .forEach { year ->
+                    DropdownMenuItem(
+                        text = { Text(year.toString()) },
+                        onClick = {
+                            onSelectYear(year)
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
         }
     }
 }

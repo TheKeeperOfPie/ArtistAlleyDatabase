@@ -18,6 +18,7 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable(with = DataYearSerializer::class)
 enum class DataYear(
     val serializedName: String,
+    val convention: Convention,
     val year: Int,
     val artistTableName: String,
     val stampRallyTableName: String?,
@@ -28,6 +29,7 @@ enum class DataYear(
     @SerialName("AX2023")
     ANIME_EXPO_2023(
         serializedName = "AX2023",
+        convention = Convention.ANIME_EXPO,
         year = 2023,
         artistTableName = "artistEntry2023",
         stampRallyTableName = "stampRallyEntry2023",
@@ -39,6 +41,7 @@ enum class DataYear(
     @SerialName("AX2024")
     ANIME_EXPO_2024(
         serializedName = "AX2024",
+        convention = Convention.ANIME_EXPO,
         year = 2024,
         artistTableName = "artistEntry2024",
         stampRallyTableName = "stampRallyEntry2024",
@@ -50,6 +53,7 @@ enum class DataYear(
     @SerialName("AX2025")
     ANIME_EXPO_2025(
         serializedName = "AX2025",
+        convention = Convention.ANIME_EXPO,
         year = 2025,
         artistTableName = "artistEntry2025",
         stampRallyTableName = "stampRallyEntry2025",
@@ -61,6 +65,7 @@ enum class DataYear(
     @SerialName("AX2026")
     ANIME_EXPO_2026(
         serializedName = "AX2026",
+        convention = Convention.ANIME_EXPO,
         year = 2026,
         artistTableName = "artistEntryAnimeExpo2026",
         stampRallyTableName = "stampRallyEntryAnimeExpo2026",
@@ -72,6 +77,7 @@ enum class DataYear(
     @SerialName("ANYC2024")
     ANIME_NYC_2024(
         serializedName = "ANYC2024",
+        convention = Convention.ANIME_NYC,
         year = 2024,
         artistTableName = "artistEntryAnimeNyc2024",
         stampRallyTableName = null,
@@ -83,6 +89,7 @@ enum class DataYear(
     @SerialName("ANYC2025")
     ANIME_NYC_2025(
         serializedName = "ANYC2025",
+        convention = Convention.ANIME_NYC,
         year = 2025,
         artistTableName = "artistEntryAnimeNyc2025",
         stampRallyTableName = null,
@@ -95,6 +102,11 @@ enum class DataYear(
     val stampRallyTableNameOrThrow: String
         get() = this.stampRallyTableName
             ?: throw IllegalStateException("$serializedName shouldn't have rallies")
+
+    enum class Convention {
+        ANIME_EXPO,
+        ANIME_NYC,
+    }
 
     companion object {
         val LATEST = ANIME_EXPO_2026
