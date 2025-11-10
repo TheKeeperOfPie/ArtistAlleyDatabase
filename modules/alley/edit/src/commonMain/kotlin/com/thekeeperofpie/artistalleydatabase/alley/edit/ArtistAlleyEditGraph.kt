@@ -13,9 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @SingleIn(AppScope::class)
@@ -25,6 +27,9 @@ interface ArtistAlleyEditGraph : ArtistAlleyComponent {
     val artistEditViewModelFactory: ArtistEditViewModel.Factory
     val homeViewModelFactory: HomeViewModel.Factory
     val imagesEditViewModelFactory: ImagesEditViewModel.Factory
+
+    @Provides
+    fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient
 
     @Provides
     fun provideArtistAlleySettings(): ArtistAlleySettings = object : ArtistAlleySettings {

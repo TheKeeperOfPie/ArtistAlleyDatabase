@@ -27,7 +27,11 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        browser()
+        browser {
+            commonWebpackConfig {
+                sourceMaps = false
+            }
+        }
         binaries.executable()
     }
 
@@ -73,8 +77,6 @@ configurations.all {
         capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
             select("com.google.guava:guava:0")
         }
-        // com.eygraber:uri-kmp:0.0.19 bumps this to 0.3, which breaks CMP
-        force("org.jetbrains.kotlinx:kotlinx-browser:0.1")
     }
 }
 
@@ -84,5 +86,14 @@ val distribution: NamedDomainObjectProvider<Configuration> by configurations.reg
 }
 
 artifacts {
-    add(distribution.name, tasks.named("wasmJsBrowserDistribution"))
+    add(
+        distribution.name,
+        tasks.named(
+            if (project.hasProperty("wasmDebug")) {
+                "wasmJsBrowserDevelopmentExecutableDistribution"
+            } else {
+                "wasmJsBrowserDistribution"
+            }
+        )
+    )
 }

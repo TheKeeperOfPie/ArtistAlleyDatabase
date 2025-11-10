@@ -18,6 +18,7 @@ class AlleyEditDatabase(
     private val artistEntryDao: ArtistEntryDao,
     private val merchEntryDao: MerchEntryDao,
     private val seriesEntryDao: SeriesEntryDao,
+    private val remoteDatabase: AlleyEditRemoteDatabase,
 ) {
     suspend fun loadArtists(dataYear: DataYear) = artistEntryDao.getAllEntries(dataYear)
 
@@ -71,4 +72,6 @@ class AlleyEditDatabase(
         artistEntryDao.getImagesById(year, artistId.toString())
             ?.let { AlleyImageUtils.getArtistImages(year, it) }
             ?.map(EditImage::DatabaseImage)
+
+    suspend fun loadFunction() = remoteDatabase.loadFunction()
 }

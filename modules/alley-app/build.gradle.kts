@@ -119,13 +119,21 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("ArtistAlleyWasm")
-        browser()
+        browser {
+            commonWebpackConfig {
+                sourceMaps = false
+            }
+        }
         binaries.executable()
     }
 
     js {
         outputModuleName.set("ArtistAlleyJs")
-        browser()
+        browser {
+            commonWebpackConfig {
+                sourceMaps = false
+            }
+        }
         binaries.executable()
     }
 
@@ -202,12 +210,17 @@ kotlin {
     }
 }
 
-val serviceWorkerOutput: Configuration by configurations.creating {
+val serviceWorkerOutput by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
 
-val alleyEditOutput: Configuration by configurations.creating {
+val alleyEditOutput by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
+val alleyFunctionsOutput by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
@@ -219,30 +232,71 @@ dependencies {
     alleyEditOutput(project(":modules:alley-edit")) {
         targetConfiguration = "distribution"
     }
+    alleyFunctionsOutput(project(":modules:alley-functions")) {
+        targetConfiguration = "distribution"
+    }
+}
+
+val isWasmDebug = project.hasProperty("wasmDebug")
+val outputDir = if (isWasmDebug) {
+    "dist/web/developmentExecutable"
+} else {
+    "dist/web/productionExecutable"
 }
 
 val buildBothWebVariants by tasks.registering(Sync::class) {
-    val alleyAppTaskName = "composeCompatibilityBrowserDistribution"
+    val alleyAppTaskName = if (isWasmDebug) {
+        "wasmJsBrowserDevelopmentExecutableDistribution"
+    } else {
+        "composeCompatibilityBrowserDistribution"
+    }
     dependsOn(alleyAppTaskName)
 
     from(tasks.named(alleyAppTaskName).get().outputs.files)
-    into(layout.buildDirectory.dir("dist/web/productionExecutable"))
+    into(layout.buildDirectory.dir(outputDir))
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-val copyServiceWorkerOutput: TaskProvider<Copy> by tasks.registering(Copy::class) {
-    dependsOn("buildBothWebVariants")
+val copyServiceWorkerOutput by tasks.registering(Copy::class) {
+    mustRunAfter(buildBothWebVariants)
     from(serviceWorkerOutput)
-    into(project.layout.buildDirectory.dir("dist/web/productionExecutable"))
+    into(layout.buildDirectory.dir(outputDir))
     duplicatesStrategy = DuplicatesStrategy.FAIL
 }
 
 val copyAlleyEdit by tasks.registering(Copy::class) {
-    dependsOn("buildBothWebVariants")
+    mustRunAfter(buildBothWebVariants)
     from(alleyEditOutput)
-    into(layout.buildDirectory.dir("dist/web/productionExecutable"))
+    into(layout.buildDirectory.dir(outputDir))
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+val copyAlleyFunctions by tasks.registering(Copy::class) {
+    mustRunAfter(buildBothWebVariants)
+    from(alleyFunctionsOutput)
+    include("*.mjs")
+    rename {
+        if (it.contains("alley-functions")) {
+            "/functions/database.mjs"
+        } else {
+            "/functions/$it"
+        }
+    }
+    into(layout.buildDirectory.dir(outputDir))
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+
+    val outputDir = project.layout.buildDirectory.dir(outputDir)
+    doLast {
+        // TODO: Expose onRequest directly and see if that just works
+        outputDir.get().asFile
+            .resolve("functions/database.mjs")
+            .appendText("""
+                export async function onRequest(context) {
+                  return Worker.request(context)
+                }
+            """.trimIndent())
+    }
 }
 
 tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
@@ -252,8 +306,6 @@ configurations.all {
         capabilitiesResolution.withCapability("com.google.guava:listenablefuture") {
             select("com.google.guava:guava:0")
         }
-        // com.eygraber:uri-kmp:0.0.19 bumps this to 0.3, which breaks CMP
-        force("org.jetbrains.kotlinx:kotlinx-browser:0.1")
     }
 }
 
@@ -261,15 +313,14 @@ configurations.all {
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
     dependsOn(":modules:alley:user:verifySqlDelightMigration")
-    dependsOn(copyServiceWorkerOutput, copyAlleyEdit)
+    dependsOn(buildBothWebVariants, copyServiceWorkerOutput, copyAlleyEdit, copyAlleyFunctions)
 
-    val distDir = project.layout.buildDirectory.dir("dist/web/productionExecutable")
+    val outputDir = project.layout.buildDirectory.dir(outputDir)
     doLast {
-        val folder = distDir.get().asFile
+        val folder = outputDir.get().asFile
         folder.listFiles()
             .filter { it.extension == "map" }
             .forEach { it.delete() }
-        val serviceWorker = folder.resolve("serviceWorker.js")
         val rootFiles = folder.listFiles()
             .filter { it.isFile }
             .filter { it.name != "serviceWorker.js" }
@@ -306,6 +357,7 @@ tasks.register("webRelease") {
                 val relativePath = it.relativeTo(folder).path.replace(File.separatorChar, '/')
                 "$relativePath-${hash(it)}"
             }
+        val serviceWorker = folder.resolve("serviceWorker.js")
         val serviceWorkerEdited = serviceWorker.readText()
             .replace("CACHE_INPUT", fileNamesAndHashes)
         serviceWorker.writeText(serviceWorkerEdited)

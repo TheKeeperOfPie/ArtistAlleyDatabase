@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.home
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.Assisted
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @AssistedInject
 class HomeViewModel(
@@ -34,6 +36,12 @@ class HomeViewModel(
             }
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    init {
+        viewModelScope.launch {
+            ConsoleLogger.log("loadFunction: ${database.loadFunction()}")
+        }
+    }
 
     @AssistedFactory
     interface Factory {

@@ -4,7 +4,6 @@ import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 
 plugins {
-    id("library-android")
     id("library-desktop")
     id("library-kotlin")
     id("com.google.devtools.ksp")

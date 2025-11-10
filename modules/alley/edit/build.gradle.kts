@@ -3,13 +3,10 @@ plugins {
     id("library-desktop")
     id("library-inject")
     id("library-kotlin")
-    id("library-web")
+    id("library-wasmJs")
 }
 
 kotlin {
-    androidLibrary {
-        namespace = "com.thekeeperofpie.artistalleydatabase.alley.edit"
-    }
     sourceSets {
         commonMain.dependencies {
             api(libs.jetBrainsAndroidX.navigation3.ui)
@@ -34,6 +31,7 @@ kotlin {
             implementation(projects.modules.utils)
             implementation(projects.modules.utilsCompose)
             implementation(projects.modules.utilsInject)
+            implementation(projects.modules.utilsNetwork)
         }
     }
 }

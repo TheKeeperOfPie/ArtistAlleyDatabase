@@ -8,6 +8,9 @@ kotlin {
     js(compiler = KotlinJsCompilerType.IR) {
         binaries.executable()
         browser {
+            commonWebpackConfig {
+                sourceMaps = false
+            }
             webpackTask {
                 mainOutputFileName = "serviceWorker.js"
             }

@@ -28,10 +28,22 @@ kotlin {
         }
     }
     jvm()
-    js { browser() }
+    js {
+        browser {
+            commonWebpackConfig {
+                sourceMaps = false
+            }
+        }
+    }
 
     @OptIn(ExperimentalWasmDsl::class)
-    wasmJs { browser() }
+    wasmJs {
+        browser {
+            commonWebpackConfig {
+                sourceMaps = false
+            }
+        }
+    }
 
     sourceSets {
         commonMain {
