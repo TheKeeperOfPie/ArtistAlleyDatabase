@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -56,23 +57,25 @@ private fun SqlCursor.toArtistWithUserData2023(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            year = DataYear.ANIME_EXPO_2023,
-            id = artistId,
-            booth = getString(1),
-            name = getString(2)!!,
-            summary = getString(4),
-            links = getString(5)!!.let(Json::decodeFromString),
-            storeLinks = emptyList(),
-            catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            driveLink = getString(7),
-            notes = null,
-            commissions = emptyList(),
-            seriesInferred = emptyList(),
-            seriesConfirmed = emptyList(),
-            merchInferred = emptyList(),
-            merchConfirmed = emptyList(),
-            images = getString(8)!!.let(Json::decodeFromString),
-            counter = getLong(9)!!,
+            ArtistDatabaseEntry.Impl(
+                year = DataYear.ANIME_EXPO_2023,
+                id = artistId,
+                booth = getString(1),
+                name = getString(2)!!,
+                summary = getString(4),
+                links = getString(5)!!.let(Json::decodeFromString),
+                storeLinks = emptyList(),
+                catalogLinks = getString(6)!!.let(Json::decodeFromString),
+                driveLink = getString(7),
+                notes = null,
+                commissions = emptyList(),
+                seriesInferred = emptyList(),
+                seriesConfirmed = emptyList(),
+                merchInferred = emptyList(),
+                merchConfirmed = emptyList(),
+                images = getString(8)!!.let(Json::decodeFromString),
+                counter = getLong(9)!!,
+            )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
@@ -87,23 +90,25 @@ private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            year = DataYear.ANIME_EXPO_2024,
-            id = artistId,
-            booth = getString(1),
-            name = getString(2)!!,
-            summary = getString(3),
-            links = getString(4)!!.let(Json::decodeFromString),
-            storeLinks = getString(5)!!.let(Json::decodeFromString),
-            catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            driveLink = getString(7),
-            notes = getString(8),
-            commissions = emptyList(),
-            seriesInferred = getString(9)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(10)!!.let(Json::decodeFromString),
-            merchInferred = getString(11)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(12)!!.let(Json::decodeFromString),
-            images = getString(13)!!.let(Json::decodeFromString),
-            counter = getLong(14)!!,
+            ArtistDatabaseEntry.Impl(
+                year = DataYear.ANIME_EXPO_2024,
+                id = artistId,
+                booth = getString(1),
+                name = getString(2)!!,
+                summary = getString(3),
+                links = getString(4)!!.let(Json::decodeFromString),
+                storeLinks = getString(5)!!.let(Json::decodeFromString),
+                catalogLinks = getString(6)!!.let(Json::decodeFromString),
+                driveLink = getString(7),
+                notes = getString(8),
+                commissions = emptyList(),
+                seriesInferred = getString(9)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(10)!!.let(Json::decodeFromString),
+                merchInferred = getString(11)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(12)!!.let(Json::decodeFromString),
+                images = getString(13)!!.let(Json::decodeFromString),
+                counter = getLong(14)!!,
+            )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
@@ -118,25 +123,27 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            year = DataYear.ANIME_EXPO_2025,
-            id = artistId,
-            booth = getString(1),
-            name = getString(2)!!,
-            summary = getString(3),
-            links = getString(4)!!.let(Json::decodeFromString),
-            storeLinks = getString(5)!!.let(Json::decodeFromString),
-            catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            // Skip 2 for link flags
-            driveLink = getString(9),
-            notes = getString(10),
-            commissions = getString(11)!!.let(Json::decodeFromString),
-            // Skip 1 for commission flags
-            seriesInferred = getString(13)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-            merchInferred = getString(15)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-            images = getString(17)!!.let(Json::decodeFromString),
-            counter = getLong(18)!!,
+            ArtistDatabaseEntry.Impl(
+                year = DataYear.ANIME_EXPO_2025,
+                id = artistId,
+                booth = getString(1),
+                name = getString(2)!!,
+                summary = getString(3),
+                links = getString(4)!!.let(Json::decodeFromString),
+                storeLinks = getString(5)!!.let(Json::decodeFromString),
+                catalogLinks = getString(6)!!.let(Json::decodeFromString),
+                // Skip 2 for link flags
+                driveLink = getString(9),
+                notes = getString(10),
+                commissions = getString(11)!!.let(Json::decodeFromString),
+                // Skip 1 for commission flags
+                seriesInferred = getString(13)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
+                merchInferred = getString(15)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
+                images = getString(17)!!.let(Json::decodeFromString),
+                counter = getLong(18)!!,
+            )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
@@ -151,25 +158,27 @@ private fun SqlCursor.toArtistWithUserDataAnimeExpo2026(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            year = DataYear.ANIME_EXPO_2026,
-            id = artistId,
-            booth = getString(1),
-            name = getString(2)!!,
-            summary = getString(3),
-            links = getString(4)!!.let(Json::decodeFromString),
-            storeLinks = getString(5)!!.let(Json::decodeFromString),
-            catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            // Skip 2 for link flags
-            driveLink = getString(9),
-            notes = getString(10),
-            commissions = getString(11)!!.let(Json::decodeFromString),
-            // Skip 1 for commission flags
-            seriesInferred = getString(13)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-            merchInferred = getString(15)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-            images = getString(17)!!.let(Json::decodeFromString),
-            counter = getLong(18)!!,
+            ArtistDatabaseEntry.Impl(
+                year = DataYear.ANIME_EXPO_2026,
+                id = artistId,
+                booth = getString(1),
+                name = getString(2)!!,
+                summary = getString(3),
+                links = getString(4)!!.let(Json::decodeFromString),
+                storeLinks = getString(5)!!.let(Json::decodeFromString),
+                catalogLinks = getString(6)!!.let(Json::decodeFromString),
+                // Skip 2 for link flags
+                driveLink = getString(9),
+                notes = getString(10),
+                commissions = getString(11)!!.let(Json::decodeFromString),
+                // Skip 1 for commission flags
+                seriesInferred = getString(13)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
+                merchInferred = getString(15)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
+                images = getString(17)!!.let(Json::decodeFromString),
+                counter = getLong(18)!!,
+            )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
@@ -184,25 +193,27 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            year = DataYear.ANIME_NYC_2024,
-            id = artistId,
-            booth = getString(1),
-            name = getString(2)!!,
-            summary = getString(3),
-            links = getString(4)!!.let(Json::decodeFromString),
-            storeLinks = getString(5)!!.let(Json::decodeFromString),
-            catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            // Skip 2 for link flags
-            driveLink = getString(9),
-            notes = getString(10),
-            commissions = getString(11)!!.let(Json::decodeFromString),
-            // Skip 1 for commission flags
-            seriesInferred = getString(13)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-            merchInferred = getString(15)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-            images = getString(17)!!.let(Json::decodeFromString),
-            counter = getLong(18)!!,
+            ArtistDatabaseEntry.Impl(
+                year = DataYear.ANIME_NYC_2024,
+                id = artistId,
+                booth = getString(1),
+                name = getString(2)!!,
+                summary = getString(3),
+                links = getString(4)!!.let(Json::decodeFromString),
+                storeLinks = getString(5)!!.let(Json::decodeFromString),
+                catalogLinks = getString(6)!!.let(Json::decodeFromString),
+                // Skip 2 for link flags
+                driveLink = getString(9),
+                notes = getString(10),
+                commissions = getString(11)!!.let(Json::decodeFromString),
+                // Skip 1 for commission flags
+                seriesInferred = getString(13)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
+                merchInferred = getString(15)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
+                images = getString(17)!!.let(Json::decodeFromString),
+                counter = getLong(18)!!,
+            )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
@@ -217,26 +228,28 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            year = DataYear.ANIME_NYC_2025,
-            id = artistId,
-            booth = getString(1),
-            name = getString(2)!!,
-            summary = getString(3),
-            links = getString(4)!!.let(Json::decodeFromString),
-            storeLinks = getString(5)!!.let(Json::decodeFromString),
-            catalogLinks = getString(6)!!.let(Json::decodeFromString),
-            // Skip 2 for link flags
-            driveLink = getString(9),
-            notes = getString(10),
-            commissions = getString(11)!!.let(Json::decodeFromString),
-            // Skip 1 for commission flags
-            seriesInferred = getString(13)!!.let(Json::decodeFromString),
-            seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-            merchInferred = getString(15)!!.let(Json::decodeFromString),
-            merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-            // Skip 1 for exhibitor tag flags
-            images = getString(18)!!.let(Json::decodeFromString),
-            counter = getLong(19)!!,
+            ArtistDatabaseEntry.Impl(
+                year = DataYear.ANIME_NYC_2025,
+                id = artistId,
+                booth = getString(1),
+                name = getString(2)!!,
+                summary = getString(3),
+                links = getString(4)!!.let(Json::decodeFromString),
+                storeLinks = getString(5)!!.let(Json::decodeFromString),
+                catalogLinks = getString(6)!!.let(Json::decodeFromString),
+                // Skip 2 for link flags
+                driveLink = getString(9),
+                notes = getString(10),
+                commissions = getString(11)!!.let(Json::decodeFromString),
+                // Skip 1 for commission flags
+                seriesInferred = getString(13)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
+                merchInferred = getString(15)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
+                // Skip 1 for exhibitor tag flags
+                images = getString(18)!!.let(Json::decodeFromString),
+                counter = getLong(19)!!,
+            )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
@@ -249,6 +262,186 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(): ArtistWithUserData {
 
 private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
+        ArtistDatabaseEntry.Impl(
+            year = DataYear.ANIME_EXPO_2023,
+            id = id,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = emptyList(),
+            catalogLinks = catalogLinks,
+            driveLink = driveLink,
+            notes = null,
+            commissions = emptyList(),
+            seriesInferred = emptyList(),
+            seriesConfirmed = emptyList(),
+            merchInferred = emptyList(),
+            merchConfirmed = emptyList(),
+            images = emptyList(),
+            counter = counter,
+        )
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        dataYear = DataYear.ANIME_EXPO_2023,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
+private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        ArtistDatabaseEntry.Impl(
+            year = DataYear.ANIME_EXPO_2024,
+            id = id,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            driveLink = driveLink,
+            notes = notes,
+            commissions = emptyList(),
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = images,
+            counter = counter,
+        )
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        dataYear = DataYear.ANIME_EXPO_2024,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
+private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        ArtistDatabaseEntry.Impl(
+            year = DataYear.ANIME_EXPO_2025,
+            id = id,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            driveLink = driveLink,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = images,
+            counter = counter,
+        )
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        dataYear = DataYear.ANIME_EXPO_2025,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
+private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        ArtistDatabaseEntry.Impl(
+            year = DataYear.ANIME_EXPO_2026,
+            id = id,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            driveLink = driveLink,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = images,
+            counter = counter,
+        )
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        dataYear = DataYear.ANIME_EXPO_2026,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
+private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        ArtistDatabaseEntry.Impl(
+            year = DataYear.ANIME_NYC_2024,
+            id = id,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            driveLink = driveLink,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = images,
+            counter = counter,
+        )
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        dataYear = DataYear.ANIME_NYC_2024,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
+private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
+    artist = ArtistEntry(
+        ArtistDatabaseEntry.Impl(
+            year = DataYear.ANIME_NYC_2025,
+            id = id,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            driveLink = driveLink,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = images,
+            counter = counter,
+        )
+    ),
+    userEntry = ArtistUserEntry(
+        artistId = id,
+        dataYear = DataYear.ANIME_NYC_2025,
+        favorite = DaoUtils.coerceBooleanForJs(favorite),
+        ignored = DaoUtils.coerceBooleanForJs(ignored),
+    )
+)
+
+fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
+    ArtistDatabaseEntry.Impl(
         year = DataYear.ANIME_EXPO_2023,
         id = id,
         booth = booth,
@@ -264,19 +457,13 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
         seriesConfirmed = emptyList(),
         merchInferred = emptyList(),
         merchConfirmed = emptyList(),
-        images = emptyList(),
+        images = images,
         counter = counter,
-    ),
-    userEntry = ArtistUserEntry(
-        artistId = id,
-        dataYear = DataYear.ANIME_EXPO_2023,
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
-private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
-    artist = ArtistEntry(
+fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
+    ArtistDatabaseEntry.Impl(
         year = DataYear.ANIME_EXPO_2024,
         id = id,
         booth = booth,
@@ -294,17 +481,11 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
         merchConfirmed = merchConfirmed,
         images = images,
         counter = counter,
-    ),
-    userEntry = ArtistUserEntry(
-        artistId = id,
-        dataYear = DataYear.ANIME_EXPO_2024,
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
-private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
-    artist = ArtistEntry(
+fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
+    ArtistDatabaseEntry.Impl(
         year = DataYear.ANIME_EXPO_2025,
         id = id,
         booth = booth,
@@ -322,17 +503,11 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
         merchConfirmed = merchConfirmed,
         images = images,
         counter = counter,
-    ),
-    userEntry = ArtistUserEntry(
-        artistId = id,
-        dataYear = DataYear.ANIME_EXPO_2025,
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
-private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
-    artist = ArtistEntry(
+fun ArtistEntryAnimeExpo2026.toArtistEntry() = ArtistEntry(
+    ArtistDatabaseEntry.Impl(
         year = DataYear.ANIME_EXPO_2026,
         id = id,
         booth = booth,
@@ -350,17 +525,11 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
         merchConfirmed = merchConfirmed,
         images = images,
         counter = counter,
-    ),
-    userEntry = ArtistUserEntry(
-        artistId = id,
-        dataYear = DataYear.ANIME_EXPO_2026,
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
-private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
-    artist = ArtistEntry(
+fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
+    ArtistDatabaseEntry.Impl(
         year = DataYear.ANIME_NYC_2024,
         id = id,
         booth = booth,
@@ -378,17 +547,11 @@ private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
         merchConfirmed = merchConfirmed,
         images = images,
         counter = counter,
-    ),
-    userEntry = ArtistUserEntry(
-        artistId = id,
-        dataYear = DataYear.ANIME_NYC_2024,
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
 )
 
-private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
-    artist = ArtistEntry(
+fun ArtistEntryAnimeNyc2025.toArtistEntry() = ArtistEntry(
+    ArtistDatabaseEntry.Impl(
         year = DataYear.ANIME_NYC_2025,
         id = id,
         booth = booth,
@@ -406,133 +569,7 @@ private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
         merchConfirmed = merchConfirmed,
         images = images,
         counter = counter,
-    ),
-    userEntry = ArtistUserEntry(
-        artistId = id,
-        dataYear = DataYear.ANIME_NYC_2025,
-        favorite = DaoUtils.coerceBooleanForJs(favorite),
-        ignored = DaoUtils.coerceBooleanForJs(ignored),
     )
-)
-
-fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
-    year = DataYear.ANIME_EXPO_2023,
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links,
-    storeLinks = emptyList(),
-    catalogLinks = catalogLinks,
-    driveLink = driveLink,
-    notes = null,
-    commissions = emptyList(),
-    seriesInferred = emptyList(),
-    seriesConfirmed = emptyList(),
-    merchInferred = emptyList(),
-    merchConfirmed = emptyList(),
-    images = images,
-    counter = counter,
-)
-
-fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
-    year = DataYear.ANIME_EXPO_2024,
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links,
-    storeLinks = storeLinks,
-    catalogLinks = catalogLinks,
-    driveLink = driveLink,
-    notes = notes,
-    commissions = emptyList(),
-    seriesInferred = seriesInferred,
-    seriesConfirmed = seriesConfirmed,
-    merchInferred = merchInferred,
-    merchConfirmed = merchConfirmed,
-    images = images,
-    counter = counter,
-)
-
-fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
-    year = DataYear.ANIME_EXPO_2025,
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links,
-    storeLinks = storeLinks,
-    catalogLinks = catalogLinks,
-    driveLink = driveLink,
-    notes = notes,
-    commissions = commissions,
-    seriesInferred = seriesInferred,
-    seriesConfirmed = seriesConfirmed,
-    merchInferred = merchInferred,
-    merchConfirmed = merchConfirmed,
-    images = images,
-    counter = counter,
-)
-
-fun ArtistEntryAnimeExpo2026.toArtistEntry() = ArtistEntry(
-    year = DataYear.ANIME_EXPO_2026,
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links,
-    storeLinks = storeLinks,
-    catalogLinks = catalogLinks,
-    driveLink = driveLink,
-    notes = notes,
-    commissions = commissions,
-    seriesInferred = seriesInferred,
-    seriesConfirmed = seriesConfirmed,
-    merchInferred = merchInferred,
-    merchConfirmed = merchConfirmed,
-    images = images,
-    counter = counter,
-)
-
-fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
-    year = DataYear.ANIME_NYC_2024,
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links,
-    storeLinks = storeLinks,
-    catalogLinks = catalogLinks,
-    driveLink = driveLink,
-    notes = notes,
-    commissions = commissions,
-    seriesInferred = seriesInferred,
-    seriesConfirmed = seriesConfirmed,
-    merchInferred = merchInferred,
-    merchConfirmed = merchConfirmed,
-    images = images,
-    counter = counter,
-)
-
-fun ArtistEntryAnimeNyc2025.toArtistEntry() = ArtistEntry(
-    year = DataYear.ANIME_NYC_2025,
-    id = id,
-    booth = booth,
-    name = name,
-    summary = summary,
-    links = links,
-    storeLinks = storeLinks,
-    catalogLinks = catalogLinks,
-    driveLink = driveLink,
-    notes = notes,
-    commissions = commissions,
-    seriesInferred = seriesInferred,
-    seriesConfirmed = seriesConfirmed,
-    merchInferred = merchInferred,
-    merchConfirmed = merchConfirmed,
-    images = images,
-    counter = counter,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)

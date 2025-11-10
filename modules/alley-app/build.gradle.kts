@@ -277,10 +277,10 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
     from(alleyFunctionsOutput)
     include("*.mjs")
     rename {
-        if (it.contains("alley-functions")) {
-            "/functions/database.mjs"
+        "/functions/database/" + if (it.contains("alley-functions")) {
+            "[[database]].mjs"
         } else {
-            "/functions/$it"
+            it
         }
     }
     into(layout.buildDirectory.dir(outputDir))
@@ -290,7 +290,7 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
     doLast {
         // TODO: Expose onRequest directly and see if that just works
         outputDir.get().asFile
-            .resolve("functions/database.mjs")
+            .resolve("functions/database/[[database]].mjs")
             .appendText("""
                 export async function onRequest(context) {
                   return Worker.request(context)

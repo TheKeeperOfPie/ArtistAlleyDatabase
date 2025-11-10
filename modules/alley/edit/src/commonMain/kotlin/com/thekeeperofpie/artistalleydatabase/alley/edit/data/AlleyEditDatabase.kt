@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -73,5 +74,5 @@ class AlleyEditDatabase(
             ?.let { AlleyImageUtils.getArtistImages(year, it) }
             ?.map(EditImage::DatabaseImage)
 
-    suspend fun loadFunction() = remoteDatabase.loadFunction()
+    suspend fun saveArtist(artist: ArtistDatabaseEntry.Impl) = remoteDatabase.saveArtist(artist)
 }

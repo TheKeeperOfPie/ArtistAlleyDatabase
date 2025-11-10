@@ -22,7 +22,7 @@ import kotlin.time.Clock
 
 object AlleyUtils {
     fun isCurrentYear(year: DataYear) =
-        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year == year.year
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year == year.dates.year
 }
 
 val DataYear.fullName

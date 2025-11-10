@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -72,6 +73,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_e
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import coil3.compose.AsyncImage
 import com.anilist.data.type.MediaType
@@ -140,6 +142,7 @@ object ArtistEditScreen {
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickEditImages = { onClickEditImages(viewModel.artist.value?.name.orEmpty(), it) },
+            onClickSave = viewModel::onClickSave,
         )
     }
 
@@ -152,6 +155,7 @@ object ArtistEditScreen {
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: () -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
+        onClickSave: () -> Unit,
     ) {
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
@@ -167,6 +171,14 @@ object ArtistEditScreen {
                         )
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = onClickBack) },
+                    actions = {
+                        IconButton(onClick = onClickSave) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = stringResource(Res.string.alley_edit_artist_action_save_content_description),
+                            )
+                        }
+                    },
                     modifier = Modifier
                         .conditionally(!isExpanded, Modifier.widthIn(max = 960.dp))
                 )

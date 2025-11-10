@@ -142,6 +142,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.FixedOffsetTimeZone
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.atStartOfDayIn
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
@@ -612,6 +615,12 @@ class DataYearHeaderState(
 
 private val UPCOMING_PROMPT_DURATION = 15.days
 
+private val DataYear.Dates.start
+    get() = LocalDate(year = year, month = month, day = startDay)
+
+private val DataYear.Dates.timeZone
+    get() = FixedOffsetTimeZone(UtcOffset(hours = timeZoneOffsetHours))
+
 @Composable
 fun DataYearHeader(
     state: DataYearHeaderState,
@@ -625,7 +634,7 @@ fun DataYearHeader(
             if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
                 return@remember null
             }
-            val start = year.dates.start.atStartOfDayIn(year.timeZone)
+            val start = year.dates.start.atStartOfDayIn(year.dates.timeZone)
             val now = Clock.System.now()
             if (start > now && start - now < UPCOMING_PROMPT_DURATION) {
                 HumanReadable.timeAgo(start)
@@ -794,7 +803,7 @@ private fun ConventionDropdown(
             fun onSelectConvention(convention: DataYear.Convention) {
                 val dataYear = dataYear()
                 val newYear = DataYear.entries.find {
-                    dataYear.convention == convention && dataYear.year == it.year
+                    dataYear.convention == convention && dataYear.dates.year == it.dates.year
                 } ?: DataYear.entries.filter { it.convention == convention }
                     .asReversed()
                     .first()
@@ -829,7 +838,7 @@ private fun YearDropdown(
             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
         ) {
             Text(
-                text = dataYear().year.toString(),
+                text = dataYear().dates.year.toString(),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier
                     .minimumInteractiveComponentSize()
@@ -848,7 +857,7 @@ private fun YearDropdown(
             fun onSelectYear(year: Int) {
                 val dataYear = dataYear()
                 val newYear = DataYear.entries.first {
-                    it.convention == dataYear.convention && it.year == year
+                    it.convention == dataYear.convention && it.dates.year == year
                 }
                 onDataYearChange(newYear)
             }
@@ -856,7 +865,7 @@ private fun YearDropdown(
             val convention = dataYear().convention
             DataYear.entries
                 .filter { it.convention == convention }
-                .map { it.year }
+                .map { it.dates.year }
                 .forEach { year ->
                     DropdownMenuItem(
                         text = { Text(year.toString()) },

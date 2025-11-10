@@ -2,28 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
 
 data class ArtistEntry(
-    val year: DataYear,
-    val id: String,
-    val booth: String?,
-    val name: String,
-    val summary: String?,
-    val links: List<String>,
-    val storeLinks: List<String>,
-    val catalogLinks: List<String>,
-    val driveLink: String?,
-    val notes: String?,
-    val commissions: List<String>,
-    val seriesInferred: List<String>,
-    val seriesConfirmed: List<String>,
-    val merchInferred: List<String>,
-    val merchConfirmed: List<String>,
-    val images: List<CatalogImage>,
-    val counter: Long,
-) {
+    private val databaseEntry: ArtistDatabaseEntry.Impl,
+): ArtistDatabaseEntry by databaseEntry {
     val linkModels by lazy {
         links.map { LinkModel.parse(it) }.sortedBy { it.logo }
     }

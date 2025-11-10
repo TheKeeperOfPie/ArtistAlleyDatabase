@@ -1,10 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.shared.alley.data
 
-import kotlinx.datetime.FixedOffsetTimeZone
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.Month
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.UtcOffset
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -19,83 +14,105 @@ import kotlinx.serialization.encoding.Encoder
 enum class DataYear(
     val serializedName: String,
     val convention: Convention,
-    val year: Int,
     val artistTableName: String,
     val stampRallyTableName: String?,
     val folderName: String,
-    val dates: ClosedRange<LocalDate>,
-    val timeZone: TimeZone,
+    val dates: Dates,
 ) {
     @SerialName("AX2023")
     ANIME_EXPO_2023(
         serializedName = "AX2023",
         convention = Convention.ANIME_EXPO,
-        year = 2023,
         artistTableName = "artistEntry2023",
         stampRallyTableName = "stampRallyEntry2023",
         folderName = "2023",
-        dates = LocalDate(year = 2023, Month.JULY, 1)..LocalDate(year = 2023, Month.JULY, 4),
-        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
+        dates = Dates(
+            year = 2023,
+            month = 7,
+            startDay = 1,
+            endDay = 4,
+            timeZoneOffsetHours = -7,
+        ),
     ),
 
     @SerialName("AX2024")
     ANIME_EXPO_2024(
         serializedName = "AX2024",
         convention = Convention.ANIME_EXPO,
-        year = 2024,
         artistTableName = "artistEntry2024",
         stampRallyTableName = "stampRallyEntry2024",
         folderName = "2024",
-        dates = LocalDate(year = 2024, Month.JULY, 4)..LocalDate(year = 2024, Month.JULY, 7),
-        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
+        dates = Dates(
+            year = 2024,
+            month = 7,
+            startDay = 4,
+            endDay = 7,
+            timeZoneOffsetHours = -7,
+        ),
     ),
 
     @SerialName("AX2025")
     ANIME_EXPO_2025(
         serializedName = "AX2025",
         convention = Convention.ANIME_EXPO,
-        year = 2025,
         artistTableName = "artistEntry2025",
         stampRallyTableName = "stampRallyEntry2025",
         folderName = "2025",
-        dates = LocalDate(year = 2025, Month.JULY, 3)..LocalDate(year = 2025, Month.JULY, 6),
-        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
+        dates = Dates(
+            year = 2025,
+            month = 7,
+            startDay = 3,
+            endDay = 6,
+            timeZoneOffsetHours = -7,
+        ),
     ),
 
     @SerialName("AX2026")
     ANIME_EXPO_2026(
         serializedName = "AX2026",
         convention = Convention.ANIME_EXPO,
-        year = 2026,
         artistTableName = "artistEntryAnimeExpo2026",
         stampRallyTableName = "stampRallyEntryAnimeExpo2026",
         folderName = "animeExpo2026",
-        dates = LocalDate(year = 2026, Month.JULY, 2)..LocalDate(year = 2026, Month.JULY, 5),
-        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -7)),
+        dates = Dates(
+            year = 2026,
+            month = 7,
+            startDay = 2,
+            endDay = 5,
+            timeZoneOffsetHours = -7,
+        ),
     ),
 
     @SerialName("ANYC2024")
     ANIME_NYC_2024(
         serializedName = "ANYC2024",
         convention = Convention.ANIME_NYC,
-        year = 2024,
         artistTableName = "artistEntryAnimeNyc2024",
         stampRallyTableName = null,
         folderName = "animeNyc2024",
-        dates = LocalDate(year = 2024, Month.AUGUST, 23)..LocalDate(year = 2024, Month.AUGUST, 25),
-        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
+        dates = Dates(
+            year = 2024,
+            month = 8,
+            startDay = 23,
+            endDay = 25,
+            timeZoneOffsetHours = -4,
+        ),
     ),
 
     @SerialName("ANYC2025")
     ANIME_NYC_2025(
         serializedName = "ANYC2025",
         convention = Convention.ANIME_NYC,
-        year = 2025,
         artistTableName = "artistEntryAnimeNyc2025",
         stampRallyTableName = null,
         folderName = "animeNyc2025",
-        dates = LocalDate(year = 2025, Month.AUGUST, 21)..LocalDate(year = 2025, Month.AUGUST, 24),
-        timeZone = FixedOffsetTimeZone(UtcOffset(hours = -4)),
+        dates = Dates(
+            year = 2025,
+            month = 8,
+            startDay = 21,
+            endDay = 24,
+            timeZoneOffsetHours = -4,
+        ),
     ),
     ;
 
@@ -107,6 +124,16 @@ enum class DataYear(
         ANIME_EXPO,
         ANIME_NYC,
     }
+
+    // :modules:alley-functions's build fails to import js-joda correctly, so instead of using
+    // kotlinx-datetime, this manually declares a data class for the convention date range
+    data class Dates(
+        val year: Int,
+        val month: Int,
+        val startDay: Int,
+        val endDay: Int,
+        val timeZoneOffsetHours: Int,
+    )
 
     companion object {
         val LATEST = ANIME_EXPO_2026

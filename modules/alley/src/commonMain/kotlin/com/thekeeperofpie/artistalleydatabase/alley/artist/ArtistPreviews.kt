@@ -1,13 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
 object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData> {
     override val values = sequence {
-        val artist = ArtistWithUserData(
-            artist = ArtistEntry(
+        val databaseEntry =
+            ArtistDatabaseEntry.Impl(
                 year = DataYear.ANIME_EXPO_2025,
                 id = "artistId",
                 booth = "C39",
@@ -25,7 +26,9 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 merchConfirmed = listOf("Bags", "Shirts", "Stickers", "Prints"),
                 images = emptyList(),
                 counter = 1,
-            ),
+            )
+        val artist = ArtistWithUserData(
+            artist = ArtistEntry(databaseEntry),
             userEntry = ArtistUserEntry(
                 artistId = "artistId",
                 dataYear = DataYear.ANIME_EXPO_2025,
@@ -34,7 +37,25 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
             ),
         )
         yield(artist)
-        yield(artist.copy(artist = artist.artist.copy(booth = "C40", name = "Megurine Luka")))
-        yield(artist.copy(artist = artist.artist.copy(booth = "C41", name = "Kagamine Rin")))
+        yield(
+            artist.copy(
+                artist = artist.artist.copy(
+                    databaseEntry = databaseEntry.copy(
+                        booth = "C40",
+                        name = "Megurine Luka",
+                    )
+                )
+            )
+        )
+        yield(
+            artist.copy(
+                artist = artist.artist.copy(
+                    databaseEntry = databaseEntry.copy(
+                        booth = "C41",
+                        name = "Kagamine Rin",
+                    )
+                )
+            )
+        )
     }
 }

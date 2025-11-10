@@ -15,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
@@ -28,11 +30,12 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.uuid.Uuid
 
 @AssistedInject
 class ArtistEditViewModel(
     dispatchers: CustomDispatchers,
-    database: AlleyEditDatabase,
+    private val database: AlleyEditDatabase,
     seriesImagesStore: SeriesImagesStore,
     @Assisted route: AlleyEditDestination.ArtistEdit,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -173,6 +176,49 @@ class ArtistEditViewModel(
 
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
+
+    // TODO
+    fun onClickSave() {
+        val textState = state.textState
+        val booth = textState.booth.value.text.toString()
+        val name = textState.name.value.text.toString()
+        val summary = textState.summary.value.text.toString()
+
+        // TODO: Include pending value?
+        val links = state.links.toList().map { it.link }
+        val storeLinks = state.storeLinks.toList().map { it.link }
+        val catalogLinks = state.catalogLinks.toList()
+
+        val notes = textState.notes.pendingValue.text.toString()
+        val commissions = state.commissions.toList()
+        val seriesInferred = state.seriesInferred.toList().map { it.id }
+        val seriesConfirmed = state.seriesConfirmed.toList().map { it.id }
+        val merchInferred = state.merchInferred.toList().map { it.name }
+        val merchConfirmed = state.merchConfirmed.toList().map { it.name }
+        viewModelScope.launch {
+            database.saveArtist(
+                ArtistDatabaseEntry.Impl(
+                    year = DataYear.ANIME_EXPO_2026,
+                    id = Uuid.random().toString(),
+                    booth = booth,
+                    name = name,
+                    summary = summary,
+                    links = links,
+                    storeLinks = storeLinks,
+                    catalogLinks = catalogLinks,
+                    driveLink = null,
+                    notes = notes,
+                    commissions = commissions,
+                    seriesInferred = seriesInferred,
+                    seriesConfirmed = seriesConfirmed,
+                    merchInferred = merchInferred,
+                    merchConfirmed = merchConfirmed,
+                    images = emptyList(),
+                    counter = 1,
+                )
+            )
+        }
+    }
 
     @AssistedFactory
     interface Factory {

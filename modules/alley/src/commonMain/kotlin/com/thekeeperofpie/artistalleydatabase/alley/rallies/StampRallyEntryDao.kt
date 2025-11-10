@@ -400,7 +400,7 @@ class StampRallyEntryDao(
         val andClauses = mutableListOf<String>().apply {
             if (onlyFavorites) this += "stampRallyUserEntry.favorite = 1"
 
-            if (year.year >= 2024) {
+            if (year.dates.year >= 2024) {
                 val totalCost = filterParams.totalCost
                 if (totalCost.isOnlyStart) {
                     this += "$tableName.totalCost = 0"
@@ -438,14 +438,14 @@ class StampRallyEntryDao(
                 }
             }
 
-            if (year.year >= 2025) {
+            if (year.dates.year >= 2025) {
                 if (!filterParams.showUnconfirmed) {
                     this += "$tableName.confirmed = 1"
                 }
             }
 
             // TODO: Locked series/merch doesn't enforce AND
-            if (year.year >= 2025 && filterParams.seriesIn.isNotEmpty()) {
+            if (year.dates.year >= 2025 && filterParams.seriesIn.isNotEmpty()) {
                 val seriesList = filterParams.seriesIn.joinToString(separator = ",") {
                     DatabaseUtils.sqlEscapeString(it)
                 }
@@ -503,8 +503,8 @@ class StampRallyEntryDao(
             "fandom",
             "tables",
             "notes".takeIf { year != DataYear.ANIME_EXPO_2023 },
-            "series".takeIf { year.year >= 2025 },
-            "prize".takeIf { year.year >= 2025 },
+            "series".takeIf { year.dates.year >= 2025 },
+            "prize".takeIf { year.dates.year >= 2025 },
         )
         val matchQuery = buildString {
             append("'")
