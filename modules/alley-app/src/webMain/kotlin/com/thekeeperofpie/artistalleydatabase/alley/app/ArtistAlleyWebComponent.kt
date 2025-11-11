@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,8 +42,8 @@ interface ArtistAlleyWebComponent : ArtistAlleyAppComponent {
     val artistImageCache: ArtistImageCache
     val deepLinker: DeepLinker
 
-    @Provides
-    fun bindArtistAlleySettings(settings: ArtistAlleyWebSettings): ArtistAlleySettings = settings
+    @Binds
+    val ArtistAlleyWebSettings.bindArtistAlleySettings: ArtistAlleySettings
 
     @DependencyGraph.Factory
     interface Factory {

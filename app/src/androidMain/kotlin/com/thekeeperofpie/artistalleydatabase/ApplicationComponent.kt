@@ -46,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.work.WorkerComponent
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provider
@@ -78,40 +79,35 @@ interface ApplicationComponent : AppComponent, AniListComponent, AnimeComponent,
     val settingsProvider: SettingsProvider
     val workManager: WorkManager
 
-    @Provides
-    fun bindSettingsProvider(settingsProvider: AndroidSettingsProvider): SettingsProvider =
-        settingsProvider
+    @Binds
+    val AndroidSettingsProvider.bindSettingsProvider: SettingsProvider
 
-    @Provides
-    fun bindAppSettings(settingsProvider: AndroidSettingsProvider): AppSettings = settingsProvider
+    @Binds
+    val AndroidSettingsProvider.bindAppSettings: AppSettings
 
-    @Provides
-    fun bindMonetizationOverrideProvider(
-        monetizationOverrideProvider: AppMonetizationOverrideProvider,
-    ): MonetizationOverrideProvider = monetizationOverrideProvider
+    @Binds
+    val AppMonetizationOverrideProvider.bindMonetizationOverrideProvider: MonetizationOverrideProvider
 
-    @Provides
-    fun bindFeatureOverrideProvider(
-        featureOverrideProvider: AppFeatureOverrideProvider
-    ): FeatureOverrideProvider = featureOverrideProvider
+    @Binds
+    val AppFeatureOverrideProvider.bindFeatureOverrideProvider: FeatureOverrideProvider
 
-    @Provides
-    fun bindAniListDatabase(database: AppDatabase): AniListDatabase = database
+    @Binds
+    val AppDatabase.bindAniListDatabase: AniListDatabase
 
-    @Provides
-    fun bindAnimeDatabase(database: AppDatabase): AnimeDatabase = database
+    @Binds
+    val AppDatabase.bindAnimeDatabase: AnimeDatabase
 
-    @Provides
-    fun bindArtEntryDatabase(database: AppDatabase): ArtEntryDatabase = database
+    @Binds
+    val AppDatabase.bindArtEntryDatabase: ArtEntryDatabase
 
-    @Provides
-    fun bindCdEntryDatabase(database: AppDatabase): CdEntryDatabase = database
+    @Binds
+    val AppDatabase.bindCdEntryDatabase: CdEntryDatabase
 
-    @Provides
-    fun bindMusicalArtistDatabase(database: AppDatabase): MusicalArtistDatabase = database
+    @Binds
+    val AppDatabase.bindMusicalArtistDatabase: MusicalArtistDatabase
 
-    @Provides
-    fun bindVgmdbDatabase(database: AppDatabase): VgmdbDatabase = database
+    @Binds
+    val AppDatabase.bindVgmdbDatabase: VgmdbDatabase
 
     @SingleIn(AppScope::class)
     @Provides

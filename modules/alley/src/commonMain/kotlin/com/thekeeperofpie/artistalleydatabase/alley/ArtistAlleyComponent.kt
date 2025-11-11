@@ -56,33 +56,33 @@ interface ArtistAlleyComponent {
     val qrCodeViewModel: Provider<QrCodeViewModel>
 
     @Provides
-    fun bindArtistEntryDao(database: ArtistAlleyDatabase): ArtistEntryDao = database.artistEntryDao
+    fun provideArtistEntryDao(database: ArtistAlleyDatabase): ArtistEntryDao = database.artistEntryDao
 
     @Provides
-    fun bindStampRallyEntryDao(database: ArtistAlleyDatabase): StampRallyEntryDao =
+    fun provideStampRallyEntryDao(database: ArtistAlleyDatabase): StampRallyEntryDao =
         database.stampRallyEntryDao
 
     @Provides
-    fun bindImportExportDao(database: ArtistAlleyDatabase): ImportExportDao =
+    fun provideImportExportDao(database: ArtistAlleyDatabase): ImportExportDao =
         database.importExportDao
 
     @Provides
-    fun bindImageEntryDao(database: ArtistAlleyDatabase): ImageEntryDao = database.imageEntryDao
+    fun provideImageEntryDao(database: ArtistAlleyDatabase): ImageEntryDao = database.imageEntryDao
 
     @Provides
-    fun bindMerchEntryDao(database: ArtistAlleyDatabase): MerchEntryDao = database.merchEntryDao
+    fun provideMerchEntryDao(database: ArtistAlleyDatabase): MerchEntryDao = database.merchEntryDao
 
     @Provides
-    fun bindSeriesEntryDao(database: ArtistAlleyDatabase): SeriesEntryDao = database.seriesEntryDao
+    fun provideSeriesEntryDao(database: ArtistAlleyDatabase): SeriesEntryDao = database.seriesEntryDao
 
     @Provides
-    fun bindTagEntryDao(database: ArtistAlleyDatabase): TagEntryDao = database.tagEntryDao
+    fun provideTagEntryDao(database: ArtistAlleyDatabase): TagEntryDao = database.tagEntryDao
 
     @Provides
-    fun bindUserEntryDao(database: ArtistAlleyDatabase): UserEntryDao = database.userEntryDao
+    fun provideUserEntryDao(database: ArtistAlleyDatabase): UserEntryDao = database.userEntryDao
 
     @Provides
-    fun bindUserNotesDao(database: ArtistAlleyDatabase): UserNotesDao = database.userNotesDao
+    fun provideUserNotesDao(database: ArtistAlleyDatabase): UserNotesDao = database.userNotesDao
 
     val navigationTypeMap: NavigationTypeMap
     val settings: ArtistAlleySettings

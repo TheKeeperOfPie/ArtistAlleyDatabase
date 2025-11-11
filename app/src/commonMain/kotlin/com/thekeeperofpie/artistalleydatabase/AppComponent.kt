@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.markdown.Markdown
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.utils_compose.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
-import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.Binds
 
 interface AppComponent {
     val settings: AnimeSettings
@@ -27,39 +27,39 @@ interface AppComponent {
     val markdown: Markdown
     val fullscreenImageHandler: FullscreenImageHandler
 
-    @Provides
-    fun bindAniListSettings(appSettings: AppSettings): AniListSettings = appSettings
+    @Binds
+    val AppSettings.bindAniListSettings: AniListSettings
 
-    @Provides
-    fun bindAnimeSettings(appSettings: AppSettings): AnimeSettings = appSettings
+    @Binds
+    val AppSettings.bindAnimeSettings: AnimeSettings
 
-    @Provides
-    fun bindArtSettings(appSettings: AppSettings): ArtSettings = appSettings
+    @Binds
+    val AppSettings.bindArtSettings: ArtSettings
 
-    @Provides
-    fun bindCharacterSettings(appSettings: AppSettings): CharacterSettings = appSettings
+    @Binds
+    val AppSettings.bindCharacterSettings: CharacterSettings
 
-    @Provides
-    fun bindCropSettings(appSettings: AppSettings): CropSettings = appSettings
+    @Binds
+    val AppSettings.bindCropSettings: CropSettings
 
-    @Provides
-    fun bindHistorySettings(appSettings: AppSettings): HistorySettings = appSettings
+    @Binds
+    val AppSettings.bindHistorySettings: HistorySettings
 
-    @Provides
-    fun bindIgnoreSettings(appSettings: AppSettings): IgnoreSettings = appSettings
+    @Binds
+    val AppSettings.bindIgnoreSettings: IgnoreSettings
 
-    @Provides
-    fun bindMediaDataSettings(appSettings: AppSettings): MediaDataSettings = appSettings
+    @Binds
+    val AppSettings.bindMediaDataSettings: MediaDataSettings
 
-    @Provides
-    fun bindMonetizationSettings(appSettings: AppSettings): MonetizationSettings = appSettings
+    @Binds
+    val AppSettings.bindMonetizationSettings: MonetizationSettings
 
-    @Provides
-    fun bindNewsSettings(appSettings: AppSettings): NewsSettings = appSettings
+    @Binds
+    val AppSettings.bindNewsSettings: NewsSettings
 
-    @Provides
-    fun bindNetworkSettings(appSettings: AppSettings): NetworkSettings = appSettings
+    @Binds
+    val AppSettings.bindNetworkSettings: NetworkSettings
 
-    @Provides
-    fun bindStaffSettings(appSettings: AppSettings): StaffSettings = appSettings
+    @Binds
+    val AppSettings.bindStaffSettings: StaffSettings
 }

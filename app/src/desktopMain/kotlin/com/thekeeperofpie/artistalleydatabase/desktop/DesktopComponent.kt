@@ -29,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbComponent
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provides
@@ -50,23 +51,23 @@ interface DesktopComponent : AppComponent, AniListComponent, AnimeComponent, Art
     val settingsProvider: DesktopSettingsProvider
     val monetizationController: MonetizationController
 
-    @Provides
-    fun bindAppSettings(settingsProvider: DesktopSettingsProvider): AppSettings = settingsProvider
+    @Binds
+    val DesktopSettingsProvider.bindAppSettings: AppSettings
 
-    @Provides
-    fun bindAniListDatabase(database: DesktopDatabase): AniListDatabase = database
+    @Binds
+    val DesktopDatabase.bindAniListDatabase: AniListDatabase
 
-    @Provides
-    fun bindAnimeDatabase(database: DesktopDatabase): AnimeDatabase = database
+    @Binds
+    val DesktopDatabase.bindAnimeDatabase: AnimeDatabase
 
-    @Provides
-    fun bindArtEntryDatabase(database: DesktopDatabase): ArtEntryDatabase = database
+    @Binds
+    val DesktopDatabase.bindArtEntryDatabase: ArtEntryDatabase
 
-    @Provides
-    fun bindCdEntryDatabase(database: DesktopDatabase): CdEntryDatabase = database
+    @Binds
+    val DesktopDatabase.bindCdEntryDatabase: CdEntryDatabase
 
-    @Provides
-    fun bindVgmdbDatabase(database: DesktopDatabase): VgmdbDatabase = database
+    @Binds
+    val DesktopDatabase.bindVgmdbDatabase: VgmdbDatabase
 
     // Remove this once SettingsProvider is unified
     @SingleIn(AppScope::class)
@@ -105,8 +106,9 @@ interface DesktopComponent : AppComponent, AniListComponent, AnimeComponent, Art
 
     @SingleIn(AppScope::class)
     @Provides
-    fun bindsTypeMap(typeMaps: @JvmSuppressWildcards Set<Map<KType, NavType<*>>>): NavigationTypeMap =
-        NavigationTypeMap(typeMaps.fold(mapOf<KType, NavType<*>>()) { acc, map -> acc + map })
+    fun providesNavigationTypeMap(
+        typeMaps: @JvmSuppressWildcards Set<Map<KType, NavType<*>>>,
+    ): NavigationTypeMap = NavigationTypeMap(typeMaps.fold(mapOf()) { acc, map -> acc + map })
 
     @SingleIn(AppScope::class)
     @Provides

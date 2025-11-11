@@ -2,14 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.play
 
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppUpdateChecker
-import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.Binds
 
 interface PlayComponent {
-    @Provides
-    fun bindAppUpdateChecker(appUpdateChecker: PlayAppUpdateChecker): AppUpdateChecker? =
-        appUpdateChecker
+    @Binds
+    val PlayAppUpdateChecker.bindAppUpdateChecker: AppUpdateChecker?
 
-    @Provides
-    fun bindSubscriptionProvider(provider: PlaySubscriptionProvider): SubscriptionProvider? =
-        provider
+    @Binds
+    val PlaySubscriptionProvider.bindSubscriptionProvider: SubscriptionProvider?
 }

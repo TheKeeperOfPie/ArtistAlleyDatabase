@@ -36,7 +36,7 @@ interface AniListComponent : AniListSqlCacheComponent {
 
     @Provides
     @IntoSet
-    fun bindEmptyApolloHttpInterceptorsSet(): Set<HttpInterceptor> = emptySet()
+    fun provideEmptyApolloHttpInterceptorsSet(): Set<HttpInterceptor> = emptySet()
 
     @OptIn(ApolloExperimental::class)
     @Named("AniList")

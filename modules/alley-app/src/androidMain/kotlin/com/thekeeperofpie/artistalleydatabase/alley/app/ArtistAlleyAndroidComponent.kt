@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
@@ -18,8 +19,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @DependencyGraph
 interface ArtistAlleyAndroidComponent : ArtistAlleyAppComponent {
 
-    @Provides
-    fun bindArtistAlleySettings(settings: ArtistAlleyAppSettings): ArtistAlleySettings = settings
+    @Binds
+    val ArtistAlleyAppSettings.bindArtistAlleySettings: ArtistAlleySettings
 
     @SingleIn(AppScope::class)
     @Provides

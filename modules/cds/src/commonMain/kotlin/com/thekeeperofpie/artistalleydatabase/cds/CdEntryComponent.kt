@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.utils.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
@@ -41,26 +42,18 @@ interface CdEntryComponent {
         database.cdEntryDetailsDao()
 
     @IntoSet
-    @SingleIn(AppScope::class)
-    @Provides
-    fun provideCdExporter(cdExporter: CdExporter): Exporter = cdExporter
+    @Binds
+    val CdExporter.bindExporter: Exporter
 
     @IntoSet
-    @SingleIn(AppScope::class)
-    @Provides
-    fun provideCdImporter(cdImporter: CdImporter): Importer = cdImporter
+    @Binds
+    val CdImporter.bindImporter: Importer
 
     @IntoSet
-    @SingleIn(AppScope::class)
-    @Provides
-    fun bindCdEntryNavigatorAsBrowseSelectionNavigator(
-        cdEntryNavigator: CdEntryNavigator,
-    ): BrowseSelectionNavigator = cdEntryNavigator
+    @Binds
+    val CdEntryNavigator.bindBrowseSelectionNavigator: BrowseSelectionNavigator
 
     @IntoSet
-    @SingleIn(AppScope::class)
-    @Provides
-    fun provideCdBrowseTabPerformers(
-        cdBrowseTabMusicalArtists: CdBrowseTabMusicalArtists,
-    ): BrowseTabViewModel = cdBrowseTabMusicalArtists
+    @Binds
+    val CdBrowseTabMusicalArtists.bindBrowseTabViewModel: BrowseTabViewModel
 }

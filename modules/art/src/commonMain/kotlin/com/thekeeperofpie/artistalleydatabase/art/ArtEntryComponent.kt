@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.Exporter
 import com.thekeeperofpie.artistalleydatabase.utils.Importer
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
@@ -54,12 +55,12 @@ interface ArtEntryComponent {
         database.artEntrySyncDao()
 
     @IntoSet
-    @Provides
-    fun provideArtExporter(artExporter: ArtExporter): Exporter = artExporter
+    @Binds
+    val ArtExporter.bindExporter: Exporter
 
     @IntoSet
-    @Provides
-    fun bindArtImporter(artImporter: ArtImporter): Importer = artImporter
+    @Binds
+    val ArtImporter.bindImporter: Importer
 
     @IntoSet
     @Provides
@@ -82,12 +83,10 @@ interface ArtEntryComponent {
         artBrowseTabTags
 
     @IntoSet
-    @Provides
-    fun bindArtSyncer(artSyncer: ArtSyncer): DatabaseSyncer = artSyncer
+    @Binds
+    val ArtSyncer.bindDatabaseSyncer: DatabaseSyncer
 
     @IntoSet
-    @Provides
-    fun bindArtEntryNavigatorAsBrowseSelectionNavigator(
-        artEntryNavigator: ArtEntryNavigator,
-    ): BrowseSelectionNavigator = artEntryNavigator
+    @Binds
+    val ArtEntryNavigator.bindBrowseSelectionNavigator: BrowseSelectionNavigator
 }

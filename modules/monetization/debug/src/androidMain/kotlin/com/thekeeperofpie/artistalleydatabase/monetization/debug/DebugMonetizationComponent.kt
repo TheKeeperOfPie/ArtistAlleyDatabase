@@ -2,15 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.monetization.debug
 
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
-import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.Binds
 
 interface DebugMonetizationComponent {
 
-    @Provides
-    fun bindMonetizationProvider(provider: DebugMonetizationProvider): MonetizationProvider =
-        provider
+    @Binds
+    val DebugMonetizationProvider.bindMonetizationProvider: MonetizationProvider
 
-    @Provides
-    fun bindSubscriptionProvider(provider: DebugSubscriptionProvider): SubscriptionProvider =
-        provider
+    @Binds
+    val DebugSubscriptionProvider.bindSubscriptionProvider: SubscriptionProvider
 }

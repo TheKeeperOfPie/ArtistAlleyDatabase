@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
@@ -14,9 +15,8 @@ import dev.zacsweers.metro.SingleIn
 interface ArtistAlleyDesktopComponent : ArtistAlleyAppComponent {
     val appFileSystem: AppFileSystem
 
-    @Provides
-    fun bindArtistAlleySettings(settings: ArtistAlleyDesktopSettings): ArtistAlleySettings =
-        settings
+    @Binds
+    val ArtistAlleyDesktopSettings.bindArtistAlleySettings: ArtistAlleySettings
 
     @Provides
     @SingleIn(AppScope::class)
