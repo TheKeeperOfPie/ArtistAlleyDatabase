@@ -53,9 +53,14 @@ actual class AlleyEditRemoteDatabase(
 
     actual suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary> =
         withContext(PlatformDispatchers.IO) {
-            val response = ktorClient.get(window.origin + "/database/artists")
-            response.bodyAsChannel().readBuffer().use {
-                Json.decodeFromSource<List<ArtistSummary>>(it)
+            try {
+                val response = ktorClient.get(window.origin + "/database/artists")
+                response.bodyAsChannel().readBuffer().use {
+                    Json.decodeFromSource<List<ArtistSummary>>(it)
+                }
+            } catch (_: Throwable) {
+                // TODO
+                emptyList()
             }
         }
 

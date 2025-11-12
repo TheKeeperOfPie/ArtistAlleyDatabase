@@ -6,6 +6,12 @@ compatibility_date = "2025-01-05"
 [placement]
 mode = "off"
 
+[vars]
+IS_PRODUCTION = false
+
+[env.production.vars]
+IS_PRODUCTION = true
+
 [env.production.placement]
 mode = "smart"
 
@@ -14,3 +20,7 @@ database_id = "970a37de-849d-4816-8633-20bb95cf0ef9"
 binding = "ANIME_EXPO_2026_DB"
 database_name = "ANIME_EXPO_2026_DB"
 preview_database_id = "ANIME_EXPO_2026_DB"
+
+# Local build/dev commands
+# ./gradlew -PwasmDebug=true :modules:alley-app:webRelease
+# bun i --cwd "./modules/alley-app/build/dist/web/developmentExecutable" @cloudflare/pages-plugin-cloudflare-access && bunx wrangler pages dev --persist-to "./.wrangler/state" --local "./modules/alley-app/build/dist/web/developmentExecutable"

@@ -225,6 +225,11 @@ val alleyFunctionsOutput by configurations.creating {
     isCanBeResolved = true
 }
 
+val alleyFunctionsMiddlewareOutput by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     serviceWorkerOutput(project(":modules:alley-app:service-worker")) {
         targetConfiguration = "distribution"
@@ -233,6 +238,9 @@ dependencies {
         targetConfiguration = "distribution"
     }
     alleyFunctionsOutput(project(":modules:alley-functions")) {
+        targetConfiguration = "distribution"
+    }
+    alleyFunctionsMiddlewareOutput(project(":modules:alley-functions:middleware")) {
         targetConfiguration = "distribution"
     }
 }
@@ -291,11 +299,36 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
         // TODO: Expose onRequest directly and see if that just works
         outputDir.get().asFile
             .resolve("functions/database/[[database]].mjs")
-            .appendText("""
+            .appendText(
+                """
                 export async function onRequest(context) {
                   return Worker.request(context)
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
+    }
+}
+
+val copyAlleyFunctionsMiddleware by tasks.registering(Copy::class) {
+    mustRunAfter(copyAlleyFunctions)
+    from(alleyFunctionsMiddlewareOutput)
+    include("*middleware.mjs")
+    rename { "/functions/database/_middleware.mjs" }
+    into(layout.buildDirectory.dir(outputDir))
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+
+    val outputDir = project.layout.buildDirectory.dir(outputDir)
+    doLast {
+        // TODO: Expose onRequest directly and see if that just works
+        outputDir.get().asFile
+            .resolve("functions/database/_middleware.mjs")
+            .appendText(
+                """
+                export async function onRequest(context) {
+                  return Middleware.request(context)
+                }
+            """.trimIndent()
+            )
     }
 }
 
@@ -313,7 +346,13 @@ configurations.all {
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
     dependsOn(":modules:alley:user:verifySqlDelightMigration")
-    dependsOn(buildBothWebVariants, copyServiceWorkerOutput, copyAlleyEdit, copyAlleyFunctions)
+    dependsOn(
+        buildBothWebVariants,
+        copyServiceWorkerOutput,
+        copyAlleyEdit,
+        copyAlleyFunctions,
+        copyAlleyFunctionsMiddleware,
+    )
 
     val outputDir = project.layout.buildDirectory.dir(outputDir)
     doLast {

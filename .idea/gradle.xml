@@ -34,6 +34,7 @@
             <option value="$PROJECT_DIR$/modules/alley-app/service-worker" />
             <option value="$PROJECT_DIR$/modules/alley-edit" />
             <option value="$PROJECT_DIR$/modules/alley-functions" />
+            <option value="$PROJECT_DIR$/modules/alley-functions/middleware" />
             <option value="$PROJECT_DIR$/modules/alley/data" />
             <option value="$PROJECT_DIR$/modules/alley/edit" />
             <option value="$PROJECT_DIR$/modules/alley/user" />
