@@ -25,7 +25,9 @@ kotlin {
             implementation(libs.jetBrainsCompose.material3.windowSizeClass)
             implementation(libs.kermit)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization.json.io)
 
             implementation(projects.modules.alley)
             implementation(projects.modules.utils)

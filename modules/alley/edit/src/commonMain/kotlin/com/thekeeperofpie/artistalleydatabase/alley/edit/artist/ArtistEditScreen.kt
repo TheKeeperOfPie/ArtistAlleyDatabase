@@ -63,6 +63,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_e
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_commissions
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_merch_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_merch_inferred
@@ -72,12 +73,12 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_e
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_summary
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_adding
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import coil3.compose.AsyncImage
 import com.anilist.data.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
@@ -99,6 +100,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -117,12 +119,18 @@ object ArtistEditScreen {
 
     @Composable
     operator fun invoke(
-        route: AlleyEditDestination.ArtistEdit,
+        dataYear: DataYear,
+        artistId: Uuid?,
         graph: ArtistAlleyEditGraph,
         onClickBack: () -> Unit,
         onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
         viewModel: ArtistEditViewModel = viewModel {
-            graph.artistEditViewModelFactory.create(route, createSavedStateHandle())
+            graph.artistEditViewModelFactory.create(
+                dataYear = dataYear,
+                artistId = artistId ?: Uuid.random(),
+                mode = if (artistId == null) Mode.ADD else Mode.EDIT,
+                savedStateHandle = createSavedStateHandle(),
+            )
         },
     ) {
         NavigationResultEffect(ImagesEditScreen.RESULT_KEY) {
@@ -135,7 +143,8 @@ object ArtistEditScreen {
             }
         }
         ArtistEditScreen(
-            route = route,
+            dataYear = dataYear,
+            mode = viewModel.mode,
             state = viewModel.state,
             seriesPredictions = viewModel::seriesPredictions,
             merchPredictions = viewModel::merchPredictions,
@@ -148,7 +157,8 @@ object ArtistEditScreen {
 
     @Composable
     operator fun invoke(
-        route: AlleyEditDestination.ArtistEdit,
+        dataYear: DataYear,
+        mode: Mode,
         state: State,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
@@ -163,12 +173,20 @@ object ArtistEditScreen {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                            stringResource(
-                                Res.string.alley_artist_edit_title,
-                                stringResource(route.dataYear.shortName),
-                                state.textState.name.value.text.ifBlank { route.artistId })
-                        )
+                        val text = when (mode) {
+                            Mode.ADD ->
+                                stringResource(
+                                    Res.string.alley_artist_edit_title_adding,
+                                    stringResource(dataYear.shortName),
+                                )
+                            Mode.EDIT ->
+                                stringResource(
+                                    Res.string.alley_artist_edit_title_editing,
+                                    stringResource(dataYear.shortName),
+                                    state.textState.name.value.text.ifBlank { state.textState.id.value.text.toString() },
+                                )
+                        }
+                        Text(text)
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = onClickBack) },
                     actions = {
@@ -235,7 +253,7 @@ object ArtistEditScreen {
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                         ImagesPager(
-                            artistId = route.artistId,
+                            sharedElementId = state.textState.id.value.text.toString(),
                             images = state.images,
                             imagePagerState = imagePagerState,
                             onClickImage = {},
@@ -256,7 +274,7 @@ object ArtistEditScreen {
 
     @Composable
     private fun ImagesPager(
-        artistId: Uuid,
+        sharedElementId: Any,
         images: List<EditImage>,
         imagePagerState: PagerState,
         onClickImage: (EditImage) -> Unit,
@@ -264,7 +282,7 @@ object ArtistEditScreen {
         ImagePager(
             images = images,
             pagerState = imagePagerState,
-            sharedElementId = artistId.toString(),
+            sharedElementId = sharedElementId,
             onClickPage = { onClickImage(images[it]) },
             imageContentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxWidth().height(400.dp)
@@ -281,6 +299,7 @@ object ArtistEditScreen {
     ) {
         val textState = state.textState
         EntryForm2(modifier = modifier) {
+            SingleTextSection(textState.id, Res.string.alley_artist_edit_id)
             SingleTextSection(textState.booth, Res.string.alley_artist_edit_booth)
             SingleTextSection(textState.name, Res.string.alley_artist_edit_name)
             SingleTextSection(textState.summary, Res.string.alley_artist_edit_summary)
@@ -552,6 +571,10 @@ object ArtistEditScreen {
         }
     }
 
+    enum class Mode {
+        ADD, EDIT
+    }
+
     @Stable
     class State(
         val images: SnapshotStateList<EditImage>,
@@ -567,6 +590,7 @@ object ArtistEditScreen {
     ) {
         @Stable
         class TextState(
+            val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val summary: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
@@ -582,6 +606,7 @@ object ArtistEditScreen {
         ) {
             object Saver : ComposeSaver<TextState, List<Any>> {
                 override fun SaverScope.save(value: TextState) = listOf(
+                    with(EntryForm2.SingleTextState.Saver) { save(value.id) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.booth) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.name) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.summary) },
@@ -597,18 +622,19 @@ object ArtistEditScreen {
                 )
 
                 override fun restore(value: List<Any>) = TextState(
-                    booth = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
-                    name = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
-                    summary = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
-                    links = with(EntryForm2.PendingTextState.Saver) { restore(value[3]) },
-                    storeLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[4]) },
-                    catalogLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[5]) },
-                    commissions = with(EntryForm2.PendingTextState.Saver) { restore(value[6]) },
-                    seriesInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[7]) },
-                    seriesConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[8]) },
-                    merchInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[9]) },
-                    merchConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[10]) },
-                    notes = with(EntryForm2.PendingTextState.Saver) { restore(value[11]) },
+                    id = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
+                    booth = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
+                    name = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+                    summary = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
+                    links = with(EntryForm2.PendingTextState.Saver) { restore(value[4]) },
+                    storeLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[5]) },
+                    catalogLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[6]) },
+                    commissions = with(EntryForm2.PendingTextState.Saver) { restore(value[7]) },
+                    seriesInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[8]) },
+                    seriesConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[9]) },
+                    merchInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[10]) },
+                    merchConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[11]) },
+                    notes = with(EntryForm2.PendingTextState.Saver) { restore(value[12]) },
                 )
             }
         }

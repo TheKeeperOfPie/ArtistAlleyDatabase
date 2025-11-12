@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="alley_artist_edit_title">Editing %1$s - %2$s</string>
+    <string name="alley_artist_edit_title_editing">Editing %1$s - %2$s</string>
+    <string name="alley_artist_edit_title_adding">Adding %1$s</string>
+    <string name="alley_artist_edit_id">ID</string>
     <string name="alley_artist_edit_booth">Booth</string>
     <string name="alley_artist_edit_name">Name</string>
     <string name="alley_artist_edit_summary">Summary</string>
@@ -18,6 +20,7 @@
     <string name="alley_artist_edit_action_images">Edit images</string>
 
     <string name="alley_edit_artist_action_save_content_description">Save artist</string>
+    <string name="alley_edit_artist_action_add">Add artist</string>
 
     <string name="alley_edit_image_title">Editing images for %1$s - %2$s</string>
     <string name="alley_edit_image_width_and_height">Width: %1$d - Height: %2$d</string>

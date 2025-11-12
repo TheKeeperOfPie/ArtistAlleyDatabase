@@ -21,10 +21,22 @@ class AlleyEditDatabase(
     private val seriesEntryDao: SeriesEntryDao,
     private val remoteDatabase: AlleyEditRemoteDatabase,
 ) {
-    suspend fun loadArtists(dataYear: DataYear) = artistEntryDao.getAllEntries(dataYear)
+    suspend fun loadArtists(dataYear: DataYear) = when (dataYear) {
+        DataYear.ANIME_EXPO_2026 -> remoteDatabase.loadArtists(dataYear)
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025 -> artistEntryDao.getAllEntries(dataYear)
+    }
 
-    suspend fun loadArtist(dataYear: DataYear, artistId: Uuid) =
-        artistEntryDao.getEntry(dataYear, artistId.toString())
+    suspend fun loadArtist(dataYear: DataYear, artistId: Uuid) = when (dataYear) {
+        DataYear.ANIME_EXPO_2026 -> remoteDatabase.loadArtist(dataYear, artistId)
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025 -> artistEntryDao.getEntry(dataYear, artistId.toString())
             ?.artist
             ?.let {
                 ArtistEditInfo(
@@ -43,6 +55,7 @@ class AlleyEditDatabase(
                     merchConfirmed = it.merchConfirmed,
                 )
             }
+    }
 
     suspend fun loadSeries() = seriesEntryDao.getSeries()
         .associate {
@@ -74,5 +87,5 @@ class AlleyEditDatabase(
             ?.let { AlleyImageUtils.getArtistImages(year, it) }
             ?.map(EditImage::DatabaseImage)
 
-    suspend fun saveArtist(artist: ArtistDatabaseEntry.Impl) = remoteDatabase.saveArtist(artist)
+    suspend fun saveArtist(dataYear: DataYear, artist: ArtistDatabaseEntry.Impl) = remoteDatabase.saveArtist(dataYear, artist)
 }

@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,6 +39,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -59,6 +63,7 @@ internal object HomeScreen {
     @Composable
     operator fun invoke(
         graph: ArtistAlleyEditGraph,
+        onAddArtist: (dataYear: DataYear) -> Unit,
         onEditArtist: (dataYear: DataYear, id: Uuid) -> Unit,
         viewModel: HomeViewModel = viewModel {
             graph.homeViewModelFactory.create(createSavedStateHandle())
@@ -68,9 +73,8 @@ internal object HomeScreen {
             query = viewModel.query,
             dataYear = viewModel.dataYear,
             entries = viewModel.entries,
-            onEditArtist = {
-                onEditArtist(viewModel.dataYear.value, it)
-            },
+            onAddArtist = { onAddArtist(viewModel.dataYear.value) },
+            onEditArtist = { onEditArtist(viewModel.dataYear.value, it) },
         )
     }
 
@@ -79,6 +83,7 @@ internal object HomeScreen {
         query: MutableStateFlow<String>,
         dataYear: MutableStateFlow<DataYear>,
         entries: StateFlow<List<ArtistSummary>>,
+        onAddArtist: () -> Unit,
         onEditArtist: (id: Uuid) -> Unit,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -118,6 +123,14 @@ internal object HomeScreen {
                                 modifier = Modifier.padding(top = 4.dp),
                             )
                         }
+                    }
+                },
+                floatingActionButton = {
+                    LargeFloatingActionButton(onClick = onAddArtist) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(Res.string.alley_edit_artist_action_add),
+                        )
                     }
                 },
                 modifier = Modifier.widthIn(max = 1200.dp)
@@ -209,6 +222,7 @@ private fun HomeScreenPreview() {
                 )
             )
         },
+        onAddArtist = {},
         onEditArtist = {},
     )
 }

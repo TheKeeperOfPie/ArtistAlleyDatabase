@@ -69,6 +69,9 @@ fun ArtistAlleyEditApp(
                         sharedElementEntry<AlleyEditDestination.Home> {
                             HomeScreen(
                                 graph = graph,
+                                onAddArtist = {
+                                    twoWayStack.navigate(AlleyEditDestination.ArtistAdd(it))
+                                },
                                 onEditArtist = { dataYear, artistId ->
                                     twoWayStack.navigate(
                                         AlleyEditDestination.ArtistEdit(
@@ -79,9 +82,27 @@ fun ArtistAlleyEditApp(
                                 },
                             )
                         }
+                        sharedElementEntry<AlleyEditDestination.ArtistAdd> { route ->
+                            ArtistEditScreen(
+                                dataYear = route.dataYear,
+                                artistId = null,
+                                graph = graph,
+                                onClickBack = onClickBack,
+                                onClickEditImages = { displayName, images ->
+                                    twoWayStack.navigate(
+                                        AlleyEditDestination.ImagesEdit(
+                                            route.dataYear,
+                                            displayName,
+                                            images
+                                        )
+                                    )
+                                },
+                            )
+                        }
                         sharedElementEntry<AlleyEditDestination.ArtistEdit> { route ->
                             ArtistEditScreen(
-                                route = route,
+                                dataYear = route.dataYear,
+                                artistId = route.artistId,
                                 graph = graph,
                                 onClickBack = onClickBack,
                                 onClickEditImages = { displayName, images ->

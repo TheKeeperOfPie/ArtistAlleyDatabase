@@ -34,6 +34,7 @@ kotlin {
                 "kotlin.time.ExperimentalTime",
                 "kotlin.uuid.ExperimentalUuidApi",
                 "kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "kotlinx.serialization.ExperimentalSerializationApi",
             )
         )
     }

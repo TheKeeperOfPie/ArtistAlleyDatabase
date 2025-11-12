@@ -14,6 +14,9 @@ sealed interface AlleyEditDestination : NavKey {
     data object Home : AlleyEditDestination
 
     @Serializable
+    data class ArtistAdd(val dataYear: DataYear) : AlleyEditDestination
+
+    @Serializable
     data class ArtistEdit(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
 
     @Serializable
@@ -24,10 +27,16 @@ sealed interface AlleyEditDestination : NavKey {
     ) : AlleyEditDestination
 
     companion object {
-        fun parseRoute(route: String) = if (route.isEmpty() || route.startsWith("home")) {
-            Home
-        } else if (route.startsWith("artist")) {
-            try {
+        fun parseRoute(route: String): AlleyEditDestination? = when {
+            route.isEmpty() || route.startsWith("home") -> Home
+            route.startsWith("artist/add") -> try {
+                val (year) = route.removePrefix("artist/add").split("/")
+                val dataYear = DataYear.deserialize(year) ?: return null
+                ArtistAdd(dataYear)
+            } catch (_: IllegalArgumentException) {
+                null
+            }
+            route.startsWith("artist") -> try {
                 val (year, artist) = route.removePrefix("artist/").split("/")
                 val artistId = Uuid.parse(artist)
                 val dataYear = DataYear.deserialize(year) ?: return null
@@ -35,16 +44,13 @@ sealed interface AlleyEditDestination : NavKey {
             } catch (_: IllegalArgumentException) {
                 null
             }
-        } else {
-            null
+            else -> null
         }
 
         fun toEncodedRoute(destination: AlleyEditDestination) = when (destination) {
-            is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/${
-                Uri.encode(
-                    destination.artistId.toString()
-                )
-            }"
+            is ArtistAdd -> "artist/add/${Uri.encode(destination.dataYear.serializedName)}"
+            is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.artistId.toString())
             is ImagesEdit -> null
             Home -> ""
         }
