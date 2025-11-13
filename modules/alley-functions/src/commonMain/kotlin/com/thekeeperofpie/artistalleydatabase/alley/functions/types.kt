@@ -1,9 +1,15 @@
 @file:OptIn(ExperimentalWasmJsInterop::class, ExperimentalJsCollectionsApi::class)
 
+package com.thekeeperofpie.artistalleydatabase.alley.functions
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.w3c.fetch.Request
 import kotlin.js.Promise
 
-external interface EventContext<Env> {
+external interface EventContext {
     val request: Request
     val waitUntil: (promise: Promise<Any>) -> Unit
     val env: Env
@@ -32,3 +38,15 @@ external interface D1Result {
 external interface D1ResultMeta {
     val changes: Int
 }
+
+internal fun <T> promise(block: suspend CoroutineScope.() -> T) =
+    Promise { resolve, reject ->
+        @OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch {
+            try {
+                resolve(block())
+            } catch (t: Throwable) {
+                reject(t)
+            }
+        }
+    }

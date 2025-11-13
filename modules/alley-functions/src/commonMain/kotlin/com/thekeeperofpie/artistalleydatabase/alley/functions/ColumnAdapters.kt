@@ -1,4 +1,4 @@
-
+package com.thekeeperofpie.artistalleydatabase.alley.functions
 import app.cash.sqldelight.ColumnAdapter
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import kotlinx.serialization.json.Json

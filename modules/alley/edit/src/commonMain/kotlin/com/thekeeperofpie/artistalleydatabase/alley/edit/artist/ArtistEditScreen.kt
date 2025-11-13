@@ -150,7 +150,9 @@ object ArtistEditScreen {
             merchPredictions = viewModel::merchPredictions,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickEditImages = { onClickEditImages(viewModel.artist.value?.name.orEmpty(), it) },
+            onClickEditImages = {
+                onClickEditImages(viewModel.state.textState.name.value.text.toString(), it)
+            },
             onClickSave = viewModel::onClickSave,
         )
     }

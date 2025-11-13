@@ -43,7 +43,6 @@ kotlin {
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.jetBrainsAndroidX.navigationevent.compose)
             implementation(libs.jetBrainsCompose.material3.windowSizeClass)
-            implementation(libs.kotlinx.serialization.json.io)
             implementation(libs.paging.common)
             implementation(libs.paging.compose)
             implementation(libs.qrose)

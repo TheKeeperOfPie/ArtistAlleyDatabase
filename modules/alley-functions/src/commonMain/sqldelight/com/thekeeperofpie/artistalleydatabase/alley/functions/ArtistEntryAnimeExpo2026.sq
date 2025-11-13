@@ -28,6 +28,13 @@ CREATE TABLE
         PRIMARY KEY (id)
     );
 
+getArtists:
+SELECT id, booth, name FROM artistEntryAnimeExpo2026;
+
 insertArtist:
 INSERT OR REPLACE INTO artistEntryAnimeExpo2026
 VALUES ?;
+
+getArtist:
+SELECT * FROM artistEntryAnimeExpo2026
+WHERE :id = artistEntryAnimeExpo2026.id;

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     id("library-android")
     id("library-desktop")
@@ -31,6 +29,8 @@ kotlin {
         commonMain.dependencies {
             api(libs.apollo.runtime)
             api(libs.ktor.client.core)
+            api(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.content.negotiation)
         }
         wasmJsMain.dependencies {
             implementation(libs.apollo.engine.ktor.wasm.js)

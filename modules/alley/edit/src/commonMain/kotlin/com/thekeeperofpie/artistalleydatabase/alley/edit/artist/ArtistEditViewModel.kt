@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.uuid.Uuid
@@ -42,9 +41,6 @@ class ArtistEditViewModel(
     @Assisted internal val mode: ArtistEditScreen.Mode,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val artist = flowFromSuspend { database.loadArtist(dataYear, artistId) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
     private val textState by savedStateHandle.saveable(saver = ArtistEditScreen.State.TextState.Saver) {
         ArtistEditScreen.State.TextState().apply {
             id.value.setTextAndPlaceCursorAtEnd(artistId.toString())

@@ -1,5 +1,7 @@
 @file:OptIn(ExperimentalJsCollectionsApi::class)
 
+package com.thekeeperofpie.artistalleydatabase.alley.functions
+
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
@@ -23,8 +25,14 @@ internal class WorkerSqlDriver(
         val collectingStatement = CollectingStatement()
         binders?.invoke(collectingStatement)
         return QueryResult.AsyncValue {
-            val result = statement.bind(*collectingStatement.values.toTypedArray())
-                .run()
+            val result = statement.run {
+                if (parameters > 0) {
+                    bind(*collectingStatement.values.toTypedArray())
+                } else {
+                    this
+                }
+            }
+                .raw()
                 .await()
             mapper(WorkerSqlCursor(result)).await()
         }
@@ -40,7 +48,13 @@ internal class WorkerSqlDriver(
         val collectingStatement = CollectingStatement()
         binders?.invoke(collectingStatement)
         return QueryResult.AsyncValue {
-            statement.bind(*collectingStatement.values.toTypedArray())
+            statement.run {
+                if (parameters > 0) {
+                    bind(*collectingStatement.values.toTypedArray())
+                } else {
+                    this
+                }
+            }
                 .run()
                 .await()
                 .meta
@@ -72,8 +86,7 @@ internal class WorkerSqlDriver(
     }
 }
 
-internal class WorkerSqlCursor(result: D1Result) : SqlCursor {
-    private val values: Array<Array<dynamic>> = result.results
+internal class WorkerSqlCursor(private val values: Array<Array<dynamic>>) : SqlCursor {
     private var currentRow = -1
 
     override fun next(): QueryResult<Boolean> = QueryResult.Value(++currentRow < values.size)

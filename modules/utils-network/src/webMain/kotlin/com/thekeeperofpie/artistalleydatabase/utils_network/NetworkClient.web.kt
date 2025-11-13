@@ -10,6 +10,6 @@ import io.ktor.client.HttpClient
 @Inject
 @SingleIn(AppScope::class)
 actual class NetworkClient {
-    actual val httpClient = HttpClient()
+    actual val httpClient = HttpClient { configure() }
     actual val httpEngine: HttpEngine = DefaultHttpEngine()
 }

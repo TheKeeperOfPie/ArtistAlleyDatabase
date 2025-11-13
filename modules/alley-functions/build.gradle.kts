@@ -25,7 +25,7 @@ kotlin {
 
 sqldelight {
     databases {
-        create("Database") {
+        create("AlleyFunctionsDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
             generateAsync = true

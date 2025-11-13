@@ -21,6 +21,7 @@ class AlleyEditDatabase(
     private val seriesEntryDao: SeriesEntryDao,
     private val remoteDatabase: AlleyEditRemoteDatabase,
 ) {
+    // TODO: Failure result
     suspend fun loadArtists(dataYear: DataYear) = when (dataYear) {
         DataYear.ANIME_EXPO_2026 -> remoteDatabase.loadArtists(dataYear)
         DataYear.ANIME_EXPO_2023,

@@ -63,6 +63,7 @@ actual class NetworkClient(
         .build()
 
     actual val httpClient = HttpClient(OkHttp) {
+        configure()
         engine {
             preconfigured = okHttpClient
         }
