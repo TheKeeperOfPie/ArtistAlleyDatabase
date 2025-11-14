@@ -5,8 +5,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.async.coroutines.awaitCreate
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
@@ -76,7 +76,7 @@ object Database {
         context: EventContext,
         tryCreate: Boolean = false,
     ): AlleyFunctionsDatabase {
-        val sqlDriver = WorkerSqlDriver(database = context.env.ANIME_EXPO_2026_DB)
+        val sqlDriver = WorkerSqlDriver(database = context.env.ARTIST_ALLEY_DB)
         val database = AlleyFunctionsDatabase(
             driver = sqlDriver,
             artistEntryAnimeExpo2026Adapter = artistEntryAnimeExpo2026Adapter,

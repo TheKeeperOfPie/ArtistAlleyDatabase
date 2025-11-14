@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 

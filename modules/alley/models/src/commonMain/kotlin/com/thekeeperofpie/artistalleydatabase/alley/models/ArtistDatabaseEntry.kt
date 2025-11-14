@@ -1,5 +1,7 @@
-package com.thekeeperofpie.artistalleydatabase.shared.alley.data
+package com.thekeeperofpie.artistalleydatabase.alley.models
 
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 
 interface ArtistDatabaseEntry {

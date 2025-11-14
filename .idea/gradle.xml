@@ -37,6 +37,7 @@
             <option value="$PROJECT_DIR$/modules/alley-functions/middleware" />
             <option value="$PROJECT_DIR$/modules/alley/data" />
             <option value="$PROJECT_DIR$/modules/alley/edit" />
+            <option value="$PROJECT_DIR$/modules/alley/models" />
             <option value="$PROJECT_DIR$/modules/alley/user" />
             <option value="$PROJECT_DIR$/modules/anilist" />
             <option value="$PROJECT_DIR$/modules/anilist/data" />

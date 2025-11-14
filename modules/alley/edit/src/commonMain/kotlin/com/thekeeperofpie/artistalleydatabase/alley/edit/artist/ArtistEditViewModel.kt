@@ -11,10 +11,10 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -47,6 +47,7 @@ class ArtistEditViewModel(
             id.lockState = EntryLockState.LOCKED
         }
     }
+    private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", false)
     val state = ArtistEditScreen.State(
         images = savedStateHandle.saveable(
             "images",
@@ -85,6 +86,7 @@ class ArtistEditViewModel(
             saver = StateUtils.snapshotListJsonSaver()
         ) { SnapshotStateList() },
         textState = textState,
+        saved = saved,
     )
 
     private var hasLoaded by savedStateHandle.saved { mode == ArtistEditScreen.Mode.ADD }
@@ -232,6 +234,7 @@ class ArtistEditViewModel(
                     counter = 1,
                 )
             )
+            saved.value = true
         }
     }
 

@@ -19,6 +19,8 @@ kotlin {
             implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.sqldelight.coroutines.extensions)
+
+            implementation(projects.modules.alley.models)
         }
     }
 }

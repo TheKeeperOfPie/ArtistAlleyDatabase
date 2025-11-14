@@ -2,6 +2,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 import java.util.zip.CRC32
 
 plugins {
@@ -355,6 +356,7 @@ tasks.register("webRelease") {
     )
 
     val outputDir = project.layout.buildDirectory.dir(outputDir)
+    val propertiesFile = project.layout.projectDirectory.file("secrets.properties")
     doLast {
         val folder = outputDir.get().asFile
         folder.listFiles()
@@ -400,5 +402,11 @@ tasks.register("webRelease") {
         val serviceWorkerEdited = serviceWorker.readText()
             .replace("CACHE_INPUT", fileNamesAndHashes)
         serviceWorker.writeText(serviceWorkerEdited)
+
+        val properties = Properties().apply { load(propertiesFile.asFile.reader()) }
+        val wranglerToml = folder.resolve("wrangler.toml")
+        val wranglerTomlEdited = wranglerToml.readText()
+            .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
+        wranglerToml.writeText(wranglerTomlEdited)
     }
 }

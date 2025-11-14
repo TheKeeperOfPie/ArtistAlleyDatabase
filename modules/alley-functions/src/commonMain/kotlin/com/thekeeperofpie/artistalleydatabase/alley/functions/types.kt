@@ -17,7 +17,7 @@ external interface EventContext {
 }
 
 external interface Env {
-    val ANIME_EXPO_2026_DB: D1Database
+    val ARTIST_ALLEY_DB: D1Database
 }
 
 external interface D1Database {

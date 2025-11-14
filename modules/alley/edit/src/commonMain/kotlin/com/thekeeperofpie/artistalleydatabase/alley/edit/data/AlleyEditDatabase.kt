@@ -5,8 +5,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject

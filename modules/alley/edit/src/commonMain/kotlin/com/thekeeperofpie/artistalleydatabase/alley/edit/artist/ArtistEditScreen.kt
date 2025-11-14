@@ -37,6 +37,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
@@ -107,6 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -169,6 +172,14 @@ object ArtistEditScreen {
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
     ) {
+        val saved by state.saved.collectAsStateWithLifecycle()
+        LaunchedEffect(saved) {
+            if (saved == true) {
+                onClickBack()
+                state.saved.value = null
+            }
+        }
+
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
         Scaffold(
@@ -589,6 +600,7 @@ object ArtistEditScreen {
         val merchInferred: SnapshotStateList<MerchInfo>,
         val merchConfirmed: SnapshotStateList<MerchInfo>,
         val textState: TextState,
+        val saved: MutableStateFlow<Boolean?>,
     ) {
         @Stable
         class TextState(

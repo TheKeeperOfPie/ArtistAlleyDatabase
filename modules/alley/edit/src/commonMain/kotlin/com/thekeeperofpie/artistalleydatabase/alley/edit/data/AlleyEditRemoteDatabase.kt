@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditInfo
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlin.uuid.Uuid
 

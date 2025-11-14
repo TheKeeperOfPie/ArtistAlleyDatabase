@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist
 
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 
 data class ArtistEntry(
     private val databaseEntry: ArtistDatabaseEntry.Impl,
