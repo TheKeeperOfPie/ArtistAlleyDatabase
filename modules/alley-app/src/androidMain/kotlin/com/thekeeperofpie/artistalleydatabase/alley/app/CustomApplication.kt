@@ -11,6 +11,7 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.utils.ComponentProvider
+import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.MainScope
 
 class CustomApplication : Application(), ComponentProvider, SingletonImageLoader.Factory {
@@ -18,11 +19,7 @@ class CustomApplication : Application(), ComponentProvider, SingletonImageLoader
     private val scope = MainScope()
 
     private val applicationComponent by lazy {
-        ArtistAlleyAndroidComponent::class.create(this, scope)
-    }
-
-    override fun onCreate() {
-        super.onCreate()
+        createGraphFactory<ArtistAlleyAndroidComponent.Factory>().create(this, scope)
     }
 
     override fun newImageLoader(context: PlatformContext) = ImageLoader.Builder(context)

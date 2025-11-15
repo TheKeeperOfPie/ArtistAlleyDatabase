@@ -1,51 +1,13 @@
 
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    // Doesn't use convention plugins to avoid having to add a JS target to every module
-    id("org.jetbrains.kotlin.multiplatform")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.compose")
-    id("com.android.kotlin.multiplatform.library")
-    id("org.jetbrains.kotlin.plugin.serialization")
+    id("library-android")
+    id("library-compose")
+    id("library-desktop")
+    id("library-web")
 }
 
 kotlin {
-    compilerOptions {
-        jvmToolchain(18)
-    }
-
-    androidLibrary {
-        compileSdk = 36
-        minSdk = 28
-
-        compilations.configureEach {
-            compileTaskProvider.configure {
-                compilerOptions {
-                    jvmTarget = JvmTarget.JVM_18
-                }
-            }
-        }
-    }
-    jvm()
-    js {
-        browser {
-            commonWebpackConfig {
-                sourceMaps = false
-            }
-        }
-    }
-
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser {
-            commonWebpackConfig {
-                sourceMaps = false
-            }
-        }
-    }
-
     sourceSets {
         commonMain {
             kotlin.srcDir(project.layout.buildDirectory.dir("generated/source"))

@@ -166,6 +166,7 @@ kotlin {
         val nonServiceWorkerCommonMain by getting {
             dependencies {
                 implementation(projects.modules.alley)
+                implementation(projects.modules.alley.data)
                 implementation(projects.modules.utils)
                 implementation(projects.modules.utilsCompose)
                 implementation(projects.modules.utilsInject)
@@ -198,9 +199,6 @@ kotlin {
         }
         val webMain by getting {
             dependsOn(nonServiceWorkerCommonMain)
-            dependencies {
-                implementation(projects.modules.alley.data)
-            }
         }
         jsMain.dependencies {
             implementation(libs.jetBrainsCompose.ui.backhandler)
