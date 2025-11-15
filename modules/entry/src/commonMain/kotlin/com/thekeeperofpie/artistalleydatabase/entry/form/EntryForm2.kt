@@ -29,14 +29,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.delete
+import androidx.compose.foundation.text.input.insert
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -85,10 +84,12 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.ImeAction
@@ -106,15 +107,15 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.swap
+import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKeyDownOrTyped
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -158,17 +159,16 @@ object EntryForm2 {
     @Stable
     class PendingTextState(
         val pendingValue: TextFieldState = TextFieldState(),
-        initialPendingFocused: Boolean = false,
         initialLockState: EntryLockState = EntryLockState.UNLOCKED,
         override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
     ) : State() {
-        var pendingFocused by mutableStateOf(initialPendingFocused)
         override var lockState by mutableStateOf(initialLockState)
+        val focusRequester = FocusRequester()
+        var isFocused by mutableStateOf(false)
 
         object Saver : ComposeSaver<PendingTextState, Any> {
             override fun SaverScope.save(value: PendingTextState) = listOf(
                 with(TextFieldState.Saver) { save(value.pendingValue) },
-                value.pendingFocused,
                 value.lockState,
                 value.wasEverDifferent,
             )
@@ -177,7 +177,6 @@ object EntryForm2 {
                 val (pendingValue, pendingFocused, lockState, wasEverDifferent) = value as List<*>
                 return PendingTextState(
                     pendingValue = with(TextFieldState.Saver) { restore(pendingValue!!) }!!,
-                    initialPendingFocused = pendingFocused as Boolean,
                     initialLockState = lockState as EntryLockState,
                     wasEverDifferent = wasEverDifferent as Boolean,
                 )
@@ -192,6 +191,8 @@ object EntryForm2 {
     ) : State() {
         override var lockState by mutableStateOf(initialLockState)
         override val wasEverDifferent get() = false
+        val focusRequester = FocusRequester()
+        var isFocused by mutableStateOf(false)
 
         object Saver : ComposeSaver<SingleTextState, Any> {
             override fun SaverScope.save(value: SingleTextState) = listOf(
@@ -282,6 +283,7 @@ object EntryForm2 {
 fun EntryFormScope.SingleTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
+    onTab: (next: Boolean) -> Unit = {},
 ) {
     Column {
         SectionHeader(
@@ -290,7 +292,11 @@ fun EntryFormScope.SingleTextSection(
             onClick = state::rotateLockState,
         )
 
-        val modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        val modifier = Modifier.fillMaxWidth()
+            .onFocusChanged { state.isFocused = it.isFocused }
+            .focusRequester(state.focusRequester)
+            .padding(horizontal = 16.dp)
+            .interceptTab(onTab)
         if (state.lockState == EntryLockState.UNLOCKED) {
             OutlinedTextField(
                 state = state.value,
@@ -310,137 +316,148 @@ fun EntryFormScope.SingleTextSection(
 fun EntryFormScope.MultiTextSection(
     state: EntryForm2.PendingTextState,
     headerText: @Composable () -> Unit,
-    focusRequester: FocusRequester? = null,
-    onFocusChanged: (Boolean) -> Unit = {},
     entryPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>> = { emptyFlow() },
     trailingIcon: (EntryForm2.MultiTextState.Entry) -> Pair<ImageVector, StringResource>? = { null },
     onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
     items: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
-    onItemCommitted: (EntryForm2.MultiTextState.Entry) -> Unit,
+    onItemCommitted: (String) -> Unit,
     removeLastItem: () -> String?,
 ) {
-    val onNewEntry: (EntryForm2.MultiTextState.Entry) -> Unit = {
-        Snapshot.withMutableSnapshot {
+    // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
+    val uriHandler = LocalUriHandler.current
+    MultiTextSection(
+        state = state,
+        headerText = headerText,
+        entryPredictions = entryPredictions,
+        items = items,
+        onItemCommitted = {
             onItemCommitted(it)
             state.pendingValue.edit { this.delete(0, length) }
-        }
-    }
-    SectionHeader(
-        text = headerText,
-        lockState = state.lockState,
-        onClick = {
-            val newValue = state.pendingValue.text
-            if (newValue.isNotBlank()) {
-                // TODO: Unify trim logic somewhere
-                onNewEntry(EntryForm2.MultiTextState.Entry.Custom(newValue.trim().toString()))
-            }
-            state.rotateLockState()
-        }
-    )
+        },
+        removeLastItem = removeLastItem,
+        item = { index, value ->
+            var showOverflow by remember { mutableStateOf(false) }
+            Box {
+                val iconPair = trailingIcon(value)
+                val focusManager = LocalFocusManager.current
+                SectionField(
+                    index = index,
+                    entry = value,
+                    onValueChange = {
+                        if (value.text != it) {
+                            items[index] = EntryForm2.MultiTextState.Entry.Custom(it.trim())
+                        }
+                    },
+                    onClickMore = { showOverflow = !showOverflow },
+                    onDone = { focusManager.moveFocus(FocusDirection.Next) },
+                    lockState = { state.lockState },
+                    trailingIcon = if (iconPair != null) {
+                        {
+                            Icon(
+                                imageVector = iconPair.first,
+                                contentDescription = stringResource(iconPair.second),
+                            )
+                        }
+                    } else null,
+                    onNavigate = { onNavigate(value) },
+                )
 
-    val focusManager = LocalFocusManager.current
-    items.forEachIndexed { index, value ->
-        var showOverflow by remember { mutableStateOf(false) }
-        Box {
-            val iconPair = trailingIcon(value)
-            SectionField(
-                index = index,
-                entry = value,
-                onValueChange = {
-                    if (value.text != it) {
-                        items[index] = EntryForm2.MultiTextState.Entry.Custom(it.trim())
-                    }
-                },
-                onClickMore = { showOverflow = !showOverflow },
-                onDone = { focusManager.moveFocus(FocusDirection.Next) },
-                lockState = { state.lockState },
-                trailingIcon = if (iconPair != null) {
-                    {
-                        Icon(
-                            imageVector = iconPair.first,
-                            contentDescription = stringResource(iconPair.second),
+                EntryItemDropdown(
+                    show = { showOverflow },
+                    onDismiss = { showOverflow = false },
+                    index = index,
+                    totalSize = { items.size },
+                    onDelete = { items.removeAt(index) },
+                    onMoveUp = { items.swap(index, index - 1) },
+                    onMoveDown = { items.swap(index, index + 1) },
+                    modifier = Modifier
+                        .width(48.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp)
+                )
+            }
+        },
+        prediction = { _, entry ->
+            val titleText: @Composable () -> String
+            var subtitleText: () -> String? = { null }
+            var image: () -> String? = { null }
+            var imageLink: () -> String? = { null }
+            var secondaryImage: (() -> String?)? = null
+            var secondaryImageLink: () -> String? = { null }
+            when (entry) {
+                is EntryForm2.MultiTextState.Entry.Custom -> {
+                    titleText = { entry.text }
+                }
+                is EntryForm2.MultiTextState.Entry.Prefilled<*> -> {
+                    titleText = { entry.titleText }
+                    subtitleText = { entry.subtitleText }
+                    image = { entry.image }
+                    imageLink = { entry.imageLink }
+                    secondaryImage = entry.secondaryImage?.let { { it } }
+                    secondaryImageLink = { entry.secondaryImageLink }
+                }
+                EntryForm2.MultiTextState.Entry.Different -> {
+                    titleText = { stringResource(Res.string.different) }
+                }
+            }.run { /*exhaust*/ }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.animateContentSize(),
+            ) {
+                EntryImage(
+                    image = image,
+                    link = imageLink,
+                    uriHandler = uriHandler,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .heightIn(min = 54.dp)
+                        .width(42.dp)
+                )
+                Column(
+                    Modifier
+                        .weight(1f, true)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 8.dp,
+                        )
+                ) {
+                    Text(
+                        text = titleText(),
+                        maxLines = 1,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                    )
+
+                    @Suppress("NAME_SHADOWING")
+                    val subtitleText = subtitleText()
+                    if (subtitleText != null) {
+                        Text(
+                            text = subtitleText,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(start = 24.dp)
                         )
                     }
-                } else null,
-                onNavigate = { onNavigate(value) },
-            )
+                }
 
-            EntryItemDropdown(
-                show = { showOverflow },
-                onDismiss = { showOverflow = false },
-                index = index,
-                totalSize = { items.size },
-                onDelete = { items.removeAt(index) },
-                onMoveUp = { items.swap(index, index - 1) },
-                onMoveDown = { items.swap(index, index + 1) },
-                modifier = Modifier
-                    .width(48.dp)
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp)
-            )
-        }
-    }
+                trailingIcon?.invoke(entry)
 
-    AnimatedVisibility(
-        // TODO: Allow showing open field even when locked in search panel
-        visible = state.lockState.editable,
-        enter = expandVertically(),
-        exit = shrinkVertically(),
-    ) {
-        val predictions by produceState(emptyList(), state, entryPredictions) {
-            snapshotFlow { state.pendingValue.text.toString() }
-                .debounce(1.seconds)
-                .flatMapLatest(entryPredictions)
-                .collectLatest { value = it }
-        }
-        EntryPrefilledAutocompleteDropdown(
-            text = { state.pendingValue.text },
-            predictions = { predictions },
-            showPredictions = { state.lockState.editable && state.pendingValue.text.isNotBlank() },
-            onPredictionChosen = onNewEntry,
-            trailingIcon = {
-                val iconPair = trailingIcon(it)
-                if (iconPair != null) {
-                    Icon(
-                        imageVector = iconPair.first,
-                        contentDescription = stringResource(iconPair.second),
+                if (secondaryImage != null) {
+                    EntryImage(
+                        image = secondaryImage,
+                        link = secondaryImageLink,
+                        uriHandler = uriHandler,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .heightIn(min = 54.dp)
+                            .width(42.dp)
                     )
                 }
-            },
-        ) { bringIntoViewRequester ->
-            OpenSectionField(
-                state = state.pendingValue,
-                lockState = { state.lockState },
-                totalSize = { items.size },
-                onLock = { state.lockState = EntryLockState.LOCKED },
-                bringIntoViewRequester = bringIntoViewRequester,
-                focusRequester = focusRequester,
-                onFocusChanged = {
-                    state.pendingFocused = it
-                    onFocusChanged(it)
-                },
-                onRemove = {
-                    Snapshot.withMutableSnapshot {
-                        val removed = removeLastItem()
-                        if (removed != null) {
-                            state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
-                        }
-                    }
-                },
-                onDone = {
-                    val newValue = state.pendingValue.text
-                    if (newValue.isNotBlank()) {
-                        onNewEntry(
-                            EntryForm2.MultiTextState.Entry.Custom(
-                                newValue.trim().toString()
-                            )
-                        )
-                    }
-                },
-                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
-            )
-        }
-    }
+            }
+        },
+    )
 }
 
 @Composable
@@ -451,9 +468,10 @@ fun <T> EntryFormScope.MultiTextSection(
     items: SnapshotStateList<T>,
     onItemCommitted: (String) -> Unit,
     removeLastItem: () -> String?,
-    item: @Composable (T) -> Unit,
-    prediction: @Composable (T) -> Unit = item,
+    item: @Composable (index: Int, T) -> Unit,
+    prediction: @Composable (index: Int, T) -> Unit = item,
     preferPrediction: Boolean = false,
+    onTab: (next: Boolean) -> Unit = {},
 ) {
     SectionHeader(
         text = headerText,
@@ -484,7 +502,7 @@ fun <T> EntryFormScope.MultiTextSection(
                     .bottomBorder(MaterialTheme.colorScheme.onSurfaceVariant)
                     .animateContentSize()
             ) {
-                item(value)
+                item(index, value)
             }
 
             EntryItemDropdown(
@@ -510,16 +528,26 @@ fun <T> EntryFormScope.MultiTextSection(
         exit = shrinkVertically(),
     ) {
         val predictions by produceState(emptyList(), state, entryPredictions) {
+            // No debounce here because speed of autocomplete is critical for streamlined entry
             snapshotFlow { state.pendingValue.text.toString() }
-                .debounce(1.seconds)
                 .flatMapLatest(entryPredictions)
                 .flowOn(PlatformDispatchers.IO)
                 .collectLatest { value = it }
         }
+        val dropdownFocusRequester = remember { FocusRequester() }
+        val showPredictions by remember {
+            derivedStateOf {
+                state.lockState.editable && state.pendingValue.text.isNotBlank()
+            }
+        }
+        var dropdownExpanded by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
         EntryAutocompleteDropdown(
+            expanded = { dropdownExpanded },
+            onExpandedChange = { dropdownExpanded = it },
             text = { state.pendingValue.text },
             predictions = { predictions },
-            showPredictions = { state.lockState.editable && state.pendingValue.text.isNotBlank() },
+            showPredictions = { showPredictions },
             onPredictionChosen = {
                 Snapshot.withMutableSnapshot {
                     items += it
@@ -527,22 +555,46 @@ fun <T> EntryFormScope.MultiTextSection(
                 }
             },
             item = prediction,
-        ) { bringIntoViewRequester ->
+            fieldFocusRequester = state.focusRequester,
+            focusRequester = dropdownFocusRequester,
+            onTextEntry = {
+                state.pendingValue.edit { insert(length, it.toString()) }
+                state.focusRequester.requestFocus()
+            },
+            modifier = Modifier.onPreviewKeyEvent {
+                if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (it.key) {
+                    // TODO: Re-add backspace to move up behavior on mobile
+                    Key.DirectionUp -> if (state.pendingValue.text.isBlank() && items.isNotEmpty()) {
+                        Snapshot.withMutableSnapshot {
+                            val removed = removeLastItem()
+                            if (removed != null) {
+                                state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
+                            }
+                        }
+                        scope.launch {
+                            delay(1.seconds)
+                            println("focus state: ${state.focusRequester.requestFocus()}")
+                        }
+                        true
+                    } else {
+                        false
+                    }
+                    Key.DirectionDown -> if (dropdownExpanded) {
+                        dropdownFocusRequester.requestFocus()
+                        true
+                    } else {
+                        false
+                    }
+                    else -> false
+                }
+            }
+        ) {
             OpenSectionField(
                 state = state.pendingValue,
                 lockState = { state.lockState },
                 totalSize = { items.size },
                 onLock = { state.lockState = EntryLockState.LOCKED },
-                bringIntoViewRequester = bringIntoViewRequester,
-                onFocusChanged = { state.pendingFocused = it },
-                onRemove = {
-                    Snapshot.withMutableSnapshot {
-                        val removed = removeLastItem()
-                        if (removed != null) {
-                            state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
-                        }
-                    }
-                },
                 onDone = {
                     if (preferPrediction && predictions.isNotEmpty()) {
                         Snapshot.withMutableSnapshot {
@@ -556,7 +608,16 @@ fun <T> EntryFormScope.MultiTextSection(
                         }
                     }
                 },
-                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
+                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+                    .onFocusChanged { state.isFocused = it.isFocused }
+                    .focusRequester(state.focusRequester)
+                    .interceptTab {
+                        if (dropdownExpanded) {
+                            dropdownFocusRequester.requestFocus()
+                        } else {
+                            onTab(it)
+                        }
+                    }
             )
         }
     }
@@ -655,10 +716,6 @@ private fun OpenSectionField(
     lockState: () -> EntryLockState?,
     totalSize: () -> Int,
     onLock: () -> Unit,
-    bringIntoViewRequester: BringIntoViewRequester? = null,
-    focusRequester: FocusRequester? = null,
-    onFocusChanged: (Boolean) -> Unit = {},
-    onRemove: () -> Unit = {},
     onDone: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -671,28 +728,9 @@ private fun OpenSectionField(
             }
             focusManager.moveFocus(FocusDirection.Next)
         },
-        onBackspace = {
-            if (state.text.isBlank()) {
-                if (totalSize() > 0) {
-                    onRemove()
-                    true
-                } else {
-                    false
-                }
-            } else {
-                false
-            }
-        },
         onDone = onDone,
         lockState = lockState,
-        modifier = modifier
-            .conditionallyNonNull(focusRequester) {
-                focusRequester(it)
-            }
-            .onFocusChanged { onFocusChanged(it.isFocused) }
-            .conditionallyNonNull(bringIntoViewRequester) {
-                bringIntoViewRequester(it)
-            }
+        modifier = modifier,
     )
 }
 
@@ -702,7 +740,6 @@ private fun OpenSectionField(
     lockState: () -> EntryLockState?,
     modifier: Modifier = Modifier,
     onNext: () -> Unit,
-    onBackspace: () -> Boolean,
     onDone: () -> Unit,
 ) {
     val isBlank by remember { derivedStateOf { state.text.isBlank() } }
@@ -727,8 +764,7 @@ private fun OpenSectionField(
                             onNext()
                             true
                         }
-                        Key.Backspace -> onBackspace()
-                        Key.Tab, Key.Enter -> {
+                        Key.Enter -> {
                             onDone()
                             true
                         }
@@ -1011,151 +1047,87 @@ private fun DifferentText(
 }
 
 @Composable
-private fun EntryPrefilledAutocompleteDropdown(
-    text: () -> CharSequence?,
-    predictions: () -> List<EntryForm2.MultiTextState.Entry>,
-    showPredictions: () -> Boolean,
-    onPredictionChosen: (EntryForm2.MultiTextState.Entry) -> Unit,
-    modifier: Modifier = Modifier,
-    trailingIcon: @Composable ((EntryForm2.MultiTextState.Entry) -> Unit)?,
-    textField: @Composable ExposedDropdownMenuBoxScope.(BringIntoViewRequester) -> Unit,
-) {
-    // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
-    val uriHandler = LocalUriHandler.current
-    EntryAutocompleteDropdown(
-        text = text,
-        predictions = predictions,
-        showPredictions = showPredictions,
-        onPredictionChosen = onPredictionChosen,
-        textField = textField,
-        modifier = modifier,
-        item = { entry ->
-            val titleText: @Composable () -> String
-            var subtitleText: () -> String? = { null }
-            var image: () -> String? = { null }
-            var imageLink: () -> String? = { null }
-            var secondaryImage: (() -> String?)? = null
-            var secondaryImageLink: () -> String? = { null }
-            when (entry) {
-                is EntryForm2.MultiTextState.Entry.Custom -> {
-                    titleText = { entry.text }
-                }
-                is EntryForm2.MultiTextState.Entry.Prefilled<*> -> {
-                    titleText = { entry.titleText }
-                    subtitleText = { entry.subtitleText }
-                    image = { entry.image }
-                    imageLink = { entry.imageLink }
-                    secondaryImage = entry.secondaryImage?.let { { it } }
-                    secondaryImageLink = { entry.secondaryImageLink }
-                }
-                EntryForm2.MultiTextState.Entry.Different -> {
-                    titleText = { stringResource(Res.string.different) }
-                }
-            }.run { /*exhaust*/ }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.animateContentSize(),
-            ) {
-                EntryImage(
-                    image = image,
-                    link = imageLink,
-                    uriHandler = uriHandler,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .heightIn(min = 54.dp)
-                        .width(42.dp)
-                )
-                Column(
-                    Modifier
-                        .weight(1f, true)
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 8.dp,
-                            bottom = 8.dp,
-                        )
-                ) {
-                    Text(
-                        text = titleText(),
-                        maxLines = 1,
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
-                    )
-
-                    @Suppress("NAME_SHADOWING")
-                    val subtitleText = subtitleText()
-                    if (subtitleText != null) {
-                        Text(
-                            text = subtitleText,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(start = 24.dp)
-                        )
-                    }
-                }
-
-                trailingIcon?.invoke(entry)
-
-                if (secondaryImage != null) {
-                    EntryImage(
-                        image = secondaryImage,
-                        link = secondaryImageLink,
-                        uriHandler = uriHandler,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .heightIn(min = 54.dp)
-                            .width(42.dp)
-                    )
-                }
-            }
-        },
-    )
-}
-
-@Composable
 private fun <T> EntryAutocompleteDropdown(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
     text: () -> CharSequence?,
     predictions: () -> List<T>,
     showPredictions: () -> Boolean,
     onPredictionChosen: (T) -> Unit,
+    fieldFocusRequester: FocusRequester,
+    focusRequester: FocusRequester,
+    onTextEntry: (Char) -> Unit,
     modifier: Modifier = Modifier,
-    item: @Composable (T) -> Unit,
-    textField: @Composable ExposedDropdownMenuBoxScope.(BringIntoViewRequester) -> Unit,
+    item: @Composable (index: Int, T) -> Unit,
+    textField: @Composable ExposedDropdownMenuBoxScope.() -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = modifier
+        expanded = expanded(),
+        onExpandedChange = { onExpandedChange(!expanded()) },
+        modifier = modifier.focusable(false)
     ) {
-        val bringIntoViewRequester = remember { BringIntoViewRequester() }
-        textField(bringIntoViewRequester)
+        textField()
 
         if (showPredictions()) {
             val predictions = predictions()
             if (predictions.isNotEmpty()) {
                 LaunchedEffect(text(), predictions) {
-                    expanded = true
+                    onExpandedChange(true)
                 }
-                val coroutineScope = rememberCoroutineScope()
+                val focusRequesters = remember(focusRequester, predictions.size) {
+                    listOf(focusRequester) + (0 until predictions.size - 1).map { FocusRequester() }
+                }
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
+                    expanded = expanded(),
+                    onDismissRequest = { onExpandedChange(false) },
                     modifier = Modifier.heightIn(max = 240.dp)
+                        .focusable(false)
+                        .onPreviewKeyEvent {
+                            if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                            val char = it.utf16CodePoint.toChar()
+                            if (char.isLetterOrDigit() ||
+                                char.category == CharCategory.SPACE_SEPARATOR
+                            ) {
+                                onExpandedChange(false)
+                                onTextEntry(char)
+                                true
+                            } else {
+                                false
+                            }
+                        }
                 ) {
-                    predictions.forEach { entry ->
+                    predictions.forEachIndexed { index, entry ->
+                        var focused by remember { mutableStateOf(false) }
                         DropdownMenuItem(
-                            onClick = {
-                                onPredictionChosen(entry)
-                                coroutineScope.launch {
-                                    // TODO: Delay is necessary or column won't scroll
-                                    delay(500)
-                                    bringIntoViewRequester.bringIntoView()
-                                }
-                            },
-                            text = { item(entry) },
+                            onClick = { onPredictionChosen(entry) },
+                            text = { item(index, entry) },
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .background(
+                                    if (focused) {
+                                        MaterialTheme.colorScheme.surfaceContainerHigh
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceContainer
+                                    }
+                                )
+                                .onFocusChanged { focused = it.isFocused }
+                                .focusRequester(focusRequesters[index])
+                                .fillMaxWidth()
+                                .onKeyEvent { event ->
+                                    if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+                                    when (event.key) {
+                                        Key.DirectionDown -> {
+                                            (focusRequesters.getOrNull(index + 1)
+                                                ?: fieldFocusRequester).requestFocus()
+                                            true
+                                        }
+                                        Key.DirectionUp -> {
+                                            focusRequesters.getOrNull(index - 1)?.requestFocus()
+                                            true
+                                        }
+                                        else -> false
+                                    }
+                                }
                         )
                     }
                 }
@@ -1169,8 +1141,6 @@ private fun <T> EntryAutocompleteDropdown(
 fun EntryFormScope.LongTextSection(
     state: EntryForm2.PendingTextState,
     headerText: @Composable () -> Unit,
-    focusRequester: FocusRequester? = null,
-    onFocusChanged: (Boolean) -> Unit = {},
 ) {
     SectionHeader(text = headerText, state = state)
 
@@ -1179,8 +1149,8 @@ fun EntryFormScope.LongTextSection(
         state = state.pendingValue,
         readOnly = !editable,
         modifier = Modifier
-            .conditionallyNonNull(focusRequester) { focusRequester(it) }
-            .onFocusChanged { onFocusChanged(it.isFocused) }
+            .onFocusChanged { state.isFocused = it.isFocused }
+            .focusRequester(state.focusRequester)
             .focusable(editable)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
@@ -1195,8 +1165,6 @@ fun <T> EntryFormScope.DropdownSection(
     headerText: @Composable () -> Unit,
     options: List<T>,
     optionToText: @Composable (T) -> String,
-    focusRequester: FocusRequester,
-    onFocusChanged: (Boolean) -> Unit,
 ) {
     SectionHeader(text = headerText, state = state)
 
@@ -1233,8 +1201,6 @@ fun <T> EntryFormScope.DropdownSection(
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { onFocusChanged(it.isFocused) }
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
             )
             ExposedDropdownMenu(
@@ -1252,5 +1218,17 @@ fun <T> EntryFormScope.DropdownSection(
                 }
             }
         }
+    }
+}
+
+fun Modifier.interceptTab(onTab: (next: Boolean) -> Unit) = onPreviewKeyEvent {
+    if (it.isTabKeyDownOrTyped) {
+        onTab(!it.isShiftPressed)
+        true
+    } else if (it.isTabKey) {
+        // Intercept all tabs to avoid default focus next/previous interaction
+        true
+    } else {
+        false
     }
 }

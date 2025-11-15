@@ -7,6 +7,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.async.coroutines.awaitCreate
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
@@ -65,11 +66,18 @@ object Database {
             .let(::jsonResponse)
 
     suspend fun insertArtist(context: EventContext): Response {
-        val artist = Json.decodeFromString<ArtistDatabaseEntry.Impl>(context.request.text().await())
-        database(context, tryCreate = true)
-            .artistEntryAnimeExpo2026Queries
-            .insertArtist(artist.toArtistEntryAnimeExpo2026())
-        return Response("")
+        val request = Json.decodeFromString<ArtistSave.Request>(context.request.text().await())
+        val database = database(context, tryCreate = true)
+        val currentArtist =
+            database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
+                .awaitAsOneOrNull()?.toArtistDatabaseEntry()
+        if (currentArtist != null && currentArtist != request.updated) {
+            return jsonResponse(
+                ArtistSave.Response(ArtistSave.Response.Result.Outdated(currentArtist))
+            )
+        }
+        database.artistEntryAnimeExpo2026Queries.insertArtist(request.updated.toArtistEntryAnimeExpo2026())
+        return jsonResponse(ArtistSave.Response(ArtistSave.Response.Result.Success))
     }
 
     private suspend fun database(

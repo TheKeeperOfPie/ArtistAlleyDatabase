@@ -235,7 +235,7 @@ class SeriesAutocompleteSection(
         val titleRomaji: String,
         val titleNative: String,
     ) {
-        constructor(entry: SeriesEntry) : this(
+        constructor(entry: SeriesRowInfo) : this(
             id = entry.id,
             titlePreferred = entry.titlePreferred,
             titleEnglish = entry.titleEnglish,

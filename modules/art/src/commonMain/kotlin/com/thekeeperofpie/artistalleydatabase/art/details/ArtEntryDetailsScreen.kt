@@ -125,13 +125,11 @@ object ArtEntryDetailsScreen {
                             )
                         )
                     },
-                    focusRequester = focusRequester,
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                     trailingIcon = { /* TODO */ null },
                     entryPredictions = seriesPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
                     items = series,
-                    onItemCommitted = { series += it },
+                    onItemCommitted = { series += EntryForm2.MultiTextState.Entry.Custom(it) },
                     removeLastItem = { series.removeLastOrNull()?.text },
                 )
 
@@ -145,13 +143,11 @@ object ArtEntryDetailsScreen {
                             )
                         )
                     },
-                    focusRequester = focusRequester,
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                     trailingIcon = { /* TODO */ null },
                     entryPredictions = characterPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
                     items = characters,
-                    onItemCommitted = { characters += it },
+                    onItemCommitted = { characters += EntryForm2.MultiTextState.Entry.Custom(it) },
                     removeLastItem = { characters.removeLastOrNull()?.text },
                 )
 
@@ -165,21 +161,15 @@ object ArtEntryDetailsScreen {
                             )
                         )
                     },
-                    focusRequester = focusRequester,
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                     trailingIcon = { null },
                     entryPredictions = artistPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
                     items = artists,
-                    onItemCommitted = { artists += it },
+                    onItemCommitted = { artists += EntryForm2.MultiTextState.Entry.Custom(it) },
                     removeLastItem = { artists.removeLastOrNull()?.text },
                 )
 
-                SourceDropdown(
-                    state = sourceState,
-                    focusRequester = focusRequester,
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
-                )
+                SourceDropdown(state = sourceState)
 
                 MultiTextSection(
                     state = state.tags,
@@ -191,21 +181,17 @@ object ArtEntryDetailsScreen {
                             )
                         )
                     },
-                    focusRequester = focusRequester,
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                     trailingIcon = { null },
                     entryPredictions = tagPredictions,
                     onNavigate = { onEvent(Event.Navigate(it)) },
                     items = tags,
-                    onItemCommitted = { tags += it },
+                    onItemCommitted = { tags += EntryForm2.MultiTextState.Entry.Custom(it) },
                     removeLastItem = { tags.removeLastOrNull()?.text },
                 )
 
                 LongTextSection(
                     state = state.notes,
                     headerText = { Text(stringResource(Res.string.art_entry_notes_header)) },
-                    focusRequester = focusRequester,
-                    onFocusChanged = { if (it) onEvent(Event.SectionFocused) },
                 )
             }
         }
@@ -247,7 +233,6 @@ object ArtEntryDetailsScreen {
     }
 
     sealed interface Event {
-        data object SectionFocused : Event
         data class Navigate(val entry: EntryForm2.MultiTextState.Entry) : Event
     }
 }

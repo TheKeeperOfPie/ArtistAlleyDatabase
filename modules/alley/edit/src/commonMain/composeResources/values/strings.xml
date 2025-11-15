@@ -38,4 +38,6 @@
     <string name="alley_edit_image_save_changes_moved">%1$s: %2$d -> %3$d</string>
 
     <string name="alley_edit_drag_handle_content_description">Drag handle</string>
+
+    <string name="alley_edit_tag_delete_content_description">Delete tag</string>
 </resources>

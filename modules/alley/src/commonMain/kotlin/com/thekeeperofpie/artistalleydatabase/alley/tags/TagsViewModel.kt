@@ -15,12 +15,12 @@ import androidx.paging.cachedIn
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_series_language
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRowInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -143,7 +143,7 @@ class TagsViewModel(
         }
     }
 
-    fun getSeriesImage(series: SeriesEntry) = seriesImageLoader.getSeriesImage(series)
+    fun getSeriesImage(series: SeriesRowInfo) = seriesImageLoader.getSeriesImage(series)
 
     fun onSeriesFavoriteToggle(data: SeriesWithUserData, favorite: Boolean) {
         seriesMutationUpdates.tryEmit(data.userEntry.copy(favorite = favorite))

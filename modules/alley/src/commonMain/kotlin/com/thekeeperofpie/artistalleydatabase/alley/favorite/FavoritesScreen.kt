@@ -63,7 +63,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_sea
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
@@ -78,6 +77,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRowInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
@@ -172,7 +172,7 @@ object FavoritesScreen {
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,
         merchScrollStateSaver: ScrollStateSaver,
-        getSeriesImage: (SeriesEntry) -> String?,
+        getSeriesImage: (SeriesRowInfo) -> String?,
         eventSink: (Event) -> Unit,
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
@@ -460,7 +460,7 @@ object FavoritesScreen {
     private fun SeriesContent(
         listState: LazyListState,
         series: LazyPagingItems<SeriesWithUserData>,
-        getSeriesImage: (SeriesEntry) -> String?,
+        getSeriesImage: (SeriesRowInfo) -> String?,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
@@ -516,7 +516,7 @@ object FavoritesScreen {
                             SeriesRow(
                                 data = data,
                                 image = {
-                                    data?.let { getSeriesImage(it.series) }
+                                    data?.let { getSeriesImage(it) }
                                 },
                                 textStyle = LocalTextStyle.current,
                                 onFavoriteToggle = {

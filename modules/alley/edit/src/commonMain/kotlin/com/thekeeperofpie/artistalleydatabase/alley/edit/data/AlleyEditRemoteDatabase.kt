@@ -1,13 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
-    suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistEditInfo?
+    suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl?
     suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary>
-    suspend fun saveArtist(dataYear: DataYear, artist: ArtistDatabaseEntry.Impl)
+    suspend fun saveArtist(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+    ): ArtistSave.Response.Result
 }

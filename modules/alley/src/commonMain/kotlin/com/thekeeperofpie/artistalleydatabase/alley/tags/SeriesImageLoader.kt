@@ -2,10 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.tags
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.Snapshot
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRowInfo
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -73,7 +72,7 @@ class SeriesImageLoader(
         data object Failed : Request
     }
 
-    fun getSeriesImage(series: SeriesEntry) = getSeriesImage(series.toImageInfo())
+    fun getSeriesImage(series: SeriesRowInfo) = getSeriesImage(series.toImageInfo())
 
     fun getSeriesImage(series: SeriesImageInfo): String? {
         val cached = requests[series.id]

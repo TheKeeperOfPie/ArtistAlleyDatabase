@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
@@ -26,26 +26,11 @@ actual class AlleyEditRemoteDatabase(
     private val ktorClient: HttpClient,
 ) {
     // TODO: Error handling
-    actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistEditInfo? =
+    actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
         withContext(PlatformDispatchers.IO) {
             val response = ktorClient.get(window.origin + "/database/artist/$artistId")
             if (response.status != HttpStatusCode.OK) return@withContext null
-            val artist = response.body<ArtistDatabaseEntry.Impl>()
-            ArtistEditInfo(
-                id = Uuid.parse(artist.id),
-                booth = artist.booth,
-                name = artist.name,
-                summary = artist.summary,
-                links = artist.links,
-                storeLinks = artist.storeLinks,
-                catalogLinks = artist.catalogLinks,
-                notes = artist.notes,
-                commissions = artist.commissions,
-                seriesInferred = artist.seriesInferred,
-                seriesConfirmed = artist.seriesConfirmed,
-                merchInferred = artist.merchInferred,
-                merchConfirmed = artist.merchConfirmed,
-            )
+            response.body<ArtistDatabaseEntry.Impl>()
         }
 
     actual suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary> =
@@ -59,11 +44,27 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun saveArtist(dataYear: DataYear, artist: ArtistDatabaseEntry.Impl): Unit =
+    actual suspend fun saveArtist(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+    ): ArtistSave.Response.Result =
         withContext(PlatformDispatchers.IO) {
-            ktorClient.put(window.origin + "/database/insertArtist") {
-                contentType(ContentType.Application.Json)
-                setBody(artist)
+            try {
+                ktorClient.put(window.origin + "/database/insertArtist") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        ArtistSave.Request(
+                            initial = initial,
+                            updated = updated,
+                        )
+                    )
+                }
+                    .body<ArtistSave.Response>()
+                    .result
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                ArtistSave.Response.Result.Failed(t)
             }
         }
 }

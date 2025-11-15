@@ -179,7 +179,7 @@ object BrowseScreen {
                                             data = data,
                                             image = {
                                                 data?.let {
-                                                    tagsViewModel.getSeriesImage(it.series)
+                                                    tagsViewModel.getSeriesImage(it)
                                                 }
                                             },
                                             textStyle = LocalTextStyle.current,

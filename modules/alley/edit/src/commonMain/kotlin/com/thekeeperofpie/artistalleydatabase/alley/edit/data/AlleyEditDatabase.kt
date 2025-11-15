@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
@@ -28,7 +27,8 @@ class AlleyEditDatabase(
         DataYear.ANIME_EXPO_2024,
         DataYear.ANIME_EXPO_2025,
         DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025 -> artistEntryDao.getAllEntries(dataYear)
+        DataYear.ANIME_NYC_2025,
+            -> artistEntryDao.getAllEntries(dataYear)
     }
 
     suspend fun loadArtist(dataYear: DataYear, artistId: Uuid) = when (dataYear) {
@@ -37,25 +37,10 @@ class AlleyEditDatabase(
         DataYear.ANIME_EXPO_2024,
         DataYear.ANIME_EXPO_2025,
         DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025 -> artistEntryDao.getEntry(dataYear, artistId.toString())
+        DataYear.ANIME_NYC_2025,
+            -> artistEntryDao.getEntry(dataYear, artistId.toString())
             ?.artist
-            ?.let {
-                ArtistEditInfo(
-                    id = Uuid.parse(it.id),
-                    booth = it.booth,
-                    name = it.name,
-                    summary = it.summary,
-                    links = it.links,
-                    storeLinks = it.storeLinks,
-                    catalogLinks = it.catalogLinks,
-                    notes = it.notes,
-                    commissions = it.commissions,
-                    seriesInferred = it.seriesInferred,
-                    seriesConfirmed = it.seriesConfirmed,
-                    merchInferred = it.merchInferred,
-                    merchConfirmed = it.merchConfirmed,
-                )
-            }
+            ?.databaseEntry
     }
 
     suspend fun loadSeries() = seriesEntryDao.getSeries()
@@ -71,6 +56,7 @@ class AlleyEditDatabase(
                 titleEnglish = it.titleEnglish,
                 titleRomaji = it.titleRomaji,
                 titleNative = it.titleNative,
+                link = it.link,
             )
         }
 
@@ -88,5 +74,9 @@ class AlleyEditDatabase(
             ?.let { AlleyImageUtils.getArtistImages(year, it) }
             ?.map(EditImage::DatabaseImage)
 
-    suspend fun saveArtist(dataYear: DataYear, artist: ArtistDatabaseEntry.Impl) = remoteDatabase.saveArtist(dataYear, artist)
+    suspend fun saveArtist(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+    ) = remoteDatabase.saveArtist(dataYear, initial, updated)
 }

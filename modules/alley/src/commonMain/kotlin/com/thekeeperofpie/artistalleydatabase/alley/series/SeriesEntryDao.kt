@@ -360,7 +360,7 @@ class SeriesEntryDao(
         )
     }
 
-    suspend fun searchSeriesForAutocomplete(query: String): List<SeriesEntry> {
+    suspend fun searchSeriesForAutocomplete(query: String): List<SeriesRowInfo> {
         if (query.isBlank()) return emptyList()
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
@@ -389,7 +389,7 @@ class SeriesEntryDao(
             driver = driver(),
             statement = statement,
             tableNames = listOf("seriesEntry", "seriesEntry_fts"), mapper = SqlCursor::toSeriesEntry
-        ).awaitAsList()
+        ).awaitAsList().map { it.toRowInfo() }
     }
 
     suspend fun hasRallies(series: String) = seriesDao().getRallyCount(series)

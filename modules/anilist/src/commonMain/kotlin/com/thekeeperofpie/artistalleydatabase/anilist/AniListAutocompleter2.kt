@@ -258,7 +258,7 @@ class AniListAutocompleter2(
                     .startWith(item = emptyList())
 
                 val characters =
-                    snapshotFlow { charactersState.pendingFocused to charactersState.pendingValue.text.toString() }
+                    snapshotFlow { charactersState.isFocused to charactersState.pendingValue.text.toString() }
                         .debounce(500.milliseconds)
                         .filter { it.first }
                         .flatMapLatest { (_, query) ->

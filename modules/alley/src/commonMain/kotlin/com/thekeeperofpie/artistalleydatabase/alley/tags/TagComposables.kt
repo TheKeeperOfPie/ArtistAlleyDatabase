@@ -42,10 +42,11 @@ import com.anilist.data.type.MediaType
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRowInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -63,7 +64,7 @@ fun SeriesRow(
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     SeriesRow(
-        series = data?.series,
+        series = data,
         image = image,
         favoritesButton = {
             val languageOptionMedia = LocalLanguageOptionMedia.current
@@ -82,9 +83,9 @@ fun SeriesRow(
 
 @Composable
 fun SeriesRow(
-    series: SeriesEntry?,
+    series: SeriesRowInfo?,
     image: () -> String?,
-    favoritesButton: @Composable () -> Unit = {},
+    favoritesButton: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showAllTitles: Boolean = false,
@@ -96,7 +97,7 @@ fun SeriesRow(
             .optionalClickable(onClick)
             .height(IntrinsicSize.Min)
     ) {
-        favoritesButton()
+        favoritesButton?.invoke()
 
         AsyncImage(
             model = image(),
@@ -170,11 +171,12 @@ fun SeriesRow(
             )
         }
 
-        if (series?.link != null) {
+        val link = series?.link
+        if (link != null) {
             IconButtonWithTooltip(
                 imageVector = Icons.Default.Link,
-                tooltipText = series.link,
-                onClick = { uriHandler.openUri(series.link) },
+                tooltipText = link,
+                onClick = { uriHandler.openUri(link) },
                 allowPopupHover = false,
             )
         }

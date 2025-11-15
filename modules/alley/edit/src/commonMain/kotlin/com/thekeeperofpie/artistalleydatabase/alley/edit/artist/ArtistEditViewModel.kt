@@ -96,6 +96,8 @@ class ArtistEditViewModel(
     private val merchById = flowFromSuspend { database.loadMerch() }
         .shareIn(viewModelScope, SharingStarted.Eagerly, 1)
 
+    private var artist: ArtistDatabaseEntry.Impl? = null
+
     init {
         if (!hasLoaded) {
             viewModelScope.launch {
@@ -107,6 +109,7 @@ class ArtistEditViewModel(
 
     private suspend fun loadArtistInfo(artistId: Uuid) = withContext(PlatformDispatchers.IO) {
         val artist = database.loadArtist(dataYear, artistId) ?: return@withContext
+        this@ArtistEditViewModel.artist = artist
         val seriesById = seriesById.first()
         val merchById = merchById.first()
 
@@ -214,7 +217,8 @@ class ArtistEditViewModel(
         viewModelScope.launch {
             database.saveArtist(
                 dataYear = dataYear,
-                artist = ArtistDatabaseEntry.Impl(
+                initial = artist,
+                updated = ArtistDatabaseEntry.Impl(
                     year = DataYear.ANIME_EXPO_2026,
                     id = id,
                     booth = booth,

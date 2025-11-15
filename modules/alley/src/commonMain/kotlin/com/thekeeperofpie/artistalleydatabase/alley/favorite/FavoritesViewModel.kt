@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
@@ -32,8 +31,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRowInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSortFilterController
-import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -326,7 +325,7 @@ class FavoritesViewModel(
         }
     }
 
-    fun getSeriesImage(series: SeriesEntry) = seriesImageLoader.getSeriesImage(series)
+    fun getSeriesImage(series: SeriesRowInfo) = seriesImageLoader.getSeriesImage(series)
 
     fun onEvent(
         navigationController: NavigationController,

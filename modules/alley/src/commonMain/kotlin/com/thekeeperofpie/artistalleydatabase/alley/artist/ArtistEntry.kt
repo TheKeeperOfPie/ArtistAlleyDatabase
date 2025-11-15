@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 
 data class ArtistEntry(
-    private val databaseEntry: ArtistDatabaseEntry.Impl,
+    val databaseEntry: ArtistDatabaseEntry.Impl,
 ): ArtistDatabaseEntry by databaseEntry {
     val linkModels by lazy {
         links.map { LinkModel.parse(it) }.sortedBy { it.logo }

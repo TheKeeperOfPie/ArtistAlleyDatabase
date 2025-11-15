@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,8 +18,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.Monitor
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.DropdownMenu
@@ -29,12 +26,10 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,12 +44,8 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -78,13 +69,11 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_e
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
-import coil3.compose.AsyncImage
-import com.anilist.data.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.edit.data.name
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
@@ -93,10 +82,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerSta
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
-import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
@@ -312,31 +300,59 @@ object ArtistEditScreen {
     ) {
         val textState = state.textState
         EntryForm2(modifier = modifier) {
-            SingleTextSection(textState.id, Res.string.alley_artist_edit_id)
-            SingleTextSection(textState.booth, Res.string.alley_artist_edit_booth)
-            SingleTextSection(textState.name, Res.string.alley_artist_edit_name)
-            SingleTextSection(textState.summary, Res.string.alley_artist_edit_summary)
+            SingleTextSection(
+                state = textState.id,
+                title = Res.string.alley_artist_edit_id,
+                previousFocus = null,
+                nextFocus = textState.booth.focusRequester,
+            )
+            SingleTextSection(
+                state = textState.booth,
+                title = Res.string.alley_artist_edit_booth,
+                previousFocus = textState.id.focusRequester,
+                nextFocus = textState.name.focusRequester,
+            )
+            SingleTextSection(
+                state = textState.name,
+                title = Res.string.alley_artist_edit_name,
+                previousFocus = textState.booth.focusRequester,
+                nextFocus = textState.summary.focusRequester,
+            )
+            SingleTextSection(
+                state = textState.summary,
+                title = Res.string.alley_artist_edit_summary,
+                previousFocus = textState.name.focusRequester,
+                nextFocus = textState.links.focusRequester,
+            )
             LinksSection(
                 state = textState.links,
                 title = Res.string.alley_artist_edit_links,
                 items = state.links,
+                previousFocus = textState.summary.focusRequester,
+                nextFocus = textState.storeLinks.focusRequester,
             )
             LinksSection(
                 state = textState.storeLinks,
                 title = Res.string.alley_artist_edit_store_links,
                 items = state.storeLinks,
+                previousFocus = textState.links.focusRequester,
+                nextFocus = textState.catalogLinks.focusRequester,
             )
             MultiTextSection(
                 state = textState.catalogLinks,
                 title = Res.string.alley_artist_edit_catalog_links,
                 items = state.catalogLinks,
                 itemToText = { it },
+                previousFocus = textState.storeLinks.focusRequester,
+                nextFocus = textState.commissions.focusRequester,
             )
             MultiTextSection(
                 state = textState.commissions,
                 title = Res.string.alley_artist_edit_commissions,
                 items = state.commissions,
                 itemToText = { it },
+                previousFocus = textState.catalogLinks.focusRequester,
+                nextFocus = textState.seriesInferred.focusRequester,
             )
             SeriesSection(
                 state = textState.seriesInferred,
@@ -344,6 +360,8 @@ object ArtistEditScreen {
                 items = state.seriesInferred,
                 predictions = seriesPredictions,
                 image = seriesImage,
+                previousFocus = textState.commissions.focusRequester,
+                nextFocus = textState.seriesConfirmed.focusRequester,
             )
             SeriesSection(
                 state = textState.seriesConfirmed,
@@ -351,6 +369,8 @@ object ArtistEditScreen {
                 items = state.seriesConfirmed,
                 predictions = seriesPredictions,
                 image = seriesImage,
+                previousFocus = textState.seriesInferred.focusRequester,
+                nextFocus = textState.merchInferred.focusRequester,
             )
             MultiTextSection(
                 state = textState.merchInferred,
@@ -358,6 +378,8 @@ object ArtistEditScreen {
                 items = state.merchInferred,
                 predictions = merchPredictions,
                 itemToText = { it.name },
+                previousFocus = textState.seriesConfirmed.focusRequester,
+                nextFocus = textState.merchConfirmed.focusRequester,
             )
             MultiTextSection(
                 state = textState.merchConfirmed,
@@ -365,6 +387,8 @@ object ArtistEditScreen {
                 items = state.merchConfirmed,
                 predictions = merchPredictions,
                 itemToText = { it.name },
+                previousFocus = textState.merchInferred.focusRequester,
+                nextFocus = textState.notes.focusRequester,
             )
             LongTextSection(
                 textState.notes,
@@ -379,8 +403,17 @@ object ArtistEditScreen {
     private fun EntryFormScope.SingleTextSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
+        previousFocus: FocusRequester?,
+        nextFocus: FocusRequester?,
     ) {
-        SingleTextSection(state = state, headerText = { Text(stringResource(title)) })
+        SingleTextSection(
+            state = state,
+            headerText = { Text(stringResource(title)) },
+            onTab = {
+                val focusRequester = if (it) nextFocus else previousFocus
+                focusRequester?.requestFocus()
+            },
+        )
     }
 
     @Composable
@@ -390,6 +423,8 @@ object ArtistEditScreen {
         items: SnapshotStateList<T>,
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
         itemToText: (T) -> String,
+        previousFocus: FocusRequester?,
+        nextFocus: FocusRequester?,
     ) {
         MultiTextSection(
             state = state,
@@ -397,7 +432,7 @@ object ArtistEditScreen {
             items = items,
             predictions = predictions,
             removeLastItem = { items.removeLastOrNull()?.let { itemToText(it) } },
-            item = { item ->
+            item = { _, item ->
                 Box {
                     TextField(
                         value = itemToText(item),
@@ -429,7 +464,11 @@ object ArtistEditScreen {
                     )
                 }
             },
-            prediction = { Text(text = itemToText(it)) },
+            prediction = { _, value -> Text(text = itemToText(value)) },
+            onTab = {
+                val focusRequester = if (it) nextFocus else previousFocus
+                focusRequester?.requestFocus()
+            },
         )
     }
 
@@ -440,8 +479,9 @@ object ArtistEditScreen {
         items: SnapshotStateList<T>,
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
         removeLastItem: () -> String?,
-        item: @Composable (T) -> Unit,
-        prediction: @Composable (T) -> Unit,
+        item: @Composable (index: Int, T) -> Unit,
+        prediction: @Composable (index: Int, T) -> Unit,
+        onTab: (next: Boolean) -> Unit,
     ) {
         MultiTextSection(
             state = state,
@@ -453,6 +493,7 @@ object ArtistEditScreen {
             prediction = prediction,
             preferPrediction = true,
             item = item,
+            onTab = onTab,
         )
     }
 
@@ -463,6 +504,8 @@ object ArtistEditScreen {
         items: SnapshotStateList<SeriesInfo>,
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
         image: (SeriesInfo) -> String?,
+        previousFocus: FocusRequester?,
+        nextFocus: FocusRequester?,
     ) {
         MultiTextSection(
             state = state,
@@ -470,8 +513,36 @@ object ArtistEditScreen {
             items = items,
             predictions = predictions,
             removeLastItem = { items.removeLastOrNull()?.titlePreferred },
-            prediction = { Text(it.titlePreferred) },
-            item = { SeriesRow(series = it, image = { image(it) }) },
+            prediction = { _, value -> Text(value.titlePreferred) },
+            item = { _, value ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SeriesRow(
+                        series = value,
+                        image = { image(value) },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    AnimatedVisibility(
+                        visible = state.lockState.editable,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        val contentDescription = stringResource(
+                            Res.string.alley_edit_tag_delete_content_description
+                        )
+                        IconButtonWithTooltip(
+                            imageVector = Icons.Default.Delete,
+                            tooltipText = contentDescription,
+                            onClick = { items -= value },
+                            contentDescription = contentDescription,
+                        )
+                    }
+                }
+            },
+            onTab = {
+                val focusRequester = if (it) nextFocus else previousFocus
+                focusRequester?.requestFocus()
+            },
         )
     }
 
@@ -498,6 +569,8 @@ object ArtistEditScreen {
         state: EntryForm2.PendingTextState,
         title: StringResource,
         items: SnapshotStateList<LinkModel>,
+        previousFocus: FocusRequester?,
+        nextFocus: FocusRequester?,
     ) {
         MultiTextSection(
             state = state,
@@ -505,83 +578,12 @@ object ArtistEditScreen {
             items = items,
             onItemCommitted = {},
             removeLastItem = { items.removeLastOrNull()?.link },
-            item = { LinkRow(it, isLast = false) },
+            item = { _, value -> LinkRow(value, isLast = false) },
+            onTab = {
+                val focusRequester = if (it) nextFocus else previousFocus
+                focusRequester?.requestFocus()
+            }
         )
-    }
-
-    @Composable
-    fun SeriesRow(
-        series: SeriesInfo,
-        image: () -> String?,
-        modifier: Modifier = Modifier,
-        textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.height(IntrinsicSize.Min)
-        ) {
-            AsyncImage(
-                model = image(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxHeight()
-                    .width(56.dp)
-                    .height(80.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
-
-            val languageOptionMedia = LocalLanguageOptionMedia.current
-            val colorScheme = MaterialTheme.colorScheme
-            val title = remember(series, languageOptionMedia, colorScheme) {
-                val name = series.name(languageOptionMedia)
-                val otherTitles = listOf(
-                    series.titlePreferred,
-                    series.titleEnglish,
-                    series.titleRomaji,
-                    series.titleNative,
-                ).distinct() - name
-                buildAnnotatedString {
-                    withStyle(SpanStyle(color = colorScheme.secondary)) {
-                        append(name)
-                    }
-                    if (otherTitles.isNotEmpty()) {
-                        otherTitles.forEach {
-                            append(" / ")
-                            append(it)
-                        }
-                    }
-                }
-            }
-            Text(
-                text = title,
-                style = textStyle,
-                modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .weight(1f)
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            )
-
-            val uriHandler = LocalUriHandler.current
-            if (series.aniListId != null) {
-                val mediaType = when (series.aniListType) {
-                    "ANIME" -> MediaType.ANIME
-                    "MANGA" -> MediaType.MANGA
-                    else -> MediaType.UNKNOWN__
-                }
-                val icon = when (series.aniListType) {
-                    "ANIME" -> Icons.Default.Monitor
-                    "MANGA" -> Icons.Default.Book
-                    else -> Icons.Default.Monitor
-                }
-                val aniListUrl = AniListDataUtils.mediaUrl(mediaType, series.aniListId.toString())
-                IconButtonWithTooltip(
-                    imageVector = icon,
-                    tooltipText = aniListUrl,
-                    onClick = { uriHandler.openUri(aniListUrl) },
-                    allowPopupHover = false,
-                )
-            }
-        }
     }
 
     enum class Mode {
