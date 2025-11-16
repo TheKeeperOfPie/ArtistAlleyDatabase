@@ -51,8 +51,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_action_delete
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_action_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_commissions
@@ -68,6 +66,9 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_e
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_editing
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
@@ -96,6 +97,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -229,7 +233,8 @@ object ArtistEditScreen {
                     )
                     Column {
                         EditImagesButton(
-                            onClick = { onClickEditImages(state.images.toList()) },
+                            images = state.images,
+                            onClickEdit = { onClickEditImages(state.images.toList()) },
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                         ImageGrid(
@@ -250,7 +255,8 @@ object ArtistEditScreen {
                             .verticalScroll(rememberScrollState())
                     ) {
                         EditImagesButton(
-                            onClick = { onClickEditImages(state.images.toList()) },
+                            images = state.images,
+                            onClickEdit = { onClickEditImages(state.images.toList()) },
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                         ImagesPager(
@@ -267,9 +273,27 @@ object ArtistEditScreen {
     }
 
     @Composable
-    private fun EditImagesButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-        FilledTonalButton(onClick = onClick, modifier = modifier.padding(16.dp)) {
-            Text(stringResource(Res.string.alley_artist_edit_action_images))
+    private fun EditImagesButton(
+        images: SnapshotStateList<EditImage>,
+        onClickEdit: () -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        if (images.isEmpty()) {
+            val launcher = rememberFilePickerLauncher(
+                type = FileKitType.Image,
+                mode = FileKitMode.Multiple(),
+            ) {
+                if (it != null) {
+                    images += it.map(EditImage::LocalImage)
+                }
+            }
+            FilledTonalButton(onClick = { launcher.launch() }, modifier = modifier.padding(16.dp)) {
+                Text(stringResource(Res.string.alley_edit_artist_action_add_images))
+            }
+        } else {
+            FilledTonalButton(onClick = onClickEdit, modifier = modifier.padding(16.dp)) {
+                Text(stringResource(Res.string.alley_edit_artist_action_edit_images))
+            }
         }
     }
 
@@ -451,7 +475,7 @@ object ArtistEditScreen {
                                     onDismissRequest = { showMenu = false },
                                 ) {
                                     DropdownMenuItem(
-                                        text = { Text(stringResource(Res.string.alley_artist_edit_action_delete)) },
+                                        text = { Text(stringResource(Res.string.alley_edit_artist_action_delete)) },
                                         onClick = {
                                             items.remove(item)
                                             showMenu = false

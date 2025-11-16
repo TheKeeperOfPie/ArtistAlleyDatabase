@@ -16,8 +16,9 @@
     <string name="alley_artist_edit_merch_inferred">Merch - Inferred</string>
     <string name="alley_artist_edit_merch_confirmed">Merch - Confirmed</string>
 
-    <string name="alley_artist_edit_action_delete">Delete</string>
-    <string name="alley_artist_edit_action_images">Edit images</string>
+    <string name="alley_edit_artist_action_delete">Delete</string>
+    <string name="alley_edit_artist_action_add_images">Add images</string>
+    <string name="alley_edit_artist_action_edit_images">Edit images</string>
 
     <string name="alley_edit_artist_action_save_content_description">Save artist</string>
     <string name="alley_edit_artist_action_add">Add artist</string>

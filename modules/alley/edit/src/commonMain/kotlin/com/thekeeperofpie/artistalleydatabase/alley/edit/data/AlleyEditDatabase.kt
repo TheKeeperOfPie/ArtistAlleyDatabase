@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import io.github.vinceglb.filekit.PlatformFile
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -69,14 +70,28 @@ class AlleyEditDatabase(
             )
         }
 
-    suspend fun loadArtistImages(year: DataYear, artistId: Uuid) =
-        artistEntryDao.getImagesById(year, artistId.toString())
+    suspend fun loadArtistImages(year: DataYear, artist: ArtistDatabaseEntry): List<EditImage> {
+        val databaseImages = artistEntryDao.getImagesById(year, artist.id)
             ?.let { AlleyImageUtils.getArtistImages(year, it) }
             ?.map(EditImage::DatabaseImage)
+            ?.associateBy { it.name }
+            .orEmpty()
+        val networkImages = remoteDatabase.listImages(year, Uuid.parse(artist.id))
+            .associateBy { it.name }
+        return artist.images.mapNotNull {
+            databaseImages[it.name] ?: networkImages[it.name]
+        }
+    }
 
     suspend fun saveArtist(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
     ) = remoteDatabase.saveArtist(dataYear, initial, updated)
+
+    suspend fun uploadImage(
+        dataYear: DataYear,
+        artistId: Uuid,
+        platformFile: PlatformFile,
+    ): EditImage = remoteDatabase.uploadImage(dataYear, artistId, platformFile)
 }

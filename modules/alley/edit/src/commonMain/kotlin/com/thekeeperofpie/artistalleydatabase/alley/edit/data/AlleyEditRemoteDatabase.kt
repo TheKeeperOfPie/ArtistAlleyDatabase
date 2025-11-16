@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import io.github.vinceglb.filekit.PlatformFile
 import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
@@ -14,4 +16,7 @@ expect class AlleyEditRemoteDatabase {
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
     ): ArtistSave.Response.Result
+
+    suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage>
+    suspend fun uploadImage(dataYear: DataYear, artistId: Uuid, platformFile: PlatformFile): EditImage
 }

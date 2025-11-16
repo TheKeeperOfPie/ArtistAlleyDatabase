@@ -64,7 +64,13 @@ fun ArtistAlleyEditApp(
                         onDispose { twoWayStack.remove() }
                     }
 
-                    val onClickBack = { onClickBackInput.backCompleted() }
+                    val onClickBack = { force: Boolean ->
+                        if (force) {
+                            twoWayStack.onBack()
+                        } else {
+                            onClickBackInput.backCompleted()
+                        }
+                    }
                     val entryProvider = entryProvider<NavKey> {
                         sharedElementEntry<AlleyEditDestination.Home> {
                             HomeScreen(
@@ -87,7 +93,7 @@ fun ArtistAlleyEditApp(
                                 dataYear = route.dataYear,
                                 artistId = null,
                                 graph = graph,
-                                onClickBack = onClickBack,
+                                onClickBack = { onClickBack(false) },
                                 onClickEditImages = { displayName, images ->
                                     twoWayStack.navigate(
                                         AlleyEditDestination.ImagesEdit(
@@ -104,7 +110,7 @@ fun ArtistAlleyEditApp(
                                 dataYear = route.dataYear,
                                 artistId = route.artistId,
                                 graph = graph,
-                                onClickBack = onClickBack,
+                                onClickBack = { onClickBack(false) },
                                 onClickEditImages = { displayName, images ->
                                     twoWayStack.navigate(
                                         AlleyEditDestination.ImagesEdit(

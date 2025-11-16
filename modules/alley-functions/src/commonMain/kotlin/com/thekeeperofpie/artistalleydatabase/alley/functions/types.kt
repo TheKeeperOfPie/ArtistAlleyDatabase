@@ -2,6 +2,8 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.D1Database
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2Bucket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -18,25 +20,7 @@ external interface EventContext {
 
 external interface Env {
     val ARTIST_ALLEY_DB: D1Database
-}
-
-external interface D1Database {
-    fun prepare(statement: String): D1PreparedStatement
-}
-
-external interface D1PreparedStatement {
-    fun bind(vararg values: Any?): D1PreparedStatement
-    fun run(): Promise<D1Result>
-    fun raw(): Promise<Array<Array<dynamic>>>
-}
-
-external interface D1Result {
-    val meta: D1ResultMeta
-    val results: Array<Array<dynamic>>
-}
-
-external interface D1ResultMeta {
-    val changes: Int
+    val ARTIST_ALLEY_IMAGES_BUCKET: R2Bucket
 }
 
 internal fun <T> promise(block: suspend CoroutineScope.() -> T) =

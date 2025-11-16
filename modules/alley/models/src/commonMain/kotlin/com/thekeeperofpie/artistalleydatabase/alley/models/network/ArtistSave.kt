@@ -14,7 +14,9 @@ object ArtistSave {
     data class Response(val result: Result) {
         @Serializable
         sealed interface Result {
+            @Serializable
             data object Success : Result
+            @Serializable
             data class Outdated(val current: ArtistDatabaseEntry.Impl) : Result
             data class Failed(val t: Throwable) : Result
         }

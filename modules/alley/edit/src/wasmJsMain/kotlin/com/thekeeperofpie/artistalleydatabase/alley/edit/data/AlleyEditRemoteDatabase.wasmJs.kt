@@ -1,16 +1,22 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -67,4 +73,37 @@ actual class AlleyEditRemoteDatabase(
                 ArtistSave.Response.Result.Failed(t)
             }
         }
+
+    actual suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage> =
+        withContext(PlatformDispatchers.IO) {
+            try {
+                ktorClient.post(window.origin + "/database/listImages") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        ListImages.Request(EditImage.NetworkImage.makePrefix(dataYear, artistId))
+                    )
+                }
+                    .body<ListImages.Response>()
+                    .keys
+                    .map { EditImage.NetworkImage(Uri.parse(window.origin + "/database/image/$it")) }
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
+    actual suspend fun uploadImage(
+        dataYear: DataYear,
+        artistId: Uuid,
+        platformFile: PlatformFile,
+    ): EditImage = withContext(PlatformDispatchers.IO) {
+        val name = Uuid.random().toString()
+        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) + "/$name"
+        val bytes = platformFile.readBytes()
+        ktorClient.put(window.origin + "/database/uploadImage/$key") {
+            contentType(ContentType.Application.OctetStream)
+            setBody(bytes)
+        }
+        EditImage.NetworkImage(Uri.parse(window.origin + "/database/image/$key"))
+    }
 }

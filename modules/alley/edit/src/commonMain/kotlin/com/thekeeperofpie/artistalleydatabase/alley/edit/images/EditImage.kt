@@ -2,10 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.name
 import kotlinx.serialization.Serializable
+import kotlin.uuid.Uuid
 
 @Serializable
 sealed interface EditImage : ImageWithDimensions {
@@ -30,9 +32,10 @@ sealed interface EditImage : ImageWithDimensions {
         )
     }
 
-    @Serializable
-    data class LocalImage(val platformFile: PlatformFile) : EditImage {
-        override val name = platformFile.name
+    data class LocalImage(
+        val platformFile: PlatformFile,
+        override val name: String = platformFile.name,
+    ) : EditImage {
         override val coilImageModel: PlatformFile get() = platformFile
     }
 
@@ -40,6 +43,11 @@ sealed interface EditImage : ImageWithDimensions {
     data class NetworkImage(val uri: Uri) : EditImage {
         override val name = uri.toString()
         override val coilImageModel: Uri get() = uri
+
+        companion object {
+            fun makePrefix(dataYear: DataYear, artistId: Uuid) =
+                "${dataYear.serializedName}/$artistId"
+        }
     }
 
     data class Diff(

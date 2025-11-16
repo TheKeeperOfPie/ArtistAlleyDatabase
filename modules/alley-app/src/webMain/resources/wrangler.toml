@@ -23,3 +23,7 @@ database_id = "artistAlleyDatabaseId"
 binding = "ARTIST_ALLEY_DB"
 database_name = "ARTIST_ALLEY_DB"
 preview_database_id = "ARTIST_ALLEY_DB"
+
+[[r2_buckets]]
+binding = "ARTIST_ALLEY_IMAGES_BUCKET"
+bucket_name = "artist-alley-images"

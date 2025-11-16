@@ -91,7 +91,7 @@ object ImagesEditScreen {
     operator fun invoke(
         route: AlleyEditDestination.ImagesEdit,
         graph: ArtistAlleyEditGraph,
-        onClickBack: () -> Unit,
+        onClickBack: (force: Boolean) -> Unit,
         viewModel: ImagesEditViewModel = viewModel {
             graph.imagesEditViewModelFactory.create(route, createSavedStateHandle())
         },
@@ -100,12 +100,12 @@ object ImagesEditScreen {
         ImagesEditScreen(
             route = route,
             images = viewModel.images,
-            onClickBack = onClickBack,
+            onClickBack = { onClickBack(false) },
             onClickSave = {
                 navigationResults.launchSave(RESULT_KEY) {
                     Json.encodeToString(viewModel.images.toList())
                 }
-                onClickBack()
+                onClickBack(true)
             },
         )
     }
@@ -146,10 +146,10 @@ object ImagesEditScreen {
             ) {
                 val addLauncher = rememberFilePickerLauncher(
                     type = FileKitType.Image,
-                    mode = FileKitMode.Single,
+                    mode = FileKitMode.Multiple(),
                 ) {
                     if (it != null) {
-                        images += EditImage.LocalImage(it)
+                        images += it.map(EditImage::LocalImage)
                     }
                 }
                 val listState = rememberLazyListState()

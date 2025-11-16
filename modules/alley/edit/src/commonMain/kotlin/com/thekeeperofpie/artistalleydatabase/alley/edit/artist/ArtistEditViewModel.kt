@@ -10,11 +10,13 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -151,8 +153,8 @@ class ArtistEditViewModel(
         state.merchInferred += merchInferred
         state.merchConfirmed += merchConfirmed
 
-        val images = database.loadArtistImages(dataYear, artistId)
-        if (images != null) {
+        val images = database.loadArtistImages(dataYear, artist)
+        if (images.isNotEmpty()) {
             state.images += images
         }
     }
@@ -191,9 +193,8 @@ class ArtistEditViewModel(
     // TODO: Saving indicator and exit on done
     fun onClickSave() {
         val textState = state.textState
-        val id = textState.id.value.text.toString()
-        try {
-            Uuid.parse(id)
+        val id = try {
+            Uuid.parse(textState.id.value.text.toString())
         } catch (_: IllegalArgumentException) {
             // TODO: Show error to user
             return
@@ -214,13 +215,28 @@ class ArtistEditViewModel(
         val seriesConfirmed = state.seriesConfirmed.toList().map { it.id }
         val merchInferred = state.merchInferred.toList().map { it.name }
         val merchConfirmed = state.merchConfirmed.toList().map { it.name }
+
+        val images = state.images.toList()
         viewModelScope.launch {
+            val finalImages = images.map {
+                when (it) {
+                    is EditImage.DatabaseImage,
+                    is EditImage.NetworkImage,
+                        -> it
+                    is EditImage.LocalImage -> database.uploadImage(
+                        dataYear = dataYear,
+                        artistId = id,
+                        platformFile = it.platformFile,
+                    )
+                }
+            }
+
             database.saveArtist(
                 dataYear = dataYear,
                 initial = artist,
                 updated = ArtistDatabaseEntry.Impl(
-                    year = DataYear.ANIME_EXPO_2026,
-                    id = id,
+                    year = dataYear,
+                    id = id.toString(),
                     booth = booth,
                     name = name,
                     summary = summary,
@@ -234,7 +250,9 @@ class ArtistEditViewModel(
                     seriesConfirmed = seriesConfirmed,
                     merchInferred = merchInferred,
                     merchConfirmed = merchConfirmed,
-                    images = emptyList(), // TODO: Wire up images
+                    images = finalImages.map {
+                        CatalogImage(name = it.name, width = it.width, height = it.height)
+                    },
                     counter = 1,
                 )
             )
