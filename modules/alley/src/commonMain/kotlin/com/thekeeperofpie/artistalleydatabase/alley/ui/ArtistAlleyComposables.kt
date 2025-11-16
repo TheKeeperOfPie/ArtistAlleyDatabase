@@ -866,6 +866,7 @@ private fun YearDropdown(
             DataYear.entries
                 .filter { it.convention == convention }
                 .map { it.dates.year }
+                .sortedDescending()
                 .forEach { year ->
                     DropdownMenuItem(
                         text = { Text(year.toString()) },
