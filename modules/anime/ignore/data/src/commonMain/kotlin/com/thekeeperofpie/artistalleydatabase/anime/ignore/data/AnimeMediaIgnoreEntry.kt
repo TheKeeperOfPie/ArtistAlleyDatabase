@@ -14,12 +14,12 @@ data class AnimeMediaIgnoreEntry(
     val bannerImage: String? = null,
     val coverImage: String? = null,
     @Embedded(prefix = "title_")
-    val title: Title,
+    val title: AnimeMediaIgnoreEntryTitle,
     val viewedAt: Long = -1L,
-) {
-    data class Title(
-        val romaji: String? = null,
-        val english: String? = null,
-        val native: String? = null,
-    )
-}
+)
+
+data class AnimeMediaIgnoreEntryTitle(
+    val romaji: String? = null,
+    val english: String? = null,
+    val native: String? = null,
+)

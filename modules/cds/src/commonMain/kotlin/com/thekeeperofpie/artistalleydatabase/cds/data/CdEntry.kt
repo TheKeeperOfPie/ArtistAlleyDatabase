@@ -44,7 +44,7 @@ data class CdEntry(
     val imageWidth: Int? = null,
     val imageHeight: Int? = null,
     val notes: String? = null,
-    @Embedded val locks: Locks = Locks.EMPTY,
+    @Embedded val locks: CdEntryLocks = CdEntryLocks.EMPTY,
 ) {
     @delegate:Transient
     val entryId by lazy { EntryId(CdEntryUtils.SCOPED_ID_TYPE, id) }
@@ -80,23 +80,23 @@ data class CdEntry(
 
         return _characters
     }
+}
 
-    @Serializable
-    data class Locks(
-        val catalogIdLocked: Boolean? = false,
-        val titlesLocked: Boolean? = false,
-        val performersLocked: Boolean? = false,
-        val composersLocked: Boolean? = false,
-        val seriesLocked: Boolean? = false,
-        val charactersLocked: Boolean? = false,
-        val discsLocked: Boolean? = false,
-        val tagsLocked: Boolean? = false,
-        val priceLocked: Boolean? = false,
-        val notesLocked: Boolean? = false,
-    ) {
-        companion object {
-            val EMPTY = Locks()
-        }
+@Serializable
+data class CdEntryLocks(
+    val catalogIdLocked: Boolean? = false,
+    val titlesLocked: Boolean? = false,
+    val performersLocked: Boolean? = false,
+    val composersLocked: Boolean? = false,
+    val seriesLocked: Boolean? = false,
+    val charactersLocked: Boolean? = false,
+    val discsLocked: Boolean? = false,
+    val tagsLocked: Boolean? = false,
+    val priceLocked: Boolean? = false,
+    val notesLocked: Boolean? = false,
+) {
+    companion object {
+        val EMPTY = CdEntryLocks()
     }
 }
 
@@ -126,5 +126,5 @@ data class CdEntryFts(
     val imageWidth: Int?,
     val imageHeight: Int?,
     val notes: String?,
-    @Embedded val locks: CdEntry.Locks = CdEntry.Locks.EMPTY,
+    @Embedded val locks: CdEntryLocks = CdEntryLocks.EMPTY,
 )

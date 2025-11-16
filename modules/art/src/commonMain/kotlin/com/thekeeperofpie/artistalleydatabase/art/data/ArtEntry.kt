@@ -43,7 +43,7 @@ data class ArtEntry(
     val printWidth: Int? = null,
     val printHeight: Int? = null,
     val notes: String? = null,
-    @Embedded val locks: Locks = Locks.EMPTY,
+    @Embedded val locks: ArtEntryLocks = ArtEntryLocks.EMPTY,
 ) {
     @delegate:Transient
     val entryId by lazy { EntryId(ArtEntryUtils.SCOPED_ID_TYPE, id) }
@@ -79,30 +79,20 @@ data class ArtEntry(
 
         return _characters
     }
+}
 
-    @Serializable
-    data class Locks(
-        val artistsLocked: Boolean? = false,
-        val sourceLocked: Boolean? = false,
-        val seriesLocked: Boolean? = false,
-        val charactersLocked: Boolean? = false,
-        val tagsLocked: Boolean? = false,
-        val notesLocked: Boolean? = false,
-        val printSizeLocked: Boolean? = false,
-    ) {
-        companion object {
-            val EMPTY = Locks()
-        }
-
-        constructor(locked: Boolean?) : this(
-            artistsLocked = locked,
-            sourceLocked = locked,
-            seriesLocked = locked,
-            charactersLocked = locked,
-            tagsLocked = locked,
-            notesLocked = locked,
-            printSizeLocked = locked,
-        )
+@Serializable
+data class ArtEntryLocks(
+    val artistsLocked: Boolean? = false,
+    val sourceLocked: Boolean? = false,
+    val seriesLocked: Boolean? = false,
+    val charactersLocked: Boolean? = false,
+    val tagsLocked: Boolean? = false,
+    val notesLocked: Boolean? = false,
+    val printSizeLocked: Boolean? = false,
+) {
+    companion object {
+        val EMPTY = ArtEntryLocks()
     }
 }
 
@@ -128,5 +118,5 @@ data class ArtEntryFts(
     val printWidth: Int?,
     val printHeight: Int?,
     val notes: String?,
-    @Embedded val locks: ArtEntry.Locks = ArtEntry.Locks.EMPTY,
+    @Embedded val locks: ArtEntryLocks = ArtEntryLocks.EMPTY,
 )

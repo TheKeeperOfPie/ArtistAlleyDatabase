@@ -7,7 +7,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntrySyncDao
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.serialization.parseStringList
 import com.thekeeperofpie.artistalleydatabase.utils_room.DatabaseSyncer
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -39,13 +38,11 @@ class ArtSyncer(
         val characterIds = mutableListOf<String>()
         val mediaIds = mutableListOf<String>()
         repeatToLimit(artEntryDao::getCharactersAndSeries) {
-            characterIds += it.map { it.charactersSerialized }
-                .flatMap(json::parseStringList)
+            characterIds += it.flatMap { it.charactersSerialized }
                 .map { Character.parseSingle(json, it).id }
                 .distinct()
                 .toList()
-            mediaIds += it.map { it.seriesSerialized }
-                .flatMap(json::parseStringList)
+            mediaIds += it.flatMap { it.seriesSerialized }
                 .map { Series.parseSingle(json, it).id }
                 .distinct()
                 .toList()

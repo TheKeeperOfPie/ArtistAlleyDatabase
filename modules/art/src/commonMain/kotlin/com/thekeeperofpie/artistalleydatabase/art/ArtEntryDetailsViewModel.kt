@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryLocks
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.art.sections.ArtEntrySections
@@ -441,7 +442,7 @@ class ArtEntryDetailsViewModel(
             printWidth = entrySections.printSizeSection.finalWidth(),
             printHeight = entrySections.printSizeSection.finalHeight(),
             notes = entrySections.notesSection.value.trim(),
-            locks = ArtEntry.Locks(
+            locks = ArtEntryLocks(
                 artistsLocked = entrySections.artistSection.lockState?.toSerializedValue(),
                 seriesLocked = entrySections.seriesSection.lockState?.toSerializedValue(),
                 charactersLocked = entrySections.characterSection.lockState?.toSerializedValue(),

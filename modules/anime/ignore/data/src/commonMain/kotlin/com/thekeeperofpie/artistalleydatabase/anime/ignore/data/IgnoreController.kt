@@ -64,7 +64,7 @@ class IgnoreController(
                             isAdult = isAdult,
                             bannerImage = bannerImage,
                             coverImage = coverImage,
-                            title = AnimeMediaIgnoreEntry.Title(
+                            title = AnimeMediaIgnoreEntryTitle(
                                 romaji = titleRomaji,
                                 english = titleEnglish,
                                 native = titleNative,

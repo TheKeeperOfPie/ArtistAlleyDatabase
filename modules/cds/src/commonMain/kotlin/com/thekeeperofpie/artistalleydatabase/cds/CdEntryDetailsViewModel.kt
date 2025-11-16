@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryLocks
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryModel
 import com.thekeeperofpie.artistalleydatabase.cds.section.CdEntrySections
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
@@ -314,7 +315,7 @@ class CdEntryDetailsViewModel(
             imageWidth = null,
             imageHeight = null,
             notes = entrySections.notesSection.value.trim(),
-            locks = CdEntry.Locks(
+            locks = CdEntryLocks(
                 catalogIdLocked = entrySections.catalogIdSection.lockState?.toSerializedValue(),
                 titlesLocked = entrySections.titleSection.lockState?.toSerializedValue(),
                 performersLocked = entrySections.performerSection.lockState?.toSerializedValue(),

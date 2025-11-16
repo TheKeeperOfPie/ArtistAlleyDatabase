@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "61b4547d4d01338bdce0d73b3c1626b0",
+    "identityHash": "1bc3c2fd5fdc1da146aff8e8c016fd63",
     "entities": [
       {
         "tableName": "art_entries",
@@ -636,7 +636,7 @@
       },
       {
         "tableName": "media_entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT, `synonyms` TEXT, `title_romaji` TEXT, `title_english` TEXT, `title_native` TEXT, `image_extraLarge` TEXT, `image_large` TEXT, `image_medium` TEXT, `image_color` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT, `synonyms` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -653,41 +653,6 @@
             "fieldPath": "synonyms",
             "columnName": "synonyms",
             "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "title.romaji",
-            "columnName": "title_romaji",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "title.english",
-            "columnName": "title_english",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "title.native",
-            "columnName": "title_native",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.extraLarge",
-            "columnName": "image_extraLarge",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.large",
-            "columnName": "image_large",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.medium",
-            "columnName": "image_medium",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.color",
-            "columnName": "image_color",
-            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -699,7 +664,7 @@
       },
       {
         "tableName": "character_entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mediaIds` TEXT, `mediaTitle` TEXT, `voiceActors` TEXT, `name_first` TEXT, `name_middle` TEXT, `name_last` TEXT, `name_full` TEXT, `name_native` TEXT, `name_alternative` TEXT, `image_large` TEXT, `image_medium` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mediaIds` TEXT, `mediaTitle` TEXT, `voiceActors` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -720,46 +685,6 @@
           {
             "fieldPath": "voiceActors",
             "columnName": "voiceActors",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.first",
-            "columnName": "name_first",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.middle",
-            "columnName": "name_middle",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.last",
-            "columnName": "name_last",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.full",
-            "columnName": "name_full",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.native",
-            "columnName": "name_native",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.alternative",
-            "columnName": "name_alternative",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.large",
-            "columnName": "image_large",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.medium",
-            "columnName": "image_medium",
             "affinity": "TEXT"
           }
         ],
@@ -772,7 +697,7 @@
       },
       {
         "tableName": "character_entries_fts",
-        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `mediaIds` TEXT, `mediaTitle` TEXT, `voiceActors` TEXT, `name_first` TEXT, `name_middle` TEXT, `name_last` TEXT, `name_full` TEXT, `name_native` TEXT, `name_alternative` TEXT, `image_large` TEXT, `image_medium` TEXT, content=`character_entries`)",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `mediaIds` TEXT, `mediaTitle` TEXT, `voiceActors` TEXT, content=`character_entries`)",
         "fields": [
           {
             "fieldPath": "id",
@@ -793,46 +718,6 @@
           {
             "fieldPath": "voiceActors",
             "columnName": "voiceActors",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.first",
-            "columnName": "name_first",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.middle",
-            "columnName": "name_middle",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.last",
-            "columnName": "name_last",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.full",
-            "columnName": "name_full",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.native",
-            "columnName": "name_native",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "name.alternative",
-            "columnName": "name_alternative",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.large",
-            "columnName": "image_large",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "image.medium",
-            "columnName": "image_medium",
             "affinity": "TEXT"
           }
         ],
@@ -856,8 +741,8 @@
         "contentSyncTriggers": [
           "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_BEFORE_UPDATE BEFORE UPDATE ON `character_entries` BEGIN DELETE FROM `character_entries_fts` WHERE `docid`=OLD.`rowid`; END",
           "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_BEFORE_DELETE BEFORE DELETE ON `character_entries` BEGIN DELETE FROM `character_entries_fts` WHERE `docid`=OLD.`rowid`; END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_AFTER_UPDATE AFTER UPDATE ON `character_entries` BEGIN INSERT INTO `character_entries_fts`(`docid`, `id`, `mediaIds`, `mediaTitle`, `voiceActors`, `name_first`, `name_middle`, `name_last`, `name_full`, `name_native`, `name_alternative`, `image_large`, `image_medium`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`mediaIds`, NEW.`mediaTitle`, NEW.`voiceActors`, NEW.`name_first`, NEW.`name_middle`, NEW.`name_last`, NEW.`name_full`, NEW.`name_native`, NEW.`name_alternative`, NEW.`image_large`, NEW.`image_medium`); END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_AFTER_INSERT AFTER INSERT ON `character_entries` BEGIN INSERT INTO `character_entries_fts`(`docid`, `id`, `mediaIds`, `mediaTitle`, `voiceActors`, `name_first`, `name_middle`, `name_last`, `name_full`, `name_native`, `name_alternative`, `image_large`, `image_medium`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`mediaIds`, NEW.`mediaTitle`, NEW.`voiceActors`, NEW.`name_first`, NEW.`name_middle`, NEW.`name_last`, NEW.`name_full`, NEW.`name_native`, NEW.`name_alternative`, NEW.`image_large`, NEW.`image_medium`); END"
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_AFTER_UPDATE AFTER UPDATE ON `character_entries` BEGIN INSERT INTO `character_entries_fts`(`docid`, `id`, `mediaIds`, `mediaTitle`, `voiceActors`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`mediaIds`, NEW.`mediaTitle`, NEW.`voiceActors`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_character_entries_fts_AFTER_INSERT AFTER INSERT ON `character_entries` BEGIN INSERT INTO `character_entries_fts`(`docid`, `id`, `mediaIds`, `mediaTitle`, `voiceActors`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`mediaIds`, NEW.`mediaTitle`, NEW.`voiceActors`); END"
         ]
       },
       {
@@ -1103,7 +988,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '61b4547d4d01338bdce0d73b3c1626b0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1bc3c2fd5fdc1da146aff8e8c016fd63')"
     ]
   }
 }

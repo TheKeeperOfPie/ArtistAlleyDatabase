@@ -17,9 +17,9 @@ interface ArtEntrySyncDao : ArtEntryDao {
         limit: Int = Int.MAX_VALUE,
         offset: Int = 0
     ): List<CharactersAndSeries>
-
-    data class CharactersAndSeries(
-        val charactersSerialized: String,
-        val seriesSerialized: String,
-    )
 }
+
+data class CharactersAndSeries(
+    val charactersSerialized: List<String>,
+    val seriesSerialized: List<String>,
+)

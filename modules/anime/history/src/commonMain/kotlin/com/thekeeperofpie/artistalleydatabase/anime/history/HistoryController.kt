@@ -36,7 +36,7 @@ class HistoryController(
                         isAdult = isAdult,
                         bannerImage = bannerImage,
                         coverImage = coverImage,
-                        title = AnimeMediaHistoryEntry.Title(
+                        title = AnimeMediaHistoryEntryTitle(
                             romaji = titleRomaji,
                             english = titleEnglish,
                             native = titleNative,

@@ -1,6 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.google.devtools.ksp.KspExperimental
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -14,11 +13,6 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("androidx.room")
     alias(libs.plugins.dev.zacsweers.metro)
-}
-
-ksp {
-    @OptIn(KspExperimental::class)
-    useKsp2 = false // Breaks Room processing
 }
 
 android {
