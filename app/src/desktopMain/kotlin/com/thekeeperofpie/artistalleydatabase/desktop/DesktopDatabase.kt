@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryFts
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.utils_room.Converters
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
@@ -51,4 +52,4 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
     ]
 )
 abstract class DesktopDatabase : RoomDatabase(), AniListDatabase, AnimeDatabase, ArtEntryDatabase,
-    CdEntryDatabase, VgmdbDatabase
+    CdEntryDatabase, MusicalArtistDatabase, VgmdbDatabase

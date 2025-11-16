@@ -191,7 +191,8 @@ object ArtistAlleyAppScreen {
                                                         navigationController.navigateUp()
                                                     is DetailsScreen.Event.OpenImage -> {
                                                         val artist = viewModel.entry.value?.artist
-                                                        if (artist != null && artist.booth != null) {
+                                                        val booth = artist?.booth
+                                                        if (booth != null) {
                                                             val year = catalog.result?.fallbackYear
                                                                 ?.takeIf { catalog.result?.showOutdatedCatalogs == true }
                                                                 ?: route.year
@@ -201,7 +202,7 @@ object ArtistAlleyAppScreen {
                                                                     id = route.id,
                                                                     type = Destinations.Images.Type.Artist(
                                                                         id = artist.id,
-                                                                        booth = artist.booth,
+                                                                        booth = booth,
                                                                         name = artist.name,
                                                                     ),
                                                                     images = artist.images,

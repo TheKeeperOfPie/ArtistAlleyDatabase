@@ -8,7 +8,7 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version "2.2.21-RC2"
+    kotlin("jvm") version "2.3.0-Beta2"
     `kotlin-dsl`
     alias(libs.plugins.app.cash.sqldelight).version("2.1.0")
 }
@@ -16,8 +16,8 @@ plugins {
 // Enable Enum.entries support
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        apiVersion = KotlinVersion.KOTLIN_1_9
-        languageVersion = KotlinVersion.KOTLIN_1_9
+        apiVersion = KotlinVersion.KOTLIN_2_1
+        languageVersion = KotlinVersion.KOTLIN_2_1
     }
 }
 

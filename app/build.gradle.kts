@@ -13,6 +13,7 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("androidx.room")
     alias(libs.plugins.dev.zacsweers.metro)
+    alias(libs.plugins.com.github.ben.manes.versions)
 }
 
 android {

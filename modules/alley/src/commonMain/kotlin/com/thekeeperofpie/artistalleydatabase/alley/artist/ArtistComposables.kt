@@ -38,9 +38,9 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
@@ -117,9 +117,10 @@ fun ArtistListRow(
         Row(
             modifier = Modifier.sharedBounds("container", artist.id)
         ) {
-            if (artist.booth != null) {
+            val booth = artist.booth
+            if (booth != null) {
                 Text(
-                    text = artist.booth,
+                    text = booth,
                     style = MaterialTheme.typography.titleLarge
                         .copy(fontFamily = FontFamily.Monospace),
                     modifier = Modifier

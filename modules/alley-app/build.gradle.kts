@@ -13,6 +13,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.multiplatform")
     alias(libs.plugins.dev.zacsweers.metro)
+    alias(libs.plugins.com.github.ben.manes.versions)
 }
 
 android {

@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 

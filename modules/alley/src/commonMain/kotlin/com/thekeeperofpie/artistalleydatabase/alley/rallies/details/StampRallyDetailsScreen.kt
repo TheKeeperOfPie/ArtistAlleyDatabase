@@ -46,10 +46,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
@@ -240,12 +240,13 @@ object StampRallyDetailsScreen {
                         contentDescriptionTextRes = null,
                         values = artists,
                         valueToText = {
-                            if (it.booth == null) {
+                            val booth = it.booth
+                            if (booth == null) {
                                 it.name
                             } else {
                                 stringResource(
                                     Res.string.alley_artist_details_booth_and_table_name,
-                                    it.booth,
+                                    booth,
                                     it.name
                                 )
                             }

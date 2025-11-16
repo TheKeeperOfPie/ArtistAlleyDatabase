@@ -17,6 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistComponent
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsStore
 import com.thekeeperofpie.artistalleydatabase.utils.FeatureOverrideProvider
@@ -42,7 +44,7 @@ import kotlin.reflect.KType
 @SingleIn(AppScope::class)
 @DependencyGraph
 interface DesktopComponent : AppComponent, AniListComponent, AnimeComponent, ArtEntryComponent,
-    CdEntryComponent, NetworkComponent, VgmdbComponent {
+    CdEntryComponent, MusicalArtistComponent, NetworkComponent, VgmdbComponent {
 
     val artEntryNavigator: ArtEntryNavigator
     val cdEntryNavigator: CdEntryNavigator
@@ -65,6 +67,9 @@ interface DesktopComponent : AppComponent, AniListComponent, AnimeComponent, Art
 
     @Binds
     val DesktopDatabase.bindCdEntryDatabase: CdEntryDatabase
+
+    @Binds
+    val DesktopDatabase.bindMusicalArtistDatabase: MusicalArtistDatabase
 
     @Binds
     val DesktopDatabase.bindVgmdbDatabase: VgmdbDatabase

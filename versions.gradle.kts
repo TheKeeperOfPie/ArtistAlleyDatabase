@@ -5,11 +5,11 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.13.0"
+        const val gradle = "8.13.1"
     }
 
     object androidx {
-        const val activity = "1.12.0-alpha09"
+        const val activity = "1.12.0-rc01"
         const val annotation = "1.9.1"
         const val browser = "1.10.0-alpha02"
         const val core = "1.17.0"
@@ -22,7 +22,7 @@ object Versions {
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
         const val tracing = "1.3.0"
-        const val work = "2.11.0-rc01"
+        const val work = "2.11.0"
     }
 
     const val androidyoutubeplayer = "13.0.0"
@@ -51,6 +51,7 @@ object Versions {
         const val appUpdate = "2.1.0"
         const val billing = "8.0.0"
         const val cronetOkHttp = "0.1.0"
+        const val ksp = "2.3.2"
         const val playServicesAds = "24.7.0"
         const val playServicesCronet = "18.1.1"
         const val truth = "1.4.5"
@@ -85,20 +86,19 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
-        const val core = "2.2.21-RC2"
+        const val core = "2.3.0-Beta2"
         const val coroutines = "1.10.2"
         const val datetime = "0.7.1-0.6.x-compat"
         const val io = "0.8.0"
-        const val ksp = "2.2.21-RC2-2.0.4"
         const val serialization = "1.9.0"
     }
 
-    const val ktor = "3.3.1"
+    const val ktor = "3.3.2"
     const val ksoup = "0.2.5"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2025.1.27"
     const val markwon = "4.6.2"
-    const val metro = "0.7.3"
+    const val metro = "0.7.5"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.2.0"
     const val multiplatformMarkdown = "0.38.0-b01"
@@ -138,7 +138,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 plugin("com.apollographql.apollo3.external").version(Versions.apollo)
                 plugin("com.codingfeline.buildkonfig").version(Versions.buildKonfig)
                 plugin("com.github.ben-manes.versions").version(Versions.benManesVersions)
-                plugin("com.google.devtools.ksp").version(Versions.kotlin.ksp)
+                plugin("com.google.devtools.ksp").version(Versions.google.ksp)
                 plugin("com.netflix.dgs.codegen").version(Versions.netflixDgsCodegen)
                 plugin("dev.iurysouza.modulegraph").version(Versions.moduleGraph)
                 plugin("dev.zacsweers.metro").version(Versions.metro)
@@ -218,6 +218,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
 
                 with(Versions.google) {
                     library("com.google.android.play:app-update-ktx:$appUpdate")
+                    library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp")
                     library("com.android.billingclient:billing-ktx:$billing")
                     library("com.google.net.cronet:cronet-okhttp:$cronetOkHttp")
 
@@ -283,7 +284,6 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
                         library("org.jetbrains.kotlinx:kotlinx-coroutines-test")
                     }
-                    library("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp")
                     library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$core")
                     library("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$core")
                     library("org.jetbrains.kotlinx:kotlinx-datetime:$datetime")
