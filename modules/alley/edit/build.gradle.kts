@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.json.io)
+            implementation(libs.stately.concurrent.collections)
 
             implementation(projects.modules.alley)
             implementation(projects.modules.utils)

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
@@ -50,7 +51,8 @@ actual class AlleyEditRemoteDatabase {
         platformFile: PlatformFile
     ): EditImage {
         val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) + "/${Uuid.random()}"
-        val image = EditImage.LocalImage(platformFile, name = key)
+        val imageKey = PlatformImageCache.add(platformFile)
+        val image = EditImage.LocalImage(imageKey, name = key)
         images[key] = image
         return image
     }

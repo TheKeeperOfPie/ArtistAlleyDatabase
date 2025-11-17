@@ -75,17 +75,17 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.DraggableItem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.dragContainer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDragDropState
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 object ImagesEditScreen {
 
-    const val RESULT_KEY = "ImagesEditScreen"
+    val RESULT_KEY = NavigationResults.Key<List<EditImage>>("ImagesEditScreen")
 
     @Composable
     operator fun invoke(
@@ -102,9 +102,7 @@ object ImagesEditScreen {
             images = viewModel.images,
             onClickBack = { onClickBack(false) },
             onClickSave = {
-                navigationResults.launchSave(RESULT_KEY) {
-                    Json.encodeToString(viewModel.images.toList())
-                }
+                navigationResults.launchSave(RESULT_KEY) { viewModel.images.toList() }
                 onClickBack(true)
             },
         )
@@ -149,7 +147,9 @@ object ImagesEditScreen {
                     mode = FileKitMode.Multiple(),
                 ) {
                     if (it != null) {
-                        images += it.map(EditImage::LocalImage)
+                        images += it
+                            .map(PlatformImageCache::add)
+                            .map(EditImage::LocalImage)
                     }
                 }
                 val listState = rememberLazyListState()
@@ -229,7 +229,8 @@ object ImagesEditScreen {
                                         mode = FileKitMode.Single,
                                     ) {
                                         if (it != null) {
-                                            images[index] = EditImage.LocalImage(it)
+                                            images[index] =
+                                                EditImage.LocalImage(PlatformImageCache.add(it))
                                         }
                                     }
 

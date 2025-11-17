@@ -77,6 +77,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -92,7 +93,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
@@ -103,8 +103,6 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
@@ -128,10 +126,7 @@ object ArtistEditScreen {
             )
         },
     ) {
-        NavigationResultEffect(ImagesEditScreen.RESULT_KEY) {
-            val images = withContext(PlatformDispatchers.IO) {
-                Json.decodeFromString<List<EditImage>>(it)
-            }
+        NavigationResultEffect(ImagesEditScreen.RESULT_KEY) { images ->
             Snapshot.withMutableSnapshot {
                 viewModel.state.images.clear()
                 viewModel.state.images += images
@@ -284,7 +279,9 @@ object ArtistEditScreen {
                 mode = FileKitMode.Multiple(),
             ) {
                 if (it != null) {
-                    images += it.map(EditImage::LocalImage)
+                    images += it
+                        .map(PlatformImageCache::add)
+                        .map(EditImage::LocalImage)
                 }
             }
             FilledTonalButton(onClick = { launcher.launch() }, modifier = modifier.padding(16.dp)) {

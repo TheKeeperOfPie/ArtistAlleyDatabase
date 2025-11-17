@@ -11,6 +11,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -79,7 +80,7 @@ class AlleyEditDatabase(
         val networkImages = remoteDatabase.listImages(year, Uuid.parse(artist.id))
             .associateBy { it.name }
         return artist.images.mapNotNull {
-            databaseImages[it.name] ?: networkImages[it.name]
+            databaseImages[it.name] ?: networkImages[it.name]?.fillSize(it.width, it.height)
         }
     }
 
@@ -93,5 +94,14 @@ class AlleyEditDatabase(
         dataYear: DataYear,
         artistId: Uuid,
         platformFile: PlatformFile,
-    ): EditImage = remoteDatabase.uploadImage(dataYear, artistId, platformFile)
+    ): EditImage? {
+        val (width, height) = try {
+            platformFile.toImageBitmap().run { width to height }
+        } catch (_: Throwable) {
+            // TODO: Error handling
+            return null
+        }
+        return remoteDatabase.uploadImage(dataYear, artistId, platformFile)
+            .fillSize(width, height)
+    }
 }

@@ -14,7 +14,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlin.reflect.KClass
 
 @Composable
 fun rememberNavigationResults(): NavigationResults {
@@ -24,10 +26,15 @@ fun rememberNavigationResults(): NavigationResults {
 }
 
 @Composable
-fun NavigationResultEffect(key: String, onResult: suspend (String) -> Unit) {
+inline fun <reified T : Any> NavigationResultEffect(
+    key: NavigationResults.Key<T>,
+    crossinline onResult: suspend (T) -> Unit,
+) {
     val navigationResults = LocalNavigationResults.current
     LaunchedEffect(navigationResults) {
-        val result = navigationResults.remove(key)
+        val result = withContext(PlatformDispatchers.IO) {
+            navigationResults.remove<T>(key)
+        }
         if (result != null) {
             onResult(result)
         }
@@ -44,16 +51,24 @@ private object SnapshotStateMapSaver : ComposeSaver<SnapshotStateMap<String, Str
 }
 
 @Stable
-class NavigationResults(val scope: CoroutineScope, val map: SnapshotStateMap<String, String>,) {
-    internal fun remove(key: String) = map.remove(key)
-
-    operator fun set(key: String, result: String) {
-        map[key] = result
+class NavigationResults(val scope: CoroutineScope, val map: SnapshotStateMap<String, String>) {
+    inline fun <reified T : Any> remove(key: Key<T>) = map.remove(key.key)?.let {
+        Json.decodeFromString<T>(it)
     }
 
-    fun launchSave(key: String, block: suspend () -> String) {
+    inline operator fun <reified T : Any> set(key: Key<T>, value: T) {
+        map[key.key] = Json.encodeToString<T>(value)
+    }
+
+    inline fun <reified T : Any> launchSave(key: Key<T>, crossinline block: suspend () -> T) {
         scope.launch(PlatformDispatchers.IO) {
-            map[key] = block()
+            map[key.key] = Json.encodeToString<T>(block())
+        }
+    }
+
+    data class Key<T : Any>(val key: String, val clazz: KClass<T>) {
+        companion object {
+            inline operator fun <reified T : Any> invoke(key: String) = Key(key, T::class)
         }
     }
 }

@@ -21,11 +21,14 @@ import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import dev.zacsweers.metro.createGraphFactory
+import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -55,6 +58,9 @@ fun main() {
                 .components {
                     add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                         data.toString().toUri()
+                    })
+                    add(Mapper<PlatformImageKey, PlatformFile> { data, _ ->
+                        PlatformImageCache[data]
                     })
                     addPlatformFileSupport()
                 }

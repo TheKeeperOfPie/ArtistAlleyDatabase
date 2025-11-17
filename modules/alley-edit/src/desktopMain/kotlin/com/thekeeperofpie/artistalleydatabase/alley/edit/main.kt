@@ -18,16 +18,21 @@ import coil3.decode.ImageSource
 import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
+import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.request.Options
 import coil3.request.crossfade
+import coil3.toUri
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.mouseNavigationEvents
 import dev.zacsweers.metro.createGraphFactory
+import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.io.asInputStream
@@ -45,6 +50,12 @@ fun main() {
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
                 .components {
+                    add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
+                        data.toString().toUri()
+                    })
+                    add(Mapper<PlatformImageKey, PlatformFile> { data, _ ->
+                        PlatformImageCache[data]
+                    })
                     add(object : Fetcher.Factory<Uri> {
                         override fun create(
                             data: Uri,

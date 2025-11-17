@@ -4,8 +4,6 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.name
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -32,21 +30,35 @@ sealed interface EditImage : ImageWithDimensions {
         )
     }
 
+    @Serializable
     data class LocalImage(
-        val platformFile: PlatformFile,
-        override val name: String = platformFile.name,
+        val key: PlatformImageKey,
+        override val name: String = key.value,
     ) : EditImage {
-        override val coilImageModel: PlatformFile get() = platformFile
+        override val coilImageModel: PlatformImageKey get() = key
     }
 
     @Serializable
-    data class NetworkImage(val uri: Uri) : EditImage {
+    data class NetworkImage(
+        val uri: Uri,
+        override val width: Int? = null,
+        override val height: Int? = null,
+    ) : EditImage {
         override val name = uri.toString()
         override val coilImageModel: Uri get() = uri
 
         companion object {
             fun makePrefix(dataYear: DataYear, artistId: Uuid) =
                 "${dataYear.serializedName}/$artistId"
+        }
+    }
+
+    fun fillSize(width: Int?, height: Int?): EditImage {
+        if (width == null || height == null) return this
+        return when (this) {
+            is DatabaseImage -> copy(width = width, height = height)
+            is LocalImage -> this
+            is NetworkImage -> copy(width = width, height = height)
         }
     }
 

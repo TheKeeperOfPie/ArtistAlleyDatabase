@@ -11,6 +11,7 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -218,16 +219,20 @@ class ArtistEditViewModel(
 
         val images = state.images.toList()
         viewModelScope.launch {
-            val finalImages = images.map {
+            val finalImages = images.mapNotNull {
                 when (it) {
                     is EditImage.DatabaseImage,
                     is EditImage.NetworkImage,
                         -> it
-                    is EditImage.LocalImage -> database.uploadImage(
-                        dataYear = dataYear,
-                        artistId = id,
-                        platformFile = it.platformFile,
-                    )
+                    is EditImage.LocalImage -> {
+                        // TODO: Error handling
+                        val file = PlatformImageCache[it.key] ?: return@mapNotNull null
+                        database.uploadImage(
+                            dataYear = dataYear,
+                            artistId = id,
+                            platformFile = file,
+                        )
+                    }
                 }
             }
 
