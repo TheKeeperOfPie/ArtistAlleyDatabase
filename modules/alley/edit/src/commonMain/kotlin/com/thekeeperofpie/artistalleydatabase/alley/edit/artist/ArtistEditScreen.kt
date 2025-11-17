@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -28,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -39,6 +41,7 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -50,6 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_catalog_links
@@ -70,6 +76,9 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_save_changes_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_exit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_save
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -115,7 +124,7 @@ object ArtistEditScreen {
         dataYear: DataYear,
         artistId: Uuid?,
         graph: ArtistAlleyEditGraph,
-        onClickBack: () -> Unit,
+        onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
         viewModel: ArtistEditViewModel = viewModel {
             graph.artistEditViewModelFactory.create(
@@ -155,14 +164,14 @@ object ArtistEditScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
-        onClickBack: () -> Unit,
+        onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
     ) {
         val saved by state.saved.collectAsStateWithLifecycle()
         LaunchedEffect(saved) {
             if (saved == true) {
-                onClickBack()
+                onClickBack(true)
                 state.saved.value = null
             }
         }
@@ -188,7 +197,7 @@ object ArtistEditScreen {
                         }
                         Text(text)
                     },
-                    navigationIcon = { ArrowBackIconButton(onClick = onClickBack) },
+                    navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {
                         IconButton(onClick = onClickSave) {
                             Icon(
@@ -264,6 +273,12 @@ object ArtistEditScreen {
                     }
                 }
             }
+
+            ExitDialog(
+                mode = mode,
+                onClickBack = { onClickBack(true) },
+                onClickSave = onClickSave,
+            )
         }
     }
 
@@ -605,6 +620,50 @@ object ArtistEditScreen {
                 focusRequester?.requestFocus()
             }
         )
+    }
+
+    @Composable
+    private fun ExitDialog(
+        mode: Mode,
+        onClickBack: () -> Unit,
+        onClickSave: () -> Unit,
+    ) {
+        when (mode) {
+            Mode.ADD -> Unit
+            Mode.EDIT -> return
+        }
+        var showBackDialog by rememberSaveable { mutableStateOf(false) }
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+        ) {
+            showBackDialog = true
+        }
+        if (showBackDialog) {
+            AlertDialog(
+                onDismissRequest = { showBackDialog = false },
+                title = {
+                    Text(stringResource(Res.string.alley_edit_artist_save_changes_title))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showBackDialog = false
+                            onClickSave()
+                        },
+                    ) {
+                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_save))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showBackDialog = false
+                        onClickBack()
+                    }) {
+                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_exit))
+                    }
+                }
+            )
+        }
     }
 
     enum class Mode {

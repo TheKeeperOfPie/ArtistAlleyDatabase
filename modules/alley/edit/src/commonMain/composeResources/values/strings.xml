@@ -19,6 +19,7 @@
     <string name="alley_edit_artist_action_delete">Delete</string>
     <string name="alley_edit_artist_action_add_images">Add images</string>
     <string name="alley_edit_artist_action_edit_images">Edit images</string>
+    <string name="alley_edit_artist_save_changes_title">Save changes?</string>
 
     <string name="alley_edit_artist_action_save_content_description">Save artist</string>
     <string name="alley_edit_artist_action_add">Add artist</string>

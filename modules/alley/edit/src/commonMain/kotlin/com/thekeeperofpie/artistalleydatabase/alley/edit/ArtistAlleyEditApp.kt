@@ -93,7 +93,7 @@ fun ArtistAlleyEditApp(
                                 dataYear = route.dataYear,
                                 artistId = null,
                                 graph = graph,
-                                onClickBack = { onClickBack(false) },
+                                onClickBack = onClickBack,
                                 onClickEditImages = { displayName, images ->
                                     twoWayStack.navigate(
                                         AlleyEditDestination.ImagesEdit(
@@ -110,7 +110,7 @@ fun ArtistAlleyEditApp(
                                 dataYear = route.dataYear,
                                 artistId = route.artistId,
                                 graph = graph,
-                                onClickBack = { onClickBack(false) },
+                                onClickBack = onClickBack,
                                 onClickEditImages = { displayName, images ->
                                     twoWayStack.navigate(
                                         AlleyEditDestination.ImagesEdit(

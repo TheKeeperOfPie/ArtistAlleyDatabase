@@ -132,7 +132,9 @@ class ArtistEditViewModel(
         }
 
         textState.name.value.setTextAndPlaceCursorAtEnd(artist.name)
-        textState.name.lockState = EntryLockState.LOCKED
+        if (artist.name.isNotBlank()) {
+            textState.name.lockState = EntryLockState.LOCKED
+        }
 
         artist.summary?.ifBlank { null }?.let {
             textState.summary.value.setTextAndPlaceCursorAtEnd(it)

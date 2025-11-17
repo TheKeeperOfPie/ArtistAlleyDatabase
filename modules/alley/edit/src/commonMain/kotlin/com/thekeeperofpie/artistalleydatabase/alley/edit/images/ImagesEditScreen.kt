@@ -280,85 +280,100 @@ object ImagesEditScreen {
                 }
             }
 
-            val hasEdited by remember { derivedStateOf { route.images != images } }
-            var showBackDialog by rememberSaveable { mutableStateOf(false) }
-            var hasConfirmedExit by remember { mutableStateOf(false) }
-            NavigationBackHandler(
-                state = rememberNavigationEventState(NavigationEventInfo.None),
-                isBackEnabled = hasEdited && !hasConfirmedExit,
-            ) {
-                showBackDialog = true
+            ExitDialog(
+                route = route,
+                images = images,
+                onClickBack = onClickBack,
+                onClickSave = onClickSave,
+            )
+        }
+    }
+
+    @Composable
+    private fun ExitDialog(
+        route: AlleyEditDestination.ImagesEdit,
+        images: SnapshotStateList<EditImage>,
+        onClickBack: () -> Unit,
+        onClickSave: () -> Unit,
+    ) {
+        val hasEdited by remember { derivedStateOf { route.images != images } }
+        var showBackDialog by rememberSaveable { mutableStateOf(false) }
+        var hasConfirmedExit by remember { mutableStateOf(false) }
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = hasEdited && !hasConfirmedExit,
+        ) {
+            showBackDialog = true
+        }
+        if (showBackDialog) {
+            val diff by produceState<EditImage.Diff?>(null, key1 = images) {
+                value = EditImage.generateDiffs(route.images, images)
             }
-            if (showBackDialog) {
-                val diff by produceState<EditImage.Diff?>(null, key1 = images) {
-                    value = EditImage.generateDiffs(route.images, images)
-                }
-                AlertDialog(
-                    onDismissRequest = { showBackDialog = false },
-                    title = {
-                        Text(stringResource(Res.string.alley_edit_image_save_changes_title))
-                    },
-                    text = {
-                        val diff = diff
-                        if (diff == null) {
-                            Box(
-                                contentAlignment = Alignment.TopCenter,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        } else {
-                            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                                if (diff.added.isNotEmpty()) {
-                                    Text(stringResource(Res.string.alley_edit_image_save_changes_header_added))
-                                    diff.added.forEach {
-                                        Text(it.name)
-                                    }
-                                }
-                                if (diff.deleted.isNotEmpty()) {
-                                    Text(stringResource(Res.string.alley_edit_image_save_changes_header_deleted))
-                                    diff.deleted.forEach {
-                                        Text(it.name)
-                                    }
-                                }
-                                if (diff.moved.isNotEmpty()) {
-                                    Text(stringResource(Res.string.alley_edit_image_save_changes_header_moved))
-                                    diff.moved.forEach { (indexDiff, image) ->
-                                        Text(
-                                            stringResource(
-                                                Res.string.alley_edit_image_save_changes_moved,
-                                                image.name,
-                                                indexDiff.fromIndex,
-                                                indexDiff.toIndex,
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                hasConfirmedExit = true
-                                showBackDialog = false
-                                onClickSave()
-                            },
+            AlertDialog(
+                onDismissRequest = { showBackDialog = false },
+                title = {
+                    Text(stringResource(Res.string.alley_edit_image_save_changes_title))
+                },
+                text = {
+                    val diff = diff
+                    if (diff == null) {
+                        Box(
+                            contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(stringResource(Res.string.alley_edit_image_save_changes_action_save))
+                            CircularProgressIndicator()
                         }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            hasConfirmedExit = true
-                            showBackDialog = false
-                            onClickBack()
-                        }) {
-                            Text(stringResource(Res.string.alley_edit_image_save_changes_action_exit))
+                    } else {
+                        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                            if (diff.added.isNotEmpty()) {
+                                Text(stringResource(Res.string.alley_edit_image_save_changes_header_added))
+                                diff.added.forEach {
+                                    Text(it.name)
+                                }
+                            }
+                            if (diff.deleted.isNotEmpty()) {
+                                Text(stringResource(Res.string.alley_edit_image_save_changes_header_deleted))
+                                diff.deleted.forEach {
+                                    Text(it.name)
+                                }
+                            }
+                            if (diff.moved.isNotEmpty()) {
+                                Text(stringResource(Res.string.alley_edit_image_save_changes_header_moved))
+                                diff.moved.forEach { (indexDiff, image) ->
+                                    Text(
+                                        stringResource(
+                                            Res.string.alley_edit_image_save_changes_moved,
+                                            image.name,
+                                            indexDiff.fromIndex,
+                                            indexDiff.toIndex,
+                                        )
+                                    )
+                                }
+                            }
                         }
                     }
-                )
-            }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            hasConfirmedExit = true
+                            showBackDialog = false
+                            onClickSave()
+                        },
+                    ) {
+                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_save))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        hasConfirmedExit = true
+                        showBackDialog = false
+                        onClickBack()
+                    }) {
+                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_exit))
+                    }
+                }
+            )
         }
     }
 }
