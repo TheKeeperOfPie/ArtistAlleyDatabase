@@ -1,10 +1,9 @@
-
-
 plugins {
     id("library-android")
     id("library-compose")
     id("library-desktop")
     id("library-web")
+    id("app.cash.sqldelight")
 }
 
 kotlin {
@@ -28,6 +27,16 @@ kotlin {
         namespace = "com.thekeeperofpie.artistalleydatabase.alley.data"
         compileSdk = 36
         minSdk = 28
+    }
+}
+
+sqldelight {
+    databases {
+        create("AlleySqlDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.alley.data")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
+            generateAsync = true
+        }
     }
 }
 

@@ -15,7 +15,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_show_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore

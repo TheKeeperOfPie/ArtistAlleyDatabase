@@ -57,8 +57,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_merch_chip_st
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
-import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.category

@@ -40,7 +40,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_clear_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.name

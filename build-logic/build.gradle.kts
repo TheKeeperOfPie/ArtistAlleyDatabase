@@ -30,6 +30,8 @@ sqldelight {
                 project.layout.projectDirectory
                     .dir("../modules/alley/src/commonMain/sqldelight"),
                 project.layout.projectDirectory
+                    .dir("../modules/alley/data/src/commonMain/sqldelight"),
+                project.layout.projectDirectory
                     .dir("../modules/alley/user/src/commonMain/sqldelight"),
                 project.layout.projectDirectory
                     .dir("src/main/sqldelight"),

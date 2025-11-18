@@ -62,8 +62,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_search_no_res
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
-import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption

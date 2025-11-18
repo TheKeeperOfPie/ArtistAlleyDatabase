@@ -25,7 +25,6 @@ kotlin {
     sourceSets {
         jsMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
-            implementation(projects.modules.alley.data)
         }
     }
 }

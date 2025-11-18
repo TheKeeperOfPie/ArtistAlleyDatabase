@@ -7,7 +7,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_language_opti
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_english
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_native
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_romaji
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption

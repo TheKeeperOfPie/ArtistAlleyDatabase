@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 
 data class SeriesImageInfo(
     val id: String,

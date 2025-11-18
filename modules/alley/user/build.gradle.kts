@@ -54,7 +54,6 @@ sqldelight {
         create("AlleySqlDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.user")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
-            version = 2
             generateAsync = true
 
             // :modules:alley:user:generateCommonMainAlleySqlDatabaseSchema

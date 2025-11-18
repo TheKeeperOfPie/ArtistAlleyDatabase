@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import androidx.collection.LruCache
-import com.thekeeperofpie.artistalleydatabase.alley.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import dev.zacsweers.metro.Inject
 
 @Inject

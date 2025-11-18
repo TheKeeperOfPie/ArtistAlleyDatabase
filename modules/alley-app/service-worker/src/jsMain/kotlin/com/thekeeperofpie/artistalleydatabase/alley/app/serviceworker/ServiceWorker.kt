@@ -28,11 +28,6 @@ private val CACHES = setOf(APP_CACHE, IMAGE_CACHE, MEDIA_IMAGE_CACHE)
 
 value class CacheName(val name: String)
 
-private const val catalogsDir =
-    "/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/catalogs"
-private const val ralliesDir =
-    "/composeResources/artistalleydatabase.modules.alley.data.generated.resources/files/rallies"
-
 private const val filesToCacheInput = "CACHE_INPUT"
 private val filesToCacheAndRevisions = filesToCacheInput.lineSequence()
     .associate { it.substringBeforeLast("-") to it.substringAfterLast("-") }

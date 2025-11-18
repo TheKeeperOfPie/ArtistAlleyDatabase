@@ -9,8 +9,8 @@ import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetMerchById
-import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry

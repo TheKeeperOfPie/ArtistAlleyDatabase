@@ -5,6 +5,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.async.coroutines.awaitCreate
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -117,14 +118,14 @@ object Database {
     private suspend fun database(
         context: EventContext,
         tryCreate: Boolean = false,
-    ): AlleyFunctionsDatabase {
+    ): AlleySqlDatabase {
         val sqlDriver = WorkerSqlDriver(database = context.env.ARTIST_ALLEY_DB)
-        val database = AlleyFunctionsDatabase(
+        val database = AlleySqlDatabase(
             driver = sqlDriver,
             artistEntryAnimeExpo2026Adapter = artistEntryAnimeExpo2026Adapter,
         )
         if (tryCreate) {
-            AlleyFunctionsDatabase.Schema.awaitCreate(sqlDriver)
+            AlleySqlDatabase.Schema.awaitCreate(sqlDriver)
         }
         return database
     }

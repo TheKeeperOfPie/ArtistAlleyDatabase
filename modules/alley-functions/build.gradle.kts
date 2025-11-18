@@ -20,6 +20,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.sqldelight.coroutines.extensions)
 
+            implementation(projects.modules.alley.data)
             implementation(projects.modules.alley.models)
         }
     }
@@ -27,10 +28,11 @@ kotlin {
 
 sqldelight {
     databases {
-        create("AlleyFunctionsDatabase") {
+        create("AlleySqlDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
             generateAsync = true
+            dependency(project(":modules:alley:data"))
         }
     }
 }

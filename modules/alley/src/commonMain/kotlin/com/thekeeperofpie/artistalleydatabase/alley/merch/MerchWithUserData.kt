@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.merch
 
-import com.thekeeperofpie.artistalleydatabase.alley.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 
 data class MerchWithUserData(
