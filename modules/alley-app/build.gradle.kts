@@ -1,3 +1,4 @@
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -253,17 +254,22 @@ val outputDir = if (isWasmDebug) {
 }
 
 val buildBothWebVariants by tasks.registering(Sync::class) {
-    val alleyAppTaskName = if (isWasmDebug) {
+    val alleyAppTask = if (isWasmDebug) {
         "wasmJsBrowserDevelopmentExecutableDistribution"
     } else {
         "composeCompatibilityBrowserDistribution"
-    }
-    dependsOn(alleyAppTaskName)
+    }.let(tasks::named).get()
+    dependsOn(alleyAppTask)
 
-    from(tasks.named(alleyAppTaskName).get().outputs.files)
-    into(layout.buildDirectory.dir(outputDir))
+    val sourceFiles = alleyAppTask.outputs.files
+    from(sourceFiles)
+    val destDir = layout.buildDirectory.dir(outputDir)
+    into(destDir)
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    doLast {
+        Utils.writeCopiedFiles(sourceFiles, destDir, "alleyAppFiles.txt")
+    }
 }
 
 val copyServiceWorkerOutput by tasks.registering(Copy::class) {
@@ -275,9 +281,29 @@ val copyServiceWorkerOutput by tasks.registering(Copy::class) {
 
 val copyAlleyEdit by tasks.registering(Copy::class) {
     mustRunAfter(buildBothWebVariants)
+
+    val sourceFiles = alleyEditOutput.files
     from(alleyEditOutput)
-    into(layout.buildDirectory.dir(outputDir))
+    val destDir = layout.buildDirectory.dir(outputDir)
+    into(destDir)
+
+    val output = destDir.get().asFile
+
+    // DuplicatesStrategy doesn't work for not overwriting buildBothWebVariants, manually exclude
+    exclude {
+        // This is really inefficient, but good enough since edit has a small number of files
+        val sourceDir = sourceFiles.single()
+        val alleyAppFiles = output.resolve("alleyAppFiles.txt")
+            .readLines()
+            .map { sourceDir.resolve(File(it)) }
+            .toSet()
+        it.file in alleyAppFiles
+    }
+
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    doLast {
+        Utils.writeCopiedFiles(sourceFiles, destDir, "alleyEditFiles.txt")
+    }
 }
 
 val copyAlleyFunctions by tasks.registering(Copy::class) {
@@ -311,6 +337,8 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
 
 val copyAlleyFunctionsMiddleware by tasks.registering(Copy::class) {
     mustRunAfter(copyAlleyFunctions)
+
+    // TODO: Does this need to manually dedupe with copyAlleyFunctions similar to copyAlleyEdit?
     from(alleyFunctionsMiddlewareOutput)
     include("*middleware.mjs")
     rename { "/functions/database/_middleware.mjs" }
@@ -358,19 +386,25 @@ tasks.register("webRelease") {
     val propertiesFile = project.layout.projectDirectory.file("secrets.properties")
     doLast {
         val folder = outputDir.get().asFile
-        folder.listFiles()
+        folder.listFiles()!!
             .filter { it.extension == "map" }
             .forEach { it.delete() }
-        val rootFiles = folder.listFiles()
+        val rootFiles = folder.listFiles()!!
             .filter { it.isFile }
             .filter { it.name != "serviceWorker.js" }
             .filter { it.name != "_headers" }
+            .filter { it.extension.isNotBlank() }
+            .filter { it.extension != "txt" }
 
         val icons = folder.resolve("icons")
             .listFiles()
 
         val resourceFiles = folder.resolve("composeResources")
-            .walkBottomUp()
+            .walkTopDown()
+            .onEnter {
+                !it.path.contains("alley.edit.generated.resources") &&
+                        !it.path.contains("alley_edit.generated.resources")
+            }
             .filter { it.isFile }
             .filter {
                 it.extension == "cvr" ||
@@ -378,7 +412,13 @@ tasks.register("webRelease") {
                         it.name.contains("database")
             }
 
-        val filesToCache = rootFiles + icons + resourceFiles
+        val alleyAppFiles = folder.resolve("alleyAppFiles.txt").readLines()
+            .mapTo(mutableSetOf()) { folder.resolve(File(it)) }
+        val alleyEditFiles = folder.resolve("alleyEditFiles.txt").readLines()
+            .mapTo(mutableSetOf()) { folder.resolve(File(it)) }
+        val editOnlyFiles = alleyEditFiles - alleyAppFiles
+
+        val filesToCache = rootFiles + icons + resourceFiles - editOnlyFiles
 
         fun hash(file: File): Long {
             val crc32 = CRC32()
@@ -407,5 +447,31 @@ tasks.register("webRelease") {
         val wranglerTomlEdited = wranglerToml.readText()
             .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
         wranglerToml.writeText(wranglerTomlEdited)
+
+        // This is done here because syncing the site involves replacing all of the files in the
+        // git repo, and so this file would be lost between builds.
+        val txtFiles = folder.listFiles { it.extension == "txt" }!!.map { it.name }
+        folder.resolve(".gitignore").writeText(txtFiles.joinToString("\n"))
+
+        // Map key changes from webpackChunkalley_app to webpackChunkalley_edit and needs to be
+        // manually consolidated into the same key
+        val editJs = folder.resolve("alley-edit.js")
+        val editJsEdited = editJs.readText()
+            .replace("webpackChunkalley_edit", "webpackChunkalley_app")
+        editJs.writeText(editJsEdited)
+    }
+}
+
+private object Utils {
+    fun writeCopiedFiles(
+        sourceFiles: Iterable<File>,
+        destDir: Provider<Directory>,
+        outputFileName: String,
+    ) {
+        val sourceDir = sourceFiles.single()
+        val files = sourceDir.listFiles()!!
+            .filter { it.isFile }
+            .joinToString("\n") { it.relativeTo(sourceDir).path }
+        destDir.get().asFile.resolve(outputFileName).writeText(files)
     }
 }
