@@ -22,7 +22,6 @@ import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.request.Options
 import coil3.request.crossfade
-import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
@@ -50,9 +49,6 @@ fun main() {
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
                 .components {
-                    add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
-                        data.toString().toUri()
-                    })
                     add(Mapper<PlatformImageKey, PlatformFile> { data, _ ->
                         PlatformImageCache[data]
                     })

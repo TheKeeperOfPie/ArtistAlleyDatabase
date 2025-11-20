@@ -1,11 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import artistalleydatabase.modules.alley.data.generated.resources.Res
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -71,10 +73,22 @@ class AlleyEditDatabase(
             )
         }
 
+    fun getArtistEditImages(
+        year: DataYear,
+        images: List<CatalogImage>
+    ) = images.map {
+        val path = "files/${year.folderName}/catalogs/${it.name}"
+        EditImage.DatabaseImage(
+            uri = Uri.parse(Res.getUri(path)),
+            name = it.name,
+            width = it.width,
+            height = it.height,
+        )
+    }
+
     suspend fun loadArtistImages(year: DataYear, artist: ArtistDatabaseEntry): List<EditImage> {
         val databaseImages = artistEntryDao.getImagesById(year, artist.id)
-            ?.let { AlleyImageUtils.getArtistImages(year, it) }
-            ?.map(EditImage::DatabaseImage)
+            ?.let { getArtistEditImages(year, it) }
             ?.associateBy { it.name }
             .orEmpty()
         val networkImages = remoteDatabase.listImages(year, Uuid.parse(artist.id))

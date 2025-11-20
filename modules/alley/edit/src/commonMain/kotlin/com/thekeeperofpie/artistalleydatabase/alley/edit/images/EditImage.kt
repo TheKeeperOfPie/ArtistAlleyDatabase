@@ -19,8 +19,8 @@ sealed interface EditImage : ImageWithDimensions {
         val uri: Uri,
         override val width: Int?,
         override val height: Int?,
+        override val name: String = uri.toString(),
     ) : EditImage {
-        override val name = uri.toString()
         override val coilImageModel: Uri get() = uri
 
         constructor(image: CatalogImage) : this(
