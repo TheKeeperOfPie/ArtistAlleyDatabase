@@ -14,7 +14,7 @@ object AlleyImageUtils {
     ) = images.map {
         val path = "files/${year.folderName}/catalogs/${it.name}"
         CatalogImage(
-            uri = Uri.Companion.parse(Res.getUri(path)),
+            uri = Uri.parse(Res.getUri(path)),
             width = it.width,
             height = it.height,
         )
@@ -26,7 +26,7 @@ object AlleyImageUtils {
     ) = images.map {
         val path = "files/${year.folderName}/rallies/${it.name}"
         CatalogImage(
-            uri = Uri.Companion.parse(Res.getUri(path)),
+            uri = Uri.parse(Res.getUri(path)),
             width = it.width,
             height = it.height,
         )

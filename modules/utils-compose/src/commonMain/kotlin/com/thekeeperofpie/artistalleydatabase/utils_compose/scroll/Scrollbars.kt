@@ -53,11 +53,13 @@ import kotlin.math.roundToInt
 fun VerticalScrollbar(
     state: LazyGridState,
     modifier: Modifier = Modifier,
+    alwaysVisible: Boolean = false,
 ) = VerticalScrollbar(
     firstVisibleItemIndex = { firstVisibleItemIndex },
     totalItemsCount = { layoutInfo.totalItemsCount },
     lastVisibleIndex = { layoutInfo.visibleItemsInfo.lastOrNull()?.index },
     scrollToItem = { scrollToItem(it) },
+    alwaysVisible = alwaysVisible,
     state = state,
     modifier = modifier,
 )
@@ -66,11 +68,13 @@ fun VerticalScrollbar(
 fun VerticalScrollbar(
     state: LazyStaggeredGridState,
     modifier: Modifier = Modifier,
+    alwaysVisible: Boolean = false,
 ) = VerticalScrollbar(
     firstVisibleItemIndex = { firstVisibleItemIndex },
     totalItemsCount = { layoutInfo.totalItemsCount },
     lastVisibleIndex = { layoutInfo.visibleItemsInfo.lastOrNull()?.index },
     scrollToItem = { scrollToItem(it) },
+    alwaysVisible = alwaysVisible,
     state = state,
     modifier = modifier,
 )
@@ -78,8 +82,8 @@ fun VerticalScrollbar(
 @Composable
 fun VerticalScrollbar(
     state: LazyListState,
-    alwaysVisible: Boolean = false,
     modifier: Modifier = Modifier,
+    alwaysVisible: Boolean = false,
 ) = VerticalScrollbar(
     firstVisibleItemIndex = { firstVisibleItemIndex },
     totalItemsCount = { layoutInfo.totalItemsCount },

@@ -7,8 +7,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -16,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -49,15 +49,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -82,13 +81,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.WrappedViewConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
-import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomPanState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomableState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
-import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.rememberZoomableState
+import me.saket.telephoto.zoomable.zoomable
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -121,18 +123,13 @@ fun ImagePager(
     sharedElementId: Any,
     onClickPage: ((Int) -> Unit)?,
     modifier: Modifier = Modifier,
-    onClickOutside: (() -> Unit)? = null,
     clipCorners: Boolean = true,
     forceMinHeight: Boolean = true,
     imageContentScale: ContentScale = ContentScale.FillWidth,
-    zoomPanStates: MultiZoomPanState = rememberSaveable(
-        images,
-        LocalDensity.current,
-        saver = MultiZoomPanState.Saver
-    ) { MultiZoomPanState(images.size) },
+    multiZoomableState: MultiZoomableState = rememberMultiZoomableState(images.size),
 ) {
     val scope = rememberCoroutineScope()
-    Box(modifier.conditionallyNonNull(onClickOutside) { clickable(onClick = it) }) {
+    Box(modifier = modifier) {
         val existingViewConfiguration = LocalViewConfiguration.current
         val newViewConfiguration = remember(existingViewConfiguration) {
             WrappedViewConfiguration(
@@ -142,8 +139,11 @@ fun ImagePager(
         }
         val userScrollEnabled by remember(images) {
             derivedStateOf {
-                images.size > 1 && zoomPanStates[(pagerState.currentPage - 1).coerceAtLeast(0)]
-                    .canPanExternal()
+                if (images.size <= 1) return@derivedStateOf false
+                val zoomableState =
+                    multiZoomableState[(pagerState.currentPage - 1).coerceAtLeast(0)]
+                val zoomFraction = zoomableState.zoomFraction ?: return@derivedStateOf true
+                zoomFraction < 0.05f
             }
         }
 
@@ -188,9 +188,9 @@ fun ImagePager(
                             }
                         )
                     } else {
-                        val imageIndex = (it - 1).coerceAtLeast(0)
-                        val zoomPanState = zoomPanStates[imageIndex]
-                        ZoomPanBox(state = zoomPanState, onClick = onClickOutside) {
+                        Box(modifier = modifier.fillMaxSize()) {
+                            val imageIndex = (it - 1).coerceAtLeast(0)
+                            val zoomableState = multiZoomableState[imageIndex]
                             val image = images[imageIndex]
                             val width = image.width
                             val height = image.height
@@ -205,20 +205,14 @@ fun ImagePager(
                                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                                 contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                                 modifier = Modifier
-                                    .pointerInput(zoomPanState) {
-                                        detectTapGestures(
-                                            onTap = if (onClickPage == null) {
-                                                null
-                                            } else {
-                                                { onClickPage(pagerState.settledPage) }
-                                            },
-                                            onDoubleTap = {
-                                                scope.launch {
-                                                    zoomPanState.toggleZoom(it, size)
-                                                }
+                                    .zoomable(
+                                        state = zoomableState,
+                                        onClick = if (onClickPage == null) null else {
+                                            {
+                                                onClickPage(pagerState.settledPage)
                                             }
-                                        )
-                                    }
+                                        },
+                                    )
                                     .sharedElement("image", image.coilImageModel)
                                     .conditionally(isFillWidth) {
                                         fillMaxWidth()
@@ -401,37 +395,59 @@ fun ImageGrid(
             }
         }
     }
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Adaptive(500.dp),
-        contentPadding = PaddingValues(8.dp),
-        verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-    ) {
-        itemsIndexed(images) { index, image ->
-            val size = cachedDimensions[image]
-            AsyncImage(
-                model = ImageRequest.Builder(LocalPlatformContext.current)
-                    .data(image.coilImageModel)
-                    .placeholderMemoryCacheKey(image.coilImageModel.toString())
-                    .build(),
-                contentScale = ContentScale.FillWidth,
-                contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                onSuccess = {
-                    val width = it.result.image.width
-                    val height = it.result.image.height
-                    if (width > 0 && height > 0) {
-                        cachedDimensions[image] = IntSize(width, height)
-                    }
-                },
-                modifier = Modifier
-                    .clickable { onClickImage(index) }
-                    .sharedElement("image", image.coilImageModel)
-                    .fillMaxWidth()
-                    .conditionallyNonNull(size) {
-                        aspectRatio(it.width.toFloat() / it.height)
-                    }
-            )
+
+    val placeholderColor = MaterialTheme.colorScheme.surfaceVariant
+    val placeholder = remember { ColorPainter(placeholderColor) }
+
+    Row(modifier = modifier) {
+        val gridState = rememberLazyStaggeredGridState()
+        LazyVerticalStaggeredGrid(
+            state = gridState,
+            columns = StaggeredGridCells.Adaptive(500.dp),
+            contentPadding = PaddingValues(8.dp),
+            verticalItemSpacing = 8.dp,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            itemsIndexed(images) { index, image ->
+                val zoomableState = rememberZoomableState()
+                val zoomFraction = zoomableState.zoomFraction
+                val size = cachedDimensions[image]
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(image.coilImageModel)
+                        .placeholderMemoryCacheKey(image.coilImageModel.toString())
+                        .build(),
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                    placeholder = placeholder,
+                    onSuccess = {
+                        val width = it.result.image.width
+                        val height = it.result.image.height
+                        if (width > 0 && height > 0) {
+                            cachedDimensions[image] = IntSize(width, height)
+                        }
+                    },
+                    modifier = Modifier
+                        .zoomable(
+                            state = zoomableState,
+                            onClick = { onClickImage(index) },
+                        )
+                        .sharedElement("image", image.coilImageModel)
+                        .fillMaxWidth()
+                        .conditionallyNonNull(size) {
+                            aspectRatio(it.width.toFloat() / it.height)
+                        }
+                )
+            }
         }
+
+        VerticalScrollbar(
+            state = gridState,
+            alwaysVisible = true,
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 8.dp, bottom = 72.dp)
+        )
     }
 }

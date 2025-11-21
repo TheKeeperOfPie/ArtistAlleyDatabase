@@ -267,7 +267,9 @@ object ArtistEditScreen {
                             sharedElementId = state.textState.id.value.text.toString(),
                             images = state.images,
                             imagePagerState = imagePagerState,
-                            onClickImage = {},
+                            onClickPage = {
+                                // TODO: Open images screen
+                            },
                         )
                         form(Modifier.fillMaxWidth())
                     }
@@ -314,13 +316,13 @@ object ArtistEditScreen {
         sharedElementId: Any,
         images: List<EditImage>,
         imagePagerState: PagerState,
-        onClickImage: (EditImage) -> Unit,
+        onClickPage: (page: Int) -> Unit,
     ) {
         ImagePager(
             images = images,
             pagerState = imagePagerState,
             sharedElementId = sharedElementId,
-            onClickPage = { onClickImage(images[it]) },
+            onClickPage = onClickPage,
             imageContentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxWidth().height(400.dp)
         )

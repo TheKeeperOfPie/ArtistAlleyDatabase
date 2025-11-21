@@ -50,6 +50,7 @@ kotlin {
             api(libs.jetBrainsCompose.ui.backhandler)
             api(libs.paging.common)
             api(libs.paging.compose)
+            api(libs.zoomable)
 
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)

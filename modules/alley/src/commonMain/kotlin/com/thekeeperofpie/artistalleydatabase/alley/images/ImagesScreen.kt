@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.images
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.gestures.animateZoomBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -16,12 +15,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
@@ -29,9 +26,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
-import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomPanState
+import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -83,13 +81,7 @@ object ImagesScreen {
         ) {
             Column(Modifier.padding(it)) {
                 val images = images()
-                val zoomPanStates = rememberSaveable(
-                    images,
-                    LocalDensity.current,
-                    saver = MultiZoomPanState.Saver
-                ) {
-                    MultiZoomPanState(images.size)
-                }
+                val multiZoomableState = rememberMultiZoomableState(images.size)
                 ImagePager(
                     images = images,
                     pagerState = imagePagerState,
@@ -98,27 +90,42 @@ object ImagesScreen {
                     clipCorners = false,
                     forceMinHeight = false,
                     imageContentScale = ContentScale.Fit,
-                    zoomPanStates = zoomPanStates,
+                    multiZoomableState = multiZoomableState,
                     modifier = Modifier.weight(1f)
                 )
 
                 if (images.isNotEmpty()) {
                     val imageIndex = imagePagerState.currentPage - 1
-                    val zoomPanState = zoomPanStates[imageIndex.coerceAtLeast(0)]
+                    val zoomPanState = multiZoomableState[imageIndex.coerceAtLeast(0)]
                     val scope = rememberCoroutineScope()
                     val alpha by animateFloatAsState(if (imageIndex >= 0 || images.size == 1) 1f else 0f)
+                    val scale = AnimationUtils.lerp(
+                        start = zoomPanState.zoomSpec.minimum.factor,
+                        end = zoomPanState.zoomSpec.maximum.factor,
+                        progress = zoomPanState.zoomFraction ?: 0.5f,
+                    )
                     ZoomSlider(
-                        scale = { zoomPanState.scale },
-                        onScaleChange = zoomPanState::onZoomChange,
-                        scaleRange = (1f..5f),
+                        scale = { scale },
+                        onScaleChange = {
+                            scope.launch {
+                                zoomPanState.zoomTo(
+                                    AnimationUtils.lerp(
+                                        start = zoomPanState.zoomSpec.minimum.factor,
+                                        end = zoomPanState.zoomSpec.maximum.factor,
+                                        progress = it,
+                                    )
+                                )
+                            }
+                        },
+                        scaleRange = (0f..1f),
                         onClickZoomOut = {
                             scope.launch {
-                                zoomPanState.transformableState.animateZoomBy(0.8f)
+                                zoomPanState.zoomBy(0.8f)
                             }
                         },
                         onClickZoomIn = {
                             scope.launch {
-                                zoomPanState.transformableState.animateZoomBy(1.2f)
+                                zoomPanState.zoomBy(1.2f)
                             }
                         },
                         modifier = Modifier

@@ -48,6 +48,7 @@ kotlin {
             implementation(libs.paging.compose)
             implementation(libs.qrose)
             implementation(libs.sqldelight.coroutines.extensions)
+            implementation(libs.zoomable)
         }
         androidMain {
             dependsOn(jvmMain)

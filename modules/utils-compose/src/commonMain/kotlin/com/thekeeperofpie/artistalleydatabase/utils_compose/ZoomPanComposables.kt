@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +40,25 @@ import androidx.compose.ui.util.lerp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.zoom_in
 import artistalleydatabase.modules.utils_compose.generated.resources.zoom_out
+import me.saket.telephoto.zoomable.ZoomableState
+import me.saket.telephoto.zoomable.rememberZoomableState
 import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun rememberMultiZoomableState(size: Int): MultiZoomableState {
+    val states = (0 until size).map {
+        key(it) {
+            rememberZoomableState()
+        }
+    }
+    return remember(states) { MultiZoomableState(states) }
+}
+
+class MultiZoomableState(
+    private val states: List<ZoomableState>,
+) {
+    operator fun get(index: Int) = states[index]
+}
 
 class MultiZoomPanState private constructor(
     private val states: List<ZoomPanState>,

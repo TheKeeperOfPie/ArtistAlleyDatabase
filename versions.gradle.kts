@@ -112,6 +112,7 @@ object Versions {
     const val sqldelight = "2.1.0"
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
+    const val telephoto = "0.18.0"
     const val turbine = "1.2.1"
     const val unityAds = "4.16.3"
     const val uriKmp = "0.0.21"
@@ -382,6 +383,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("io.github.petertrr:kotlin-multiplatform-diff:${Versions.diffUtils}")
                 library("io.github.alexzhirkevich:qrose:${Versions.qrose}")
                 library("it.skrape:skrapeit:${Versions.skrapeIt}")
+                library("me.saket.telephoto:zoomable:${Versions.telephoto}")
                 library("nl.jacobras:Human-Readable:${Versions.humanReadable}")
                 library("org.awaitility:awaitility:${Versions.awaitility}")
                 library("org.chromium.net:cronet-embedded:${Versions.cronetEmbedded}")
