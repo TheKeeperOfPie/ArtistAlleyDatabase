@@ -85,9 +85,6 @@ android {
         compose = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
     packaging {
         resources {
             merges += "/META-INF/*"
@@ -201,6 +198,9 @@ kotlin {
         }
         val webMain by getting {
             dependsOn(nonServiceWorkerCommonMain)
+            dependencies {
+                implementation(libs.kotlinx.browser)
+            }
         }
         jsMain.dependencies {
             implementation(libs.jetBrainsCompose.ui.backhandler)

@@ -564,7 +564,7 @@ object ArtistAlleyAppScreen {
                     }
                 }
 
-                if (BuildVariant.isDebug() && PlatformSpecificConfig.type != PlatformType.WASM) {
+                if (BuildVariant.isDebug() && PlatformSpecificConfig.type != PlatformType.WEB) {
                     Box(
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.primary)

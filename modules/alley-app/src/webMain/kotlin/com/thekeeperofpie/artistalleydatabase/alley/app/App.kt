@@ -13,7 +13,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.ExperimentalBrowserHistoryApi
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import artistalleydatabase.modules.alley_app.generated.resources.Res
 import artistalleydatabase.modules.alley_app.generated.resources.service_worker_reload
@@ -34,11 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberN
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
-
-expect suspend fun bindToNavigationFixed(
-    navHostController: NavHostController,
-    deepLinker: DeepLinker,
-)
 
 private lateinit var artistImageCache: ArtistImageCache
 

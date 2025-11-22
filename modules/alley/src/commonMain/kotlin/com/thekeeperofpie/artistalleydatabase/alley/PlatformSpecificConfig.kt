@@ -11,5 +11,5 @@ expect object PlatformSpecificConfig {
 }
 
 enum class PlatformType {
-    ANDROID, DESKTOP, WASM
+    ANDROID, DESKTOP, WEB
 }

@@ -86,6 +86,7 @@ object Versions {
     const val kmpalette = "3.1.0"
 
     object kotlin {
+        const val browser = "0.5.0"
         const val core = "2.3.0-Beta2"
         const val coroutines = "1.10.2"
         const val datetime = "0.7.1-0.6.x-compat"
@@ -287,6 +288,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                     }
                     library("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:$core")
                     library("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$core")
+                    library("org.jetbrains.kotlinx:kotlinx-browser:$browser")
                     library("org.jetbrains.kotlinx:kotlinx-datetime:$datetime")
                     library("org.jetbrains.kotlinx:kotlinx-io-core:$io")
                     library("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")

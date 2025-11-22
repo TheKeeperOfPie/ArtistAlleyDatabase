@@ -13,6 +13,7 @@ kotlin {
             api(projects.modules.alley.data)
             implementation(libs.sqldelight.coroutines.extensions)
             implementation(libs.kotlinx.io.core)
+            implementation(projects.modules.utils)
         }
         androidMain.dependencies {
             implementation(libs.androidx.sqlite)

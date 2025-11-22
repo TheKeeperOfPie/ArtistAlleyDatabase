@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
