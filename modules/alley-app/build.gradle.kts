@@ -451,7 +451,8 @@ tasks.register("webRelease") {
         // This is done here because syncing the site involves replacing all of the files in the
         // git repo, and so this file would be lost between builds.
         val txtFiles = folder.listFiles { it.extension == "txt" }!!.map { it.name }
-        folder.resolve(".gitignore").writeText(txtFiles.joinToString("\n"))
+        folder.resolve(".gitignore")
+            .writeText(txtFiles.joinToString("\n") + "\n.wrangler")
 
         // Map key changes from webpackChunkalley_app to webpackChunkalley_edit and needs to be
         // manually consolidated into the same key

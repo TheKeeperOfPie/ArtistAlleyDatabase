@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@cloudflare/pages-plugin-cloudflare-access" : "^1.0.5"
+  }
+}
