@@ -291,6 +291,15 @@ val copyAlleyEdit by tasks.registering(Copy::class) {
 
     // DuplicatesStrategy doesn't work for not overwriting buildBothWebVariants, manually exclude
     exclude {
+        if (it.path.contains("composeResources/artistalleydatabase")) {
+            if (
+                !it.path.contains("artistalleydatabase.modules.alley_edit.generated.resources") &&
+                !it.path.contains("artistalleydatabase.modules.alley.edit.generated.resources")
+            ) {
+                return@exclude true
+            }
+        }
+
         // This is really inefficient, but good enough since edit has a small number of files
         val sourceDir = sourceFiles.single()
         val alleyAppFiles = output.resolve("alleyAppFiles.txt")
