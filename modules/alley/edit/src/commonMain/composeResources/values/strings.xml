@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="alley_edit_top_level_nav_artists">Artists</string>
+    <string name="alley_edit_top_level_nav_series">Series</string>
+    <string name="alley_edit_top_level_nav_merch">Merch</string>
+
     <string name="alley_artist_edit_title_editing">Editing %1$s - %2$s</string>
     <string name="alley_artist_edit_title_adding">Adding %1$s</string>
     <string name="alley_artist_edit_id">ID</string>

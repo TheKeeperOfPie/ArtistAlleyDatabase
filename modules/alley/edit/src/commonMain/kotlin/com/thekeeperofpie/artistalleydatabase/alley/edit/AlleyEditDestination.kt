@@ -28,9 +28,17 @@ sealed interface AlleyEditDestination : NavKey {
         val images: List<EditImage>,
     ) : AlleyEditDestination
 
+    @Serializable
+    data object Series : AlleyEditDestination
+
+    @Serializable
+    data object Merch : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = when {
             route.isEmpty() || route.startsWith("home") -> Home
+            route == "series" -> Series
+            route == "merch" -> Merch
             route.startsWith("artist/add") -> try {
                 val (year, artist) = route.removePrefix("artist/add/").split("/")
                 val artistId = Uuid.parse(artist)
@@ -61,6 +69,8 @@ sealed interface AlleyEditDestination : NavKey {
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ImagesEdit -> null
+            is Series -> "series"
+            is Merch -> "merch"
             Home -> ""
         }
     }

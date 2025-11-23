@@ -23,6 +23,8 @@ import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -94,11 +96,11 @@ private fun Content(graph: ArtistAlleyEditGraph) {
         CompositionLocalProvider(
             LocalWindowConfiguration provides windowConfiguration,
         ) {
-            val twoWayStack = rememberArtistAlleyEditTwoWayStack()
-            ArtistAlleyEditApp(graph = graph, twoWayStack = twoWayStack)
+            val navStack = rememberArtistAlleyEditTopLevelStacks()
+            ArtistAlleyEditApp(graph = graph, navStack = navStack)
 
             val scope = rememberCoroutineScope()
-            val browserInput = remember(scope, twoWayStack) { BrowserInput(scope, twoWayStack) }
+            val browserInput = remember(scope, navStack) { BrowserInput(scope, navStack) }
             val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
             DisposableEffect(navigationEventDispatcherOwner, browserInput) {
                 val dispatcher = navigationEventDispatcherOwner?.navigationEventDispatcher
@@ -110,7 +112,7 @@ private fun Content(graph: ArtistAlleyEditGraph) {
     }
 }
 
-class BrowserInput(scope: CoroutineScope, twoWayStack: ArtistAlleyEditTwoWayStack) :
+class BrowserInput(scope: CoroutineScope, navStack: ArtistAlleyEditTopLevelStacks) :
     NavigationEventInput() {
     init {
         scope.launch {
@@ -126,7 +128,7 @@ class BrowserInput(scope: CoroutineScope, twoWayStack: ArtistAlleyEditTwoWayStac
                         val route = localWindow.location.pathname.substringAfter("edit/")
                         val destination = AlleyEditDestination.parseRoute(route)
                         if (destination != null) {
-                            twoWayStack.navigate(destination)
+                            navStack.navigate(destination)
                         }
                         return@collect
                     }
@@ -134,7 +136,7 @@ class BrowserInput(scope: CoroutineScope, twoWayStack: ArtistAlleyEditTwoWayStac
                     Snapshot.withMutableSnapshot {
                         val restoredRoutes = state.lines()
                             .map(AlleyEditDestination::parseRoute)
-                        val currentRoutes = twoWayStack.navBackStack
+                        val currentRoutes = navStack.navBackStack()
 
                         var commonTail = -1
                         restoredRoutes.forEachIndexed { index, restoredRoute ->
@@ -150,8 +152,8 @@ class BrowserInput(scope: CoroutineScope, twoWayStack: ArtistAlleyEditTwoWayStac
                             currentRoutes.size - 2 -> dispatchOnBackCompleted()
                             -1, 0 -> {
                                 val root = currentRoutes.removeFirst()
-                                twoWayStack.navBackStack.clear()
-                                twoWayStack.navBackStack += root
+                                navStack.navBackStack().clear()
+                                navStack.navBackStack() += root
                             }
                             else -> ((currentRoutes.size - 1) downTo commonTail + 1).forEach {
                                 currentRoutes.removeAt(it)
@@ -161,14 +163,14 @@ class BrowserInput(scope: CoroutineScope, twoWayStack: ArtistAlleyEditTwoWayStac
                         if (commonTail < restoredRoutes.size - 1) {
                             restoredRoutes.subList(commonTail + 1, restoredRoutes.size)
                                 .filterNotNull()
-                                .forEach(twoWayStack::navigate)
+                                .forEach(navStack::navigate)
                         }
                     }
                 }
             }
 
             launch {
-                snapshotFlow { twoWayStack.navBackStack.toList() }
+                snapshotFlow { navStack.navBackStack().toList() }
                     .collect {
                         val routes =
                             it.mapNotNull { AlleyEditDestination.toEncodedRoute(it as AlleyEditDestination) }

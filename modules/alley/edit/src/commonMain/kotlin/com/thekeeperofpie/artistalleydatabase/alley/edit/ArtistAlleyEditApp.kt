@@ -1,28 +1,34 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberDecoratedNavEntries
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.home.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.TopLevelStackKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberDecoratedNavEntries
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
@@ -30,137 +36,155 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.sharedElementEntry
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ArtistAlleyEditApp(
     graph: ArtistAlleyEditGraph,
-    twoWayStack: ArtistAlleyEditTwoWayStack = rememberArtistAlleyEditTwoWayStack(),
+    navStack: ArtistAlleyEditTopLevelStacks = rememberArtistAlleyEditTopLevelStacks(),
 ) {
-    Scaffold { paddingValues ->
-        CompositionLocalProvider(LocalNavigationController provides remember {
-            object : NavigationController {
-                override fun navigateUp(): Boolean = false
-                override fun navigate(navDestination: NavDestination) {}
-                override fun popBackStack() = false
-                override fun popBackStack(navDestination: NavDestination) = false
-            }
-        }) {
-            SharedTransitionLayout {
-                CompositionLocalProvider(
-                    LocalSharedTransitionScope provides this,
-                    LocalNavigationResults provides rememberNavigationResults(),
+    CompositionLocalProvider(LocalNavigationController provides remember {
+        object : NavigationController {
+            override fun navigateUp(): Boolean = false
+            override fun navigate(navDestination: NavDestination) {}
+            override fun popBackStack() = false
+            override fun popBackStack(navDestination: NavDestination) = false
+        }
+    }) {
+        SharedTransitionLayout {
+            CompositionLocalProvider(
+                LocalSharedTransitionScope provides this,
+                LocalNavigationResults provides rememberNavigationResults(),
+            ) {
+                val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
+                val onClickBackInput = remember { DirectNavigationEventInput() }
+                DisposableEffect(onClickBackInput) {
+                    val dispatcher = navigationEventDispatcherOwner?.navigationEventDispatcher
+                        ?: return@DisposableEffect onDispose {}
+                    dispatcher.addInput(onClickBackInput)
+                    onDispose { dispatcher.removeInput(onClickBackInput) }
+                }
+                DisposableEffect(navigationEventDispatcherOwner, navStack) {
+                    navigationEventDispatcherOwner?.navigationEventDispatcher
+                        ?.addHandler(navStack)
+                    onDispose { navStack.remove() }
+                }
+
+                val onClickBack = { force: Boolean ->
+                    if (force) {
+                        navStack.onBack()
+                    } else {
+                        onClickBackInput.backCompleted()
+                    }
+                }
+                val entryProvider = entryProvider(
+                    graph = graph,
+                    navStack = navStack,
+                    onClickBack = onClickBack,
+                )
+
+                val decoratedNavEntries = rememberDecoratedNavEntries(navStack, entryProvider)
+
+                NavigationSuiteScaffold(
+                    navigationSuiteItems = {
+                        TopLevelStackKey.entries.forEachIndexed { index, key ->
+                            item(
+                                icon = {
+                                    Icon(
+                                        imageVector = key.icon,
+                                        contentDescription = stringResource(key.title)
+                                    )
+                                },
+                                label = { Text(stringResource(key.title)) },
+                                selected = navStack.topLevelStackIndex == index,
+                                onClick = { navStack.topLevelStackIndex = index },
+                                modifier = Modifier.zIndex(3f)
+                            )
+                        }
+                    }
                 ) {
-                    val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
-                    val onClickBackInput = remember { DirectNavigationEventInput() }
-                    DisposableEffect(onClickBackInput) {
-                        val dispatcher = navigationEventDispatcherOwner?.navigationEventDispatcher
-                            ?: return@DisposableEffect onDispose {}
-                        dispatcher.addInput(onClickBackInput)
-                        onDispose { dispatcher.removeInput(onClickBackInput) }
-                    }
-                    DisposableEffect(navigationEventDispatcherOwner, twoWayStack) {
-                        navigationEventDispatcherOwner?.navigationEventDispatcher
-                            ?.addHandler(twoWayStack)
-                        onDispose { twoWayStack.remove() }
-                    }
-
-                    val onClickBack = { force: Boolean ->
-                        if (force) {
-                            twoWayStack.onBack()
-                        } else {
-                            onClickBackInput.backCompleted()
-                        }
-                    }
-                    val entryProvider = entryProvider<NavKey> {
-                        sharedElementEntry<AlleyEditDestination.Home> {
-                            HomeScreen(
-                                graph = graph,
-                                onAddArtist = {
-                                    twoWayStack.navigate(AlleyEditDestination.ArtistAdd(it))
-                                },
-                                onEditArtist = { dataYear, artistId ->
-                                    twoWayStack.navigate(
-                                        AlleyEditDestination.ArtistEdit(
-                                            dataYear,
-                                            artistId
-                                        )
-                                    )
-                                },
-                            )
-                        }
-                        sharedElementEntry<AlleyEditDestination.ArtistAdd> { route ->
-                            ArtistEditScreen(
-                                dataYear = route.dataYear,
-                                artistId = null,
-                                graph = graph,
-                                onClickBack = onClickBack,
-                                onClickEditImages = { displayName, images ->
-                                    twoWayStack.navigate(
-                                        AlleyEditDestination.ImagesEdit(
-                                            route.dataYear,
-                                            displayName,
-                                            images
-                                        )
-                                    )
-                                },
-                            )
-                        }
-                        sharedElementEntry<AlleyEditDestination.ArtistEdit> { route ->
-                            ArtistEditScreen(
-                                dataYear = route.dataYear,
-                                artistId = route.artistId,
-                                graph = graph,
-                                onClickBack = onClickBack,
-                                onClickEditImages = { displayName, images ->
-                                    twoWayStack.navigate(
-                                        AlleyEditDestination.ImagesEdit(
-                                            route.dataYear,
-                                            displayName,
-                                            images
-                                        )
-                                    )
-                                },
-                            )
-                        }
-                        sharedElementEntry<AlleyEditDestination.ImagesEdit> {
-                            ImagesEditScreen(route = it, graph = graph, onClickBack = onClickBack)
-                        }
-                    }
-
-                    val decoratedNavEntries =
-                        (twoWayStack.navBackStack + twoWayStack.navForwardStack)
-                            .flatMap {
-                                key(it.toString()) {
-                                    rememberDecoratedNavEntries(
-                                        backStack = listOf(it),
-                                        entryDecorators = listOf(
-                                            rememberSaveableStateHolderNavEntryDecorator(),
-                                            rememberViewModelStoreNavEntryDecorator()
-                                        ),
-                                        entryProvider = entryProvider,
-                                    )
-                                }
-                            }
-
                     NavDisplay(
-                        entries = decoratedNavEntries.take(twoWayStack.navBackStack.size),
-                        onBack = twoWayStack::onBack,
+                        entries = navStack.calculateBackStack(decoratedNavEntries),
+                        onBack = navStack::onBack,
                         transitionSpec = {
-                            slideInHorizontally(initialOffsetX = { it }) togetherWith
-                                    slideOutHorizontally(targetOffsetX = { -it })
+                            slideInHorizontally(initialOffsetX = { it }) togetherWith fadeOut()
                         },
                         popTransitionSpec = {
-                            slideInHorizontally(initialOffsetX = { -it }) togetherWith
-                                    slideOutHorizontally(targetOffsetX = { it })
+                            slideInHorizontally(initialOffsetX = { -it }) togetherWith fadeOut()
                         },
                         predictivePopTransitionSpec = {
-                            slideInHorizontally(initialOffsetX = { -it }) togetherWith
-                                    slideOutHorizontally(targetOffsetX = { it })
+                            slideInHorizontally(initialOffsetX = { -it }) togetherWith fadeOut()
                         },
-                        modifier = Modifier.padding(paddingValues)
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun entryProvider(
+    graph: ArtistAlleyEditGraph,
+    navStack: ArtistAlleyEditTopLevelStacks,
+    onClickBack: (force: Boolean) -> Unit,
+) = entryProvider<NavKey> {
+    sharedElementEntry<AlleyEditDestination.Home> {
+        HomeScreen(
+            graph = graph,
+            onAddArtist = {
+                navStack.navigate(AlleyEditDestination.ArtistAdd(it))
+            },
+            onEditArtist = { dataYear, artistId ->
+                navStack.navigate(
+                    AlleyEditDestination.ArtistEdit(
+                        dataYear,
+                        artistId
+                    )
+                )
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.ArtistAdd> { route ->
+        ArtistEditScreen(
+            dataYear = route.dataYear,
+            artistId = null,
+            graph = graph,
+            onClickBack = onClickBack,
+            onClickEditImages = { displayName, images ->
+                navStack.navigate(
+                    AlleyEditDestination.ImagesEdit(
+                        route.dataYear,
+                        displayName,
+                        images
+                    )
+                )
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.ArtistEdit> { route ->
+        ArtistEditScreen(
+            dataYear = route.dataYear,
+            artistId = route.artistId,
+            graph = graph,
+            onClickBack = onClickBack,
+            onClickEditImages = { displayName, images ->
+                navStack.navigate(
+                    AlleyEditDestination.ImagesEdit(
+                        route.dataYear,
+                        displayName,
+                        images
+                    )
+                )
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.ImagesEdit> {
+        ImagesEditScreen(route = it, graph = graph, onClickBack = onClickBack)
+    }
+    sharedElementEntry<AlleyEditDestination.Series> {
+        Text("Series screen", Modifier.background(Color.Red).padding(16.dp))
+    }
+    sharedElementEntry<AlleyEditDestination.Merch> {
+        Text("Merch screen", Modifier.background(Color.Blue).padding(16.dp))
     }
 }
