@@ -2,10 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import kotlin.uuid.Uuid
 
 interface SeriesRowInfo {
     val id: String
-    val uuid: String
+    val uuid: Uuid
     val notes: String?
     val aniListId: Long?
     val aniListType: String?
@@ -26,7 +27,7 @@ interface SeriesRowInfo {
 
     class Impl(
         override val id: String,
-        override val uuid: String,
+        override val uuid: Uuid,
         override val notes: String?,
         override val aniListId: Long?,
         override val aniListType: String?,
@@ -41,7 +42,7 @@ interface SeriesRowInfo {
 
 fun SeriesEntry.toRowInfo() = SeriesRowInfo.Impl(
     id = id,
-    uuid = uuid,
+    uuid = Uuid.parse(uuid),
     notes = notes,
     aniListId = aniListId,
     aniListType = aniListType,

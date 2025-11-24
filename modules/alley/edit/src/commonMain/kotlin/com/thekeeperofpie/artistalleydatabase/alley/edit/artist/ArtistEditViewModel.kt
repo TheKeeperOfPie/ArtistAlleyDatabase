@@ -41,7 +41,7 @@ class ArtistEditViewModel(
     seriesImagesStore: SeriesImagesStore,
     @Assisted private val dataYear: DataYear,
     @Assisted artistId: Uuid,
-    @Assisted internal val mode: ArtistEditScreen.Mode,
+    @Assisted val mode: ArtistEditScreen.Mode,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val textState by savedStateHandle.saveable(saver = ArtistEditScreen.State.TextState.Saver) {

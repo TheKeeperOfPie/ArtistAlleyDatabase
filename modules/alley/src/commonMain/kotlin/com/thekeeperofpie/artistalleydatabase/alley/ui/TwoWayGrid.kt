@@ -46,13 +46,14 @@ object TwoWayGrid {
         columns: EnumEntries<ColumnType>,
         columnHeader: @Composable (column: ColumnType) -> Unit,
         tableCell: @Composable (row: T?, column: ColumnType) -> Unit,
+        modifier: Modifier = Modifier,
         noResultsHeader: @Composable (() -> Unit)? = null,
         moreResultsFooter: @Composable (() -> Unit)? = null,
         listState: LazyListState = rememberLazyListState(),
         horizontalScrollState: ScrollState = rememberScrollState(),
         topOffset: Dp = 0.dp,
+        pinnedColumns: Int = 1,
         contentPadding: PaddingValues = PaddingValues(0.dp),
-        modifier: Modifier = Modifier,
     ) where T : Any, ColumnType : Enum<ColumnType>, ColumnType : Column {
         val width = remember(columns) {
             val dividerCount = columns.size - 1
@@ -74,10 +75,12 @@ object TwoWayGrid {
                             .padding(top = topOffset)
                             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp))
                     ) {
-                        columns.firstOrNull()?.let { columnHeader(it) }
-                        VerticalDivider()
+                        columns.take(pinnedColumns).forEach {
+                            columnHeader(it)
+                            VerticalDivider()
+                        }
                         Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
-                            columns.drop(1).forEachIndexed { columnIndex, column ->
+                            columns.drop(pinnedColumns).forEachIndexed { columnIndex, column ->
                                 columnHeader(column)
                                 if (columnIndex != columns.lastIndex - 1) {
                                     VerticalDivider()
@@ -96,14 +99,14 @@ object TwoWayGrid {
 
                 items(rows.itemCount) { index ->
                     Row(Modifier.height(IntrinsicSize.Min)) {
-                        columns.firstOrNull()?.let {
+                        columns.take(pinnedColumns).forEach {
                             Box(Modifier.requiredWidth(it.size)) {
                                 tableCell(rows[index], it)
                             }
+                            VerticalDivider()
                         }
-                        VerticalDivider()
                         Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
-                            columns.drop(1).forEachIndexed { columnIndex, column ->
+                            columns.drop(pinnedColumns).forEachIndexed { columnIndex, column ->
                                 Box(Modifier.requiredWidth(column.size)) {
                                     tableCell(rows[index], column)
                                 }

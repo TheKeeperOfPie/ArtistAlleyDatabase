@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.home
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 
 @AssistedInject
-class HomeViewModel(
+class ArtistListViewModel(
     database: AlleyEditDatabase,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -37,6 +37,6 @@ class HomeViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): HomeViewModel
+        fun create(savedStateHandle: SavedStateHandle): ArtistListViewModel
     }
 }

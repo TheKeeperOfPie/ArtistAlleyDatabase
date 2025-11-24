@@ -2,13 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
+import kotlin.uuid.Uuid
 
 data class SeriesWithUserData(
     val series: SeriesEntry,
     val userEntry: SeriesUserEntry,
 ): SeriesRowInfo {
+    override val uuid = Uuid.parse(series.uuid)
+
     override val id get() = series.id
-    override val uuid get() = series.uuid
     override val notes get() = series.notes
     override val aniListId get() = series.aniListId
     override val aniListType get() = series.aniListType

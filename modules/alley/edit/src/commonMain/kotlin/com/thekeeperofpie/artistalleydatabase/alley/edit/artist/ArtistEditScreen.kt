@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -29,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -41,7 +39,6 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -53,9 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_catalog_links
@@ -76,9 +70,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_save_changes_title
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_exit
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_error_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -87,6 +79,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -98,9 +91,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
+import com.thekeeperofpie.artistalleydatabase.entry.form.FormErrorValidation
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
+import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -276,8 +271,7 @@ object ArtistEditScreen {
                 }
             }
 
-            ExitDialog(
-                mode = mode,
+            GenericExitDialog(
                 onClickBack = { onClickBack(true) },
                 onClickSave = onClickSave,
             )
@@ -343,12 +337,14 @@ object ArtistEditScreen {
                 title = Res.string.alley_artist_edit_id,
                 previousFocus = null,
                 nextFocus = textState.booth.focusRequester,
+                errorValidation = rememberUuidValidator(),
             )
             SingleTextSection(
                 state = textState.booth,
                 title = Res.string.alley_artist_edit_booth,
                 previousFocus = textState.id.focusRequester,
                 nextFocus = textState.name.focusRequester,
+                errorValidation = rememberBoothValidator(),
             )
             SingleTextSection(
                 state = textState.name,
@@ -435,23 +431,6 @@ object ArtistEditScreen {
                 },
             )
         }
-    }
-
-    @Composable
-    private fun EntryFormScope.SingleTextSection(
-        state: EntryForm2.SingleTextState,
-        title: StringResource,
-        previousFocus: FocusRequester?,
-        nextFocus: FocusRequester?,
-    ) {
-        SingleTextSection(
-            state = state,
-            headerText = { Text(stringResource(title)) },
-            onTab = {
-                val focusRequester = if (it) nextFocus else previousFocus
-                focusRequester?.requestFocus()
-            },
-        )
     }
 
     @Composable
@@ -624,47 +603,21 @@ object ArtistEditScreen {
         )
     }
 
+    @Stable
     @Composable
-    private fun ExitDialog(
-        mode: Mode,
-        onClickBack: () -> Unit,
-        onClickSave: () -> Unit,
-    ) {
-        when (mode) {
-            Mode.ADD -> Unit
-            Mode.EDIT -> return
-        }
-        var showBackDialog by rememberSaveable { mutableStateOf(false) }
-        NavigationBackHandler(
-            state = rememberNavigationEventState(NavigationEventInfo.None),
-        ) {
-            showBackDialog = true
-        }
-        if (showBackDialog) {
-            AlertDialog(
-                onDismissRequest = { showBackDialog = false },
-                title = {
-                    Text(stringResource(Res.string.alley_edit_artist_save_changes_title))
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showBackDialog = false
-                            onClickSave()
-                        },
-                    ) {
-                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_save))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showBackDialog = false
-                        onClickBack()
-                    }) {
-                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_exit))
-                    }
-                }
-            )
+    private fun rememberBoothValidator(): FormErrorValidation.Derived {
+        val errorMessage = stringResource(Res.string.alley_edit_series_error_booth)
+        return FormErrorValidation.Derived {
+            val booth = it.toString()
+            if (booth.isNotBlank() &&
+                booth.length != 3 ||
+                !booth.first().isLetter() ||
+                booth.drop(1).toIntOrNull() == null
+            ) {
+                errorMessage
+            } else {
+                null
+            }
         }
     }
 

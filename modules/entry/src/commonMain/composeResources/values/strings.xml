@@ -46,4 +46,9 @@
     <string name="entry_image_menu_option_crop">Crop</string>
 
     <string name="entry_open_more_content_description">Open more</string>
+
+    <string name="entry_error_invalid_uuid">Invalid UUID</string>
+    <string name="entry_error_invalid_number">Invalid number</string>
+    <string name="entry_error_invalid_link">Invalid link</string>
+    <string name="entry_error_invalid_link_scheme">Link must be https</string>
 </resources>

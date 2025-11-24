@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -23,12 +25,14 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.home.HomeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.TopLevelStackKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberDecoratedNavEntries
+import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
@@ -110,10 +114,10 @@ fun ArtistAlleyEditApp(
                             slideInHorizontally(initialOffsetX = { it }) togetherWith fadeOut()
                         },
                         popTransitionSpec = {
-                            slideInHorizontally(initialOffsetX = { -it }) togetherWith fadeOut()
+                            fadeIn() togetherWith slideOutHorizontally(targetOffsetX = { it })
                         },
                         predictivePopTransitionSpec = {
-                            slideInHorizontally(initialOffsetX = { -it }) togetherWith fadeOut()
+                            slideInHorizontally(initialOffsetX = { it }) togetherWith fadeOut()
                         },
                     )
                 }
@@ -182,7 +186,31 @@ private fun entryProvider(
         ImagesEditScreen(route = it, graph = graph, onClickBack = onClickBack)
     }
     sharedElementEntry<AlleyEditDestination.Series> {
-        Text("Series screen", Modifier.background(Color.Red).padding(16.dp))
+        SeriesListScreen(
+            graph = graph,
+            onClickEditSeries = {
+                navStack.navigate(AlleyEditDestination.SeriesEdit(it))
+            },
+            onClickAddSeries = {
+                navStack.navigate(AlleyEditDestination.SeriesAdd())
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.SeriesAdd> {
+        SeriesEditScreen(
+            seriesId = it.seriesId,
+            initialInfo = null,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.SeriesEdit> {
+        SeriesEditScreen(
+            seriesId = it.series.uuid,
+            initialInfo = it.series,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
     }
     sharedElementEntry<AlleyEditDestination.Merch> {
         Text("Merch screen", Modifier.background(Color.Blue).padding(16.dp))

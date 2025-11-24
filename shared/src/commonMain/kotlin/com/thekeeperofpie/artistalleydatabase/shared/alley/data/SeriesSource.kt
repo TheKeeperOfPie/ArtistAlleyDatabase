@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.shared.alley.data
 
 enum class SeriesSource {
+    NONE,
     ANIME,
     BOOK,
     COMIC,
@@ -19,5 +20,4 @@ enum class SeriesSource {
     WEB_NOVEL,
     WEB_SERIES,
     WEBTOON,
-    NONE,
 }

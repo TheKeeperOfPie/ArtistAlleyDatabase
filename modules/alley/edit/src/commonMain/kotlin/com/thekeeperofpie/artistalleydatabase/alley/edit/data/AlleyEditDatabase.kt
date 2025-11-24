@@ -51,11 +51,12 @@ class AlleyEditDatabase(
         .associate {
             it.id to SeriesInfo(
                 id = it.id,
-                uuid = it.uuid,
+                uuid = Uuid.parse(it.uuid),
                 notes = it.notes,
                 aniListId = it.aniListId,
                 aniListType = it.aniListType,
                 wikipediaId = it.wikipediaId,
+                source = it.source,
                 titlePreferred = it.titlePreferred,
                 titleEnglish = it.titleEnglish,
                 titleRomaji = it.titleRomaji,

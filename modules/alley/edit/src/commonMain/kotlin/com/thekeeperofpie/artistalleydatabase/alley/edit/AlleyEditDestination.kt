@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
@@ -30,6 +31,12 @@ sealed interface AlleyEditDestination : NavKey {
 
     @Serializable
     data object Series : AlleyEditDestination
+
+    @Serializable
+    data class SeriesAdd(val seriesId: Uuid = Uuid.random()) : AlleyEditDestination
+
+    @Serializable
+    data class SeriesEdit(val series: SeriesInfo) : AlleyEditDestination
 
     @Serializable
     data object Merch : AlleyEditDestination
@@ -68,10 +75,12 @@ sealed interface AlleyEditDestination : NavKey {
                     Uri.encode(destination.artistId.toString())
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
-            is ImagesEdit -> null
             Series -> "series"
+            is SeriesAdd -> "series/add/${Uri.encode(destination.seriesId.toString())}"
             Merch -> "merch"
             Home -> ""
+            is ImagesEdit,
+            is SeriesEdit -> null
         }
     }
 }

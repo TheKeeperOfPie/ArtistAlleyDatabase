@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.home
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -65,8 +65,8 @@ internal object HomeScreen {
         graph: ArtistAlleyEditGraph,
         onAddArtist: (dataYear: DataYear) -> Unit,
         onEditArtist: (dataYear: DataYear, id: Uuid) -> Unit,
-        viewModel: HomeViewModel = viewModel {
-            graph.homeViewModelFactory.create(createSavedStateHandle())
+        viewModel: ArtistListViewModel = viewModel {
+            graph.artistListViewModelFactory.create(createSavedStateHandle())
         },
     ) {
         HomeScreen(

@@ -3,8 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyComponent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.home.HomeViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
@@ -25,8 +27,10 @@ interface ArtistAlleyEditGraph : ArtistAlleyComponent {
 
     val appFileSystem: AppFileSystem
     val artistEditViewModelFactory: ArtistEditViewModel.Factory
-    val homeViewModelFactory: HomeViewModel.Factory
+    val artistListViewModelFactory: ArtistListViewModel.Factory
     val imagesEditViewModelFactory: ImagesEditViewModel.Factory
+    val seriesEditViewModelFactory: SeriesEditViewModel.Factory
+    fun seriesListViewModel(): SeriesListViewModel
 
     @Provides
     fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient

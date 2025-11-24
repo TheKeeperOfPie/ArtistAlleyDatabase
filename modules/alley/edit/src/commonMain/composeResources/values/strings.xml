@@ -46,4 +46,25 @@
     <string name="alley_edit_drag_handle_content_description">Drag handle</string>
 
     <string name="alley_edit_tag_delete_content_description">Delete tag</string>
+
+    <string name="alley_edit_series_header_edit">Edit</string>
+    <string name="alley_edit_series_header_image">Image</string>
+    <string name="alley_edit_series_header_canonical">Series</string>
+    <string name="alley_edit_series_header_notes">Notes</string>
+    <string name="alley_edit_series_header_aniList_id">AniList ID</string>
+    <string name="alley_edit_series_header_aniList_type">AniList Type</string>
+    <string name="alley_edit_series_header_source_type">Source Type</string>
+    <string name="alley_edit_series_header_title_english">English</string>
+    <string name="alley_edit_series_header_title_romaji">Romaji</string>
+    <string name="alley_edit_series_header_title_native">Native</string>
+    <string name="alley_edit_series_header_title_preferred">Preferred</string>
+    <string name="alley_edit_series_header_wikipedia_id">Wikipedia ID</string>
+    <string name="alley_edit_series_header_external_link">External link</string>
+    <string name="alley_edit_series_header_uuid">UUID</string>
+
+    <string name="alley_edit_series_action_edit_content_description">Edit</string>
+    <string name="alley_edit_series_action_add">Add series</string>
+    <string name="alley_edit_series_action_save_content_description">Save series</string>
+
+    <string name="alley_edit_series_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
 </resources>

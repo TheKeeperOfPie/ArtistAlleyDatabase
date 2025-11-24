@@ -285,6 +285,26 @@
     <string name="alley_series_filter_vtubers">VTubers</string>
     <string name="alley_series_filter_other">Other</string>
 
+    <string name="alley_series_source_anime">Anime</string>
+    <string name="alley_series_source_book">Book</string>
+    <string name="alley_series_source_comic">Comic</string>
+    <string name="alley_series_source_game">Game</string>
+    <string name="alley_series_source_light_novel">Light Novel</string>
+    <string name="alley_series_source_manga">Manga</string>
+    <string name="alley_series_source_movie">Movie</string>
+    <string name="alley_series_source_multimedia_project">Multimedia Project</string>
+    <string name="alley_series_source_music">Music</string>
+    <string name="alley_series_source_novel">Novel</string>
+    <string name="alley_series_source_other">Other</string>
+    <string name="alley_series_source_tv">TV</string>
+    <string name="alley_series_source_video_game">Video Game</string>
+    <string name="alley_series_source_visual_novel">Visual Novel</string>
+    <string name="alley_series_source_vtuber">VTuber</string>
+    <string name="alley_series_source_web_novel">Web Novel</string>
+    <string name="alley_series_source_web_series">Web Series</string>
+    <string name="alley_series_source_webtoon">Webtoon</string>
+    <string name="alley_series_source_none"/>
+
     <string name="alley_series_filter_label">Series</string>
     <string name="alley_series_filter_content_description">Series filter expand</string>
     <string name="alley_series_filter_search_placeholder">Search series…</string>

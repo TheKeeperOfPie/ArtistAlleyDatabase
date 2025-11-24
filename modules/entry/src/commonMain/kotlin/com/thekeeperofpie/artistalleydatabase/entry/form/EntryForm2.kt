@@ -116,6 +116,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -193,6 +194,17 @@ object EntryForm2 {
         override val wasEverDifferent get() = false
         val focusRequester = FocusRequester()
         var isFocused by mutableStateOf(false)
+
+        companion object {
+            fun fromValue(value: String?) = SingleTextState(
+                value = TextFieldState(value.orEmpty()),
+                initialLockState = if (value.isNullOrBlank()) {
+                    EntryLockState.UNLOCKED
+                } else {
+                    EntryLockState.LOCKED
+                }
+            )
+        }
 
         object Saver : ComposeSaver<SingleTextState, Any> {
             override fun SaverScope.save(value: SingleTextState) = listOf(
@@ -278,12 +290,32 @@ object EntryForm2 {
     }
 }
 
+@Composable
+fun EntryFormScope.SingleTextSection(
+    state: EntryForm2.SingleTextState,
+    title: StringResource,
+    previousFocus: FocusRequester?,
+    nextFocus: FocusRequester?,
+    errorValidation: FormErrorValidation? = null,
+) {
+    SingleTextSection(
+        state = state,
+        headerText = { Text(stringResource(title)) },
+        onTab = {
+            val focusRequester = if (it) nextFocus else previousFocus
+            focusRequester?.requestFocus()
+        },
+        errorValidation = errorValidation,
+    )
+}
+
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun EntryFormScope.SingleTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     onTab: (next: Boolean) -> Unit = {},
+    errorValidation: FormErrorValidation? = null,
 ) {
     Column {
         SectionHeader(
@@ -297,15 +329,37 @@ fun EntryFormScope.SingleTextSection(
             .focusRequester(state.focusRequester)
             .padding(horizontal = 16.dp)
             .interceptTab(onTab)
+        val errorText by remember {
+            derivedStateOf {
+                when (errorValidation) {
+                    is FormErrorValidation.Clearable -> errorValidation.text
+                    is FormErrorValidation.Derived -> errorValidation(state.value.text)
+                    null -> null
+                }
+            }
+        }
+        LaunchedEffect(errorValidation) {
+            if (errorValidation is FormErrorValidation.Clearable) {
+                snapshotFlow { state.value.text }
+                    .drop(1)
+                    .collectLatest {
+                        errorValidation.text = null
+                    }
+            }
+        }
         if (state.lockState == EntryLockState.UNLOCKED) {
             OutlinedTextField(
                 state = state.value,
+                supportingText = errorText?.let { { Text(it) } },
+                isError = errorText != null,
                 modifier = modifier
             )
         } else {
             TextField(
                 state = state.value,
                 readOnly = true,
+                supportingText = errorText?.let { { Text(it) } },
+                isError = errorText != null,
                 modifier = modifier
             )
         }
