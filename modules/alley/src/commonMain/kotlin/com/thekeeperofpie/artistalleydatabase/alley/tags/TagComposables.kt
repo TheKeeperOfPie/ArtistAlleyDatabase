@@ -44,7 +44,7 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRowInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
@@ -64,7 +64,7 @@ fun SeriesRow(
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     SeriesRow(
-        series = data,
+        series = data?.series,
         image = image,
         favoritesButton = {
             val languageOptionMedia = LocalLanguageOptionMedia.current
@@ -83,7 +83,7 @@ fun SeriesRow(
 
 @Composable
 fun SeriesRow(
-    series: SeriesRowInfo?,
+    series: SeriesInfo?,
     image: () -> String?,
     favoritesButton: (@Composable () -> Unit)? = null,
     onClick: (() -> Unit)? = null,

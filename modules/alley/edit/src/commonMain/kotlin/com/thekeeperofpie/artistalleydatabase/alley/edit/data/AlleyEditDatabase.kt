@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -48,22 +49,7 @@ class AlleyEditDatabase(
     }
 
     suspend fun loadSeries() = seriesEntryDao.getSeries()
-        .associate {
-            it.id to SeriesInfo(
-                id = it.id,
-                uuid = Uuid.parse(it.uuid),
-                notes = it.notes,
-                aniListId = it.aniListId,
-                aniListType = it.aniListType,
-                wikipediaId = it.wikipediaId,
-                source = it.source,
-                titlePreferred = it.titlePreferred,
-                titleEnglish = it.titleEnglish,
-                titleRomaji = it.titleRomaji,
-                titleNative = it.titleNative,
-                link = it.link,
-            )
-        }
+        .associate { it.id to it.toSeriesInfo() }
 
     suspend fun loadMerch() = merchEntryDao.getMerch()
         .associate {
@@ -76,7 +62,7 @@ class AlleyEditDatabase(
 
     fun getArtistEditImages(
         year: DataYear,
-        images: List<CatalogImage>
+        images: List<CatalogImage>,
     ) = images.map {
         val path = "files/${year.folderName}/catalogs/${it.name}"
         EditImage.DatabaseImage(

@@ -4,9 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -17,7 +17,7 @@ import kotlin.random.Random
 class ArtistEntryGridModel(
     val artist: ArtistEntry,
     val userEntry: ArtistUserEntry,
-    val series: List<SeriesEntry>,
+    val series: List<SeriesInfo>,
     val hasMoreSeries: Boolean,
     val merch: List<String>,
     val hasMoreMerch: Boolean,
@@ -46,7 +46,7 @@ class ArtistEntryGridModel(
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
             seriesEntryCache: SeriesEntryCache,
-        ): Pair<List<SeriesEntry>, Boolean> {
+        ): Pair<List<SeriesInfo>, Boolean> {
             val seriesIds = entry.artist.seriesConfirmed.toMutableList()
             if (!showOnlyConfirmedTags && seriesIds.size < TAGS_TO_SHOW) {
                 seriesIds += entry.artist.seriesInferred
@@ -59,7 +59,7 @@ class ArtistEntryGridModel(
             randomSeed: Int,
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
-            series: List<SeriesEntry>,
+            series: List<SeriesInfo>,
             hasMoreSeries: Boolean,
             showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
             fallbackCatalog: Pair<DataYear, List<CatalogImage>>?,

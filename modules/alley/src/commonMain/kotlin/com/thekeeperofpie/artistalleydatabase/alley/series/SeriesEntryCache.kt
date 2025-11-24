@@ -1,18 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
 import androidx.collection.LruCache
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import dev.zacsweers.metro.Inject
 
 @Inject
 class SeriesEntryCache(
     private val seriesEntryDao: SeriesEntryDao,
 ) {
-    val cache = LruCache<String, SeriesEntry>(500)
+    val cache = LruCache<String, SeriesInfo>(500)
 
-    suspend fun getSeries(ids: List<String>): List<SeriesEntry> {
+    suspend fun getSeries(ids: List<String>): List<SeriesInfo> {
         val missing = mutableListOf<String>()
-        val cachedSeries = mutableListOf<SeriesEntry>()
+        val cachedSeries = mutableListOf<SeriesInfo>()
         ids.forEach {
             val cached = cache[it]
             if (cached != null) {

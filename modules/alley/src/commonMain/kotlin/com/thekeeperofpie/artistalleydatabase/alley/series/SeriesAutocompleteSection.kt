@@ -40,10 +40,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_series_filter
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_clear_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_series_filter_search_placeholder
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.tags.name
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -74,7 +73,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class SeriesAutocompleteSection(
     scope: CoroutineScope,
     dispatchers: CustomDispatchers,
-    lockedSeriesEntry: StateFlow<SeriesEntry?>,
+    lockedSeriesEntry: StateFlow<SeriesInfo?>,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     savedStateHandle: SavedStateHandle,
@@ -235,7 +234,7 @@ class SeriesAutocompleteSection(
         val titleRomaji: String,
         val titleNative: String,
     ) {
-        constructor(entry: SeriesRowInfo) : this(
+        constructor(entry: SeriesInfo) : this(
             id = entry.id,
             titlePreferred = entry.titlePreferred,
             titleEnglish = entry.titleEnglish,

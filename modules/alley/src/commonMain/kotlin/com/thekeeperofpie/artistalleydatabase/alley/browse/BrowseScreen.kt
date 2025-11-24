@@ -63,8 +63,8 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
@@ -99,7 +99,7 @@ object BrowseScreen {
         tagsViewModel: TagsViewModel,
         dataYearHeaderState: DataYearHeaderState,
         onSeriesFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
-        onSeriesClick: (SeriesEntry) -> Unit,
+        onSeriesClick: (SeriesInfo) -> Unit,
         onMerchFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
         onMerchClick: (MerchEntry) -> Unit,
     ) {
@@ -179,7 +179,7 @@ object BrowseScreen {
                                             data = data,
                                             image = {
                                                 data?.let {
-                                                    tagsViewModel.getSeriesImage(it)
+                                                    tagsViewModel.getSeriesImage(it.series)
                                                 }
                                             },
                                             textStyle = LocalTextStyle.current,

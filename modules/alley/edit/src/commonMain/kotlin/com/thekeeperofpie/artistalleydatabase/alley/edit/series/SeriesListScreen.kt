@@ -49,7 +49,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_wikipedia_id
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
-import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar

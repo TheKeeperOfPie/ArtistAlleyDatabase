@@ -64,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.links.textRes
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -108,7 +109,7 @@ class ArtistSortFilterController(
     scope: CoroutineScope,
     savedStateHandle: SavedStateHandle,
     dataYear: StateFlow<DataYear>,
-    lockedSeriesEntry: StateFlow<SeriesEntry?>,
+    lockedSeriesEntry: StateFlow<SeriesInfo?>,
     lockedMerchId: String?,
     dispatchers: CustomDispatchers,
     merchEntryDao: MerchEntryDao,

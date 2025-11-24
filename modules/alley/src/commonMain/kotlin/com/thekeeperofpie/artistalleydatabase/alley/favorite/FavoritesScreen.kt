@@ -69,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -77,7 +78,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySor
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesRowInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
@@ -172,7 +172,7 @@ object FavoritesScreen {
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,
         merchScrollStateSaver: ScrollStateSaver,
-        getSeriesImage: (SeriesRowInfo) -> String?,
+        getSeriesImage: (SeriesInfo) -> String?,
         eventSink: (Event) -> Unit,
     ) {
         CompositionLocalProvider(LocalStableRandomSeed provides state.randomSeed) {
@@ -460,7 +460,7 @@ object FavoritesScreen {
     private fun SeriesContent(
         listState: LazyListState,
         series: LazyPagingItems<SeriesWithUserData>,
-        getSeriesImage: (SeriesRowInfo) -> String?,
+        getSeriesImage: (SeriesInfo) -> String?,
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
@@ -516,7 +516,7 @@ object FavoritesScreen {
                             SeriesRow(
                                 data = data,
                                 image = {
-                                    data?.let { getSeriesImage(it) }
+                                    data?.let { getSeriesImage(it.series) }
                                 },
                                 textStyle = LocalTextStyle.current,
                                 onFavoriteToggle = {

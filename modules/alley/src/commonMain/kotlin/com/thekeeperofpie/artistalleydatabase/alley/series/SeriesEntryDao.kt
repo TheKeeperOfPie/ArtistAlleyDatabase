@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -26,6 +27,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
+import kotlin.random.Random
+import kotlin.uuid.Uuid
 
 fun SqlCursor.toSeriesEntry(): SeriesEntry {
     val source = getString(6)
@@ -60,30 +63,30 @@ fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
     val uuid = getString(1)!!
     val source = getString(6)
     return SeriesWithUserData(
-        SeriesEntry(
+        SeriesInfo(
             id = getString(0)!!,
-            uuid = uuid,
+            uuid = Uuid.parse(uuid),
             notes = getString(2),
             aniListId = getLong(3),
             aniListType = getString(4),
             wikipediaId = getLong(5),
-            source = SeriesSource.entries.find { it.name == source },
+            source = SeriesSource.entries.find { it.name == source } ?: SeriesSource.NONE,
             titlePreferred = getString(7)!!,
             titleEnglish = getString(8)!!,
             titleRomaji = getString(9)!!,
             titleNative = getString(10)!!,
             link = getString(11),
-            inferred2024 = getLong(12)!!,
-            inferred2025 = getLong(13)!!,
-            inferredAnimeExpo2026 = getLong(14)!!,
-            inferredAnimeNyc2025 = getLong(15)!!,
-            inferredAnimeNyc2024 = getLong(16)!!,
-            confirmed2024 = getLong(17)!!,
-            confirmed2025 = getLong(18)!!,
-            confirmedAnimeExpo2026 = getLong(19)!!,
-            confirmedAnimeNyc2024 = getLong(20)!!,
-            confirmedAnimeNyc2025 = getLong(21)!!,
-            counter = getLong(22)!!,
+//            inferred2024 = getLong(12)!!,
+//            inferred2025 = getLong(13)!!,
+//            inferredAnimeExpo2026 = getLong(14)!!,
+//            inferredAnimeNyc2025 = getLong(15)!!,
+//            inferredAnimeNyc2024 = getLong(16)!!,
+//            confirmed2024 = getLong(17)!!,
+//            confirmed2025 = getLong(18)!!,
+//            confirmedAnimeExpo2026 = getLong(19)!!,
+//            confirmedAnimeNyc2024 = getLong(20)!!,
+//            confirmedAnimeNyc2025 = getLong(21)!!,
+//            counter = getLong(22)!!,
         ),
         userEntry = SeriesUserEntry(
             seriesId = uuid,
@@ -93,30 +96,19 @@ fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
 }
 
 fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
-    series = SeriesEntry(
+    series = SeriesInfo(
         id = id,
-        uuid = uuid,
+        uuid = Uuid.parse(uuid),
         notes = notes,
         aniListId = aniListId,
         aniListType = aniListType,
         wikipediaId = wikipediaId,
-        source = source,
+        source = source ?: SeriesSource.NONE,
         titlePreferred = titlePreferred,
         titleEnglish = titleEnglish,
         titleRomaji = titleRomaji,
         titleNative = titleNative,
         link = link,
-        inferred2024 = inferred2024,
-        inferred2025 = inferred2025,
-        inferredAnimeExpo2026 = inferredAnimeExpo2026,
-        inferredAnimeNyc2024 = inferredAnimeNyc2024,
-        inferredAnimeNyc2025 = inferredAnimeNyc2025,
-        confirmed2024 = confirmed2024,
-        confirmed2025 = confirmed2025,
-        confirmedAnimeExpo2026 = confirmedAnimeExpo2026,
-        confirmedAnimeNyc2024 = confirmedAnimeNyc2024,
-        confirmedAnimeNyc2025 = confirmedAnimeNyc2025,
-        counter = counter,
     ),
     userEntry = SeriesUserEntry(
         seriesId = uuid,
@@ -125,30 +117,19 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
 )
 
 fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
-    series = SeriesEntry(
+    series = SeriesInfo(
         id = id,
-        uuid = uuid,
+        uuid = Uuid.parse(uuid),
         notes = notes,
         aniListId = aniListId,
         aniListType = aniListType,
         wikipediaId = wikipediaId,
-        source = source,
+        source = source ?: SeriesSource.NONE,
         titlePreferred = titlePreferred,
         titleEnglish = titleEnglish,
         titleRomaji = titleRomaji,
         titleNative = titleNative,
         link = link,
-        inferred2024 = inferred2024,
-        inferred2025 = inferred2025,
-        inferredAnimeExpo2026 = inferredAnimeExpo2026,
-        inferredAnimeNyc2024 = inferredAnimeNyc2024,
-        inferredAnimeNyc2025 = inferredAnimeNyc2025,
-        confirmed2024 = confirmed2024,
-        confirmed2025 = confirmed2025,
-        confirmedAnimeExpo2026 = confirmedAnimeExpo2026,
-        confirmedAnimeNyc2024 = confirmedAnimeNyc2024,
-        confirmedAnimeNyc2025 = confirmedAnimeNyc2025,
-        counter = counter,
     ),
     userEntry = SeriesUserEntry(
         seriesId = uuid,
@@ -169,9 +150,10 @@ class SeriesEntryDao(
             .flatMapLatest { it.getSeriesById(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO) }
             .mapLatest { it?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(id) }
 
-    suspend fun getSeriesByIds(ids: List<String>): List<SeriesEntry> {
+    suspend fun getSeriesByIds(ids: List<String>): List<SeriesInfo> {
         if (ids.isEmpty()) return emptyList()
-        val series = seriesDao().getSeriesByIds(ids).awaitAsList().associateBy { it.id }
+        val series =
+            seriesDao().getSeriesByIds(ids).awaitAsList().associate { it.id to it.toSeriesInfo() }
         return ids.map { series[it] ?: fallbackSeriesWithUserData(it).series }
     }
 
@@ -360,7 +342,7 @@ class SeriesEntryDao(
         )
     }
 
-    suspend fun searchSeriesForAutocomplete(query: String): List<SeriesRowInfo> {
+    suspend fun searchSeriesForAutocomplete(query: String): List<SeriesInfo> {
         if (query.isBlank()) return emptyList()
         val queries = query.split(Regex("\\s+"))
         val matchOrQuery = DaoUtils.makeMatchAndQuery(queries)
@@ -389,7 +371,7 @@ class SeriesEntryDao(
             driver = driver(),
             statement = statement,
             tableNames = listOf("seriesEntry", "seriesEntry_fts"), mapper = SqlCursor::toSeriesEntry
-        ).awaitAsList().map { it.toRowInfo() }
+        ).awaitAsList().map { it.toSeriesInfo() }
     }
 
     suspend fun hasRallies(series: String) = seriesDao().getRallyCount(series)
@@ -453,9 +435,9 @@ class SeriesEntryDao(
     // Some tags were adjusted between years, and the most recent list may not have all
     // of the prior tags. In those cases, mock a response.
     private fun fallbackSeriesWithUserData(id: String) = SeriesWithUserData(
-        series = SeriesEntry(
+        series = SeriesInfo(
             id = id,
-            uuid = id,
+            uuid = uuidFromRandomBytes(id),
             notes = null,
             aniListId = null,
             aniListType = null,
@@ -466,21 +448,20 @@ class SeriesEntryDao(
             titleRomaji = id,
             titleNative = id,
             link = null,
-            inferred2024 = 1,
-            inferred2025 = 1,
-            inferredAnimeExpo2026 = 1,
-            inferredAnimeNyc2024 = 1,
-            inferredAnimeNyc2025 = 1,
-            confirmed2024 = 0,
-            confirmed2025 = 0,
-            confirmedAnimeExpo2026 = 0,
-            confirmedAnimeNyc2024 = 0,
-            confirmedAnimeNyc2025 = 0,
-            counter = 1,
         ),
         userEntry = SeriesUserEntry(
             seriesId = id,
             favorite = false,
         )
     )
+
+    private fun uuidFromRandomBytes(seed: String): Uuid {
+        val randomBytes = ByteArray(Uuid.SIZE_BYTES)
+            .also { Random(seed.hashCode()).nextBytes(it) }
+        randomBytes[6] = (randomBytes[6].toInt() and 0x0f).toByte()
+        randomBytes[6] = (randomBytes[6].toInt() or 0x40).toByte()
+        randomBytes[8] = (randomBytes[8].toInt() and 0x3f).toByte()
+        randomBytes[8] = (randomBytes[8].toInt() or 0x80).toByte()
+        return Uuid.fromByteArray(randomBytes)
+    }
 }

@@ -8,17 +8,13 @@ import artistalleydatabase.modules.alley.generated.resources.alley_language_opti
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_native
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_romaji
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import org.jetbrains.compose.resources.StringResource
-
-fun SeriesEntry.name(languageOption: AniListLanguageOption) = when (languageOption) {
-    AniListLanguageOption.DEFAULT -> titlePreferred
-    AniListLanguageOption.ENGLISH -> titleEnglish
-    AniListLanguageOption.NATIVE -> titleNative
-    AniListLanguageOption.ROMAJI -> titleRomaji
-}
+import kotlin.uuid.Uuid
 
 val AniListLanguageOption.textWithExplanation: StringResource
     get() = when (this) {
@@ -32,30 +28,19 @@ val AniListLanguageOption.textWithExplanation: StringResource
 fun previewSeriesWithUserData(id: String): SeriesWithUserData {
     if (!LocalInspectionMode.current) throw IllegalStateException("Must be in preview")
     return SeriesWithUserData(
-        series = SeriesEntry(
+        series = SeriesInfo(
             id = id,
-            uuid = id,
+            uuid = Uuid.parse(id),
             notes = null,
             aniListId = null,
             aniListType = null,
             wikipediaId = null,
-            source = null,
+            source = SeriesSource.NONE,
             titlePreferred = id,
             titleEnglish = id,
             titleRomaji = id,
             titleNative = id,
             link = null,
-            inferred2024 = 1,
-            inferred2025 = 1,
-            inferredAnimeExpo2026 = 1,
-            inferredAnimeNyc2024 = 1,
-            inferredAnimeNyc2025 = 1,
-            confirmed2024 = 0,
-            confirmed2025 = 0,
-            confirmedAnimeExpo2026 = 0,
-            confirmedAnimeNyc2024 = 0,
-            confirmedAnimeNyc2025 = 0,
-            counter = 1,
         ),
         userEntry = SeriesUserEntry(
             seriesId = id,
