@@ -97,7 +97,7 @@ fun ArtistAlleyEditApp(
                                 },
                                 label = { Text(stringResource(key.title)) },
                                 selected = navStack.topLevelStackIndex == index,
-                                onClick = { navStack.topLevelStackIndex = index },
+                                onClick = { navStack.moveToTopLevelStack(index) },
                                 modifier = Modifier.zIndex(3f)
                             )
                         }

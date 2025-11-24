@@ -9,6 +9,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
@@ -70,15 +72,40 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
     isForwardEnabled = true,
 ) {
     var topLevelStackIndex by topLevelStackIndex
+        private set
+    private val topLevelKeysStack = listOf(topLevelStackIndex.value).toMutableStateList()
 
     fun calculateBackStack(navEntries: List<List<NavEntry<NavKey>>>) =
         navEntries[topLevelStackIndex].take(twoWayStacks[topLevelStackIndex].navBackStack.size)
 
     fun navBackStack() = twoWayStacks[topLevelStackIndex].navBackStack
 
+    fun moveToTopLevelStack(index: Int) {
+        Snapshot.withMutableSnapshot {
+            topLevelKeysStack -= index
+            topLevelKeysStack += index
+            topLevelStackIndex = index
+            updateInfo()
+        }
+    }
+
     fun navigate(destination: AlleyEditDestination) {
-        val resetIndex = TopLevelStackKey.entries.indexOfFirst { it.initialDestination == destination }
+        val resetIndex =
+            TopLevelStackKey.entries.indexOfFirst { it.initialDestination == destination }
         if (resetIndex > 0) {
+            topLevelStackIndex = resetIndex
+        } else {
+            twoWayStacks[topLevelStackIndex].navigate(destination)
+        }
+        updateInfo()
+    }
+
+    fun navigateOnBrowserBack(destination: AlleyEditDestination) {
+        val resetIndex = twoWayStacks.indexOfFirst {
+            it.navBackStack.find { it == destination } != null
+        }
+        if (resetIndex > 0) {
+            twoWayStacks[resetIndex].navigate(destination)
             topLevelStackIndex = resetIndex
         } else {
             twoWayStacks[topLevelStackIndex].navigate(destination)
@@ -88,6 +115,14 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
 
     private fun updateInfo() {
         val backInfo = mutableListOf<Route>()
+        twoWayStacks.dropLast(1).forEach {
+            (it.navBackStack + it.navForwardStack).forEach {
+                backInfo += Route(
+                    AlleyEditDestination.toEncodedRoute(it as AlleyEditDestination)
+                        ?: backInfo.lastOrNull()?.route.orEmpty()
+                )
+            }
+        }
         val twoWayStack = twoWayStacks[topLevelStackIndex]
         val navBackStack = twoWayStack.navBackStack
         val navForwardStack = twoWayStack.navForwardStack
@@ -121,6 +156,10 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
     override fun onBackCompleted() {
         if (twoWayStacks[topLevelStackIndex].onBack()) {
             updateInfo()
+        } else if (topLevelKeysStack.size > 1) {
+            topLevelKeysStack.removeLast()
+            topLevelStackIndex = topLevelKeysStack.last()
+            updateInfo()
         }
     }
 
@@ -130,5 +169,5 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
         }
     }
 
-    private data class Route(val route: String) : NavigationEventInfo()
+    data class Route(val route: String) : NavigationEventInfo()
 }

@@ -69,8 +69,8 @@ sealed interface AlleyEditDestination : NavKey {
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ImagesEdit -> null
-            is Series -> "series"
-            is Merch -> "merch"
+            Series -> "series"
+            Merch -> "merch"
             Home -> ""
         }
     }

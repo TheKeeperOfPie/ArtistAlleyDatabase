@@ -112,6 +112,7 @@ private fun Content(graph: ArtistAlleyEditGraph) {
     }
 }
 
+// TODO: This doesn't actually work with the new multiple top level stacks
 class BrowserInput(scope: CoroutineScope, navStack: ArtistAlleyEditTopLevelStacks) :
     NavigationEventInput() {
     init {
@@ -128,7 +129,7 @@ class BrowserInput(scope: CoroutineScope, navStack: ArtistAlleyEditTopLevelStack
                         val route = localWindow.location.pathname.substringAfter("edit/")
                         val destination = AlleyEditDestination.parseRoute(route)
                         if (destination != null) {
-                            navStack.navigate(destination)
+                            navStack.navigateOnBrowserBack(destination)
                         }
                         return@collect
                     }
