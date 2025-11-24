@@ -27,7 +27,7 @@ class SeriesEditViewModel(
         SeriesEditScreen.Mode.EDIT
     }
 
-    private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", false)
+    private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", null)
     val state = SeriesEditScreen.State(
         id = savedStateHandle.saveable(
             key = "id",
@@ -116,6 +116,7 @@ class SeriesEditViewModel(
         val titleRomaji = state.titleRomaji.value.text.toString()
         val titleNative = state.titleNative.value.text.toString()
         val link = state.link.value.text.toString()
+        state.saved.value = false
         viewModelScope.launch {
             database.saveSeries(
                 initial = initialSeries,

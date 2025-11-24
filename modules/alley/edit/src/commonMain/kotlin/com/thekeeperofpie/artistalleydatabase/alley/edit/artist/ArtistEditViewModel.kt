@@ -51,7 +51,7 @@ class ArtistEditViewModel(
             id.lockState = EntryLockState.LOCKED
         }
     }
-    private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", false)
+    private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", null)
     val state = ArtistEditScreen.State(
         images = savedStateHandle.saveable(
             "images",
@@ -203,6 +203,7 @@ class ArtistEditViewModel(
             // TODO: Show error to user
             return
         }
+        saved.value = false
 
         val booth = textState.booth.value.text.toString()
         val name = textState.name.value.text.toString()

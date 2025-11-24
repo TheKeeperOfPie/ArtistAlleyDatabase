@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -78,6 +80,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
@@ -206,67 +209,70 @@ object ArtistEditScreen {
                 )
             },
             modifier = Modifier.fillMaxWidth()
-        ) {
-            val imagePagerState = rememberImagePagerState(state.images, 0)
-            val form = remember {
-                movableContentOf { modifier: Modifier ->
-                    Form(
-                        state = state,
-                        seriesPredictions = seriesPredictions,
-                        merchPredictions = merchPredictions,
-                        seriesImage = seriesImage,
-                        modifier = modifier,
-                    )
-                }
-            }
-            if (isExpanded) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
-                        .padding(it)
-                ) {
-                    form(
-                        Modifier.fillMaxHeight()
-                            .width(800.dp)
-                            .verticalScroll(rememberScrollState())
-                    )
-                    Column {
-                        EditImagesButton(
-                            images = state.images,
-                            onClickEdit = { onClickEditImages(state.images.toList()) },
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                        ImageGrid(
-                            images = state.images,
-                            onClickImage = {},
-                            modifier = Modifier.fillMaxWidth()
+        ) { scaffoldPadding ->
+            ContentSavingBox(
+                saving = saved == false,
+                modifier = Modifier.padding(scaffoldPadding)
+            ) {
+                val imagePagerState = rememberImagePagerState(state.images, 0)
+                val form = remember {
+                    movableContentOf { modifier: Modifier ->
+                        Form(
+                            state = state,
+                            seriesPredictions = seriesPredictions,
+                            merchPredictions = merchPredictions,
+                            seriesImage = seriesImage,
+                            modifier = modifier,
                         )
                     }
                 }
-            } else {
-                Box(
-                    contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
-                        .padding(it)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .widthIn(max = 960.dp)
-                            .verticalScroll(rememberScrollState())
+                if (isExpanded) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        EditImagesButton(
-                            images = state.images,
-                            onClickEdit = { onClickEditImages(state.images.toList()) },
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        form(
+                            Modifier.fillMaxHeight()
+                                .width(800.dp)
+                                .verticalScroll(rememberScrollState())
                         )
-                        ImagesPager(
-                            sharedElementId = state.textState.id.value.text.toString(),
-                            images = state.images,
-                            imagePagerState = imagePagerState,
-                            onClickPage = {
-                                // TODO: Open images screen
-                            },
-                        )
-                        form(Modifier.fillMaxWidth())
+                        Column {
+                            EditImagesButton(
+                                images = state.images,
+                                onClickEdit = { onClickEditImages(state.images.toList()) },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                            ImageGrid(
+                                images = state.images,
+                                onClickImage = {},
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                } else {
+                    Box(
+                        contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .widthIn(max = 960.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            EditImagesButton(
+                                images = state.images,
+                                onClickEdit = { onClickEditImages(state.images.toList()) },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                            ImagesPager(
+                                sharedElementId = state.textState.id.value.text.toString(),
+                                images = state.images,
+                                imagePagerState = imagePagerState,
+                                onClickPage = {
+                                    // TODO: Open images screen
+                                },
+                            )
+                            form(Modifier.fillMaxWidth())
+                        }
                     }
                 }
             }
@@ -344,6 +350,7 @@ object ArtistEditScreen {
                 title = Res.string.alley_artist_edit_booth,
                 previousFocus = textState.id.focusRequester,
                 nextFocus = textState.name.focusRequester,
+                inputTransformation = InputTransformation.maxLength(3),
                 errorValidation = rememberBoothValidator(),
             )
             SingleTextSection(
@@ -609,10 +616,10 @@ object ArtistEditScreen {
         val errorMessage = stringResource(Res.string.alley_edit_series_error_booth)
         return FormErrorValidation.Derived {
             val booth = it.toString()
-            if (booth.isNotBlank() &&
-                booth.length != 3 ||
-                !booth.first().isLetter() ||
-                booth.drop(1).toIntOrNull() == null
+            if (booth.isNotBlank() && (
+                        booth.length != 3 ||
+                                !booth.first().isLetter() ||
+                                booth.drop(1).toIntOrNull() == null)
             ) {
                 errorMessage
             } else {

@@ -36,6 +36,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_uuid
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_wikipedia_id
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.textRes
@@ -106,91 +107,92 @@ object SeriesEditScreen {
                 )
             },
         ) { scaffoldPadding ->
-            Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier.fillMaxWidth()
-                    .padding(scaffoldPadding)
+            ContentSavingBox(
+                saving = saved == false,
+                modifier = Modifier.padding(scaffoldPadding)
             ) {
-                EntryForm2(modifier = Modifier.width(600.dp)) {
-                    SingleTextSection(
-                        state = state.id,
-                        title = Res.string.alley_edit_series_header_canonical,
-                        previousFocus = null,
-                        nextFocus = state.uuid.focusRequester,
-                    )
+                Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
+                    EntryForm2(modifier = Modifier.width(600.dp)) {
+                        SingleTextSection(
+                            state = state.id,
+                            title = Res.string.alley_edit_series_header_canonical,
+                            previousFocus = null,
+                            nextFocus = state.uuid.focusRequester,
+                        )
 
-                    SingleTextSection(
-                        state = state.uuid,
-                        title = Res.string.alley_edit_series_header_uuid,
-                        previousFocus = state.id.focusRequester,
-                        nextFocus = state.aniListId.focusRequester,
-                        errorValidation = rememberUuidValidator(),
-                    )
-                    SingleTextSection(
-                        state = state.aniListId,
-                        title = Res.string.alley_edit_series_header_aniList_id,
-                        previousFocus = state.uuid.focusRequester,
-                        nextFocus = state.aniListType.focusRequester,
-                        errorValidation = rememberLongValidator(),
-                    )
-                    SingleTextSection(
-                        state = state.aniListType,
-                        title = Res.string.alley_edit_series_header_aniList_type,
-                        previousFocus = state.aniListId.focusRequester,
-                        nextFocus = state.wikipediaId.focusRequester,
-                    )
-                    SingleTextSection(
-                        state = state.wikipediaId,
-                        title = Res.string.alley_edit_series_header_wikipedia_id,
-                        previousFocus = state.aniListType.focusRequester,
-                        nextFocus = null, // TODO
-                        errorValidation = rememberLongValidator(),
-                    )
-                    DropdownSection(
-                        state = state.source,
-                        headerText = {
-                            Text(stringResource(Res.string.alley_edit_series_header_source_type))
-                        },
-                        options = SeriesSource.entries,
-                        optionToText = { stringResource(it.textRes) },
-                    )
-                    SingleTextSection(
-                        state = state.titleEnglish,
-                        title = Res.string.alley_edit_series_header_title_english,
-                        previousFocus = null,
-                        nextFocus = state.titleRomaji.focusRequester,
-                    )
-                    SingleTextSection(
-                        state = state.titleRomaji,
-                        title = Res.string.alley_edit_series_header_title_romaji,
-                        previousFocus = state.titleEnglish.focusRequester,
-                        nextFocus = state.titleNative.focusRequester,
-                    )
-                    SingleTextSection(
-                        state = state.titleNative,
-                        title = Res.string.alley_edit_series_header_title_native,
-                        previousFocus = state.titleRomaji.focusRequester,
-                        nextFocus = state.titlePreferred.focusRequester,
-                    )
-                    SingleTextSection(
-                        state = state.titlePreferred,
-                        title = Res.string.alley_edit_series_header_title_preferred,
-                        previousFocus = state.titleNative.focusRequester,
-                        nextFocus = state.link.focusRequester,
-                    )
-                    SingleTextSection(
-                        state = state.link,
-                        title = Res.string.alley_edit_series_header_external_link,
-                        previousFocus = state.titlePreferred.focusRequester,
-                        nextFocus = state.notes.focusRequester,
-                        errorValidation = rememberLinkValidator(),
-                    )
-                    SingleTextSection(
-                        state = state.notes,
-                        title = Res.string.alley_edit_series_header_notes,
-                        previousFocus = state.link.focusRequester,
-                        nextFocus = null,
-                    )
+                        SingleTextSection(
+                            state = state.uuid,
+                            title = Res.string.alley_edit_series_header_uuid,
+                            previousFocus = state.id.focusRequester,
+                            nextFocus = state.aniListId.focusRequester,
+                            errorValidation = rememberUuidValidator(),
+                        )
+                        SingleTextSection(
+                            state = state.aniListId,
+                            title = Res.string.alley_edit_series_header_aniList_id,
+                            previousFocus = state.uuid.focusRequester,
+                            nextFocus = state.aniListType.focusRequester,
+                            errorValidation = rememberLongValidator(),
+                        )
+                        SingleTextSection(
+                            state = state.aniListType,
+                            title = Res.string.alley_edit_series_header_aniList_type,
+                            previousFocus = state.aniListId.focusRequester,
+                            nextFocus = state.wikipediaId.focusRequester,
+                        )
+                        SingleTextSection(
+                            state = state.wikipediaId,
+                            title = Res.string.alley_edit_series_header_wikipedia_id,
+                            previousFocus = state.aniListType.focusRequester,
+                            nextFocus = null, // TODO
+                            errorValidation = rememberLongValidator(),
+                        )
+                        DropdownSection(
+                            state = state.source,
+                            headerText = {
+                                Text(stringResource(Res.string.alley_edit_series_header_source_type))
+                            },
+                            options = SeriesSource.entries,
+                            optionToText = { stringResource(it.textRes) },
+                        )
+                        SingleTextSection(
+                            state = state.titleEnglish,
+                            title = Res.string.alley_edit_series_header_title_english,
+                            previousFocus = null,
+                            nextFocus = state.titleRomaji.focusRequester,
+                        )
+                        SingleTextSection(
+                            state = state.titleRomaji,
+                            title = Res.string.alley_edit_series_header_title_romaji,
+                            previousFocus = state.titleEnglish.focusRequester,
+                            nextFocus = state.titleNative.focusRequester,
+                        )
+                        SingleTextSection(
+                            state = state.titleNative,
+                            title = Res.string.alley_edit_series_header_title_native,
+                            previousFocus = state.titleRomaji.focusRequester,
+                            nextFocus = state.titlePreferred.focusRequester,
+                        )
+                        SingleTextSection(
+                            state = state.titlePreferred,
+                            title = Res.string.alley_edit_series_header_title_preferred,
+                            previousFocus = state.titleNative.focusRequester,
+                            nextFocus = state.link.focusRequester,
+                        )
+                        SingleTextSection(
+                            state = state.link,
+                            title = Res.string.alley_edit_series_header_external_link,
+                            previousFocus = state.titlePreferred.focusRequester,
+                            nextFocus = state.notes.focusRequester,
+                            errorValidation = rememberLinkValidator(),
+                        )
+                        SingleTextSection(
+                            state = state.notes,
+                            title = Res.string.alley_edit_series_header_notes,
+                            previousFocus = state.link.focusRequester,
+                            nextFocus = null,
+                        )
+                    }
                 }
             }
 

@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.delete
@@ -296,6 +297,7 @@ fun EntryFormScope.SingleTextSection(
     title: StringResource,
     previousFocus: FocusRequester?,
     nextFocus: FocusRequester?,
+    inputTransformation: InputTransformation? = null,
     errorValidation: FormErrorValidation? = null,
 ) {
     SingleTextSection(
@@ -305,6 +307,7 @@ fun EntryFormScope.SingleTextSection(
             val focusRequester = if (it) nextFocus else previousFocus
             focusRequester?.requestFocus()
         },
+        inputTransformation = inputTransformation,
         errorValidation = errorValidation,
     )
 }
@@ -315,6 +318,7 @@ fun EntryFormScope.SingleTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     onTab: (next: Boolean) -> Unit = {},
+    inputTransformation: InputTransformation? = null,
     errorValidation: FormErrorValidation? = null,
 ) {
     Column {
@@ -352,6 +356,7 @@ fun EntryFormScope.SingleTextSection(
                 state = state.value,
                 supportingText = errorText?.let { { Text(it) } },
                 isError = errorText != null,
+                inputTransformation = inputTransformation,
                 modifier = modifier
             )
         } else {
@@ -360,6 +365,7 @@ fun EntryFormScope.SingleTextSection(
                 readOnly = true,
                 supportingText = errorText?.let { { Text(it) } },
                 isError = errorText != null,
+                inputTransformation = inputTransformation,
                 modifier = modifier
             )
         }
