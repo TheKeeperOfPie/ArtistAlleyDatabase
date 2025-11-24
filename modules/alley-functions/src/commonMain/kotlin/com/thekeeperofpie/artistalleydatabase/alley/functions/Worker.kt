@@ -13,7 +13,7 @@ class Worker {
         fun request(context: EventContext): Promise<Response> = promise {
             val functionPath = context.functionPath.orEmpty()
             when {
-                functionPath.startsWith("/database") -> Database.handleRequest(
+                functionPath.startsWith("/database") -> AlleyBackendDatabase.handleRequest(
                     context = context,
                     path = functionPath.removePrefix("/database"),
                 )

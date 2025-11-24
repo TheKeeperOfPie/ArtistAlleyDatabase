@@ -4,8 +4,10 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
@@ -59,12 +61,7 @@ actual class AlleyEditRemoteDatabase(
             try {
                 ktorClient.put(window.origin + "/database/insertArtist") {
                     contentType(ContentType.Application.Json)
-                    setBody(
-                        ArtistSave.Request(
-                            initial = initial,
-                            updated = updated,
-                        )
-                    )
+                    setBody(ArtistSave.Request(initial = initial, updated = updated))
                 }
                     .body<ArtistSave.Response>()
                     .result
@@ -106,4 +103,34 @@ actual class AlleyEditRemoteDatabase(
         }
         EditImage.NetworkImage(Uri.parse(window.origin + "/database/image/$key"))
     }
+
+    // TODO: Cache this and rely on manual refresh to avoid extra row reads
+    actual suspend fun loadSeries(): List<SeriesInfo> =
+        withContext(PlatformDispatchers.IO) {
+            try {
+                ktorClient.get(window.origin + "/database/series")
+                    .body<List<SeriesInfo>>()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
+    actual suspend fun saveSeries(
+        initial: SeriesInfo?,
+        updated: SeriesInfo,
+    ): SeriesSave.Response.Result =
+        withContext(PlatformDispatchers.IO) {
+            try {
+                ktorClient.put(window.origin + "/database/insertSeries") {
+                    contentType(ContentType.Application.Json)
+                    setBody(SeriesSave.Request(initial = initial, updated = updated))
+                }
+                    .body<SeriesSave.Response>()
+                    .result
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                SeriesSave.Response.Result.Failed(t)
+            }
+        }
 }

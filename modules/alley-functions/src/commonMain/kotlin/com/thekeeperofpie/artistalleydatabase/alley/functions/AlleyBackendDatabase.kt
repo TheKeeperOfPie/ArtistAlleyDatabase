@@ -2,17 +2,23 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
+import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.async.coroutines.awaitCreate
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
 import org.w3c.fetch.Headers
@@ -21,7 +27,7 @@ import org.w3c.fetch.ResponseInit
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-object Database {
+object AlleyBackendDatabase {
     private val artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
         linksAdapter = ColumnAdapters.listStringAdapter,
         storeLinksAdapter = ColumnAdapters.listStringAdapter,
@@ -32,6 +38,16 @@ object Database {
         merchInferredAdapter = ColumnAdapters.listStringAdapter,
         merchConfirmedAdapter = ColumnAdapters.listStringAdapter,
         imagesAdapter = ColumnAdapters.listCatalogImageAdapter,
+    )
+
+    private val seriesEntryAdapter = SeriesEntry.Adapter(
+        sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
+            override fun decode(databaseValue: String) =
+                SeriesSource.entries.find { it.name == databaseValue }
+                    ?: SeriesSource.NONE
+
+            override fun encode(value: SeriesSource) = value.name
+        },
     )
 
     suspend fun handleRequest(context: EventContext, path: String): Response {
@@ -47,6 +63,8 @@ object Database {
             "image" -> loadImage(context, segments.drop(1).joinToString(separator = "/"))
             "listImages" -> listImages(context)
             "uploadImage" -> uploadImage(context, segments.drop(1).joinToString(separator = "/"))
+            "series" -> loadSeries(context)
+            "insertSeries" -> insertSeries(context)
             else -> null
         } ?: Response(null, ResponseInit(status = 404))
     }
@@ -115,6 +133,28 @@ object Database {
         return Response("")
     }
 
+    suspend fun loadSeries(context: EventContext): Response =
+        database(context).seriesEntryQueries
+            .getSeries()
+            .awaitAsList()
+            .map { it.toSeriesInfo() }
+            .let(::jsonResponse)
+
+    suspend fun insertSeries(context: EventContext): Response {
+        val request = Json.decodeFromString<SeriesSave.Request>(context.request.text().await())
+        val database = database(context, tryCreate = true)
+        val currentSeries =
+            database.seriesEntryQueries.getSeriesById(request.updated.id)
+                .awaitAsOneOrNull()?.toSeriesInfo()
+        if (currentSeries != null && currentSeries != request.updated) {
+            return jsonResponse(
+                SeriesSave.Response(SeriesSave.Response.Result.Outdated(currentSeries))
+            )
+        }
+        database.seriesEntryQueries.insertSeries(request.updated.toSeriesEntry())
+        return jsonResponse(SeriesSave.Response(SeriesSave.Response.Result.Success))
+    }
+
     private suspend fun database(
         context: EventContext,
         tryCreate: Boolean = false,
@@ -123,6 +163,7 @@ object Database {
         val database = AlleySqlDatabase(
             driver = sqlDriver,
             artistEntryAnimeExpo2026Adapter = artistEntryAnimeExpo2026Adapter,
+            seriesEntryAdapter = seriesEntryAdapter,
         )
         if (tryCreate) {
             AlleySqlDatabase.Schema.awaitCreate(sqlDriver)
@@ -180,4 +221,30 @@ object Database {
             images = images,
             counter = counter,
         )
+
+    private fun SeriesInfo.toSeriesEntry() = SeriesEntry(
+        id = id,
+        uuid = uuid.toString(),
+        notes = notes,
+        aniListId = aniListId,
+        aniListType = aniListType,
+        wikipediaId = wikipediaId,
+        source = source,
+        titlePreferred = titlePreferred,
+        titleEnglish = titleEnglish,
+        titleRomaji = titleRomaji,
+        titleNative = titleNative,
+        link = link,
+        inferred2024 = 0,
+        inferred2025 = 0,
+        inferredAnimeExpo2026 = 0,
+        inferredAnimeNyc2024 = 0,
+        inferredAnimeNyc2025 = 0,
+        confirmed2024 = 0,
+        confirmed2025 = 0,
+        confirmedAnimeExpo2026 = 0,
+        confirmedAnimeNyc2024 = 0,
+        confirmedAnimeNyc2025 = 0,
+        counter = 0,
+    )
 }

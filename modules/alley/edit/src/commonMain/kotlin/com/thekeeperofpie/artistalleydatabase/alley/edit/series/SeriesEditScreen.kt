@@ -12,10 +12,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
@@ -44,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLongValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -78,6 +82,14 @@ object SeriesEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: () -> Unit,
     ) {
+        val saved by state.saved.collectAsStateWithLifecycle()
+        LaunchedEffect(saved) {
+            if (saved == true) {
+                onClickBack(true)
+                state.saved.value = null
+            }
+        }
+
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -146,7 +158,7 @@ object SeriesEditScreen {
                         state = state.titleEnglish,
                         title = Res.string.alley_edit_series_header_title_english,
                         previousFocus = null,
-                        nextFocus = state.titlePreferred.focusRequester,
+                        nextFocus = state.titleRomaji.focusRequester,
                     )
                     SingleTextSection(
                         state = state.titleRomaji,
@@ -195,17 +207,18 @@ object SeriesEditScreen {
 
     @Stable
     class State(
-        val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val uuid: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val aniListId: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val aniListType: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val wikipediaId: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val source: EntryForm2.DropdownState = EntryForm2.DropdownState(),
-        val titleEnglish: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val titleRomaji: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val titleNative: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val titlePreferred: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val link: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val id: EntryForm2.SingleTextState,
+        val uuid: EntryForm2.SingleTextState,
+        val aniListId: EntryForm2.SingleTextState,
+        val aniListType: EntryForm2.SingleTextState,
+        val wikipediaId: EntryForm2.SingleTextState,
+        val source: EntryForm2.DropdownState,
+        val titleEnglish: EntryForm2.SingleTextState,
+        val titleRomaji: EntryForm2.SingleTextState,
+        val titleNative: EntryForm2.SingleTextState,
+        val titlePreferred: EntryForm2.SingleTextState,
+        val link: EntryForm2.SingleTextState,
+        val notes: EntryForm2.SingleTextState,
+        val saved: MutableStateFlow<Boolean?>,
     )
 }

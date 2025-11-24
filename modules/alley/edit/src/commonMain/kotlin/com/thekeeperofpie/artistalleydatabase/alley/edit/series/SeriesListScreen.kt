@@ -7,16 +7,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,12 +31,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_add
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_edit_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_refresh_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_aniList_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_aniList_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_canonical
@@ -63,11 +68,15 @@ object SeriesListScreen {
         graph: ArtistAlleyEditGraph,
         onClickEditSeries: (SeriesInfo) -> Unit,
         onClickAddSeries: () -> Unit,
-        viewModel: SeriesListViewModel = viewModel { graph.seriesListViewModel() },
+        viewModel: SeriesListViewModel = viewModel {
+            graph.seriesListViewModelFactory.create(createSavedStateHandle())
+        },
     ) {
         SeriesListScreen(
+            query = viewModel.query,
             series = viewModel.series.collectAsLazyPagingItems(),
             loadImage = viewModel::loadImage,
+            onRefresh = viewModel::refresh,
             onClickEditSeries = onClickEditSeries,
             onClickAddSeries = onClickAddSeries,
         )
@@ -75,8 +84,10 @@ object SeriesListScreen {
 
     @Composable
     private operator fun invoke(
+        query: TextFieldState,
         series: LazyPagingItems<SeriesInfo>,
         loadImage: (SeriesInfo) -> String?,
+        onRefresh: () -> Unit,
         onClickEditSeries: (SeriesInfo) -> Unit,
         onClickAddSeries: () -> Unit,
     ) {
@@ -87,8 +98,18 @@ object SeriesListScreen {
                     modifier = Modifier.fillMaxWidth()
                         .padding(bottom = 16.dp)
                 ) {
-                    val query = rememberTextFieldState()
-                    StaticSearchBar(query = query, modifier = Modifier.widthIn(max = 1200.dp))
+                    StaticSearchBar(
+                        query = query,
+                        modifier = Modifier.widthIn(max = 1200.dp),
+                        trailingIcon = {
+                            IconButton(onClick = onRefresh) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = stringResource(Res.string.alley_edit_series_action_refresh_content_description)
+                                )
+                            }
+                        },
+                    )
                 }
             },
             floatingActionButton = {
@@ -176,6 +197,11 @@ object SeriesListScreen {
                 },
                 modifier = Modifier.fillMaxSize()
                     .padding(scaffoldPadding)
+                    .pullToRefresh(
+                        isRefreshing = false,
+                        state = rememberPullToRefreshState(),
+                        onRefresh = onRefresh,
+                    )
             )
         }
     }

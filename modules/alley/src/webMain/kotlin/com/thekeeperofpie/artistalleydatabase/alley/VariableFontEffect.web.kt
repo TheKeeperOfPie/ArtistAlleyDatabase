@@ -13,9 +13,9 @@ fun VariableFontEffect() {
     LaunchedEffect(Unit) {
         try {
             val fonts = listOf(
-                "NotoSansJP-VariableFont_wght.ttf",
-                "NotoSansKR-VariableFont_wght.ttf",
-                "NotoSansSC-VariableFont_wght.ttf",
+                "NotoSansJP.ttf",
+                "NotoSansKR.ttf",
+                "NotoSansSC.ttf",
             ).map {
                 Font(it, Res.readBytes("font/$it"))
             }

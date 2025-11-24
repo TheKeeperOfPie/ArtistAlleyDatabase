@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesById
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdsWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo

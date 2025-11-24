@@ -3,11 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -48,8 +49,9 @@ class AlleyEditDatabase(
             ?.databaseEntry
     }
 
-    suspend fun loadSeries() = seriesEntryDao.getSeries()
-        .associate { it.id to it.toSeriesInfo() }
+    suspend fun loadSeries(): Map<String, SeriesInfo> =
+        (remoteDatabase.loadSeries() + seriesEntryDao.getSeries().map { it.toSeriesInfo() })
+            .associateBy { it.id }
 
     suspend fun loadMerch() = merchEntryDao.getMerch()
         .associate {
@@ -105,4 +107,7 @@ class AlleyEditDatabase(
         return remoteDatabase.uploadImage(dataYear, artistId, platformFile)
             .fillSize(width, height)
     }
+
+    suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo) =
+        remoteDatabase.saveSeries(initial, updated)
 }

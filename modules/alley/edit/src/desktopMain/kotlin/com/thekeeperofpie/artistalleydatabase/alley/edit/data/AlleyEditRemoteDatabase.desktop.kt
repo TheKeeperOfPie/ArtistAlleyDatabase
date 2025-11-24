@@ -4,7 +4,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -19,6 +21,8 @@ actual class AlleyEditRemoteDatabase {
     private val artistsByDataYearAndId =
         mutableMapOf<DataYear, MutableMap<String, ArtistDatabaseEntry.Impl>>()
     private val images = mutableMapOf<String, EditImage>()
+
+    private val series = mutableMapOf<Uuid, SeriesInfo>()
 
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
         artistsByDataYearAndId[dataYear]?.get(artistId.toString())
@@ -55,5 +59,16 @@ actual class AlleyEditRemoteDatabase {
         val image = EditImage.LocalImage(imageKey, name = key)
         images[key] = image
         return image
+    }
+
+    actual suspend fun loadSeries(): List<SeriesInfo> = series.values.toList()
+
+    actual suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo): SeriesSave.Response.Result {
+        val existing = initial?.uuid?.let { series[it] }
+        if (existing != null && existing != initial) {
+            return SeriesSave.Response.Result.Outdated(existing)
+        }
+        series[updated.uuid] = updated
+        return SeriesSave.Response.Result.Success
     }
 }

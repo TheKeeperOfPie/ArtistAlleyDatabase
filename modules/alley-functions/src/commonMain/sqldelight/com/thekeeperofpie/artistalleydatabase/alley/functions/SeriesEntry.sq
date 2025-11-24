@@ -1,0 +1,10 @@
+getSeries:
+SELECT * FROM seriesEntry;
+
+insertSeries:
+INSERT OR REPLACE INTO seriesEntry
+VALUES ?;
+
+getSeriesById:
+SELECT * FROM seriesEntry
+WHERE :id = seriesEntry.id;

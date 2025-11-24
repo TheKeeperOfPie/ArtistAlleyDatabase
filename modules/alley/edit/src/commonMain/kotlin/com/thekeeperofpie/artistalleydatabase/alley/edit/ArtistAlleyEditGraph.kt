@@ -30,7 +30,7 @@ interface ArtistAlleyEditGraph : ArtistAlleyComponent {
     val artistListViewModelFactory: ArtistListViewModel.Factory
     val imagesEditViewModelFactory: ImagesEditViewModel.Factory
     val seriesEditViewModelFactory: SeriesEditViewModel.Factory
-    fun seriesListViewModel(): SeriesListViewModel
+    val seriesListViewModelFactory: SeriesListViewModel.Factory
 
     @Provides
     fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient

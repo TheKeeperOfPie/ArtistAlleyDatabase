@@ -12,6 +12,7 @@ kotlin {
             kotlin.srcDir(project.layout.buildDirectory.dir("generated/source"))
             dependencies {
                 api("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
+                api(projects.modules.alley.models)
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.runtime)

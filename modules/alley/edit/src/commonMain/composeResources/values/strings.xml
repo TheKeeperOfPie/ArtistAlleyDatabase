@@ -65,6 +65,7 @@
     <string name="alley_edit_series_action_edit_content_description">Edit</string>
     <string name="alley_edit_series_action_add">Add series</string>
     <string name="alley_edit_series_action_save_content_description">Save series</string>
+    <string name="alley_edit_series_action_refresh_content_description">Refresh series</string>
 
     <string name="alley_edit_series_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
 </resources>
