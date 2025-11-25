@@ -4,8 +4,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -25,6 +27,7 @@ actual class AlleyEditRemoteDatabase {
     private val images = mutableMapOf<String, EditImage>()
 
     private val series = mutableMapOf<Uuid, SeriesInfo>()
+    private val merch = mutableMapOf<Uuid, MerchInfo>()
 
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
         artistsByDataYearAndId[dataYear]?.get(artistId.toString())
@@ -75,6 +78,18 @@ actual class AlleyEditRemoteDatabase {
         }
         series[updated.uuid] = updated
         return SeriesSave.Response.Result.Success
+    }
+
+    actual suspend fun loadMerch(): List<MerchInfo> = merch.values.toList()
+
+    actual suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result {
+        simulateLatency()
+        val existing = initial?.uuid?.let { merch[it] }
+        if (existing != null && existing != initial) {
+            return MerchSave.Response.Result.Outdated(existing)
+        }
+        merch[updated.uuid] = updated
+        return MerchSave.Response.Result.Success
     }
 
     private suspend fun simulateLatency() = delay(5.seconds)

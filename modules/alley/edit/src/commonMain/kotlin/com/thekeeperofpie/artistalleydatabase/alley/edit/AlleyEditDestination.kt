@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
@@ -41,6 +42,12 @@ sealed interface AlleyEditDestination : NavKey {
     @Serializable
     data object Merch : AlleyEditDestination
 
+    @Serializable
+    data class MerchAdd(val merchId: Uuid = Uuid.random()) : AlleyEditDestination
+
+    @Serializable
+    data class MerchEdit(val merch: MerchInfo) : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = when {
             route.isEmpty() || route.startsWith("home") -> Home
@@ -78,9 +85,11 @@ sealed interface AlleyEditDestination : NavKey {
             Series -> "series"
             is SeriesAdd -> "series/add/${Uri.encode(destination.seriesId.toString())}"
             Merch -> "merch"
+            is MerchAdd -> "merch/add/${Uri.encode(destination.merchId.toString())}"
             Home -> ""
             is ImagesEdit,
-            is SeriesEdit -> null
+            is MerchEdit,
+            is SeriesEdit, -> null
         }
     }
 }

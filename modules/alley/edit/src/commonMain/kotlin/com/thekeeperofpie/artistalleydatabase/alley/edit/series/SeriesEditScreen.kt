@@ -70,7 +70,6 @@ object SeriesEditScreen {
     ) {
         SeriesEditScreen(
             state = viewModel.state,
-            mode = viewModel.mode,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
         )
@@ -79,7 +78,6 @@ object SeriesEditScreen {
     @Composable
     operator fun invoke(
         state: State,
-        mode: Mode,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: () -> Unit,
     ) {
@@ -201,10 +199,6 @@ object SeriesEditScreen {
                 onClickSave = onClickSave,
             )
         }
-    }
-
-    enum class Mode {
-        ADD, EDIT
     }
 
     @Stable

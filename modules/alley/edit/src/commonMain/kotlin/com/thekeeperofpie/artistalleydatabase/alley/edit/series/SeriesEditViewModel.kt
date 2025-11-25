@@ -21,12 +21,6 @@ class SeriesEditViewModel(
     @Assisted private val initialSeries: SeriesInfo?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val mode: SeriesEditScreen.Mode = if (initialSeries == null) {
-        SeriesEditScreen.Mode.ADD
-    } else {
-        SeriesEditScreen.Mode.EDIT
-    }
-
     private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", null)
     val state = SeriesEditScreen.State(
         id = savedStateHandle.saveable(

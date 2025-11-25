@@ -7,15 +7,19 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.async.coroutines.awaitCreate
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
@@ -65,6 +69,8 @@ object AlleyBackendDatabase {
             "uploadImage" -> uploadImage(context, segments.drop(1).joinToString(separator = "/"))
             "series" -> loadSeries(context)
             "insertSeries" -> insertSeries(context)
+            "merch" -> loadMerch(context)
+            "insertMerch" -> insertMerch(context)
             else -> null
         } ?: Response(null, ResponseInit(status = 404))
     }
@@ -153,6 +159,28 @@ object AlleyBackendDatabase {
         }
         database.seriesEntryQueries.insertSeries(request.updated.toSeriesEntry())
         return jsonResponse(SeriesSave.Response(SeriesSave.Response.Result.Success))
+    }
+
+    suspend fun loadMerch(context: EventContext): Response =
+        database(context).merchEntryQueries
+            .getMerch()
+            .awaitAsList()
+            .map { it.toMerchInfo() }
+            .let(::jsonResponse)
+
+    suspend fun insertMerch(context: EventContext): Response {
+        val request = Json.decodeFromString<MerchSave.Request>(context.request.text().await())
+        val database = database(context, tryCreate = true)
+        val currentMerch =
+            database.merchEntryQueries.getMerchById(request.updated.name)
+                .awaitAsOneOrNull()?.toMerchInfo()
+        if (currentMerch != null && currentMerch != request.updated) {
+            return jsonResponse(
+                MerchSave.Response(MerchSave.Response.Result.Outdated(currentMerch))
+            )
+        }
+        database.merchEntryQueries.insertMerch(request.updated.toMerchEntry())
+        return jsonResponse(MerchSave.Response(MerchSave.Response.Result.Success))
     }
 
     private suspend fun database(
@@ -246,5 +274,13 @@ object AlleyBackendDatabase {
         confirmedAnimeNyc2024 = 0,
         confirmedAnimeNyc2025 = 0,
         counter = 0,
+    )
+
+    private fun MerchInfo.toMerchEntry() = MerchEntry(
+        name = name,
+        uuid = uuid.toString(),
+        notes = notes,
+        categories = null,
+        yearFlags = 0L,
     )
 }

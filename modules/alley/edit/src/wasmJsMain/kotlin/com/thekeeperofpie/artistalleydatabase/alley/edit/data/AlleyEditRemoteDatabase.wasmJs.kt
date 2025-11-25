@@ -4,9 +4,11 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -131,6 +133,36 @@ actual class AlleyEditRemoteDatabase(
             } catch (t: Throwable) {
                 t.printStackTrace()
                 SeriesSave.Response.Result.Failed(t)
+            }
+        }
+
+    // TODO: Cache this and rely on manual refresh to avoid extra row reads
+    actual suspend fun loadMerch(): List<MerchInfo> =
+        withContext(PlatformDispatchers.IO) {
+            try {
+                ktorClient.get(window.origin + "/database/merch")
+                    .body<List<MerchInfo>>()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
+    actual suspend fun saveMerch(
+        initial: MerchInfo?,
+        updated: MerchInfo,
+    ): MerchSave.Response.Result =
+        withContext(PlatformDispatchers.IO) {
+            try {
+                ktorClient.put(window.origin + "/database/insertMerch") {
+                    contentType(ContentType.Application.Json)
+                    setBody(MerchSave.Request(initial = initial, updated = updated))
+                }
+                    .body<MerchSave.Response>()
+                    .result
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                MerchSave.Response.Result.Failed(t)
             }
         }
 }

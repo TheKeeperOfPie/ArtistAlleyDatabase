@@ -3,10 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 import artistalleydatabase.modules.alley.data.generated.resources.Res
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
@@ -53,14 +55,10 @@ class AlleyEditDatabase(
         (remoteDatabase.loadSeries() + seriesEntryDao.getSeries().map { it.toSeriesInfo() })
             .associateBy { it.id }
 
-    suspend fun loadMerch() = merchEntryDao.getMerch()
-        .associate {
-            it.name to MerchInfo(
-                name = it.name,
-                uuid = it.uuid,
-                notes = it.notes,
-            )
-        }
+    suspend fun loadMerch(): Map<String, MerchInfo> {
+        return (remoteDatabase.loadMerch() + merchEntryDao.getMerch().map { it.toMerchInfo() })
+            .associateBy { it.name }
+    }
 
     fun getArtistEditImages(
         year: DataYear,
@@ -110,4 +108,7 @@ class AlleyEditDatabase(
 
     suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo) =
         remoteDatabase.saveSeries(initial, updated)
+
+    suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo) =
+        remoteDatabase.saveMerch(initial, updated)
 }

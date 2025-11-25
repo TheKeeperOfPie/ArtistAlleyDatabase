@@ -6,8 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -16,8 +14,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -27,6 +23,8 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.TopLevelStackKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
@@ -213,6 +211,30 @@ private fun entryProvider(
         )
     }
     sharedElementEntry<AlleyEditDestination.Merch> {
-        Text("Merch screen", Modifier.background(Color.Blue).padding(16.dp))
+        MerchListScreen(
+            graph = graph,
+            onClickEditMerch = {
+                navStack.navigate(AlleyEditDestination.MerchEdit(it))
+            },
+            onClickAddMerch = {
+                navStack.navigate(AlleyEditDestination.MerchAdd())
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.MerchAdd> {
+        MerchEditScreen(
+            merchId = it.merchId,
+            initialInfo = null,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.MerchEdit> {
+        MerchEditScreen(
+            merchId = it.merch.uuid,
+            initialInfo = it.merch,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
     }
 }

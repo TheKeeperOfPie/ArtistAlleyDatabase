@@ -1,0 +1,10 @@
+getMerch:
+SELECT * FROM merchEntry;
+
+insertMerch:
+INSERT OR REPLACE INTO merchEntry
+VALUES ?;
+
+getMerchById:
+SELECT * FROM merchEntry
+WHERE :name = merchEntry.name;
