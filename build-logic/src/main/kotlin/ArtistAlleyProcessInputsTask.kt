@@ -1,4 +1,5 @@
 
+import com.sksamuel.scrimage.webp.CWebpHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -14,6 +15,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.nio.file.Path
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -29,6 +31,12 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         private const val RESIZE_TARGET = 1200
         private const val WEBP_TARGET_QUALITY = 80
         private const val WEBP_METHOD = 6
+
+        private val cwebpPath by  lazy {
+            val field = CWebpHandler::class.java.getDeclaredField("binary")
+            field.trySetAccessible()
+            field.get(null) as Path
+        }
 
         internal fun parseScaledImageWidthHeight(
             imageCacheDir: File,
@@ -54,7 +62,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                                         (RESIZE_TARGET.toFloat() / imageWidth * imageHeight).toInt()
                                     resized = true
                                 } else if (imageHeight >= imageWidth && imageHeight > RESIZE_TARGET) {
-                                    width = (RESIZE_TARGET.toFloat() / imageHeight * imageWidth).toInt()
+                                    width =
+                                        (RESIZE_TARGET.toFloat() / imageHeight * imageWidth).toInt()
                                     height = RESIZE_TARGET
                                     resized = true
                                 } else {
@@ -289,7 +298,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         val input = image.file
         logger.lifecycle("Compressing $input")
         val params = mutableListOf(
-            "cwebp",
+            cwebpPath.toAbsolutePath().toString(),
             "-af",
             "-q",
             WEBP_TARGET_QUALITY.toString(),

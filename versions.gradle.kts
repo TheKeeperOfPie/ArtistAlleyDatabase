@@ -109,6 +109,7 @@ object Versions {
     const val okio = "3.16.2"
     const val placeholder = "1.0.12"
     const val qrose = "1.0.1"
+    const val scrimage = "4.3.5"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.1.0"
     const val sqldelightAndroidXDriver = "0.0.7"
@@ -333,6 +334,11 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 withVersion(Versions.multiplatformMarkdown) {
                     library("com.mikepenz:multiplatform-markdown-renderer-m3")
                     library("com.mikepenz:multiplatform-markdown-renderer-coil3")
+                }
+
+                withVersion(Versions.scrimage) {
+                    library("com.sksamuel.scrimage:scrimage-core")
+                    library("com.sksamuel.scrimage:scrimage-webp")
                 }
 
                 prefix("sqldelight") {

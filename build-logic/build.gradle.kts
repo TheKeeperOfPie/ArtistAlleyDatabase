@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.org.jetbrains.kotlin.android.gradle.plugin)
     implementation(libs.org.jetbrains.kotlin.plugin.serialization.gradle.plugin)
+    implementation(libs.scrimage.core)
+    implementation(libs.scrimage.webp)
     implementation(libs.sqldelight.sqlite.driver)
     implementation(libs.webp.imageio)
 }
