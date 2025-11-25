@@ -15,11 +15,12 @@ val artistsAnimeNyc2024OutputFile = inputsFolder.resolve("animeNyc2024/artists.c
 val artistsAnimeNyc2025OutputFile = inputsFolder.resolve("animeNyc2025/artists.csv")
 val seriesOutputFile = inputsFolder.resolve("series.csv")
 val merchOutputFile = inputsFolder.resolve("merch.csv")
-val ralliesAnimeExpo2025OutputFile = inputsFolder.resolve("animeExpo2025/rallies.csv")
+val ralliesAnimeExpo2024OutputFile = inputsFolder.resolve("2024/rallies.csv")
+val ralliesAnimeExpo2025OutputFile = inputsFolder.resolve("2025/rallies.csv")
 
-//downloadUrl(sheetIdAnimeExpo2023, "Artists", artistsAnimeExpo2023OutputFile, "A1:K")
-//downloadUrl(sheetIdAnimeExpo2024, "Artists", artistsAnimeExpo2024OutputFile, "A1:M")
-//downloadUrl(sheetIdAnimeExpo2025, "Artists", artistsAnimeExpo2025OutputFile, "A1:Q")
+downloadUrl(sheetIdAnimeExpo2023, "Artists", artistsAnimeExpo2023OutputFile, "A1:K")
+downloadUrl(sheetIdAnimeExpo2024, "Artists", artistsAnimeExpo2024OutputFile, "A1:M")
+downloadUrl(sheetIdAnimeExpo2025, "Artists", artistsAnimeExpo2025OutputFile, "A1:Q")
 
 downloadUrl(sheetIdAnimeNyc2024, "Artists", artistsAnimeNyc2024OutputFile, "A1:Q")
 
@@ -27,10 +28,8 @@ downloadUrl(sheetIdAnimeNyc2025, "Artists", artistsAnimeNyc2025OutputFile, "A1:R
 downloadUrl(sheetIdAnimeNyc2025, "Series", seriesOutputFile)
 downloadUrl(sheetIdAnimeNyc2025, "Merch", merchOutputFile)
 
-// For some reason Stamp Rallies doesn't download correctly, dev should overwrite manually.
-// This is kept around in case optimistically it fixes itself.
-//downloadUrl("Stamp Rallies", "rallies.csv", "A1:G")
-//downloadUrl(sheetIdAnimeExpo2025, "Stamp Rallies", ralliesAnimeExpo2025OutputFile, "A1:K")
+downloadUrl(sheetIdAnimeExpo2024, "Stamp Rallies", ralliesAnimeExpo2024OutputFile, "A1:G")
+downloadUrl(sheetIdAnimeExpo2025, "Stamp Rallies", ralliesAnimeExpo2025OutputFile, "A1:K")
 
 fun downloadUrl(sheetId: String, sheetName: String, outputFile: File, range: String? = null) {
     outputFile.parentFile.mkdirs()

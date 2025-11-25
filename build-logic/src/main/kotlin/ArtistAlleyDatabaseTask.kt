@@ -360,6 +360,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         database: BuildLogicDatabase,
     ): List<ArtistEntry2023> {
         val artistsCsv2023 = inputsDirectory.file("2023/$ARTISTS_CSV_NAME").get()
+        if (!artistsCsv2023.asFile.exists()) return emptyList()
         return open(artistsCsv2023).use {
             var counter = 1L
             read(it)
@@ -434,6 +435,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsv2024 = inputsDirectory.file("2024/$ARTISTS_CSV_NAME").get()
+        if (!artistsCsv2024.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
         val artists2024 = open(artistsCsv2024).use {
             var counter = 1L
             read(it)
@@ -564,6 +566,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsv2025 = inputsDirectory.file("2025/$ARTISTS_CSV_NAME").get()
+        if (!artistsCsv2025.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
         val artists2025 = open(artistsCsv2025).use {
             var counter = 1L
             read(it)
@@ -742,6 +745,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsvAnimeNyc2024 = inputsDirectory.file("animeNyc2024/$ARTISTS_CSV_NAME").get()
+        if (!artistsCsvAnimeNyc2024.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
         val artistsAnimeNyc2024 = open(artistsCsvAnimeNyc2024).use {
             var counter = 1L
             read(it)
@@ -937,6 +941,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsvAnimeNyc2025 = inputsDirectory.file("animeNyc2025/$ARTISTS_CSV_NAME").get()
+        if (!artistsCsvAnimeNyc2025.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
         val artistsAnimeNyc2025 = open(artistsCsvAnimeNyc2025).use {
             var counter = 1L
             read(it)
@@ -1213,6 +1218,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ): List<SeriesEntry> {
         val mutationQueries = database.mutationQueries
         val seriesCsv = inputsDirectory.file(SERIES_CSV_NAME).get()
+        if (!seriesCsv.asFile.exists()) return emptyList()
         return open(seriesCsv).use {
             var counter = 1L
             read(it)
@@ -1344,6 +1350,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ): List<MerchEntry> {
         val mutationQueries = database.mutationQueries
         val merchCsv = inputsDirectory.file(MERCH_CSV_NAME).get()
+        if (!merchCsv.asFile.exists()) return emptyList()
         return open(merchCsv).use {
             read(it)
                 .map {
@@ -1382,6 +1389,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) {
         val mutationQueries = database.mutationQueries
         val stampRalliesCsv2023 = inputsDirectory.file("2023/$STAMP_RALLIES_CSV_NAME").get()
+        if (!stampRalliesCsv2023.asFile.exists()) return
         val boothToArtist2023 = artists2023.associateBy { it.booth }
         open(stampRalliesCsv2023).use {
             var counter = 1L
@@ -1460,6 +1468,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) {
         val mutationQueries = database.mutationQueries
         val stampRalliesCsv2024 = inputsDirectory.file("2024/$STAMP_RALLIES_CSV_NAME").get()
+        if (!stampRalliesCsv2024.asFile.exists()) return
         val boothToArtist2024 = artists2024.associateBy { it.booth }
 
         open(stampRalliesCsv2024).use {
@@ -1529,6 +1538,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     ) {
         val mutationQueries = database.mutationQueries
         val stampRalliesCsv2025 = inputsDirectory.file("2025/$STAMP_RALLIES_CSV_NAME").get()
+        if (!stampRalliesCsv2025.asFile.exists()) return
         val boothToArtist2025 = artists2025.associateBy { it.booth }
 
         open(stampRalliesCsv2025).use {

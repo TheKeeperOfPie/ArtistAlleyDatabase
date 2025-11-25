@@ -30,7 +30,10 @@ tasks.withType<KotlinJsCompile>().configureEach {
 }
 
 val properties = Properties().apply {
-    load(projectDir.resolve("secrets.properties").reader())
+    val secretsFile = projectDir.resolve("secrets.properties")
+    if (secretsFile.exists()) {
+        load(secretsFile.reader())
+    }
 }
 
 buildkonfig {
