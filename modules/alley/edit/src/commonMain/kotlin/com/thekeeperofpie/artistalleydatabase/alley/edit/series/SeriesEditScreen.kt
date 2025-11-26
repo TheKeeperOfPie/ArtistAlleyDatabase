@@ -83,8 +83,14 @@ object SeriesEditScreen {
                 SeriesColumn.CANONICAL -> state.id.focusRequester
                 SeriesColumn.NOTES -> state.notes.focusRequester
                 SeriesColumn.ANILIST_ID -> state.aniListId.focusRequester
-                SeriesColumn.ANILIST_TYPE -> state.aniListType.focusRequester
-                SeriesColumn.SOURCE_TYPE -> state.source.focusRequester
+                SeriesColumn.ANILIST_TYPE -> {
+                    state.aniListType.expanded = true
+                    state.aniListType.focusRequester
+                }
+                SeriesColumn.SOURCE_TYPE -> {
+                    state.source.expanded = true
+                    state.source.focusRequester
+                }
                 SeriesColumn.TITLE_ENGLISH -> state.titleEnglish.focusRequester
                 SeriesColumn.TITLE_ROMAJI -> state.titleRomaji.focusRequester
                 SeriesColumn.TITLE_NATIVE -> state.titleNative.focusRequester

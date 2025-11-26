@@ -268,6 +268,7 @@ object EntryForm2 {
         override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
     ) : State() {
         var selectedIndex by mutableIntStateOf(initialSelectedIndex)
+        var expanded by mutableStateOf(false)
         val focusRequester = FocusRequester()
         override var lockState by mutableStateOf(initialLockState)
 
@@ -1221,12 +1222,11 @@ fun <T> EntryFormScope.DropdownSection(
             .padding(start = 16.dp, end = 16.dp)
     ) {
         val editable = state.lockState.editable
-        var expanded by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(
-            expanded = expanded && editable,
+            expanded = state.expanded && editable,
             onExpandedChange = {
                 if (editable) {
-                    expanded = it
+                    state.expanded = it
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -1257,7 +1257,7 @@ fun <T> EntryFormScope.DropdownSection(
                         return@onPreviewKeyEvent false
                     }
                     if (editable) {
-                        expanded = true
+                        state.expanded = true
                         true
                     } else {
                         false
@@ -1276,7 +1276,7 @@ fun <T> EntryFormScope.DropdownSection(
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                        ExposedDropdownMenuDefaults.TrailingIcon(state.expanded)
                     }
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
@@ -1294,8 +1294,8 @@ fun <T> EntryFormScope.DropdownSection(
                 (0 until options.size).map { FocusRequester() }
             }
             ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
+                expanded = state.expanded,
+                onDismissRequest = { state.expanded = false },
             ) {
                 options.forEachIndexed { index, item ->
                     val focusRequester = focusRequesters[index]
@@ -1307,7 +1307,7 @@ fun <T> EntryFormScope.DropdownSection(
                     var focused by remember { mutableStateOf(false) }
                     DropdownMenuItem(
                         onClick = {
-                            expanded = false
+                            state.expanded = false
                             state.selectedIndex = index
                         },
                         text = { Text(optionToText(item)) },

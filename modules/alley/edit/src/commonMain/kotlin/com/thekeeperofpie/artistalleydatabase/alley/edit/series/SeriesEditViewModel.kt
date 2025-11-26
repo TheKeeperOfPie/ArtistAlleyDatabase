@@ -57,7 +57,8 @@ class SeriesEditViewModel(
                     ?: AniListType.NONE.ordinal
                 EntryForm2.DropdownState(
                     initialSelectedIndex = index,
-                    initialLockState = if (index == AniListType.NONE.ordinal) {
+                    initialLockState = if (index == AniListType.NONE.ordinal ||
+                        editInfo?.seriesColumn == SeriesColumn.ANILIST_TYPE) {
                         EntryLockState.UNLOCKED
                     } else {
                         EntryLockState.LOCKED
@@ -83,7 +84,9 @@ class SeriesEditViewModel(
                     ?: SeriesSource.NONE.ordinal
                 EntryForm2.DropdownState(
                     initialSelectedIndex = index,
-                    initialLockState = if (index == SeriesSource.NONE.ordinal) {
+                    initialLockState = if (index == SeriesSource.NONE.ordinal ||
+                        editInfo?.seriesColumn == SeriesColumn.SOURCE_TYPE
+                    ) {
                         EntryLockState.UNLOCKED
                     } else {
                         EntryLockState.LOCKED

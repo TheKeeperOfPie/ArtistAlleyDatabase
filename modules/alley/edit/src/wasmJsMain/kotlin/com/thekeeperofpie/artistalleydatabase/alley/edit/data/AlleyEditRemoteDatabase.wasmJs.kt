@@ -48,8 +48,9 @@ actual class AlleyEditRemoteDatabase(
             try {
                 ktorClient.get(window.origin + "/database/artists")
                     .body<List<ArtistSummary>>()
-            } catch (_: Throwable) {
-                // TODO
+            } catch (t: Throwable) {
+                // TODO: Actually surface errors
+                t.printStackTrace()
                 emptyList()
             }
         }
