@@ -12,7 +12,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,7 +46,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLongValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.JobFinishedEffect
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
@@ -81,13 +82,7 @@ object SeriesEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: () -> Unit,
     ) {
-        val saved by state.saved.collectAsStateWithLifecycle()
-        LaunchedEffect(saved) {
-            if (saved == true) {
-                onClickBack(true)
-                state.saved.value = null
-            }
-        }
+        JobFinishedEffect(state.savingState) { onClickBack(true) }
 
         Scaffold(
             topBar = {
@@ -105,8 +100,9 @@ object SeriesEditScreen {
                 )
             },
         ) { scaffoldPadding ->
+            val jobProgress by state.savingState.collectAsStateWithLifecycle()
             ContentSavingBox(
-                saving = saved == false,
+                saving = jobProgress is JobProgress.Loading,
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
@@ -215,6 +211,6 @@ object SeriesEditScreen {
         val titlePreferred: EntryForm2.SingleTextState,
         val link: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
-        val saved: MutableStateFlow<Boolean?>,
+        val savingState: MutableStateFlow<JobProgress>,
     )
 }

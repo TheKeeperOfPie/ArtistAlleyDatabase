@@ -8,20 +8,23 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.uuid.Uuid
 
 @AssistedInject
 class SeriesEditViewModel(
     private val database: AlleyEditDatabase,
+    private val dispatchers: CustomDispatchers,
     @Assisted seriesId: Uuid,
     @Assisted private val initialSeries: SeriesInfo?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", null)
+    private val saveJob = ExclusiveProgressJob(viewModelScope, ::captureSeriesInfo, ::save)
     val state = SeriesEditScreen.State(
         id = savedStateHandle.saveable(
             key = "id",
@@ -91,12 +94,13 @@ class SeriesEditViewModel(
             saver = EntryForm2.SingleTextState.Saver,
             init = { EntryForm2.SingleTextState.fromValue(initialSeries?.notes.orEmpty()) },
         ),
-        saved = saved,
+        savingState = saveJob.state,
     )
 
-    // TODO: Saving indicator and exit on done
     // TODO: Refresh list screen after save
-    fun onClickSave() {
+    fun onClickSave() = saveJob.launch()
+
+    private fun captureSeriesInfo(): SeriesInfo {
         // TODO: Apply error validation from UI
         val id = state.id.value.text.toString()
         val uuid = state.uuid.value.text.toString()
@@ -110,27 +114,24 @@ class SeriesEditViewModel(
         val titleRomaji = state.titleRomaji.value.text.toString()
         val titleNative = state.titleNative.value.text.toString()
         val link = state.link.value.text.toString()
-        state.saved.value = false
-        viewModelScope.launch {
-            database.saveSeries(
-                initial = initialSeries,
-                updated = SeriesInfo(
-                    id = id,
-                    uuid = Uuid.parse(uuid),
-                    notes = notes,
-                    aniListId = aniListId.ifBlank { null }?.toLong(),
-                    aniListType = aniListType,
-                    wikipediaId = wikipediaId.ifBlank { null }?.toLong(),
-                    source = source,
-                    titlePreferred = titlePreferred,
-                    titleEnglish = titleEnglish,
-                    titleRomaji = titleRomaji,
-                    titleNative = titleNative,
-                    link = link,
-                ),
-            )
-            saved.value = true
-        }
+        return SeriesInfo(
+            id = id,
+            uuid = Uuid.parse(uuid),
+            notes = notes,
+            aniListId = aniListId.ifBlank { null }?.toLong(),
+            aniListType = aniListType,
+            wikipediaId = wikipediaId.ifBlank { null }?.toLong(),
+            source = source,
+            titlePreferred = titlePreferred,
+            titleEnglish = titleEnglish,
+            titleRomaji = titleRomaji,
+            titleNative = titleNative,
+            link = link,
+        )
+    }
+
+    private suspend fun save(seriesInfo: SeriesInfo) = withContext(dispatchers.io) {
+        database.saveSeries(initial = initialSeries, updated = seriesInfo)
     }
 
     @AssistedFactory

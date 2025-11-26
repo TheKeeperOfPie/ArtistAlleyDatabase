@@ -34,7 +34,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
@@ -76,7 +75,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
-import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
@@ -87,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
@@ -100,7 +99,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.JobFinishedEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
@@ -166,13 +167,7 @@ object ArtistEditScreen {
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
     ) {
-        val saved by state.saved.collectAsStateWithLifecycle()
-        LaunchedEffect(saved) {
-            if (saved == true) {
-                onClickBack(true)
-                state.saved.value = null
-            }
-        }
+        JobFinishedEffect(state.savingState) { onClickBack(true) }
 
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
@@ -210,8 +205,9 @@ object ArtistEditScreen {
             },
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
+            val jobProgress by state.savingState.collectAsStateWithLifecycle()
             ContentSavingBox(
-                saving = saved == false,
+                saving = jobProgress is JobProgress.Loading,
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 val imagePagerState = rememberImagePagerState(state.images, 0)
@@ -644,7 +640,7 @@ object ArtistEditScreen {
         val merchInferred: SnapshotStateList<MerchInfo>,
         val merchConfirmed: SnapshotStateList<MerchInfo>,
         val textState: TextState,
-        val saved: MutableStateFlow<Boolean?>,
+        val savingState: MutableStateFlow<JobProgress>,
     ) {
         @Stable
         class TextState(

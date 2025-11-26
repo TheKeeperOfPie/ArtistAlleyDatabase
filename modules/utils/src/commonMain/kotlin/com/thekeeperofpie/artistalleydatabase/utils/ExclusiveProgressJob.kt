@@ -1,0 +1,35 @@
+package com.thekeeperofpie.artistalleydatabase.utils
+
+import androidx.annotation.MainThread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+
+class ExclusiveProgressJob<T>(
+    private val scope: CoroutineScope,
+    private val captureState: () -> T,
+    private val run: suspend (T) -> Unit,
+) {
+    val state = MutableStateFlow<JobProgress>(JobProgress.Idle)
+    var job: Job? = null
+
+    @MainThread
+    fun launch() {
+        if (state.value == JobProgress.Loading) return
+        val captured = captureState()
+        val previousJob = job
+        job = scope.launch {
+            state.value = JobProgress.Loading
+            previousJob?.cancelAndJoin()
+            state.value = JobProgress.Loading
+            state.value = try {
+                run(captured)
+                JobProgress.Finished.Success
+            } catch (throwable: Throwable) {
+                JobProgress.Finished.UnhandledError(throwable)
+            }
+        }
+    }
+}

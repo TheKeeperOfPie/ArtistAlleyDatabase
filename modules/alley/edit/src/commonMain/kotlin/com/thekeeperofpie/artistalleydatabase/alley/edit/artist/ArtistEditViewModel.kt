@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
@@ -37,8 +38,8 @@ import kotlin.uuid.Uuid
 
 @AssistedInject
 class ArtistEditViewModel(
-    dispatchers: CustomDispatchers,
     private val database: AlleyEditDatabase,
+    private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
     @Assisted private val dataYear: DataYear,
     @Assisted artistId: Uuid,
@@ -51,7 +52,7 @@ class ArtistEditViewModel(
             id.lockState = EntryLockState.LOCKED
         }
     }
-    private val saved = savedStateHandle.getMutableStateFlow<Boolean?>("saved", null)
+    private val saveJob = ExclusiveProgressJob(viewModelScope, ::captureDatabaseEntry, ::save)
     val state = ArtistEditScreen.State(
         images = savedStateHandle.saveable(
             "images",
@@ -90,7 +91,7 @@ class ArtistEditViewModel(
             saver = StateUtils.snapshotListJsonSaver()
         ) { SnapshotStateList() },
         textState = textState,
-        saved = saved,
+        savingState = saveJob.state,
     )
 
     private var hasLoaded by savedStateHandle.saved { mode == ArtistEditScreen.Mode.ADD }
@@ -194,16 +195,11 @@ class ArtistEditViewModel(
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
-    // TODO: Saving indicator and exit on done
-    fun onClickSave() {
+    fun onClickSave() = saveJob.launch()
+
+    private fun captureDatabaseEntry(): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
         val textState = state.textState
-        val id = try {
-            Uuid.parse(textState.id.value.text.toString())
-        } catch (_: IllegalArgumentException) {
-            // TODO: Show error to user
-            return
-        }
-        saved.value = false
+        val id = Uuid.parse(textState.id.value.text.toString())
 
         val booth = textState.booth.value.text.toString()
         val name = textState.name.value.text.toString()
@@ -222,7 +218,30 @@ class ArtistEditViewModel(
         val merchConfirmed = state.merchConfirmed.toList().map { it.name }
 
         val images = state.images.toList()
-        viewModelScope.launch {
+        return images to ArtistDatabaseEntry.Impl(
+            year = dataYear,
+            id = id.toString(),
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            driveLink = null,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = emptyList(),
+            counter = 1,
+        )
+    }
+
+    private suspend fun save(pair: Pair<List<EditImage>, ArtistDatabaseEntry.Impl>) =
+        withContext(dispatchers.io) {
+            val (images, databaseEntry) = pair
             val finalImages = images.mapNotNull {
                 when (it) {
                     is EditImage.DatabaseImage,
@@ -233,7 +252,7 @@ class ArtistEditViewModel(
                         val file = PlatformImageCache[it.key] ?: return@mapNotNull null
                         database.uploadImage(
                             dataYear = dataYear,
-                            artistId = id,
+                            artistId = Uuid.parse(databaseEntry.id),
                             platformFile = file,
                         )
                     }
@@ -243,31 +262,11 @@ class ArtistEditViewModel(
             database.saveArtist(
                 dataYear = dataYear,
                 initial = artist,
-                updated = ArtistDatabaseEntry.Impl(
-                    year = dataYear,
-                    id = id.toString(),
-                    booth = booth,
-                    name = name,
-                    summary = summary,
-                    links = links,
-                    storeLinks = storeLinks,
-                    catalogLinks = catalogLinks,
-                    driveLink = null,
-                    notes = notes,
-                    commissions = commissions,
-                    seriesInferred = seriesInferred,
-                    seriesConfirmed = seriesConfirmed,
-                    merchInferred = merchInferred,
-                    merchConfirmed = merchConfirmed,
-                    images = finalImages.map {
-                        CatalogImage(name = it.name, width = it.width, height = it.height)
-                    },
-                    counter = 1,
-                )
+                updated = databaseEntry.copy(images = finalImages.map {
+                    CatalogImage(name = it.name, width = it.width, height = it.height)
+                }),
             )
-            saved.value = true
         }
-    }
 
     @AssistedFactory
     interface Factory {
