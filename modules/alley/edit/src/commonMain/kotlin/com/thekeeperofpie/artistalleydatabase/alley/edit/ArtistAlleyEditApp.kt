@@ -186,8 +186,8 @@ private fun entryProvider(
     sharedElementEntry<AlleyEditDestination.Series> {
         SeriesListScreen(
             graph = graph,
-            onClickEditSeries = {
-                navStack.navigate(AlleyEditDestination.SeriesEdit(it))
+            onClickEditSeries = { seriesInfo, seriesColumn ->
+                navStack.navigate(AlleyEditDestination.SeriesEdit(seriesInfo, seriesColumn))
             },
             onClickAddSeries = {
                 navStack.navigate(AlleyEditDestination.SeriesAdd())
@@ -205,7 +205,7 @@ private fun entryProvider(
     sharedElementEntry<AlleyEditDestination.SeriesEdit> {
         SeriesEditScreen(
             seriesId = it.series.uuid,
-            initialInfo = it.series,
+            initialInfo = it,
             graph = graph,
             onClickBack = onClickBack,
         )

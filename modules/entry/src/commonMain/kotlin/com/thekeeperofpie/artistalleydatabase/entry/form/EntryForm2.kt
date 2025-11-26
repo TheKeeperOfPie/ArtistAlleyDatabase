@@ -108,6 +108,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.swap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKey
@@ -117,7 +118,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -268,6 +268,7 @@ object EntryForm2 {
         override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
     ) : State() {
         var selectedIndex by mutableIntStateOf(initialSelectedIndex)
+        val focusRequester = FocusRequester()
         override var lockState by mutableStateOf(initialLockState)
 
         object Saver : ComposeSaver<DropdownState, Any> {
@@ -298,7 +299,7 @@ fun EntryFormScope.SingleTextSection(
     previousFocus: FocusRequester?,
     nextFocus: FocusRequester?,
     inputTransformation: InputTransformation? = null,
-    errorValidation: FormErrorValidation? = null,
+    errorText: (() -> String?)? = null,
 ) {
     SingleTextSection(
         state = state,
@@ -308,7 +309,7 @@ fun EntryFormScope.SingleTextSection(
             focusRequester?.requestFocus()
         },
         inputTransformation = inputTransformation,
-        errorValidation = errorValidation,
+        errorText = errorText,
     )
 }
 
@@ -319,7 +320,7 @@ fun EntryFormScope.SingleTextSection(
     headerText: @Composable () -> Unit,
     onTab: (next: Boolean) -> Unit = {},
     inputTransformation: InputTransformation? = null,
-    errorValidation: FormErrorValidation? = null,
+    errorText: (() -> String?)? = null,
 ) {
     Column {
         SectionHeader(
@@ -333,24 +334,7 @@ fun EntryFormScope.SingleTextSection(
             .focusRequester(state.focusRequester)
             .padding(horizontal = 16.dp)
             .interceptTab(onTab)
-        val errorText by remember {
-            derivedStateOf {
-                when (errorValidation) {
-                    is FormErrorValidation.Clearable -> errorValidation.text
-                    is FormErrorValidation.Derived -> errorValidation(state.value.text)
-                    null -> null
-                }
-            }
-        }
-        LaunchedEffect(errorValidation) {
-            if (errorValidation is FormErrorValidation.Clearable) {
-                snapshotFlow { state.value.text }
-                    .drop(1)
-                    .collectLatest {
-                        errorValidation.text = null
-                    }
-            }
-        }
+        val errorText = errorText?.invoke()
         if (state.lockState == EntryLockState.UNLOCKED) {
             OutlinedTextField(
                 state = state.value,
@@ -1225,6 +1209,9 @@ fun <T> EntryFormScope.DropdownSection(
     headerText: @Composable () -> Unit,
     options: List<T>,
     optionToText: @Composable (T) -> String,
+    errorText: (() -> String?)? = null,
+    previousFocus: FocusRequester? = null,
+    nextFocus: FocusRequester? = null,
 ) {
     SectionHeader(text = headerText, state = state)
 
@@ -1238,12 +1225,46 @@ fun <T> EntryFormScope.DropdownSection(
         ExposedDropdownMenuBox(
             expanded = expanded && editable,
             onExpandedChange = {
-                if (state.lockState.editable) {
-                    expanded = !expanded
+                if (editable) {
+                    expanded = it
                 }
             },
-            Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
+                .focusRequester(state.focusRequester)
+                .conditionallyNonNull(previousFocus) { requester ->
+                    onPreviewKeyEvent {
+                        if (it.isTabKeyDownOrTyped && it.isShiftPressed) {
+                            requester.requestFocus(FocusDirection.Previous)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                }
+                .conditionallyNonNull(nextFocus) { requester ->
+                    onPreviewKeyEvent {
+                        if (it.isTabKeyDownOrTyped) {
+                            requester.requestFocus(FocusDirection.Next)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                }
+                .onPreviewKeyEvent { it.isTabKey }
+                .onPreviewKeyEvent {
+                    if (it.type != KeyEventType.KeyDown || it.key != Key.DirectionDown) {
+                        return@onPreviewKeyEvent false
+                    }
+                    if (editable) {
+                        expanded = true
+                        true
+                    } else {
+                        false
+                    }
+                }
         ) {
+            val errorText = errorText?.invoke()
             TextField(
                 readOnly = true,
                 value = options.getOrNull(state.selectedIndex)?.let { optionToText(it) }.orEmpty(),
@@ -1259,21 +1280,61 @@ fun <T> EntryFormScope.DropdownSection(
                     }
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                supportingText = if (errorText == null) {
+                    null
+                } else {
+                    { Text(errorText) }
+                },
+                isError = errorText != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
             )
+            val focusRequesters = remember(options) {
+                (0 until options.size).map { FocusRequester() }
+            }
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
             ) {
                 options.forEachIndexed { index, item ->
+                    val focusRequester = focusRequesters[index]
+                    LaunchedEffect(index, focusRequester) {
+                        if (index == 0) {
+                            focusRequester.requestFocus()
+                        }
+                    }
+                    var focused by remember { mutableStateOf(false) }
                     DropdownMenuItem(
                         onClick = {
                             expanded = false
                             state.selectedIndex = index
                         },
                         text = { Text(optionToText(item)) },
+                        modifier = Modifier
+                            .background(
+                                if (focused) {
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainer
+                                }
+                            )
+                            .onFocusChanged { focused = it.isFocused }
+                            .focusRequester(focusRequester)
+                            .onKeyEvent { event ->
+                                if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+                                when (event.key) {
+                                    Key.DirectionDown -> {
+                                        focusRequesters.getOrNull(index + 1)?.requestFocus()
+                                        true
+                                    }
+                                    Key.DirectionUp -> {
+                                        focusRequesters.getOrNull(index - 1)?.requestFocus()
+                                        true
+                                    }
+                                    else -> false
+                                }
+                            }
                     )
                 }
             }

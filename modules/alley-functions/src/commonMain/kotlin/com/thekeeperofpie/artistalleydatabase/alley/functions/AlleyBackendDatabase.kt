@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
+import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -255,7 +256,7 @@ object AlleyBackendDatabase {
         uuid = uuid.toString(),
         notes = notes,
         aniListId = aniListId,
-        aniListType = aniListType,
+        aniListType = aniListType.takeUnless { it == AniListType.NONE }?.name,
         wikipediaId = wikipediaId,
         source = source,
         titlePreferred = titlePreferred,

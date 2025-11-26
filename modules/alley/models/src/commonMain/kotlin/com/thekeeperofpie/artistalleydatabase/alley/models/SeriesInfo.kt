@@ -10,7 +10,7 @@ data class SeriesInfo(
     val uuid: Uuid,
     val notes: String?,
     val aniListId: Long?,
-    val aniListType: String?,
+    val aniListType: AniListType,
     val wikipediaId: Long?,
     val source: SeriesSource,
     val titlePreferred: String,

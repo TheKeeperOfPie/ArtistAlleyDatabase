@@ -99,12 +99,14 @@ object MerchEditScreen {
                             previousFocus = null,
                             nextFocus = state.uuid.focusRequester,
                         )
+
+                        val uuidErrorMessage by rememberUuidValidator(state.uuid)
                         SingleTextSection(
                             state = state.uuid,
                             title = Res.string.alley_edit_merch_header_uuid,
                             previousFocus = state.id.focusRequester,
                             nextFocus = state.notes.focusRequester,
-                            errorValidation = rememberUuidValidator(),
+                            errorText = { uuidErrorMessage },
                         )
                         SingleTextSection(
                             state = state.notes,

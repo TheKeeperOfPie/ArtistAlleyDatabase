@@ -44,6 +44,7 @@ import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
+import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
@@ -153,14 +154,14 @@ fun SeriesRow(
         val uriHandler = LocalUriHandler.current
         if (series?.aniListId != null) {
             val mediaType = when (series.aniListType) {
-                "ANIME" -> MediaType.ANIME
-                "MANGA" -> MediaType.MANGA
-                else -> MediaType.UNKNOWN__
+                AniListType.NONE -> MediaType.UNKNOWN__
+                AniListType.ANIME -> MediaType.ANIME
+                AniListType.MANGA -> MediaType.MANGA
             }
             val icon = when (series.aniListType) {
-                "ANIME" -> Icons.Default.Monitor
-                "MANGA" -> Icons.Default.Book
-                else -> Icons.Default.Monitor
+                AniListType.NONE -> Icons.Default.Monitor
+                AniListType.ANIME -> Icons.Default.Monitor
+                AniListType.MANGA -> Icons.Default.Book
             }
             val aniListUrl = AniListDataUtils.mediaUrl(mediaType, series.aniListId.toString())
             IconButtonWithTooltip(

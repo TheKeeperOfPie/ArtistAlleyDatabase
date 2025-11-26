@@ -1,11 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.series
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -21,78 +26,100 @@ class SeriesEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     @Assisted seriesId: Uuid,
-    @Assisted private val initialSeries: SeriesInfo?,
+    @Assisted private val editInfo: AlleyEditDestination.SeriesEdit?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveJob = ExclusiveProgressJob(viewModelScope, ::captureSeriesInfo, ::save)
+    private val initialSeries = editInfo?.series
     val state = SeriesEditScreen.State(
         id = savedStateHandle.saveable(
             key = "id",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.id) },
+            init = { initialValue(initialSeries?.id, SeriesColumn.CANONICAL) },
         ),
         uuid = savedStateHandle.saveable(
             key = "uuid",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(seriesId.toString()) },
+            init = { initialValue(seriesId.toString(), SeriesColumn.UUID) },
         ),
         aniListId = savedStateHandle.saveable(
             key = "aniListId",
             saver = EntryForm2.SingleTextState.Saver,
             init = {
-                EntryForm2.SingleTextState.fromValue(initialSeries?.aniListId?.toString())
+                initialValue(initialSeries?.aniListId?.toString(), SeriesColumn.ANILIST_ID)
             },
         ),
         aniListType = savedStateHandle.saveable(
             key = "aniListType",
-            saver = EntryForm2.SingleTextState.Saver,
-            // TODO: Use enum for type
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.aniListType.orEmpty()) },
+            saver = EntryForm2.DropdownState.Saver,
+            init = {
+                val index = initialSeries?.aniListType?.let(AniListType.entries::indexOf)
+                    ?: AniListType.NONE.ordinal
+                EntryForm2.DropdownState(
+                    initialSelectedIndex = index,
+                    initialLockState = if (index == AniListType.NONE.ordinal) {
+                        EntryLockState.UNLOCKED
+                    } else {
+                        EntryLockState.LOCKED
+                    }
+                )
+            },
         ),
         wikipediaId = savedStateHandle.saveable(
             key = "wikipediaId",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.wikipediaId?.toString()) },
+            init = {
+                initialValue(
+                    initialSeries?.wikipediaId?.toString(),
+                    SeriesColumn.WIKIPEDIA_ID
+                )
+            },
         ),
         source = savedStateHandle.saveable(
             key = "source",
             saver = EntryForm2.DropdownState.Saver,
             init = {
+                val index = initialSeries?.source?.let(SeriesSource.entries::indexOf)
+                    ?: SeriesSource.NONE.ordinal
                 EntryForm2.DropdownState(
-                    initialSeries?.source?.let(SeriesSource.entries::indexOf)
-                        ?: SeriesSource.NONE.ordinal
+                    initialSelectedIndex = index,
+                    initialLockState = if (index == SeriesSource.NONE.ordinal) {
+                        EntryLockState.UNLOCKED
+                    } else {
+                        EntryLockState.LOCKED
+                    }
                 )
             },
         ),
         titleEnglish = savedStateHandle.saveable(
             key = "titleEnglish",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.titleEnglish) },
+            init = { initialValue(initialSeries?.titleEnglish, SeriesColumn.TITLE_ENGLISH) },
         ),
         titleRomaji = savedStateHandle.saveable(
             key = "titleRomaji",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.titleRomaji) },
+            init = { initialValue(initialSeries?.titleRomaji, SeriesColumn.TITLE_ROMAJI) },
         ),
         titleNative = savedStateHandle.saveable(
             key = "titleNative",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.titleNative) },
+            init = { initialValue(initialSeries?.titleNative, SeriesColumn.TITLE_NATIVE) },
         ),
         titlePreferred = savedStateHandle.saveable(
             key = "titlePreferred",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.titlePreferred) },
+            init = { initialValue(initialSeries?.titlePreferred, SeriesColumn.TITLE_PREFERRED) },
         ),
         link = savedStateHandle.saveable(
             key = "link",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.link.orEmpty()) },
+            init = { initialValue(initialSeries?.link.orEmpty(), SeriesColumn.EXTERNAL_LINK) },
         ),
         notes = savedStateHandle.saveable(
             key = "notes",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { EntryForm2.SingleTextState.fromValue(initialSeries?.notes.orEmpty()) },
+            init = { initialValue(initialSeries?.notes.orEmpty(), SeriesColumn.NOTES) },
         ),
         savingState = saveJob.state,
     )
@@ -100,13 +127,31 @@ class SeriesEditViewModel(
     // TODO: Refresh list screen after save
     fun onClickSave() = saveJob.launch()
 
+    private fun initialValue(
+        value: String?,
+        seriesColumn: SeriesColumn,
+    ): EntryForm2.SingleTextState {
+        val isSelectedColumn = editInfo?.seriesColumn == seriesColumn
+        return EntryForm2.SingleTextState(
+            value = TextFieldState(
+                initialText = value.orEmpty(),
+                initialSelection = TextRange(0, if (isSelectedColumn) value.orEmpty().length else 0)
+            ),
+            initialLockState = if (value.isNullOrBlank() || isSelectedColumn) {
+                EntryLockState.UNLOCKED
+            } else {
+                EntryLockState.LOCKED
+            }
+        )
+    }
+
     private fun captureSeriesInfo(): SeriesInfo {
         // TODO: Apply error validation from UI
         val id = state.id.value.text.toString()
         val uuid = state.uuid.value.text.toString()
         val notes = state.notes.value.text.toString()
         val aniListId = state.aniListId.value.text.toString()
-        val aniListType = state.aniListType.value.text.toString()
+        val aniListType = AniListType.entries[state.aniListType.selectedIndex]
         val wikipediaId = state.wikipediaId.value.text.toString()
         val source = SeriesSource.entries[state.source.selectedIndex]
         val titlePreferred = state.titlePreferred.value.text.toString()
@@ -138,7 +183,7 @@ class SeriesEditViewModel(
     interface Factory {
         fun create(
             seriesId: Uuid,
-            series: SeriesInfo?,
+            editInfo: AlleyEditDestination.SeriesEdit?,
             savedStateHandle: SavedStateHandle,
         ): SeriesEditViewModel
     }

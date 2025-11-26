@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
+import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
@@ -69,7 +70,7 @@ fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
             uuid = Uuid.parse(uuid),
             notes = getString(2),
             aniListId = getLong(3),
-            aniListType = getString(4),
+            aniListType = AniListType.parse(getString(4)),
             wikipediaId = getLong(5),
             source = SeriesSource.entries.find { it.name == source } ?: SeriesSource.NONE,
             titlePreferred = getString(7)!!,
@@ -102,7 +103,7 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
         uuid = Uuid.parse(uuid),
         notes = notes,
         aniListId = aniListId,
-        aniListType = aniListType,
+        aniListType = AniListType.parse(aniListType),
         wikipediaId = wikipediaId,
         source = source ?: SeriesSource.NONE,
         titlePreferred = titlePreferred,
@@ -123,7 +124,7 @@ fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
         uuid = Uuid.parse(uuid),
         notes = notes,
         aniListId = aniListId,
-        aniListType = aniListType,
+        aniListType = AniListType.parse(aniListType),
         wikipediaId = wikipediaId,
         source = source ?: SeriesSource.NONE,
         titlePreferred = titlePreferred,
@@ -441,7 +442,7 @@ class SeriesEntryDao(
             uuid = uuidFromRandomBytes(id),
             notes = null,
             aniListId = null,
-            aniListType = null,
+            aniListType = AniListType.NONE,
             wikipediaId = null,
             source = SeriesSource.NONE,
             titlePreferred = id,

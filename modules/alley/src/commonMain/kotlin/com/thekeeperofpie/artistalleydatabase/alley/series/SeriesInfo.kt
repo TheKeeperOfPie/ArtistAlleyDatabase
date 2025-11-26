@@ -7,7 +7,6 @@ fun SeriesInfo.toImageInfo() = SeriesImageInfo(
     id = id,
     uuid = uuid,
     aniListId = aniListId,
-    aniListType = aniListType,
     wikipediaId = wikipediaId,
 )
 

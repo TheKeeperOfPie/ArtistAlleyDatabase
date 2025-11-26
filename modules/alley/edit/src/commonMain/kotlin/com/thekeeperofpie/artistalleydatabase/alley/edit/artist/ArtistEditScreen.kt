@@ -35,6 +35,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
@@ -71,7 +72,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_error_booth
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -93,7 +94,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
-import com.thekeeperofpie.artistalleydatabase.entry.form.FormErrorValidation
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
@@ -334,20 +334,23 @@ object ArtistEditScreen {
     ) {
         val textState = state.textState
         EntryForm2(modifier = modifier) {
+            val idErrorMessage by rememberUuidValidator(textState.id)
             SingleTextSection(
                 state = textState.id,
                 title = Res.string.alley_artist_edit_id,
                 previousFocus = null,
                 nextFocus = textState.booth.focusRequester,
-                errorValidation = rememberUuidValidator(),
+                errorText = { idErrorMessage },
             )
+
+            val boothErrorMessage by rememberBoothValidator(textState.booth)
             SingleTextSection(
                 state = textState.booth,
                 title = Res.string.alley_artist_edit_booth,
                 previousFocus = textState.id.focusRequester,
                 nextFocus = textState.name.focusRequester,
                 inputTransformation = InputTransformation.maxLength(3),
-                errorValidation = rememberBoothValidator(),
+                errorText = { boothErrorMessage },
             )
             SingleTextSection(
                 state = textState.name,
@@ -608,18 +611,20 @@ object ArtistEditScreen {
 
     @Stable
     @Composable
-    private fun rememberBoothValidator(): FormErrorValidation.Derived {
-        val errorMessage = stringResource(Res.string.alley_edit_series_error_booth)
-        return FormErrorValidation.Derived {
-            val booth = it.toString()
-            if (booth.isNotBlank() && (
-                        booth.length != 3 ||
-                                !booth.first().isLetter() ||
-                                booth.drop(1).toIntOrNull() == null)
-            ) {
-                errorMessage
-            } else {
-                null
+    private fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): androidx.compose.runtime.State<String?> {
+        val errorMessage = stringResource(Res.string.alley_edit_artist_error_booth)
+        return remember {
+            derivedStateOf {
+                val booth = boothState.value.text.toString()
+                if (booth.isNotBlank() && (
+                            booth.length != 3 ||
+                                    !booth.first().isLetter() ||
+                                    booth.drop(1).toIntOrNull() == null)
+                ) {
+                    errorMessage
+                } else {
+                    null
+                }
             }
         }
     }

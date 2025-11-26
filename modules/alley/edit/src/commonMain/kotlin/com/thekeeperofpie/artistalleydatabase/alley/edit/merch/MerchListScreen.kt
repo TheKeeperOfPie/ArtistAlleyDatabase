@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.merch
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,7 +12,6 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,10 +33,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_action_add
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_action_edit_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_action_refresh_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_canonical
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_edit
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_merch_header_uuid
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -120,27 +119,17 @@ object MerchListScreen {
                     )
                 },
                 tableCell = { row, column ->
-                    when (column) {
-                        Column.EDIT -> {
-                            Box(
-                                contentAlignment = Alignment.TopCenter,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                IconButton(onClick = {
-                                    if (row != null) {
-                                        onClickEditMerch(row)
-                                    }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = stringResource(Res.string.alley_edit_merch_action_edit_content_description)
-                                    )
-                                }
+                    val modifier = Modifier
+                        .width(column.size)
+                        .clickable {
+                            if (row != null) {
+                                onClickEditMerch(row)
                             }
                         }
-                        Column.MERCH -> FieldText(row?.name)
-                        Column.NOTES -> FieldText(row?.notes)
-                        Column.UUID -> FieldText(row?.uuid)
+                    when (column) {
+                        Column.MERCH -> FieldText(value = row?.name, modifier = modifier)
+                        Column.NOTES -> FieldText(value = row?.notes, modifier = modifier)
+                        Column.UUID -> FieldText(value = row?.uuid, modifier = modifier)
                     }
                 },
                 modifier = Modifier.fillMaxSize()
@@ -155,10 +144,12 @@ object MerchListScreen {
     }
 
     @Composable
-    private fun FieldText(value: Any?) {
+    private fun FieldText(value: Any?, modifier: Modifier = Modifier) {
         Text(
             text = value?.toString().orEmpty(),
-            modifier = Modifier.padding(16.dp)
+            modifier = modifier
+                .fillMaxHeight()
+                .padding(16.dp)
         )
     }
 
@@ -166,7 +157,6 @@ object MerchListScreen {
         override val text: StringResource,
         override val size: Dp = 200.dp,
     ) : TwoWayGrid.Column {
-        EDIT(size = 48.dp, text = Res.string.alley_edit_merch_header_edit),
         MERCH(text = Res.string.alley_edit_merch_header_canonical),
         NOTES(text = Res.string.alley_edit_merch_header_notes, size = 450.dp),
         UUID(text = Res.string.alley_edit_merch_header_uuid, size = 400.dp),

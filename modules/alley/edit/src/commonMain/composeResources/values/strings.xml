@@ -28,6 +28,8 @@
     <string name="alley_edit_artist_action_save_content_description">Save artist</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
 
+    <string name="alley_edit_artist_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
+
     <string name="alley_edit_image_title">Editing images for %1$s - %2$s</string>
     <string name="alley_edit_image_width_and_height">Width: %1$d - Height: %2$d</string>
     <string name="alley_edit_image_action_delete">Delete image</string>
@@ -47,7 +49,6 @@
 
     <string name="alley_edit_tag_delete_content_description">Delete tag</string>
 
-    <string name="alley_edit_series_header_edit">Edit</string>
     <string name="alley_edit_series_header_image">Image</string>
     <string name="alley_edit_series_header_canonical">Series</string>
     <string name="alley_edit_series_header_notes">Notes</string>
@@ -62,22 +63,23 @@
     <string name="alley_edit_series_header_external_link">External link</string>
     <string name="alley_edit_series_header_uuid">UUID</string>
 
-    <string name="alley_edit_series_action_edit_content_description">Edit series</string>
     <string name="alley_edit_series_action_add">Add series</string>
     <string name="alley_edit_series_action_save_content_description">Save series</string>
     <string name="alley_edit_series_action_refresh_content_description">Refresh series</string>
 
-    <string name="alley_edit_series_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
+    <string name="alley_edit_series_error_aniList_type">AniList Type requires AniList ID</string>
 
-    <string name="alley_edit_merch_header_edit">Edit</string>
     <string name="alley_edit_merch_header_canonical">Merch</string>
     <string name="alley_edit_merch_header_notes">Notes</string>
     <string name="alley_edit_merch_header_uuid">UUID</string>
 
-    <string name="alley_edit_merch_action_edit_content_description">Edit merch</string>
     <string name="alley_edit_merch_action_add">Add merch</string>
     <string name="alley_edit_merch_action_save_content_description">Save merch</string>
     <string name="alley_edit_merch_action_refresh_content_description">Refresh merch</string>
 
     <string name="alley_edit_saving">Saving...</string>
+
+    <string name="alley_edit_aniList_type_none"/>
+    <string name="alley_edit_aniList_type_anime">Anime</string>
+    <string name="alley_edit_aniList_type_manga">Manga</string>
 </resources>

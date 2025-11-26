@@ -7,7 +7,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_language_opti
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_english
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_native
 import artistalleydatabase.modules.alley.generated.resources.alley_language_option_romaji
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
@@ -33,7 +33,7 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             uuid = Uuid.parse(id),
             notes = null,
             aniListId = null,
-            aniListType = null,
+            aniListType = AniListType.NONE,
             wikipediaId = null,
             source = SeriesSource.NONE,
             titlePreferred = id,
