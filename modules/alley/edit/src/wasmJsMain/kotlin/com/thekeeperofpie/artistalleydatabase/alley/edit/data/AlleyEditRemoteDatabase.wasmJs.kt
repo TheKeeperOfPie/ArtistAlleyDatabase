@@ -16,6 +16,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.extension
 import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -100,7 +101,9 @@ actual class AlleyEditRemoteDatabase(
         val name = Uuid.random().toString()
         val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) + "/$name"
         val bytes = platformFile.readBytes()
-        ktorClient.put(window.origin + "/database/uploadImage/$key") {
+
+        // Add extension when uploading, but keep database entry without extension
+        ktorClient.put(window.origin + "/database/uploadImage/$key.${platformFile.extension}") {
             contentType(ContentType.Application.OctetStream)
             setBody(bytes)
         }

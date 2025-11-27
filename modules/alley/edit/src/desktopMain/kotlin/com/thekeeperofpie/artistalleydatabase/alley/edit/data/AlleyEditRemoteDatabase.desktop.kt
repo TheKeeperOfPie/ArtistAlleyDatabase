@@ -14,6 +14,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.extension
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
@@ -58,10 +59,11 @@ actual class AlleyEditRemoteDatabase {
     actual suspend fun uploadImage(
         dataYear: DataYear,
         artistId: Uuid,
-        platformFile: PlatformFile
+        platformFile: PlatformFile,
     ): EditImage {
         simulateLatency()
-        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) + "/${Uuid.random()}"
+        val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId)
+        val key = "$prefix/${Uuid.random()}.${platformFile.extension}"
         val imageKey = PlatformImageCache.add(platformFile)
         val image = EditImage.LocalImage(imageKey, name = key)
         images[key] = image
@@ -70,7 +72,10 @@ actual class AlleyEditRemoteDatabase {
 
     actual suspend fun loadSeries(): List<SeriesInfo> = series.values.toList()
 
-    actual suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo): SeriesSave.Response.Result {
+    actual suspend fun saveSeries(
+        initial: SeriesInfo?,
+        updated: SeriesInfo,
+    ): SeriesSave.Response.Result {
         simulateLatency()
         val existing = initial?.uuid?.let { series[it] }
         if (existing != null && existing != initial) {
@@ -82,7 +87,10 @@ actual class AlleyEditRemoteDatabase {
 
     actual suspend fun loadMerch(): List<MerchInfo> = merch.values.toList()
 
-    actual suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result {
+    actual suspend fun saveMerch(
+        initial: MerchInfo?,
+        updated: MerchInfo,
+    ): MerchSave.Response.Result {
         simulateLatency()
         val existing = initial?.uuid?.let { merch[it] }
         if (existing != null && existing != initial) {

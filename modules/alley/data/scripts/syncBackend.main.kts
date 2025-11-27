@@ -1,18 +1,24 @@
 // Assumes that:
 // - bun is available to execute bunx wrangler
 // - user is logged into Cloudflare via wrangler to access D1/R2 instances
+// - rclone is available on host to sync images
 @file:OptIn(kotlin.time.ExperimentalTime::class)
+@file:Suppress("CanConvertToMultiDollarString")
 
 import java.io.File
 import java.lang.ProcessBuilder
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.time.Clock
 
-val REMOTE = true
+val REMOTE = false
 val scriptDir = __FILE__.parentFile
 
 val buildDir = scriptDir.resolve("build").apply { mkdir() }
-val wranglerToml = initializeWranglerFile()
+
+val secretsFile = scriptDir.resolve("../../../alley-app/secrets.properties")
+val secrets = Properties().apply { secretsFile.inputStream().use(::load) }
+val wranglerToml = initializeWranglerFile(secrets)
 val exportFile = buildDir.resolve("export.sql").apply { delete() }
 
 runWranglerCommand(
@@ -37,6 +43,27 @@ runWranglerCommand(
 val targetFolder = scriptDir.parentFile.resolve("inputs/animeExpo2026").apply { mkdirs() }
 exportFile.copyTo(targetFolder.resolve("database.sql"), overwrite = true)
 
+val rcloneConf = buildDir.resolve("rclone.conf")
+scriptDir.resolve("rclone.conf").copyTo(rcloneConf, overwrite = true)
+rcloneConf.writeText(
+    rcloneConf.readText()
+        .replace("\$ACCESS_KEY_ID", secrets.getProperty("accessKeyId"))
+        .replace("\$SECRET_ACCESS_KEY", secrets.getProperty("secretAccessKey"))
+        .replace("\$ACCOUNT_ID", secrets.getProperty("cloudflareAccountId"))
+)
+
+if (REMOTE) {
+    val imagesFolder = buildDir.resolve("images")
+    runCommand(
+        "rclone",
+        "--config",
+        rcloneConf.absolutePath,
+        "sync",
+        "\"Cloudflare R2:artist-alley-images\"",
+        imagesFolder.absolutePath,
+    )
+}
+
 fun runCommand(vararg params: String) =
     ProcessBuilder(params.toList())
         .inheritIO()
@@ -54,13 +81,9 @@ fun runWranglerCommand(vararg params: String, remote: Boolean = REMOTE) =
         if (remote) "--remote" else "--local",
     )
 
-fun initializeWranglerFile(): File {
+fun initializeWranglerFile(secrets: Properties): File {
     val file = buildDir.resolve("wrangler.toml")
-    val databaseId = scriptDir.resolve("../../../alley-app/secrets.properties")
-        .readLines()
-        .first()
-        .removePrefix("artistAlleyDatabaseId=")
-        .trim()
+    val databaseId = secrets.getProperty("artistAlleyDatabaseId")
     file.writeText(
         """
             name = "artistalley"
