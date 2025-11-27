@@ -1,3 +1,4 @@
+
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
@@ -48,6 +49,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @CacheableTask
@@ -107,119 +109,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     @TaskAction
     fun process() {
         val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
-        val dbFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
-        if (dbFile.exists() && !dbFile.delete()) {
+        val databaseFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
+        if (databaseFile.exists() && !databaseFile.delete()) {
             throw IllegalStateException(
-                "Failed to delete $dbFile, manually delete to re-process inputs"
+                "Failed to delete $databaseFile, manually delete to re-process inputs"
             )
         } else {
-            val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
-            try {
-                BuildLogicDatabase.Schema.create(driver)
-            } catch (_: Throwable) {
-                Thread.sleep(5000)
-                BuildLogicDatabase.Schema.create(driver)
-            }
-            val database = BuildLogicDatabase(
-                driver = driver,
-                artistEntry2023Adapter = ArtistEntry2023.Adapter(
-                    artistNamesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                artistEntry2024Adapter = ArtistEntry2024.Adapter(
-                    linksAdapter = listStringAdapter,
-                    storeLinksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    seriesInferredAdapter = listStringAdapter,
-                    seriesConfirmedAdapter = listStringAdapter,
-                    merchInferredAdapter = listStringAdapter,
-                    merchConfirmedAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                artistEntry2025Adapter = ArtistEntry2025.Adapter(
-                    linksAdapter = listStringAdapter,
-                    storeLinksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    seriesInferredAdapter = listStringAdapter,
-                    seriesConfirmedAdapter = listStringAdapter,
-                    merchInferredAdapter = listStringAdapter,
-                    merchConfirmedAdapter = listStringAdapter,
-                    commissionsAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
-                    linksAdapter = listStringAdapter,
-                    storeLinksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    seriesInferredAdapter = listStringAdapter,
-                    seriesConfirmedAdapter = listStringAdapter,
-                    merchInferredAdapter = listStringAdapter,
-                    merchConfirmedAdapter = listStringAdapter,
-                    commissionsAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
-                    linksAdapter = listStringAdapter,
-                    storeLinksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    seriesInferredAdapter = listStringAdapter,
-                    seriesConfirmedAdapter = listStringAdapter,
-                    merchInferredAdapter = listStringAdapter,
-                    merchConfirmedAdapter = listStringAdapter,
-                    commissionsAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
-                    linksAdapter = listStringAdapter,
-                    storeLinksAdapter = listStringAdapter,
-                    catalogLinksAdapter = listStringAdapter,
-                    seriesInferredAdapter = listStringAdapter,
-                    seriesConfirmedAdapter = listStringAdapter,
-                    merchInferredAdapter = listStringAdapter,
-                    merchConfirmedAdapter = listStringAdapter,
-                    commissionsAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
-                    tablesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
-                    tablesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
-                    tablesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
-                    seriesAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
-                    tablesAdapter = listStringAdapter,
-                    linksAdapter = listStringAdapter,
-                    seriesAdapter = listStringAdapter,
-                    imagesAdapter = listCatalogImageAdapter,
-                ),
-                artistNotesAdapter = ArtistNotes.Adapter(
-                    dataYearAdapter = dataYearAdapter,
-                ),
-                artistUserEntryAdapter = ArtistUserEntry.Adapter(
-                    dataYearAdapter = dataYearAdapter,
-                ),
-                seriesEntryAdapter = SeriesEntry.Adapter(
-                    sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
-                        override fun decode(databaseValue: String) =
-                            SeriesSource.entries.find { it.name == databaseValue }
-                                ?: SeriesSource.NONE
-
-                        override fun encode(value: SeriesSource) = value.name
-                    },
-                )
-            )
+            var (driver, database) = createDatabase(databaseFile)
 
             val seriesConnections = mutableMapOf<Pair<String, String>, ArtistSeriesConnection>()
             val merchConnections = mutableMapOf<Pair<String, String>, ArtistMerchConnection>()
@@ -306,6 +202,25 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             parseStampRallies2024(imageCacheDir, artists2024, database)
             parseStampRallies2025(imageCacheDir, artists2025, database)
 
+            val animeExpo2026 = inputsDirectory.file("animeExpo2026").get().asFile
+            val animeExpo2026Database = animeExpo2026.resolve("database.sql")
+            if (animeExpo2026Database.exists()) {
+                driver.close()
+                ProcessBuilder(
+                    "sqlite3",
+                    databaseFile.absolutePath,
+                    "\".read \"${animeExpo2026Database.absolutePath}\"\""
+                )
+                    .inheritIO()
+                    .redirectErrorStream(true)
+                    .start()
+                    .waitFor(30, TimeUnit.SECONDS)
+
+                val pair = createDatabase(databaseFile)
+                driver = pair.first
+                database = pair.second
+            }
+
             runBlocking {
                 // Don't retain user tables (merged from depending on :modules:alley:user)
                 listOf(
@@ -322,6 +237,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     "artistEntry2023_fts",
                     "artistEntry2024_fts",
                     "artistEntry2025_fts",
+                    "artistEntryAnimeExpo2026_fts",
                     "artistEntryAnimeNyc2024_fts",
                     "artistEntryAnimeNyc2025_fts",
                     "stampRallyEntry2023_fts",
@@ -340,19 +256,129 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 driver.execute(null, "VACUUM;", 0, null).await()
             }
 
-            driver.closeConnection(driver.getConnection())
             driver.close()
 
-            dbFile.copyTo(
+            databaseFile.copyTo(
                 outputResources.file("files/database.sqlite").get().asFile,
                 overwrite = true,
             )
-            val hash = Utils.hash(dbFile)
+            val hash = Utils.hash(databaseFile)
 
-            dbFile.delete()
+            databaseFile.delete()
 
             outputResources.file("files/databaseHash.txt").get().asFile.writeText(hash.toString())
         }
+    }
+
+    private fun createDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicDatabase> {
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
+        try {
+            BuildLogicDatabase.Schema.create(driver)
+        } catch (_: Throwable) {
+            Thread.sleep(5000)
+            BuildLogicDatabase.Schema.create(driver)
+        }
+        val database = BuildLogicDatabase(
+            driver = driver,
+            artistEntry2023Adapter = ArtistEntry2023.Adapter(
+                artistNamesAdapter = listStringAdapter,
+                linksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            artistEntry2024Adapter = ArtistEntry2024.Adapter(
+                linksAdapter = listStringAdapter,
+                storeLinksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                seriesInferredAdapter = listStringAdapter,
+                seriesConfirmedAdapter = listStringAdapter,
+                merchInferredAdapter = listStringAdapter,
+                merchConfirmedAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            artistEntry2025Adapter = ArtistEntry2025.Adapter(
+                linksAdapter = listStringAdapter,
+                storeLinksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                seriesInferredAdapter = listStringAdapter,
+                seriesConfirmedAdapter = listStringAdapter,
+                merchInferredAdapter = listStringAdapter,
+                merchConfirmedAdapter = listStringAdapter,
+                commissionsAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
+                linksAdapter = listStringAdapter,
+                storeLinksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                seriesInferredAdapter = listStringAdapter,
+                seriesConfirmedAdapter = listStringAdapter,
+                merchInferredAdapter = listStringAdapter,
+                merchConfirmedAdapter = listStringAdapter,
+                commissionsAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
+                linksAdapter = listStringAdapter,
+                storeLinksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                seriesInferredAdapter = listStringAdapter,
+                seriesConfirmedAdapter = listStringAdapter,
+                merchInferredAdapter = listStringAdapter,
+                merchConfirmedAdapter = listStringAdapter,
+                commissionsAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
+                linksAdapter = listStringAdapter,
+                storeLinksAdapter = listStringAdapter,
+                catalogLinksAdapter = listStringAdapter,
+                seriesInferredAdapter = listStringAdapter,
+                seriesConfirmedAdapter = listStringAdapter,
+                merchInferredAdapter = listStringAdapter,
+                merchConfirmedAdapter = listStringAdapter,
+                commissionsAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
+                tablesAdapter = listStringAdapter,
+                linksAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
+                tablesAdapter = listStringAdapter,
+                linksAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
+                tablesAdapter = listStringAdapter,
+                linksAdapter = listStringAdapter,
+                seriesAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
+                tablesAdapter = listStringAdapter,
+                linksAdapter = listStringAdapter,
+                seriesAdapter = listStringAdapter,
+                imagesAdapter = listCatalogImageAdapter,
+            ),
+            artistNotesAdapter = ArtistNotes.Adapter(
+                dataYearAdapter = dataYearAdapter,
+            ),
+            artistUserEntryAdapter = ArtistUserEntry.Adapter(
+                dataYearAdapter = dataYearAdapter,
+            ),
+            seriesEntryAdapter = SeriesEntry.Adapter(
+                sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
+                    override fun decode(databaseValue: String) =
+                        SeriesSource.entries.find { it.name == databaseValue }
+                            ?: SeriesSource.NONE
+
+                    override fun encode(value: SeriesSource) = value.name
+                },
+            )
+        )
+        return driver to database
     }
 
     private fun parseArtists2023(
@@ -435,7 +461,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsv2024 = inputsDirectory.file("2024/$ARTISTS_CSV_NAME").get()
-        if (!artistsCsv2024.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
+        if (!artistsCsv2024.asFile.exists()) return Triple(
+            emptyList(),
+            mutableListOf(),
+            mutableListOf()
+        )
         val artists2024 = open(artistsCsv2024).use {
             var counter = 1L
             read(it)
@@ -566,7 +596,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsv2025 = inputsDirectory.file("2025/$ARTISTS_CSV_NAME").get()
-        if (!artistsCsv2025.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
+        if (!artistsCsv2025.asFile.exists()) return Triple(
+            emptyList(),
+            mutableListOf(),
+            mutableListOf()
+        )
         val artists2025 = open(artistsCsv2025).use {
             var counter = 1L
             read(it)
@@ -745,7 +779,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsvAnimeNyc2024 = inputsDirectory.file("animeNyc2024/$ARTISTS_CSV_NAME").get()
-        if (!artistsCsvAnimeNyc2024.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
+        if (!artistsCsvAnimeNyc2024.asFile.exists()) return Triple(
+            emptyList(),
+            mutableListOf(),
+            mutableListOf()
+        )
         val artistsAnimeNyc2024 = open(artistsCsvAnimeNyc2024).use {
             var counter = 1L
             read(it)
@@ -941,7 +979,11 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         val seriesConnections = mutableListOf<ArtistSeriesConnection>()
         val merchConnections = mutableListOf<ArtistMerchConnection>()
         val artistsCsvAnimeNyc2025 = inputsDirectory.file("animeNyc2025/$ARTISTS_CSV_NAME").get()
-        if (!artistsCsvAnimeNyc2025.asFile.exists()) return Triple(emptyList(), mutableListOf(), mutableListOf())
+        if (!artistsCsvAnimeNyc2025.asFile.exists()) return Triple(
+            emptyList(),
+            mutableListOf(),
+            mutableListOf()
+        )
         val artistsAnimeNyc2025 = open(artistsCsvAnimeNyc2025).use {
             var counter = 1L
             read(it)

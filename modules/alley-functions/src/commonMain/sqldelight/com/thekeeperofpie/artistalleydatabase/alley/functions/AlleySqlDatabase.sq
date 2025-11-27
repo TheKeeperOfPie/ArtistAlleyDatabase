@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS artistEntry2023_fts;
+DROP TABLE IF EXISTS artistEntry2024_fts;
+DROP TABLE IF EXISTS artistEntry2025_fts;
+DROP TABLE IF EXISTS artistEntryAnimeExpo2026_fts;
+DROP TABLE IF EXISTS artistEntryAnimeNyc2025_fts;
+DROP TABLE IF EXISTS artistEntryAnimeNyc2024_fts;
+DROP TABLE IF EXISTS stampRallyEntry2023_fts;
+DROP TABLE IF EXISTS stampRallyEntry2024_fts;
+DROP TABLE IF EXISTS stampRallyEntry2025_fts;
+DROP TABLE IF EXISTS stampRallyEntryAnimeExpo2026_fts;
+DROP TABLE IF EXISTS seriesEntry_fts;
+DROP TABLE IF EXISTS merchEntry_fts;
