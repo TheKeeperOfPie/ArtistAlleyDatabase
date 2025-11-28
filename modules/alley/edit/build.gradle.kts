@@ -1,9 +1,13 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
+import java.util.Properties
+
 plugins {
     id("library-compose")
     id("library-desktop")
     id("library-inject")
     id("library-kotlin")
     id("library-wasmJs")
+    alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
 kotlin {
@@ -37,5 +41,29 @@ kotlin {
             implementation(projects.modules.utilsInject)
             implementation(projects.modules.utilsNetwork)
         }
+    }
+}
+
+val properties = Properties().apply {
+    val secretsFile = projectDir.resolve("secrets.properties")
+    if (secretsFile.exists()) {
+        load(secretsFile.reader())
+    }
+}
+
+val isWasmDebug = project.hasProperty("wasmDebug")
+
+buildkonfig {
+    packageName = "com.thekeeperofpie.artistalleydatabase.alley.edit.secrets"
+
+    defaultConfigs {
+        properties.forEach {
+            buildConfigField(FieldSpec.Type.STRING, it.key.toString(), it.value.toString())
+        }
+        buildConfigField(
+            FieldSpec.Type.STRING,
+            "imagesUrl",
+            if (isWasmDebug) properties.getProperty("prodImagesUrl") else "",
+        )
     }
 }

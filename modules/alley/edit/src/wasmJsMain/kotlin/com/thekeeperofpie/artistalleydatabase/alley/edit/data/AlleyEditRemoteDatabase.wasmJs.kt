@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -86,7 +87,7 @@ actual class AlleyEditRemoteDatabase(
                 }
                     .body<ListImages.Response>()
                     .keys
-                    .map { EditImage.NetworkImage(Uri.parse(window.origin + "/database/image/$it")) }
+                    .map(::imageFromKey)
             } catch (t: Throwable) {
                 t.printStackTrace()
                 emptyList()
@@ -107,7 +108,7 @@ actual class AlleyEditRemoteDatabase(
             contentType(ContentType.Application.OctetStream)
             setBody(bytes)
         }
-        EditImage.NetworkImage(Uri.parse(window.origin + "/database/image/$key"))
+        imageFromKey(key)
     }
 
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
@@ -169,4 +170,10 @@ actual class AlleyEditRemoteDatabase(
                 MerchSave.Response.Result.Failed(t)
             }
         }
+
+    private fun imageFromKey(key: String) = EditImage.NetworkImage(
+        Uri.parse(
+            BuildKonfig.imagesUrl.ifBlank { "${window.origin}/database/image" } + "/$key"
+        )
+    )
 }

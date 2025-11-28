@@ -11,10 +11,13 @@ import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.time.Clock
 
-val REMOTE = false
+val PROD = false
+val REMOTE = true
 val scriptDir = __FILE__.parentFile
 
-val buildDir = scriptDir.resolve("build").apply { mkdir() }
+val buildDir = scriptDir.resolve("build")
+    .resolve(if (PROD) "prod" else "dev")
+    .apply { mkdirs() }
 
 val secretsFile = scriptDir.resolve("../../../alley-app/secrets.properties")
 val secrets = Properties().apply { secretsFile.inputStream().use(::load) }
@@ -40,7 +43,8 @@ runWranglerCommand(
     "artist-alley-snapshots/$snapshotTime.sql"
 )
 
-val targetFolder = scriptDir.parentFile.resolve("inputs/animeExpo2026").apply { mkdirs() }
+val dataDir = if (PROD) scriptDir.parentFile else buildDir
+val targetFolder = dataDir.resolve("inputs/animeExpo2026").apply { mkdirs() }
 exportFile.copyTo(targetFolder.resolve("database.sql"), overwrite = true)
 
 val rcloneConf = buildDir.resolve("rclone.conf")

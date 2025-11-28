@@ -112,6 +112,10 @@ object AlleyBackendDatabase {
         return jsonResponse(ArtistSave.Response(ArtistSave.Response.Result.Success))
     }
 
+    /**
+     * Exposes image for local development so that it doesn't access the remote R2 bucket via the
+     * public domain.
+     */
     suspend fun loadImage(context: EventContext, key: String): Response {
         val file = context.env.ARTIST_ALLEY_IMAGES_BUCKET.get(key).await()
             ?: return Response(null, ResponseInit(status = 404))
