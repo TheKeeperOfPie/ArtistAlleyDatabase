@@ -1,4 +1,3 @@
-
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
@@ -21,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -51,6 +51,7 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.time.Instant
 
 @CacheableTask
 abstract class ArtistAlleyDatabaseTask : DefaultTask() {
@@ -86,7 +87,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         override fun encode(value: List<String>) = Json.encodeToString(value)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
         override fun decode(databaseValue: String) =
             DataYear.entries.first { it.serializedName == databaseValue }
@@ -99,6 +99,23 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             Json.decodeFromString<List<CatalogImage>>(databaseValue)
 
         override fun encode(value: List<CatalogImage>) = Json.encodeToString(value)
+    }
+
+    private val artistStatusAdapter = object : ColumnAdapter<ArtistStatus, String> {
+        override fun decode(databaseValue: String) =
+            ArtistStatus.entries.find { it.name == databaseValue } ?: ArtistStatus.UNKNOWN
+
+        override fun encode(value: ArtistStatus) = value.name
+    }
+
+    private val instantAdapter = object : ColumnAdapter<Instant, String> {
+        override fun decode(databaseValue: String) = try {
+            Instant.parse(databaseValue)
+        } catch (_: IllegalArgumentException) {
+            Instant.DISTANT_PAST
+        }
+
+        override fun encode(value: Instant) = value.toString()
     }
 
     init {
@@ -202,26 +219,29 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             parseStampRallies2024(imageCacheDir, artists2024, database)
             parseStampRallies2025(imageCacheDir, artists2025, database)
 
-            val animeExpo2026 = inputsDirectory.file("animeExpo2026").get().asFile
-            val animeExpo2026Database = animeExpo2026.resolve("database.sql")
-            if (animeExpo2026Database.exists()) {
-                driver.close()
-                ProcessBuilder(
-                    "sqlite3",
-                    databaseFile.absolutePath,
-                    "\".read \"${animeExpo2026Database.absolutePath}\"\""
-                )
-                    .inheritIO()
-                    .redirectErrorStream(true)
-                    .start()
-                    .waitFor(30, TimeUnit.SECONDS)
-
-                val pair = createDatabase(databaseFile)
-                driver = pair.first
-                database = pair.second
-            }
 
             runBlocking {
+                val animeExpo2026 = inputsDirectory.file("animeExpo2026").get().asFile
+                val animeExpo2026Database = animeExpo2026.resolve("database.sql")
+                if (animeExpo2026Database.exists()) {
+                    driver.close()
+                    ProcessBuilder(
+                        "sqlite3",
+                        databaseFile.absolutePath,
+                        "\".read \"${animeExpo2026Database.absolutePath}\"\""
+                    )
+                        .inheritIO()
+                        .redirectErrorStream(true)
+                        .start()
+                        .waitFor(30, TimeUnit.SECONDS)
+
+                    val pair = createDatabase(databaseFile)
+                    driver = pair.first
+                    database = pair.second
+
+                    database.mutationQueries.cleanUpForRelease().await()
+                }
+
                 // Don't retain user tables (merged from depending on :modules:alley:user)
                 listOf(
                     "artistUserEntry",
@@ -308,6 +328,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 imagesAdapter = listCatalogImageAdapter,
             ),
             artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
+                statusAdapter = artistStatusAdapter,
                 linksAdapter = listStringAdapter,
                 storeLinksAdapter = listStringAdapter,
                 catalogLinksAdapter = listStringAdapter,
@@ -317,6 +338,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                lastEditTimeAdapter = instantAdapter,
             ),
             artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
                 linksAdapter = listStringAdapter,

@@ -1,7 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.artist
 
-import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import org.jetbrains.compose.ui.tooling.preview.PreviewParameterProvider
 
@@ -11,6 +12,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
             ArtistDatabaseEntry.Impl(
                 year = DataYear.ANIME_EXPO_2025,
                 id = "artistId",
+                status = ArtistStatus.FINAL,
                 booth = "C39",
                 name = "Hatsune Miku",
                 summary = "Summary summary summary",
@@ -26,6 +28,9 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 merchConfirmed = listOf("Bags", "Shirts", "Stickers", "Prints"),
                 images = emptyList(),
                 counter = 1,
+                editorNotes = null,
+                lastEditor = null,
+                lastEditTime = null,
             )
         val artist = ArtistWithUserData(
             artist = ArtistEntry(databaseEntry),

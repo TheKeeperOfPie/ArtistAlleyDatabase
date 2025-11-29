@@ -6,6 +6,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.DateTimeUtils
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.offsetIn
 import kotlinx.datetime.toLocalDateTime
 import nl.jacobras.humanreadable.HumanReadable
 import kotlin.time.Clock
@@ -67,4 +69,10 @@ actual class DateTimeFormatter {
         if (month == null) return year.toString()
         return DateTimeUtils.subtitleMonthYearFormat.format(LocalDate(year, month, 1))
     }
+
+    actual fun formatDateTime(instant: Instant): String =
+        instant.format(
+            format = DateTimeUtils.dateTimeFormat,
+            offset = instant.offsetIn(TimeZone.currentSystemDefault()),
+        )
 }

@@ -590,21 +590,24 @@ class StampRallyEntryDao(
         val (countStatement, searchStatement) = statements
         val tableName = year.stampRallyTableNameOrThrow
 
+        val mapper: SqlCursor.(AlleySqlDatabase) -> StampRallyWithUserData = {
+            when (year) {
+                DataYear.ANIME_EXPO_2023 -> toStampRallyWithUserData2023()
+                DataYear.ANIME_EXPO_2024 -> toStampRallyWithUserData2024()
+                DataYear.ANIME_EXPO_2025 -> toStampRallyWithUserData2025()
+                DataYear.ANIME_EXPO_2026 -> toStampRallyWithUserDataAnimeExpo2026()
+                DataYear.ANIME_NYC_2024,
+                DataYear.ANIME_NYC_2025,
+                    -> throw IllegalStateException("ANYC shouldn't have rallies")
+            }
+        }
         return DaoUtils.queryPagingSource(
             driver = driver,
             database = database,
             countStatement = countStatement,
             statement = searchStatement,
             tableNames = listOf("${tableName}_fts", "stampRallyUserEntry"),
-            mapper = when (year) {
-                DataYear.ANIME_EXPO_2023 -> SqlCursor::toStampRallyWithUserData2023
-                DataYear.ANIME_EXPO_2024 -> SqlCursor::toStampRallyWithUserData2024
-                DataYear.ANIME_EXPO_2025 -> SqlCursor::toStampRallyWithUserData2025
-                DataYear.ANIME_EXPO_2026 -> SqlCursor::toStampRallyWithUserDataAnimeExpo2026
-                DataYear.ANIME_NYC_2024,
-                DataYear.ANIME_NYC_2025,
-                    -> throw IllegalStateException("ANYC shouldn't have rallies")
-            },
+            mapper = mapper,
         )
     }
 }

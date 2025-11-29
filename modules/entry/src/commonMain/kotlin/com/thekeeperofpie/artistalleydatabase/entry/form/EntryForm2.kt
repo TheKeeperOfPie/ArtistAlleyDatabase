@@ -1210,6 +1210,8 @@ fun <T> EntryFormScope.DropdownSection(
     headerText: @Composable () -> Unit,
     options: List<T>,
     optionToText: @Composable (T) -> String,
+    leadingIcon: (@Composable (T) -> Unit)? = null,
+    expandedItemText: @Composable (T) -> Unit = { Text(optionToText(it)) },
     errorText: (() -> String?)? = null,
     previousFocus: FocusRequester? = null,
     nextFocus: FocusRequester? = null,
@@ -1265,10 +1267,12 @@ fun <T> EntryFormScope.DropdownSection(
                 }
         ) {
             val errorText = errorText?.invoke()
+            val option = options.getOrNull(state.selectedIndex)
             TextField(
                 readOnly = true,
-                value = options.getOrNull(state.selectedIndex)?.let { optionToText(it) }.orEmpty(),
+                value = option?.let { optionToText(it) }.orEmpty(),
                 onValueChange = {},
+                leadingIcon = leadingIcon?.let { option?.let { { leadingIcon(it) } } },
                 trailingIcon = {
                     @Suppress("RemoveRedundantQualifierName")
                     androidx.compose.animation.AnimatedVisibility(
@@ -1310,7 +1314,8 @@ fun <T> EntryFormScope.DropdownSection(
                             state.expanded = false
                             state.selectedIndex = index
                         },
-                        text = { Text(optionToText(item)) },
+                        leadingIcon = leadingIcon?.let { { leadingIcon(item) } },
+                        text = { expandedItemText(item) },
                         modifier = Modifier
                             .background(
                                 if (focused) {

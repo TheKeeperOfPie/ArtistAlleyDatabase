@@ -3,10 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import app.cash.sqldelight.Query
-import app.cash.sqldelight.SuspendingTransacter
 import app.cash.sqldelight.TransactionCallbacks
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
+import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import kotlinx.coroutines.sync.Mutex
@@ -19,9 +19,9 @@ private val globalDatabaseMutex = Mutex()
 
 // Copied out from androidx-paging3-extensions since it doesn't publish a wasmJs target
 class OffsetQueryPagingSource<RowType : Any>(
-    private val queryProvider: suspend (limit: Int, offset: Int) -> Query<RowType>,
+    private val queryProvider: suspend (database: AlleySqlDatabase, limit: Int, offset: Int) -> Query<RowType>,
     private val countQuery: suspend () -> Query<Int>,
-    private val transacter: suspend () -> SuspendingTransacter,
+    private val transacter: suspend () -> AlleySqlDatabase,
     private val context: CoroutineContext,
     private val initialOffset: Int,
 ) : QueryPagingSource<Int, RowType>() {
@@ -43,7 +43,7 @@ class OffsetQueryPagingSource<RowType : Any>(
                 is LoadParams.Append<*> -> key
                 is LoadParams.Refresh<*> -> if (key >= count) maxOf(0, count - params.loadSize) else key
             }
-            val data = queryProvider(limit, offset)
+            val data = queryProvider(transacter(), limit, offset)
                 .also { currentQuery = it }
                 .awaitAsList()
             val nextPosToLoad = offset + data.size

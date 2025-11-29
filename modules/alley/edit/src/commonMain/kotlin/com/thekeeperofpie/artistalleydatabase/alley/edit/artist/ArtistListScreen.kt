@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -41,6 +44,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_refresh_content_description
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
@@ -51,10 +55,12 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
@@ -73,6 +79,7 @@ internal object HomeScreen {
             query = viewModel.query,
             dataYear = viewModel.dataYear,
             entries = viewModel.entries,
+            onRefresh = viewModel::refresh,
             onAddArtist = { onAddArtist(viewModel.dataYear.value) },
             onEditArtist = { onEditArtist(viewModel.dataYear.value, it) },
         )
@@ -80,9 +87,10 @@ internal object HomeScreen {
 
     @Composable
     operator fun invoke(
-        query: MutableStateFlow<String>,
+        query: TextFieldState,
         dataYear: MutableStateFlow<DataYear>,
         entries: StateFlow<List<ArtistSummary>>,
+        onRefresh: () -> Unit,
         onAddArtist: () -> Unit,
         onEditArtist: (id: Uuid) -> Unit,
     ) {
@@ -95,27 +103,32 @@ internal object HomeScreen {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            var query by query.collectAsMutableStateWithLifecycle()
-                            val isNotEmpty by remember { derivedStateOf { query.isNotEmpty() } }
+                            val isNotEmpty by remember { derivedStateOf { query.text.isNotEmpty() } }
                             NavigationBackHandler(
                                 state = rememberNavigationEventState(NavigationEventInfo.None),
                                 isBackEnabled = isNotEmpty,
-                            ) {
-                                query = ""
-                            }
+                                onBackCompleted = query::clearText,
+                            )
 
                             StaticSearchBar(
                                 query = query,
-                                onQueryChange = { query = it },
                                 onSearch = {},
                                 trailingIcon = {
-                                    AnimatedVisibility(isNotEmpty) {
-                                        IconButton(onClick = { query = "" }) {
+                                    Row {
+                                        AnimatedVisibility(isNotEmpty) {
+                                            IconButton(onClick = query::clearText) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Clear,
+                                                    contentDescription = stringResource(
+                                                        EntryRes.string.entry_search_clear
+                                                    ),
+                                                )
+                                            }
+                                        }
+                                        IconButton(onClick = onRefresh) {
                                             Icon(
-                                                imageVector = Icons.Filled.Clear,
-                                                contentDescription = stringResource(
-                                                    EntryRes.string.entry_search_clear
-                                                ),
+                                                imageVector = Icons.Default.Refresh,
+                                                contentDescription = stringResource(Res.string.alley_edit_artist_action_refresh_content_description)
                                             )
                                         }
                                     }
@@ -126,11 +139,17 @@ internal object HomeScreen {
                     }
                 },
                 floatingActionButton = {
-                    LargeFloatingActionButton(onClick = onAddArtist) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(Res.string.alley_edit_artist_action_add),
-                        )
+                    val dataYear by dataYear.collectAsStateWithLifecycle()
+                    val currentYear = remember {
+                        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
+                    }
+                    if (dataYear.dates.year >= currentYear) {
+                        LargeFloatingActionButton(onClick = onAddArtist) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(Res.string.alley_edit_artist_action_add),
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.widthIn(max = 1200.dp)
@@ -145,7 +164,7 @@ internal object HomeScreen {
                         DataYearHeader(dataYearHeaderState, showFeedbackReminder = false)
                     }
                     items(items = entries, key = { it.id }, contentType = { "artistRow" }) {
-                        Column{
+                        Column {
                             ArtistRow(it, modifier = Modifier.clickable { onEditArtist(it.id) })
                             HorizontalDivider()
                         }
@@ -194,7 +213,7 @@ internal object HomeScreen {
 @Composable
 private fun HomeScreenPreview() {
     HomeScreen(
-        query = remember { MutableStateFlow("Some query") },
+        query = rememberTextFieldState("Two"),
         dataYear = remember { MutableStateFlow(DataYear.LATEST) },
         entries = remember {
             ReadOnlyStateFlow(
@@ -222,6 +241,7 @@ private fun HomeScreenPreview() {
                 )
             )
         },
+        onRefresh = {},
         onAddArtist = {},
         onEditArtist = {},
     )

@@ -10,6 +10,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.transformIf
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.format
+import kotlinx.datetime.offsetIn
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -90,4 +92,10 @@ actual class DateTimeFormatter(private val context: Context) {
         if (month == null) return year.toString()
         return DateTimeUtils.subtitleMonthYearFormat.format(LocalDate(year, month, 1))
     }
+
+    actual fun formatDateTime(instant: Instant): String =
+        instant.format(
+            format = DateTimeUtils.dateTimeFormat,
+            offset = instant.offsetIn(TimeZone.currentSystemDefault()),
+        )
 }

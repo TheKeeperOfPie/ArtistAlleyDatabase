@@ -15,7 +15,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_f
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_show_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_filter_total_cost_expand_content_description
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesAutocompleteSection
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -176,7 +175,7 @@ class StampRallySortFilterController(
         FilterParams(
             sortOption = it[0] as StampRallySearchSortOption,
             sortAscending = it[1] as Boolean,
-            seriesIn = setOfNotNull((it[2] as SeriesEntry?)?.id) +
+            seriesIn = setOfNotNull((it[2] as SeriesInfo?)?.id) +
                     (it[3] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.id },
             totalCost = it[4] as RangeData,
             prizeLimit = it[5] as RangeData,

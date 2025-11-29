@@ -58,7 +58,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_
 import artistalleydatabase.modules.alley.generated.resources.alley_merch_filter_label
 import artistalleydatabase.modules.alley.generated.resources.alley_sort_label
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkTagEntry
 import com.thekeeperofpie.artistalleydatabase.alley.links.category
@@ -501,7 +500,7 @@ class ArtistSortFilterController(
         FilterParams(
             sortOption = it[0] as ArtistSearchSortOption,
             sortAscending = it[1] as Boolean,
-            seriesIn = setOfNotNull((it[2] as SeriesEntry?)?.id) +
+            seriesIn = setOfNotNull((it[2] as SeriesInfo?)?.id) +
                     (it[3] as List<SeriesAutocompleteSection.SeriesFilterEntry>).map { it.id },
             merchIn = (it[4] as Set<String>) + setOfNotNull(lockedMerchId),
             commissionsIn = it[5] as Set<CommissionType>,

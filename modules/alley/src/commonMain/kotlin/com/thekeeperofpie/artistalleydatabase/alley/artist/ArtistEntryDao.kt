@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
+import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
@@ -54,11 +55,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeExpo2026.Get
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2024.GetEntry as GetEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2025.GetEntry as GetEntryAnimeNyc2025
 
-private fun SqlCursor.toArtistWithUserData2023(): ArtistWithUserData {
+private fun SqlCursor.toArtistWithUserData2023(
+    @Suppress("unused") database: AlleySqlDatabase,
+): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            ArtistDatabaseEntry.Impl(
+            ArtistDatabaseEntry.legacy(
                 year = DataYear.ANIME_EXPO_2023,
                 id = artistId,
                 booth = getString(1),
@@ -87,11 +90,13 @@ private fun SqlCursor.toArtistWithUserData2023(): ArtistWithUserData {
     )
 }
 
-private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
+private fun SqlCursor.toArtistWithUserData2024(
+    @Suppress("unused") database: AlleySqlDatabase,
+): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            ArtistDatabaseEntry.Impl(
+            ArtistDatabaseEntry.legacy(
                 year = DataYear.ANIME_EXPO_2024,
                 id = artistId,
                 booth = getString(1),
@@ -120,11 +125,13 @@ private fun SqlCursor.toArtistWithUserData2024(): ArtistWithUserData {
     )
 }
 
-private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
+private fun SqlCursor.toArtistWithUserData2025(
+    @Suppress("unused") database: AlleySqlDatabase,
+): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            ArtistDatabaseEntry.Impl(
+            ArtistDatabaseEntry.legacy(
                 year = DataYear.ANIME_EXPO_2025,
                 id = artistId,
                 booth = getString(1),
@@ -155,46 +162,18 @@ private fun SqlCursor.toArtistWithUserData2025(): ArtistWithUserData {
     )
 }
 
-private fun SqlCursor.toArtistWithUserDataAnimeExpo2026(): ArtistWithUserData {
-    val artistId = getString(0)!!
-    return ArtistWithUserData(
-        artist = ArtistEntry(
-            ArtistDatabaseEntry.Impl(
-                year = DataYear.ANIME_EXPO_2026,
-                id = artistId,
-                booth = getString(1),
-                name = getString(2)!!,
-                summary = getString(3),
-                links = getString(4)!!.let(Json::decodeFromString),
-                storeLinks = getString(5)!!.let(Json::decodeFromString),
-                catalogLinks = getString(6)!!.let(Json::decodeFromString),
-                // Skip 2 for link flags
-                driveLink = getString(9),
-                notes = getString(10),
-                commissions = getString(11)!!.let(Json::decodeFromString),
-                // Skip 1 for commission flags
-                seriesInferred = getString(13)!!.let(Json::decodeFromString),
-                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-                merchInferred = getString(15)!!.let(Json::decodeFromString),
-                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-                images = getString(17)!!.let(Json::decodeFromString),
-                counter = getLong(18)!!,
-            )
-        ),
-        userEntry = ArtistUserEntry(
-            artistId = artistId,
-            dataYear = DataYear.ANIME_EXPO_2026,
-            favorite = getBooleanFixed(19),
-            ignored = getBooleanFixed(20),
-        )
-    )
-}
+private fun SqlCursor.toArtistWithUserDataAnimeExpo2026(
+    database: AlleySqlDatabase
+): ArtistWithUserData =
+    database.artistEntryAnimeExpo2026Queries.getEntry("").mapper(this).toArtistWithUserData()
 
-private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(): ArtistWithUserData {
+private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(
+    @Suppress("unused") database: AlleySqlDatabase,
+): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            ArtistDatabaseEntry.Impl(
+            ArtistDatabaseEntry.legacy(
                 year = DataYear.ANIME_NYC_2024,
                 id = artistId,
                 booth = getString(1),
@@ -225,11 +204,13 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(): ArtistWithUserData {
     )
 }
 
-private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(): ArtistWithUserData {
+private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(
+    @Suppress("unused") database: AlleySqlDatabase,
+): ArtistWithUserData {
     val artistId = getString(0)!!
     return ArtistWithUserData(
         artist = ArtistEntry(
-            ArtistDatabaseEntry.Impl(
+            ArtistDatabaseEntry.legacy(
                 year = DataYear.ANIME_NYC_2025,
                 id = artistId,
                 booth = getString(1),
@@ -263,7 +244,7 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(): ArtistWithUserData {
 
 private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
-        ArtistDatabaseEntry.Impl(
+        ArtistDatabaseEntry.legacy(
             year = DataYear.ANIME_EXPO_2023,
             id = id,
             booth = booth,
@@ -293,7 +274,7 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
 
 private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
-        ArtistDatabaseEntry.Impl(
+        ArtistDatabaseEntry.legacy(
             year = DataYear.ANIME_EXPO_2024,
             id = id,
             booth = booth,
@@ -323,7 +304,7 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
 
 private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
-        ArtistDatabaseEntry.Impl(
+        ArtistDatabaseEntry.legacy(
             year = DataYear.ANIME_EXPO_2025,
             id = id,
             booth = booth,
@@ -356,13 +337,14 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
         ArtistDatabaseEntry.Impl(
             year = DataYear.ANIME_EXPO_2026,
             id = id,
+            status = status,
             booth = booth,
             name = name,
             summary = summary,
             links = links,
             storeLinks = storeLinks,
             catalogLinks = catalogLinks,
-            driveLink = driveLink,
+            driveLink = null,
             notes = notes,
             commissions = commissions,
             seriesInferred = seriesInferred,
@@ -371,6 +353,9 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
             merchConfirmed = merchConfirmed,
             images = images,
             counter = counter,
+            editorNotes = editorNotes,
+            lastEditor = lastEditor,
+            lastEditTime = lastEditTime,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -383,7 +368,7 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
 
 private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
-        ArtistDatabaseEntry.Impl(
+        ArtistDatabaseEntry.legacy(
             year = DataYear.ANIME_NYC_2024,
             id = id,
             booth = booth,
@@ -413,7 +398,7 @@ private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
 
 private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
     artist = ArtistEntry(
-        ArtistDatabaseEntry.Impl(
+        ArtistDatabaseEntry.legacy(
             year = DataYear.ANIME_NYC_2025,
             id = id,
             booth = booth,
@@ -442,7 +427,7 @@ private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
 )
 
 fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
-    ArtistDatabaseEntry.Impl(
+    ArtistDatabaseEntry.legacy(
         year = DataYear.ANIME_EXPO_2023,
         id = id,
         booth = booth,
@@ -464,7 +449,7 @@ fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
 )
 
 fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
-    ArtistDatabaseEntry.Impl(
+    ArtistDatabaseEntry.legacy(
         year = DataYear.ANIME_EXPO_2024,
         id = id,
         booth = booth,
@@ -486,7 +471,7 @@ fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
 )
 
 fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
-    ArtistDatabaseEntry.Impl(
+    ArtistDatabaseEntry.legacy(
         year = DataYear.ANIME_EXPO_2025,
         id = id,
         booth = booth,
@@ -507,30 +492,10 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
     )
 )
 
-fun ArtistEntryAnimeExpo2026.toArtistEntry() = ArtistEntry(
-    ArtistDatabaseEntry.Impl(
-        year = DataYear.ANIME_EXPO_2026,
-        id = id,
-        booth = booth,
-        name = name,
-        summary = summary,
-        links = links,
-        storeLinks = storeLinks,
-        catalogLinks = catalogLinks,
-        driveLink = driveLink,
-        notes = notes,
-        commissions = commissions,
-        seriesInferred = seriesInferred,
-        seriesConfirmed = seriesConfirmed,
-        merchInferred = merchInferred,
-        merchConfirmed = merchConfirmed,
-        images = images,
-        counter = counter,
-    )
-)
+fun ArtistEntryAnimeExpo2026.toArtistEntry() = ArtistEntry(toArtistDatabaseEntry())
 
 fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
-    ArtistDatabaseEntry.Impl(
+    ArtistDatabaseEntry.legacy(
         year = DataYear.ANIME_NYC_2024,
         id = id,
         booth = booth,
@@ -552,7 +517,7 @@ fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
 )
 
 fun ArtistEntryAnimeNyc2025.toArtistEntry() = ArtistEntry(
-    ArtistDatabaseEntry.Impl(
+    ArtistDatabaseEntry.legacy(
         year = DataYear.ANIME_NYC_2025,
         id = id,
         booth = booth,

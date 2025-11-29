@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 @AssistedInject
@@ -42,18 +44,22 @@ class ArtistEditViewModel(
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
     @Assisted private val dataYear: DataYear,
-    @Assisted artistId: Uuid,
+    @Assisted private val artistId: Uuid,
     @Assisted val mode: ArtistEditScreen.Mode,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val textState by savedStateHandle.saveable(saver = ArtistEditScreen.State.TextState.Saver) {
-        ArtistEditScreen.State.TextState().apply {
+    private val formState by savedStateHandle.saveable(saver = ArtistEditScreen.State.FormState.Saver) {
+        ArtistEditScreen.State.FormState().apply {
             id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
             id.lockState = EntryLockState.LOCKED
         }
     }
     private val saveJob = ExclusiveProgressJob(viewModelScope, ::captureDatabaseEntry, ::save)
+    private val artistMetadata by savedStateHandle.saveable(saver = ArtistEditScreen.State.ArtistMetadata.Saver) {
+        ArtistEditScreen.State.ArtistMetadata()
+    }
     val state = ArtistEditScreen.State(
+        artistMetadata = artistMetadata,
         images = savedStateHandle.saveable(
             "images",
             saver = StateUtils.snapshotListJsonSaver()
@@ -90,7 +96,7 @@ class ArtistEditViewModel(
             "merchConfirmed",
             saver = StateUtils.snapshotListJsonSaver()
         ) { SnapshotStateList() },
-        textState = textState,
+        formState = formState,
         savingState = saveJob.state,
     )
 
@@ -103,7 +109,7 @@ class ArtistEditViewModel(
 
     private var artist: ArtistDatabaseEntry.Impl? = null
 
-    init {
+    fun initialize() {
         if (!hasLoaded) {
             viewModelScope.launch {
                 loadArtistInfo(artistId)
@@ -126,42 +132,81 @@ class ArtistEditViewModel(
         val merchInferred = artist.merchInferred.mapNotNull { merchById[it] }
         val merchConfirmed = artist.merchConfirmed.mapNotNull { merchById[it] }
 
-        // TODO: Fill out other fields and store lock state in database
-        val textState = state.textState
-        artist.booth?.ifBlank { null }?.let {
-            textState.booth.value.setTextAndPlaceCursorAtEnd(it)
+        val textState = state.formState
+        val status = artist.status
+        textState.status.selectedIndex = ArtistStatus.entries.indexOf(status)
+
+        val booth = artist.booth.orEmpty()
+        if (booth.isNotBlank() || status.shouldStartLocked) {
+            textState.booth.value.setTextAndPlaceCursorAtEnd(booth)
             textState.booth.lockState = EntryLockState.LOCKED
         }
 
-        textState.name.value.setTextAndPlaceCursorAtEnd(artist.name)
-        if (artist.name.isNotBlank()) {
+        val name = artist.name.orEmpty()
+        if (name.isNotBlank() || status.shouldStartLocked) {
+            textState.name.value.setTextAndPlaceCursorAtEnd(name)
             textState.name.lockState = EntryLockState.LOCKED
         }
 
-        artist.summary?.ifBlank { null }?.let {
-            textState.summary.value.setTextAndPlaceCursorAtEnd(it)
+        val summary = artist.summary.orEmpty()
+        if (summary.isNotBlank() || status.shouldStartLocked) {
+            textState.summary.value.setTextAndPlaceCursorAtEnd(summary)
             textState.summary.lockState = EntryLockState.LOCKED
         }
 
-        artist.notes?.ifBlank { null }?.let {
-            textState.notes.pendingValue.setTextAndPlaceCursorAtEnd(it)
+        val notes = artist.notes.orEmpty()
+        if (notes.isNotBlank() || status.shouldStartLocked) {
+            textState.notes.pendingValue.setTextAndPlaceCursorAtEnd(notes)
             textState.notes.lockState = EntryLockState.LOCKED
         }
 
-        state.links += links
-        state.storeLinks += storeLinks
-        state.catalogLinks += artist.catalogLinks
-        state.commissions += artist.commissions
+        val editorNotes = artist.editorNotes.orEmpty()
+        if (editorNotes.isNotBlank() || status.shouldStartLocked) {
+            textState.editorNotes.pendingValue.setTextAndPlaceCursorAtEnd(editorNotes)
+            textState.editorNotes.lockState = EntryLockState.LOCKED
+        }
 
-        state.seriesInferred += seriesInferred
-        state.seriesConfirmed += seriesConfirmed
-        state.merchInferred += merchInferred
-        state.merchConfirmed += merchConfirmed
+        if (links.isNotEmpty() || status.shouldStartLocked) {
+            state.links += links
+            textState.links.lockState = EntryLockState.LOCKED
+        }
+        if (storeLinks.isNotEmpty() || status.shouldStartLocked) {
+            state.storeLinks += storeLinks
+            textState.storeLinks.lockState = EntryLockState.LOCKED
+        }
+        if (artist.catalogLinks.isNotEmpty() || status.shouldStartLocked) {
+            state.catalogLinks += artist.catalogLinks
+            textState.catalogLinks.lockState = EntryLockState.LOCKED
+        }
+        if (artist.commissions.isNotEmpty() || status.shouldStartLocked) {
+            state.commissions += artist.commissions
+            textState.commissions.lockState = EntryLockState.LOCKED
+        }
+
+        if (seriesInferred.isNotEmpty() || status.shouldStartLocked) {
+            state.seriesInferred += seriesInferred
+            textState.seriesInferred.lockState = EntryLockState.LOCKED
+        }
+        if (seriesConfirmed.isNotEmpty() || status.shouldStartLocked) {
+            state.seriesConfirmed += seriesConfirmed
+            textState.seriesConfirmed.lockState = EntryLockState.LOCKED
+        }
+        if (merchInferred.isNotEmpty() || status.shouldStartLocked) {
+            state.merchInferred += merchInferred
+            textState.merchInferred.lockState = EntryLockState.LOCKED
+        }
+        if (merchConfirmed.isNotEmpty() || status.shouldStartLocked) {
+            state.merchConfirmed += merchConfirmed
+            textState.merchConfirmed.lockState = EntryLockState.LOCKED
+        }
 
         val images = database.loadArtistImages(dataYear, artist)
         if (images.isNotEmpty()) {
             state.images += images
         }
+
+        artistMetadata.lastEditor = artist.lastEditor
+        artistMetadata.lastEditTime = artist.lastEditTime
     }
 
     fun seriesPredictions(query: String) =
@@ -198,8 +243,9 @@ class ArtistEditViewModel(
     fun onClickSave() = saveJob.launch()
 
     private fun captureDatabaseEntry(): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
-        val textState = state.textState
+        val textState = state.formState
         val id = Uuid.parse(textState.id.value.text.toString())
+        val status = ArtistStatus.entries[textState.status.selectedIndex]
 
         val booth = textState.booth.value.text.toString()
         val name = textState.name.value.text.toString()
@@ -211,6 +257,7 @@ class ArtistEditViewModel(
         val catalogLinks = state.catalogLinks.toList()
 
         val notes = textState.notes.pendingValue.text.toString()
+        val editorNotes = textState.editorNotes.pendingValue.text.toString()
         val commissions = state.commissions.toList()
         val seriesInferred = state.seriesInferred.toList().map { it.id }
         val seriesConfirmed = state.seriesConfirmed.toList().map { it.id }
@@ -221,6 +268,7 @@ class ArtistEditViewModel(
         return images to ArtistDatabaseEntry.Impl(
             year = dataYear,
             id = id.toString(),
+            status = status,
             booth = booth,
             name = name,
             summary = summary,
@@ -236,6 +284,9 @@ class ArtistEditViewModel(
             merchConfirmed = merchConfirmed,
             images = emptyList(),
             counter = 1,
+            editorNotes = editorNotes,
+            lastEditor = "TODO", // TODO
+            lastEditTime = Clock.System.now(),
         )
     }
 

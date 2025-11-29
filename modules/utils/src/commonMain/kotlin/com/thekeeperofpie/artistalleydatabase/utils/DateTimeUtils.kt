@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.utils
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.char
 
@@ -29,5 +30,22 @@ object DateTimeUtils {
         monthNumber()
         char('-')
         dayOfMonth()
+    }
+    val dateTimeFormat = DateTimeComponents.Format {
+        year()
+        chars("-")
+        monthNumber()
+        char('-')
+        day()
+        char(' ')
+        hour()
+        char(':')
+        minute()
+        char(':')
+        second()
+        char(' ')
+        offsetHours()
+        char(':')
+        offsetMinutesOfHour()
     }
 }

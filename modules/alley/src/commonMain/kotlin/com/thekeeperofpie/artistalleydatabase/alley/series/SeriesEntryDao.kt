@@ -296,7 +296,7 @@ class SeriesEntryDao(
                 countStatement = countStatement,
                 statement = statement,
                 tableNames = listOf("seriesEntry", "seriesUserEntry"),
-                mapper = SqlCursor::toSeriesWithUserData,
+                mapper = { cursor, _ -> cursor.toSeriesWithUserData() },
             )
         }
 
@@ -340,7 +340,7 @@ class SeriesEntryDao(
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("seriesEntry_fts", "seriesUserEntry"),
-            mapper = SqlCursor::toSeriesWithUserData,
+            mapper = { cursor, _ -> cursor.toSeriesWithUserData() },
         )
     }
 

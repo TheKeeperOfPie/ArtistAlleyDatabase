@@ -4,26 +4,31 @@
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
 
-    <string name="alley_artist_edit_title_editing">Editing %1$s - %2$s</string>
-    <string name="alley_artist_edit_title_adding">Adding %1$s</string>
-    <string name="alley_artist_edit_id">ID</string>
-    <string name="alley_artist_edit_booth">Booth</string>
-    <string name="alley_artist_edit_name">Name</string>
-    <string name="alley_artist_edit_summary">Summary</string>
-    <string name="alley_artist_edit_links">Social links</string>
-    <string name="alley_artist_edit_store_links">Store links</string>
-    <string name="alley_artist_edit_catalog_links">Catalog links</string>
-    <string name="alley_artist_edit_notes">Notes</string>
-    <string name="alley_artist_edit_commissions">Commissions</string>
-    <string name="alley_artist_edit_series_inferred">Series - Inferred</string>
-    <string name="alley_artist_edit_series_confirmed">Series - Confirmed</string>
-    <string name="alley_artist_edit_merch_inferred">Merch - Inferred</string>
-    <string name="alley_artist_edit_merch_confirmed">Merch - Confirmed</string>
+    <string name="alley_edit_artist_edit_title_editing">Editing %1$s - %2$s</string>
+    <string name="alley_edit_artist_edit_title_adding">Adding %1$s</string>
+    <string name="alley_edit_artist_edit_id">ID</string>
+    <string name="alley_edit_artist_edit_status">Status</string>
+    <string name="alley_edit_artist_edit_booth">Booth</string>
+    <string name="alley_edit_artist_edit_name">Name</string>
+    <string name="alley_edit_artist_edit_summary">Summary</string>
+    <string name="alley_edit_artist_edit_links">Social links</string>
+    <string name="alley_edit_artist_edit_store_links">Store links</string>
+    <string name="alley_edit_artist_edit_catalog_links">Catalog links</string>
+    <string name="alley_edit_artist_edit_notes">Notes (PUBLIC FACING)</string>
+    <string name="alley_edit_artist_edit_editor_notes">Editor notes (for editors/admins)</string>
+    <string name="alley_edit_artist_edit_commissions">Commissions</string>
+    <string name="alley_edit_artist_edit_series_inferred">Series - Inferred</string>
+    <string name="alley_edit_artist_edit_series_confirmed">Series - Confirmed</string>
+    <string name="alley_edit_artist_edit_merch_inferred">Merch - Inferred</string>
+    <string name="alley_edit_artist_edit_merch_confirmed">Merch - Confirmed</string>
+    <string name="alley_edit_artist_edit_last_modified_prefix">Last modified</string>
+    <string name="alley_edit_artist_edit_last_modified_author_prefix">by</string>
 
     <string name="alley_edit_artist_action_delete">Delete</string>
     <string name="alley_edit_artist_action_add_images">Add images</string>
     <string name="alley_edit_artist_action_edit_images">Edit images</string>
     <string name="alley_edit_artist_save_changes_title">Save changes?</string>
+    <string name="alley_edit_artist_action_refresh_content_description">Refresh artists</string>
 
     <string name="alley_edit_artist_action_save_content_description">Save artist</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
@@ -82,4 +87,16 @@
     <string name="alley_edit_aniList_type_none"/>
     <string name="alley_edit_aniList_type_anime">Anime</string>
     <string name="alley_edit_aniList_type_manga">Manga</string>
+
+    <string name="alley_edit_artist_status_unknown">Unknown</string>
+    <string name="alley_edit_artist_status_unknown_description">Status not known, either a parsing error, in prod where the column is wiped, or from a historical year where this data is not available</string>
+    <string name="alley_edit_artist_status_locked">Locked</string>
+    <string name="alley_edit_artist_status_locked_description">Locked by an editor, reason not specified, should ask %1$s or admin</string>
+    <string name="alley_edit_artist_status_locked_unknown_editor">editor</string>
+    <string name="alley_edit_artist_status_needs_attention">Needs attention</string>
+    <string name="alley_edit_artist_status_needs_attention_description">Something requires the attention of the admin, consider adding an editor note</string>
+    <string name="alley_edit_artist_status_inferred">Inferred</string>
+    <string name="alley_edit_artist_status_inferred_description">Inferred series/merch tags are done</string>
+    <string name="alley_edit_artist_status_final">Final</string>
+    <string name="alley_edit_artist_status_final_description">Entry is completely final, with all applicable tags and metadata entered</string>
 </resources>

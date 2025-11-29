@@ -1,170 +1,57 @@
 package com.thekeeperofpie.artistalleydatabase.alley.database
 
 import androidx.paging.PagingSource
-import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.Query
-import app.cash.sqldelight.SuspendingTransacter
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
-import kotlinx.serialization.json.Json
 
 // TODO: On js target, "1" isn't coerced to true properly
-fun SqlCursor.getBooleanFixed(index: Int) = (getBoolean(index) == true) || getString(index).toString() == "1"
+fun SqlCursor.getBooleanFixed(index: Int) =
+    (getBoolean(index) == true) || getString(index).toString() == "1"
 
 object DaoUtils {
 
-    val listStringAdapter = object : ColumnAdapter<List<String>, String> {
-        override fun decode(databaseValue: String) = Json.decodeFromString<List<String>>(databaseValue)
-        override fun encode(value: List<String>) = Json.encodeToString(value)
-    }
-
-    val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
-        override fun decode(databaseValue: String) =
-            DataYear.entries.first { it.serializedName == databaseValue }
-
-        override fun encode(value: DataYear) = value.serializedName
-    }
-
-    private val listCatalogImageAdapter = object : ColumnAdapter<List<CatalogImage>, String> {
-        override fun decode(databaseValue: String) =
-            Json.decodeFromString<List<CatalogImage>>(databaseValue)
-
-        override fun encode(value: List<CatalogImage>) = Json.encodeToString(value)
-    }
-
     fun createAlleySqlDatabase(driver: SqlDriver) = AlleySqlDatabase(
         driver = driver,
-        artistEntry2023Adapter = ArtistEntry2023.Adapter(
-            artistNamesAdapter = listStringAdapter,
-            linksAdapter = listStringAdapter,
-            catalogLinksAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        artistEntry2024Adapter = ArtistEntry2024.Adapter(
-            linksAdapter = listStringAdapter,
-            storeLinksAdapter = listStringAdapter,
-            catalogLinksAdapter = listStringAdapter,
-            seriesInferredAdapter = listStringAdapter,
-            seriesConfirmedAdapter = listStringAdapter,
-            merchInferredAdapter = listStringAdapter,
-            merchConfirmedAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        artistEntry2025Adapter = ArtistEntry2025.Adapter(
-            linksAdapter = listStringAdapter,
-            storeLinksAdapter = listStringAdapter,
-            catalogLinksAdapter = listStringAdapter,
-            seriesInferredAdapter = listStringAdapter,
-            seriesConfirmedAdapter = listStringAdapter,
-            merchInferredAdapter = listStringAdapter,
-            merchConfirmedAdapter = listStringAdapter,
-            commissionsAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
-            linksAdapter = listStringAdapter,
-            storeLinksAdapter = listStringAdapter,
-            catalogLinksAdapter = listStringAdapter,
-            seriesInferredAdapter = listStringAdapter,
-            seriesConfirmedAdapter = listStringAdapter,
-            merchInferredAdapter = listStringAdapter,
-            merchConfirmedAdapter = listStringAdapter,
-            commissionsAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
-            linksAdapter = listStringAdapter,
-            storeLinksAdapter = listStringAdapter,
-            catalogLinksAdapter = listStringAdapter,
-            seriesInferredAdapter = listStringAdapter,
-            seriesConfirmedAdapter = listStringAdapter,
-            merchInferredAdapter = listStringAdapter,
-            merchConfirmedAdapter = listStringAdapter,
-            commissionsAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
-            linksAdapter = listStringAdapter,
-            storeLinksAdapter = listStringAdapter,
-            catalogLinksAdapter = listStringAdapter,
-            seriesInferredAdapter = listStringAdapter,
-            seriesConfirmedAdapter = listStringAdapter,
-            merchInferredAdapter = listStringAdapter,
-            merchConfirmedAdapter = listStringAdapter,
-            commissionsAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
-            tablesAdapter = listStringAdapter,
-            linksAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
-            tablesAdapter = listStringAdapter,
-            linksAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
-            tablesAdapter = listStringAdapter,
-            linksAdapter = listStringAdapter,
-            seriesAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
-        stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
-            tablesAdapter = listStringAdapter,
-            linksAdapter = listStringAdapter,
-            seriesAdapter = listStringAdapter,
-            imagesAdapter = listCatalogImageAdapter,
-        ),
+        artistEntry2023Adapter = ColumnAdapters.artistEntry2023Adapter,
+        artistEntry2024Adapter = ColumnAdapters.artistEntry2024Adapter,
+        artistEntry2025Adapter = ColumnAdapters.artistEntry2025Adapter,
+        artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
+        artistEntryAnimeNyc2024Adapter = ColumnAdapters.artistEntryAnimeNyc2024Adapter,
+        artistEntryAnimeNyc2025Adapter = ColumnAdapters.artistEntryAnimeNyc2025Adapter,
+        stampRallyEntry2023Adapter = ColumnAdapters.stampRallyEntry2023Adapter,
+        stampRallyEntry2024Adapter = ColumnAdapters.stampRallyEntry2024Adapter,
+        stampRallyEntry2025Adapter = ColumnAdapters.stampRallyEntry2025Adapter,
+        stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
         artistNotesAdapter = ArtistNotes.Adapter(
-            dataYearAdapter = dataYearAdapter,
+            dataYearAdapter = ColumnAdapters.dataYearAdapter,
         ),
         artistUserEntryAdapter = ArtistUserEntry.Adapter(
-            dataYearAdapter = dataYearAdapter,
-        ),
-        seriesEntryAdapter = SeriesEntry.Adapter(
-            sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
-                override fun decode(databaseValue: String) =
-                    SeriesSource.entries.find { it.name == databaseValue }
-                        ?: SeriesSource.NONE
-
-                override fun encode(value: SeriesSource) = value.name
-            },
-        )
+            dataYearAdapter = ColumnAdapters.dataYearAdapter),
+        seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
     )
 
     fun <T : Any> queryPagingSource(
         driver: suspend () -> SqlDriver,
-        database: suspend () -> SuspendingTransacter,
+        database: suspend () -> AlleySqlDatabase,
         countStatement: String,
         statement: String,
         tableNames: List<String>,
         parameters: List<String> = emptyList(),
-        mapper: (SqlCursor) -> T,
+        mapper: (SqlCursor, AlleySqlDatabase) -> T,
     ): PagingSource<Int, T> {
         return OffsetQueryPagingSource(
-            queryProvider = { limit, offset ->
+            queryProvider = { database, limit, offset ->
                 val statement = "$statement LIMIT $limit OFFSET $offset"
-                makeQuery(driver(), statement, tableNames, parameters, mapper)
+                makeQuery(driver(), statement, tableNames, parameters, mapper = {
+                    mapper(it, database)
+                })
             },
             countQuery = {
                 makeQuery(

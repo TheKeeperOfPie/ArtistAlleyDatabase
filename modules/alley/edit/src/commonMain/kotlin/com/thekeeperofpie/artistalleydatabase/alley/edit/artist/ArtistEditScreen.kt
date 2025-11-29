@@ -28,12 +28,16 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -48,30 +52,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_booth
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_catalog_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_commissions
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_id
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_merch_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_merch_inferred
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_name
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_notes
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_series_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_series_inferred
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_store_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_summary
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_adding
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_booth
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_catalog_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_commissions
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_editor_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_id
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_last_modified_author_prefix
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_last_modified_prefix
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_merch_confirmed
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_merch_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_name
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_confirmed
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_status
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_store_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
@@ -92,16 +103,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
+import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.JobFinishedEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
@@ -113,6 +127,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
@@ -149,10 +164,14 @@ object ArtistEditScreen {
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickEditImages = {
-                onClickEditImages(viewModel.state.textState.name.value.text.toString(), it)
+                onClickEditImages(viewModel.state.formState.name.value.text.toString(), it)
             },
             onClickSave = viewModel::onClickSave,
         )
+
+        LaunchedEffect(viewModel) {
+            viewModel.initialize()
+        }
     }
 
     @Composable
@@ -178,14 +197,14 @@ object ArtistEditScreen {
                         val text = when (mode) {
                             Mode.ADD ->
                                 stringResource(
-                                    Res.string.alley_artist_edit_title_adding,
+                                    Res.string.alley_edit_artist_edit_title_adding,
                                     stringResource(dataYear.shortName),
                                 )
                             Mode.EDIT ->
                                 stringResource(
-                                    Res.string.alley_artist_edit_title_editing,
+                                    Res.string.alley_edit_artist_edit_title_editing,
                                     stringResource(dataYear.shortName),
-                                    state.textState.name.value.text.ifBlank { state.textState.id.value.text.toString() },
+                                    state.formState.name.value.text.ifBlank { state.formState.id.value.text.toString() },
                                 )
                         }
                         Text(text)
@@ -260,7 +279,7 @@ object ArtistEditScreen {
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                             ImagesPager(
-                                sharedElementId = state.textState.id.value.text.toString(),
+                                sharedElementId = state.formState.id.value.text.toString(),
                                 images = state.images,
                                 imagePagerState = imagePagerState,
                                 onClickPage = {
@@ -332,108 +351,163 @@ object ArtistEditScreen {
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
-        val textState = state.textState
+        val formState = state.formState
         EntryForm2(modifier = modifier) {
-            val idErrorMessage by rememberUuidValidator(textState.id)
+            val metadata = state.artistMetadata
+            val lastEditTime = metadata.lastEditTime
+            if (lastEditTime != null) {
+                OutlinedCard(modifier = Modifier.padding(16.dp)) {
+                    val textColorDim = LocalContentColor.current.copy(alpha = 0.6f)
+                    val colorPrimary = MaterialTheme.colorScheme.primary
+                    val lastEditor = metadata.lastEditor
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = textColorDim)) {
+                                append(stringResource(Res.string.alley_edit_artist_edit_last_modified_prefix))
+                            }
+                            append(' ')
+                            withStyle(SpanStyle(color = colorPrimary)) {
+                                append(LocalDateTimeFormatter.current.formatDateTime(lastEditTime))
+                            }
+                            if (lastEditor != null) {
+                                append(' ')
+                                withStyle(SpanStyle(color = textColorDim)) {
+                                    append(stringResource(Res.string.alley_edit_artist_edit_last_modified_author_prefix))
+                                }
+                                append(' ')
+                                append(lastEditor)
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
+            }
+
+            DropdownSection(
+                state = formState.status,
+                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_status)) },
+                options = ArtistStatus.entries,
+                optionToText = { stringResource(it.title) },
+                leadingIcon = { Icon(imageVector = it.icon, null) },
+                expandedItemText = {
+                    Column {
+                        Text(stringResource(it.title))
+                        Text(
+                            text = it.description(metadata.lastEditor),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.padding(start = 32.dp)
+                        )
+                    }
+                },
+                nextFocus = formState.id.focusRequester
+            )
+
+            val idErrorMessage by rememberUuidValidator(formState.id)
             SingleTextSection(
-                state = textState.id,
-                title = Res.string.alley_artist_edit_id,
-                previousFocus = null,
-                nextFocus = textState.booth.focusRequester,
+                state = formState.id,
+                title = Res.string.alley_edit_artist_edit_id,
+                previousFocus = formState.status.focusRequester,
+                nextFocus = formState.booth.focusRequester,
                 errorText = { idErrorMessage },
             )
 
-            val boothErrorMessage by rememberBoothValidator(textState.booth)
+            val boothErrorMessage by rememberBoothValidator(formState.booth)
             SingleTextSection(
-                state = textState.booth,
-                title = Res.string.alley_artist_edit_booth,
-                previousFocus = textState.id.focusRequester,
-                nextFocus = textState.name.focusRequester,
+                state = formState.booth,
+                title = Res.string.alley_edit_artist_edit_booth,
+                previousFocus = formState.id.focusRequester,
+                nextFocus = formState.name.focusRequester,
                 inputTransformation = InputTransformation.maxLength(3),
                 errorText = { boothErrorMessage },
             )
             SingleTextSection(
-                state = textState.name,
-                title = Res.string.alley_artist_edit_name,
-                previousFocus = textState.booth.focusRequester,
-                nextFocus = textState.summary.focusRequester,
+                state = formState.name,
+                title = Res.string.alley_edit_artist_edit_name,
+                previousFocus = formState.booth.focusRequester,
+                nextFocus = formState.summary.focusRequester,
             )
             SingleTextSection(
-                state = textState.summary,
-                title = Res.string.alley_artist_edit_summary,
-                previousFocus = textState.name.focusRequester,
-                nextFocus = textState.links.focusRequester,
+                state = formState.summary,
+                title = Res.string.alley_edit_artist_edit_summary,
+                previousFocus = formState.name.focusRequester,
+                nextFocus = formState.links.focusRequester,
             )
             LinksSection(
-                state = textState.links,
-                title = Res.string.alley_artist_edit_links,
+                state = formState.links,
+                title = Res.string.alley_edit_artist_edit_links,
                 items = state.links,
-                previousFocus = textState.summary.focusRequester,
-                nextFocus = textState.storeLinks.focusRequester,
+                previousFocus = formState.summary.focusRequester,
+                nextFocus = formState.storeLinks.focusRequester,
             )
             LinksSection(
-                state = textState.storeLinks,
-                title = Res.string.alley_artist_edit_store_links,
+                state = formState.storeLinks,
+                title = Res.string.alley_edit_artist_edit_store_links,
                 items = state.storeLinks,
-                previousFocus = textState.links.focusRequester,
-                nextFocus = textState.catalogLinks.focusRequester,
+                previousFocus = formState.links.focusRequester,
+                nextFocus = formState.catalogLinks.focusRequester,
             )
             MultiTextSection(
-                state = textState.catalogLinks,
-                title = Res.string.alley_artist_edit_catalog_links,
+                state = formState.catalogLinks,
+                title = Res.string.alley_edit_artist_edit_catalog_links,
                 items = state.catalogLinks,
                 itemToText = { it },
-                previousFocus = textState.storeLinks.focusRequester,
-                nextFocus = textState.commissions.focusRequester,
+                previousFocus = formState.storeLinks.focusRequester,
+                nextFocus = formState.commissions.focusRequester,
             )
             MultiTextSection(
-                state = textState.commissions,
-                title = Res.string.alley_artist_edit_commissions,
+                state = formState.commissions,
+                title = Res.string.alley_edit_artist_edit_commissions,
                 items = state.commissions,
                 itemToText = { it },
-                previousFocus = textState.catalogLinks.focusRequester,
-                nextFocus = textState.seriesInferred.focusRequester,
+                previousFocus = formState.catalogLinks.focusRequester,
+                nextFocus = formState.seriesInferred.focusRequester,
             )
             SeriesSection(
-                state = textState.seriesInferred,
-                title = Res.string.alley_artist_edit_series_inferred,
+                state = formState.seriesInferred,
+                title = Res.string.alley_edit_artist_edit_series_inferred,
                 items = state.seriesInferred,
                 predictions = seriesPredictions,
                 image = seriesImage,
-                previousFocus = textState.commissions.focusRequester,
-                nextFocus = textState.seriesConfirmed.focusRequester,
+                previousFocus = formState.commissions.focusRequester,
+                nextFocus = formState.seriesConfirmed.focusRequester,
             )
             SeriesSection(
-                state = textState.seriesConfirmed,
-                title = Res.string.alley_artist_edit_series_confirmed,
+                state = formState.seriesConfirmed,
+                title = Res.string.alley_edit_artist_edit_series_confirmed,
                 items = state.seriesConfirmed,
                 predictions = seriesPredictions,
                 image = seriesImage,
-                previousFocus = textState.seriesInferred.focusRequester,
-                nextFocus = textState.merchInferred.focusRequester,
+                previousFocus = formState.seriesInferred.focusRequester,
+                nextFocus = formState.merchInferred.focusRequester,
             )
             MultiTextSection(
-                state = textState.merchInferred,
-                title = Res.string.alley_artist_edit_merch_inferred,
+                state = formState.merchInferred,
+                title = Res.string.alley_edit_artist_edit_merch_inferred,
                 items = state.merchInferred,
                 predictions = merchPredictions,
                 itemToText = { it.name },
-                previousFocus = textState.seriesConfirmed.focusRequester,
-                nextFocus = textState.merchConfirmed.focusRequester,
+                previousFocus = formState.seriesConfirmed.focusRequester,
+                nextFocus = formState.merchConfirmed.focusRequester,
             )
             MultiTextSection(
-                state = textState.merchConfirmed,
-                title = Res.string.alley_artist_edit_merch_confirmed,
+                state = formState.merchConfirmed,
+                title = Res.string.alley_edit_artist_edit_merch_confirmed,
                 items = state.merchConfirmed,
                 predictions = merchPredictions,
                 itemToText = { it.name },
-                previousFocus = textState.merchInferred.focusRequester,
-                nextFocus = textState.notes.focusRequester,
+                previousFocus = formState.merchInferred.focusRequester,
+                nextFocus = formState.notes.focusRequester,
             )
             LongTextSection(
-                textState.notes,
+                formState.notes,
                 headerText = {
-                    Text(stringResource(Res.string.alley_artist_edit_notes))
+                    Text(stringResource(Res.string.alley_edit_artist_edit_notes))
+                },
+            )
+            LongTextSection(
+                formState.editorNotes,
+                headerText = {
+                    Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
                 },
             )
         }
@@ -635,6 +709,7 @@ object ArtistEditScreen {
 
     @Stable
     class State(
+        val artistMetadata: ArtistMetadata,
         val images: SnapshotStateList<EditImage>,
         val links: SnapshotStateList<LinkModel>,
         val storeLinks: SnapshotStateList<LinkModel>,
@@ -644,12 +719,38 @@ object ArtistEditScreen {
         val seriesConfirmed: SnapshotStateList<SeriesInfo>,
         val merchInferred: SnapshotStateList<MerchInfo>,
         val merchConfirmed: SnapshotStateList<MerchInfo>,
-        val textState: TextState,
+        val formState: FormState,
         val savingState: MutableStateFlow<JobProgress>,
     ) {
         @Stable
-        class TextState(
+        class ArtistMetadata(
+            lastEditor: String? = null,
+            lastEditTime: Instant? = null,
+        ) {
+            var lastEditor by mutableStateOf(lastEditor)
+            var lastEditTime by mutableStateOf(lastEditTime)
+
+            object Saver : ComposeSaver<ArtistMetadata, List<Any?>> {
+                override fun SaverScope.save(value: ArtistMetadata) = listOf(
+                    value.lastEditor,
+                    value.lastEditTime?.toString()
+                )
+
+                override fun restore(value: List<Any?>): ArtistMetadata {
+                    val (lastEditor, lastEditTime) = value
+                    return ArtistMetadata(
+                        lastEditor = lastEditor as String?,
+                        lastEditTime = (lastEditTime as? String?)?.let(Instant::parseOrNull)
+                    )
+                }
+
+            }
+        }
+
+        @Stable
+        class FormState(
             val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val status: EntryForm2.DropdownState = EntryForm2.DropdownState(),
             val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val summary: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
@@ -662,10 +763,12 @@ object ArtistEditScreen {
             val merchInferred: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
             val merchConfirmed: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
             val notes: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
+            val editorNotes: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
         ) {
-            object Saver : ComposeSaver<TextState, List<Any>> {
-                override fun SaverScope.save(value: TextState) = listOf(
+            object Saver : ComposeSaver<FormState, List<Any>> {
+                override fun SaverScope.save(value: FormState) = listOf(
                     with(EntryForm2.SingleTextState.Saver) { save(value.id) },
+                    with(EntryForm2.DropdownState.Saver) { save(value.status) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.booth) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.name) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.summary) },
@@ -678,22 +781,25 @@ object ArtistEditScreen {
                     with(EntryForm2.PendingTextState.Saver) { save(value.merchInferred) },
                     with(EntryForm2.PendingTextState.Saver) { save(value.merchConfirmed) },
                     with(EntryForm2.PendingTextState.Saver) { save(value.notes) },
+                    with(EntryForm2.PendingTextState.Saver) { save(value.editorNotes) },
                 )
 
-                override fun restore(value: List<Any>) = TextState(
+                override fun restore(value: List<Any>) = FormState(
                     id = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
-                    booth = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
-                    name = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
-                    summary = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
-                    links = with(EntryForm2.PendingTextState.Saver) { restore(value[4]) },
-                    storeLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[5]) },
-                    catalogLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[6]) },
-                    commissions = with(EntryForm2.PendingTextState.Saver) { restore(value[7]) },
-                    seriesInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[8]) },
-                    seriesConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[9]) },
-                    merchInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[10]) },
-                    merchConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[11]) },
-                    notes = with(EntryForm2.PendingTextState.Saver) { restore(value[12]) },
+                    status = with(EntryForm2.DropdownState.Saver) { restore(value[1]) },
+                    booth = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+                    name = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
+                    summary = with(EntryForm2.SingleTextState.Saver) { restore(value[4]) },
+                    links = with(EntryForm2.PendingTextState.Saver) { restore(value[5]) },
+                    storeLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[6]) },
+                    catalogLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[7]) },
+                    commissions = with(EntryForm2.PendingTextState.Saver) { restore(value[8]) },
+                    seriesInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[9]) },
+                    seriesConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[10]) },
+                    merchInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[11]) },
+                    merchConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[12]) },
+                    notes = with(EntryForm2.PendingTextState.Saver) { restore(value[13]) },
+                    editorNotes = with(EntryForm2.PendingTextState.Saver) { restore(value[14]) },
                 )
             }
         }
