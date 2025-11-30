@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -115,7 +116,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
@@ -194,7 +194,6 @@ object ArtistEditScreen {
         LaunchedEffect(Unit) {
             state.savingState.collectLatest {
                 if (it is JobProgress.Finished.Result<*>) {
-                    ConsoleLogger.log("save result ${it.value}")
                     when (val result = it.value as? ArtistSave.Response.Result) {
                         is ArtistSave.Response.Result.Failed ->
                             snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
@@ -475,6 +474,10 @@ object ArtistEditScreen {
                 title = Res.string.alley_edit_artist_edit_catalog_links,
                 items = state.catalogLinks,
                 itemToText = { it },
+                onItemCommitted = {
+                    state.catalogLinks.add(it)
+                    formState.catalogLinks.pendingValue.clearText()
+                },
                 previousFocus = formState.storeLinks.focusRequester,
                 nextFocus = formState.commissions.focusRequester,
             )
@@ -483,6 +486,10 @@ object ArtistEditScreen {
                 title = Res.string.alley_edit_artist_edit_commissions,
                 items = state.commissions,
                 itemToText = { it },
+                onItemCommitted = {
+                    state.commissions.add(it)
+                    formState.commissions.pendingValue.clearText()
+                },
                 previousFocus = formState.catalogLinks.focusRequester,
                 nextFocus = formState.seriesInferred.focusRequester,
             )
@@ -546,12 +553,14 @@ object ArtistEditScreen {
         itemToText: (T) -> String,
         previousFocus: FocusRequester?,
         nextFocus: FocusRequester?,
+        onItemCommitted: (String) -> Unit = {},
     ) {
         MultiTextSection(
             state = state,
             title = title,
             items = items,
             predictions = predictions,
+            onItemCommitted = onItemCommitted,
             removeLastItem = { items.removeLastOrNull()?.let { itemToText(it) } },
             item = { _, item ->
                 Box {
@@ -603,13 +612,14 @@ object ArtistEditScreen {
         item: @Composable (index: Int, T) -> Unit,
         prediction: @Composable (index: Int, T) -> Unit,
         onTab: (next: Boolean) -> Unit,
+        onItemCommitted: (String) -> Unit = {},
     ) {
         MultiTextSection(
             state = state,
             headerText = { Text(stringResource(title)) },
             entryPredictions = predictions,
             items = items,
-            onItemCommitted = { },
+            onItemCommitted = onItemCommitted,
             removeLastItem = removeLastItem,
             prediction = prediction,
             preferPrediction = true,
@@ -697,7 +707,10 @@ object ArtistEditScreen {
             state = state,
             headerText = { Text(stringResource(title)) },
             items = items,
-            onItemCommitted = {},
+            onItemCommitted = {
+                items.add(LinkModel.parse(it))
+                state.pendingValue.clearText()
+            },
             removeLastItem = { items.removeLastOrNull()?.link },
             item = { _, value -> LinkRow(value, isLast = false) },
             onTab = {

@@ -109,7 +109,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val dispatcher = it.asCoroutineDispatcher()
             runBlocking(dispatcher) {
                 // Copy over preserved pre-processed images
-                listOf("2023", "2024", "2025", "animeNyc2024", "animeNyc2025").forEach {
+                listOf("2023", "2024", "2025", "animeExpo2026", "animeNyc2024", "animeNyc2025").forEach {
                     val processed = inputFolder.dir("$it/processed").get().asFile
                     if (processed.exists()) {
                         val output = outputResources.dir("files/$it").get().asFile
@@ -190,6 +190,15 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     transformName = transformCatalogName,
                     transformId = transformCatalogId,
                 )
+
+                processFolder(
+                    imageCacheDir = imageCacheDir,
+                    path = "animeExpo2026/catalogs",
+                    transformName = { it },
+                    transformImageName = { index, hash, name ->
+                        "${index.toString().padStart(2, '0')}-$name-$hash.webp"
+                    },
+                )
             }
         }
 
@@ -198,6 +207,9 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         path: String,
         transformName: (String) -> String,
         transformId: (String) -> String = transformName,
+        transformImageName: (index: Int, hash: String, name: String) -> String = { index, hash, _ ->
+            "${index.toString().padStart(2, '0')}-$hash.webp"
+        }
     ): List<CatalogFolder> {
         val input = inputFolder.dir(path).get().asFile
         val output = outputResources.dir("files/$path").get().asFile
@@ -207,6 +219,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             outputFolder = output,
             transformName = transformName,
             transformId = transformId,
+            transformImageName = transformImageName,
         )
     }
 
@@ -216,6 +229,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
         outputFolder: File,
         transformName: (String) -> String,
         transformId: (String) -> String = transformName,
+        transformImageName: (index: Int, hash: String, name: String) -> String,
     ): List<CatalogFolder> {
         val folders = inputFolder.listFiles()
             .orEmpty()
@@ -240,14 +254,15 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                                 RESIZE_TARGET,
                                 WEBP_METHOD,
                                 WEBP_TARGET_QUALITY
-                            )
+                            ).toString()
                             CatalogFolder.Image(
                                 file = file,
                                 width = width,
                                 height = height,
                                 resized = resized,
                                 index = index,
-                                hash = hash.toString(),
+                                hash = hash,
+                                name = transformImageName(index, hash, file.name)
                             )
                         }
                     val name = transformName(it.name)
@@ -335,7 +350,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             val resized: Boolean,
             val index: Int,
             val hash: String,
-            val name: String = "${index.toString().padStart(2, '0')}-$hash.webp",
+            val name: String,
         )
     }
 }

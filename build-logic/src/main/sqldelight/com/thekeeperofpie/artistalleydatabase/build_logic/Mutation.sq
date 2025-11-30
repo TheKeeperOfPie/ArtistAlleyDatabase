@@ -62,6 +62,12 @@ insertMerch:
 INSERT OR REPLACE INTO merchEntry
 VALUES ?;
 
+getAllArtistEntryAnimeExpo2026Images:
+SELECT id, images FROM artistEntryAnimeExpo2026;
+
+updateArtistEntryAnimeExpo2026Images:
+UPDATE artistEntryAnimeExpo2026 SET images = :images WHERE id = :id;
+
 cleanUpForRelease {
     UPDATE artistEntryAnimeExpo2026 SET editorNotes = NULL;
     UPDATE artistEntryAnimeExpo2026 SET lastEditor = NULL;

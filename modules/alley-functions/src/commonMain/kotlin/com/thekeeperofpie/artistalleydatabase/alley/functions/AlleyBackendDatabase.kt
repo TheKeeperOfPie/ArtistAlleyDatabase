@@ -114,7 +114,9 @@ object AlleyBackendDatabase {
             .await()
             .objects
             .map { it.key }
-        return jsonResponse(ListImages.Response(keys))
+        return jsonResponse(ListImages.Response(keys.map {
+            Uuid.parse(it.substringAfterLast("/").substringBefore(".")) to it
+        }))
     }
 
     suspend fun uploadImage(context: EventContext, path: String): Response {

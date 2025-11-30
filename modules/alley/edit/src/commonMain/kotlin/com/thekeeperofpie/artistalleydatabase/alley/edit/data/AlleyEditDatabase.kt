@@ -83,7 +83,10 @@ class AlleyEditDatabase(
         val networkImages = remoteDatabase.listImages(year, Uuid.parse(artist.id))
             .associateBy { it.name }
         return artist.images.mapNotNull {
-            databaseImages[it.name] ?: networkImages[it.name]?.fillSize(it.width, it.height)
+            val targetName = it.name
+            networkImages.entries.find { it.key.contains(targetName) }?.value
+                ?.fillSize(it.width, it.height)
+                ?: databaseImages.entries.find { it.key.contains(targetName) }?.value
         }
     }
 
@@ -97,6 +100,7 @@ class AlleyEditDatabase(
         dataYear: DataYear,
         artistId: Uuid,
         platformFile: PlatformFile,
+        id: Uuid,
     ): EditImage? {
         val (width, height) = try {
             platformFile.toImageBitmap().run { width to height }
@@ -104,7 +108,7 @@ class AlleyEditDatabase(
             // TODO: Error handling
             return null
         }
-        return remoteDatabase.uploadImage(dataYear, artistId, platformFile)
+        return remoteDatabase.uploadImage(dataYear, artistId, platformFile, id)
             .fillSize(width, height)
     }
 

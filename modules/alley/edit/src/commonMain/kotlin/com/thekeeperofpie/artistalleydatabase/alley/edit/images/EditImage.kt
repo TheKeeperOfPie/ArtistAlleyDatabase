@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import kotlinx.serialization.Serializable
@@ -22,18 +21,12 @@ sealed interface EditImage : ImageWithDimensions {
         override val name: String = uri.toString(),
     ) : EditImage {
         override val coilImageModel: Uri get() = uri
-
-        constructor(image: CatalogImage) : this(
-            uri = image.uri,
-            width = image.width,
-            height = image.height,
-        )
     }
 
     @Serializable
     data class LocalImage(
         val key: PlatformImageKey,
-        override val name: String = key.value,
+        override val name: String = key.value.toString(),
     ) : EditImage {
         override val coilImageModel: PlatformImageKey get() = key
     }
@@ -41,10 +34,11 @@ sealed interface EditImage : ImageWithDimensions {
     @Serializable
     data class NetworkImage(
         val uri: Uri,
+        val id: Uuid,
         override val width: Int? = null,
         override val height: Int? = null,
     ) : EditImage {
-        override val name = uri.toString()
+        override val name = id.toString()
         override val coilImageModel: Uri get() = uri
 
         companion object {

@@ -22,7 +22,12 @@ expect class AlleyEditRemoteDatabase {
     ): ArtistSave.Response.Result
 
     suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage>
-    suspend fun uploadImage(dataYear: DataYear, artistId: Uuid, platformFile: PlatformFile): EditImage
+    suspend fun uploadImage(
+        dataYear: DataYear,
+        artistId: Uuid,
+        platformFile: PlatformFile,
+        id: Uuid,
+    ): EditImage
 
     suspend fun loadSeries(): List<SeriesInfo>
     suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo): SeriesSave.Response.Result

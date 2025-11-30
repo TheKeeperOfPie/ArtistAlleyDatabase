@@ -20,7 +20,7 @@ object PlatformImageCache {
     operator fun get(key: PlatformImageKey) = cache[key]
 
     fun add(platformFile: PlatformFile): PlatformImageKey {
-        val key = PlatformImageKey(Uuid.random().toString())
+        val key = PlatformImageKey(Uuid.random())
         cache[key] = platformFile
         return key
     }
@@ -28,4 +28,4 @@ object PlatformImageCache {
 
 @JvmInline
 @Serializable
-value class PlatformImageKey(val value: String)
+value class PlatformImageKey(val value: Uuid)

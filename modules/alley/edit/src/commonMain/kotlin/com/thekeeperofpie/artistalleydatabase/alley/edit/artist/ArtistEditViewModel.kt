@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCac
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -25,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -167,42 +169,42 @@ class ArtistEditViewModel(
         }
 
         if (links.isNotEmpty() || status.shouldStartLocked) {
-            state.links += links
+            state.links.replaceAll(links)
             textState.links.lockState = EntryLockState.LOCKED
         }
         if (storeLinks.isNotEmpty() || status.shouldStartLocked) {
-            state.storeLinks += storeLinks
+            state.storeLinks.replaceAll(storeLinks)
             textState.storeLinks.lockState = EntryLockState.LOCKED
         }
         if (artist.catalogLinks.isNotEmpty() || status.shouldStartLocked) {
-            state.catalogLinks += artist.catalogLinks
+            state.catalogLinks.replaceAll(artist.catalogLinks)
             textState.catalogLinks.lockState = EntryLockState.LOCKED
         }
         if (artist.commissions.isNotEmpty() || status.shouldStartLocked) {
-            state.commissions += artist.commissions
+            state.commissions.replaceAll(artist.commissions)
             textState.commissions.lockState = EntryLockState.LOCKED
         }
 
         if (seriesInferred.isNotEmpty() || status.shouldStartLocked) {
-            state.seriesInferred += seriesInferred
+            state.seriesInferred.replaceAll(seriesInferred)
             textState.seriesInferred.lockState = EntryLockState.LOCKED
         }
         if (seriesConfirmed.isNotEmpty() || status.shouldStartLocked) {
-            state.seriesConfirmed += seriesConfirmed
+            state.seriesConfirmed.replaceAll(seriesConfirmed)
             textState.seriesConfirmed.lockState = EntryLockState.LOCKED
         }
         if (merchInferred.isNotEmpty() || status.shouldStartLocked) {
-            state.merchInferred += merchInferred
+            state.merchInferred.replaceAll(merchInferred)
             textState.merchInferred.lockState = EntryLockState.LOCKED
         }
         if (merchConfirmed.isNotEmpty() || status.shouldStartLocked) {
-            state.merchConfirmed += merchConfirmed
+            state.merchConfirmed.replaceAll(merchConfirmed)
             textState.merchConfirmed.lockState = EntryLockState.LOCKED
         }
 
         val images = database.loadArtistImages(dataYear, artist)
         if (images.isNotEmpty()) {
-            state.images += images
+            state.images.replaceAll(images)
         }
 
         artistMetadata.lastEditor = artist.lastEditor
@@ -305,6 +307,7 @@ class ArtistEditViewModel(
                             dataYear = dataYear,
                             artistId = Uuid.parse(databaseEntry.id),
                             platformFile = file,
+                            id = it.key.value,
                         )
                     }
                 }
@@ -316,7 +319,11 @@ class ArtistEditViewModel(
                 updated = databaseEntry.copy(images = finalImages.map {
                     CatalogImage(name = it.name, width = it.width, height = it.height)
                 }),
-            )
+            ).also {
+                if (it is ArtistSave.Response.Result.Success) {
+                    hasLoaded = false
+                }
+            }
         }
 
     @AssistedFactory

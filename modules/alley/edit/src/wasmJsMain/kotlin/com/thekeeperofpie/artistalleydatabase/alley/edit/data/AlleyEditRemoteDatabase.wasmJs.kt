@@ -86,8 +86,8 @@ actual class AlleyEditRemoteDatabase(
                     )
                 }
                     .body<ListImages.Response>()
-                    .keys
-                    .map(::imageFromKey)
+                    .idsAndKeys
+                    .map { imageFromIdAndKey(it.first, it.second) }
             } catch (t: Throwable) {
                 t.printStackTrace()
                 emptyList()
@@ -98,17 +98,18 @@ actual class AlleyEditRemoteDatabase(
         dataYear: DataYear,
         artistId: Uuid,
         platformFile: PlatformFile,
+        id: Uuid,
     ): EditImage = withContext(PlatformDispatchers.IO) {
-        val name = Uuid.random().toString()
-        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) + "/$name"
+        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) +
+                "/$id.${platformFile.extension}"
         val bytes = platformFile.readBytes()
 
-        // Add extension when uploading, but keep database entry without extension
-        ktorClient.put(window.origin + "/database/uploadImage/$key.${platformFile.extension}") {
+        ktorClient.put(window.origin + "/database/uploadImage/$key") {
             contentType(ContentType.Application.OctetStream)
             setBody(bytes)
         }
-        imageFromKey(key)
+
+        imageFromIdAndKey(id, key)
     }
 
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
@@ -171,9 +172,10 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    private fun imageFromKey(key: String) = EditImage.NetworkImage(
-        Uri.parse(
+    private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
+        uri = Uri.parse(
             BuildKonfig.imagesUrl.ifBlank { "${window.origin}/database/image" } + "/$key"
-        )
+        ),
+        id = id,
     )
 }

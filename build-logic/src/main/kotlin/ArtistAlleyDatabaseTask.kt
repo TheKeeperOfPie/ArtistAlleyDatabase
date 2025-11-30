@@ -225,21 +225,35 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 val animeExpo2026Database = animeExpo2026.resolve("database.sql")
                 if (animeExpo2026Database.exists()) {
                     driver.close()
-                    ProcessBuilder(
+                    val success = ProcessBuilder(
                         "sqlite3",
                         databaseFile.absolutePath,
-                        "\".read \"${animeExpo2026Database.absolutePath}\"\""
+                        "\".read \'${animeExpo2026Database.absolutePath}\'\""
                     )
                         .inheritIO()
                         .redirectErrorStream(true)
                         .start()
                         .waitFor(30, TimeUnit.SECONDS)
+                    if (!success) {
+                        logger.error("Failed to apply animeExpo2026 database")
+                    }
 
                     val pair = createDatabase(databaseFile)
                     driver = pair.first
                     database = pair.second
 
                     database.mutationQueries.cleanUpForRelease().await()
+
+                    database.mutationQueries.getAllArtistEntryAnimeExpo2026Images().executeAsList()
+                        .forEach {
+                            val images =
+                                findArtistImages(imageCacheDir, DataYear.ANIME_EXPO_2026, it.id)
+                            val updatedImages = it.images.map { original ->
+                                images.first { it.name.contains(original.name) }
+                            }
+                            database.mutationQueries
+                                .updateArtistEntryAnimeExpo2026Images(updatedImages, it.id)
+                        }
                 }
 
                 // Don't retain user tables (merged from depending on :modules:alley:user)

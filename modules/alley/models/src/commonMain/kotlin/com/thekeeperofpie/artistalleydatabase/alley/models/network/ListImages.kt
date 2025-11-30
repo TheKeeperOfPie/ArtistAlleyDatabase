@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models.network
 
 import kotlinx.serialization.Serializable
+import kotlin.uuid.Uuid
 
 class ListImages {
     @Serializable
@@ -10,6 +11,6 @@ class ListImages {
 
     @Serializable
     data class Response(
-        val keys: List<String>,
+        val idsAndKeys: List<Pair<Uuid, String>>,
     )
 }

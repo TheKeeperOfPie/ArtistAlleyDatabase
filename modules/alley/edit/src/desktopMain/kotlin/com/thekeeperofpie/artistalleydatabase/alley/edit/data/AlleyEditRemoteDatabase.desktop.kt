@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -60,11 +61,14 @@ actual class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         artistId: Uuid,
         platformFile: PlatformFile,
+        id: Uuid,
     ): EditImage {
         simulateLatency()
         val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId)
-        val key = "$prefix/${Uuid.random()}.${platformFile.extension}"
-        val imageKey = PlatformImageCache.add(platformFile)
+        val key = "$prefix/$id.${platformFile.extension}"
+        val imageKey = PlatformImageKey(id)
+            .takeIf { PlatformImageCache[it] != null }
+            ?: PlatformImageCache.add(platformFile)
         val image = EditImage.LocalImage(imageKey, name = key)
         images[key] = image
         return image

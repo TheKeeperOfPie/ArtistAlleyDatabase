@@ -377,7 +377,7 @@ fun EntryFormScope.MultiTextSection(
         items = items,
         onItemCommitted = {
             onItemCommitted(it)
-            state.pendingValue.edit { this.delete(0, length) }
+            state.pendingValue.clearText()
         },
         removeLastItem = removeLastItem,
         item = { index, value ->

@@ -33,15 +33,17 @@ runWranglerCommand(
     "\"${exportFile.absolutePath}\"",
 )
 
-val snapshotTime = Clock.System.now().toString()
-runWranglerCommand(
-    "r2",
-    "object",
-    "put",
-    "--file",
-    exportFile.absolutePath,
-    "artist-alley-snapshots/$snapshotTime.sql"
-)
+if (PROD) {
+    val snapshotTime = Clock.System.now().toString()
+    runWranglerCommand(
+        "r2",
+        "object",
+        "put",
+        "--file",
+        exportFile.absolutePath,
+        "artist-alley-snapshots/$snapshotTime.sql"
+    )
+}
 
 val dataDir = if (PROD) scriptDir.parentFile else buildDir
 val targetFolder = dataDir.resolve("inputs/animeExpo2026").apply { mkdirs() }

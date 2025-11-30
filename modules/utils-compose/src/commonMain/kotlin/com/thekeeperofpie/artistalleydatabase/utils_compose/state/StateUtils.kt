@@ -69,3 +69,12 @@ fun <T> SnapshotStateList<T>.swap(indexOne: Int, indexTwo: Int) {
         this[indexTwo] = temp
     }
 }
+
+fun <T> SnapshotStateList<T>.replaceAll(values: List<T>) {
+    if (this.toList() == values) return
+
+    Snapshot.withMutableSnapshot {
+        clear()
+        addAll(values)
+    }
+}
