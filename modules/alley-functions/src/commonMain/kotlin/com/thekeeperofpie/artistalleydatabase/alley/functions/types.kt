@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.CloudflareAccessPlugin
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.D1Database
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2Bucket
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +17,11 @@ external interface EventContext {
     val waitUntil: (promise: Promise<Any>) -> Unit
     val env: Env
     val functionPath: String?
+    val data: PluginData?
+}
+
+external interface PluginData {
+    val cloudflareAccess: CloudflareAccessPlugin?
 }
 
 external interface Env {

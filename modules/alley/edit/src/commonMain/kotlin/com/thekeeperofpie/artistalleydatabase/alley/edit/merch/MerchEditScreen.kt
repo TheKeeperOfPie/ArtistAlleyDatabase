@@ -10,10 +10,14 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,13 +33,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.JobFinishedEffect
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -68,7 +73,25 @@ object MerchEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: () -> Unit,
     ) {
-        JobFinishedEffect(state.savingState) { onClickBack(true) }
+        val snackbarHostState = remember { SnackbarHostState() }
+        LaunchedEffect(Unit) {
+            state.savingState.collectLatest {
+                if (it is JobProgress.Finished.Result<*>) {
+                    when (val result = it.value as? MerchSave.Response.Result) {
+                        is MerchSave.Response.Result.Failed ->
+                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
+                        is MerchSave.Response.Result.Outdated -> {
+                            // TODO
+                        }
+                        MerchSave.Response.Result.Success -> {
+                            state.savingState.value = JobProgress.Idle
+                            onClickBack(true)
+                        }
+                        null -> Unit
+                    }
+                }
+            }
+        }
 
         Scaffold(
             topBar = {
@@ -85,6 +108,7 @@ object MerchEditScreen {
                     },
                 )
             },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { scaffoldPadding ->
             val jobProgress by state.savingState.collectAsStateWithLifecycle()
             ContentSavingBox(

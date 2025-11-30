@@ -32,6 +32,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -99,6 +101,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
@@ -112,9 +115,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.JobFinishedEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
@@ -124,6 +127,7 @@ import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -186,7 +190,26 @@ object ArtistEditScreen {
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
     ) {
-        JobFinishedEffect(state.savingState) { onClickBack(true) }
+        val snackbarHostState = remember { SnackbarHostState() }
+        LaunchedEffect(Unit) {
+            state.savingState.collectLatest {
+                if (it is JobProgress.Finished.Result<*>) {
+                    ConsoleLogger.log("save result ${it.value}")
+                    when (val result = it.value as? ArtistSave.Response.Result) {
+                        is ArtistSave.Response.Result.Failed ->
+                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
+                        is ArtistSave.Response.Result.Outdated -> {
+                            // TODO
+                        }
+                        is ArtistSave.Response.Result.Success -> {
+                            state.savingState.value = JobProgress.Idle
+                            onClickBack(true)
+                        }
+                        null -> Unit
+                    }
+                }
+            }
+        }
 
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
@@ -222,6 +245,7 @@ object ArtistEditScreen {
                         .conditionally(!isExpanded, Modifier.widthIn(max = 960.dp))
                 )
             },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
             val jobProgress by state.savingState.collectAsStateWithLifecycle()

@@ -22,6 +22,7 @@ kotlin {
 
             implementation(projects.modules.alley.data)
             implementation(projects.modules.alley.models)
+            implementation(npm("@cloudflare/pages-plugin-cloudflare-access", "1.0.5"))
         }
     }
 }

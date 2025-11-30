@@ -18,7 +18,7 @@ object ArtistSave {
             data object Success : Result
             @Serializable
             data class Outdated(val current: ArtistDatabaseEntry.Impl) : Result
-            data class Failed(val t: Throwable) : Result
+            data class Failed(val throwable: Throwable) : Result
         }
     }
 }

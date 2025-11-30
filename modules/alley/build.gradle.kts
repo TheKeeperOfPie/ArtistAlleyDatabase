@@ -110,7 +110,12 @@ buildkonfig {
 
     defaultConfigs {
         properties.forEach {
-            buildConfigField(FieldSpec.Type.STRING, it.key.toString(), it.value.toString())
+            buildConfigField(
+                type = FieldSpec.Type.STRING,
+                name = it.key.toString(),
+                value = it.value.toString(),
+                const = true,
+            )
         }
     }
 }

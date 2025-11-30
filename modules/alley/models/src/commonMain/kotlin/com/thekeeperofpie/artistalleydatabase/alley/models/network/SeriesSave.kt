@@ -18,7 +18,7 @@ object SeriesSave {
             data object Success : Result
             @Serializable
             data class Outdated(val current: SeriesInfo) : Result
-            data class Failed(val t: Throwable) : Result
+            data class Failed(val throwable: Throwable) : Result
         }
     }
 }

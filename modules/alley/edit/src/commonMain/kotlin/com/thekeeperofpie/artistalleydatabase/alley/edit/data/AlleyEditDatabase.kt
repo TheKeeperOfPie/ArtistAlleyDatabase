@@ -10,6 +10,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -106,9 +108,9 @@ class AlleyEditDatabase(
             .fillSize(width, height)
     }
 
-    suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo) =
+    suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo): SeriesSave.Response.Result =
         remoteDatabase.saveSeries(initial, updated)
 
-    suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo) =
+    suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result =
         remoteDatabase.saveMerch(initial, updated)
 }

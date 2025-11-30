@@ -10,8 +10,11 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -42,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.textRes
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -52,9 +56,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.JobFinishedEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OneTimeEffect
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -114,7 +118,25 @@ object SeriesEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: () -> Unit,
     ) {
-        JobFinishedEffect(state.savingState) { onClickBack(true) }
+        val snackbarHostState = remember { SnackbarHostState() }
+        LaunchedEffect(Unit) {
+            state.savingState.collectLatest {
+                if (it is JobProgress.Finished.Result<*>) {
+                    when (val result = it.value as? SeriesSave.Response.Result) {
+                        is SeriesSave.Response.Result.Failed ->
+                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
+                        is SeriesSave.Response.Result.Outdated -> {
+                            // TODO
+                        }
+                        SeriesSave.Response.Result.Success -> {
+                            state.savingState.value = JobProgress.Idle
+                            onClickBack(true)
+                        }
+                        null -> Unit
+                    }
+                }
+            }
+        }
 
         Scaffold(
             topBar = {
@@ -131,6 +153,7 @@ object SeriesEditScreen {
                     },
                 )
             },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { scaffoldPadding ->
             val jobProgress by state.savingState.collectAsStateWithLifecycle()
             ContentSavingBox(

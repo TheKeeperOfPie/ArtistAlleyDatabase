@@ -18,7 +18,7 @@ object MerchSave {
             data object Success : Result
             @Serializable
             data class Outdated(val current: MerchInfo) : Result
-            data class Failed(val t: Throwable) : Result
+            data class Failed(val throwable: Throwable) : Result
         }
     }
 }

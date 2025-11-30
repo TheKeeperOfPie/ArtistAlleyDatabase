@@ -7,10 +7,10 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class ExclusiveProgressJob<T>(
+class ExclusiveProgressJob<T, R>(
     private val scope: CoroutineScope,
     private val captureState: () -> T,
-    private val run: suspend (T) -> Unit,
+    private val run: suspend (T) -> R,
 ) {
     val state = MutableStateFlow<JobProgress>(JobProgress.Idle)
     var job: Job? = null
@@ -25,8 +25,8 @@ class ExclusiveProgressJob<T>(
             previousJob?.cancelAndJoin()
             state.value = JobProgress.Loading
             state.value = try {
-                run(captured)
-                JobProgress.Finished.Success
+                val result = run(captured)
+                JobProgress.Finished.Result(result)
             } catch (throwable: Throwable) {
                 JobProgress.Finished.UnhandledError(throwable)
             }

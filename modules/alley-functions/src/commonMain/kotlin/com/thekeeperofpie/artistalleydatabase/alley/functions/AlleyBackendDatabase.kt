@@ -79,12 +79,16 @@ object AlleyBackendDatabase {
         val currentArtist =
             database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
                 .awaitAsOneOrNull()?.toArtistDatabaseEntry()
-        if (currentArtist != null && currentArtist != request.updated) {
+        if (currentArtist != null && currentArtist != request.initial) {
             return jsonResponse(
                 ArtistSave.Response(ArtistSave.Response.Result.Outdated(currentArtist))
             )
         }
-        database.artistEntryAnimeExpo2026Queries.insertArtist(request.updated.toArtistEntryAnimeExpo2026())
+
+        val updatedArtist = request.updated.copy(
+            lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
+        ).toArtistEntryAnimeExpo2026()
+        database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist)
         return jsonResponse(ArtistSave.Response(ArtistSave.Response.Result.Success))
     }
 
@@ -133,7 +137,7 @@ object AlleyBackendDatabase {
         val currentSeries =
             database.seriesEntryQueries.getSeriesById(request.updated.id)
                 .awaitAsOneOrNull()?.toSeriesInfo()
-        if (currentSeries != null && currentSeries != request.updated) {
+        if (currentSeries != null && currentSeries != request.initial) {
             return jsonResponse(
                 SeriesSave.Response(SeriesSave.Response.Result.Outdated(currentSeries))
             )
@@ -155,7 +159,7 @@ object AlleyBackendDatabase {
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.updated.name)
                 .awaitAsOneOrNull()?.toMerchInfo()
-        if (currentMerch != null && currentMerch != request.updated) {
+        if (currentMerch != null && currentMerch != request.initial) {
             return jsonResponse(
                 MerchSave.Response(MerchSave.Response.Result.Outdated(currentMerch))
             )

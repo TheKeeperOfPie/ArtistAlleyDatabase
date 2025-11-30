@@ -29,6 +29,7 @@ tasks.withType<KotlinJsCompile>().configureEach {
     }
 }
 
+val isWasmDebug = project.hasProperty("wasmDebug")
 val properties = Properties().apply {
     val secretsFile = projectDir.resolve("secrets.properties")
     if (secretsFile.exists()) {
@@ -41,8 +42,19 @@ buildkonfig {
 
     defaultConfigs {
         properties.forEach {
-            buildConfigField(FieldSpec.Type.STRING, it.key.toString(), it.value.toString())
+            buildConfigField(
+                type = FieldSpec.Type.STRING,
+                name = it.key.toString(),
+                value = it.value.toString(),
+                const = true,
+            )
         }
+        buildConfigField(
+            type = FieldSpec.Type.BOOLEAN,
+            name = "debug",
+            value = isWasmDebug.toString(),
+            const = true
+        )
     }
 }
 

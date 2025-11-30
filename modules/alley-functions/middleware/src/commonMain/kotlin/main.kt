@@ -12,15 +12,15 @@ class Middleware {
     companion object {
         @JsStatic
         fun request(@Suppress("unused") context: EventContext<Env>): Promise<Response> =
-            if (context.env.IS_PRODUCTION) {
+            if (BuildKonfig.debug) {
+                context.next(context.request)
+            } else {
                 cloudflare.onRequest(
                     pluginData = PluginArgs(
                         domain = BuildKonfig.cloudflareAccessDomain,
                         aud = BuildKonfig.cloudflareAccessAudienceTag,
                     )
                 )(context)
-            } else {
-                context.next(context.request)
             }
     }
 }
