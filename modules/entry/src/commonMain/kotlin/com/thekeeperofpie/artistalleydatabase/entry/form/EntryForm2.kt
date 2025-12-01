@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.delete
@@ -79,6 +80,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.RectangleShape
@@ -125,6 +127,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
@@ -590,7 +593,7 @@ fun <T> EntryFormScope.MultiTextSection(
         EntryAutocompleteDropdown(
             expanded = { dropdownExpanded },
             onExpandedChange = { dropdownExpanded = it },
-            text = { state.pendingValue.text },
+            text = state.pendingValue,
             predictions = { predictions },
             showPredictions = { showPredictions },
             onPredictionChosen = {
@@ -602,36 +605,45 @@ fun <T> EntryFormScope.MultiTextSection(
             item = prediction,
             fieldFocusRequester = state.focusRequester,
             focusRequester = dropdownFocusRequester,
-            onTextEntry = {
-                state.pendingValue.edit { insert(length, it.toString()) }
-                state.focusRequester.requestFocus()
-            },
             modifier = Modifier.onPreviewKeyEvent {
                 if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                when (it.key) {
-                    // TODO: Re-add backspace to move up behavior on mobile
-                    Key.DirectionUp -> if (state.pendingValue.text.isBlank() && items.isNotEmpty()) {
-                        Snapshot.withMutableSnapshot {
-                            val removed = removeLastItem()
-                            if (removed != null) {
-                                state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
-                            }
-                        }
+                if (it.isTabKeyDownOrTyped) {
+                    if (dropdownExpanded) {
                         scope.launch {
-                            delay(1.seconds)
-                            println("focus state: ${state.focusRequester.requestFocus()}")
+                            delay(100.milliseconds)
+                            dropdownFocusRequester.requestFocus(FocusDirection.Next)
                         }
-                        true
-                    } else {
-                        false
                     }
-                    Key.DirectionDown -> if (dropdownExpanded) {
-                        dropdownFocusRequester.requestFocus()
-                        true
-                    } else {
-                        false
+                    false
+                } else {
+                    when (it.key) {
+                        // TODO: Re-add backspace to move up behavior on mobile
+                        Key.DirectionUp -> if (dropdownExpanded) {
+                            dropdownFocusRequester.requestFocus(FocusDirection.Next)
+                            true
+                        } else if (state.pendingValue.text.isBlank() && items.isNotEmpty()) {
+                            Snapshot.withMutableSnapshot {
+                                val removed = removeLastItem()
+                                if (removed != null) {
+                                    state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
+                                }
+                            }
+                            scope.launch {
+                                delay(1.seconds)
+                                state.focusRequester.requestFocus()
+                            }
+                            true
+                        } else {
+                            false
+                        }
+                        Key.DirectionDown -> if (dropdownExpanded) {
+                            dropdownFocusRequester.requestFocus(FocusDirection.Next)
+                            true
+                        } else {
+                            false
+                        }
+                        else -> false
                     }
-                    else -> false
                 }
             }
         ) {
@@ -656,6 +668,15 @@ fun <T> EntryFormScope.MultiTextSection(
                 modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
                     .onFocusChanged { state.isFocused = it.isFocused }
                     .focusRequester(state.focusRequester)
+                    .onPreviewKeyEvent {
+                        if (it.type != KeyEventType.KeyDown || !dropdownExpanded ||
+                            it.key != Key.Escape
+                        ) {
+                            return@onPreviewKeyEvent false
+                        }
+                        dropdownExpanded = false
+                        true
+                    }
                     .interceptTab {
                         if (dropdownExpanded) {
                             dropdownFocusRequester.requestFocus()
@@ -799,6 +820,7 @@ private fun OpenSectionField(
                 onDone()
             }
         },
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
@@ -1095,13 +1117,12 @@ private fun DifferentText(
 private fun <T> EntryAutocompleteDropdown(
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    text: () -> CharSequence?,
+    text: TextFieldState,
     predictions: () -> List<T>,
     showPredictions: () -> Boolean,
     onPredictionChosen: (T) -> Unit,
     fieldFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
-    onTextEntry: (Char) -> Unit,
     modifier: Modifier = Modifier,
     item: @Composable (index: Int, T) -> Unit,
     textField: @Composable ExposedDropdownMenuBoxScope.() -> Unit,
@@ -1110,13 +1131,23 @@ private fun <T> EntryAutocompleteDropdown(
         expanded = expanded(),
         onExpandedChange = { onExpandedChange(!expanded()) },
         modifier = modifier.focusable(false)
+            .onPreviewKeyEvent {
+                if (expanded() && it.type == KeyEventType.KeyDown &&
+                    (it.key == Key.DirectionDown || it.key == Key.DirectionUp)
+                ) {
+                    focusRequester.requestFocus(FocusDirection.Enter)
+                    true
+                } else {
+                    false
+                }
+            }
     ) {
         textField()
 
         if (showPredictions()) {
             val predictions = predictions()
             if (predictions.isNotEmpty()) {
-                LaunchedEffect(text(), predictions) {
+                LaunchedEffect(text.text, predictions) {
                     onExpandedChange(true)
                 }
                 val focusRequesters = remember(focusRequester, predictions.size) {
@@ -1134,13 +1165,23 @@ private fun <T> EntryAutocompleteDropdown(
                                 char.category == CharCategory.SPACE_SEPARATOR
                             ) {
                                 onExpandedChange(false)
-                                onTextEntry(char)
+                                text.edit { insert(length, it.toString()) }
+                                fieldFocusRequester.requestFocus()
+                                true
+                            } else if (it.key == Key.Backspace) {
+                                text.edit {
+                                    if (length > 0) {
+                                        delete(length - 1, length)
+                                    }
+                                }
+                                fieldFocusRequester.requestFocus()
                                 true
                             } else {
                                 false
                             }
                         }
                 ) {
+                    val focusManager = LocalFocusManager.current
                     predictions.forEachIndexed { index, entry ->
                         var focused by remember { mutableStateOf(false) }
                         DropdownMenuItem(
@@ -1157,17 +1198,34 @@ private fun <T> EntryAutocompleteDropdown(
                                 )
                                 .onFocusChanged { focused = it.isFocused }
                                 .focusRequester(focusRequesters[index])
+                                .focusProperties {
+                                    up = focusRequesters.getOrNull(index - 1)
+                                        ?: fieldFocusRequester
+                                    previous = focusRequesters.getOrNull(index - 1)
+                                        ?: fieldFocusRequester
+                                    down = focusRequesters.getOrNull(index + 1)
+                                        ?: fieldFocusRequester
+                                    next = focusRequesters.getOrNull(index + 1)
+                                        ?: fieldFocusRequester
+                                }
                                 .fillMaxWidth()
-                                .onKeyEvent { event ->
-                                    if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+                                .onPreviewKeyEvent { event ->
+                                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                                     when (event.key) {
+                                        Key.Escape -> {
+                                            onExpandedChange(false)
+                                            true
+                                        }
                                         Key.DirectionDown -> {
-                                            (focusRequesters.getOrNull(index + 1)
-                                                ?: fieldFocusRequester).requestFocus()
+                                            focusManager.moveFocus(FocusDirection.Next)
                                             true
                                         }
                                         Key.DirectionUp -> {
-                                            focusRequesters.getOrNull(index - 1)?.requestFocus()
+                                            focusManager.moveFocus(FocusDirection.Previous)
+                                            true
+                                        }
+                                        Key.Enter -> {
+                                            onPredictionChosen(entry)
                                             true
                                         }
                                         else -> false

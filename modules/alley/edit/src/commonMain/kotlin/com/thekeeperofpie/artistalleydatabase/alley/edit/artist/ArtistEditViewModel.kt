@@ -32,6 +32,9 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
@@ -211,24 +214,27 @@ class ArtistEditViewModel(
         artistMetadata.lastEditTime = artist.lastEditTime
     }
 
-    fun seriesPredictions(query: String) =
-        seriesById.mapLatest {
-            val matching = mutableListOf<Pair<SeriesInfo, Int>>()
-            it.values.forEach {
-                val priority = when {
-                    it.titlePreferred.contains(query, ignoreCase = true) -> 0
-                    it.titleRomaji.contains(query, ignoreCase = true) -> 2
-                    it.titleEnglish.contains(query, ignoreCase = true) -> 1
-                    it.titleNative.contains(query, ignoreCase = true) -> 3
-                    else -> null
+    fun seriesPredictions(query: String) = if (query.length < 3) {
+        flowOf(emptyList())
+    } else {
+        seriesById.flatMapLatest {
+            flow {
+                val (firstSection, firstRemaining) = it.values.partition {
+                    it.titlePreferred.contains(query, ignoreCase = true)
                 }
-                if (priority != null) {
-                    matching += it to priority
+                emit(firstSection)
+                val (secondSection, secondRemaining) = firstRemaining.partition {
+                    it.titleRomaji.contains(query, ignoreCase = true)
                 }
+                val secondResults = firstSection + secondSection
+                emit(secondResults)
+                val (thirdSection) = secondRemaining.partition {
+                    it.titleEnglish.contains(query, ignoreCase = true)
+                }
+                emit(secondResults + thirdSection)
             }
-            matching.sortedBy { it.second }.map { it.first }
-        }
-            .flowOn(PlatformDispatchers.IO)
+        }.flowOn(dispatchers.io)
+    }
 
     fun merchPredictions(query: String) =
         merchById
