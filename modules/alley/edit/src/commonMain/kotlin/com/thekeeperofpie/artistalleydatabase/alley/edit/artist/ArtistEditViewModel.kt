@@ -293,7 +293,7 @@ class ArtistEditViewModel(
             images = emptyList(),
             counter = 1,
             editorNotes = editorNotes,
-            lastEditor = "TODO", // TODO
+            lastEditor = null, // This is filled on the backend
             lastEditTime = Clock.System.now(),
         )
     }

@@ -610,6 +610,8 @@ fun <T> EntryFormScope.MultiTextSection(
                 if (it.isTabKeyDownOrTyped) {
                     if (dropdownExpanded) {
                         scope.launch {
+                            // Delay long enough for the popup to capture focus,
+                            // then move to first dropdown item
                             delay(100.milliseconds)
                             dropdownFocusRequester.requestFocus(FocusDirection.Next)
                         }
@@ -619,8 +621,11 @@ fun <T> EntryFormScope.MultiTextSection(
                     when (it.key) {
                         // TODO: Re-add backspace to move up behavior on mobile
                         Key.DirectionUp -> if (dropdownExpanded) {
-                            dropdownFocusRequester.requestFocus(FocusDirection.Next)
-                            true
+                            scope.launch {
+                                delay(100.milliseconds)
+                                dropdownFocusRequester.requestFocus(FocusDirection.Next)
+                            }
+                            false
                         } else if (state.pendingValue.text.isBlank() && items.isNotEmpty()) {
                             Snapshot.withMutableSnapshot {
                                 val removed = removeLastItem()
@@ -636,10 +641,13 @@ fun <T> EntryFormScope.MultiTextSection(
                         } else {
                             false
                         }
-                        Key.DirectionDown -> if (dropdownExpanded) {
-                            dropdownFocusRequester.requestFocus(FocusDirection.Next)
-                            true
-                        } else {
+                        Key.DirectionDown -> {
+                            if (dropdownExpanded) {
+                                scope.launch {
+                                    delay(100.milliseconds)
+                                    dropdownFocusRequester.requestFocus(FocusDirection.Next)
+                                }
+                            }
                             false
                         }
                         else -> false
@@ -1131,16 +1139,6 @@ private fun <T> EntryAutocompleteDropdown(
         expanded = expanded(),
         onExpandedChange = { onExpandedChange(!expanded()) },
         modifier = modifier.focusable(false)
-            .onPreviewKeyEvent {
-                if (expanded() && it.type == KeyEventType.KeyDown &&
-                    (it.key == Key.DirectionDown || it.key == Key.DirectionUp)
-                ) {
-                    focusRequester.requestFocus(FocusDirection.Enter)
-                    true
-                } else {
-                    false
-                }
-            }
     ) {
         textField()
 
