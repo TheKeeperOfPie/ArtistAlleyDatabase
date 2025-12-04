@@ -10,7 +10,7 @@ FROM artistEntryAnimeNyc2024
 WHERE booth = :booth;
 
 getAllEntries:
-SELECT artistEntryAnimeNyc2024.id, artistEntryAnimeNyc2024.booth, artistEntryAnimeNyc2024.name
+SELECT id, booth, name, links, storeLinks, catalogLinks, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed, images
 FROM artistEntryAnimeNyc2024;
 
 getImagesById:

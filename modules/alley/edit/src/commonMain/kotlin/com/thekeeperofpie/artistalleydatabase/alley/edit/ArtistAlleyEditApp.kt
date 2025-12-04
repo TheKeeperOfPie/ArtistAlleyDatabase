@@ -21,7 +21,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.HomeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen
@@ -131,7 +131,7 @@ private fun entryProvider(
     onClickBack: (force: Boolean) -> Unit,
 ) = entryProvider<NavKey> {
     sharedElementEntry<AlleyEditDestination.Home> {
-        HomeScreen(
+        ArtistListScreen(
             graph = graph,
             onAddArtist = {
                 navStack.navigate(AlleyEditDestination.ArtistAdd(it))

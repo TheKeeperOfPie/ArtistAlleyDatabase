@@ -163,7 +163,7 @@ private fun SqlCursor.toArtistWithUserData2025(
 }
 
 private fun SqlCursor.toArtistWithUserDataAnimeExpo2026(
-    database: AlleySqlDatabase
+    database: AlleySqlDatabase,
 ): ArtistWithUserData =
     database.artistEntryAnimeExpo2026Queries.getEntry("").mapper(this).toArtistWithUserData()
 
@@ -978,30 +978,99 @@ class ArtistEntryDao(
         when (year) {
             DataYear.ANIME_EXPO_2023 -> dao2023().getAllEntries().awaitAsList()
                 .map {
-                    if (it.id.isBlank()) {
-                        println(it)
-                    }
-                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                    ArtistSummary(
+                        id = Uuid.parse(it.id),
+                        booth = it.booth,
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = emptyList(),
+                        catalogLinks = it.catalogLinks,
+                        seriesInferred = emptyList(),
+                        seriesConfirmed = emptyList(),
+                        merchInferred = emptyList(),
+                        merchConfirmed = emptyList(),
+                        images = it.images,
+                    )
                 }
             DataYear.ANIME_EXPO_2024 -> dao2024().getAllEntries().awaitAsList()
                 .map {
-                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                    ArtistSummary(
+                        id = Uuid.parse(it.id),
+                        booth = it.booth,
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                        seriesInferred = it.seriesInferred,
+                        seriesConfirmed = it.seriesConfirmed,
+                        merchInferred = it.merchInferred,
+                        merchConfirmed = it.merchConfirmed,
+                        images = it.images,
+                    )
                 }
             DataYear.ANIME_EXPO_2025 -> dao2025().getAllEntries().awaitAsList()
                 .map {
-                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                    ArtistSummary(
+                        id = Uuid.parse(it.id),
+                        booth = it.booth,
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                        seriesInferred = it.seriesInferred,
+                        seriesConfirmed = it.seriesConfirmed,
+                        merchInferred = it.merchInferred,
+                        merchConfirmed = it.merchConfirmed,
+                        images = it.images,
+                    )
                 }
             DataYear.ANIME_EXPO_2026 -> daoAnimeExpo2026().getAllEntries().awaitAsList()
                 .map {
-                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                    ArtistSummary(
+                        id = Uuid.parse(it.id),
+                        booth = it.booth,
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                        seriesInferred = it.seriesInferred,
+                        seriesConfirmed = it.seriesConfirmed,
+                        merchInferred = it.merchInferred,
+                        merchConfirmed = it.merchConfirmed,
+                        images = it.images,
+                    )
                 }
             DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024().getAllEntries().awaitAsList()
                 .map {
-                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                    ArtistSummary(
+                        id = Uuid.parse(it.id),
+                        booth = it.booth,
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                        seriesInferred = it.seriesInferred,
+                        seriesConfirmed = it.seriesConfirmed,
+                        merchInferred = it.merchInferred,
+                        merchConfirmed = it.merchConfirmed,
+                        images = it.images,
+                    )
                 }
             DataYear.ANIME_NYC_2025 -> daoAnimeNyc2025().getAllEntries().awaitAsList()
                 .map {
-                    ArtistSummary(id = Uuid.parse(it.id), booth = it.booth, name = it.name)
+                    ArtistSummary(
+                        id = Uuid.parse(it.id),
+                        booth = it.booth,
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                        seriesInferred = it.seriesInferred,
+                        seriesConfirmed = it.seriesConfirmed,
+                        merchInferred = it.merchInferred,
+                        merchConfirmed = it.merchConfirmed,
+                        images = it.images,
+                    )
                 }
         }
     }

@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 interface ArtistDatabaseEntry {
     val year: DataYear
@@ -98,3 +99,17 @@ interface ArtistDatabaseEntry {
         )
     }
 }
+
+fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(
+    id = Uuid.parse(id),
+    booth = booth,
+    name = name,
+    links = links,
+    storeLinks = storeLinks,
+    catalogLinks = catalogLinks,
+    seriesInferred = seriesInferred,
+    seriesConfirmed = seriesConfirmed,
+    merchInferred = merchInferred,
+    merchConfirmed = merchConfirmed,
+    images = images,
+)

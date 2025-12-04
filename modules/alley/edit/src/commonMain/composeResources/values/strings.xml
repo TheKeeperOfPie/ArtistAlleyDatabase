@@ -4,6 +4,15 @@
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
 
+    <string name="alley_edit_artist_list_tab_all">All</string>
+    <string name="alley_edit_artist_list_tab_missing_links">Missing links</string>
+    <string name="alley_edit_artist_list_tab_missing_inferred">Missing inferred</string>
+    <string name="alley_edit_artist_list_tab_missing_confirmed">Missing confirmed</string>
+
+    <string name="alley_edit_artist_list_sort_content_description">Sort artists</string>
+    <string name="alley_edit_artist_list_sort_booth">Booth</string>
+    <string name="alley_edit_artist_list_sort_name">Name</string>
+
     <string name="alley_edit_artist_edit_title_editing">Editing %1$s - %2$s</string>
     <string name="alley_edit_artist_edit_title_adding">Adding %1$s</string>
     <string name="alley_edit_artist_edit_id">ID</string>

@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
@@ -31,27 +32,19 @@ class AlleyEditDatabase(
     private val remoteDatabase: AlleyEditRemoteDatabase,
 ) {
     // TODO: Failure result
-    suspend fun loadArtists(dataYear: DataYear) = when (dataYear) {
-        DataYear.ANIME_EXPO_2026 -> remoteDatabase.loadArtists(dataYear)
-        DataYear.ANIME_EXPO_2023,
-        DataYear.ANIME_EXPO_2024,
-        DataYear.ANIME_EXPO_2025,
-        DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025,
-            -> artistEntryDao.getAllEntries(dataYear)
+    suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary> {
+        val remoteArtists = remoteDatabase.loadArtists(dataYear)
+        val remoteIds = remoteArtists.map { it.id }.toSet()
+        val databaseArtists = artistEntryDao.getAllEntries(dataYear)
+            .filter { it.id !in remoteIds }
+        return databaseArtists + remoteArtists
     }
 
-    suspend fun loadArtist(dataYear: DataYear, artistId: Uuid) = when (dataYear) {
-        DataYear.ANIME_EXPO_2026 -> remoteDatabase.loadArtist(dataYear, artistId)
-        DataYear.ANIME_EXPO_2023,
-        DataYear.ANIME_EXPO_2024,
-        DataYear.ANIME_EXPO_2025,
-        DataYear.ANIME_NYC_2024,
-        DataYear.ANIME_NYC_2025,
-            -> artistEntryDao.getEntry(dataYear, artistId.toString())
-            ?.artist
-            ?.databaseEntry
-    }
+    suspend fun loadArtist(dataYear: DataYear, artistId: Uuid) =
+        remoteDatabase.loadArtist(dataYear, artistId)
+            ?: artistEntryDao.getEntry(dataYear, artistId.toString())
+                ?.artist
+                ?.databaseEntry
 
     suspend fun loadSeries(): Map<String, SeriesInfo> =
         (remoteDatabase.loadSeries() + seriesEntryDao.getSeries().map { it.toSeriesInfo() })

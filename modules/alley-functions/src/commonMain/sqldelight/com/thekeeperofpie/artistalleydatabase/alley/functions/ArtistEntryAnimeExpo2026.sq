@@ -1,5 +1,6 @@
 getArtists:
-SELECT id, booth, name FROM artistEntryAnimeExpo2026;
+SELECT id, booth, name, links, storeLinks, catalogLinks, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed, images
+FROM artistEntryAnimeExpo2026;
 
 insertArtist:
 INSERT OR REPLACE INTO artistEntryAnimeExpo2026

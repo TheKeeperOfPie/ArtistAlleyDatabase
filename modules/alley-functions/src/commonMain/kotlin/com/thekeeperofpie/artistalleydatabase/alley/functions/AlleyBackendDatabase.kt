@@ -61,6 +61,14 @@ object AlleyBackendDatabase {
                     id = Uuid.parse(it.id),
                     booth = it.booth,
                     name = it.name,
+                    links = it.links,
+                    storeLinks = it.storeLinks,
+                    catalogLinks = it.catalogLinks,
+                    seriesInferred = it.seriesInferred,
+                    seriesConfirmed = it.seriesConfirmed,
+                    merchInferred = it.merchInferred,
+                    merchConfirmed = it.merchConfirmed,
+                    images = it.images,
                 )
             }
             .let(::jsonResponse)

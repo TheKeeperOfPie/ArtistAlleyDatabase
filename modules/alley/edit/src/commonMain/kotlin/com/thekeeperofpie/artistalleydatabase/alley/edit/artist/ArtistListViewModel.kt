@@ -15,7 +15,9 @@ import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -24,16 +26,45 @@ class ArtistListViewModel(
     database: AlleyEditDatabase,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val dataYear = savedStateHandle.getMutableStateFlow("dataYear", DataYear.LATEST)
-    val query by savedStateHandle.saveable(saver = TextFieldState.Saver) { TextFieldState() }
+    private val query by savedStateHandle.saveable(saver = TextFieldState.Saver) { TextFieldState() }
+    private val dataYear = savedStateHandle.getMutableStateFlow("dataYear", DataYear.LATEST)
+    private val sortBy = savedStateHandle.getMutableStateFlow("sortBy", ArtistListSortBy.BOOTH)
+    private val tab = savedStateHandle.getMutableStateFlow("tab", ArtistListTab.ALL)
     private val refreshFlow = RefreshFlow()
     private val artistEntries = combine(dataYear, refreshFlow.updates, ::Pair)
         .mapLatest { (dataYear) -> database.loadArtists(dataYear) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val debouncedQuery = snapshotFlow { query.text.toString() }
         .debounce(500.milliseconds)
-    val entries = combine(debouncedQuery, artistEntries, ::Pair)
-        .mapLatest { (query, entries) ->
+
+    private val missingLinks = artistEntries.mapLatest {
+        it.filter { it.links.isEmpty() && it.storeLinks.isEmpty() && it.catalogLinks.isEmpty() }
+    }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
+
+    private val missingInferred = artistEntries.mapLatest {
+        it.filter {
+            (it.seriesInferred.isEmpty() || it.merchInferred.isEmpty()) &&
+                    (it.seriesConfirmed.isEmpty() && it.merchConfirmed.isEmpty())
+        }
+    }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
+
+    private val missingConfirmed = artistEntries.mapLatest {
+        it.filter { it.images.isNotEmpty() && (it.seriesConfirmed.isEmpty() || it.merchConfirmed.isEmpty()) }
+    }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
+
+    private val entries = tab
+        .flatMapLatest {
+            combine(
+                when (it) {
+                    ArtistListTab.ALL -> artistEntries
+                    ArtistListTab.MISSING_LINKS -> missingLinks
+                    ArtistListTab.MISSING_INFERRED -> missingInferred
+                    ArtistListTab.MISSING_CONFIRMED -> missingConfirmed
+                }, debouncedQuery, ::Pair
+            )
+        }
+        .mapLatest { (entries, query) ->
             if (query.isBlank()) {
                 return@mapLatest entries
             }
@@ -44,7 +75,25 @@ class ArtistListViewModel(
                         it.booth?.contains(query) == true
             }
         }
+        .flatMapLatest { artists ->
+            sortBy.mapLatest {
+                when (it) {
+                    ArtistListSortBy.BOOTH -> artists.sortedBy { it.booth }
+                    ArtistListSortBy.NAME -> artists.sortedWith(
+                        compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.orEmpty() }
+                    )
+                }
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    internal val state = ArtistListScreen.State(
+        query = query,
+        dataYear = dataYear,
+        sortBy = sortBy,
+        tab = tab,
+        entries = entries,
+    )
 
     fun refresh() = refreshFlow.refresh()
 

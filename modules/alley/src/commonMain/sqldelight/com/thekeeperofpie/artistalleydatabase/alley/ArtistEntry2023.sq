@@ -10,7 +10,7 @@ FROM artistEntry2023
 WHERE booth = :booth;
 
 getAllEntries:
-SELECT artistEntry2023.id, artistEntry2023.booth, artistEntry2023.name
+SELECT id, booth, name, links, catalogLinks, images
 FROM artistEntry2023;
 
 getStampRallyEntries:

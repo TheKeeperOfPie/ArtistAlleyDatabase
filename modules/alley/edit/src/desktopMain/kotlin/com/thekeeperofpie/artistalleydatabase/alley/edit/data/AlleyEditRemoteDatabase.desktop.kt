@@ -4,12 +4,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -35,8 +35,7 @@ actual class AlleyEditRemoteDatabase {
         artistsByDataYearAndId[dataYear]?.get(artistId.toString())
 
     actual suspend fun loadArtists(dataYear: DataYear) =
-        artistsByDataYearAndId[dataYear]?.values.orEmpty().toList()
-            .map { ArtistSummary(Uuid.parse(it.id), it.booth, it.name) }
+        artistsByDataYearAndId[dataYear]?.values.orEmpty().toList().map { it.toArtistSummary() }
 
     actual suspend fun saveArtist(
         dataYear: DataYear,
