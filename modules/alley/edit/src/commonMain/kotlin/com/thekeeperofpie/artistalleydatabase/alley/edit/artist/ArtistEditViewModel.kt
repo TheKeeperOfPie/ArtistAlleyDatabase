@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SearchUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -219,19 +220,13 @@ class ArtistEditViewModel(
     } else {
         seriesById.flatMapLatest {
             flow {
-                val (firstSection, firstRemaining) = it.values.partition {
-                    it.titlePreferred.contains(query, ignoreCase = true)
-                }
-                emit(firstSection)
-                val (secondSection, secondRemaining) = firstRemaining.partition {
-                    it.titleRomaji.contains(query, ignoreCase = true)
-                }
-                val secondResults = firstSection + secondSection
-                emit(secondResults)
-                val (thirdSection) = secondRemaining.partition {
-                    it.titleEnglish.contains(query, ignoreCase = true)
-                }
-                emit(secondResults + thirdSection)
+                SearchUtils.incrementallyPartition(
+                    values = it.values,
+                    { it.titlePreferred.contains(query, ignoreCase = true) },
+                    { it.titleRomaji.contains(query, ignoreCase = true) },
+                    { it.titleEnglish.contains(query, ignoreCase = true) },
+                    { it.synonyms.any { it.contains(query, ignoreCase = true) } },
+                )
             }
         }.flowOn(dispatchers.io)
     }

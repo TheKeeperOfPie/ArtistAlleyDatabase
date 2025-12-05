@@ -17,5 +17,6 @@ fun SeriesEntry.toSeriesInfo() = SeriesInfo(
     titleEnglish = titleEnglish,
     titleRomaji = titleRomaji,
     titleNative = titleNative,
+    synonyms = synonyms.orEmpty(),
     link = link,
 )

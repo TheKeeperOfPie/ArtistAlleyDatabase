@@ -1,10 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.series
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
@@ -19,13 +22,16 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_open_link_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_save_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_error_aniList_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_aniList_id
@@ -34,6 +40,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_external_link
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_source_type
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_synonyms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_english
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_native
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_preferred
@@ -49,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.textRes
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLongValidator
@@ -99,6 +107,7 @@ object SeriesEditScreen {
                 SeriesColumn.TITLE_ROMAJI -> state.titleRomaji.focusRequester
                 SeriesColumn.TITLE_NATIVE -> state.titleNative.focusRequester
                 SeriesColumn.TITLE_PREFERRED -> state.titlePreferred.focusRequester
+                SeriesColumn.SYNONYMS -> state.synonymsPendingValue.focusRequester
                 SeriesColumn.WIKIPEDIA_ID -> state.wikipediaId.focusRequester
                 SeriesColumn.EXTERNAL_LINK -> state.link.focusRequester
                 SeriesColumn.UUID -> state.uuid.focusRequester
@@ -164,7 +173,7 @@ object SeriesEditScreen {
                     EntryForm2(modifier = Modifier.width(600.dp)) {
                         SingleTextSection(
                             state = state.id,
-                            title = Res.string.alley_edit_series_header_canonical,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_canonical)) },
                             previousFocus = null,
                             nextFocus = state.uuid.focusRequester,
                         )
@@ -172,7 +181,7 @@ object SeriesEditScreen {
                         val uuidErrorMessage by rememberUuidValidator(state.uuid)
                         SingleTextSection(
                             state = state.uuid,
-                            title = Res.string.alley_edit_series_header_uuid,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_uuid)) },
                             previousFocus = state.id.focusRequester,
                             nextFocus = state.aniListId.focusRequester,
                             errorText = { uuidErrorMessage },
@@ -181,7 +190,7 @@ object SeriesEditScreen {
                         val aniListIdErrorMessage by rememberLongValidator(state.aniListId)
                         SingleTextSection(
                             state = state.aniListId,
-                            title = Res.string.alley_edit_series_header_aniList_id,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_aniList_id)) },
                             previousFocus = state.uuid.focusRequester,
                             nextFocus = state.aniListType.focusRequester,
                             errorText = { aniListIdErrorMessage },
@@ -207,7 +216,7 @@ object SeriesEditScreen {
                         val wikipediaIdErrorMessage by rememberLongValidator(state.wikipediaId)
                         SingleTextSection(
                             state = state.wikipediaId,
-                            title = Res.string.alley_edit_series_header_wikipedia_id,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_wikipedia_id)) },
                             previousFocus = state.aniListType.focusRequester,
                             nextFocus = state.source.focusRequester,
                             errorText = { wikipediaIdErrorMessage },
@@ -224,40 +233,76 @@ object SeriesEditScreen {
                         )
                         SingleTextSection(
                             state = state.titleEnglish,
-                            title = Res.string.alley_edit_series_header_title_english,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_english)) },
                             previousFocus = state.source.focusRequester,
                             nextFocus = state.titleRomaji.focusRequester,
                         )
                         SingleTextSection(
                             state = state.titleRomaji,
-                            title = Res.string.alley_edit_series_header_title_romaji,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_romaji)) },
                             previousFocus = state.titleEnglish.focusRequester,
                             nextFocus = state.titleNative.focusRequester,
                         )
                         SingleTextSection(
                             state = state.titleNative,
-                            title = Res.string.alley_edit_series_header_title_native,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_native)) },
                             previousFocus = state.titleRomaji.focusRequester,
                             nextFocus = state.titlePreferred.focusRequester,
                         )
                         SingleTextSection(
                             state = state.titlePreferred,
-                            title = Res.string.alley_edit_series_header_title_preferred,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_preferred)) },
                             previousFocus = state.titleNative.focusRequester,
                             nextFocus = state.link.focusRequester,
+                        )
+                        MultiTextSection(
+                            state = state.synonymsPendingValue,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_synonyms)) },
+                            items = state.synonyms,
+                            onItemCommitted = {
+                                state.synonyms.add(it)
+                                state.synonymsPendingValue.pendingValue.clearText()
+                            },
+                            removeLastItem = { state.synonyms.removeLastOrNull() },
+                            previousFocus = state.titlePreferred.focusRequester,
+                            nextFocus = state.link.focusRequester,
+                            item = { _, synonym ->
+                                Text(
+                                    text = synonym,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            },
                         )
 
                         val linkErrorMessage by rememberLinkValidator(state.link)
                         SingleTextSection(
                             state = state.link,
-                            title = Res.string.alley_edit_series_header_external_link,
-                            previousFocus = state.titlePreferred.focusRequester,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_external_link)) },
+                            trailingIcon = {
+                                AnimatedVisibility(visible = linkErrorMessage == null) {
+                                    val uriHandler = LocalUriHandler.current
+                                    IconButton(onClick = {
+                                        try {
+                                            uriHandler.openUri(state.link.value.text.toString())
+                                        } catch (_: Throwable) {
+                                        }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Default.OpenInNew,
+                                            contentDescription = stringResource(Res.string.alley_edit_open_link_content_description),
+                                        )
+                                    }
+                                }
+                            },
+                            previousFocus = state.synonymsPendingValue.focusRequester,
                             nextFocus = state.notes.focusRequester,
                             errorText = { linkErrorMessage },
                         )
                         SingleTextSection(
                             state = state.notes,
-                            title = Res.string.alley_edit_series_header_notes,
+                            headerText = { Text(stringResource(Res.string.alley_edit_series_header_notes)) },
                             previousFocus = state.link.focusRequester,
                             nextFocus = null,
                         )
@@ -302,6 +347,8 @@ object SeriesEditScreen {
         val titleRomaji: EntryForm2.SingleTextState,
         val titleNative: EntryForm2.SingleTextState,
         val titlePreferred: EntryForm2.SingleTextState,
+        val synonyms: SnapshotStateList<String>,
+        val synonymsPendingValue: EntryForm2.PendingTextState,
         val link: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
         val savingState: MutableStateFlow<JobProgress>,

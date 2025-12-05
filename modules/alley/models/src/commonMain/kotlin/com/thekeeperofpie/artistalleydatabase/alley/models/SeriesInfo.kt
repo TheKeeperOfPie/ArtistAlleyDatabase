@@ -17,5 +17,6 @@ data class SeriesInfo(
     val titleEnglish: String,
     val titleRomaji: String,
     val titleNative: String,
+    val synonyms: List<String>,
     val link: String?,
 )

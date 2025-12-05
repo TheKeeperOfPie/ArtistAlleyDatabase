@@ -213,8 +213,9 @@ object AlleyBackendDatabase {
         titleEnglish = titleEnglish,
         titleRomaji = titleRomaji,
         titleNative = titleNative,
+        synonyms = synonyms,
         link = link,
-        inferred2024 = 0,
+        inferred2024 = 0, // TODO: Recalculate counts when adding to local database
         inferred2025 = 0,
         inferredAnimeExpo2026 = 0,
         inferredAnimeNyc2024 = 0,

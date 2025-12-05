@@ -45,7 +45,7 @@ class ArtistSeriesViewModel(
     val seriesEntry = if (route.series == null) {
         ReadOnlyStateFlow(null)
     } else {
-        seriesEntryDao.getSeriesById(route.series)
+        seriesEntryDao.getSeriesByIdWithUserData(route.series)
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
     }
 

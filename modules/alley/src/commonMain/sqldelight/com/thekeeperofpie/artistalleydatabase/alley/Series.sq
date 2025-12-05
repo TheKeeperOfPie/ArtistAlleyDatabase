@@ -5,6 +5,10 @@ getSeriesAndImageIds:
 SELECT id, aniListId, wikipediaId FROM seriesEntry;
 
 getSeriesById:
+SELECT * FROM seriesEntry
+WHERE id = :id;
+
+getSeriesByIdWithUserData:
 SELECT seriesEntry.*, seriesUserEntry.favorite FROM seriesEntry
 LEFT OUTER JOIN seriesUserEntry
 ON seriesEntry.uuid = seriesUserEntry.seriesId

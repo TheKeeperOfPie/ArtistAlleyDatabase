@@ -409,7 +409,7 @@ object ArtistEditScreen {
             val idErrorMessage by rememberUuidValidator(formState.id)
             SingleTextSection(
                 state = formState.id,
-                title = Res.string.alley_edit_artist_edit_id,
+                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_id)) },
                 previousFocus = formState.status.focusRequester,
                 nextFocus = formState.booth.focusRequester,
                 errorText = { idErrorMessage },
@@ -418,7 +418,7 @@ object ArtistEditScreen {
             val boothErrorMessage by rememberBoothValidator(formState.booth)
             SingleTextSection(
                 state = formState.booth,
-                title = Res.string.alley_edit_artist_edit_booth,
+                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
                 previousFocus = formState.id.focusRequester,
                 nextFocus = formState.name.focusRequester,
                 inputTransformation = InputTransformation.maxLength(3),
@@ -426,13 +426,13 @@ object ArtistEditScreen {
             )
             SingleTextSection(
                 state = formState.name,
-                title = Res.string.alley_edit_artist_edit_name,
+                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
                 previousFocus = formState.booth.focusRequester,
                 nextFocus = formState.summary.focusRequester,
             )
             SingleTextSection(
                 state = formState.summary,
-                title = Res.string.alley_edit_artist_edit_summary,
+                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
                 previousFocus = formState.name.focusRequester,
                 nextFocus = formState.links.focusRequester,
             )
@@ -532,8 +532,8 @@ object ArtistEditScreen {
         items: SnapshotStateList<T>,
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
         itemToText: (T) -> String,
-        previousFocus: FocusRequester?,
-        nextFocus: FocusRequester?,
+        previousFocus: FocusRequester? = null,
+        nextFocus: FocusRequester? = null,
         onItemCommitted: (String) -> Unit = {},
     ) {
         MultiTextSection(
@@ -576,10 +576,8 @@ object ArtistEditScreen {
                 }
             },
             prediction = { _, value -> Text(text = itemToText(value)) },
-            onTab = {
-                val focusRequester = if (it) nextFocus else previousFocus
-                focusRequester?.requestFocus()
-            },
+            previousFocus = previousFocus,
+            nextFocus = nextFocus,
         )
     }
 
@@ -592,7 +590,8 @@ object ArtistEditScreen {
         removeLastItem: () -> String?,
         item: @Composable (index: Int, T) -> Unit,
         prediction: @Composable (index: Int, T) -> Unit,
-        onTab: (next: Boolean) -> Unit,
+        previousFocus: FocusRequester? = null,
+        nextFocus: FocusRequester? = null,
         onItemCommitted: (String) -> Unit = {},
     ) {
         MultiTextSection(
@@ -605,7 +604,8 @@ object ArtistEditScreen {
             prediction = prediction,
             preferPrediction = true,
             item = item,
-            onTab = onTab,
+            previousFocus = previousFocus,
+            nextFocus = nextFocus,
         )
     }
 
@@ -651,10 +651,8 @@ object ArtistEditScreen {
                     }
                 }
             },
-            onTab = {
-                val focusRequester = if (it) nextFocus else previousFocus
-                focusRequester?.requestFocus()
-            },
+            previousFocus = previousFocus,
+            nextFocus = nextFocus,
         )
     }
 
@@ -694,10 +692,8 @@ object ArtistEditScreen {
             },
             removeLastItem = { items.removeLastOrNull()?.link },
             item = { _, value -> LinkRow(value, isLast = false) },
-            onTab = {
-                val focusRequester = if (it) nextFocus else previousFocus
-                focusRequester?.requestFocus()
-            }
+            previousFocus = previousFocus,
+            nextFocus = nextFocus,
         )
     }
 

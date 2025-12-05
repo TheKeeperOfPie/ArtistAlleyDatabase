@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.series
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -15,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -35,95 +37,98 @@ class SeriesEditViewModel(
         id = savedStateHandle.saveable(
             key = "id",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(initialSeries?.id, SeriesColumn.CANONICAL) },
-        ),
+        ) { initialValue(initialSeries?.id, SeriesColumn.CANONICAL) },
         uuid = savedStateHandle.saveable(
             key = "uuid",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(seriesId.toString(), SeriesColumn.UUID) },
-        ),
+        ) { initialValue(seriesId.toString(), SeriesColumn.UUID) },
         aniListId = savedStateHandle.saveable(
             key = "aniListId",
             saver = EntryForm2.SingleTextState.Saver,
-            init = {
-                initialValue(initialSeries?.aniListId?.toString(), SeriesColumn.ANILIST_ID)
-            },
-        ),
+        ) { initialValue(initialSeries?.aniListId?.toString(), SeriesColumn.ANILIST_ID) },
         aniListType = savedStateHandle.saveable(
             key = "aniListType",
             saver = EntryForm2.DropdownState.Saver,
-            init = {
-                val index = initialSeries?.aniListType?.let(AniListType.entries::indexOf)
-                    ?: AniListType.NONE.ordinal
-                EntryForm2.DropdownState(
-                    initialSelectedIndex = index,
-                    initialLockState = if (index == AniListType.NONE.ordinal ||
-                        editInfo?.seriesColumn == SeriesColumn.ANILIST_TYPE) {
-                        EntryLockState.UNLOCKED
-                    } else {
-                        EntryLockState.LOCKED
-                    }
-                )
-            },
-        ),
+        ) {
+            val index = initialSeries?.aniListType?.let(AniListType.entries::indexOf)
+                ?: AniListType.NONE.ordinal
+            EntryForm2.DropdownState(
+                initialSelectedIndex = index,
+                initialLockState = if (index == AniListType.NONE.ordinal ||
+                    editInfo?.seriesColumn == SeriesColumn.ANILIST_TYPE
+                ) {
+                    EntryLockState.UNLOCKED
+                } else {
+                    EntryLockState.LOCKED
+                }
+            )
+        },
         wikipediaId = savedStateHandle.saveable(
             key = "wikipediaId",
             saver = EntryForm2.SingleTextState.Saver,
-            init = {
-                initialValue(
-                    initialSeries?.wikipediaId?.toString(),
-                    SeriesColumn.WIKIPEDIA_ID
-                )
-            },
-        ),
+        ) {
+            initialValue(
+                initialSeries?.wikipediaId?.toString(),
+                SeriesColumn.WIKIPEDIA_ID
+            )
+        },
         source = savedStateHandle.saveable(
             key = "source",
             saver = EntryForm2.DropdownState.Saver,
-            init = {
-                val index = initialSeries?.source?.let(SeriesSource.entries::indexOf)
-                    ?: SeriesSource.NONE.ordinal
-                EntryForm2.DropdownState(
-                    initialSelectedIndex = index,
-                    initialLockState = if (index == SeriesSource.NONE.ordinal ||
-                        editInfo?.seriesColumn == SeriesColumn.SOURCE_TYPE
-                    ) {
-                        EntryLockState.UNLOCKED
-                    } else {
-                        EntryLockState.LOCKED
-                    }
-                )
-            },
-        ),
+        ) {
+            val index = initialSeries?.source?.let(SeriesSource.entries::indexOf)
+                ?: SeriesSource.NONE.ordinal
+            EntryForm2.DropdownState(
+                initialSelectedIndex = index,
+                initialLockState = if (index == SeriesSource.NONE.ordinal ||
+                    editInfo?.seriesColumn == SeriesColumn.SOURCE_TYPE
+                ) {
+                    EntryLockState.UNLOCKED
+                } else {
+                    EntryLockState.LOCKED
+                }
+            )
+        },
         titleEnglish = savedStateHandle.saveable(
             key = "titleEnglish",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(initialSeries?.titleEnglish, SeriesColumn.TITLE_ENGLISH) },
-        ),
+        ) { initialValue(initialSeries?.titleEnglish, SeriesColumn.TITLE_ENGLISH) },
         titleRomaji = savedStateHandle.saveable(
             key = "titleRomaji",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(initialSeries?.titleRomaji, SeriesColumn.TITLE_ROMAJI) },
-        ),
+        ) { initialValue(initialSeries?.titleRomaji, SeriesColumn.TITLE_ROMAJI) },
         titleNative = savedStateHandle.saveable(
             key = "titleNative",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(initialSeries?.titleNative, SeriesColumn.TITLE_NATIVE) },
-        ),
+        ) { initialValue(initialSeries?.titleNative, SeriesColumn.TITLE_NATIVE) },
         titlePreferred = savedStateHandle.saveable(
             key = "titlePreferred",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(initialSeries?.titlePreferred, SeriesColumn.TITLE_PREFERRED) },
-        ),
+        ) { initialValue(initialSeries?.titlePreferred, SeriesColumn.TITLE_PREFERRED) },
+        synonyms = savedStateHandle.saveable(
+            key = "synonyms",
+            saver = StateUtils.snapshotListJsonSaver(),
+        ) { initialSeries?.synonyms.orEmpty().toMutableStateList() },
+        synonymsPendingValue = savedStateHandle.saveable(
+            key = "synonymsPendingValue",
+            saver = EntryForm2.PendingTextState.Saver,
+        ) {
+            EntryForm2.PendingTextState(
+                initialLockState = if (initialSeries?.synonyms?.isNotEmpty() == true) {
+                    EntryLockState.LOCKED
+                } else {
+                    EntryLockState.UNLOCKED
+                }
+            )
+        },
         link = savedStateHandle.saveable(
             key = "link",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(initialSeries?.link.orEmpty(), SeriesColumn.EXTERNAL_LINK) },
-        ),
+        ) { initialValue(initialSeries?.link.orEmpty(), SeriesColumn.EXTERNAL_LINK) },
         notes = savedStateHandle.saveable(
             key = "notes",
             saver = EntryForm2.SingleTextState.Saver,
-            init = { initialValue(initialSeries?.notes.orEmpty(), SeriesColumn.NOTES) },
-        ),
+        ) { initialValue(initialSeries?.notes.orEmpty(), SeriesColumn.NOTES) },
         savingState = saveJob.state,
     )
 
@@ -161,6 +166,7 @@ class SeriesEditViewModel(
         val titleEnglish = state.titleEnglish.value.text.toString()
         val titleRomaji = state.titleRomaji.value.text.toString()
         val titleNative = state.titleNative.value.text.toString()
+        val synonyms = state.synonyms.toList()
         val link = state.link.value.text.toString()
         return SeriesInfo(
             id = id,
@@ -174,6 +180,7 @@ class SeriesEditViewModel(
             titleEnglish = titleEnglish,
             titleRomaji = titleRomaji,
             titleNative = titleNative,
+            synonyms = synonyms,
             link = link,
         )
     }

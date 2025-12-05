@@ -10,13 +10,12 @@ import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesById
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdsWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
-import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
@@ -32,72 +31,13 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlin.random.Random
 import kotlin.uuid.Uuid
 
-fun SqlCursor.toSeriesEntry(): SeriesEntry {
-    val source = getString(6)
-    return SeriesEntry(
-        id = getString(0)!!,
-        uuid = getString(1)!!,
-        notes = getString(2),
-        aniListId = getLong(3),
-        aniListType = getString(4),
-        wikipediaId = getLong(5),
-        source = SeriesSource.entries.find { it.name == source },
-        titlePreferred = getString(7)!!,
-        titleEnglish = getString(8)!!,
-        titleRomaji = getString(9)!!,
-        titleNative = getString(10)!!,
-        link = getString(11),
-        inferred2024 = getLong(12)!!,
-        inferred2025 = getLong(13)!!,
-        inferredAnimeExpo2026 = getLong(14)!!,
-        inferredAnimeNyc2024 = getLong(15)!!,
-        inferredAnimeNyc2025 = getLong(16)!!,
-        confirmed2024 = getLong(17)!!,
-        confirmed2025 = getLong(18)!!,
-        confirmedAnimeExpo2026 = getLong(19)!!,
-        confirmedAnimeNyc2024 = getLong(20)!!,
-        confirmedAnimeNyc2025 = getLong(21)!!,
-        counter = getLong(22)!!,
-    )
-}
+fun SqlCursor.toSeriesEntry(database: AlleySqlDatabase): SeriesEntry =
+    database.seriesQueries.getSeriesById("").mapper(this)
 
-fun SqlCursor.toSeriesWithUserData(): SeriesWithUserData {
-    val uuid = getString(1)!!
-    val source = getString(6)
-    return SeriesWithUserData(
-        SeriesInfo(
-            id = getString(0)!!,
-            uuid = Uuid.parse(uuid),
-            notes = getString(2),
-            aniListId = getLong(3),
-            aniListType = AniListType.parse(getString(4)),
-            wikipediaId = getLong(5),
-            source = SeriesSource.entries.find { it.name == source } ?: SeriesSource.NONE,
-            titlePreferred = getString(7)!!,
-            titleEnglish = getString(8)!!,
-            titleRomaji = getString(9)!!,
-            titleNative = getString(10)!!,
-            link = getString(11),
-//            inferred2024 = getLong(12)!!,
-//            inferred2025 = getLong(13)!!,
-//            inferredAnimeExpo2026 = getLong(14)!!,
-//            inferredAnimeNyc2025 = getLong(15)!!,
-//            inferredAnimeNyc2024 = getLong(16)!!,
-//            confirmed2024 = getLong(17)!!,
-//            confirmed2025 = getLong(18)!!,
-//            confirmedAnimeExpo2026 = getLong(19)!!,
-//            confirmedAnimeNyc2024 = getLong(20)!!,
-//            confirmedAnimeNyc2025 = getLong(21)!!,
-//            counter = getLong(22)!!,
-        ),
-        userEntry = SeriesUserEntry(
-            seriesId = uuid,
-            favorite = getBooleanFixed(21),
-        )
-    )
-}
+fun SqlCursor.toSeriesWithUserData(database: AlleySqlDatabase): SeriesWithUserData =
+    database.seriesQueries.getSeriesByIdWithUserData("").mapper(this).toSeriesWithUserData()
 
-fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
+fun GetSeriesByIdWithUserData.toSeriesWithUserData() = SeriesWithUserData(
     series = SeriesInfo(
         id = id,
         uuid = Uuid.parse(uuid),
@@ -110,6 +50,7 @@ fun GetSeriesById.toSeriesWithUserData() = SeriesWithUserData(
         titleEnglish = titleEnglish,
         titleRomaji = titleRomaji,
         titleNative = titleNative,
+        synonyms = synonyms.orEmpty(),
         link = link,
     ),
     userEntry = SeriesUserEntry(
@@ -131,6 +72,7 @@ fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
         titleEnglish = titleEnglish,
         titleRomaji = titleRomaji,
         titleNative = titleNative,
+        synonyms = synonyms.orEmpty(),
         link = link,
     ),
     userEntry = SeriesUserEntry(
@@ -147,9 +89,14 @@ class SeriesEntryDao(
 ) {
     suspend fun getSeriesIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
 
-    fun getSeriesById(id: String): Flow<SeriesWithUserData> =
+    fun getSeriesById(id: String): Flow<SeriesInfo> =
         flowFromSuspend { seriesDao() }
             .flatMapLatest { it.getSeriesById(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO) }
+            .mapLatest { it?.toSeriesInfo() ?: fallbackSeriesWithUserData(id).series }
+
+    fun getSeriesByIdWithUserData(id: String): Flow<SeriesWithUserData> =
+        flowFromSuspend { seriesDao() }
+            .flatMapLatest { it.getSeriesByIdWithUserData(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO) }
             .mapLatest { it?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(id) }
 
     suspend fun getSeriesByIds(ids: List<String>): List<SeriesInfo> {
@@ -296,7 +243,7 @@ class SeriesEntryDao(
                 countStatement = countStatement,
                 statement = statement,
                 tableNames = listOf("seriesEntry", "seriesUserEntry"),
-                mapper = { cursor, _ -> cursor.toSeriesWithUserData() },
+                mapper = { cursor, database -> cursor.toSeriesWithUserData(database) },
             )
         }
 
@@ -340,7 +287,7 @@ class SeriesEntryDao(
             countStatement = countStatement,
             statement = statement,
             tableNames = listOf("seriesEntry_fts", "seriesUserEntry"),
-            mapper = { cursor, _ -> cursor.toSeriesWithUserData() },
+            mapper = { cursor, database -> cursor.toSeriesWithUserData(database) },
         )
     }
 
@@ -369,10 +316,12 @@ class SeriesEntryDao(
             likeStatement = likeStatement,
         ) + " LIMIT 10"
 
+        val database = database()
         return DaoUtils.makeQuery(
             driver = driver(),
             statement = statement,
-            tableNames = listOf("seriesEntry", "seriesEntry_fts"), mapper = SqlCursor::toSeriesEntry
+            tableNames = listOf("seriesEntry", "seriesEntry_fts"),
+            mapper = { it.toSeriesEntry(database) }
         ).awaitAsList().map { it.toSeriesInfo() }
     }
 
@@ -449,6 +398,7 @@ class SeriesEntryDao(
             titleEnglish = id,
             titleRomaji = id,
             titleNative = id,
+            synonyms = emptyList(),
             link = null,
         ),
         userEntry = SeriesUserEntry(

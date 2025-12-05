@@ -72,4 +72,5 @@ cleanUpForRelease {
     UPDATE artistEntryAnimeExpo2026 SET editorNotes = NULL;
     UPDATE artistEntryAnimeExpo2026 SET lastEditor = NULL;
     UPDATE artistEntryAnimeExpo2026 SET lastEditTime = NULL;
+    UPDATE seriesEntry SET synonyms = NULL;
 }

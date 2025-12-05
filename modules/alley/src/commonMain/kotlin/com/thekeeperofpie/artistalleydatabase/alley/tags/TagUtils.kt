@@ -40,6 +40,7 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             titleEnglish = id,
             titleRomaji = id,
             titleNative = id,
+            synonyms = emptyList(),
             link = null,
         ),
         userEntry = SeriesUserEntry(

@@ -242,8 +242,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                     driver = pair.first
                     database = pair.second
 
-                    database.mutationQueries.cleanUpForRelease().await()
-
                     database.mutationQueries.getAllArtistEntryAnimeExpo2026Images().executeAsList()
                         .forEach {
                             val images =
@@ -256,6 +254,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         }
                 }
 
+
+                database.mutationQueries.cleanUpForRelease().await()
                 // Don't retain user tables (merged from depending on :modules:alley:user)
                 listOf(
                     "artistUserEntry",
@@ -412,6 +412,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                     override fun encode(value: SeriesSource) = value.name
                 },
+                synonymsAdapter = listStringAdapter,
             )
         )
         return driver to database
@@ -1398,6 +1399,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         titleNative = titleNative ?: titleRomaji ?: titlePreferred ?: titleEnglish
                         ?: id,
                         link = link,
+                        synonyms = null,
                         inferred2024 = inferred2024.toLong(),
                         inferred2025 = inferred2025.toLong(),
                         inferredAnimeExpo2026 = inferredAnimeExpo2026.toLong(),

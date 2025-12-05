@@ -296,33 +296,14 @@ object EntryForm2 {
     }
 }
 
-@Composable
-fun EntryFormScope.SingleTextSection(
-    state: EntryForm2.SingleTextState,
-    title: StringResource,
-    previousFocus: FocusRequester?,
-    nextFocus: FocusRequester?,
-    inputTransformation: InputTransformation? = null,
-    errorText: (() -> String?)? = null,
-) {
-    SingleTextSection(
-        state = state,
-        headerText = { Text(stringResource(title)) },
-        onTab = {
-            val focusRequester = if (it) nextFocus else previousFocus
-            focusRequester?.requestFocus()
-        },
-        inputTransformation = inputTransformation,
-        errorText = errorText,
-    )
-}
-
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun EntryFormScope.SingleTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
-    onTab: (next: Boolean) -> Unit = {},
+    previousFocus: FocusRequester? = null,
+    nextFocus: FocusRequester? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
     errorText: (() -> String?)? = null,
 ) {
@@ -337,12 +318,16 @@ fun EntryFormScope.SingleTextSection(
             .onFocusChanged { state.isFocused = it.isFocused }
             .focusRequester(state.focusRequester)
             .padding(horizontal = 16.dp)
-            .interceptTab(onTab)
+            .interceptTab {
+                val focusRequester = if (it) nextFocus else previousFocus
+                focusRequester?.requestFocus()
+            }
         val errorText = errorText?.invoke()
         if (state.lockState == EntryLockState.UNLOCKED) {
             OutlinedTextField(
                 state = state.value,
                 supportingText = errorText?.let { { Text(it) } },
+                trailingIcon = trailingIcon,
                 isError = errorText != null,
                 inputTransformation = inputTransformation,
                 modifier = modifier
@@ -352,6 +337,7 @@ fun EntryFormScope.SingleTextSection(
                 state = state.value,
                 readOnly = true,
                 supportingText = errorText?.let { { Text(it) } },
+                trailingIcon = trailingIcon,
                 isError = errorText != null,
                 inputTransformation = inputTransformation,
                 modifier = modifier
@@ -512,14 +498,15 @@ fun EntryFormScope.MultiTextSection(
 fun <T> EntryFormScope.MultiTextSection(
     state: EntryForm2.PendingTextState,
     headerText: @Composable () -> Unit,
-    entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
     items: SnapshotStateList<T>,
     onItemCommitted: (String) -> Unit,
     removeLastItem: () -> String?,
     item: @Composable (index: Int, T) -> Unit,
+    entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
     prediction: @Composable (index: Int, T) -> Unit = item,
     preferPrediction: Boolean = false,
-    onTab: (next: Boolean) -> Unit = {},
+    previousFocus: FocusRequester? = null,
+    nextFocus: FocusRequester? = null,
 ) {
     SectionHeader(
         text = headerText,
@@ -689,7 +676,8 @@ fun <T> EntryFormScope.MultiTextSection(
                         if (dropdownExpanded) {
                             dropdownFocusRequester.requestFocus()
                         } else {
-                            onTab(it)
+                            val focusRequester = if (it) nextFocus else previousFocus
+                            focusRequester?.requestFocus()
                         }
                     }
             )

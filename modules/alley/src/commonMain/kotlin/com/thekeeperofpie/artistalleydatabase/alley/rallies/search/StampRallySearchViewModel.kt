@@ -88,7 +88,6 @@ class StampRallySearchViewModel(
         .flatMapLatest {
             if (it == null) flowOf(null) else seriesEntryDao.getSeriesById(it)
         }
-        .mapLatest { it?.series }
         .flowOn(dispatchers.io)
         .stateInForCompose(this, null)
 

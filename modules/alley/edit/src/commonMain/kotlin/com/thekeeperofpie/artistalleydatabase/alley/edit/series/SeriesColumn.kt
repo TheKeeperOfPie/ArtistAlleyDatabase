@@ -10,6 +10,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ser
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_image
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_source_type
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_synonyms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_english
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_native
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_title_preferred
@@ -33,6 +34,7 @@ enum class SeriesColumn(
     TITLE_ROMAJI(text = Res.string.alley_edit_series_header_title_romaji),
     TITLE_NATIVE(text = Res.string.alley_edit_series_header_title_native),
     TITLE_PREFERRED(text = Res.string.alley_edit_series_header_title_preferred),
+    SYNONYMS(text = Res.string.alley_edit_series_header_synonyms),
     WIKIPEDIA_ID(text = Res.string.alley_edit_series_header_wikipedia_id),
     EXTERNAL_LINK(text = Res.string.alley_edit_series_header_external_link),
     UUID(text = Res.string.alley_edit_series_header_uuid),

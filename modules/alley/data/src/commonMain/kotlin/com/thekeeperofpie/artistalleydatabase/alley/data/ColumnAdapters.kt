@@ -141,5 +141,6 @@ object ColumnAdapters {
 
             override fun encode(value: SeriesSource) = value.name
         },
+        synonymsAdapter = listStringAdapter,
     )
 }

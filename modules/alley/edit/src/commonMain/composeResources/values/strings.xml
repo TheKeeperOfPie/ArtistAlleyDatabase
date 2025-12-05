@@ -74,6 +74,7 @@
     <string name="alley_edit_series_header_title_romaji">Romaji</string>
     <string name="alley_edit_series_header_title_native">Native</string>
     <string name="alley_edit_series_header_title_preferred">Preferred</string>
+    <string name="alley_edit_series_header_synonyms">Synonyms</string>
     <string name="alley_edit_series_header_wikipedia_id">Wikipedia ID</string>
     <string name="alley_edit_series_header_external_link">External link</string>
     <string name="alley_edit_series_header_uuid">UUID</string>
@@ -109,4 +110,6 @@
     <string name="alley_edit_artist_status_inferred_description">Inferred series/merch tags are done</string>
     <string name="alley_edit_artist_status_final">Final</string>
     <string name="alley_edit_artist_status_final_description">Entry is completely final, with all applicable tags and metadata entered</string>
+
+    <string name="alley_edit_open_link_content_description">Open link</string>
 </resources>

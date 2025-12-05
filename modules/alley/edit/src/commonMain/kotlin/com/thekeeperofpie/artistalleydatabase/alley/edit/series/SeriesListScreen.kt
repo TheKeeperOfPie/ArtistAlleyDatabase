@@ -171,6 +171,10 @@ internal object SeriesListScreen {
                             value = row?.titlePreferred,
                             modifier = modifier
                         )
+                        SeriesColumn.SYNONYMS -> FieldText(
+                            value = row?.synonyms?.joinToString(separator = "\n"),
+                            modifier = modifier
+                        )
                         SeriesColumn.WIKIPEDIA_ID -> FieldText(
                             value = row?.wikipediaId,
                             modifier = modifier

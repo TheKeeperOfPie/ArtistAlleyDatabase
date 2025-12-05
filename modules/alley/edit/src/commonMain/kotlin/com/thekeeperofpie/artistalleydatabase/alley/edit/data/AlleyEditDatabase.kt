@@ -47,11 +47,11 @@ class AlleyEditDatabase(
                 ?.databaseEntry
 
     suspend fun loadSeries(): Map<String, SeriesInfo> =
-        (remoteDatabase.loadSeries() + seriesEntryDao.getSeries().map { it.toSeriesInfo() })
+        (seriesEntryDao.getSeries().map { it.toSeriesInfo() } + remoteDatabase.loadSeries())
             .associateBy { it.id }
 
     suspend fun loadMerch(): Map<String, MerchInfo> {
-        return (remoteDatabase.loadMerch() + merchEntryDao.getMerch().map { it.toMerchInfo() })
+        return (merchEntryDao.getMerch().map { it.toMerchInfo() } + remoteDatabase.loadMerch())
             .associateBy { it.name }
     }
 
