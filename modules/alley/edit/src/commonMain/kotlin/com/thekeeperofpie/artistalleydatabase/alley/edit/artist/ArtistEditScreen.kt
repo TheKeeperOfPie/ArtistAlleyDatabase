@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
@@ -54,7 +52,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -301,14 +298,15 @@ object ArtistEditScreen {
                                 onClickEdit = { onClickEditImages(state.images.toList()) },
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
-                            ImagesPager(
-                                sharedElementId = state.formState.id.value.text.toString(),
+                            ImagePager(
                                 images = state.images,
-                                imagePagerState = imagePagerState,
+                                pagerState = imagePagerState,
+                                sharedElementId = state.formState.id.value.text.toString(),
                                 onClickPage = {
                                     // TODO: Open images screen
                                 },
                             )
+
                             form(Modifier.fillMaxWidth())
                         }
                     }
@@ -347,23 +345,6 @@ object ArtistEditScreen {
                 Text(stringResource(Res.string.alley_edit_artist_action_edit_images))
             }
         }
-    }
-
-    @Composable
-    private fun ImagesPager(
-        sharedElementId: Any,
-        images: List<EditImage>,
-        imagePagerState: PagerState,
-        onClickPage: (page: Int) -> Unit,
-    ) {
-        ImagePager(
-            images = images,
-            pagerState = imagePagerState,
-            sharedElementId = sharedElementId,
-            onClickPage = onClickPage,
-            imageContentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxWidth().height(400.dp)
-        )
     }
 
     @Composable

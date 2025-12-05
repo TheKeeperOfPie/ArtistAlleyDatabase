@@ -60,6 +60,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_refresh_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_list_search_placeholder
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_list_sort_content_description
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -108,6 +109,7 @@ internal object ArtistListScreen {
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
+            val entries by state.entries.collectAsStateWithLifecycle()
             Scaffold(
                 topBar = {
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -126,6 +128,14 @@ internal object ArtistListScreen {
                             StaticSearchBar(
                                 query = query,
                                 onSearch = {},
+                                placeholder = {
+                                    Text(
+                                        stringResource(
+                                            Res.string.alley_edit_artist_list_search_placeholder,
+                                            entries.size,
+                                        )
+                                    )
+                                },
                                 trailingIcon = {
                                     Row {
                                         AnimatedVisibility(isNotEmpty) {
@@ -226,7 +236,6 @@ internal object ArtistListScreen {
                 },
                 modifier = Modifier.widthIn(max = 1200.dp)
             ) {
-                val entries by state.entries.collectAsStateWithLifecycle()
                 val dataYear by state.dataYear.collectAsStateWithLifecycle()
                 val sortBy by state.sortBy.collectAsStateWithLifecycle()
                 val tab by state.tab.collectAsStateWithLifecycle()

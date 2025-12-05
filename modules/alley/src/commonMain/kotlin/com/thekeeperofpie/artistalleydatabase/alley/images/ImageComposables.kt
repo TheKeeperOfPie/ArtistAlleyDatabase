@@ -4,6 +4,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.images
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -55,6 +58,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -83,15 +87,18 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.MultiZoomableState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OnChangeEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun rememberImagePagerState(images: List<ImageWithDimensions>, initialImageIndex: Int): PagerState {
@@ -212,6 +219,7 @@ fun ImagePager(
                                                 onClickPage(pagerState.settledPage)
                                             }
                                         },
+                                        clipToBounds = false,
                                     )
                                     .sharedElement("image", image.coilImageModel)
                                     .conditionally(isFillWidth) {
@@ -410,35 +418,55 @@ fun ImageGrid(
             modifier = Modifier.weight(1f)
         ) {
             itemsIndexed(images) { index, image ->
-                val zoomableState = rememberZoomableState()
-                val zoomFraction = zoomableState.zoomFraction
-                val size = cachedDimensions[image]
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                        .data(image.coilImageModel)
-                        .placeholderMemoryCacheKey(image.coilImageModel.toString())
-                        .build(),
-                    contentScale = ContentScale.FillWidth,
-                    contentDescription = stringResource(Res.string.alley_artist_catalog_image),
-                    placeholder = placeholder,
-                    onSuccess = {
-                        val width = it.result.image.width
-                        val height = it.result.image.height
-                        if (width > 0 && height > 0) {
-                            cachedDimensions[image] = IntSize(width, height)
-                        }
-                    },
-                    modifier = Modifier
-                        .zoomable(
-                            state = zoomableState,
-                            onClick = { onClickImage(index) },
-                        )
-                        .sharedElement("image", image.coilImageModel)
-                        .fillMaxWidth()
-                        .conditionallyNonNull(size) {
-                            aspectRatio(it.width.toFloat() / it.height)
-                        }
-                )
+                Box {
+                    val zoomableState = rememberZoomableState(ZoomSpec(maxZoomFactor = 3f))
+                    val size = cachedDimensions[image]
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalPlatformContext.current)
+                            .data(image.coilImageModel)
+                            .placeholderMemoryCacheKey(image.coilImageModel.toString())
+                            .build(),
+                        contentScale = ContentScale.FillWidth,
+                        contentDescription = stringResource(Res.string.alley_artist_catalog_image),
+                        placeholder = placeholder,
+                        onSuccess = {
+                            val width = it.result.image.width
+                            val height = it.result.image.height
+                            if (width > 0 && height > 0) {
+                                cachedDimensions[image] = IntSize(width, height)
+                            }
+                        },
+                        modifier = Modifier
+                            .zoomable(
+                                state = zoomableState,
+                                onClick = { onClickImage(index) },
+                            )
+                            .sharedElement("image", image.coilImageModel)
+                            .fillMaxWidth()
+                            .conditionallyNonNull(size) {
+                                aspectRatio(it.width.toFloat() / it.height)
+                            }
+                    )
+
+                    val isZoomed = zoomableState.zoomFraction.let { it != null && it > 0f }
+                    val sliderVisible = isZoomed && zoomableState.isAnimationRunning
+                    val alpha by animateFloatAsState(
+                        if (sliderVisible) 1f else 0f,
+                        if (sliderVisible) {
+                            tween(durationMillis = 100)
+                        } else {
+                            tween(durationMillis = 2.seconds.inWholeMilliseconds.toInt())
+                        },
+                    )
+                    ZoomSlider(
+                        state = zoomableState,
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .widthIn(max = 480.dp)
+                            .align(Alignment.BottomCenter)
+                            .graphicsLayer { this.alpha = alpha }
+                    )
+                }
             }
         }
 

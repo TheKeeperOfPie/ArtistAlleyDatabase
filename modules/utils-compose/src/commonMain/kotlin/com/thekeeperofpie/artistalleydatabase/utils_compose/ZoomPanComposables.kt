@@ -5,6 +5,7 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.TransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -13,11 +14,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +28,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,19 +40,23 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.zoom_in
 import artistalleydatabase.modules.utils_compose.generated.resources.zoom_out
+import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
+import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.ZoomableState
 import me.saket.telephoto.zoomable.rememberZoomableState
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun rememberMultiZoomableState(size: Int): MultiZoomableState {
+fun rememberMultiZoomableState(size: Int, maxZoomFactor: Float = 3f): MultiZoomableState {
     val states = (0 until size).map {
         key(it) {
-            rememberZoomableState()
+            rememberZoomableState(ZoomSpec(maxZoomFactor = maxZoomFactor))
         }
     }
     return remember(states) { MultiZoomableState(states) }
@@ -148,7 +156,7 @@ class ZoomPanState(
             .coerceIn(-maxTranslationY * (scale - 1f), maxTranslationY * (scale - 1f))
         return Offset(offsetX, offsetY)
     }
-    
+
     fun onZoomChange(newScale: Float, translation: Offset = this.translation) {
         this.scale = newScale
         this.translation = translation.copy(
@@ -202,6 +210,41 @@ fun ZoomPanBox(
                 )
             },
         content = content,
+    )
+}
+
+@Composable
+fun ZoomSlider(state: ZoomableState, modifier: Modifier = Modifier) {
+    val scope = rememberCoroutineScope()
+    ZoomSlider(
+        scale = { state.zoomFraction ?: 0.5f },
+        onScaleChange = {
+            scope.launch {
+                state.zoomTo(
+                    AnimationUtils.lerp(
+                        start = state.zoomSpec.minimum.factor,
+                        end = state.zoomSpec.maximum.factor,
+                        progress = it,
+                    )
+                )
+            }
+        },
+        scaleRange = (0f..1f),
+        onClickZoomOut = {
+            scope.launch {
+                state.zoomBy(0.8f)
+            }
+        },
+        onClickZoomIn = {
+            scope.launch {
+                state.zoomBy(1.2f)
+            }
+        },
+        modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.7f),
+                shape = RoundedCornerShape(12.dp),
+            )
     )
 }
 
