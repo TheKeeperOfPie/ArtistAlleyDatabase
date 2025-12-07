@@ -6,6 +6,10 @@ name = "artistalley"
 pages_build_output_dir = ""
 compatibility_date = "2025-01-05"
 
+kv_namespaces = [
+    { binding = "ARTIST_ALLEY_CACHE_KV", id = "artistAlleyCacheKVId" }
+]
+
 [placement]
 mode = "off"
 

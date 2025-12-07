@@ -134,12 +134,24 @@ object AlleyBackendDatabase {
         return Response("")
     }
 
-    suspend fun loadSeries(context: EventContext): Response =
-        database(context).seriesEntryQueries
+    suspend fun loadSeries(context: EventContext): Response {
+        val cachedSeriesJson = context.env.ARTIST_ALLEY_CACHE_KV.get("series").await()
+        if (cachedSeriesJson != null) {
+            return literalJsonResponse(cachedSeriesJson)
+        }
+
+        val seriesJson = loadSeriesIntoCache(context)
+        return literalJsonResponse(seriesJson)
+    }
+
+    private suspend fun loadSeriesIntoCache(context: EventContext) =
+        database(context)
+            .seriesEntryQueries
             .getSeries()
             .awaitAsList()
             .map { it.toSeriesInfo() }
-            .let(::jsonResponse)
+            .let(Json::encodeToString)
+            .also { context.env.ARTIST_ALLEY_CACHE_KV.put("series", it).await() }
 
     suspend fun insertSeries(context: EventContext): Response {
         val request = Json.decodeFromString<SeriesSave.Request>(context.request.text().await())
@@ -153,6 +165,7 @@ object AlleyBackendDatabase {
             )
         }
         database.seriesEntryQueries.insertSeries(request.updated.toSeriesEntry())
+        loadSeriesIntoCache(context)
         return jsonResponse(SeriesSave.Response(SeriesSave.Response.Result.Success))
     }
 
@@ -196,6 +209,13 @@ object AlleyBackendDatabase {
 
     private inline fun <reified T> jsonResponse(value: T) = Response(
         body = Json.encodeToString(value),
+        init = ResponseInit(status = 200, headers = Headers().apply {
+            set("Content-Type", "application/json")
+        })
+    )
+
+    private fun literalJsonResponse(value: String) = Response(
+        body = value,
         init = ResponseInit(status = 200, headers = Headers().apply {
             set("Content-Type", "application/json")
         })

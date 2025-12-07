@@ -46,3 +46,9 @@ external interface R2PutOptions
 external interface ResponseWithBody {
     val body: ReadableStream
 }
+
+external interface KeyValueStore {
+    fun get(key: String): Promise<String?>
+    fun put(key: String, value: String): Promise<dynamic>
+    fun delete(key: String): Promise<dynamic>
+}

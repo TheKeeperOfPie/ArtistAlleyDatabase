@@ -4,6 +4,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.CloudflareAccessPlugin
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.D1Database
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.KeyValueStore
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2Bucket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -27,6 +28,7 @@ external interface PluginData {
 external interface Env {
     val ARTIST_ALLEY_DB: D1Database
     val ARTIST_ALLEY_IMAGES_BUCKET: R2Bucket
+    val ARTIST_ALLEY_CACHE_KV: KeyValueStore
 }
 
 internal fun <T> promise(block: suspend CoroutineScope.() -> T) =
