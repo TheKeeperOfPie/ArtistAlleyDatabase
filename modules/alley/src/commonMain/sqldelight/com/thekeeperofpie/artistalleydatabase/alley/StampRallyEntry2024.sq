@@ -4,6 +4,9 @@ LEFT OUTER JOIN stampRallyUserEntry
 ON stampRallyEntry2024.id = stampRallyUserEntry.stampRallyId
 WHERE id = :id;
 
+getAllEntries:
+SELECT * FROM stampRallyEntry2024;
+
 getArtistEntries:
 SELECT artistEntry2024.* FROM stampRallyArtistConnection
 INNER JOIN artistEntry2024 ON (stampRallyArtistConnection.artistId = artistEntry2024.id)

@@ -110,7 +110,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             runBlocking(dispatcher) {
                 // Copy over preserved pre-processed images
                 listOf("2023", "2024", "2025", "animeExpo2026", "animeNyc2024", "animeNyc2025").forEach {
-                    val processed = inputFolder.dir("$it/processed").get().asFile
+                    val processed = inputFolder.dir("images/$it/processed").get().asFile
                     if (processed.exists()) {
                         val output = outputResources.dir("files/$it").get().asFile
                             .apply { mkdirs() }
@@ -211,7 +211,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             "${index.toString().padStart(2, '0')}-$hash.webp"
         }
     ): List<CatalogFolder> {
-        val input = inputFolder.dir(path).get().asFile
+        val input = inputFolder.dir("images/$path").get().asFile
         val output = outputResources.dir("files/$path").get().asFile
         return processFolders(
             imageCacheDir = imageCacheDir,

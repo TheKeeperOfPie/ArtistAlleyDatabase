@@ -1,49 +1,9 @@
-insertArtist2023:
-INSERT OR REPLACE INTO artistEntry2023
-VALUES ?;
-
-insertArtist2024:
-INSERT OR REPLACE INTO artistEntry2024
-VALUES ?;
-
-insertArtist2025:
-INSERT OR REPLACE INTO artistEntry2025
-VALUES ?;
-
-insertArtistAnimeExpo2026:
-INSERT OR REPLACE INTO artistEntryAnimeExpo2026
-VALUES ?;
-
-insertArtistAnimeNyc2024:
-INSERT OR REPLACE INTO artistEntryAnimeNyc2024
-VALUES ?;
-
-insertArtistAnimeNyc2025:
-INSERT OR REPLACE INTO artistEntryAnimeNyc2025
-VALUES ?;
-
 insertSeriesConnection:
 INSERT OR REPLACE INTO artistSeriesConnection
 VALUES ?;
 
 insertMerchConnection:
 INSERT OR REPLACE INTO artistMerchConnection
-VALUES ?;
-
-insertStampRally2023:
-INSERT OR REPLACE INTO stampRallyEntry2023
-VALUES ?;
-
-insertStampRally2024:
-INSERT OR REPLACE INTO stampRallyEntry2024
-VALUES ?;
-
-insertStampRally2025:
-INSERT OR REPLACE INTO stampRallyEntry2025
-VALUES ?;
-
-insertStampRallyAnimeExpo2026:
-INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026
 VALUES ?;
 
 insertArtistConnection:
@@ -54,19 +14,52 @@ insertStampRallySeriesConnection:
 INSERT OR REPLACE INTO stampRallySeriesConnection
 VALUES ?;
 
-insertSeries:
-INSERT OR REPLACE INTO seriesEntry
-VALUES ?;
+updateArtistEntryAnimeExpo2023Images:
+UPDATE artistEntry2023 SET images = :images WHERE id = :id;
 
-insertMerch:
-INSERT OR REPLACE INTO merchEntry
-VALUES ?;
+updateArtistEntryAnimeExpo2024Images:
+UPDATE artistEntry2024 SET images = :images WHERE id = :id;
+
+updateArtistEntryAnimeExpo2025Images:
+UPDATE artistEntry2025 SET images = :images WHERE id = :id;
+
+updateArtistEntryAnimeNyc2024Images:
+UPDATE artistEntryAnimeNyc2024 SET images = :images WHERE id = :id;
+
+updateArtistEntryAnimeNyc2025Images:
+UPDATE artistEntryAnimeNyc2025 SET images = :images WHERE id = :id;
+
+updateStampRallyAnimeExpo2023Images:
+UPDATE stampRallyEntry2023 SET images = :images WHERE id = :id;
+
+updateStampRallyAnimeExpo2024Images:
+UPDATE stampRallyEntry2024 SET images = :images WHERE id = :id;
+
+updateStampRallyAnimeExpo2025Images:
+UPDATE stampRallyEntry2025 SET images = :images WHERE id = :id;
 
 getAllArtistEntryAnimeExpo2026Images:
 SELECT id, images FROM artistEntryAnimeExpo2026;
 
 updateArtistEntryAnimeExpo2026Images:
 UPDATE artistEntryAnimeExpo2026 SET images = :images WHERE id = :id;
+
+updateSeriesTagCounts:
+UPDATE seriesEntry SET
+inferred2024 = :inferredAnimeExpo2024,
+inferred2025 = :inferredAnimeExpo2025,
+inferredAnimeExpo2026 = :inferredAnimeExpo2026,
+inferredAnimeNyc2024 = :inferredAnimeNyc2024,
+inferredAnimeNyc2025 = :inferredAnimeNyc2025,
+confirmed2024 = :confirmedAnimeExpo2024,
+confirmed2025 = :confirmedAnimeExpo2025,
+confirmedAnimeExpo2026 = :confirmedAnimeExpo2026,
+confirmedAnimeNyc2024 = :confirmedAnimeNyc2024,
+confirmedAnimeNyc2025 = :confirmedAnimeNyc2025
+WHERE id = :id;
+
+updateMerchYearFlags:
+UPDATE merchEntry SET yearFlags = :yearFlags WHERE name = :id;
 
 cleanUpForRelease {
     UPDATE artistEntryAnimeExpo2026 SET editorNotes = NULL;
