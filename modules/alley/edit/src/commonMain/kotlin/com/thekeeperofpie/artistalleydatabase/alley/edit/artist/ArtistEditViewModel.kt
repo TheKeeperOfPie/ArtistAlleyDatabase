@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SearchUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -132,6 +133,7 @@ class ArtistEditViewModel(
 
         val links = artist.links.map(LinkModel::parse).sortedBy { it.logo }
         val storeLinks = artist.storeLinks.map(LinkModel::parse).sortedBy { it.logo }
+        val commissions = artist.commissions.map(CommissionModel::parse)
 
         val seriesInferred = artist.seriesInferred.mapNotNull { seriesById[it] }
         val seriesConfirmed = artist.seriesConfirmed.mapNotNull { seriesById[it] }
@@ -185,7 +187,7 @@ class ArtistEditViewModel(
             textState.catalogLinks.lockState = EntryLockState.LOCKED
         }
         if (artist.commissions.isNotEmpty() || status.shouldStartLocked) {
-            state.commissions.replaceAll(artist.commissions)
+            state.commissions.replaceAll(commissions)
             textState.commissions.lockState = EntryLockState.LOCKED
         }
 
@@ -268,7 +270,7 @@ class ArtistEditViewModel(
 
         val notes = textState.notes.value.text.toString()
         val editorNotes = textState.editorNotes.value.text.toString()
-        val commissions = (state.commissions.toList() +
+        val commissions = (state.commissions.toList().map { it.serializedValue } +
                 formState.commissions.value.text.toString()
                     .takeIf { it.isNotBlank() }).filterNotNull()
         val seriesInferred = state.seriesInferred.toList().map { it.id }

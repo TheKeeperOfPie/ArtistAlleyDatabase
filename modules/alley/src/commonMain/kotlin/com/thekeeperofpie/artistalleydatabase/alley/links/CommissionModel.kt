@@ -13,30 +13,45 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_commis
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
 import com.eygraber.uri.Uri
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import org.jetbrains.compose.resources.stringResource
 
+@Serializable
 sealed interface CommissionModel {
     val icon: ImageVector
+    val serializedValue: String
 
+    @Serializable
     data object OnSite : CommissionModel {
         override val icon = Icons.Default.FormatPaint
+        override val serializedValue get() = "On-site"
     }
 
+    @Serializable
     data object Online : CommissionModel {
         override val icon = Icons.Default.Web
+        override val serializedValue get() = "Online"
     }
 
+    @Serializable
     data class Link(val logo: Logo?, val host: String?, val link: String) : CommissionModel {
+        @Transient
         override val icon = logo?.icon ?: Icons.Default.Link
+        override val serializedValue get() = link
     }
 
-    data class Unknown(val value: String, override val icon: ImageVector = Icons.Default.Info) :
-        CommissionModel
+    @Serializable
+    data class Unknown(val value: String) : CommissionModel {
+        @Transient
+        override val icon: ImageVector = Icons.Default.Info
+        override val serializedValue get() = value
+    }
 
     companion object {
         fun parse(value: String) = when {
-            value.equals("On-site", ignoreCase = true) -> OnSite
-            value.equals("Online", ignoreCase = true) -> Online
+            value.equals(OnSite.serializedValue, ignoreCase = true) -> OnSite
+            value.equals(Online.serializedValue, ignoreCase = true) -> Online
             value.startsWith("https") -> {
                 val uri = Uri.parseOrNull(value)
                 val host = uri?.host?.removePrefix("www.")

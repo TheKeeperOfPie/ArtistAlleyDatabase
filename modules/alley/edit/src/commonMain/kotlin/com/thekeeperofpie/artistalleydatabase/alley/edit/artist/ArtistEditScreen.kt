@@ -97,8 +97,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
+import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
+import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
@@ -129,6 +131,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
@@ -462,6 +465,7 @@ object ArtistEditScreen {
                 title = Res.string.alley_edit_artist_edit_catalog_links,
                 items = state.catalogLinks,
                 itemToText = { it },
+                itemToSerializedValue = { it },
                 onItemCommitted = {
                     state.catalogLinks.add(it)
                     formState.catalogLinks.value.clearText()
@@ -474,11 +478,13 @@ object ArtistEditScreen {
                 state = formState.commissions,
                 title = Res.string.alley_edit_artist_edit_commissions,
                 items = state.commissions,
-                itemToText = { it },
+                itemToText = { it.text() },
+                itemToSerializedValue = { it.serializedValue },
                 onItemCommitted = {
-                    state.commissions.add(it)
+                    state.commissions.add(CommissionModel.parse(it))
                     formState.commissions.value.clearText()
                 },
+                predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
                 previousFocus = formState.catalogLinks.focusRequester,
                 nextFocus = formState.seriesInferred.focusRequester,
             )
@@ -506,6 +512,7 @@ object ArtistEditScreen {
                 items = state.merchInferred,
                 predictions = merchPredictions,
                 itemToText = { it.name },
+                itemToSerializedValue = { it.name },
                 previousFocus = formState.seriesConfirmed.focusRequester,
                 nextFocus = formState.merchConfirmed.focusRequester,
             )
@@ -515,6 +522,7 @@ object ArtistEditScreen {
                 items = state.merchConfirmed,
                 predictions = merchPredictions,
                 itemToText = { it.name },
+                itemToSerializedValue = { it.name },
                 previousFocus = formState.merchInferred.focusRequester,
                 nextFocus = formState.notes.focusRequester,
             )
@@ -539,7 +547,8 @@ object ArtistEditScreen {
         title: StringResource,
         items: SnapshotStateList<T>,
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
-        itemToText: (T) -> String,
+        itemToText: @Composable (T) -> String,
+        itemToSerializedValue: (T) -> String,
         previousFocus: FocusRequester? = null,
         nextFocus: FocusRequester? = null,
         onItemCommitted: (String) -> Unit = {},
@@ -552,7 +561,7 @@ object ArtistEditScreen {
             entryPredictions = predictions,
             preferPrediction = true,
             onItemCommitted = onItemCommitted,
-            removeLastItem = { items.removeLastOrNull()?.let { itemToText(it) } },
+            removeLastItem = { items.removeLastOrNull()?.let { itemToSerializedValue(it) } },
             item = { _, item ->
                 Box {
                     TextField(
@@ -742,7 +751,7 @@ object ArtistEditScreen {
         val links: SnapshotStateList<LinkModel>,
         val storeLinks: SnapshotStateList<LinkModel>,
         val catalogLinks: SnapshotStateList<String>,
-        val commissions: SnapshotStateList<String>,
+        val commissions: SnapshotStateList<CommissionModel>,
         val seriesInferred: SnapshotStateList<SeriesInfo>,
         val seriesConfirmed: SnapshotStateList<SeriesInfo>,
         val merchInferred: SnapshotStateList<MerchInfo>,
