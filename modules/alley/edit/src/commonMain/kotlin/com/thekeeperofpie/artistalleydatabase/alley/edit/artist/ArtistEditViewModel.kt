@@ -254,14 +254,23 @@ class ArtistEditViewModel(
         val name = textState.name.value.text.toString()
         val summary = textState.summary.value.text.toString()
 
+        val formState = state.formState
         // TODO: Include pending value?
-        val links = state.links.toList().map { it.link }
-        val storeLinks = state.storeLinks.toList().map { it.link }
-        val catalogLinks = state.catalogLinks.toList()
+        val links = (state.links.toList().map { it.link } +
+                formState.links.value.text.toString()
+                    .takeIf { it.isNotBlank() }).filterNotNull()
+        val storeLinks = (state.storeLinks.toList().map { it.link } +
+                formState.storeLinks.value.text.toString()
+                    .takeIf { it.isNotBlank() }).filterNotNull()
+        val catalogLinks = (state.catalogLinks.toList() +
+                formState.catalogLinks.value.text.toString()
+                    .takeIf { it.isNotBlank() }).filterNotNull()
 
         val notes = textState.notes.value.text.toString()
         val editorNotes = textState.editorNotes.value.text.toString()
-        val commissions = state.commissions.toList()
+        val commissions = (state.commissions.toList() +
+                formState.commissions.value.text.toString()
+                    .takeIf { it.isNotBlank() }).filterNotNull()
         val seriesInferred = state.seriesInferred.toList().map { it.id }
         val seriesConfirmed = state.seriesConfirmed.toList().map { it.id }
         val merchInferred = state.merchInferred.toList().map { it.name }

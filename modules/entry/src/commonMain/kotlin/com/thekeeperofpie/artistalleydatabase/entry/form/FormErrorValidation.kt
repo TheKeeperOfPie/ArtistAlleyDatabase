@@ -59,6 +59,8 @@ fun rememberLinkValidator(state: EntryForm2.SingleTextState): State<String?> {
                 ?: return@derivedStateOf genericErrorMessage
             if (uri.scheme != "https") {
                 schemeErrorMessage
+            } else if (uri.host?.contains(".") != true){
+                genericErrorMessage
             } else {
                 null
             }

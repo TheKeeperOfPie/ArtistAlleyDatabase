@@ -43,7 +43,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ViewKanban
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -98,12 +97,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.entry.generated.resources.Res
-import artistalleydatabase.modules.entry.generated.resources.delete
 import artistalleydatabase.modules.entry.generated.resources.different
 import artistalleydatabase.modules.entry.generated.resources.different_indicator_content_description
 import artistalleydatabase.modules.entry.generated.resources.entry_open_more_content_description
-import artistalleydatabase.modules.entry.generated.resources.move_down
-import artistalleydatabase.modules.entry.generated.resources.move_up
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
@@ -112,7 +108,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.swap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKeyDownOrTyped
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -369,14 +364,11 @@ fun EntryFormScope.MultiTextSection(
                     onNavigate = { onNavigate(value) },
                 )
 
-                EntryItemDropdown(
+                ReorderItemDropdown(
                     show = { showOverflow },
                     onDismiss = { showOverflow = false },
                     index = index,
-                    totalSize = { items.size },
-                    onDelete = { items.removeAt(index) },
-                    onMoveUp = { items.swap(index, index - 1) },
-                    onMoveDown = { items.swap(index, index + 1) },
+                    items = items,
                     modifier = Modifier
                         .width(48.dp)
                         .align(Alignment.BottomEnd)
@@ -478,6 +470,7 @@ fun <T> EntryFormScope.MultiTextSection(
     entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
     prediction: @Composable (index: Int, T) -> Unit = item,
     preferPrediction: Boolean = false,
+    pendingErrorMessage: () -> String? = { null },
     previousFocus: FocusRequester? = null,
     nextFocus: FocusRequester? = null,
 ) {
@@ -486,7 +479,7 @@ fun <T> EntryFormScope.MultiTextSection(
         lockState = state.lockState,
         onClick = {
             val newValue = state.value.text
-            if (newValue.isNotBlank()) {
+            if (newValue.isNotBlank() && pendingErrorMessage() == null) {
                 onItemCommitted(newValue.trim().toString())
             }
             state.rotateLockState()
@@ -513,14 +506,11 @@ fun <T> EntryFormScope.MultiTextSection(
                 item(index, value)
             }
 
-            EntryItemDropdown(
+            ReorderItemDropdown(
                 show = { showOverflow },
                 onDismiss = { showOverflow = false },
                 index = index,
-                totalSize = { items.size },
-                onDelete = { items.removeAt(index) },
-                onMoveUp = { items.swap(index, index - 1) },
-                onMoveDown = { items.swap(index, index + 1) },
+                items = items,
                 modifier = Modifier
                     .width(48.dp)
                     .align(Alignment.BottomEnd)
@@ -615,10 +605,13 @@ fun <T> EntryFormScope.MultiTextSection(
                 }
             }
         ) {
+            val pendingErrorMessage = pendingErrorMessage()
             OpenSectionField(
                 state = state.value,
                 lockState = { state.lockState },
                 totalSize = { items.size },
+                supportingText = pendingErrorMessage?.let { { Text(pendingErrorMessage) } },
+                isError = pendingErrorMessage != null,
                 onLock = { state.lockState = EntryLockState.LOCKED },
                 onDone = {
                     if (preferPrediction && predictions.isNotEmpty()) {
@@ -626,7 +619,7 @@ fun <T> EntryFormScope.MultiTextSection(
                             items += predictions.first()
                             state.value.clearText()
                         }
-                    } else {
+                    } else if (pendingErrorMessage() == null) {
                         val newValue = state.value.text
                         if (newValue.isNotBlank()) {
                             onItemCommitted(newValue.trim().toString())
@@ -654,51 +647,6 @@ fun <T> EntryFormScope.MultiTextSection(
                         }
                     }
             )
-        }
-    }
-}
-
-@Composable
-private fun EntryItemDropdown(
-    show: () -> Boolean,
-    onDismiss: () -> Unit,
-    index: Int,
-    totalSize: () -> Int,
-    onDelete: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier) {
-        DropdownMenu(
-            expanded = show(),
-            onDismissRequest = onDismiss,
-        ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.delete)) },
-                onClick = {
-                    onDelete()
-                    onDismiss()
-                }
-            )
-            if (index > 0) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.move_up)) },
-                    onClick = {
-                        onMoveUp()
-                        onDismiss()
-                    }
-                )
-            }
-            if (index < totalSize() - 1) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.move_down)) },
-                    onClick = {
-                        onMoveDown()
-                        onDismiss()
-                    }
-                )
-            }
         }
     }
 }
@@ -753,6 +701,8 @@ private fun OpenSectionField(
     onLock: () -> Unit,
     onDone: () -> Unit = {},
     modifier: Modifier = Modifier,
+    supportingText: (@Composable () -> Unit)? = null,
+    isError: Boolean = false,
 ) {
     val focusManager = LocalFocusManager.current
     OpenSectionField(
@@ -765,6 +715,8 @@ private fun OpenSectionField(
         },
         onDone = onDone,
         lockState = lockState,
+        supportingText = supportingText,
+        isError = isError,
         modifier = modifier,
     )
 }
@@ -773,9 +725,11 @@ private fun OpenSectionField(
 private fun OpenSectionField(
     state: TextFieldState,
     lockState: () -> EntryLockState?,
-    modifier: Modifier = Modifier,
     onNext: () -> Unit,
     onDone: () -> Unit,
+    modifier: Modifier = Modifier,
+    supportingText: (@Composable () -> Unit)? = null,
+    isError: Boolean = false,
 ) {
     val isBlank by remember { derivedStateOf { state.text.isBlank() } }
     OutlinedTextField(
@@ -790,6 +744,8 @@ private fun OpenSectionField(
             }
         },
         lineLimits = TextFieldLineLimits.SingleLine,
+        supportingText = supportingText,
+        isError = isError,
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)

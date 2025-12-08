@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -110,6 +112,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
+import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -209,6 +212,7 @@ object ArtistEditScreen {
 
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+        val errorState = rememberErrorState(state.formState)
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -230,7 +234,8 @@ object ArtistEditScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {
-                        IconButton(onClick = onClickSave) {
+                        val enabled = !errorState.hasAnyError
+                        IconButton(onClick = onClickSave, enabled = enabled) {
                             Icon(
                                 imageVector = Icons.Default.Save,
                                 contentDescription = stringResource(Res.string.alley_edit_artist_action_save_content_description),
@@ -254,6 +259,7 @@ object ArtistEditScreen {
                     movableContentOf { modifier: Modifier ->
                         Form(
                             state = state,
+                            errorState = errorState,
                             seriesPredictions = seriesPredictions,
                             merchPredictions = merchPredictions,
                             seriesImage = seriesImage,
@@ -350,6 +356,7 @@ object ArtistEditScreen {
     @Composable
     private fun Form(
         state: State,
+        errorState: ErrorState,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
@@ -406,23 +413,21 @@ object ArtistEditScreen {
                 nextFocus = formState.id.focusRequester
             )
 
-            val idErrorMessage by rememberUuidValidator(formState.id)
             SingleTextSection(
                 state = formState.id,
                 headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_id)) },
                 previousFocus = formState.status.focusRequester,
                 nextFocus = formState.booth.focusRequester,
-                errorText = { idErrorMessage },
+                errorText = { errorState.idErrorMessage() },
             )
 
-            val boothErrorMessage by rememberBoothValidator(formState.booth)
             SingleTextSection(
                 state = formState.booth,
                 headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
                 previousFocus = formState.id.focusRequester,
                 nextFocus = formState.name.focusRequester,
                 inputTransformation = InputTransformation.maxLength(3),
-                errorText = { boothErrorMessage },
+                errorText = { errorState.boothErrorMessage() },
             )
             SingleTextSection(
                 state = formState.name,
@@ -440,6 +445,7 @@ object ArtistEditScreen {
                 state = formState.links,
                 title = Res.string.alley_edit_artist_edit_links,
                 items = state.links,
+                pendingErrorMessage = { errorState.linksErrorMessage() },
                 previousFocus = formState.summary.focusRequester,
                 nextFocus = formState.storeLinks.focusRequester,
             )
@@ -447,6 +453,7 @@ object ArtistEditScreen {
                 state = formState.storeLinks,
                 title = Res.string.alley_edit_artist_edit_store_links,
                 items = state.storeLinks,
+                pendingErrorMessage = { errorState.storeLinksErrorMessage() },
                 previousFocus = formState.links.focusRequester,
                 nextFocus = formState.catalogLinks.focusRequester,
             )
@@ -461,6 +468,7 @@ object ArtistEditScreen {
                 },
                 previousFocus = formState.storeLinks.focusRequester,
                 nextFocus = formState.commissions.focusRequester,
+                pendingErrorMessage = { errorState.catalogLinksErrorMessage() },
             )
             MultiTextSection(
                 state = formState.commissions,
@@ -535,12 +543,14 @@ object ArtistEditScreen {
         previousFocus: FocusRequester? = null,
         nextFocus: FocusRequester? = null,
         onItemCommitted: (String) -> Unit = {},
+        pendingErrorMessage: () -> String? = { null },
     ) {
         MultiTextSection(
             state = state,
-            title = title,
+            headerText = { Text(stringResource(title)) },
             items = items,
-            predictions = predictions,
+            entryPredictions = predictions,
+            preferPrediction = true,
             onItemCommitted = onItemCommitted,
             removeLastItem = { items.removeLastOrNull()?.let { itemToText(it) } },
             item = { _, item ->
@@ -578,34 +588,7 @@ object ArtistEditScreen {
             prediction = { _, value -> Text(text = itemToText(value)) },
             previousFocus = previousFocus,
             nextFocus = nextFocus,
-        )
-    }
-
-    @Composable
-    private fun <T> EntryFormScope.MultiTextSection(
-        state: EntryForm2.SingleTextState,
-        title: StringResource,
-        items: SnapshotStateList<T>,
-        predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
-        removeLastItem: () -> String?,
-        item: @Composable (index: Int, T) -> Unit,
-        prediction: @Composable (index: Int, T) -> Unit,
-        previousFocus: FocusRequester? = null,
-        nextFocus: FocusRequester? = null,
-        onItemCommitted: (String) -> Unit = {},
-    ) {
-        MultiTextSection(
-            state = state,
-            headerText = { Text(stringResource(title)) },
-            entryPredictions = predictions,
-            items = items,
-            onItemCommitted = onItemCommitted,
-            removeLastItem = removeLastItem,
-            prediction = prediction,
-            preferPrediction = true,
-            item = item,
-            previousFocus = previousFocus,
-            nextFocus = nextFocus,
+            pendingErrorMessage = pendingErrorMessage,
         )
     }
 
@@ -621,9 +604,10 @@ object ArtistEditScreen {
     ) {
         MultiTextSection(
             state = state,
-            title = title,
+            headerText = { Text(stringResource(title)) },
             items = items,
-            predictions = predictions,
+            entryPredictions = predictions,
+            preferPrediction = true,
             removeLastItem = { items.removeLastOrNull()?.titlePreferred },
             prediction = { _, value -> Text(value.titlePreferred) },
             item = { _, value ->
@@ -651,6 +635,7 @@ object ArtistEditScreen {
                     }
                 }
             },
+            onItemCommitted = { /* Ignored, must use predictions */ },
             previousFocus = previousFocus,
             nextFocus = nextFocus,
         )
@@ -660,8 +645,8 @@ object ArtistEditScreen {
     private fun MenuIcon(visible: Boolean, onClick: () -> Unit) {
         AnimatedVisibility(
             visible = visible,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = fadeIn() + expandHorizontally(),
+            exit = fadeOut() + shrinkHorizontally(),
         ) {
             IconButton(onClick = onClick) {
                 Icon(
@@ -679,6 +664,7 @@ object ArtistEditScreen {
         state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<LinkModel>,
+        pendingErrorMessage: () -> String?,
         previousFocus: FocusRequester?,
         nextFocus: FocusRequester?,
     ) {
@@ -691,7 +677,35 @@ object ArtistEditScreen {
                 state.value.clearText()
             },
             removeLastItem = { items.removeLastOrNull()?.link },
-            item = { _, value -> LinkRow(value, isLast = false) },
+            item = { index, value ->
+                LinkRow(
+                    link = value,
+                    isLast = index == items.lastIndex && !state.lockState.editable,
+                    additionalActions = {
+                        Box {
+                            var showMenu by remember { mutableStateOf(false) }
+                            MenuIcon(
+                                visible = state.lockState.editable,
+                                onClick = { showMenu = true },
+                            )
+
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(Res.string.alley_edit_artist_action_delete)) },
+                                    onClick = {
+                                        items.removeAt(index)
+                                        showMenu = false
+                                    }
+                                )
+                            }
+                        }
+                    },
+                )
+            },
+            pendingErrorMessage = pendingErrorMessage,
             previousFocus = previousFocus,
             nextFocus = nextFocus,
         )
@@ -817,5 +831,40 @@ object ArtistEditScreen {
                 )
             }
         }
+    }
+
+    // Not saved since it's purely derived from input fields
+    @Stable
+    class ErrorState(
+        val idErrorMessage: () -> String?,
+        val boothErrorMessage: () -> String?,
+        val linksErrorMessage: () -> String?,
+        val storeLinksErrorMessage: () -> String?,
+        val catalogLinksErrorMessage: () -> String?,
+    ) {
+        val hasAnyError by derivedStateOf {
+            idErrorMessage() != null ||
+                    boothErrorMessage() != null ||
+                    linksErrorMessage() != null ||
+                    storeLinksErrorMessage() != null ||
+                    catalogLinksErrorMessage() != null
+        }
+    }
+
+    @Stable
+    @Composable
+    fun rememberErrorState(state: State.FormState): ErrorState {
+        val idErrorMessage by rememberUuidValidator(state.id)
+        val boothErrorMessage by rememberBoothValidator(state.booth)
+        val linksErrorMessage by rememberLinkValidator(state.links)
+        val storeLinksErrorMessage by rememberLinkValidator(state.storeLinks)
+        val catalogLinksErrorMessage by rememberLinkValidator(state.catalogLinks)
+        return ErrorState(
+            idErrorMessage = { idErrorMessage },
+            boothErrorMessage = { boothErrorMessage },
+            linksErrorMessage = { linksErrorMessage },
+            storeLinksErrorMessage = { storeLinksErrorMessage },
+            catalogLinksErrorMessage = { catalogLinksErrorMessage },
+        )
     }
 }

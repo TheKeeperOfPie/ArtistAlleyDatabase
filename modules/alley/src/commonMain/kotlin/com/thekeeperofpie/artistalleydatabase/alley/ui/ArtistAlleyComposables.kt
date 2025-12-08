@@ -472,7 +472,8 @@ fun currentWindowSizeClass(): WindowSizeClass {
 // TooltipBox crashes on web
 @Composable
 fun Tooltip(
-    text: String? = null,
+    text: String?,
+    modifier: Modifier = Modifier,
     popupAlignment: Alignment = Alignment.BottomCenter,
     onClick: (() -> Unit)? = null,
     allowPopupHover: Boolean = true,
@@ -483,7 +484,7 @@ fun Tooltip(
     val contentInteractionSource = remember { MutableInteractionSource() }
     var popupPressVisible by remember { mutableStateOf(false) }
     Box(
-        modifier = Modifier
+        modifier = modifier
             .let {
                 if (onClick == null) {
                     it.pointerInput(Unit) {
@@ -564,10 +565,16 @@ fun IconButtonWithTooltip(
     imageVector: ImageVector,
     tooltipText: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     contentDescription: String? = null,
     allowPopupHover: Boolean = true,
 ) {
-    Tooltip(text = tooltipText, onClick = onClick, allowPopupHover = allowPopupHover) {
+    Tooltip(
+        text = tooltipText,
+        onClick = onClick,
+        allowPopupHover = allowPopupHover,
+        modifier = modifier
+    ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.minimumInteractiveComponentSize()
