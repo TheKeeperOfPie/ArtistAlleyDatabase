@@ -12,44 +12,58 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_save_changes_title
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_exit
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_action_exit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_title
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun GenericExitDialog(
     onClickBack: () -> Unit,
     onClickSave: () -> Unit,
+    saveErrorMessage: () -> String? = { null },
 ) {
-    var showBackDialog by rememberSaveable { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
     NavigationBackHandler(
         state = rememberNavigationEventState(NavigationEventInfo.None),
     ) {
-        showBackDialog = true
+        showDialog = true
     }
-    if (showBackDialog) {
+    if (showDialog) {
+        val saveErrorMessage = saveErrorMessage()
         AlertDialog(
-            onDismissRequest = { showBackDialog = false },
+            onDismissRequest = { showDialog = false },
             title = {
-                Text(stringResource(Res.string.alley_edit_artist_save_changes_title))
+                Text(stringResource(Res.string.alley_edit_save_changes_title))
             },
+            text = saveErrorMessage?.let { { Text(saveErrorMessage) } },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showBackDialog = false
-                        onClickSave()
+                        showDialog = false
+                        if (saveErrorMessage == null) {
+                            onClickSave()
+                        }
                     },
                 ) {
-                    Text(stringResource(Res.string.alley_edit_image_save_changes_action_save))
+                    Text(
+                        stringResource(
+                            if (saveErrorMessage == null) {
+                                Res.string.alley_edit_save_changes_action_save
+                            } else {
+                                Res.string.alley_edit_save_changes_action_cancel
+                            }
+                        )
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
-                    showBackDialog = false
+                    showDialog = false
                     onClickBack()
                 }) {
-                    Text(stringResource(Res.string.alley_edit_image_save_changes_action_exit))
+                    Text(stringResource(Res.string.alley_edit_save_changes_action_exit))
                 }
             }
         )

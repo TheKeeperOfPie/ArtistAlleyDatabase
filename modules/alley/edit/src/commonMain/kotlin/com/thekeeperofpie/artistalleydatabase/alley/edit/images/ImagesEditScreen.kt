@@ -56,15 +56,15 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ima
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_change
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_action_save_content_description
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_exit
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_action_save
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_added
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_deleted
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_moved
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_moved
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_width_and_height
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_action_exit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_title
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
@@ -312,7 +312,7 @@ object ImagesEditScreen {
             AlertDialog(
                 onDismissRequest = { showBackDialog = false },
                 title = {
-                    Text(stringResource(Res.string.alley_edit_image_save_changes_title))
+                    Text(stringResource(Res.string.alley_edit_save_changes_title))
                 },
                 text = {
                     val diff = diff
@@ -361,7 +361,7 @@ object ImagesEditScreen {
                             onClickSave()
                         },
                     ) {
-                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_save))
+                        Text(stringResource(Res.string.alley_edit_save_changes_action_save))
                     }
                 },
                 dismissButton = {
@@ -370,7 +370,7 @@ object ImagesEditScreen {
                         showBackDialog = false
                         onClickBack()
                     }) {
-                        Text(stringResource(Res.string.alley_edit_image_save_changes_action_exit))
+                        Text(stringResource(Res.string.alley_edit_save_changes_action_exit))
                     }
                 }
             )

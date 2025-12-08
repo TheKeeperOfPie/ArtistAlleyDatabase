@@ -86,6 +86,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_booth
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -322,9 +323,11 @@ object ArtistEditScreen {
                 }
             }
 
+            val errorMessage = stringResource(Res.string.alley_edit_artist_error_saving_bad_fields)
             GenericExitDialog(
                 onClickBack = { onClickBack(true) },
                 onClickSave = onClickSave,
+                saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
             )
         }
     }
