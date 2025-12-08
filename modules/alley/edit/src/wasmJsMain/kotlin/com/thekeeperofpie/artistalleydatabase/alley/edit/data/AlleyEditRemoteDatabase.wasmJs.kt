@@ -8,10 +8,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -21,7 +23,6 @@ import io.github.vinceglb.filekit.extension
 import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -40,21 +41,12 @@ actual class AlleyEditRemoteDatabase(
     // TODO: Error handling
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
         withContext(PlatformDispatchers.IO) {
-            val response = ktorClient.get(window.origin + "/database/artist/$artistId")
-            if (response.status != HttpStatusCode.OK) return@withContext null
-            response.body<ArtistDatabaseEntry.Impl>()
+            sendRequest(BackendRequest.Artist(artistId))
         }
 
     actual suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary> =
         withContext(PlatformDispatchers.IO) {
-            try {
-                ktorClient.get(window.origin + "/database/artists")
-                    .body<List<ArtistSummary>>()
-            } catch (t: Throwable) {
-                // TODO: Actually surface errors
-                t.printStackTrace()
-                emptyList()
-            }
+            sendRequest(BackendRequest.Artists).orEmpty()
         }
 
     actual suspend fun saveArtist(
@@ -64,12 +56,7 @@ actual class AlleyEditRemoteDatabase(
     ): ArtistSave.Response.Result =
         withContext(PlatformDispatchers.IO) {
             try {
-                ktorClient.put(window.origin + "/database/insertArtist") {
-                    contentType(ContentType.Application.Json)
-                    setBody(ArtistSave.Request(initial = initial, updated = updated))
-                }
-                    .body<ArtistSave.Response>()
-                    .result
+                sendRequest(ArtistSave.Request(initial = initial, updated = updated))!!.result
             } catch (t: Throwable) {
                 t.printStackTrace()
                 ArtistSave.Response.Result.Failed(t)
@@ -79,13 +66,14 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage> =
         withContext(PlatformDispatchers.IO) {
             try {
-                ktorClient.post(window.origin + "/database/listImages") {
-                    contentType(ContentType.Application.Json)
-                    setBody(
-                        ListImages.Request(EditImage.NetworkImage.makePrefix(dataYear, artistId))
+                sendRequest(
+                    ListImages.Request(
+                        EditImage.NetworkImage.makePrefix(
+                            dataYear,
+                            artistId
+                        )
                     )
-                }
-                    .body<ListImages.Response>()
+                )!!
                     .idsAndKeys
                     .map { imageFromIdAndKey(it.first, it.second) }
             } catch (t: Throwable) {
@@ -115,13 +103,7 @@ actual class AlleyEditRemoteDatabase(
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
     actual suspend fun loadSeries(): List<SeriesInfo> =
         withContext(PlatformDispatchers.IO) {
-            try {
-                ktorClient.get(window.origin + "/database/series")
-                    .body<List<SeriesInfo>>()
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                emptyList()
-            }
+            sendRequest(BackendRequest.Series).orEmpty()
         }
 
     actual suspend fun saveSeries(
@@ -130,12 +112,7 @@ actual class AlleyEditRemoteDatabase(
     ): SeriesSave.Response.Result =
         withContext(PlatformDispatchers.IO) {
             try {
-                ktorClient.put(window.origin + "/database/insertSeries") {
-                    contentType(ContentType.Application.Json)
-                    setBody(SeriesSave.Request(initial = initial, updated = updated))
-                }
-                    .body<SeriesSave.Response>()
-                    .result
+                sendRequest(SeriesSave.Request(initial = initial, updated = updated))!!.result
             } catch (t: Throwable) {
                 t.printStackTrace()
                 SeriesSave.Response.Result.Failed(t)
@@ -145,13 +122,7 @@ actual class AlleyEditRemoteDatabase(
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
     actual suspend fun loadMerch(): List<MerchInfo> =
         withContext(PlatformDispatchers.IO) {
-            try {
-                ktorClient.get(window.origin + "/database/merch")
-                    .body<List<MerchInfo>>()
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                emptyList()
-            }
+            sendRequest(BackendRequest.Merch).orEmpty()
         }
 
     actual suspend fun saveMerch(
@@ -160,12 +131,7 @@ actual class AlleyEditRemoteDatabase(
     ): MerchSave.Response.Result =
         withContext(PlatformDispatchers.IO) {
             try {
-                ktorClient.put(window.origin + "/database/insertMerch") {
-                    contentType(ContentType.Application.Json)
-                    setBody(MerchSave.Request(initial = initial, updated = updated))
-                }
-                    .body<MerchSave.Response>()
-                    .result
+                sendRequest(MerchSave.Request(initial = initial, updated = updated))!!.result
             } catch (t: Throwable) {
                 t.printStackTrace()
                 MerchSave.Response.Result.Failed(t)
@@ -178,4 +144,20 @@ actual class AlleyEditRemoteDatabase(
         ),
         id = id,
     )
+
+    private suspend inline fun <reified Request, reified Response> sendRequest(
+        request: Request,
+    ): Response? where Request : BackendRequest, Request : BackendRequest.WithResponse<Response> {
+        ConsoleLogger.log("sendRequest = $request")
+        val response = ktorClient.post(window.origin + "/database") {
+            contentType(ContentType.Application.Json)
+            setBody<BackendRequest>(request)
+        }
+        ConsoleLogger.log("response = $response")
+        if (response.status != HttpStatusCode.OK) {
+            // TODO: Surface errors
+            return null
+        }
+        return response.body<Response>()
+    }
 }

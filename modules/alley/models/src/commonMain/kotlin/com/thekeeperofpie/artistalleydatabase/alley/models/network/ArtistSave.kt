@@ -8,7 +8,7 @@ object ArtistSave {
     data class Request(
         val initial: ArtistDatabaseEntry.Impl?,
         val updated: ArtistDatabaseEntry.Impl,
-    )
+    ): BackendRequest, BackendRequest.WithResponse<Response>
 
     @Serializable
     data class Response(val result: Result) {

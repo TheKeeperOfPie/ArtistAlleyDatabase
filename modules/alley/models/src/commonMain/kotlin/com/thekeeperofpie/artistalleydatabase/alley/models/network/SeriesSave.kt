@@ -8,7 +8,7 @@ object SeriesSave {
     data class Request(
         val initial: SeriesInfo?,
         val updated: SeriesInfo,
-    )
+    ): BackendRequest, BackendRequest.WithResponse<Response>
 
     @Serializable
     data class Response(val result: Result) {

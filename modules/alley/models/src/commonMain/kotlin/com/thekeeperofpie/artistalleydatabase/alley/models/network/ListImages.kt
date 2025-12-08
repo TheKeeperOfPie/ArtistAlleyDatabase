@@ -7,7 +7,7 @@ class ListImages {
     @Serializable
     data class Request(
         val prefix: String,
-    )
+    ): BackendRequest, BackendRequest.WithResponse<Response>
 
     @Serializable
     data class Response(

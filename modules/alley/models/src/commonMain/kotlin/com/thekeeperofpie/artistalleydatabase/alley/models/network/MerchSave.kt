@@ -8,7 +8,7 @@ object MerchSave {
     data class Request(
         val initial: MerchInfo?,
         val updated: MerchInfo,
-    )
+    ): BackendRequest, BackendRequest.WithResponse<Response>
 
     @Serializable
     data class Response(val result: Result) {

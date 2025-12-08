@@ -15,10 +15,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
@@ -31,28 +33,40 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 object AlleyBackendDatabase {
+
     suspend fun handleRequest(context: EventContext, path: String): Response {
-        val segments = path.removePrefix("/").split("/")
-        return when (segments.getOrNull(0)) {
-            "artists" -> loadArtists(context)
-            "artist" -> try {
-                loadArtist(context, Uuid.parse(segments[1]))
-            } catch (_: IllegalArgumentException) {
-                null
+        val pathSegments = path.removePrefix("/").split("/")
+        val firstSegment = pathSegments.getOrNull(0)
+        return when (firstSegment) {
+            "image" -> loadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
+            "uploadImage" ->
+                uploadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
+            else -> Json.decodeFromString<BackendRequest>(
+                context.request.text().await(),
+            ).run {
+                when (this) {
+                    is ArtistSave.Request -> makeResponse(saveArtist(context, this))
+                    is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
+                    is BackendRequest.Artists -> makeResponse(loadArtists(context))
+                    is BackendRequest.Merch -> makeResponse(loadMerch(context))
+                    is BackendRequest.Series -> loadSeries(context)
+                    is ListImages.Request -> makeResponse(listImages(context, this))
+                    is MerchSave.Request -> makeResponse(saveMerch(context, this))
+                    is SeriesSave.Request -> makeResponse(saveSeries(context, this))
+                }
             }
-            "insertArtist" -> insertArtist(context)
-            "image" -> loadImage(context, segments.drop(1).joinToString(separator = "/"))
-            "listImages" -> listImages(context)
-            "uploadImage" -> uploadImage(context, segments.drop(1).joinToString(separator = "/"))
-            "series" -> loadSeries(context)
-            "insertSeries" -> insertSeries(context)
-            "merch" -> loadMerch(context)
-            "insertMerch" -> insertMerch(context)
-            else -> null
-        } ?: Response(null, ResponseInit(status = 404))
+        }
     }
 
-    suspend fun loadArtists(context: EventContext): Response =
+    private inline fun <reified Request : BackendRequest.WithResponse<Response>, reified Response> Request.makeResponse(
+        response: Response?,
+    ): org.w3c.fetch.Response = if (response == null) {
+        jsonResponse(null)
+    } else {
+        jsonResponse<Response>(response)
+    }
+
+    private suspend fun loadArtists(context: EventContext): List<ArtistSummary> =
         database(context).artistEntryAnimeExpo2026Queries
             .getArtists()
             .awaitAsList()
@@ -71,40 +85,41 @@ object AlleyBackendDatabase {
                     images = it.images,
                 )
             }
-            .let(::jsonResponse)
 
-    suspend fun loadArtist(context: EventContext, artistId: Uuid): Response =
+    private suspend fun loadArtist(
+        context: EventContext,
+        request: BackendRequest.Artist,
+    ): ArtistDatabaseEntry.Impl? =
         database(context)
             .artistEntryAnimeExpo2026Queries
-            .getArtist(artistId.toString())
+            .getArtist(request.artistId.toString())
             .awaitAsOneOrNull()
             ?.toArtistDatabaseEntry()
-            .let(::jsonResponse)
 
-    suspend fun insertArtist(context: EventContext): Response {
-        val request = Json.decodeFromString<ArtistSave.Request>(context.request.text().await())
+    private suspend fun saveArtist(
+        context: EventContext,
+        request: ArtistSave.Request,
+    ): ArtistSave.Response {
         val database = database(context, tryCreate = true)
         val currentArtist =
             database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
                 .awaitAsOneOrNull()?.toArtistDatabaseEntry()
         if (currentArtist != null && currentArtist != request.initial) {
-            return jsonResponse(
-                ArtistSave.Response(ArtistSave.Response.Result.Outdated(currentArtist))
-            )
+            return ArtistSave.Response(ArtistSave.Response.Result.Outdated(currentArtist))
         }
 
         val updatedArtist = request.updated.copy(
             lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
         ).toArtistEntryAnimeExpo2026()
         database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist)
-        return jsonResponse(ArtistSave.Response(ArtistSave.Response.Result.Success))
+        return ArtistSave.Response(ArtistSave.Response.Result.Success)
     }
 
     /**
      * Exposes image for local development so that it doesn't access the remote R2 bucket via the
      * public domain.
      */
-    suspend fun loadImage(context: EventContext, key: String): Response {
+    private suspend fun loadImage(context: EventContext, key: String): Response {
         val file = context.env.ARTIST_ALLEY_IMAGES_BUCKET.get(key).await()
             ?: return Response(null, ResponseInit(status = 404))
         return Response(file.body, ResponseInit(headers = Headers().apply {
@@ -115,26 +130,28 @@ object AlleyBackendDatabase {
         }))
     }
 
-    suspend fun listImages(context: EventContext): Response {
-        val request = Json.decodeFromString<ListImages.Request>(context.request.text().await())
+    private suspend fun listImages(
+        context: EventContext,
+        request: ListImages.Request,
+    ): ListImages.Response {
         val keys = context.env.ARTIST_ALLEY_IMAGES_BUCKET
             .list(R2ListOptions(request.prefix))
             .await()
             .objects
             .map { it.key }
-        return jsonResponse(ListImages.Response(keys.map {
+        return ListImages.Response(keys.map {
             Uuid.parse(it.substringAfterLast("/").substringBefore(".")) to it
-        }))
+        })
     }
 
-    suspend fun uploadImage(context: EventContext, path: String): Response {
+    private suspend fun uploadImage(context: EventContext, path: String): Response {
         context.env.ARTIST_ALLEY_IMAGES_BUCKET
             .put(path, context.request.unsafeCast<ResponseWithBody>().body)
             .await()
         return Response("")
     }
 
-    suspend fun loadSeries(context: EventContext): Response {
+    private suspend fun loadSeries(context: EventContext): Response {
         val cachedSeriesJson = context.env.ARTIST_ALLEY_CACHE_KV.get("series").await()
         if (cachedSeriesJson != null) {
             return literalJsonResponse(cachedSeriesJson)
@@ -153,42 +170,38 @@ object AlleyBackendDatabase {
             .let(Json::encodeToString)
             .also { context.env.ARTIST_ALLEY_CACHE_KV.put("series", it).await() }
 
-    suspend fun insertSeries(context: EventContext): Response {
-        val request = Json.decodeFromString<SeriesSave.Request>(context.request.text().await())
+    private suspend fun saveSeries(
+        context: EventContext,
+        request: SeriesSave.Request,
+    ): SeriesSave.Response {
         val database = database(context, tryCreate = true)
         val currentSeries =
             database.seriesEntryQueries.getSeriesById(request.updated.id)
                 .awaitAsOneOrNull()?.toSeriesInfo()
         if (currentSeries != null && currentSeries != request.initial) {
-            return jsonResponse(
-                SeriesSave.Response(SeriesSave.Response.Result.Outdated(currentSeries))
-            )
+            return SeriesSave.Response(SeriesSave.Response.Result.Outdated(currentSeries))
         }
         database.seriesEntryQueries.insertSeries(request.updated.toSeriesEntry())
         loadSeriesIntoCache(context)
-        return jsonResponse(SeriesSave.Response(SeriesSave.Response.Result.Success))
+        return SeriesSave.Response(SeriesSave.Response.Result.Success)
     }
 
-    suspend fun loadMerch(context: EventContext): Response =
+    private suspend fun loadMerch(context: EventContext): List<MerchInfo> =
         database(context).merchEntryQueries
             .getMerch()
             .awaitAsList()
             .map { it.toMerchInfo() }
-            .let(::jsonResponse)
 
-    suspend fun insertMerch(context: EventContext): Response {
-        val request = Json.decodeFromString<MerchSave.Request>(context.request.text().await())
+    private suspend fun saveMerch(context: EventContext, request: MerchSave.Request): MerchSave.Response {
         val database = database(context, tryCreate = true)
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.updated.name)
                 .awaitAsOneOrNull()?.toMerchInfo()
         if (currentMerch != null && currentMerch != request.initial) {
-            return jsonResponse(
-                MerchSave.Response(MerchSave.Response.Result.Outdated(currentMerch))
-            )
+            return MerchSave.Response(MerchSave.Response.Result.Outdated(currentMerch))
         }
         database.merchEntryQueries.insertMerch(request.updated.toMerchEntry())
-        return jsonResponse(MerchSave.Response(MerchSave.Response.Result.Success))
+        return MerchSave.Response(MerchSave.Response.Result.Success)
     }
 
     private suspend fun database(
