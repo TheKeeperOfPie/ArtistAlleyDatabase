@@ -202,31 +202,31 @@ object ArtEntryDetailsScreen {
 
     @Stable
     class State(
-        val series: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-        val characters: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-        val artists: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-        val tags: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-        val notes: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
+        val series: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val characters: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val artists: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val tags: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     ) {
         object Saver : ComposeSaver<State, Any> {
             override fun SaverScope.save(value: State): List<Any?> {
                 return listOf(
-                    with(EntryForm2.PendingTextState.Saver) { save(value.series) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.characters) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.artists) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.tags) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.notes) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.series) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.characters) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.artists) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.tags) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.notes) },
                 )
             }
 
             override fun restore(value: Any): State {
                 val (series, characters, artists, tags, notes) = value as List<*>
                 return State(
-                    series = with(EntryForm2.PendingTextState.Saver) { restore(series!!) }!!,
-                    characters = with(EntryForm2.PendingTextState.Saver) { restore(characters!!) }!!,
-                    artists = with(EntryForm2.PendingTextState.Saver) { restore(artists!!) }!!,
-                    tags = with(EntryForm2.PendingTextState.Saver) { restore(tags!!) }!!,
-                    notes = with(EntryForm2.PendingTextState.Saver) { restore(notes!!) }!!,
+                    series = with(EntryForm2.SingleTextState.Saver) { restore(series!!) }!!,
+                    characters = with(EntryForm2.SingleTextState.Saver) { restore(characters!!) }!!,
+                    artists = with(EntryForm2.SingleTextState.Saver) { restore(artists!!) }!!,
+                    tags = with(EntryForm2.SingleTextState.Saver) { restore(tags!!) }!!,
+                    notes = with(EntryForm2.SingleTextState.Saver) { restore(notes!!) }!!,
                 )
             }
         }

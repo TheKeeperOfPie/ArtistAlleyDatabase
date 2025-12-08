@@ -34,7 +34,6 @@ import androidx.compose.ui.test.waitUntilExactlyOneExists
 import androidx.compose.ui.text.TextRange
 import app.cash.burst.Burst
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
-import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlin.test.Test
@@ -48,7 +47,7 @@ class EntryFormMultiTextTest {
 
     @Test
     fun autocomplete() = runComposeUiTest {
-        val state = EntryForm2.PendingTextState()
+        val state = EntryForm2.SingleTextState()
         val contents = SnapshotStateList<EntryForm2.MultiTextState.Entry>()
         setContent { Content(state, contents) }
         onNode(hasSetTextAction()).performTextInput("inputOn")
@@ -255,7 +254,7 @@ class EntryFormMultiTextTest {
 
     @Composable
     private fun Content(
-        state: EntryForm2.PendingTextState,
+        state: EntryForm2.SingleTextState,
         contents: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
         onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
     ) {
@@ -278,14 +277,14 @@ class EntryFormMultiTextTest {
     private fun ComposeUiTest.setUpAndAssertTwoExistingItems(
         entryType: EntryType,
         onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
-    ): Pair<EntryForm2.PendingTextState, SnapshotStateList<EntryForm2.MultiTextState.Entry>> {
+    ): Pair<EntryForm2.SingleTextState, SnapshotStateList<EntryForm2.MultiTextState.Entry>> {
         val generateEntry: (String) -> EntryForm2.MultiTextState.Entry = {
             when (entryType) {
                 EntryType.CUSTOM -> EntryForm2.MultiTextState.Entry.Custom(it)
                 EntryType.PREFILLED -> testPrefilled(it)
             }
         }
-        val state = EntryForm2.PendingTextState()
+        val state = EntryForm2.SingleTextState()
         val contents =
             mutableListOf(generateEntry("itemOne"), generateEntry("itemTwo")).toMutableStateList()
         setContent { Content(state = state, contents = contents, onNavigate = onNavigate) }

@@ -107,7 +107,7 @@ object SeriesEditScreen {
                 SeriesColumn.TITLE_ROMAJI -> state.titleRomaji.focusRequester
                 SeriesColumn.TITLE_NATIVE -> state.titleNative.focusRequester
                 SeriesColumn.TITLE_PREFERRED -> state.titlePreferred.focusRequester
-                SeriesColumn.SYNONYMS -> state.synonymsPendingValue.focusRequester
+                SeriesColumn.SYNONYMS -> state.synonymsValue.focusRequester
                 SeriesColumn.WIKIPEDIA_ID -> state.wikipediaId.focusRequester
                 SeriesColumn.EXTERNAL_LINK -> state.link.focusRequester
                 SeriesColumn.UUID -> state.uuid.focusRequester
@@ -256,12 +256,12 @@ object SeriesEditScreen {
                             nextFocus = state.link.focusRequester,
                         )
                         MultiTextSection(
-                            state = state.synonymsPendingValue,
+                            state = state.synonymsValue,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_synonyms)) },
                             items = state.synonyms,
                             onItemCommitted = {
                                 state.synonyms.add(it)
-                                state.synonymsPendingValue.pendingValue.clearText()
+                                state.synonymsValue.value.clearText()
                             },
                             removeLastItem = { state.synonyms.removeLastOrNull() },
                             previousFocus = state.titlePreferred.focusRequester,
@@ -296,7 +296,7 @@ object SeriesEditScreen {
                                     }
                                 }
                             },
-                            previousFocus = state.synonymsPendingValue.focusRequester,
+                            previousFocus = state.synonymsValue.focusRequester,
                             nextFocus = state.notes.focusRequester,
                             errorText = { linkErrorMessage },
                         )
@@ -348,7 +348,7 @@ object SeriesEditScreen {
         val titleNative: EntryForm2.SingleTextState,
         val titlePreferred: EntryForm2.SingleTextState,
         val synonyms: SnapshotStateList<String>,
-        val synonymsPendingValue: EntryForm2.PendingTextState,
+        val synonymsValue: EntryForm2.SingleTextState,
         val link: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
         val savingState: MutableStateFlow<JobProgress>,

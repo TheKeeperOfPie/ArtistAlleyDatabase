@@ -162,13 +162,13 @@ class ArtistEditViewModel(
 
         val notes = artist.notes.orEmpty()
         if (notes.isNotBlank() || status.shouldStartLocked) {
-            textState.notes.pendingValue.setTextAndPlaceCursorAtEnd(notes)
+            textState.notes.value.setTextAndPlaceCursorAtEnd(notes)
             textState.notes.lockState = EntryLockState.LOCKED
         }
 
         val editorNotes = artist.editorNotes.orEmpty()
         if (editorNotes.isNotBlank() || status.shouldStartLocked) {
-            textState.editorNotes.pendingValue.setTextAndPlaceCursorAtEnd(editorNotes)
+            textState.editorNotes.value.setTextAndPlaceCursorAtEnd(editorNotes)
             textState.editorNotes.lockState = EntryLockState.LOCKED
         }
 
@@ -259,8 +259,8 @@ class ArtistEditViewModel(
         val storeLinks = state.storeLinks.toList().map { it.link }
         val catalogLinks = state.catalogLinks.toList()
 
-        val notes = textState.notes.pendingValue.text.toString()
-        val editorNotes = textState.editorNotes.pendingValue.text.toString()
+        val notes = textState.notes.value.text.toString()
+        val editorNotes = textState.editorNotes.value.text.toString()
         val commissions = state.commissions.toList()
         val seriesInferred = state.seriesInferred.toList().map { it.id }
         val seriesConfirmed = state.seriesConfirmed.toList().map { it.id }

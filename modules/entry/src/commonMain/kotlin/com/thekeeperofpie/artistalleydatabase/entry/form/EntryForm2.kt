@@ -160,42 +160,13 @@ object EntryForm2 {
         }
     }
 
-    // TODO: Should this be collapsed into SingleTextState?
-    @Stable
-    class PendingTextState(
-        val pendingValue: TextFieldState = TextFieldState(),
-        initialLockState: EntryLockState = EntryLockState.UNLOCKED,
-        override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
-    ) : State() {
-        override var lockState by mutableStateOf(initialLockState)
-        val focusRequester = FocusRequester()
-        var isFocused by mutableStateOf(false)
-
-        object Saver : ComposeSaver<PendingTextState, Any> {
-            override fun SaverScope.save(value: PendingTextState) = listOf(
-                with(TextFieldState.Saver) { save(value.pendingValue) },
-                value.lockState,
-                value.wasEverDifferent,
-            )
-
-            override fun restore(value: Any): PendingTextState {
-                val (pendingValue, pendingFocused, lockState, wasEverDifferent) = value as List<*>
-                return PendingTextState(
-                    pendingValue = with(TextFieldState.Saver) { restore(pendingValue!!) }!!,
-                    initialLockState = lockState as EntryLockState,
-                    wasEverDifferent = wasEverDifferent as Boolean,
-                )
-            }
-        }
-    }
-
     @Stable
     class SingleTextState(
         val value: TextFieldState = TextFieldState(),
         initialLockState: EntryLockState = EntryLockState.UNLOCKED,
+        override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
     ) : State() {
         override var lockState by mutableStateOf(initialLockState)
-        override val wasEverDifferent get() = false
         val focusRequester = FocusRequester()
         var isFocused by mutableStateOf(false)
 
@@ -206,7 +177,7 @@ object EntryForm2 {
                     EntryLockState.UNLOCKED
                 } else {
                     EntryLockState.LOCKED
-                }
+                },
             )
         }
 
@@ -214,13 +185,15 @@ object EntryForm2 {
             override fun SaverScope.save(value: SingleTextState) = listOf(
                 with(TextFieldState.Saver) { save(value.value) },
                 value.lockState,
+                value.wasEverDifferent,
             )
 
             override fun restore(value: Any): SingleTextState {
-                val (value, lockState) = value as List<*>
+                val (value, lockState, wasEverDifferent) = value as List<*>
                 return SingleTextState(
                     value = with(TextFieldState.Saver) { restore(value!!) }!!,
                     initialLockState = lockState as EntryLockState,
+                    wasEverDifferent = wasEverDifferent as Boolean,
                 )
             }
         }
@@ -348,7 +321,7 @@ fun EntryFormScope.SingleTextSection(
 
 @Composable
 fun EntryFormScope.MultiTextSection(
-    state: EntryForm2.PendingTextState,
+    state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     entryPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>> = { emptyFlow() },
     trailingIcon: (EntryForm2.MultiTextState.Entry) -> Pair<ImageVector, StringResource>? = { null },
@@ -366,7 +339,7 @@ fun EntryFormScope.MultiTextSection(
         items = items,
         onItemCommitted = {
             onItemCommitted(it)
-            state.pendingValue.clearText()
+            state.value.clearText()
         },
         removeLastItem = removeLastItem,
         item = { index, value ->
@@ -496,7 +469,7 @@ fun EntryFormScope.MultiTextSection(
 
 @Composable
 fun <T> EntryFormScope.MultiTextSection(
-    state: EntryForm2.PendingTextState,
+    state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     items: SnapshotStateList<T>,
     onItemCommitted: (String) -> Unit,
@@ -512,7 +485,7 @@ fun <T> EntryFormScope.MultiTextSection(
         text = headerText,
         lockState = state.lockState,
         onClick = {
-            val newValue = state.pendingValue.text
+            val newValue = state.value.text
             if (newValue.isNotBlank()) {
                 onItemCommitted(newValue.trim().toString())
             }
@@ -564,7 +537,7 @@ fun <T> EntryFormScope.MultiTextSection(
     ) {
         val predictions by produceState(emptyList(), state, entryPredictions) {
             // No debounce here because speed of autocomplete is critical for streamlined entry
-            snapshotFlow { state.pendingValue.text.toString() }
+            snapshotFlow { state.value.text.toString() }
                 .flatMapLatest(entryPredictions)
                 .flowOn(PlatformDispatchers.IO)
                 .collectLatest { value = it }
@@ -572,7 +545,7 @@ fun <T> EntryFormScope.MultiTextSection(
         val dropdownFocusRequester = remember { FocusRequester() }
         val showPredictions by remember {
             derivedStateOf {
-                state.lockState.editable && state.pendingValue.text.isNotBlank()
+                state.lockState.editable && state.value.text.isNotBlank()
             }
         }
         var dropdownExpanded by remember { mutableStateOf(false) }
@@ -580,13 +553,13 @@ fun <T> EntryFormScope.MultiTextSection(
         EntryAutocompleteDropdown(
             expanded = { dropdownExpanded },
             onExpandedChange = { dropdownExpanded = it },
-            text = state.pendingValue,
+            text = state.value,
             predictions = { predictions },
             showPredictions = { showPredictions },
             onPredictionChosen = {
                 Snapshot.withMutableSnapshot {
                     items += it
-                    state.pendingValue.clearText()
+                    state.value.clearText()
                 }
             },
             item = prediction,
@@ -613,11 +586,11 @@ fun <T> EntryFormScope.MultiTextSection(
                                 dropdownFocusRequester.requestFocus(FocusDirection.Next)
                             }
                             false
-                        } else if (state.pendingValue.text.isBlank() && items.isNotEmpty()) {
+                        } else if (state.value.text.isBlank() && items.isNotEmpty()) {
                             Snapshot.withMutableSnapshot {
                                 val removed = removeLastItem()
                                 if (removed != null) {
-                                    state.pendingValue.setTextAndPlaceCursorAtEnd(removed)
+                                    state.value.setTextAndPlaceCursorAtEnd(removed)
                                 }
                             }
                             scope.launch {
@@ -643,7 +616,7 @@ fun <T> EntryFormScope.MultiTextSection(
             }
         ) {
             OpenSectionField(
-                state = state.pendingValue,
+                state = state.value,
                 lockState = { state.lockState },
                 totalSize = { items.size },
                 onLock = { state.lockState = EntryLockState.LOCKED },
@@ -651,10 +624,10 @@ fun <T> EntryFormScope.MultiTextSection(
                     if (preferPrediction && predictions.isNotEmpty()) {
                         Snapshot.withMutableSnapshot {
                             items += predictions.first()
-                            state.pendingValue.clearText()
+                            state.value.clearText()
                         }
                     } else {
-                        val newValue = state.pendingValue.text
+                        val newValue = state.value.text
                         if (newValue.isNotBlank()) {
                             onItemCommitted(newValue.trim().toString())
                         }
@@ -1228,14 +1201,14 @@ private fun <T> EntryAutocompleteDropdown(
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun EntryFormScope.LongTextSection(
-    state: EntryForm2.PendingTextState,
+    state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
 ) {
     SectionHeader(text = headerText, state = state)
 
     val editable = state.lockState.editable
     OutlinedTextField(
-        state = state.pendingValue,
+        state = state.value,
         readOnly = !editable,
         modifier = Modifier
             .onFocusChanged { state.isFocused = it.isFocused }

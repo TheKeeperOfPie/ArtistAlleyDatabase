@@ -109,11 +109,11 @@ class SeriesEditViewModel(
             key = "synonyms",
             saver = StateUtils.snapshotListJsonSaver(),
         ) { initialSeries?.synonyms.orEmpty().toMutableStateList() },
-        synonymsPendingValue = savedStateHandle.saveable(
+        synonymsValue = savedStateHandle.saveable(
             key = "synonymsPendingValue",
-            saver = EntryForm2.PendingTextState.Saver,
+            saver = EntryForm2.SingleTextState.Saver,
         ) {
-            EntryForm2.PendingTextState(
+            EntryForm2.SingleTextState(
                 initialLockState = if (initialSeries?.synonyms?.isNotEmpty() == true) {
                     EntryLockState.LOCKED
                 } else {

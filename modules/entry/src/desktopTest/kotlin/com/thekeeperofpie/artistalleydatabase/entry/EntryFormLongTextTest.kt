@@ -42,9 +42,9 @@ class EntryFormLongTextTest {
         assertTrue(onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isEmpty())
     }
 
-    private fun ComposeUiTest.setUpExistingState(): EntryForm2.PendingTextState {
-        val state = EntryForm2.PendingTextState(
-            pendingValue = TextFieldState("Long text input"),
+    private fun ComposeUiTest.setUpExistingState(): EntryForm2.SingleTextState {
+        val state = EntryForm2.SingleTextState(
+            value = TextFieldState("Long text input"),
             initialLockState = EntryLockState.UNLOCKED,
         )
         setContent { Content(state) }
@@ -53,7 +53,7 @@ class EntryFormLongTextTest {
     }
 
     @Composable
-    private fun Content(state: EntryForm2.PendingTextState) {
+    private fun Content(state: EntryForm2.SingleTextState) {
         EntryForm2 {
             LongTextSection(
                 state = state,

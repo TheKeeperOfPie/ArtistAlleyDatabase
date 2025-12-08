@@ -457,7 +457,7 @@ object ArtistEditScreen {
                 itemToText = { it },
                 onItemCommitted = {
                     state.catalogLinks.add(it)
-                    formState.catalogLinks.pendingValue.clearText()
+                    formState.catalogLinks.value.clearText()
                 },
                 previousFocus = formState.storeLinks.focusRequester,
                 nextFocus = formState.commissions.focusRequester,
@@ -469,7 +469,7 @@ object ArtistEditScreen {
                 itemToText = { it },
                 onItemCommitted = {
                     state.commissions.add(it)
-                    formState.commissions.pendingValue.clearText()
+                    formState.commissions.value.clearText()
                 },
                 previousFocus = formState.catalogLinks.focusRequester,
                 nextFocus = formState.seriesInferred.focusRequester,
@@ -527,7 +527,7 @@ object ArtistEditScreen {
 
     @Composable
     private fun <T> EntryFormScope.MultiTextSection(
-        state: EntryForm2.PendingTextState,
+        state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<T>,
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
@@ -583,7 +583,7 @@ object ArtistEditScreen {
 
     @Composable
     private fun <T> EntryFormScope.MultiTextSection(
-        state: EntryForm2.PendingTextState,
+        state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<T>,
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
@@ -611,7 +611,7 @@ object ArtistEditScreen {
 
     @Composable
     private fun EntryFormScope.SeriesSection(
-        state: EntryForm2.PendingTextState,
+        state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<SeriesInfo>,
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
@@ -676,7 +676,7 @@ object ArtistEditScreen {
 
     @Composable
     private fun EntryFormScope.LinksSection(
-        state: EntryForm2.PendingTextState,
+        state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<LinkModel>,
         previousFocus: FocusRequester?,
@@ -688,7 +688,7 @@ object ArtistEditScreen {
             items = items,
             onItemCommitted = {
                 items.add(LinkModel.parse(it))
-                state.pendingValue.clearText()
+                state.value.clearText()
             },
             removeLastItem = { items.removeLastOrNull()?.link },
             item = { _, value -> LinkRow(value, isLast = false) },
@@ -768,16 +768,16 @@ object ArtistEditScreen {
             val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
             val summary: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-            val links: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val storeLinks: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val catalogLinks: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val commissions: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val seriesInferred: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val seriesConfirmed: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val merchInferred: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val merchConfirmed: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val notes: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
-            val editorNotes: EntryForm2.PendingTextState = EntryForm2.PendingTextState(),
+            val links: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val storeLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val catalogLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val commissions: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val seriesInferred: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val seriesConfirmed: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val merchInferred: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val merchConfirmed: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val editorNotes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
         ) {
             object Saver : ComposeSaver<FormState, List<Any>> {
                 override fun SaverScope.save(value: FormState) = listOf(
@@ -786,16 +786,16 @@ object ArtistEditScreen {
                     with(EntryForm2.SingleTextState.Saver) { save(value.booth) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.name) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.summary) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.links) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.storeLinks) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.catalogLinks) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.commissions) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.seriesInferred) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.seriesConfirmed) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.merchInferred) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.merchConfirmed) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.notes) },
-                    with(EntryForm2.PendingTextState.Saver) { save(value.editorNotes) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.links) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.storeLinks) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.catalogLinks) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.commissions) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.seriesInferred) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.seriesConfirmed) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.merchInferred) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.merchConfirmed) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.notes) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.editorNotes) },
                 )
 
                 override fun restore(value: List<Any>) = FormState(
@@ -804,16 +804,16 @@ object ArtistEditScreen {
                     booth = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
                     name = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
                     summary = with(EntryForm2.SingleTextState.Saver) { restore(value[4]) },
-                    links = with(EntryForm2.PendingTextState.Saver) { restore(value[5]) },
-                    storeLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[6]) },
-                    catalogLinks = with(EntryForm2.PendingTextState.Saver) { restore(value[7]) },
-                    commissions = with(EntryForm2.PendingTextState.Saver) { restore(value[8]) },
-                    seriesInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[9]) },
-                    seriesConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[10]) },
-                    merchInferred = with(EntryForm2.PendingTextState.Saver) { restore(value[11]) },
-                    merchConfirmed = with(EntryForm2.PendingTextState.Saver) { restore(value[12]) },
-                    notes = with(EntryForm2.PendingTextState.Saver) { restore(value[13]) },
-                    editorNotes = with(EntryForm2.PendingTextState.Saver) { restore(value[14]) },
+                    links = with(EntryForm2.SingleTextState.Saver) { restore(value[5]) },
+                    storeLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[6]) },
+                    catalogLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[7]) },
+                    commissions = with(EntryForm2.SingleTextState.Saver) { restore(value[8]) },
+                    seriesInferred = with(EntryForm2.SingleTextState.Saver) { restore(value[9]) },
+                    seriesConfirmed = with(EntryForm2.SingleTextState.Saver) { restore(value[10]) },
+                    merchInferred = with(EntryForm2.SingleTextState.Saver) { restore(value[11]) },
+                    merchConfirmed = with(EntryForm2.SingleTextState.Saver) { restore(value[12]) },
+                    notes = with(EntryForm2.SingleTextState.Saver) { restore(value[13]) },
+                    editorNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[14]) },
                 )
             }
         }
