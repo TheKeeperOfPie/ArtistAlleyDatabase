@@ -47,6 +47,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -89,8 +90,11 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_booth
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_duplicate_entry
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -104,7 +108,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerSta
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
-import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
@@ -131,15 +134,20 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
+import artistalleydatabase.modules.alley.generated.resources.Res as AlleyRes
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 object ArtistEditScreen {
@@ -472,24 +480,29 @@ object ArtistEditScreen {
                 items = state.catalogLinks,
                 itemToText = { it },
                 itemToSerializedValue = { it },
-                onItemCommitted = {
-                    state.catalogLinks.add(it)
-                    formState.catalogLinks.value.clearText()
-                },
+                itemToCommitted = { it },
                 previousFocus = formState.storeLinks.focusRequester,
                 nextFocus = formState.commissions.focusRequester,
                 pendingErrorMessage = { errorState.catalogLinksErrorMessage() },
             )
+
+
+            val onSiteText = stringResource(AlleyRes.string.alley_artist_commission_on_site)
+            val onlineText = stringResource(AlleyRes.string.alley_artist_commission_online)
             MultiTextSection(
                 state = formState.commissions,
                 title = Res.string.alley_edit_artist_edit_commissions,
                 items = state.commissions,
-                itemToText = { it.text() },
-                itemToSerializedValue = { it.serializedValue },
-                onItemCommitted = {
-                    state.commissions.add(CommissionModel.parse(it))
-                    formState.commissions.value.clearText()
+                itemToText = {
+                    when (it) {
+                        is CommissionModel.Link -> it.host ?: it.link
+                        CommissionModel.OnSite -> onSiteText
+                        CommissionModel.Online -> onlineText
+                        is CommissionModel.Unknown -> it.value
+                    }
                 },
+                itemToSerializedValue = { it.serializedValue },
+                itemToCommitted = CommissionModel::parse,
                 predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
                 previousFocus = formState.catalogLinks.focusRequester,
                 nextFocus = formState.seriesInferred.focusRequester,
@@ -501,7 +514,8 @@ object ArtistEditScreen {
             SeriesSection(
                 state = formState.seriesInferred,
                 title = Res.string.alley_edit_artist_edit_series_inferred,
-                items = state.seriesInferred.takeIf { showSeriesInferred },
+                items = state.seriesInferred,
+                showItems = { showSeriesInferred },
                 predictions = seriesPredictions,
                 image = seriesImage,
                 previousFocus = formState.commissions.focusRequester,
@@ -529,7 +543,8 @@ object ArtistEditScreen {
             MultiTextSection(
                 state = formState.merchInferred,
                 title = Res.string.alley_edit_artist_edit_merch_inferred,
-                items = state.merchInferred.takeIf { showMerchInferred },
+                items = state.merchInferred,
+                showItems = { showMerchInferred },
                 predictions = merchPredictions,
                 itemToText = { it.name },
                 itemToSerializedValue = { it.name },
@@ -571,33 +586,25 @@ object ArtistEditScreen {
     private fun <T> EntryFormScope.MultiTextSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
-        items: SnapshotStateList<T>?,
+        items: SnapshotStateList<T>,
+        showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
-        itemToText: @Composable (T) -> String,
+        itemToText: (T) -> String,
         itemToSerializedValue: (T) -> String,
         previousFocus: FocusRequester? = null,
         nextFocus: FocusRequester? = null,
-        onItemCommitted: (String) -> Unit = {},
+        itemToCommitted: ((String) -> T)? = null,
         pendingErrorMessage: () -> String? = { null },
     ) {
         MultiTextSection(
             state = state,
-            headerText = { Text(stringResource(title)) },
+            title = title,
             items = items,
+            showItems = showItems,
             entryPredictions = predictions,
-            preferPrediction = true,
-            onPredictionChosen = {
-                Snapshot.withMutableSnapshot {
-                    if (items?.contains(it) == false) {
-                        items.add(it)
-                    }
-                    // Still clear existing input so that if editor enters a duplicate,
-                    // they don't have to manually clear the text to move on
-                    state.value.clearText()
-                }
-            },
-            onItemCommitted = onItemCommitted,
-            removeLastItem = { items?.removeLastOrNull()?.let { itemToSerializedValue(it) } },
+            itemToCommitted = itemToCommitted,
+            removeLastItem = { items.removeLastOrNull()?.let { itemToSerializedValue(it) } },
+            sortValue = itemToText,
             item = { _, item ->
                 Box {
                     TextField(
@@ -619,7 +626,7 @@ object ArtistEditScreen {
                                     DropdownMenuItem(
                                         text = { Text(stringResource(Res.string.alley_edit_artist_action_delete)) },
                                         onClick = {
-                                            items?.remove(item)
+                                            items.remove(item)
                                             showMenu = false
                                         }
                                     )
@@ -641,7 +648,8 @@ object ArtistEditScreen {
     private fun EntryFormScope.SeriesSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
-        items: SnapshotStateList<SeriesInfo>?,
+        items: SnapshotStateList<SeriesInfo>,
+        showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
         image: (SeriesInfo) -> String?,
         previousFocus: FocusRequester?,
@@ -649,12 +657,14 @@ object ArtistEditScreen {
     ) {
         MultiTextSection(
             state = state,
-            headerText = { Text(stringResource(title)) },
+            title = title,
             items = items,
+            itemToCommitted = null,
+            showItems = showItems,
             entryPredictions = predictions,
-            preferPrediction = true,
-            removeLastItem = { items?.removeLastOrNull()?.titlePreferred },
+            removeLastItem = { items.removeLastOrNull()?.titlePreferred },
             prediction = { _, value -> Text(value.titlePreferred) },
+            sortValue = { it.titlePreferred },
             item = { _, value ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SeriesRow(
@@ -674,13 +684,51 @@ object ArtistEditScreen {
                         IconButtonWithTooltip(
                             imageVector = Icons.Default.Delete,
                             tooltipText = contentDescription,
-                            onClick = { items?.remove(value) },
+                            onClick = { items.remove(value) },
                             contentDescription = contentDescription,
                         )
                     }
                 }
             },
-            onItemCommitted = { /* Ignored, must use predictions */ },
+            previousFocus = previousFocus,
+            nextFocus = nextFocus,
+        )
+    }
+
+    @Composable
+    fun <T> EntryFormScope.MultiTextSection(
+        state: EntryForm2.SingleTextState,
+        title: StringResource,
+        items: SnapshotStateList<T>,
+        showItems: () -> Boolean = { true },
+        itemToCommitted: ((String) -> T)? = null,
+        removeLastItem: () -> String?,
+        item: @Composable (index: Int, T) -> Unit,
+        entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
+        prediction: @Composable (index: Int, T) -> Unit = item,
+        sortValue: ((T) -> String)? = null,
+        pendingErrorMessage: () -> String? = { null },
+        previousFocus: FocusRequester? = null,
+        nextFocus: FocusRequester? = null,
+    ) {
+        val addUniqueErrorState =
+            rememberAddUniqueErrorState(state = state, items = items, sortValue = sortValue)
+        MultiTextSection(
+            state = state,
+            headerText = { Text(stringResource(title)) },
+            items = items.takeIf { showItems() },
+            onItemCommitted = {
+                if (itemToCommitted != null) {
+                    addUniqueErrorState.addAndEnforceUnique(itemToCommitted(it))
+                }
+            },
+            removeLastItem = removeLastItem,
+            item = item,
+            entryPredictions = entryPredictions,
+            prediction = prediction,
+            preferPrediction = true,
+            onPredictionChosen = addUniqueErrorState::addAndEnforceUnique,
+            pendingErrorMessage = { addUniqueErrorState.errorMessage ?: pendingErrorMessage() },
             previousFocus = previousFocus,
             nextFocus = nextFocus,
         )
@@ -743,12 +791,9 @@ object ArtistEditScreen {
     ) {
         MultiTextSection(
             state = state,
-            headerText = { Text(stringResource(title)) },
+            title = title,
             items = items,
-            onItemCommitted = {
-                items.add(LinkModel.parse(it))
-                state.value.clearText()
-            },
+            itemToCommitted = LinkModel::parse,
             removeLastItem = { items.removeLastOrNull()?.link },
             item = { index, value ->
                 LinkRow(
@@ -801,6 +846,92 @@ object ArtistEditScreen {
                     null
                 }
             }
+        }
+    }
+
+    @Stable
+    class AddUniqueErrorState<T, R : Comparable<R>>(
+        private val items: SnapshotStateList<T>,
+        private val state: EntryForm2.SingleTextState,
+        private val sortValue: ((T) -> R)?,
+        private val scope: CoroutineScope,
+        private val errorMessageText: String,
+    ) {
+        var errorMessage by mutableStateOf<String?>(null)
+            private set
+
+        fun addAndEnforceUnique(value: T) {
+            // TODO: There must be a better way to do this
+            val addSuccessful = Snapshot.withMutableSnapshot {
+                val addSuccessful = if (sortValue == null) {
+                    if (items.contains(value)) {
+                        false
+                    } else {
+                        items.add(value)
+                    }
+                } else {
+                    items.insertSorted(value, sortValue)
+                }
+                if (!addSuccessful) {
+                    errorMessage = errorMessageText
+                }
+                // Still clear existing input so that if editor enters a duplicate,
+                // they don't have to manually clear the text to move on
+                state.value.clearText()
+                addSuccessful
+            }
+            if (!addSuccessful) {
+                scope.launch {
+                    delay(2.seconds)
+                    errorMessage = null
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun <T, R : Comparable<R>> rememberAddUniqueErrorState(
+        items: SnapshotStateList<T>,
+        state: EntryForm2.SingleTextState,
+        sortValue: ((T) -> R)?,
+    ): AddUniqueErrorState<T, R> {
+        val scope = rememberCoroutineScope()
+        val errorMessageText = stringResource(Res.string.alley_edit_artist_error_duplicate_entry)
+        return remember(items, state, sortValue, scope, errorMessageText) {
+            AddUniqueErrorState(
+                items = items,
+                state = state,
+                sortValue = sortValue,
+                scope = scope,
+                errorMessageText = errorMessageText,
+            )
+        }
+    }
+
+    /**
+     * Workaround a potential concurrent modification bug:
+     * https://issuetracker.google.com/issues/272334463
+     *
+     * Should be called inside [Snapshot.withMutableSnapshot]
+     */
+    private fun <T, R : Comparable<R>> SnapshotStateList<T>.insertSorted(
+        value: T,
+        sortValue: (T) -> R,
+    ): Boolean {
+        return try {
+            val list = this.toList()
+            if (list.contains(value)) return false
+            val updated = (list + value).sortedBy(sortValue)
+            val insertIndex = updated.indexOf(value)
+            add(index = insertIndex, element = value)
+            if (toList() != updated) {
+                clear()
+                addAll(updated)
+            }
+            true
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            true
         }
     }
 

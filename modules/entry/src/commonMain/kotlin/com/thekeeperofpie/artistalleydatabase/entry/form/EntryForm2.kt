@@ -469,13 +469,13 @@ fun <T> EntryFormScope.MultiTextSection(
     item: @Composable (index: Int, T) -> Unit,
     entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
     prediction: @Composable (index: Int, T) -> Unit = item,
+    preferPrediction: Boolean = false,
     onPredictionChosen: (T) -> Unit = {
         Snapshot.withMutableSnapshot {
             items?.add(it)
             state.value.clearText()
         }
     },
-    preferPrediction: Boolean = false,
     pendingErrorMessage: () -> String? = { null },
     previousFocus: FocusRequester? = null,
     nextFocus: FocusRequester? = null,
@@ -617,10 +617,7 @@ fun <T> EntryFormScope.MultiTextSection(
                     onLock = { state.lockState = EntryLockState.LOCKED },
                     onDone = {
                         if (preferPrediction && predictions.isNotEmpty()) {
-                            Snapshot.withMutableSnapshot {
-                                items += predictions.first()
-                                state.value.clearText()
-                            }
+                            onPredictionChosen(predictions.first())
                         } else if (pendingErrorMessage() == null) {
                             val newValue = state.value.text
                             if (newValue.isNotBlank()) {
@@ -1115,7 +1112,9 @@ private fun <T> EntryAutocompleteDropdown(
                                     }
                                 )
                                 .onFocusChanged { focused = it.isFocused }
-                                .focusRequester(focusRequesters[index])
+                                .conditionallyNonNull(focusRequesters.getOrNull(index)) {
+                                    focusRequester(it)
+                                }
                                 .focusProperties {
                                     up = focusRequesters.getOrNull(index - 1)
                                         ?: fieldFocusRequester

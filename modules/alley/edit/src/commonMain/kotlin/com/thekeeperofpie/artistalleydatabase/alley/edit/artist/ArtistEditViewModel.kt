@@ -258,21 +258,25 @@ class ArtistEditViewModel(
 
         val formState = state.formState
         // TODO: Include pending value?
-        val links = (state.links.toList().map { it.link } +
-                formState.links.value.text.toString()
-                    .takeIf { it.isNotBlank() }).filterNotNull()
-        val storeLinks = (state.storeLinks.toList().map { it.link } +
-                formState.storeLinks.value.text.toString()
-                    .takeIf { it.isNotBlank() }).filterNotNull()
-        val catalogLinks = (state.catalogLinks.toList() +
-                formState.catalogLinks.value.text.toString()
-                    .takeIf { it.isNotBlank() }).filterNotNull()
+        val links = state.links.toList().map { it.link }
+            .plus(formState.links.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
+        val storeLinks = state.storeLinks.toList().map { it.link }
+            .plus(formState.storeLinks.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
+        val catalogLinks = state.catalogLinks.toList()
+            .plus(formState.catalogLinks.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
 
         val notes = textState.notes.value.text.toString()
         val editorNotes = textState.editorNotes.value.text.toString()
-        val commissions = (state.commissions.toList().map { it.serializedValue } +
-                formState.commissions.value.text.toString()
-                    .takeIf { it.isNotBlank() }).filterNotNull()
+        val commissions = state.commissions.toList().map { it.serializedValue }
+            .plus(formState.commissions.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
         val seriesInferred = state.seriesInferred.toList().map { it.id }
         val seriesConfirmed = state.seriesConfirmed.toList().map { it.id }
         val merchInferred = state.merchInferred.toList().map { it.name }
