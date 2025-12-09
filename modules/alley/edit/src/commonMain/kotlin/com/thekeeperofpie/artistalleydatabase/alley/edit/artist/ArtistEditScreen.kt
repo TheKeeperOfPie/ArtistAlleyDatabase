@@ -48,6 +48,7 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -66,6 +67,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_hide_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_show_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_commissions
@@ -491,15 +494,25 @@ object ArtistEditScreen {
                 previousFocus = formState.catalogLinks.focusRequester,
                 nextFocus = formState.seriesInferred.focusRequester,
             )
+
+            val hasConfirmedSeries by derivedStateOf { state.seriesConfirmed.isNotEmpty() }
+            var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
+            val showSeriesInferred = !hasConfirmedSeries || requestedShowSeriesInferred
             SeriesSection(
                 state = formState.seriesInferred,
                 title = Res.string.alley_edit_artist_edit_series_inferred,
-                items = state.seriesInferred,
+                items = state.seriesInferred.takeIf { showSeriesInferred },
                 predictions = seriesPredictions,
                 image = seriesImage,
                 previousFocus = formState.commissions.focusRequester,
                 nextFocus = formState.seriesConfirmed.focusRequester,
             )
+            ShowInferredButton(
+                hasConfirmed = hasConfirmedSeries,
+                showingInferred = showSeriesInferred,
+                onClick = { requestedShowSeriesInferred = it },
+            )
+
             SeriesSection(
                 state = formState.seriesConfirmed,
                 title = Res.string.alley_edit_artist_edit_series_confirmed,
@@ -509,16 +522,26 @@ object ArtistEditScreen {
                 previousFocus = formState.seriesInferred.focusRequester,
                 nextFocus = formState.merchInferred.focusRequester,
             )
+
+            val hasConfirmedMerch by derivedStateOf { state.merchConfirmed.isNotEmpty() }
+            var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
+            val showMerchInferred = !hasConfirmedMerch || requestedShowMerchInferred
             MultiTextSection(
                 state = formState.merchInferred,
                 title = Res.string.alley_edit_artist_edit_merch_inferred,
-                items = state.merchInferred,
+                items = state.merchInferred.takeIf { showMerchInferred },
                 predictions = merchPredictions,
                 itemToText = { it.name },
                 itemToSerializedValue = { it.name },
                 previousFocus = formState.seriesConfirmed.focusRequester,
                 nextFocus = formState.merchConfirmed.focusRequester,
             )
+            ShowInferredButton(
+                hasConfirmed = hasConfirmedMerch,
+                showingInferred = showMerchInferred,
+                onClick = { requestedShowMerchInferred = it },
+            )
+
             MultiTextSection(
                 state = formState.merchConfirmed,
                 title = Res.string.alley_edit_artist_edit_merch_confirmed,
@@ -548,7 +571,7 @@ object ArtistEditScreen {
     private fun <T> EntryFormScope.MultiTextSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
-        items: SnapshotStateList<T>,
+        items: SnapshotStateList<T>?,
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
         itemToText: @Composable (T) -> String,
         itemToSerializedValue: (T) -> String,
@@ -563,8 +586,18 @@ object ArtistEditScreen {
             items = items,
             entryPredictions = predictions,
             preferPrediction = true,
+            onPredictionChosen = {
+                Snapshot.withMutableSnapshot {
+                    if (items?.contains(it) == false) {
+                        items.add(it)
+                    }
+                    // Still clear existing input so that if editor enters a duplicate,
+                    // they don't have to manually clear the text to move on
+                    state.value.clearText()
+                }
+            },
             onItemCommitted = onItemCommitted,
-            removeLastItem = { items.removeLastOrNull()?.let { itemToSerializedValue(it) } },
+            removeLastItem = { items?.removeLastOrNull()?.let { itemToSerializedValue(it) } },
             item = { _, item ->
                 Box {
                     TextField(
@@ -586,7 +619,7 @@ object ArtistEditScreen {
                                     DropdownMenuItem(
                                         text = { Text(stringResource(Res.string.alley_edit_artist_action_delete)) },
                                         onClick = {
-                                            items.remove(item)
+                                            items?.remove(item)
                                             showMenu = false
                                         }
                                     )
@@ -608,7 +641,7 @@ object ArtistEditScreen {
     private fun EntryFormScope.SeriesSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
-        items: SnapshotStateList<SeriesInfo>,
+        items: SnapshotStateList<SeriesInfo>?,
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
         image: (SeriesInfo) -> String?,
         previousFocus: FocusRequester?,
@@ -620,7 +653,7 @@ object ArtistEditScreen {
             items = items,
             entryPredictions = predictions,
             preferPrediction = true,
-            removeLastItem = { items.removeLastOrNull()?.titlePreferred },
+            removeLastItem = { items?.removeLastOrNull()?.titlePreferred },
             prediction = { _, value -> Text(value.titlePreferred) },
             item = { _, value ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -641,7 +674,7 @@ object ArtistEditScreen {
                         IconButtonWithTooltip(
                             imageVector = Icons.Default.Delete,
                             tooltipText = contentDescription,
-                            onClick = { items -= value },
+                            onClick = { items?.remove(value) },
                             contentDescription = contentDescription,
                         )
                     }
@@ -667,6 +700,34 @@ object ArtistEditScreen {
                         UtilsComposeRes.string.more_actions_content_description
                     ),
                 )
+            }
+        }
+    }
+
+    @Composable
+    private fun ShowInferredButton(
+        hasConfirmed: Boolean,
+        showingInferred: Boolean,
+        onClick: (requestShowInferred: Boolean) -> Unit,
+    ) {
+        if (hasConfirmed) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp)
+            ) {
+                FilledTonalButton(onClick = { onClick(!showingInferred) }) {
+                    Text(
+                        stringResource(
+                            if (showingInferred) {
+                                Res.string.alley_edit_artist_edit_action_hide_inferred
+                            } else {
+                                Res.string.alley_edit_artist_edit_action_show_inferred
+                            }
+                        )
+                    )
+                }
             }
         }
     }

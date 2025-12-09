@@ -441,7 +441,7 @@ fun EntryFormScope.MultiTextSection(
                     }
                 }
 
-                trailingIcon?.invoke(entry)
+                trailingIcon.invoke(entry)
 
                 if (secondaryImage != null) {
                     EntryImage(
@@ -463,12 +463,18 @@ fun EntryFormScope.MultiTextSection(
 fun <T> EntryFormScope.MultiTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
-    items: SnapshotStateList<T>,
+    items: SnapshotStateList<T>?,
     onItemCommitted: (String) -> Unit,
     removeLastItem: () -> String?,
     item: @Composable (index: Int, T) -> Unit,
     entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
     prediction: @Composable (index: Int, T) -> Unit = item,
+    onPredictionChosen: (T) -> Unit = {
+        Snapshot.withMutableSnapshot {
+            items?.add(it)
+            state.value.clearText()
+        }
+    },
     preferPrediction: Boolean = false,
     pendingErrorMessage: () -> String? = { null },
     previousFocus: FocusRequester? = null,
@@ -486,7 +492,7 @@ fun <T> EntryFormScope.MultiTextSection(
         }
     )
 
-    items.forEachIndexed { index, value ->
+    items?.forEachIndexed { index, value ->
         var showOverflow by remember { mutableStateOf(false) }
         Box {
             val shape =
@@ -521,132 +527,129 @@ fun <T> EntryFormScope.MultiTextSection(
 
     AnimatedVisibility(
         // TODO: Allow showing open field even when locked in search panel
-        visible = state.lockState.editable,
+        visible = state.lockState.editable && items != null,
         enter = expandVertically(),
         exit = shrinkVertically(),
     ) {
-        val predictions by produceState(emptyList(), state, entryPredictions) {
-            // No debounce here because speed of autocomplete is critical for streamlined entry
-            snapshotFlow { state.value.text.toString() }
-                .flatMapLatest(entryPredictions)
-                .flowOn(PlatformDispatchers.IO)
-                .collectLatest { value = it }
-        }
-        val dropdownFocusRequester = remember { FocusRequester() }
-        val showPredictions by remember {
-            derivedStateOf {
-                state.lockState.editable && state.value.text.isNotBlank()
+        if (items != null) {
+            val predictions by produceState(emptyList(), state, entryPredictions) {
+                // No debounce here because speed of autocomplete is critical for streamlined entry
+                snapshotFlow { state.value.text.toString() }
+                    .flatMapLatest(entryPredictions)
+                    .flowOn(PlatformDispatchers.IO)
+                    .collectLatest { value = it }
             }
-        }
-        var dropdownExpanded by remember { mutableStateOf(false) }
-        val scope = rememberCoroutineScope()
-        EntryAutocompleteDropdown(
-            expanded = { dropdownExpanded },
-            onExpandedChange = { dropdownExpanded = it },
-            text = state.value,
-            predictions = { predictions },
-            showPredictions = { showPredictions },
-            onPredictionChosen = {
-                Snapshot.withMutableSnapshot {
-                    items += it
-                    state.value.clearText()
+            val dropdownFocusRequester = remember { FocusRequester() }
+            val showPredictions by remember {
+                derivedStateOf {
+                    state.lockState.editable && state.value.text.isNotBlank()
                 }
-            },
-            item = prediction,
-            fieldFocusRequester = state.focusRequester,
-            focusRequester = dropdownFocusRequester,
-            modifier = Modifier.onPreviewKeyEvent {
-                if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-                if (it.isTabKeyDownOrTyped) {
-                    if (dropdownExpanded) {
-                        scope.launch {
-                            // Delay long enough for the popup to capture focus,
-                            // then move to first dropdown item
-                            delay(100.milliseconds)
-                            dropdownFocusRequester.requestFocus(FocusDirection.Next)
-                        }
-                    }
-                    false
-                } else {
-                    when (it.key) {
-                        // TODO: Re-add backspace to move up behavior on mobile
-                        Key.DirectionUp -> if (dropdownExpanded) {
+            }
+            var dropdownExpanded by remember { mutableStateOf(false) }
+            val scope = rememberCoroutineScope()
+            EntryAutocompleteDropdown(
+                expanded = { dropdownExpanded },
+                onExpandedChange = { dropdownExpanded = it },
+                text = state.value,
+                predictions = { predictions },
+                showPredictions = { showPredictions },
+                onPredictionChosen = onPredictionChosen,
+                item = prediction,
+                fieldFocusRequester = state.focusRequester,
+                focusRequester = dropdownFocusRequester,
+                modifier = Modifier.onPreviewKeyEvent {
+                    if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    if (it.isTabKeyDownOrTyped) {
+                        if (dropdownExpanded) {
                             scope.launch {
+                                // Delay long enough for the popup to capture focus,
+                                // then move to first dropdown item
                                 delay(100.milliseconds)
                                 dropdownFocusRequester.requestFocus(FocusDirection.Next)
                             }
-                            false
-                        } else if (state.value.text.isBlank() && items.isNotEmpty()) {
-                            Snapshot.withMutableSnapshot {
-                                val removed = removeLastItem()
-                                if (removed != null) {
-                                    state.value.setTextAndPlaceCursorAtEnd(removed)
-                                }
-                            }
-                            scope.launch {
-                                delay(1.seconds)
-                                state.focusRequester.requestFocus()
-                            }
-                            true
-                        } else {
-                            false
                         }
-                        Key.DirectionDown -> {
-                            if (dropdownExpanded) {
+                        false
+                    } else {
+                        when (it.key) {
+                            // TODO: Re-add backspace to move up behavior on mobile
+                            Key.DirectionUp -> if (dropdownExpanded) {
                                 scope.launch {
                                     delay(100.milliseconds)
                                     dropdownFocusRequester.requestFocus(FocusDirection.Next)
                                 }
+                                false
+                            } else if (state.value.text.isBlank() && items.isNotEmpty()) {
+                                Snapshot.withMutableSnapshot {
+                                    val removed = removeLastItem()
+                                    if (removed != null) {
+                                        state.value.setTextAndPlaceCursorAtEnd(removed)
+                                    }
+                                }
+                                scope.launch {
+                                    delay(1.seconds)
+                                    state.focusRequester.requestFocus()
+                                }
+                                true
+                            } else {
+                                false
                             }
-                            false
+                            Key.DirectionDown -> {
+                                if (dropdownExpanded) {
+                                    scope.launch {
+                                        delay(100.milliseconds)
+                                        dropdownFocusRequester.requestFocus(FocusDirection.Next)
+                                    }
+                                }
+                                false
+                            }
+                            else -> false
                         }
-                        else -> false
                     }
                 }
+            ) {
+                val pendingErrorMessage = pendingErrorMessage()
+                OpenSectionField(
+                    state = state.value,
+                    lockState = { state.lockState },
+                    totalSize = { items.size },
+                    supportingText = pendingErrorMessage?.let { { Text(pendingErrorMessage) } },
+                    isError = pendingErrorMessage != null,
+                    onLock = { state.lockState = EntryLockState.LOCKED },
+                    onDone = {
+                        if (preferPrediction && predictions.isNotEmpty()) {
+                            Snapshot.withMutableSnapshot {
+                                items += predictions.first()
+                                state.value.clearText()
+                            }
+                        } else if (pendingErrorMessage() == null) {
+                            val newValue = state.value.text
+                            if (newValue.isNotBlank()) {
+                                onItemCommitted(newValue.trim().toString())
+                            }
+                        }
+                    },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+                        .onFocusChanged { state.isFocused = it.isFocused }
+                        .focusRequester(state.focusRequester)
+                        .onPreviewKeyEvent {
+                            if (it.type != KeyEventType.KeyDown || !dropdownExpanded ||
+                                it.key != Key.Escape
+                            ) {
+                                return@onPreviewKeyEvent false
+                            }
+                            dropdownExpanded = false
+                            true
+                        }
+                        .interceptTab {
+                            if (dropdownExpanded) {
+                                dropdownFocusRequester.requestFocus()
+                            } else {
+                                val focusRequester = if (it) nextFocus else previousFocus
+                                focusRequester?.requestFocus()
+                            }
+                        }
+                )
             }
-        ) {
-            val pendingErrorMessage = pendingErrorMessage()
-            OpenSectionField(
-                state = state.value,
-                lockState = { state.lockState },
-                totalSize = { items.size },
-                supportingText = pendingErrorMessage?.let { { Text(pendingErrorMessage) } },
-                isError = pendingErrorMessage != null,
-                onLock = { state.lockState = EntryLockState.LOCKED },
-                onDone = {
-                    if (preferPrediction && predictions.isNotEmpty()) {
-                        Snapshot.withMutableSnapshot {
-                            items += predictions.first()
-                            state.value.clearText()
-                        }
-                    } else if (pendingErrorMessage() == null) {
-                        val newValue = state.value.text
-                        if (newValue.isNotBlank()) {
-                            onItemCommitted(newValue.trim().toString())
-                        }
-                    }
-                },
-                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
-                    .onFocusChanged { state.isFocused = it.isFocused }
-                    .focusRequester(state.focusRequester)
-                    .onPreviewKeyEvent {
-                        if (it.type != KeyEventType.KeyDown || !dropdownExpanded ||
-                            it.key != Key.Escape
-                        ) {
-                            return@onPreviewKeyEvent false
-                        }
-                        dropdownExpanded = false
-                        true
-                    }
-                    .interceptTab {
-                        if (dropdownExpanded) {
-                            dropdownFocusRequester.requestFocus()
-                        } else {
-                            val focusRequester = if (it) nextFocus else previousFocus
-                            focusRequester?.requestFocus()
-                        }
-                    }
-            )
         }
     }
 }
