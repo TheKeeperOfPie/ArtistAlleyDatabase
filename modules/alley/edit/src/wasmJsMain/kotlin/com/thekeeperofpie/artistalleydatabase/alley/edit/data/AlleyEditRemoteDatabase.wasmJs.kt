@@ -4,6 +4,7 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -13,8 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -36,16 +36,25 @@ import kotlin.uuid.Uuid
 @SingleIn(AppScope::class)
 @Inject
 actual class AlleyEditRemoteDatabase(
+    private val dispatchers: CustomDispatchers,
     private val ktorClient: HttpClient,
 ) {
     // TODO: Error handling
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
-        withContext(PlatformDispatchers.IO) {
-            sendRequest(BackendRequest.Artist(artistId))
+        withContext(dispatchers.io) {
+            sendRequest(BackendRequest.Artist(dataYear, artistId))
         }
 
+
+    actual suspend fun loadArtistHistory(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): List<ArtistHistoryEntry> = withContext(dispatchers.io) {
+        sendRequest(BackendRequest.ArtistHistory(dataYear, artistId)).orEmpty()
+    }
+
     actual suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary> =
-        withContext(PlatformDispatchers.IO) {
+        withContext(dispatchers.io) {
             sendRequest(BackendRequest.Artists).orEmpty()
         }
 
@@ -54,9 +63,15 @@ actual class AlleyEditRemoteDatabase(
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
     ): ArtistSave.Response.Result =
-        withContext(PlatformDispatchers.IO) {
+        withContext(dispatchers.io) {
             try {
-                sendRequest(ArtistSave.Request(initial = initial, updated = updated))!!.result
+                sendRequest(
+                    ArtistSave.Request(
+                        dataYear = dataYear,
+                        initial = initial,
+                        updated = updated,
+                    )
+                )!!.result
             } catch (t: Throwable) {
                 t.printStackTrace()
                 ArtistSave.Response.Result.Failed(t)
@@ -64,7 +79,7 @@ actual class AlleyEditRemoteDatabase(
         }
 
     actual suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage> =
-        withContext(PlatformDispatchers.IO) {
+        withContext(dispatchers.io) {
             try {
                 sendRequest(
                     ListImages.Request(
@@ -87,7 +102,7 @@ actual class AlleyEditRemoteDatabase(
         artistId: Uuid,
         platformFile: PlatformFile,
         id: Uuid,
-    ): EditImage = withContext(PlatformDispatchers.IO) {
+    ): EditImage = withContext(dispatchers.io) {
         val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) +
                 "/$id.${platformFile.extension}"
         val bytes = platformFile.readBytes()
@@ -102,7 +117,7 @@ actual class AlleyEditRemoteDatabase(
 
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
     actual suspend fun loadSeries(): List<SeriesInfo> =
-        withContext(PlatformDispatchers.IO) {
+        withContext(dispatchers.io) {
             sendRequest(BackendRequest.Series).orEmpty()
         }
 
@@ -110,7 +125,7 @@ actual class AlleyEditRemoteDatabase(
         initial: SeriesInfo?,
         updated: SeriesInfo,
     ): SeriesSave.Response.Result =
-        withContext(PlatformDispatchers.IO) {
+        withContext(dispatchers.io) {
             try {
                 sendRequest(SeriesSave.Request(initial = initial, updated = updated))!!.result
             } catch (t: Throwable) {
@@ -121,7 +136,7 @@ actual class AlleyEditRemoteDatabase(
 
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
     actual suspend fun loadMerch(): List<MerchInfo> =
-        withContext(PlatformDispatchers.IO) {
+        withContext(dispatchers.io) {
             sendRequest(BackendRequest.Merch).orEmpty()
         }
 
@@ -129,7 +144,7 @@ actual class AlleyEditRemoteDatabase(
         initial: MerchInfo?,
         updated: MerchInfo,
     ): MerchSave.Response.Result =
-        withContext(PlatformDispatchers.IO) {
+        withContext(dispatchers.io) {
             try {
                 sendRequest(MerchSave.Request(initial = initial, updated = updated))!!.result
             } catch (t: Throwable) {
@@ -148,12 +163,10 @@ actual class AlleyEditRemoteDatabase(
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,
     ): Response? where Request : BackendRequest, Request : BackendRequest.WithResponse<Response> {
-        ConsoleLogger.log("sendRequest = $request")
         val response = ktorClient.post(window.origin + "/database") {
             contentType(ContentType.Application.Json)
             setBody<BackendRequest>(request)
         }
-        ConsoleLogger.log("response = $response")
         if (response.status != HttpStatusCode.OK) {
             // TODO: Surface errors
             return null

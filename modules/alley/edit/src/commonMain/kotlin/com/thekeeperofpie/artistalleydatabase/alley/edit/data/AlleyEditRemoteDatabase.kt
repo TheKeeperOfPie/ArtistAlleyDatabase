@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -14,6 +15,7 @@ import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
     suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl?
+    suspend fun loadArtistHistory(dataYear: DataYear, artistId: Uuid): List<ArtistHistoryEntry>
     suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary>
     suspend fun saveArtist(
         dataYear: DataYear,

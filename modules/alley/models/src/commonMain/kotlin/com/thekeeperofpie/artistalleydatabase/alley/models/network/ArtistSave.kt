@@ -1,11 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models.network
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 
 object ArtistSave {
     @Serializable
     data class Request(
+        val dataYear: DataYear,
         val initial: ArtistDatabaseEntry.Impl?,
         val updated: ArtistDatabaseEntry.Impl,
     ): BackendRequest, BackendRequest.WithResponse<Response>

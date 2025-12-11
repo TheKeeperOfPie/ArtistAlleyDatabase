@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.DropdownMenu
@@ -67,6 +68,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_history_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_hide_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_show_inferred
@@ -159,6 +161,7 @@ object ArtistEditScreen {
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
+        onClickHistory: (() -> Unit)? = null,
         viewModel: ArtistEditViewModel = viewModel {
             graph.artistEditViewModelFactory.create(
                 dataYear = dataYear,
@@ -185,6 +188,7 @@ object ArtistEditScreen {
             onClickEditImages = {
                 onClickEditImages(viewModel.state.formState.name.value.text.toString(), it)
             },
+            onClickHistory = onClickHistory,
             onClickSave = viewModel::onClickSave,
         )
 
@@ -203,6 +207,7 @@ object ArtistEditScreen {
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
+        onClickHistory: (() -> Unit)? = null,
         onClickSave: () -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -249,6 +254,14 @@ object ArtistEditScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {
+                        if (mode == Mode.EDIT && onClickHistory != null) {
+                            IconButton(onClick = onClickHistory) {
+                                Icon(
+                                    imageVector = Icons.Default.History,
+                                    contentDescription = stringResource(Res.string.alley_edit_artist_action_history_content_description),
+                                )
+                            }
+                        }
                         val enabled = !errorState.hasAnyError
                         IconButton(onClick = onClickSave, enabled = enabled) {
                             Icon(

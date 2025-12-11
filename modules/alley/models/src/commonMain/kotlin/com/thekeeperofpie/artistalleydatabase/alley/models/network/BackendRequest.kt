@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models.network
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -14,14 +16,19 @@ sealed interface BackendRequest {
     interface WithResponse<Response>
 
     @Serializable
-    data class Artist(val artistId: Uuid) : BackendRequest, BackendRequest.WithResponse<ArtistDatabaseEntry.Impl>
+    data class Artist(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,
+        WithResponse<ArtistDatabaseEntry.Impl>
 
     @Serializable
-    data object Artists : BackendRequest, BackendRequest.WithResponse<List<ArtistSummary>>
+    data class ArtistHistory(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,
+        WithResponse<List<ArtistHistoryEntry>>
 
     @Serializable
-    data object Series : BackendRequest, BackendRequest.WithResponse<List<SeriesInfo>>
+    data object Artists : BackendRequest, WithResponse<List<ArtistSummary>>
 
     @Serializable
-    data object Merch : BackendRequest, BackendRequest.WithResponse<List<MerchInfo>>
+    data object Series : BackendRequest, WithResponse<List<SeriesInfo>>
+
+    @Serializable
+    data object Merch : BackendRequest, WithResponse<List<MerchInfo>>
 }

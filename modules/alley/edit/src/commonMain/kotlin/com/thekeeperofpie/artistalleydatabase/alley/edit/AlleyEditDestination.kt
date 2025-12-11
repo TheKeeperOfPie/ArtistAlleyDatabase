@@ -25,6 +25,9 @@ sealed interface AlleyEditDestination : NavKey {
     data class ArtistEdit(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
 
     @Serializable
+    data class ArtistHistory(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
+
+    @Serializable
     data class ImagesEdit(
         val dataYear: DataYear,
         val displayName: String,
@@ -38,7 +41,8 @@ sealed interface AlleyEditDestination : NavKey {
     data class SeriesAdd(val seriesId: Uuid = Uuid.random()) : AlleyEditDestination
 
     @Serializable
-    data class SeriesEdit(val series: SeriesInfo, val seriesColumn: SeriesColumn?) : AlleyEditDestination
+    data class SeriesEdit(val series: SeriesInfo, val seriesColumn: SeriesColumn?) :
+        AlleyEditDestination
 
     @Serializable
     data object Merch : AlleyEditDestination
@@ -50,38 +54,45 @@ sealed interface AlleyEditDestination : NavKey {
     data class MerchEdit(val merch: MerchInfo) : AlleyEditDestination
 
     companion object {
-        fun parseRoute(route: String): AlleyEditDestination? = when {
-            route.isEmpty() || route.startsWith("home") -> Home
-            route == "series" -> Series
-            route == "merch" -> Merch
-            route.startsWith("artist/add") -> try {
-                val (year, artist) = route.removePrefix("artist/add/").split("/")
-                val artistId = Uuid.parse(artist)
-                val dataYear = DataYear.deserialize(year) ?: return null
-                ArtistAdd(dataYear, artistId)
-            } catch (e: IllegalArgumentException) {
-                e.printStackTrace()
-                null
+        fun parseRoute(route: String): AlleyEditDestination? = try {
+            when {
+                route.isEmpty() || route.startsWith("home") -> Home
+                route == "series" -> Series
+                route == "merch" -> Merch
+                route.startsWith("artist/history") -> {
+                    val (year, artist) = route.removePrefix("artist/history/").split("/")
+                    val artistId = Uuid.parse(artist)
+                    val dataYear = DataYear.deserialize(year) ?: return null
+                    ArtistHistory(dataYear, artistId)
+                }
+                route.startsWith("artist/add") -> {
+                    val (year, artist) = route.removePrefix("artist/add/").split("/")
+                    val artistId = Uuid.parse(artist)
+                    val dataYear = DataYear.deserialize(year) ?: return null
+                    ArtistAdd(dataYear, artistId)
+                }
+                route.startsWith("artist") -> {
+                    val (year, artist) = route.removePrefix("artist/").split("/")
+                    val artistId = Uuid.parse(artist)
+                    val dataYear = DataYear.deserialize(year) ?: return null
+                    ArtistEdit(dataYear, artistId)
+                }
+                else -> {
+                    ConsoleLogger.log("Failed to find route for $route")
+                    null
+                }
             }
-            route.startsWith("artist") -> try {
-                val (year, artist) = route.removePrefix("artist/").split("/")
-                val artistId = Uuid.parse(artist)
-                val dataYear = DataYear.deserialize(year) ?: return null
-                ArtistEdit(dataYear, artistId)
-            } catch (e: IllegalArgumentException) {
-                e.printStackTrace()
-                null
-            }
-            else -> {
-                ConsoleLogger.log("Failed to find route for $route")
-                null
-            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
         }
 
         fun toEncodedRoute(destination: AlleyEditDestination) = when (destination) {
             is ArtistAdd -> "artist/add/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.artistId.toString())
+            is ArtistHistory -> "artist/history/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             Series -> "series"
             is SeriesAdd -> "series/add/${Uri.encode(destination.seriesId.toString())}"
@@ -90,7 +101,8 @@ sealed interface AlleyEditDestination : NavKey {
             Home -> ""
             is ImagesEdit,
             is MerchEdit,
-            is SeriesEdit, -> null
+            is SeriesEdit,
+                -> null
         }
     }
 }

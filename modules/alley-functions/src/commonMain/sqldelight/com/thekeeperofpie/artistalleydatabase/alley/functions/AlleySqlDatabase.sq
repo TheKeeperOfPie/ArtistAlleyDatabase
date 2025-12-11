@@ -1,3 +1,11 @@
+import kotlin.Boolean;
+import kotlin.String;
+import kotlin.collections.List;
+import kotlin.time.Instant;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource;
+
 DROP TABLE IF EXISTS artistEntry2023_fts;
 DROP TABLE IF EXISTS artistEntry2024_fts;
 DROP TABLE IF EXISTS artistEntry2025_fts;
@@ -10,3 +18,26 @@ DROP TABLE IF EXISTS stampRallyEntry2025_fts;
 DROP TABLE IF EXISTS stampRallyEntryAnimeExpo2026_fts;
 DROP TABLE IF EXISTS seriesEntry_fts;
 DROP TABLE IF EXISTS merchEntry_fts;
+
+CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
+    id TEXT,
+    status TEXT AS ArtistStatus,
+    booth TEXT COLLATE NOCASE,
+    name TEXT COLLATE NOCASE,
+    summary TEXT,
+    links TEXT AS List<String>,
+    storeLinks TEXT AS List<String>,
+    catalogLinks TEXT AS List<String>,
+    notes TEXT,
+    commissions TEXT AS List<String>,
+    seriesInferred TEXT AS List<String>,
+    seriesConfirmed TEXT AS List<String>,
+    merchInferred TEXT AS List<String>,
+    merchConfirmed TEXT AS List<String>,
+    images TEXT AS List<CatalogImage>,
+    editorNotes TEXT,
+    lastEditor TEXT,
+    lastEditTime TEXT AS Instant NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEntryAnimeExpo2026History (id);

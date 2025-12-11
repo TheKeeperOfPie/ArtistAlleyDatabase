@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListO
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -24,11 +25,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
+import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -47,6 +50,8 @@ object AlleyBackendDatabase {
                 when (this) {
                     is ArtistSave.Request -> makeResponse(saveArtist(context, this))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
+                    is BackendRequest.ArtistHistory ->
+                        makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
                     is BackendRequest.Merch -> makeResponse(loadMerch(context))
                     is BackendRequest.Series -> loadSeries(context)
@@ -90,30 +95,104 @@ object AlleyBackendDatabase {
         context: EventContext,
         request: BackendRequest.Artist,
     ): ArtistDatabaseEntry.Impl? =
-        database(context)
-            .artistEntryAnimeExpo2026Queries
-            .getArtist(request.artistId.toString())
-            .awaitAsOneOrNull()
-            ?.toArtistDatabaseEntry()
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> database(context)
+                .artistEntryAnimeExpo2026Queries
+                .getArtist(request.artistId.toString())
+                .awaitAsOneOrNull()
+                ?.toArtistDatabaseEntry()
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> null // TODO: Return legacy years?
+        }
+
+    private suspend fun loadArtistHistory(
+        context: EventContext,
+        request: BackendRequest.ArtistHistory,
+    ): List<ArtistHistoryEntry> =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> database(context).artistEntryAnimeExpo2026Queries
+                .getHistory(request.artistId.toString())
+                .awaitAsList()
+                .map { it.toHistoryEntry() }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> emptyList() // TODO: Return legacy years?
+        }
 
     private suspend fun saveArtist(
         context: EventContext,
         request: ArtistSave.Request,
-    ): ArtistSave.Response {
-        val database = database(context, tryCreate = true)
-        val currentArtist =
-            database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
-                .awaitAsOneOrNull()?.toArtistDatabaseEntry()
-        if (currentArtist != null && currentArtist != request.initial) {
-            return ArtistSave.Response(ArtistSave.Response.Result.Outdated(currentArtist))
+    ) = ArtistSave.Response(
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                val database = database(context, tryCreate = true)
+                val currentArtist =
+                    database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
+                        .awaitAsOneOrNull()?.toArtistDatabaseEntry()
+                if (currentArtist != null && currentArtist != request.initial) {
+                    ArtistSave.Response.Result.Outdated(currentArtist)
+                } else {
+                    val updatedArtist = request.updated.copy(
+                        lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
+                    ).toArtistEntryAnimeExpo2026()
+                    database.artistEntryAnimeExpo2026Queries.insertHistory(
+                        ArtistEntryAnimeExpo2026History(
+                            id = updatedArtist.id,
+                            status = updatedArtist.status.takeIf { it != currentArtist?.status },
+                            booth = updatedArtist.booth.takeIf { it != currentArtist?.booth }
+                                ?.ifBlank { null },
+                            name = updatedArtist.name.takeIf { it != currentArtist?.name }
+                                ?.ifBlank { null },
+                            summary = updatedArtist.summary.takeIf { it != currentArtist?.summary }
+                                ?.ifBlank { null },
+                            links = updatedArtist.links.takeIf { it != currentArtist?.links }
+                                ?.ifEmpty { null },
+                            storeLinks = updatedArtist.storeLinks.takeIf { it != currentArtist?.storeLinks }
+                                ?.ifEmpty { null },
+                            catalogLinks = updatedArtist.catalogLinks.takeIf { it != currentArtist?.catalogLinks }
+                                ?.ifEmpty { null },
+                            notes = updatedArtist.notes.takeIf { it != currentArtist?.notes }
+                                ?.ifBlank { null },
+                            commissions = updatedArtist.commissions.takeIf { it != currentArtist?.commissions }
+                                ?.ifEmpty { null },
+                            seriesInferred = updatedArtist.seriesInferred.takeIf { it != currentArtist?.seriesInferred }
+                                ?.ifEmpty { null },
+                            seriesConfirmed = updatedArtist.seriesConfirmed.takeIf { it != currentArtist?.seriesConfirmed }
+                                ?.ifEmpty { null },
+                            merchInferred = updatedArtist.merchInferred.takeIf { it != currentArtist?.merchInferred }
+                                ?.ifEmpty { null },
+                            merchConfirmed = updatedArtist.merchConfirmed.takeIf { it != currentArtist?.merchConfirmed }
+                                ?.ifEmpty { null },
+                            images = updatedArtist.images.takeIf { it != currentArtist?.images }
+                                ?.ifEmpty { null },
+                            editorNotes = updatedArtist.editorNotes.takeIf { it != currentArtist?.editorNotes }
+                                ?.ifBlank { null },
+                            lastEditor = updatedArtist.lastEditor.takeIf { it != currentArtist?.lastEditor }
+                                ?.ifBlank { null },
+                            lastEditTime = updatedArtist.lastEditTime ?: Clock.System.now(),
+                        )
+                    )
+                    database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist)
+                    ArtistSave.Response.Result.Success
+                }
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> ArtistSave.Response.Result.Failed(
+                UnsupportedOperationException("Editing legacy years not supported")
+            )
         }
-
-        val updatedArtist = request.updated.copy(
-            lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
-        ).toArtistEntryAnimeExpo2026()
-        database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist)
-        return ArtistSave.Response(ArtistSave.Response.Result.Success)
-    }
+    )
 
     /**
      * Exposes image for local development so that it doesn't access the remote R2 bucket via the
@@ -192,7 +271,10 @@ object AlleyBackendDatabase {
             .awaitAsList()
             .map { it.toMerchInfo() }
 
-    private suspend fun saveMerch(context: EventContext, request: MerchSave.Request): MerchSave.Response {
+    private suspend fun saveMerch(
+        context: EventContext,
+        request: MerchSave.Request,
+    ): MerchSave.Response {
         val database = database(context, tryCreate = true)
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.updated.name)
@@ -212,6 +294,19 @@ object AlleyBackendDatabase {
         val database = AlleySqlDatabase(
             driver = sqlDriver,
             artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
+            artistEntryAnimeExpo2026HistoryAdapter = ArtistEntryAnimeExpo2026History.Adapter(
+                statusAdapter = ColumnAdapters.artistStatusAdapter,
+                linksAdapter = ColumnAdapters.listStringAdapter,
+                storeLinksAdapter = ColumnAdapters.listStringAdapter,
+                catalogLinksAdapter = ColumnAdapters.listStringAdapter,
+                seriesInferredAdapter = ColumnAdapters.listStringAdapter,
+                seriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
+                merchInferredAdapter = ColumnAdapters.listStringAdapter,
+                merchConfirmedAdapter = ColumnAdapters.listStringAdapter,
+                commissionsAdapter = ColumnAdapters.listStringAdapter,
+                imagesAdapter = ColumnAdapters.listCatalogImageAdapter,
+                lastEditTimeAdapter = ColumnAdapters.instantAdapter,
+            ),
             seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
         )
         if (tryCreate) {
@@ -268,4 +363,25 @@ object AlleyBackendDatabase {
         categories = null,
         yearFlags = 0L,
     )
+
+    private fun ArtistEntryAnimeExpo2026History.toHistoryEntry() =
+        ArtistHistoryEntry(
+            status = status,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = images,
+            editorNotes = editorNotes,
+            lastEditor = lastEditor,
+            lastEditTime = lastEditTime,
+        )
 }

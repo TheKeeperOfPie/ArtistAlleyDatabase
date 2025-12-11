@@ -46,6 +46,9 @@ class AlleyEditDatabase(
                 ?.artist
                 ?.databaseEntry
 
+    suspend fun loadArtistHistory(dataYear: DataYear, artistId: Uuid) =
+        remoteDatabase.loadArtistHistory(dataYear, artistId)
+
     suspend fun loadSeries(): Map<String, SeriesInfo> =
         (seriesEntryDao.getSeries().map { it.toSeriesInfo() } + remoteDatabase.loadSeries())
             .associateBy { it.id }

@@ -8,4 +8,13 @@ VALUES ?;
 
 getArtist:
 SELECT * FROM artistEntryAnimeExpo2026
-WHERE :id = artistEntryAnimeExpo2026.id;
+WHERE artistEntryAnimeExpo2026.id = :id;
+
+getHistory:
+SELECT * FROM artistEntryAnimeExpo2026History
+WHERE id = :id
+ORDER BY lastEditTime DESC;
+
+insertHistory:
+INSERT INTO artistEntryAnimeExpo2026History
+VALUES ?;

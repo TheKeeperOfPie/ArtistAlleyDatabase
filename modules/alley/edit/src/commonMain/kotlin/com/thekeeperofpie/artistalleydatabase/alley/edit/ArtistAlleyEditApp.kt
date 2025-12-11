@@ -21,6 +21,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
@@ -178,6 +179,21 @@ private fun entryProvider(
                     )
                 )
             },
+            onClickHistory = {
+                navStack.navigate(
+                    AlleyEditDestination.ArtistHistory(
+                        dataYear = route.dataYear,
+                        artistId = route.artistId,
+                    )
+                )
+            }
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.ArtistHistory> { route ->
+        ArtistHistoryScreen(
+            dataYear = route.dataYear,
+            artistId = route.artistId,
+            graph = graph,
         )
     }
     sharedElementEntry<AlleyEditDestination.ImagesEdit> {
