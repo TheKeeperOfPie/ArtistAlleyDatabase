@@ -9,6 +9,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlin.uuid.Uuid
 
@@ -19,6 +20,7 @@ class ArtistHistoryViewModel(
     @Assisted private val artistId: Uuid,
 ): ViewModel() {
     val history = flowFromSuspend { database.loadArtistHistory(dataYear, artistId) }
+        .mapLatest(ArtistHistoryEntryWithDiff::calculateDiffs)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     @AssistedFactory

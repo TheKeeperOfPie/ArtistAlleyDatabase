@@ -31,7 +31,6 @@ import kotlinx.serialization.json.Json
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
-import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -141,45 +140,11 @@ object AlleyBackendDatabase {
                 } else {
                     val updatedArtist = request.updated.copy(
                         lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
-                    ).toArtistEntryAnimeExpo2026()
-                    database.artistEntryAnimeExpo2026Queries.insertHistory(
-                        ArtistEntryAnimeExpo2026History(
-                            id = updatedArtist.id,
-                            status = updatedArtist.status.takeIf { it != currentArtist?.status },
-                            booth = updatedArtist.booth.takeIf { it != currentArtist?.booth }
-                                ?.ifBlank { null },
-                            name = updatedArtist.name.takeIf { it != currentArtist?.name }
-                                ?.ifBlank { null },
-                            summary = updatedArtist.summary.takeIf { it != currentArtist?.summary }
-                                ?.ifBlank { null },
-                            links = updatedArtist.links.takeIf { it != currentArtist?.links }
-                                ?.ifEmpty { null },
-                            storeLinks = updatedArtist.storeLinks.takeIf { it != currentArtist?.storeLinks }
-                                ?.ifEmpty { null },
-                            catalogLinks = updatedArtist.catalogLinks.takeIf { it != currentArtist?.catalogLinks }
-                                ?.ifEmpty { null },
-                            notes = updatedArtist.notes.takeIf { it != currentArtist?.notes }
-                                ?.ifBlank { null },
-                            commissions = updatedArtist.commissions.takeIf { it != currentArtist?.commissions }
-                                ?.ifEmpty { null },
-                            seriesInferred = updatedArtist.seriesInferred.takeIf { it != currentArtist?.seriesInferred }
-                                ?.ifEmpty { null },
-                            seriesConfirmed = updatedArtist.seriesConfirmed.takeIf { it != currentArtist?.seriesConfirmed }
-                                ?.ifEmpty { null },
-                            merchInferred = updatedArtist.merchInferred.takeIf { it != currentArtist?.merchInferred }
-                                ?.ifEmpty { null },
-                            merchConfirmed = updatedArtist.merchConfirmed.takeIf { it != currentArtist?.merchConfirmed }
-                                ?.ifEmpty { null },
-                            images = updatedArtist.images.takeIf { it != currentArtist?.images }
-                                ?.ifEmpty { null },
-                            editorNotes = updatedArtist.editorNotes.takeIf { it != currentArtist?.editorNotes }
-                                ?.ifBlank { null },
-                            lastEditor = updatedArtist.lastEditor.takeIf { it != currentArtist?.lastEditor }
-                                ?.ifBlank { null },
-                            lastEditTime = updatedArtist.lastEditTime ?: Clock.System.now(),
-                        )
                     )
-                    database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist)
+                    val historyEntry = ArtistHistoryEntry.create(currentArtist, updatedArtist)
+                        .toDatabaseEntry(Uuid.parse(updatedArtist.id))
+                    database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
+                    database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
                     ArtistSave.Response.Result.Success
                 }
             }
@@ -364,6 +329,28 @@ object AlleyBackendDatabase {
         yearFlags = 0L,
     )
 
+    private fun ArtistHistoryEntry.toDatabaseEntry(id: Uuid) =
+        ArtistEntryAnimeExpo2026History(
+            id = id.toString(),
+            status = status,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = images,
+            editorNotes = editorNotes,
+            lastEditor = lastEditor,
+            lastEditTime = timestamp,
+        )
+
     private fun ArtistEntryAnimeExpo2026History.toHistoryEntry() =
         ArtistHistoryEntry(
             status = status,
@@ -382,6 +369,6 @@ object AlleyBackendDatabase {
             images = images,
             editorNotes = editorNotes,
             lastEditor = lastEditor,
-            lastEditTime = lastEditTime,
+            timestamp = lastEditTime,
         )
 }

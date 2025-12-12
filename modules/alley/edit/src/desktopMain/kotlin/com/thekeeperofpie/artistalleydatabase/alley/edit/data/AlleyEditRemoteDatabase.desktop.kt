@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -18,7 +19,11 @@ import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.extension
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 
@@ -35,6 +40,86 @@ actual class AlleyEditRemoteDatabase {
     private val series = mutableMapOf<Uuid, SeriesInfo>()
     private val merch = mutableMapOf<Uuid, MerchInfo>()
 
+    private var simulatedLatency: Duration? = null
+
+    init {
+        runBlocking {
+            // Seed some initial data to make it easier to test out features locally
+            val artistUpdates = listOf<(ArtistDatabaseEntry.Impl) -> ArtistDatabaseEntry.Impl>(
+                { it.copy(name = "First Last", lastEditor = "firstlast@example.org") },
+                { it.copy(summary = "Description", lastEditor = "fakeemail@example.com") },
+                {
+                    it.copy(
+                        links = listOf(
+                            "https://example.com/social",
+                            "https://example.com/profile",
+                        )
+                    )
+                },
+                {
+                    it.copy(
+                        storeLinks = listOf("https://example.org/store"),
+                        catalogLinks = listOf("https://example.net/portfolio"),
+                    )
+                },
+                { it.copy(commissions = listOf("On-site", "Online")) },
+                {
+                    it.copy(
+                        seriesInferred = listOf("SeriesA", "SeriesB"),
+                        merchInferred = listOf("MerchA"),
+                    )
+                },
+                {
+                    it.copy(
+                        seriesInferred = it.seriesInferred + listOf("SeriesC"),
+                        merchInferred = it.merchInferred + listOf("MerchB"),
+                        lastEditor = "firstlast@example.com",
+                    )
+                },
+                {
+                    it.copy(
+                        seriesInferred = it.seriesInferred - listOf("SeriesA"),
+                        merchInferred = it.merchInferred - listOf("MerchA"),
+                        seriesConfirmed = listOf("SeriesA", "SeriesC"),
+                        merchConfirmed = listOf("MerchA", "MerchC"),
+                    )
+                },
+            )
+            var previous =
+                ArtistDatabaseEntry.Impl(
+                    year = DataYear.ANIME_EXPO_2026,
+                    id = Uuid.random().toString(),
+                    status = ArtistStatus.UNKNOWN,
+                    booth = "C38",
+                    name = "",
+                    summary = null,
+                    links = emptyList(),
+                    storeLinks = emptyList(),
+                    catalogLinks = emptyList(),
+                    driveLink = null,
+                    notes = null,
+                    commissions = emptyList(),
+                    seriesInferred = emptyList(),
+                    seriesConfirmed = emptyList(),
+                    merchInferred = emptyList(),
+                    merchConfirmed = emptyList(),
+                    images = emptyList(),
+                    counter = 0,
+                    editorNotes = null,
+                    lastEditor = "fakeemail@example.com",
+                    lastEditTime = Clock.System.now() - 1.hours,
+                )
+            saveArtist(dataYear = DataYear.ANIME_EXPO_2026, initial = null, updated = previous)
+            artistUpdates.forEach {
+                val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.minutes)
+                saveArtist(dataYear = DataYear.ANIME_EXPO_2026, initial = previous, updated = next)
+                previous = next
+            }
+
+            simulatedLatency = 5.seconds
+        }
+    }
+
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
         artistsByDataYearAndId[dataYear]?.get(artistId.toString())
 
@@ -43,7 +128,7 @@ actual class AlleyEditRemoteDatabase {
         artistId: Uuid,
     ): List<ArtistHistoryEntry> =
         artistHistoryByDataYearAndId[dataYear]?.get(artistId.toString()).orEmpty()
-            .sortedByDescending { it.lastEditTime }
+            .sortedByDescending { it.timestamp }
 
     actual suspend fun loadArtists(dataYear: DataYear) =
         artistsByDataYearAndId[dataYear]?.values.orEmpty().toList().map { it.toArtistSummary() }
@@ -55,45 +140,10 @@ actual class AlleyEditRemoteDatabase {
     ): ArtistSave.Response.Result {
         simulateLatency()
         val oldArtist = loadArtist(dataYear, Uuid.parse(updated.id))
-        if (oldArtist != null) {
-            val historyEntry = ArtistHistoryEntry(
-                status = updated.status.takeIf { it != oldArtist.status },
-                booth = updated.booth.takeIf { it != oldArtist.booth }
-                    ?.ifBlank { null },
-                name = updated.name.takeIf { it != oldArtist.name }
-                    ?.ifBlank { null },
-                summary = updated.summary.takeIf { it != oldArtist.summary }
-                    ?.ifBlank { null },
-                links = updated.links.takeIf { it != oldArtist.links }
-                    ?.ifEmpty { null },
-                storeLinks = updated.storeLinks.takeIf { it != oldArtist.storeLinks }
-                    ?.ifEmpty { null },
-                catalogLinks = updated.catalogLinks.takeIf { it != oldArtist.catalogLinks }
-                    ?.ifEmpty { null },
-                notes = updated.notes.takeIf { it != oldArtist.notes }
-                    ?.ifBlank { null },
-                commissions = updated.commissions.takeIf { it != oldArtist.commissions }
-                    ?.ifEmpty { null },
-                seriesInferred = updated.seriesInferred.takeIf { it != oldArtist.seriesInferred }
-                    ?.ifEmpty { null },
-                seriesConfirmed = updated.seriesConfirmed.takeIf { it != oldArtist.seriesConfirmed }
-                    ?.ifEmpty { null },
-                merchInferred = updated.merchInferred.takeIf { it != oldArtist.merchInferred }
-                    ?.ifEmpty { null },
-                merchConfirmed = updated.merchConfirmed.takeIf { it != oldArtist.merchConfirmed }
-                    ?.ifEmpty { null },
-                images = updated.images.takeIf { it != oldArtist.images }
-                    ?.ifEmpty { null },
-                editorNotes = updated.editorNotes.takeIf { it != oldArtist.editorNotes }
-                    ?.ifBlank { null },
-                lastEditor = updated.lastEditor.takeIf { it != oldArtist.lastEditor }
-                    ?.ifBlank { null },
-                lastEditTime = updated.lastEditTime ?: Clock.System.now(),
-            )
-            artistHistoryByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }
-                .getOrPut(updated.id) { mutableListOf() }
-                .add(historyEntry)
-        }
+        val historyEntry = ArtistHistoryEntry.create(oldArtist, updated)
+        artistHistoryByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }
+            .getOrPut(updated.id) { mutableListOf() }
+            .add(historyEntry)
         artistsByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }[updated.id] = updated
         return ArtistSave.Response.Result.Success
     }
@@ -153,5 +203,5 @@ actual class AlleyEditRemoteDatabase {
         return MerchSave.Response.Result.Success
     }
 
-    private suspend fun simulateLatency() = delay(5.seconds)
+    private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
 }

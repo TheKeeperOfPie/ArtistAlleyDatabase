@@ -99,6 +99,7 @@ object Versions {
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2025.1.27"
     const val markwon = "4.6.2"
+    const val materialKolor = "4.0.5"
     const val metro = "0.8.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.2.0"
@@ -375,6 +376,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("com.graphql-java:graphql-java:${Versions.graphQlJava}")
                 library("com.ionspin.kotlin:bignum:${Versions.bigNum}")
                 library("com.kmpalette:kmpalette-core:${Versions.kmpalette}")
+                library("com.materialkolor:material-kolor:${Versions.materialKolor}")
                 library("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${Versions.netflixDgs}")
                 library(
                     "com.pierfrancescosoffritti.androidyoutubeplayer:core:${Versions.androidyoutubeplayer}",

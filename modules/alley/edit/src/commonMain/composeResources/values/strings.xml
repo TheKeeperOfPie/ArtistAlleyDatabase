@@ -119,4 +119,22 @@
     <string name="alley_edit_artist_status_final_description">Entry is completely final, with all applicable tags and metadata entered</string>
 
     <string name="alley_edit_open_link_content_description">Open link</string>
+
+    <string name="alley_edit_artist_history_title">History for %1$s - %2$s</string>
+    <string name="alley_edit_artist_history_label_status">Status:</string>
+    <string name="alley_edit_artist_history_label_booth">Booth:</string>
+    <string name="alley_edit_artist_history_label_name">Name:</string>
+    <string name="alley_edit_artist_history_label_summary">Description:</string>
+    <string name="alley_edit_artist_history_label_links">Links:</string>
+    <string name="alley_edit_artist_history_label_store_links">Store links:</string>
+    <string name="alley_edit_artist_history_label_catalog_links">Catalog links:</string>
+    <string name="alley_edit_artist_history_label_notes">Notes:</string>
+    <string name="alley_edit_artist_history_label_commissions">Commissions:</string>
+    <string name="alley_edit_artist_history_label_series_inferred">Series - Inferred:</string>
+    <string name="alley_edit_artist_history_label_series_confirmed">Series - Confirmed:</string>
+    <string name="alley_edit_artist_history_label_merch_inferred">Merch - Inferred:</string>
+    <string name="alley_edit_artist_history_label_merch_confirmed">Merch - Confirmed:</string>
+    <string name="alley_edit_artist_history_label_editor_notes">Editor notes:</string>
+    <string name="alley_edit_artist_history_label_list_added">+ %1$s</string>
+    <string name="alley_edit_artist_history_label_list_deleted">- %1$s</string>
 </resources>

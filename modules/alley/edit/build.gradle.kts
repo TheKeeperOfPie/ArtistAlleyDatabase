@@ -29,10 +29,12 @@ kotlin {
             implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.navigation3)
             implementation(libs.jetBrainsCompose.material3.windowSizeClass)
             implementation(libs.kermit)
+            implementation(libs.kmpalette.core)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.json.io)
+            implementation(libs.material.kolor)
             implementation(libs.stately.concurrent.collections)
 
             implementation(projects.modules.alley)
