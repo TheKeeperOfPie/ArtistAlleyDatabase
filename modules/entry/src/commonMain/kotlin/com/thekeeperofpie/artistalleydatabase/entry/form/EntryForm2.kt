@@ -128,20 +128,23 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res as Util
 
 @LayoutScopeMarker
 @Immutable
-interface EntryFormScope : ColumnScope
+abstract class EntryFormScope(columnScope: ColumnScope) : ColumnScope by columnScope {
+    internal abstract val forceLocked: Boolean
+}
 
-private class EntryFormScopeImpl(columnScope: ColumnScope) : EntryFormScope,
-    ColumnScope by columnScope
+private class EntryFormScopeImpl(columnScope: ColumnScope, override val forceLocked: Boolean) :
+    EntryFormScope(columnScope)
 
 object EntryForm2 {
 
     @Composable
     operator fun invoke(
         modifier: Modifier = Modifier,
+        forceLocked: Boolean = false,
         content: @Composable EntryFormScope.() -> Unit,
     ) {
         Column(modifier = modifier) {
-            EntryFormScopeImpl(this).content()
+            EntryFormScopeImpl(this, forceLocked).content()
             Spacer(Modifier.height(80.dp))
         }
     }
@@ -264,7 +267,6 @@ object EntryForm2 {
     }
 }
 
-@Suppress("UnusedReceiverParameter")
 @Composable
 fun EntryFormScope.SingleTextSection(
     state: EntryForm2.SingleTextState,
@@ -278,7 +280,7 @@ fun EntryFormScope.SingleTextSection(
     Column {
         SectionHeader(
             text = headerText,
-            lockState = state.lockState,
+            lockState = state.lockState.takeUnless { this@SingleTextSection.forceLocked },
             onClick = state::rotateLockState,
         )
 
@@ -291,7 +293,7 @@ fun EntryFormScope.SingleTextSection(
                 focusRequester?.requestFocus()
             }
         val errorText = errorText?.invoke()
-        if (state.lockState == EntryLockState.UNLOCKED) {
+        if (state.lockState == EntryLockState.UNLOCKED && !this@SingleTextSection.forceLocked) {
             OutlinedTextField(
                 state = state.value,
                 supportingText = errorText?.let { { Text(it) } },
@@ -482,7 +484,7 @@ fun <T> EntryFormScope.MultiTextSection(
 ) {
     SectionHeader(
         text = headerText,
-        lockState = state.lockState,
+        lockState = state.lockState.takeUnless { forceLocked },
         onClick = {
             val newValue = state.value.text
             if (newValue.isNotBlank() && pendingErrorMessage() == null) {
@@ -681,13 +683,14 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun SectionHeader(
+private fun EntryFormScope.SectionHeader(
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     state: EntryForm2.State,
 ) {
     SectionHeader(
-        text = text, lockState = state.lockState,
+        text = text,
+        lockState = state.lockState.takeUnless { forceLocked },
         onClick = { state.rotateLockState() },
         modifier = modifier
     )

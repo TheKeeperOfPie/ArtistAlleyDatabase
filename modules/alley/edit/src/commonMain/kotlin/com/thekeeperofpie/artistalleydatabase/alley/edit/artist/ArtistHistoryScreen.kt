@@ -15,18 +15,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,10 +68,16 @@ import com.kmpalette.bodyTextColor
 import com.kmpalette.palette.graphics.Palette
 import com.materialkolor.ktx.harmonize
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
@@ -84,9 +97,15 @@ object ArtistHistoryScreen {
         },
     ) {
         val history by viewModel.history.collectAsStateWithLifecycle()
+        val seriesById by viewModel.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.merchById.collectAsStateWithLifecycle()
         ArtistHistoryScreen(
             history = { history },
             dataYear = dataYear,
+            artistId = artistId,
+            seriesById = { seriesById },
+            merchById = { merchById },
+            seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
         )
     }
@@ -95,6 +114,10 @@ object ArtistHistoryScreen {
     operator fun invoke(
         history: () -> List<ArtistHistoryEntryWithDiff>,
         dataYear: DataYear,
+        artistId: Uuid,
+        seriesById: () -> Map<String, SeriesInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+        seriesImage: (SeriesInfo) -> String?,
         onClickBack: () -> Unit,
     ) {
         Scaffold(
@@ -122,10 +145,65 @@ object ArtistHistoryScreen {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                ArtistHistoryTimeline(
-                    history = history(),
-                    modifier = Modifier.widthIn(max = 960.dp)
-                )
+                Row(modifier = Modifier.widthIn(max = 1200.dp)) {
+                    val history = history()
+                    var selectedIndex by rememberSaveable(history) { mutableStateOf(0) }
+                    val seriesById = seriesById()
+                    val merchById = merchById()
+                    Column(modifier = Modifier.weight(1f)) {
+                        val artistFormState by produceState<ArtistFormState?>(
+                            initialValue = null,
+                            history,
+                            selectedIndex,
+                            seriesById,
+                            merchById,
+                        ) {
+                            if (seriesById.isNotEmpty() && merchById.isNotEmpty()) {
+                                withContext(PlatformDispatchers.IO) {
+                                    val list = history.drop(selectedIndex).map { it.entry }
+                                    val artistFormState = ArtistFormState(
+                                        metadata = ArtistFormState.Metadata(),
+                                        images = SnapshotStateList(),
+                                        links = SnapshotStateList(),
+                                        storeLinks = SnapshotStateList(),
+                                        catalogLinks = SnapshotStateList(),
+                                        commissions = SnapshotStateList(),
+                                        seriesInferred = SnapshotStateList(),
+                                        seriesConfirmed = SnapshotStateList(),
+                                        merchInferred = SnapshotStateList(),
+                                        merchConfirmed = SnapshotStateList(),
+                                        textState = ArtistFormState.TextState(),
+                                    )
+                                    artistFormState.applyDatabaseEntry(
+                                        ArtistHistoryEntry.rebuild(dataYear, artistId, list),
+                                        seriesById,
+                                        merchById,
+                                    )
+                                    value = artistFormState
+                                }
+                            }
+                        }
+
+                        val formState = artistFormState
+                        if (formState != null) {
+                            ArtistForm(
+                                state = formState,
+                                errorState = rememberErrorState(formState.textState),
+                                seriesPredictions = { emptyFlow() },
+                                merchPredictions = { emptyFlow() },
+                                seriesImage = seriesImage,
+                                forceLocked = true,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                    ArtistHistoryTimeline(
+                        history = history,
+                        selectedIndex = { selectedIndex },
+                        onSelectedIndexChange = { selectedIndex = it },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
@@ -133,6 +211,8 @@ object ArtistHistoryScreen {
     @Composable
     fun ArtistHistoryTimeline(
         history: List<ArtistHistoryEntryWithDiff>,
+        selectedIndex: () -> Int,
+        onSelectedIndexChange: (Int) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         LazyColumn(
@@ -140,15 +220,23 @@ object ArtistHistoryScreen {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = modifier,
         ) {
-            items(history) { entry ->
-                HistoryEntryCard(entry)
+            itemsIndexed(history) { index, entry ->
+                HistoryEntryCard(
+                    entryWithDiff = entry,
+                    selected = selectedIndex() == index,
+                    onClick = { onSelectedIndexChange(index) },
+                )
             }
         }
     }
 
     @Composable
-    private fun HistoryEntryCard(entryWithDiff: ArtistHistoryEntryWithDiff) {
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    private fun HistoryEntryCard(
+        entryWithDiff: ArtistHistoryEntryWithDiff,
+        selected: Boolean,
+        onClick: () -> Unit,
+    ) {
+        val cardContent = movableContentOf {
             Column(modifier = Modifier.padding(16.dp)) {
                 val entry = entryWithDiff.entry
                 CardHeader(editor = entry.lastEditor, timestamp = entry.timestamp)
@@ -209,6 +297,16 @@ object ArtistHistoryScreen {
                     label = Res.string.alley_edit_artist_history_label_merch_confirmed,
                     entryWithDiff.merchConfirmedDiff,
                 )
+            }
+        }
+        val modifier = Modifier.fillMaxWidth()
+        if (selected) {
+            OutlinedCard(onClick = onClick, modifier = modifier) {
+                cardContent()
+            }
+        } else {
+            ElevatedCard(onClick = onClick, modifier = modifier) {
+                cardContent()
             }
         }
     }
