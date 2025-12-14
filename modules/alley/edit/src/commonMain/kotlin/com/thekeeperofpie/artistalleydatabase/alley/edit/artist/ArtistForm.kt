@@ -122,11 +122,26 @@ class ArtistFormState(
     val merchConfirmed: SnapshotStateList<MerchInfo>,
     val textState: TextState,
 ) {
+    companion object {
+        fun empty() = ArtistFormState(
+            metadata = Metadata(),
+            images = SnapshotStateList(),
+            links = SnapshotStateList(),
+            storeLinks = SnapshotStateList(),
+            catalogLinks = SnapshotStateList(),
+            commissions = SnapshotStateList(),
+            seriesInferred = SnapshotStateList(),
+            seriesConfirmed = SnapshotStateList(),
+            merchInferred = SnapshotStateList(),
+            merchConfirmed = SnapshotStateList(),
+            textState = TextState(),
+        )
+    }
     fun applyDatabaseEntry(
         artist: ArtistDatabaseEntry,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
-    ) {
+    ) = apply {
         val links = artist.links.map(LinkModel::parse).sortedBy { it.logo }
         val storeLinks = artist.storeLinks.map(LinkModel::parse).sortedBy { it.logo }
         val commissions = artist.commissions.map(CommissionModel::parse)

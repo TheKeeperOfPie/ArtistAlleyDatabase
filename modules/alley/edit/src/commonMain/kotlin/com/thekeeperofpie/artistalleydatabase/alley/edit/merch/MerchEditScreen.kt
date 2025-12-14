@@ -76,18 +76,17 @@ object MerchEditScreen {
         val snackbarHostState = remember { SnackbarHostState() }
         LaunchedEffect(Unit) {
             state.savingState.collectLatest {
-                if (it is JobProgress.Finished.Result<*>) {
-                    when (val result = it.value as? MerchSave.Response.Result) {
+                if (it is JobProgress.Finished.Result<MerchSave.Response.Result>) {
+                    when (val result = it.value) {
                         is MerchSave.Response.Result.Failed ->
                             snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
                         is MerchSave.Response.Result.Outdated -> {
                             // TODO
                         }
                         MerchSave.Response.Result.Success -> {
-                            state.savingState.value = JobProgress.Idle
+                            state.savingState.value = JobProgress.Idle()
                             onClickBack(true)
                         }
-                        null -> Unit
                     }
                 }
             }
@@ -154,6 +153,6 @@ object MerchEditScreen {
         val id: EntryForm2.SingleTextState,
         val uuid: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
-        val savingState: MutableStateFlow<JobProgress>,
+        val savingState: MutableStateFlow<JobProgress<MerchSave.Response.Result>>,
     )
 }

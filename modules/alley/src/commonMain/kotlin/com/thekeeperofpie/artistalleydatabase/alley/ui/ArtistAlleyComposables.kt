@@ -140,6 +140,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMayb
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.FixedOffsetTimeZone
@@ -525,6 +526,7 @@ fun Tooltip(
                         text = text,
                         modifier = Modifier
                             .hoverable(popupInteractionSource)
+                            .optionalClickable(onClick = onClick)
                             .background(
                                 color = MaterialTheme.colorScheme.surfaceDim,
                                 shape = MaterialTheme.shapes.small,

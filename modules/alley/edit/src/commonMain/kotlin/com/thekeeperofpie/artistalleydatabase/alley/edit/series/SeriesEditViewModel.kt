@@ -31,7 +31,7 @@ class SeriesEditViewModel(
     @Assisted private val editInfo: AlleyEditDestination.SeriesEdit?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveJob = ExclusiveProgressJob(viewModelScope, ::captureSeriesInfo, ::save)
+    private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
     private val initialSeries = editInfo?.series
     val state = SeriesEditScreen.State(
         id = savedStateHandle.saveable(
@@ -133,7 +133,7 @@ class SeriesEditViewModel(
     )
 
     // TODO: Refresh list screen after save
-    fun onClickSave() = saveJob.launch()
+    fun onClickSave() = saveJob.launch(::captureSeriesInfo)
 
     private fun initialValue(
         value: String?,

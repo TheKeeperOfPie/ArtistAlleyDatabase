@@ -137,4 +137,9 @@
     <string name="alley_edit_artist_history_label_editor_notes">Editor notes:</string>
     <string name="alley_edit_artist_history_label_list_added">+ %1$s</string>
     <string name="alley_edit_artist_history_label_list_deleted">- %1$s</string>
+
+    <string name="alley_edit_artist_history_action_apply_changes">Apply changes</string>
+    <string name="alley_edit_artist_history_action_revert_tooltip">Revert fields\nto this point</string>
+    <string name="alley_edit_artist_history_action_return_to_history_tooltip">Return to history</string>
+    <string name="alley_edit_artist_history_action_refresh_tooltip">Refresh</string>
 </resources>

@@ -23,7 +23,7 @@ class MerchEditViewModel(
     @Assisted private val initialMerch: MerchInfo?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveJob = ExclusiveProgressJob(viewModelScope, ::captureMerchInfo, ::save)
+    private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
     val state = MerchEditScreen.State(
         id = savedStateHandle.saveable(
             key = "id",
@@ -44,7 +44,7 @@ class MerchEditViewModel(
     )
 
     // TODO: Refresh list screen after save
-    fun onClickSave() = saveJob.launch()
+    fun onClickSave() = saveJob.launch(::captureMerchInfo)
 
     private fun captureMerchInfo(): MerchInfo {
         val id = state.id.value.text.toString()

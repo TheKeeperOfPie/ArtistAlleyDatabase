@@ -15,25 +15,41 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,7 +62,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_apply_changes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_refresh_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_return_to_history_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_revert_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_commissions
@@ -68,19 +91,30 @@ import com.kmpalette.bodyTextColor
 import com.kmpalette.palette.graphics.Palette
 import com.materialkolor.ktx.harmonize
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
+import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -99,14 +133,19 @@ object ArtistHistoryScreen {
         val history by viewModel.history.collectAsStateWithLifecycle()
         val seriesById by viewModel.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.merchById.collectAsStateWithLifecycle()
+        val initialArtist by viewModel.initial.collectAsStateWithLifecycle()
         ArtistHistoryScreen(
             history = { history },
             dataYear = dataYear,
             artistId = artistId,
+            initialArtist = { initialArtist },
             seriesById = { seriesById },
             merchById = { merchById },
+            saveProgress = viewModel.saveProgress,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
+            onClickRefresh = viewModel::onClickRefresh,
+            onApplied = viewModel::onApplied,
         )
     }
 
@@ -115,11 +154,33 @@ object ArtistHistoryScreen {
         history: () -> List<ArtistHistoryEntryWithDiff>,
         dataYear: DataYear,
         artistId: Uuid,
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
+        saveProgress: MutableStateFlow<JobProgress<ArtistSave.Response.Result>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: () -> Unit,
+        onClickRefresh: () -> Unit,
+        onApplied: (ArtistHistoryEntry) -> Unit,
     ) {
+        val snackbarHostState = remember { SnackbarHostState() }
+        LaunchedEffect(Unit) {
+            saveProgress.collectLatest {
+                if (it is JobProgress.Finished.Result<ArtistSave.Response.Result>) {
+                    when (val result = it.value) {
+                        is ArtistSave.Response.Result.Failed ->
+                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
+                        is ArtistSave.Response.Result.Outdated -> {
+                            // TODO
+                        }
+                        is ArtistSave.Response.Result.Success -> {
+                            saveProgress.value = JobProgress.Idle()
+                            onClickBack()
+                        }
+                    }
+                }
+            }
+        }
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -137,94 +198,177 @@ object ArtistHistoryScreen {
                         )
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack() }) },
+                    actions = {
+                        IconButtonWithTooltip(
+                            imageVector = Icons.Default.Refresh,
+                            tooltipText = stringResource(Res.string.alley_edit_artist_history_action_refresh_tooltip),
+                            onClick = onClickRefresh,
+                        )
+                    },
                 )
             },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+            val saveProgress by saveProgress.collectAsStateWithLifecycle()
+            ContentSavingBox(
+                saving = saveProgress is JobProgress.Loading<*>,
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                Row(modifier = Modifier.widthIn(max = 1200.dp)) {
-                    val history = history()
-                    var selectedIndex by rememberSaveable(history) { mutableStateOf(0) }
-                    val seriesById = seriesById()
-                    val merchById = merchById()
-                    Column(modifier = Modifier.weight(1f)) {
-                        val artistFormState by produceState<ArtistFormState?>(
-                            initialValue = null,
-                            history,
-                            selectedIndex,
-                            seriesById,
-                            merchById,
-                        ) {
-                            if (seriesById.isNotEmpty() && merchById.isNotEmpty()) {
-                                withContext(PlatformDispatchers.IO) {
-                                    val list = history.drop(selectedIndex).map { it.entry }
-                                    val artistFormState = ArtistFormState(
-                                        metadata = ArtistFormState.Metadata(),
-                                        images = SnapshotStateList(),
-                                        links = SnapshotStateList(),
-                                        storeLinks = SnapshotStateList(),
-                                        catalogLinks = SnapshotStateList(),
-                                        commissions = SnapshotStateList(),
-                                        seriesInferred = SnapshotStateList(),
-                                        seriesConfirmed = SnapshotStateList(),
-                                        merchInferred = SnapshotStateList(),
-                                        merchConfirmed = SnapshotStateList(),
-                                        textState = ArtistFormState.TextState(),
+                Row(modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)) {
+                    var selectedIndex by rememberSaveable(history) { mutableIntStateOf(0) }
+                    var activeRevert by rememberSaveable(history) { mutableStateOf<Int?>(null) }
+
+                    val timelineListState = rememberLazyListState()
+                    val activeRevertPair by produceState<Pair<ArtistHistoryEntryWithDiff, ArtistDatabaseEntry.Impl>?>(
+                        initialValue = null,
+                        key1 = history,
+                    ) {
+                        snapshotFlow { history() to activeRevert }
+                            .mapLatest { (history, activeRevertIndex) ->
+                                if (activeRevertIndex == null) {
+                                    null
+                                } else {
+                                    history[activeRevertIndex] to ArtistHistoryEntry.rebuild(
+                                        dataYear = dataYear,
+                                        artistId = artistId,
+                                        list = history.drop(activeRevertIndex).map { it.entry },
                                     )
-                                    artistFormState.applyDatabaseEntry(
-                                        ArtistHistoryEntry.rebuild(dataYear, artistId, list),
-                                        seriesById,
-                                        merchById,
-                                    )
-                                    value = artistFormState
                                 }
+                            }
+                            .collectLatest { value = it }
+                    }
+                    val activeRevertPairValue = activeRevertPair
+                    if (activeRevertPairValue != null) {
+                        val fieldState = key(activeRevertPairValue) {
+                            rememberFieldState(activeRevertPairValue.first)
+                        }
+                        val rebuiltEntry = activeRevertPairValue.second
+                        val artist by remember {
+                            derivedStateOf {
+                                val initial = initialArtist() ?: return@derivedStateOf null
+                                val changes = fieldState.applyChanges(rebuiltEntry)
+                                ArtistHistoryEntry.applyOver(initial, changes)
                             }
                         }
 
-                        val formState = artistFormState
-                        if (formState != null) {
-                            ArtistForm(
-                                state = formState,
-                                errorState = rememberErrorState(formState.textState),
-                                seriesPredictions = { emptyFlow() },
-                                merchPredictions = { emptyFlow() },
-                                seriesImage = seriesImage,
-                                forceLocked = true,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
+                        ArtistPreview(
+                            artist = { artist },
+                            seriesById = seriesById(),
+                            merchById = merchById(),
+                            seriesImage = seriesImage,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        RevertFieldsList(
+                            fieldState = fieldState,
+                            entryWithDiff = activeRevertPairValue.first,
+                            rebuiltEntry = activeRevertPairValue.second,
+                            onActiveRevertCleared = { activeRevert = null },
+                            onApplied = onApplied,
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        val artist by remember {
+                            derivedStateOf {
+                                ArtistHistoryEntry.rebuild(
+                                    dataYear = dataYear,
+                                    artistId = artistId,
+                                    list = history().drop(selectedIndex).map { it.entry },
+                                )
+                            }
                         }
+                        ArtistPreview(
+                            artist = { artist },
+                            seriesById = seriesById(),
+                            merchById = merchById(),
+                            seriesImage = seriesImage,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        HistoryTimeline(
+                            history = history,
+                            listState = timelineListState,
+                            selectedIndex = { selectedIndex },
+                            onSelectedIndexChange = { selectedIndex = it },
+                            onRevertSelected = { activeRevert = it },
+                            modifier = Modifier.weight(1f)
+                        )
                     }
-                    ArtistHistoryTimeline(
-                        history = history,
-                        selectedIndex = { selectedIndex },
-                        onSelectedIndexChange = { selectedIndex = it },
-                        modifier = Modifier.weight(1f)
-                    )
                 }
             }
         }
     }
 
     @Composable
-    fun ArtistHistoryTimeline(
-        history: List<ArtistHistoryEntryWithDiff>,
+    private fun ArtistPreview(
+        artist: () -> ArtistDatabaseEntry?,
+        seriesById: Map<String, SeriesInfo>,
+        merchById: Map<String, MerchInfo>,
+        seriesImage: (SeriesInfo) -> String?,
+        modifier: Modifier = Modifier,
+    ) {
+        Column(modifier = modifier) {
+            val artistFormState by produceState<ArtistFormState?>(
+                initialValue = null,
+                seriesById,
+                merchById,
+            ) {
+                if (seriesById.isNotEmpty() && merchById.isNotEmpty()) {
+                    snapshotFlow { artist() }
+                        .filterNotNull()
+                        .mapLatest {
+                            withContext(PlatformDispatchers.IO) {
+                                ArtistFormState.empty()
+                                    .applyDatabaseEntry(it, seriesById, merchById)
+                            }
+                        }
+                        .collectLatest { value = it }
+                }
+            }
+
+            val formState = artistFormState
+            if (formState != null) {
+                ArtistForm(
+                    state = formState,
+                    errorState = rememberErrorState(formState.textState),
+                    seriesPredictions = { emptyFlow() },
+                    merchPredictions = { emptyFlow() },
+                    seriesImage = seriesImage,
+                    forceLocked = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun HistoryTimeline(
+        history: () -> List<ArtistHistoryEntryWithDiff>,
+        listState: LazyListState,
         selectedIndex: () -> Int,
         onSelectedIndexChange: (Int) -> Unit,
+        onRevertSelected: (Int) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         LazyColumn(
+            state = listState,
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = modifier,
         ) {
-            itemsIndexed(history) { index, entry ->
+            itemsIndexed(history()) { index, entry ->
                 HistoryEntryCard(
                     entryWithDiff = entry,
                     selected = selectedIndex() == index,
                     onClick = { onSelectedIndexChange(index) },
+                    additionalActions = {
+                        IconButtonWithTooltip(
+                            imageVector = Icons.AutoMirrored.Default.Undo,
+                            tooltipText = stringResource(Res.string.alley_edit_artist_history_action_revert_tooltip),
+                            onClick = { onRevertSelected(index) },
+                        )
+                    },
                 )
             }
         }
@@ -234,12 +378,17 @@ object ArtistHistoryScreen {
     private fun HistoryEntryCard(
         entryWithDiff: ArtistHistoryEntryWithDiff,
         selected: Boolean,
-        onClick: () -> Unit,
+        onClick: (() -> Unit)? = null,
+        additionalActions: (@Composable () -> Unit)? = null,
     ) {
         val cardContent = movableContentOf {
             Column(modifier = Modifier.padding(16.dp)) {
                 val entry = entryWithDiff.entry
-                CardHeader(editor = entry.lastEditor, timestamp = entry.timestamp)
+                CardHeader(
+                    editor = entry.lastEditor,
+                    timestamp = entry.timestamp,
+                    additionalActions = additionalActions,
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -301,21 +450,99 @@ object ArtistHistoryScreen {
         }
         val modifier = Modifier.fillMaxWidth()
         if (selected) {
-            OutlinedCard(onClick = onClick, modifier = modifier) {
-                cardContent()
+            if (onClick == null) {
+                OutlinedCard(modifier = modifier) { cardContent() }
+            } else {
+                OutlinedCard(onClick = onClick, modifier = modifier) { cardContent() }
             }
         } else {
-            ElevatedCard(onClick = onClick, modifier = modifier) {
-                cardContent()
+            ThemeAwareElevatedCard(onClick = onClick, modifier = modifier) { cardContent() }
+        }
+    }
+
+    @Composable
+    private fun RevertFieldsList(
+        fieldState: FieldState,
+        entryWithDiff: ArtistHistoryEntryWithDiff,
+        rebuiltEntry: ArtistDatabaseEntry.Impl,
+        onActiveRevertCleared: () -> Unit,
+        onApplied: (ArtistHistoryEntry) -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+            isBackEnabled = true,
+            onBackCompleted = onActiveRevertCleared,
+        )
+        Column(modifier = modifier.fillMaxWidth()) {
+            HistoryEntryCard(
+                entryWithDiff = entryWithDiff,
+                selected = true,
+                additionalActions = {
+                    IconButtonWithTooltip(
+                        imageVector = Icons.Default.Close,
+                        tooltipText = stringResource(Res.string.alley_edit_artist_history_action_return_to_history_tooltip),
+                        onClick = onActiveRevertCleared,
+                    )
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ArtistField.entries.forEach { field ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    Checkbox(
+                        checked = fieldState[field],
+                        onCheckedChange = { fieldState[field] = it },
+                    )
+                    Text(stringResource(field.label))
+
+                    val fieldText = when (field) {
+                        ArtistField.STATUS -> stringResource(rebuiltEntry.status.title)
+                        ArtistField.BOOTH -> rebuiltEntry.booth
+                        ArtistField.NAME -> rebuiltEntry.name
+                        ArtistField.SUMMARY -> rebuiltEntry.summary
+                        ArtistField.LINKS -> rebuiltEntry.links.joinToString()
+                        ArtistField.STORE_LINKS -> rebuiltEntry.storeLinks.joinToString()
+                        ArtistField.CATALOG_LINKS -> rebuiltEntry.catalogLinks.joinToString()
+                        ArtistField.NOTES -> rebuiltEntry.notes
+                        ArtistField.COMMISSIONS -> rebuiltEntry.commissions.joinToString()
+                        ArtistField.SERIES_INFERRED -> rebuiltEntry.seriesInferred.joinToString()
+                        ArtistField.SERIES_CONFIRMED -> rebuiltEntry.seriesConfirmed.joinToString()
+                        ArtistField.MERCH_INFERRED -> rebuiltEntry.merchInferred.joinToString()
+                        ArtistField.MERCH_CONFIRMED -> rebuiltEntry.merchConfirmed.joinToString()
+                        ArtistField.EDITOR_NOTES -> rebuiltEntry.editorNotes
+                    }.orEmpty()
+                    if (fieldText.isNotBlank()) {
+                        Text(fieldText)
+                    }
+                }
+            }
+
+            Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                FilledTonalButton(
+                    onClick = { onApplied(fieldState.applyChanges(rebuiltEntry)) },
+                ) {
+                    Text(stringResource(Res.string.alley_edit_artist_history_action_apply_changes))
+                }
             }
         }
     }
 
     @Composable
-    private fun CardHeader(editor: String?, timestamp: Instant) {
+    private fun CardHeader(
+        editor: String?,
+        timestamp: Instant,
+        additionalActions: (@Composable () -> Unit)? = null,
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
             val primaryColor = MaterialTheme.colorScheme.primary
             val (color, textColor) = remember(editor, primaryColor) {
@@ -344,7 +571,7 @@ object ArtistHistoryScreen {
                 )
             }
 
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 if (editor != null) {
                     Text(
                         text = editor,
@@ -356,6 +583,8 @@ object ArtistHistoryScreen {
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
+
+            additionalActions?.invoke()
         }
     }
 
@@ -425,5 +654,76 @@ object ArtistHistoryScreen {
             modifier = Modifier.width(120.dp)
                 .padding(start = 4.dp, end = 16.dp)
         )
+    }
+
+    @Stable
+    private class FieldState(private val map: SnapshotStateMap<ArtistField, Boolean>) {
+        operator fun get(field: ArtistField) = map[field]!!
+        operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
+
+        fun applyChanges(entry: ArtistDatabaseEntry.Impl) = ArtistHistoryEntry(
+            status = entry.status.takeIf { this[ArtistField.STATUS] },
+            booth = entry.booth.takeIf { this[ArtistField.BOOTH] },
+            name = entry.name.takeIf { this[ArtistField.NAME] },
+            summary = entry.summary.takeIf { this[ArtistField.SUMMARY] },
+            links = entry.links.takeIf { this[ArtistField.LINKS] },
+            storeLinks = entry.storeLinks.takeIf { this[ArtistField.STORE_LINKS] },
+            catalogLinks = entry.catalogLinks.takeIf { this[ArtistField.CATALOG_LINKS] },
+            notes = entry.notes.takeIf { this[ArtistField.NOTES] },
+            commissions = entry.commissions.takeIf { this[ArtistField.COMMISSIONS] },
+            seriesInferred = entry.seriesInferred.takeIf { this[ArtistField.SERIES_INFERRED] },
+            seriesConfirmed = entry.seriesConfirmed.takeIf { this[ArtistField.SERIES_CONFIRMED] },
+            merchInferred = entry.merchInferred.takeIf { this[ArtistField.MERCH_INFERRED] },
+            merchConfirmed = entry.merchConfirmed.takeIf { this[ArtistField.MERCH_CONFIRMED] },
+            images = null,
+            editorNotes = entry.editorNotes.takeIf { this[ArtistField.EDITOR_NOTES] },
+            lastEditor = null,
+            timestamp = Clock.System.now()
+        )
+    }
+
+    @Composable
+    private fun rememberFieldState(entryWithDiff: ArtistHistoryEntryWithDiff): FieldState {
+        val map = rememberSaveable(entryWithDiff) {
+            mutableStateMapOf<ArtistField, Boolean>().apply {
+                ArtistField.entries.forEach {
+                    val entry = entryWithDiff.entry
+                    this[it] = when (it) {
+                        ArtistField.STATUS -> entry.status != null
+                        ArtistField.BOOTH -> entry.booth != null
+                        ArtistField.NAME -> entry.name != null
+                        ArtistField.SUMMARY -> entry.summary != null
+                        ArtistField.LINKS -> entry.links != null
+                        ArtistField.STORE_LINKS -> entry.storeLinks != null
+                        ArtistField.CATALOG_LINKS -> entry.catalogLinks != null
+                        ArtistField.NOTES -> entry.notes != null
+                        ArtistField.COMMISSIONS -> entry.commissions != null
+                        ArtistField.SERIES_INFERRED -> entry.seriesInferred != null
+                        ArtistField.SERIES_CONFIRMED -> entry.seriesConfirmed != null
+                        ArtistField.MERCH_INFERRED -> entry.merchInferred != null
+                        ArtistField.MERCH_CONFIRMED -> entry.merchConfirmed != null
+                        ArtistField.EDITOR_NOTES -> entry.editorNotes != null
+                    }
+                }
+            }
+        }
+        return remember(map) { FieldState(map) }
+    }
+
+    private enum class ArtistField(val label: StringResource) {
+        STATUS(Res.string.alley_edit_artist_history_label_status),
+        BOOTH(Res.string.alley_edit_artist_history_label_booth),
+        NAME(Res.string.alley_edit_artist_history_label_name),
+        SUMMARY(Res.string.alley_edit_artist_history_label_summary),
+        LINKS(Res.string.alley_edit_artist_history_label_links),
+        STORE_LINKS(Res.string.alley_edit_artist_history_label_store_links),
+        CATALOG_LINKS(Res.string.alley_edit_artist_history_label_catalog_links),
+        NOTES(Res.string.alley_edit_artist_history_label_notes),
+        COMMISSIONS(Res.string.alley_edit_artist_history_label_commissions),
+        SERIES_INFERRED(Res.string.alley_edit_artist_history_label_series_inferred),
+        SERIES_CONFIRMED(Res.string.alley_edit_artist_history_label_series_confirmed),
+        MERCH_INFERRED(Res.string.alley_edit_artist_history_label_merch_inferred),
+        MERCH_CONFIRMED(Res.string.alley_edit_artist_history_label_merch_confirmed),
+        EDITOR_NOTES(Res.string.alley_edit_artist_history_label_editor_notes),
     }
 }

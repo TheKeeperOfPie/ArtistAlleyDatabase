@@ -59,7 +59,7 @@ class ArtistEditViewModel(
             id.lockState = EntryLockState.LOCKED
         }
     }
-    private val saveJob = ExclusiveProgressJob(viewModelScope, ::captureDatabaseEntry, ::save)
+    private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
     private val artistMetadata by savedStateHandle.saveable(saver = ArtistFormState.Metadata.Saver) {
         ArtistFormState.Metadata()
     }
@@ -164,7 +164,7 @@ class ArtistEditViewModel(
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
-    fun onClickSave() = saveJob.launch()
+    fun onClickSave() = saveJob.launch(::captureDatabaseEntry)
 
     private fun captureDatabaseEntry(): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
         val textState = state.artistFormState.textState

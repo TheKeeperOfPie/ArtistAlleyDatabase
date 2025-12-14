@@ -138,18 +138,17 @@ object ArtistEditScreen {
         val snackbarHostState = remember { SnackbarHostState() }
         LaunchedEffect(Unit) {
             state.savingState.collectLatest {
-                if (it is JobProgress.Finished.Result<*>) {
-                    when (val result = it.value as? ArtistSave.Response.Result) {
+                if (it is JobProgress.Finished.Result<ArtistSave.Response.Result>) {
+                    when (val result = it.value) {
                         is ArtistSave.Response.Result.Failed ->
                             snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
                         is ArtistSave.Response.Result.Outdated -> {
                             // TODO
                         }
                         is ArtistSave.Response.Result.Success -> {
-                            state.savingState.value = JobProgress.Idle
+                            state.savingState.value = JobProgress.Idle()
                             onClickBack(true)
                         }
-                        null -> Unit
                     }
                 }
             }
@@ -315,6 +314,6 @@ object ArtistEditScreen {
     @Stable
     class State(
         val artistFormState: ArtistFormState,
-        val savingState: MutableStateFlow<JobProgress>,
+        val savingState: MutableStateFlow<JobProgress<ArtistSave.Response.Result>>,
     )
 }

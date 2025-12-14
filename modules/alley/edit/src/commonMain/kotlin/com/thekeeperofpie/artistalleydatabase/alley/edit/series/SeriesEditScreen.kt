@@ -130,18 +130,17 @@ object SeriesEditScreen {
         val snackbarHostState = remember { SnackbarHostState() }
         LaunchedEffect(Unit) {
             state.savingState.collectLatest {
-                if (it is JobProgress.Finished.Result<*>) {
-                    when (val result = it.value as? SeriesSave.Response.Result) {
+                if (it is JobProgress.Finished.Result<SeriesSave.Response.Result>) {
+                    when (val result = it.value) {
                         is SeriesSave.Response.Result.Failed ->
                             snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
                         is SeriesSave.Response.Result.Outdated -> {
                             // TODO
                         }
                         SeriesSave.Response.Result.Success -> {
-                            state.savingState.value = JobProgress.Idle
+                            state.savingState.value = JobProgress.Idle()
                             onClickBack(true)
                         }
-                        null -> Unit
                     }
                 }
             }
@@ -351,6 +350,6 @@ object SeriesEditScreen {
         val synonymsValue: EntryForm2.SingleTextState,
         val link: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
-        val savingState: MutableStateFlow<JobProgress>,
+        val savingState: MutableStateFlow<JobProgress<SeriesSave.Response.Result>>,
     )
 }

@@ -31,39 +31,29 @@ data class ArtistHistoryEntry(
     companion object {
         fun create(before: ArtistDatabaseEntry?, after: ArtistDatabaseEntry) = ArtistHistoryEntry(
             status = after.status.takeIf { it != before?.status },
-            booth = after.booth.takeIf { it != before?.booth }
-                ?.ifBlank { null },
-            name = after.name.takeIf { it != before?.name }
-                ?.ifBlank { null },
-            summary = after.summary.takeIf { it != before?.summary }
-                ?.ifBlank { null },
-            links = after.links.takeIf { it != before?.links }
-                ?.ifEmpty { null },
-            storeLinks = after.storeLinks.takeIf { it != before?.storeLinks }
-                ?.ifEmpty { null },
-            catalogLinks = after.catalogLinks.takeIf { it != before?.catalogLinks }
-                ?.ifEmpty { null },
-            notes = after.notes.takeIf { it != before?.notes }
-                ?.ifBlank { null },
-            commissions = after.commissions.takeIf { it != before?.commissions }
-                ?.ifEmpty { null },
-            seriesInferred = after.seriesInferred.takeIf { it != before?.seriesInferred }
-                ?.ifEmpty { null },
-            seriesConfirmed = after.seriesConfirmed.takeIf { it != before?.seriesConfirmed }
-                ?.ifEmpty { null },
-            merchInferred = after.merchInferred.takeIf { it != before?.merchInferred }
-                ?.ifEmpty { null },
-            merchConfirmed = after.merchConfirmed.takeIf { it != before?.merchConfirmed }
-                ?.ifEmpty { null },
-            images = after.images.takeIf { it != before?.images }
-                ?.ifEmpty { null },
-            editorNotes = after.editorNotes.takeIf { it != before?.editorNotes }
-                ?.ifBlank { null },
+            booth = after.booth.takeIf { it != before?.booth },
+            name = after.name.takeIf { it != before?.name },
+            summary = after.summary.takeIf { it != before?.summary },
+            links = after.links.takeIf { it != before?.links },
+            storeLinks = after.storeLinks.takeIf { it != before?.storeLinks },
+            catalogLinks = after.catalogLinks.takeIf { it != before?.catalogLinks },
+            notes = after.notes.takeIf { it != before?.notes },
+            commissions = after.commissions.takeIf { it != before?.commissions },
+            seriesInferred = after.seriesInferred.takeIf { it != before?.seriesInferred },
+            seriesConfirmed = after.seriesConfirmed.takeIf { it != before?.seriesConfirmed },
+            merchInferred = after.merchInferred.takeIf { it != before?.merchInferred },
+            merchConfirmed = after.merchConfirmed.takeIf { it != before?.merchConfirmed },
+            images = after.images.takeIf { it != before?.images },
+            editorNotes = after.editorNotes.takeIf { it != before?.editorNotes },
             lastEditor = after.lastEditor,
             timestamp = after.lastEditTime ?: Clock.System.now(),
         )
 
-        fun rebuild(dataYear: DataYear, artistId: Uuid, list: List<ArtistHistoryEntry>): ArtistDatabaseEntry.Impl {
+        fun rebuild(
+            dataYear: DataYear,
+            artistId: Uuid,
+            list: List<ArtistHistoryEntry>,
+        ): ArtistDatabaseEntry.Impl {
             var status: ArtistStatus? = null
             var booth: String? = null
             var name: String? = null
@@ -104,7 +94,7 @@ data class ArtistHistoryEntry(
                 year = dataYear,
                 id = artistId.toString(),
                 status = status ?: ArtistStatus.UNKNOWN,
-                booth = booth ,
+                booth = booth,
                 name = name.orEmpty(),
                 summary = summary,
                 links = links.orEmpty(),
@@ -124,5 +114,26 @@ data class ArtistHistoryEntry(
                 lastEditTime = Clock.System.now(),
             )
         }
+
+        fun applyOver(initial: ArtistDatabaseEntry.Impl, entry: ArtistHistoryEntry) =
+            initial.copy(
+                status = entry.status ?: initial.status,
+                booth = entry.booth ?: initial.booth,
+                name = entry.name ?: initial.name,
+                summary = entry.summary ?: initial.summary,
+                links = entry.links ?: initial.links,
+                storeLinks = entry.storeLinks ?: initial.storeLinks,
+                catalogLinks = entry.catalogLinks ?: initial.catalogLinks,
+                notes = entry.notes ?: initial.notes,
+                commissions = entry.commissions ?: initial.commissions,
+                seriesInferred = entry.seriesInferred ?: initial.seriesInferred,
+                seriesConfirmed = entry.seriesConfirmed ?: initial.seriesConfirmed,
+                merchInferred = entry.merchInferred ?: initial.merchInferred,
+                merchConfirmed = entry.merchConfirmed ?: initial.merchConfirmed,
+                images = entry.images ?: initial.images,
+                editorNotes = entry.editorNotes ?: initial.editorNotes,
+                lastEditor = null,
+                lastEditTime = Clock.System.now(),
+            )
     }
 }
