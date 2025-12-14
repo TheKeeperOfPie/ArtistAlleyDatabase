@@ -99,6 +99,9 @@ object ArtistEditScreen {
                 viewModel.state.artistFormState.images += images
             }
         }
+        NavigationResultEffect(ArtistHistoryScreen.RESULT_KEY) {
+            viewModel.initialize(force = true)
+        }
         ArtistEditScreen(
             dataYear = dataYear,
             mode = viewModel.mode,

@@ -194,7 +194,7 @@ private fun entryProvider(
             dataYear = route.dataYear,
             artistId = route.artistId,
             graph = graph,
-            onClickBack = { onClickBack(false) },
+            onClickBack = onClickBack,
         )
     }
     sharedElementEntry<AlleyEditDestination.ImagesEdit> {

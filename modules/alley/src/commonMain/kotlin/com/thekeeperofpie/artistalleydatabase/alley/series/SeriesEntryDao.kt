@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
-import kotlin.random.Random
 import kotlin.uuid.Uuid
 
 fun SqlCursor.toSeriesEntry(database: AlleySqlDatabase): SeriesEntry =
@@ -383,37 +382,11 @@ class SeriesEntryDao(
         return statement
     }
 
-    // Some tags were adjusted between years, and the most recent list may not have all
-    // of the prior tags. In those cases, mock a response.
     private fun fallbackSeriesWithUserData(id: String) = SeriesWithUserData(
-        series = SeriesInfo(
-            id = id,
-            uuid = uuidFromRandomBytes(id),
-            notes = null,
-            aniListId = null,
-            aniListType = AniListType.NONE,
-            wikipediaId = null,
-            source = SeriesSource.NONE,
-            titlePreferred = id,
-            titleEnglish = id,
-            titleRomaji = id,
-            titleNative = id,
-            synonyms = emptyList(),
-            link = null,
-        ),
+        series = SeriesInfo.fake(id),
         userEntry = SeriesUserEntry(
             seriesId = id,
             favorite = false,
         )
     )
-
-    private fun uuidFromRandomBytes(seed: String): Uuid {
-        val randomBytes = ByteArray(Uuid.SIZE_BYTES)
-            .also { Random(seed.hashCode()).nextBytes(it) }
-        randomBytes[6] = (randomBytes[6].toInt() and 0x0f).toByte()
-        randomBytes[6] = (randomBytes[6].toInt() or 0x40).toByte()
-        randomBytes[8] = (randomBytes[8].toInt() and 0x3f).toByte()
-        randomBytes[8] = (randomBytes[8].toInt() or 0x80).toByte()
-        return Uuid.fromByteArray(randomBytes)
-    }
 }

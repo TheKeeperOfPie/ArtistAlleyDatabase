@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
@@ -38,7 +39,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
@@ -116,25 +116,33 @@ class ArtistEditViewModel(
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
     private var artist: ArtistDatabaseEntry.Impl? = null
+    private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
 
-    fun initialize() {
-        if (!hasLoaded) {
-            viewModelScope.launch {
-                loadArtistInfo(artistId)
-                hasLoaded = true
-            }
+    fun initialize(force: Boolean = false) {
+        if (!hasLoaded || force) {
+            artistJob.launch()
         }
     }
 
-    private suspend fun loadArtistInfo(artistId: Uuid) = withContext(PlatformDispatchers.IO) {
-        val artist = database.loadArtist(dataYear, artistId) ?: return@withContext
+    private suspend fun loadArtistInfo() = withContext(PlatformDispatchers.IO) {
+        val artist = database.loadArtist(dataYear, artistId)
+        if (artist == null) {
+            hasLoaded = true
+            return@withContext
+        }
         this@ArtistEditViewModel.artist = artist
-        state.artistFormState.applyDatabaseEntry(artist, seriesById.first(), merchById.first())
+        state.artistFormState.applyDatabaseEntry(
+            artist = artist,
+            seriesById = seriesById.first(),
+            merchById = merchById.first(),
+            force = true,
+        )
 
         val images = database.loadArtistImages(dataYear, artist)
         if (images.isNotEmpty()) {
             state.artistFormState.images.replaceAll(images)
         }
+        hasLoaded = true
     }
 
     fun seriesPredictions(query: String) = if (query.length < 3) {

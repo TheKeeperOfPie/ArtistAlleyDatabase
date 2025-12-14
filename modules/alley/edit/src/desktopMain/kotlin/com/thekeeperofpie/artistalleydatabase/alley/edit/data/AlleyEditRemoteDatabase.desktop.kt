@@ -53,20 +53,30 @@ actual class AlleyEditRemoteDatabase {
                         links = listOf(
                             "https://example.com/social",
                             "https://example.com/profile",
-                        )
+                        ),
+                        notes = "Test notes",
+                        editorNotes = "Added links",
                     )
                 },
                 {
                     it.copy(
                         storeLinks = listOf("https://example.org/store"),
                         catalogLinks = listOf("https://example.net/portfolio"),
+                        notes = "",
                     )
                 },
-                { it.copy(commissions = listOf("On-site", "Online")) },
+                {
+                    it.copy(
+                        commissions = listOf("On-site", "Online"),
+                        notes = "More test notes",
+                        editorNotes = "Added commissions",
+                    )
+                },
                 {
                     it.copy(
                         seriesInferred = listOf("SeriesA", "SeriesB"),
                         merchInferred = listOf("MerchA"),
+                        editorNotes = "",
                     )
                 },
                 {

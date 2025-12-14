@@ -19,4 +19,22 @@ data class SeriesInfo(
     val titleNative: String,
     val synonyms: List<String>,
     val link: String?,
-)
+) {
+    companion object {
+        fun fake(id: String) = SeriesInfo(
+            id = id,
+            uuid = Utils.uuidFromRandomBytes(id),
+            notes = null,
+            aniListId = null,
+            aniListType = AniListType.NONE,
+            wikipediaId = null,
+            source = SeriesSource.NONE,
+            titlePreferred = id,
+            titleEnglish = id,
+            titleRomaji = id,
+            titleNative = id,
+            synonyms = emptyList(),
+            link = null,
+        )
+    }
+}

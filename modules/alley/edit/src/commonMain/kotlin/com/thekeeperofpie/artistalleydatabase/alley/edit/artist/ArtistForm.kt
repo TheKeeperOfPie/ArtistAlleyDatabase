@@ -137,89 +137,80 @@ class ArtistFormState(
             textState = TextState(),
         )
     }
+
     fun applyDatabaseEntry(
         artist: ArtistDatabaseEntry,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
+        force: Boolean = false,
     ) = apply {
         val links = artist.links.map(LinkModel::parse).sortedBy { it.logo }
         val storeLinks = artist.storeLinks.map(LinkModel::parse).sortedBy { it.logo }
         val commissions = artist.commissions.map(CommissionModel::parse)
 
-        val seriesInferred = artist.seriesInferred.mapNotNull { seriesById[it] }
-        val seriesConfirmed = artist.seriesConfirmed.mapNotNull { seriesById[it] }
-        val merchInferred = artist.merchInferred.mapNotNull { merchById[it] }
-        val merchConfirmed = artist.merchConfirmed.mapNotNull { merchById[it] }
+        val seriesInferred = artist.seriesInferred.map { seriesById[it] ?: SeriesInfo.fake(it) }
+        val seriesConfirmed = artist.seriesConfirmed.map { seriesById[it] ?: SeriesInfo.fake(it) }
+        val merchInferred = artist.merchInferred.map { merchById[it] ?: MerchInfo.fake(it) }
+        val merchConfirmed = artist.merchConfirmed.map { merchById[it] ?: MerchInfo.fake(it) }
 
         val status = artist.status
         textState.status.selectedIndex = ArtistStatus.entries.indexOf(status)
 
-        val booth = artist.booth.orEmpty()
-        if (booth.isNotBlank() || status.shouldStartLocked) {
-            textState.booth.value.setTextAndPlaceCursorAtEnd(booth)
-            textState.booth.lockState = EntryLockState.LOCKED
-        }
+        textState.id.value.setTextAndPlaceCursorAtEnd(artist.id)
+        textState.id.lockState = EntryLockState.LOCKED
 
-        val name = artist.name
-        if (name.isNotBlank() || status.shouldStartLocked) {
-            textState.name.value.setTextAndPlaceCursorAtEnd(name)
-            textState.name.lockState = EntryLockState.LOCKED
-        }
+        applyValue(textState.booth, status, artist.booth, force)
+        applyValue(textState.name, status, artist.name, force)
+        applyValue(textState.summary, status, artist.summary, force)
+        applyValue(textState.notes, status, artist.notes, force)
+        applyValue(textState.editorNotes, status, artist.editorNotes, force)
 
-        val summary = artist.summary.orEmpty()
-        if (summary.isNotBlank() || status.shouldStartLocked) {
-            textState.summary.value.setTextAndPlaceCursorAtEnd(summary)
-            textState.summary.lockState = EntryLockState.LOCKED
-        }
+        applyValue(textState.links, this.links, status, links, force)
+        applyValue(textState.storeLinks, this.storeLinks, status, storeLinks, force)
+        applyValue(textState.catalogLinks, this.catalogLinks, status, catalogLinks, force)
+        applyValue(textState.commissions, this.commissions, status, commissions, force)
 
-        val notes = artist.notes.orEmpty()
-        if (notes.isNotBlank() || status.shouldStartLocked) {
-            textState.notes.value.setTextAndPlaceCursorAtEnd(notes)
-            textState.notes.lockState = EntryLockState.LOCKED
-        }
-
-        val editorNotes = artist.editorNotes.orEmpty()
-        if (editorNotes.isNotBlank() || status.shouldStartLocked) {
-            textState.editorNotes.value.setTextAndPlaceCursorAtEnd(editorNotes)
-            textState.editorNotes.lockState = EntryLockState.LOCKED
-        }
-
-        if (links.isNotEmpty() || status.shouldStartLocked) {
-            this.links.replaceAll(links)
-            textState.links.lockState = EntryLockState.LOCKED
-        }
-        if (storeLinks.isNotEmpty() || status.shouldStartLocked) {
-            this.storeLinks.replaceAll(storeLinks)
-            textState.storeLinks.lockState = EntryLockState.LOCKED
-        }
-        if (artist.catalogLinks.isNotEmpty() || status.shouldStartLocked) {
-            this.catalogLinks.replaceAll(artist.catalogLinks)
-            textState.catalogLinks.lockState = EntryLockState.LOCKED
-        }
-        if (artist.commissions.isNotEmpty() || status.shouldStartLocked) {
-            this.commissions.replaceAll(commissions)
-            textState.commissions.lockState = EntryLockState.LOCKED
-        }
-
-        if (seriesInferred.isNotEmpty() || status.shouldStartLocked) {
-            this.seriesInferred.replaceAll(seriesInferred)
-            textState.seriesInferred.lockState = EntryLockState.LOCKED
-        }
-        if (seriesConfirmed.isNotEmpty() || status.shouldStartLocked) {
-            this.seriesConfirmed.replaceAll(seriesConfirmed)
-            textState.seriesConfirmed.lockState = EntryLockState.LOCKED
-        }
-        if (merchInferred.isNotEmpty() || status.shouldStartLocked) {
-            this.merchInferred.replaceAll(merchInferred)
-            textState.merchInferred.lockState = EntryLockState.LOCKED
-        }
-        if (merchConfirmed.isNotEmpty() || status.shouldStartLocked) {
-            this.merchConfirmed.replaceAll(merchConfirmed)
-            textState.merchConfirmed.lockState = EntryLockState.LOCKED
-        }
+        applyValue(textState.seriesInferred, this.seriesInferred, status, seriesInferred, force)
+        applyValue(textState.seriesConfirmed, this.seriesConfirmed, status, seriesConfirmed, force)
+        applyValue(textState.merchInferred, this.merchInferred, status, merchInferred, force)
+        applyValue(textState.merchConfirmed, this.merchConfirmed, status, merchConfirmed, force)
 
         metadata.lastEditor = artist.lastEditor
         metadata.lastEditTime = artist.lastEditTime
+    }
+
+    private fun applyValue(
+        state: EntryForm2.SingleTextState,
+        status: ArtistStatus,
+        value: String?,
+        force: Boolean,
+    ) {
+        val valueOrEmpty = value.orEmpty()
+        if (valueOrEmpty.isNotBlank() || force) {
+            state.value.setTextAndPlaceCursorAtEnd(valueOrEmpty)
+        }
+        if (valueOrEmpty.isNotBlank() || status.shouldStartLocked) {
+            state.lockState = EntryLockState.LOCKED
+        } else if (valueOrEmpty.isEmpty()) {
+            state.lockState = EntryLockState.UNLOCKED
+        }
+    }
+
+    private fun <T> applyValue(
+        state: EntryForm2.SingleTextState,
+        list: SnapshotStateList<T>,
+        status: ArtistStatus,
+        value: List<T>,
+        force: Boolean,
+    ) {
+        if (value.isNotEmpty() || force) {
+            list.replaceAll(value)
+        }
+        if (value.isNotEmpty() || status.shouldStartLocked) {
+            state.lockState = EntryLockState.LOCKED
+        } else if (value.isEmpty()) {
+            state.lockState = EntryLockState.UNLOCKED
+        }
     }
 
     @Stable
@@ -248,7 +239,9 @@ class ArtistFormState(
 
     @Stable
     class TextState(
-        val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(
+            initialLockState = EntryLockState.LOCKED,
+        ),
         val status: EntryForm2.DropdownState = EntryForm2.DropdownState(),
         val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
         val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
@@ -502,7 +495,8 @@ object ArtistForm {
 
             val hasConfirmedSeries by derivedStateOf { state.seriesConfirmed.isNotEmpty() }
             var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
-            val showSeriesInferred = !hasConfirmedSeries || requestedShowSeriesInferred
+            val showSeriesInferred =
+                forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred
             SeriesSection(
                 state = textState.seriesInferred,
                 title = Res.string.alley_edit_artist_edit_series_inferred,
@@ -513,11 +507,14 @@ object ArtistForm {
                 previousFocus = textState.commissions.focusRequester,
                 nextFocus = textState.seriesConfirmed.focusRequester,
             )
-            ShowInferredButton(
-                hasConfirmed = hasConfirmedSeries,
-                showingInferred = showSeriesInferred,
-                onClick = { requestedShowSeriesInferred = it },
-            )
+
+            if (!forceLocked) {
+                ShowInferredButton(
+                    hasConfirmed = hasConfirmedSeries,
+                    showingInferred = showSeriesInferred,
+                    onClick = { requestedShowSeriesInferred = it },
+                )
+            }
 
             SeriesSection(
                 state = textState.seriesConfirmed,
@@ -531,7 +528,7 @@ object ArtistForm {
 
             val hasConfirmedMerch by derivedStateOf { state.merchConfirmed.isNotEmpty() }
             var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
-            val showMerchInferred = !hasConfirmedMerch || requestedShowMerchInferred
+            val showMerchInferred = forceLocked || !hasConfirmedMerch || requestedShowMerchInferred
             MultiTextSection(
                 state = textState.merchInferred,
                 title = Res.string.alley_edit_artist_edit_merch_inferred,
@@ -543,11 +540,14 @@ object ArtistForm {
                 previousFocus = textState.seriesConfirmed.focusRequester,
                 nextFocus = textState.merchConfirmed.focusRequester,
             )
-            ShowInferredButton(
-                hasConfirmed = hasConfirmedMerch,
-                showingInferred = showMerchInferred,
-                onClick = { requestedShowMerchInferred = it },
-            )
+
+            if (!forceLocked) {
+                ShowInferredButton(
+                    hasConfirmed = hasConfirmedMerch,
+                    showingInferred = showMerchInferred,
+                    onClick = { requestedShowMerchInferred = it },
+                )
+            }
 
             MultiTextSection(
                 state = textState.merchConfirmed,

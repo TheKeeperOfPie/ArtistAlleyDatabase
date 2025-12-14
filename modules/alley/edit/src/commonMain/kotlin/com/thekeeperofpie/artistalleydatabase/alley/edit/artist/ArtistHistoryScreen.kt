@@ -18,8 +18,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Close
@@ -105,6 +107,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -120,12 +124,14 @@ import kotlin.uuid.Uuid
 
 object ArtistHistoryScreen {
 
+    val RESULT_KEY = NavigationResults.Key<Unit>("ArtistHistoryScreen")
+
     @Composable
     operator fun invoke(
         dataYear: DataYear,
         artistId: Uuid,
         graph: ArtistAlleyEditGraph,
-        onClickBack: () -> Unit,
+        onClickBack: (force: Boolean) -> Unit,
         viewModel: ArtistHistoryViewModel = viewModel {
             graph.artistHistoryViewModelFactory.create(dataYear, artistId)
         },
@@ -159,12 +165,13 @@ object ArtistHistoryScreen {
         merchById: () -> Map<String, MerchInfo>,
         saveProgress: MutableStateFlow<JobProgress<ArtistSave.Response.Result>>,
         seriesImage: (SeriesInfo) -> String?,
-        onClickBack: () -> Unit,
+        onClickBack: (force: Boolean) -> Unit,
         onClickRefresh: () -> Unit,
         onApplied: (ArtistHistoryEntry) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
-        LaunchedEffect(Unit) {
+        val navigationResults = LocalNavigationResults.current
+        LaunchedEffect(navigationResults) {
             saveProgress.collectLatest {
                 if (it is JobProgress.Finished.Result<ArtistSave.Response.Result>) {
                     when (val result = it.value) {
@@ -175,7 +182,8 @@ object ArtistHistoryScreen {
                         }
                         is ArtistSave.Response.Result.Success -> {
                             saveProgress.value = JobProgress.Idle()
-                            onClickBack()
+                            navigationResults[RESULT_KEY] = Unit
+                            onClickBack(true)
                         }
                     }
                 }
@@ -197,7 +205,7 @@ object ArtistHistoryScreen {
                             )
                         )
                     },
-                    navigationIcon = { ArrowBackIconButton(onClick = { onClickBack() }) },
+                    navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
                     actions = {
                         IconButtonWithTooltip(
                             imageVector = Icons.Default.Refresh,
@@ -329,15 +337,17 @@ object ArtistHistoryScreen {
 
             val formState = artistFormState
             if (formState != null) {
-                ArtistForm(
-                    state = formState,
-                    errorState = rememberErrorState(formState.textState),
-                    seriesPredictions = { emptyFlow() },
-                    merchPredictions = { emptyFlow() },
-                    seriesImage = seriesImage,
-                    forceLocked = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    ArtistForm(
+                        state = formState,
+                        errorState = rememberErrorState(formState.textState),
+                        seriesPredictions = { emptyFlow() },
+                        merchPredictions = { emptyFlow() },
+                        seriesImage = seriesImage,
+                        forceLocked = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
@@ -665,18 +675,30 @@ object ArtistHistoryScreen {
             status = entry.status.takeIf { this[ArtistField.STATUS] },
             booth = entry.booth.takeIf { this[ArtistField.BOOTH] },
             name = entry.name.takeIf { this[ArtistField.NAME] },
-            summary = entry.summary.takeIf { this[ArtistField.SUMMARY] },
+            summary = if (this[ArtistField.SUMMARY]) {
+                entry.summary.orEmpty()
+            } else {
+                null
+            },
             links = entry.links.takeIf { this[ArtistField.LINKS] },
             storeLinks = entry.storeLinks.takeIf { this[ArtistField.STORE_LINKS] },
             catalogLinks = entry.catalogLinks.takeIf { this[ArtistField.CATALOG_LINKS] },
-            notes = entry.notes.takeIf { this[ArtistField.NOTES] },
+            notes = if (this[ArtistField.NOTES]) {
+                entry.notes.orEmpty()
+            } else {
+                null
+            },
             commissions = entry.commissions.takeIf { this[ArtistField.COMMISSIONS] },
             seriesInferred = entry.seriesInferred.takeIf { this[ArtistField.SERIES_INFERRED] },
             seriesConfirmed = entry.seriesConfirmed.takeIf { this[ArtistField.SERIES_CONFIRMED] },
             merchInferred = entry.merchInferred.takeIf { this[ArtistField.MERCH_INFERRED] },
             merchConfirmed = entry.merchConfirmed.takeIf { this[ArtistField.MERCH_CONFIRMED] },
             images = null,
-            editorNotes = entry.editorNotes.takeIf { this[ArtistField.EDITOR_NOTES] },
+            editorNotes = if (this[ArtistField.EDITOR_NOTES]) {
+                entry.editorNotes.orEmpty()
+            } else {
+                null
+            },
             lastEditor = null,
             timestamp = Clock.System.now()
         )
