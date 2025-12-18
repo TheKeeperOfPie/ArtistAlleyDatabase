@@ -65,9 +65,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -181,22 +181,22 @@ private fun Header() {
 
             val uriHandler = LocalUriHandler.current
 
-            IconButtonWithTooltip(
-                imageVector = Logo.GITHUB.icon,
+            TooltipIconButton(
+                icon = Logo.GITHUB.icon,
                 tooltipText = BuildKonfig.authorTwoUrl,
                 onClick = { uriHandler.openUri(BuildKonfig.authorTwoUrl) },
                 contentDescription = stringResource(Res.string.alley_author_link),
             )
 
-            IconButtonWithTooltip(
-                imageVector = Logo.DISCORD.icon,
+            TooltipIconButton(
+                icon = Logo.DISCORD.icon,
                 tooltipText = BuildKonfig.serverUrl,
                 onClick = { uriHandler.openUri(BuildKonfig.serverUrl) },
                 contentDescription = stringResource(Res.string.alley_server_link),
             )
 
-            IconButtonWithTooltip(
-                imageVector = Icons.Default.Description,
+            TooltipIconButton(
+                icon = Icons.Default.Description,
                 tooltipText = BuildKonfig.sheetLink,
                 onClick = { uriHandler.openUri(BuildKonfig.sheetLink) },
                 contentDescription = stringResource(Res.string.alley_sheet_link),

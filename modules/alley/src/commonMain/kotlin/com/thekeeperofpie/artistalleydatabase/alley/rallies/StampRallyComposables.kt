@@ -20,8 +20,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -46,10 +51,9 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
-import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
-import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -227,9 +231,17 @@ fun StampRallyListRow(
                 onRemoveFavorite = { onFavoriteToggle(false) },
             )
         } else {
-            Tooltip(
-                text = stringResource(Res.string.alley_stamp_rally_favorite_disabled),
-                showOnClick = true,
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    positioning = TooltipAnchorPosition.Below,
+                    spacingBetweenTooltipAndAnchor = 0.dp,
+                ),
+                tooltip = {
+                    PlainTooltip {
+                        Text(stringResource(Res.string.alley_stamp_rally_favorite_disabled))
+                    }
+                },
+                state = rememberTooltipState(),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,

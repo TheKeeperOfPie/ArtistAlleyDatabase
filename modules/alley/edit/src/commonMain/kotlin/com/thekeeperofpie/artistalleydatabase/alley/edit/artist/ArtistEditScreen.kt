@@ -18,11 +18,16 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +47,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_history_content_description
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
@@ -190,11 +195,23 @@ object ArtistEditScreen {
                             }
                         }
                         val enabled = !errorState.hasAnyError
-                        IconButton(onClick = onClickSave, enabled = enabled) {
-                            Icon(
-                                imageVector = Icons.Default.Save,
-                                contentDescription = stringResource(Res.string.alley_edit_artist_action_save_content_description),
-                            )
+                        TooltipBox(
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                TooltipAnchorPosition.Below
+                            ),
+                            tooltip = {
+                                PlainTooltip {
+                                    Text(stringResource(Res.string.alley_edit_artist_action_save_tooltip))
+                                }
+                            },
+                            state = rememberTooltipState(),
+                        ) {
+                            IconButton(onClick = onClickSave, enabled = enabled) {
+                                Icon(
+                                    imageVector = Icons.Default.Save,
+                                    contentDescription = stringResource(Res.string.alley_edit_artist_action_save_tooltip),
+                                )
+                            }
                         }
                     },
                     modifier = Modifier

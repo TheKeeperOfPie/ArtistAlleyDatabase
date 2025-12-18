@@ -29,9 +29,15 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -83,7 +89,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
-import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
@@ -582,15 +587,8 @@ object ArtistDetailsScreen {
         val uriHandler = LocalUriHandler.current
         val bottomPadding = if (isLast) 12.dp else 8.dp
         val link = (model as? CommissionModel.Link)?.link
-        Tooltip(
-            text = link,
-            popupAlignment = Alignment.BottomEnd,
-            onClick = if (link == null) {
-                null
-            } else {
-                { uriHandler.openUri(link) }
-            }
-        ) {
+
+        val content = movableContentOf {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -632,6 +630,23 @@ object ArtistDetailsScreen {
                         )
                 )
             }
+        }
+        if (link == null) {
+            content()
+        } else {
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    positioning = TooltipAnchorPosition.Below,
+                    spacingBetweenTooltipAndAnchor = 0.dp,
+                ),
+                tooltip = {
+                    PlainTooltip(Modifier.clickable { uriHandler.openUri(link) }) {
+                        Text(link)
+                    }
+                },
+                state = rememberTooltipState(),
+                content = content,
+            )
         }
     }
 

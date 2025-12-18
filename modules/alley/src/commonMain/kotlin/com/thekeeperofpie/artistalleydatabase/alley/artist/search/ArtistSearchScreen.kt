@@ -25,9 +25,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -67,9 +72,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
-import com.thekeeperofpie.artistalleydatabase.alley.ui.Tooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -298,9 +302,10 @@ object ArtistSearchScreen {
                 val uriHandler = LocalUriHandler.current
                 Grid(linkModels.size) {
                     val linkModel = linkModels[it]
-                    IconButtonWithTooltip(
-                        imageVector = linkModel.logo?.icon ?: Icons.Default.Link,
+                    TooltipIconButton(
+                        icon = linkModel.logo?.icon ?: Icons.Default.Link,
                         tooltipText = linkModel.link,
+                        positioning = TooltipAnchorPosition.Above,
                         onClick = { uriHandler.openUri(linkModel.link) },
                     )
                 }
@@ -309,9 +314,10 @@ object ArtistSearchScreen {
                 val uriHandler = LocalUriHandler.current
                 Grid(count = storeLinkModels.size, columnCount = 2) {
                     val linkModel = storeLinkModels[it]
-                    IconButtonWithTooltip(
-                        imageVector = linkModel.logo?.icon ?: Icons.Default.Link,
+                    TooltipIconButton(
+                        icon = linkModel.logo?.icon ?: Icons.Default.Link,
                         tooltipText = linkModel.link,
+                        positioning = TooltipAnchorPosition.Above,
                         onClick = { uriHandler.openUri(linkModel.link) },
                     )
                 }
@@ -321,25 +327,27 @@ object ArtistSearchScreen {
                     val uriHandler = LocalUriHandler.current
                     it.forEach {
                         when (it) {
-                            is CommissionModel.Link -> IconButtonWithTooltip(
-                                imageVector = it.icon,
+                            is CommissionModel.Link -> TooltipIconButton(
+                                icon = it.icon,
                                 tooltipText = it.tooltip(),
+                                positioning = TooltipAnchorPosition.Above,
                                 onClick = { uriHandler.openUri(it.link) },
                             )
-                            CommissionModel.OnSite -> Tooltip(it.tooltip()) {
-                                CommissionChip(
-                                    model = it,
-                                    label = { Text(it.text()) },
-                                )
-                            }
-                            CommissionModel.Online -> Tooltip(it.tooltip()) {
-                                CommissionChip(
-                                    model = it,
-                                    label = { Text(it.text()) },
-                                )
-                            }
-                            is CommissionModel.Unknown ->
-                                CommissionChip(model = it, label = { Text(it.text()) })
+                            CommissionModel.Online,
+                            CommissionModel.OnSite,
+                            is CommissionModel.Unknown-> TooltipBox(
+                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                        positioning = TooltipAnchorPosition.Below,
+                                        spacingBetweenTooltipAndAnchor = 0.dp,
+                                    ),
+                                    tooltip = { PlainTooltip { Text(it.tooltip()) } },
+                                    state = rememberTooltipState(),
+                                ) {
+                                    CommissionChip(
+                                        model = it,
+                                        label = { Text(it.text()) },
+                                    )
+                                }
                         }
                     }
                 }

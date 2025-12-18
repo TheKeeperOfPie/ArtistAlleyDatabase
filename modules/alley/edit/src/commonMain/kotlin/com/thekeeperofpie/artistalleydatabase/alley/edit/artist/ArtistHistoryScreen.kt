@@ -89,9 +89,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_title
-import com.kmpalette.bodyTextColor
-import com.kmpalette.palette.graphics.Palette
 import com.materialkolor.ktx.harmonize
+import com.materialkolor.utils.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -100,7 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -207,8 +206,8 @@ object ArtistHistoryScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
                     actions = {
-                        IconButtonWithTooltip(
-                            imageVector = Icons.Default.Refresh,
+                        TooltipIconButton(
+                            icon = Icons.Default.Refresh,
                             tooltipText = stringResource(Res.string.alley_edit_artist_history_action_refresh_tooltip),
                             onClick = onClickRefresh,
                         )
@@ -373,8 +372,8 @@ object ArtistHistoryScreen {
                     selected = selectedIndex() == index,
                     onClick = { onSelectedIndexChange(index) },
                     additionalActions = {
-                        IconButtonWithTooltip(
-                            imageVector = Icons.AutoMirrored.Default.Undo,
+                        TooltipIconButton(
+                            icon = Icons.AutoMirrored.Default.Undo,
                             tooltipText = stringResource(Res.string.alley_edit_artist_history_action_revert_tooltip),
                             onClick = { onRevertSelected(index) },
                         )
@@ -489,8 +488,8 @@ object ArtistHistoryScreen {
                 entryWithDiff = entryWithDiff,
                 selected = true,
                 additionalActions = {
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Default.Close,
+                    TooltipIconButton(
+                        icon = Icons.Default.Close,
                         tooltipText = stringResource(Res.string.alley_edit_artist_history_action_return_to_history_tooltip),
                         onClick = onActiveRevertCleared,
                     )
@@ -559,7 +558,12 @@ object ArtistHistoryScreen {
                 val color = Random(editor.hashCode()).let {
                     Color(it.nextFloat(), it.nextFloat(), it.nextFloat())
                 }.harmonize(primaryColor, true)
-                color to Palette.Swatch(color.toArgb(), 1).bodyTextColor()
+                val textColor = if (ColorUtils.calculateLuminance(color.toArgb()) > 0.5f) {
+                    Color.Black
+                } else {
+                    Color.White
+                }
+                color to textColor
             }
             Box(
                 contentAlignment = Alignment.Center,

@@ -3756,8 +3756,8 @@ enum class Logo(
         label = Res.string.alley_link_label_tumblr,
         ImageVector.Builder(
             name = "Tumblr",
-            defaultWidth = 24.dp,
-            defaultHeight = (512.184 / 289.999 * 24).dp,
+            defaultWidth = (289.999f / 512.184f * 24f).dp,
+            defaultHeight = 24.dp,
             viewportWidth = 289.999f,
             viewportHeight = 512.184f
         ).apply {

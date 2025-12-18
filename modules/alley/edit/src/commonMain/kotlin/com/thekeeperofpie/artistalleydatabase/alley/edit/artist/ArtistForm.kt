@@ -81,7 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -673,8 +673,8 @@ object ArtistForm {
                         val contentDescription = stringResource(
                             Res.string.alley_edit_tag_delete_content_description
                         )
-                        IconButtonWithTooltip(
-                            imageVector = Icons.Default.Delete,
+                        TooltipIconButton(
+                            icon = Icons.Default.Delete,
                             tooltipText = contentDescription,
                             onClick = { items.remove(value) },
                             contentDescription = contentDescription,

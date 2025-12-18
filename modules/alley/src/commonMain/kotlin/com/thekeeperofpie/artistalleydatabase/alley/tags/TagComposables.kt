@@ -48,7 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
-import com.thekeeperofpie.artistalleydatabase.alley.ui.IconButtonWithTooltip
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
@@ -164,21 +164,19 @@ fun SeriesRow(
                 AniListType.MANGA -> Icons.Default.Book
             }
             val aniListUrl = AniListDataUtils.mediaUrl(mediaType, series.aniListId.toString())
-            IconButtonWithTooltip(
-                imageVector = icon,
+            TooltipIconButton(
+                icon = icon,
                 tooltipText = aniListUrl,
                 onClick = { uriHandler.openUri(aniListUrl) },
-                allowPopupHover = false,
             )
         }
 
         val link = series?.link
         if (link != null) {
-            IconButtonWithTooltip(
-                imageVector = Icons.Default.Link,
+            TooltipIconButton(
+                icon = Icons.Default.Link,
                 tooltipText = link,
                 onClick = { uriHandler.openUri(link) },
-                allowPopupHover = false,
             )
         }
     }

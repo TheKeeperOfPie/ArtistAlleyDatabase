@@ -9,14 +9,17 @@ package com.thekeeperofpie.artistalleydatabase.alley.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BasicTooltipDefaults
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -58,9 +61,15 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TooltipState
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -72,15 +81,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalUriHandler
@@ -94,10 +103,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -140,9 +146,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMayb
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.optionalClickable
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.FixedOffsetTimeZone
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.UtcOffset
@@ -152,6 +163,7 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.milliseconds
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 @Composable
@@ -470,123 +482,137 @@ fun currentWindowSizeClass(): WindowSizeClass {
     }
 }
 
-// TooltipBox crashes on web
-@Composable
-fun Tooltip(
-    text: String?,
-    modifier: Modifier = Modifier,
-    popupAlignment: Alignment = Alignment.BottomCenter,
-    onClick: (() -> Unit)? = null,
-    allowPopupHover: Boolean = true,
-    showOnClick: Boolean = false,
-    content: @Composable () -> Unit,
-) {
-    var size by remember { mutableStateOf(IntSize.Zero) }
-    val contentInteractionSource = remember { MutableInteractionSource() }
-    var popupPressVisible by remember { mutableStateOf(false) }
-    Box(
-        modifier = modifier
-            .let {
-                if (onClick == null) {
-                    it.pointerInput(Unit) {
-                        detectTapGestures(
-                            onLongPress = {
-                                popupPressVisible = true
-                            },
-                            onTap = if (showOnClick) {
-                                {
-                                    popupPressVisible = true
-                                }
-                            } else null,
-                        )
-                    }
-                } else {
-                    it.combinedClickable(
-                        onClick = onClick,
-                        onLongClick = { popupPressVisible = true },
-                    )
-                }
-            }
-            .hoverable(contentInteractionSource)
-            .onGloballyPositioned { size = it.size }
-    ) {
-        content()
-
-        if (text != null) {
-            val popupInteractionSource = remember { MutableInteractionSource() }
-            val contentIsHovered by contentInteractionSource.collectIsHoveredAsState()
-            val popupIsHovered by popupInteractionSource.collectIsHoveredAsState()
-            if (contentIsHovered || (popupIsHovered && allowPopupHover) || popupPressVisible) {
-                Popup(
-                    alignment = popupAlignment,
-                    offset = IntOffset(0, -size.height),
-                    onDismissRequest = { popupPressVisible = false },
-                ) {
-                    Text(
-                        text = text,
-                        modifier = Modifier
-                            .hoverable(popupInteractionSource)
-                            .optionalClickable(onClick = onClick)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceDim,
-                                shape = MaterialTheme.shapes.small,
-                            )
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline,
-                                shape = MaterialTheme.shapes.small,
-                            )
-                            .padding(8.dp)
-                            .widthIn(max = 240.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Composable
 fun IconWithTooltip(
     imageVector: ImageVector,
     tooltipText: String,
-    contentDescription: String? = null,
-    allowPopupHover: Boolean = false,
+    contentDescription: String? = tooltipText,
     modifier: Modifier,
 ) {
-    Tooltip(text = tooltipText, allowPopupHover = allowPopupHover) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(tooltipText) } },
+        state = rememberTooltipState(),
+        modifier = modifier,
+    ) {
         Icon(
             imageVector = imageVector,
             contentDescription = contentDescription,
-            modifier = modifier.height(24.dp)
         )
     }
 }
 
 @Composable
-fun IconButtonWithTooltip(
-    imageVector: ImageVector,
+fun TooltipIconButton(
+    icon: ImageVector,
     tooltipText: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    contentDescription: String? = null,
-    allowPopupHover: Boolean = true,
+    positioning: TooltipAnchorPosition = TooltipAnchorPosition.Below,
+    enabled: Boolean = true,
+    useButtonOnClickForTooltipOnClick: Boolean = false,
+    contentDescription: String? = tooltipText,
 ) {
-    Tooltip(
-        text = tooltipText,
-        onClick = onClick,
-        allowPopupHover = allowPopupHover,
-        modifier = modifier
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            positioning = positioning,
+            spacingBetweenTooltipAndAnchor = 0.dp,
+        ),
+        tooltip = {
+            val clipboardManager = LocalClipboardManager.current
+            PlainTooltip(
+                modifier = Modifier
+                    .hoverable(interactionSource)
+                    .run {
+                        if (useButtonOnClickForTooltipOnClick) {
+                            clickable(onClick = onClick)
+                        } else {
+                            clickable { clipboardManager.setText(AnnotatedString(tooltipText)) }
+                        }
+                    }
+            ) {
+                Text(tooltipText)
+            }
+        },
+        state = rememberCustomTooltipState(isHovered = { isHovered }),
+        focusable = true,
+        enableUserInput = true,
+        hasAction = true,
+        modifier = modifier,
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.minimumInteractiveComponentSize()
-        ) {
+        IconButton(onClick = onClick, enabled = enabled) {
             Icon(
-                imageVector = imageVector,
+                imageVector = icon,
                 contentDescription = contentDescription,
-                modifier = Modifier.height(24.dp)
             )
         }
+    }
+}
+
+private val GlobalMutatorMutex: MutatorMutex = MutatorMutex()
+
+@Composable
+private fun rememberCustomTooltipState(
+    isHovered: () -> Boolean,
+): TooltipState =
+    remember(isHovered) {
+        TooltipStateImpl(isHovered)
+    }
+
+/**
+ * Custom implementation of [TooltipState] which adds a delay when dismissing and keeps the tooltip
+ * visible when hovered.
+ */
+@Stable
+private class TooltipStateImpl(
+    private val isHovered: () -> Boolean,
+) : TooltipState {
+    override val isPersistent: Boolean = false
+
+    override val transition: MutableTransitionState<Boolean> =
+        MutableTransitionState(false)
+
+    override val isVisible: Boolean
+        get() = transition.currentState || transition.targetState
+
+    private var job: (CancellableContinuation<Unit>)? = null
+
+    override suspend fun show(mutatePriority: MutatePriority) {
+        val cancellableShow: suspend () -> Unit = {
+            suspendCancellableCoroutine { continuation ->
+                transition.targetState = true
+                job = continuation
+            }
+        }
+
+        GlobalMutatorMutex.mutate(mutatePriority) {
+            try {
+                if (isPersistent || mutatePriority == MutatePriority.UserInput) {
+                    cancellableShow()
+                } else {
+                    withTimeout(BasicTooltipDefaults.TooltipDuration) { cancellableShow() }
+                }
+            } finally {
+                if (mutatePriority != MutatePriority.PreventUserInput) {
+                    try {
+                        delay(500.milliseconds)
+                        snapshotFlow { isHovered() }.filter { !it }.first()
+                    } finally {
+                        transition.targetState = false
+                    }
+                }
+            }
+        }
+    }
+
+    override fun dismiss() {
+        job?.cancel()
+    }
+
+    override fun onDispose() {
+        job?.cancel()
     }
 }
 
