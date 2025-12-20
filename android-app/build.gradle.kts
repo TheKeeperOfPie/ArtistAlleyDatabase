@@ -5,7 +5,6 @@ plugins {
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.compose")
     id("androidx.room")
     alias(libs.plugins.dev.zacsweers.metro)
@@ -13,7 +12,6 @@ plugins {
 }
 
 kotlin {
-    androidTarget()
     compilerOptions  {
         jvmToolchain(18)
         freeCompilerArgs.add("-Xcontext-receivers")

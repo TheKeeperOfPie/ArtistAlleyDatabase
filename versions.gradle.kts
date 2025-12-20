@@ -5,7 +5,7 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.13.2"
+        const val gradle = "9.0.0-rc01"
     }
 
     object androidx {

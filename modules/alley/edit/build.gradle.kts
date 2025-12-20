@@ -69,7 +69,7 @@ buildkonfig {
         buildConfigField(
             type = FieldSpec.Type.STRING,
             name = "imagesUrl",
-            value = if (isWasmDebug) "" else properties.getProperty("prodImagesUrl"),
+            value = if (isWasmDebug) "" else properties.getProperty("prodImagesUrl").orEmpty(),
             const = true,
         )
     }

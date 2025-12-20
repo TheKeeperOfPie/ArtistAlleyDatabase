@@ -80,7 +80,7 @@ apply(rootProject.projectDir.resolve("versions.gradle.kts"))
 
 plugins {
     id("com.autonomousapps.build-health").version("2.16.0")
-    id("com.android.application").version("8.13.2").apply(false)
+    id("com.android.application").version("9.0.0-rc01").apply(false)
     id("org.jetbrains.kotlin.android").version("2.3.0").apply(false)
     id("org.jetbrains.kotlin.jvm").version("2.3.0").apply(false)
 }
