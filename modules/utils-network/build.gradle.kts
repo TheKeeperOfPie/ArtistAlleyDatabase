@@ -19,7 +19,6 @@ kotlin {
         androidMain {
             dependsOn(jvmMain)
             dependencies {
-                implementation(libs.cronet.okhttp)
                 implementation(projects.modules.utilsBuildConfig)
             }
         }

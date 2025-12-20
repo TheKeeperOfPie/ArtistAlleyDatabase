@@ -90,7 +90,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "ArtistAlleyDatabase"
 includeBuild("build-logic")
 includeBuild("shared")
-include(":app")
+include(":android-app", ":app")
 
 val excludedDirectories = setOf(".idea", "build")
 file("modules")

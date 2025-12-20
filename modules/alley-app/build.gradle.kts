@@ -2,12 +2,10 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 import java.util.zip.CRC32
 
 plugins {
-    id("com.android.application")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -15,85 +13,6 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     alias(libs.plugins.dev.zacsweers.metro)
     alias(libs.plugins.com.github.ben.manes.versions)
-}
-
-android {
-    namespace = "com.thekeeperofpie.artistalley"
-    compileSdk = 36
-
-    defaultConfig {
-        applicationId = "com.thekeeperofpie.artistalley2025"
-        minSdk = 28
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
-
-        resourceConfigurations += "en"
-    }
-
-    val proguardFiles = (file("proguard/").listFiles().orEmpty().toList() +
-            getDefaultProguardFile("proguard-android-optimize.txt")).toTypedArray()
-
-    val debugKeystore = file(System.getProperty("user.home"))
-        .resolve(".android")
-        .resolve("debug.keystore")
-    val debugKeystoreExists = debugKeystore.exists()
-
-    if (debugKeystoreExists) {
-        signingConfigs {
-            create("default") {
-                keyAlias = "androiddebugkey"
-                keyPassword = "android"
-                storeFile = debugKeystore
-                storePassword = "android"
-            }
-        }
-    }
-
-    buildTypes {
-        getByName("debug") {
-            applicationIdSuffix = ".debug"
-            isDebuggable = true
-            isMinifyEnabled = false
-            isShrinkResources = false
-            isCrunchPngs = false
-            proguardFiles(*proguardFiles)
-
-            if (debugKeystoreExists) {
-                signingConfig = signingConfigs.getByName("default")
-            }
-        }
-        getByName("release") {
-            isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
-            isCrunchPngs = true
-            proguardFiles(*proguardFiles)
-
-            if (debugKeystoreExists) {
-                signingConfig = signingConfigs.getByName("default")
-            }
-        }
-    }
-
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-    packaging {
-        resources {
-            merges += "/META-INF/*"
-            merges += "mozilla/public-suffix-list.txt"
-
-            // Can happen if an archive was built incrementally and accidentally published as-is
-            excludes += "**/previous-compilation-data.bin"
-        }
-    }
 }
 
 compose.desktop {
@@ -109,11 +28,6 @@ compose.desktop {
 }
 
 kotlin {
-    androidTarget {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_18
-        }
-    }
     jvm("desktop")
 
     @OptIn(ExperimentalWasmDsl::class)
@@ -141,7 +55,6 @@ kotlin {
     applyDefaultHierarchyTemplate {
         common {
             group("nonServiceWorkerCommon") {
-                withAndroidTarget()
                 withJvm()
                 withJs()
                 withWasmJs()
@@ -184,10 +97,6 @@ kotlin {
                 implementation(libs.jetBrainsAndroidX.navigationevent.compose)
                 implementation(libs.kermit)
             }
-        }
-        androidMain.dependencies {
-            implementation(libs.ktor.client.android)
-            runtimeOnly(libs.kotlinx.coroutines.android)
         }
         val desktopMain by getting {
             dependencies {
@@ -368,8 +277,6 @@ val copyAlleyFunctionsMiddleware by tasks.registering(Copy::class) {
             )
     }
 }
-
-tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
 
 configurations.all {
     resolutionStrategy {

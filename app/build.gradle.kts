@@ -2,10 +2,9 @@
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("com.android.application")
+    id("com.android.kotlin.multiplatform.library")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -16,133 +15,30 @@ plugins {
     alias(libs.plugins.com.github.ben.manes.versions)
 }
 
-android {
-    namespace = "com.thekeeperofpie.anichive"
-    compileSdk = 36
-
-    defaultConfig {
-        applicationId = "com.thekeeperofpie.anichive"
-        minSdk = 28
-        targetSdk = 34
-        versionCode = 18
-        versionName = "0.53"
-
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+compose{
+    resources {
+        publicResClass = true
     }
+    desktop {
+        application {
+            mainClass = "com.thekeeperofpie.artistalleydatabase.desktop.MainKt"
 
-    androidResources {
-        localeFilters += "en"
-    }
-
-    val proguardFiles = file("proguard").listFiles()!! +
-            getDefaultProguardFile("proguard-android-optimize.txt")
-
-    val debugKeystore = file(System.getProperty("user.home"))
-        .resolve(".android")
-        .resolve("debug.keystore")
-    val debugKeystoreExists = debugKeystore.exists()
-
-    if (debugKeystoreExists) {
-        signingConfigs {
-            create("default") {
-                keyAlias = "androiddebugkey"
-                keyPassword = "android"
-                storeFile = debugKeystore
-                storePassword = "android"
+            nativeDistributions {
+                targetFormats(TargetFormat.Exe)
+                packageName = "com.thekeeperofpie.artistalleydatabase"
+                packageVersion = "0.0.1"
             }
-        }
-    }
-
-    buildTypes {
-        getByName("debug") {
-            applicationIdSuffix = ".debug"
-            isDebuggable = true
-            isMinifyEnabled = false
-            isShrinkResources = false
-            isCrunchPngs = false
-            proguardFiles(*proguardFiles)
-
-            if (debugKeystoreExists) {
-                signingConfig = signingConfigs.getByName("default")
-            }
-        }
-        create("internal") {
-            applicationIdSuffix = ".internal"
-            isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
-            isCrunchPngs = true
-            proguardFiles(
-                *(proguardFiles + file("proguardInternal").listFiles()!!)
-            )
-
-            if (debugKeystoreExists) {
-                signingConfig = signingConfigs.getByName("default")
-            }
-
-            matchingFallbacks += "release"
-        }
-        getByName("release") {
-            isDebuggable = false
-            isMinifyEnabled = true
-
-            // Building a bundle with shrink resources is broken
-            isShrinkResources = false
-            isCrunchPngs = true
-            proguardFiles(*proguardFiles)
-
-            if (debugKeystoreExists) {
-                signingConfig = signingConfigs.getByName("default")
-            }
-        }
-    }
-
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-    packaging {
-        resources {
-            merges += "/META-INF/*"
-            merges += "mozilla/public-suffix-list.txt"
-
-            // Can happen if an archive was built incrementally and accidentally published as-is
-            excludes += "**/previous-compilation-data.bin"
-
-            // Kotlin coroutines test
-            pickFirsts += "win32-x86-64/attach_hotspot_windows.dll"
-            pickFirsts += "win32-x86/attach_hotspot_windows.dll"
-
-            // Unknown
-            pickFirsts += "META-INF/licenses/ASM"
-        }
-    }
-
-    lint {
-        checkDependencies = true
-    }
-}
-
-compose.desktop {
-    application {
-        mainClass = "com.thekeeperofpie.artistalleydatabase.desktop.MainKt"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Exe)
-            packageName = "com.thekeeperofpie.artistalleydatabase"
-            packageVersion = "0.0.1"
         }
     }
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_18
+    androidLibrary {
+        namespace = "com.thekeeperofpie.artistalleydatabase"
+        compileSdk {
+            version = release(36)
         }
+        androidResources { enable = true }
     }
     jvm("desktop")
     compilerOptions {
@@ -176,57 +72,6 @@ kotlin {
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.kermit)
         }
-        invokeWhenCreated("androidDebug") {
-            dependencies {
-                implementation(projects.modules.monetization.debug)
-                implementation(projects.modules.animethemes)
-                implementation(projects.modules.debug)
-                implementation(libs.leakcanary.android)
-
-                runtimeOnly(libs.cronet.embedded)
-            }
-        }
-        invokeWhenCreated("androidInternal") {
-            dependencies {
-                implementation(projects.modules.debug)
-                implementation(projects.modules.monetization.debug)
-                implementation(projects.modules.animethemes)
-                runtimeOnly(libs.cronet.embedded)
-            }
-        }
-        invokeWhenCreated("androidRelease") {
-            dependencies {
-                implementation(projects.modules.play)
-                implementation(projects.modules.monetization.unity)
-                runtimeOnly(libs.cronet.play)
-            }
-        }
-        androidMain.dependencies {
-            implementation(projects.modules.anime2anime)
-            implementation(projects.modules.anilist)
-            implementation(projects.modules.browse)
-            implementation(projects.modules.cds)
-            implementation(projects.modules.image)
-            implementation(projects.modules.data)
-            implementation(projects.modules.entry)
-            implementation(projects.modules.markdown)
-            implementation(projects.modules.utilsBuildConfig)
-
-            implementation(libs.activity.compose)
-            implementation(libs.androidx.core.ktx)
-            implementation(libs.androidx.security.crypto)
-            implementation(libs.coil3.coil.network.okhttp)
-            implementation(libs.commons.compress)
-            implementation(libs.kotlinx.serialization.json)
-            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
-            implementation(libs.room.paging)
-            implementation(libs.work.runtime)
-            implementation(libs.work.runtime.ktx)
-
-            runtimeOnly(libs.kotlin.reflect)
-            runtimeOnly(libs.kotlinx.coroutines.android)
-            runtimeOnly(libs.room.runtime)
-        }
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
@@ -253,75 +98,6 @@ room {
     generateKotlin = true
 }
 
-tasks.register("installAll") {
-    dependsOn("installDebug", "installRelease", "installInternal")
-}
-
-fun Exec.launchActivity(
-    packageName: String,
-    activityName: String = "com.thekeeperofpie.artistalleydatabase.MainActivity",
-) {
-    commandLine(
-        "adb", "shell", "am", "start-activity",
-        "-a", "\"android.intent.action.MAIN\"",
-        "-c", "\"android.intent.category.LAUNCHER\"",
-        "-n", "\"$packageName/$activityName\"",
-    )
-}
-
-tasks.register("launchRelease") {
-    dependsOn("installRelease")
-    finalizedBy("compileAndLaunchRelease", "installDebug")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register("launchInternal") {
-    dependsOn("installInternal")
-    finalizedBy("compileAndLaunchInternal")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("launchDebug") {
-    dependsOn("installDebug")
-    launchActivity("com.thekeeperofpie.anichive.debug")
-    finalizedBy("installRelease", "installInternal")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("compileAndLaunchRelease") {
-    commandLine(
-        "adb", "shell", "pm", "compile", "-f",
-        "-m", "everything",
-        "--check-prof", "false",
-        "com.thekeeperofpie.anichive",
-    )
-    finalizedBy("launchReleaseMainActivity")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("compileAndLaunchInternal") {
-    commandLine(
-        "adb", "shell", "pm", "compile", "-f",
-        "-m", "everything",
-        "--check-prof", "false",
-        "com.thekeeperofpie.anichive.internal",
-    )
-    finalizedBy("launchInternalMainActivity")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("launchInternalMainActivity") {
-    launchActivity("com.thekeeperofpie.anichive.internal")
-    outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("launchReleaseMainActivity") {
-    launchActivity("com.thekeeperofpie.anichive")
-    outputs.upToDateWhen { false }
-}
-
-tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
-
 tasks.named { it.contains("explodeCodeSource") }.configureEach {
     dependsOn("generateResourceAccessorsForAndroidMain")
     dependsOn("generateActualResourceCollectorsForAndroidMain")
@@ -336,7 +112,8 @@ configurations.all {
         // https://github.com/Kotlin/kotlinx.serialization/issues/2968#issuecomment-3356075918
         eachDependency {
             if (requested.module.group == "org.jetbrains.kotlinx" &&
-                requested.module.name.startsWith("kotlinx-serialization")) {
+                requested.module.name.startsWith("kotlinx-serialization")
+            ) {
                 useVersion("1.9.0")
             }
         }

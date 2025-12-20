@@ -25,6 +25,7 @@ fun buildNetworkClient(
 //        .enableBrotli(true)
 //        .build()
 //    val cronetInterceptor = CronetInterceptor.newBuilder(cronetEngine).build()
+    // TODO: Restore Cronet support
     val connectivityManager = application.getSystemService(ConnectivityManager::class.java)
     val interceptors = listOfNotNull(loggingInterceptor)//, cronetInterceptor)
     return NetworkClient(

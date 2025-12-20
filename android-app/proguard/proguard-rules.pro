@@ -415,6 +415,7 @@
 -dontwarn org.chromium.base.FeatureOverrides
 -dontwarn org.chromium.base.FeatureParam
 -dontwarn org.chromium.base.version_info.VersionConstantsBridgeJni
+-dontwarn libcore.icu.NativePluralRules
 
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
 -dontwarn com.google.errorprone.annotations.CheckReturnValue
