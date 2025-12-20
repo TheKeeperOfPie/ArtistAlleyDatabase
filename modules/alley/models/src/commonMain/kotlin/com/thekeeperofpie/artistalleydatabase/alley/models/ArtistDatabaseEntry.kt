@@ -56,6 +56,12 @@ interface ArtistDatabaseEntry {
     ) : ArtistDatabaseEntry
 
     companion object {
+
+        // Need to ignore metadata for equality
+        fun hasChanged(before: Impl?, after: Impl) =
+            before?.copy(counter = 0, lastEditTime = null, lastEditor = null) !=
+                    after.copy(counter = 0, lastEditTime = null, lastEditor = null)
+
         fun legacy(
             year: DataYear,
             id: String,

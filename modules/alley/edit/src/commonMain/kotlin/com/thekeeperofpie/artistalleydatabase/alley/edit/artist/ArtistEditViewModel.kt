@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
@@ -59,7 +60,8 @@ class ArtistEditViewModel(
             id.lockState = EntryLockState.LOCKED
         }
     }
-    private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
+    private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response.Result> =
+        ExclusiveTask(viewModelScope, ::save)
     private val artistMetadata by savedStateHandle.saveable(saver = ArtistFormState.Metadata.Saver) {
         ArtistFormState.Metadata()
     }
@@ -104,7 +106,7 @@ class ArtistEditViewModel(
             ) { SnapshotStateList() },
             textState = textState,
         ),
-        savingState = saveJob.state,
+        saveTaskState = saveTask.state,
     )
 
     private var hasLoaded by savedStateHandle.saved { mode == ArtistEditScreen.Mode.ADD }
@@ -172,9 +174,12 @@ class ArtistEditViewModel(
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
-    fun onClickSave() = saveJob.launch(::captureDatabaseEntry)
+    fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
+    fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }
 
-    private fun captureDatabaseEntry(): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
+    private fun captureDatabaseEntry(
+        isManual: Boolean,
+    ): Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean> {
         val textState = state.artistFormState.textState
         val id = Uuid.parse(textState.id.value.text.toString())
         val status = ArtistStatus.entries[textState.status.selectedIndex]
@@ -210,34 +215,44 @@ class ArtistEditViewModel(
         val merchConfirmed = artistFormState.merchConfirmed.toList().map { it.name }
 
         val images = artistFormState.images.toList()
-        return images to ArtistDatabaseEntry.Impl(
-            year = dataYear,
-            id = id.toString(),
-            status = status,
-            booth = booth,
-            name = name,
-            summary = summary,
-            links = links,
-            storeLinks = storeLinks,
-            catalogLinks = catalogLinks,
-            driveLink = null,
-            notes = notes,
-            commissions = commissions,
-            seriesInferred = seriesInferred,
-            seriesConfirmed = seriesConfirmed,
-            merchInferred = merchInferred,
-            merchConfirmed = merchConfirmed,
-            images = emptyList(),
-            counter = 1,
-            editorNotes = editorNotes,
-            lastEditor = null, // This is filled on the backend
-            lastEditTime = Clock.System.now(),
+        return Triple(
+            images,
+            ArtistDatabaseEntry.Impl(
+                year = dataYear,
+                id = id.toString(),
+                status = status,
+                booth = booth,
+                name = name,
+                summary = summary,
+                links = links,
+                storeLinks = storeLinks,
+                catalogLinks = catalogLinks,
+                driveLink = null,
+                notes = notes,
+                commissions = commissions,
+                seriesInferred = seriesInferred,
+                seriesConfirmed = seriesConfirmed,
+                merchInferred = merchInferred,
+                merchConfirmed = merchConfirmed,
+                images = emptyList(),
+                counter = 1,
+                editorNotes = editorNotes,
+                lastEditor = null, // This is filled on the backend
+                lastEditTime = Clock.System.now(),
+            ),
+            isManual,
         )
     }
 
-    private suspend fun save(pair: Pair<List<EditImage>, ArtistDatabaseEntry.Impl>) =
+    private suspend fun save(triple: Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>) =
         withContext(dispatchers.io) {
-            val (images, databaseEntry) = pair
+            val (images, databaseEntry, isManual) = triple
+
+            val hasChanged = ArtistDatabaseEntry.hasChanged(artist, databaseEntry)
+            if (!isManual && !hasChanged && images.none { it is EditImage.LocalImage }) {
+                // Don't save if no data has changed
+                return@withContext ArtistSave.Response.Result.Success
+            }
             val finalImages = images.mapNotNull {
                 when (it) {
                     is EditImage.DatabaseImage,
@@ -256,15 +271,26 @@ class ArtistEditViewModel(
                 }
             }
 
+            val updatedArtist = databaseEntry.copy(images = finalImages.map {
+                CatalogImage(name = it.name, width = it.width, height = it.height)
+            })
             database.saveArtist(
                 dataYear = dataYear,
                 initial = artist,
-                updated = databaseEntry.copy(images = finalImages.map {
-                    CatalogImage(name = it.name, width = it.width, height = it.height)
-                }),
+                updated = updatedArtist,
             ).also {
                 if (it is ArtistSave.Response.Result.Success) {
                     hasLoaded = false
+                    artist = updatedArtist
+                    if (!isManual) {
+                        state.artistFormState.applyDatabaseEntry(
+                            artist = updatedArtist,
+                            seriesById = seriesById.first(),
+                            merchById = merchById.first(),
+                            force = false,
+                        )
+                        state.artistFormState.images.replaceAll(finalImages)
+                    }
                 }
             }
         }

@@ -43,6 +43,7 @@
     <string name="alley_edit_artist_edit_action_show_inferred">Show inferred</string>
 
     <string name="alley_edit_artist_action_save_tooltip">Save artist</string>
+    <string name="alley_edit_artist_action_save_and_exit_tooltip">Save and exit</string>
     <string name="alley_edit_artist_action_history_content_description">View history</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
 

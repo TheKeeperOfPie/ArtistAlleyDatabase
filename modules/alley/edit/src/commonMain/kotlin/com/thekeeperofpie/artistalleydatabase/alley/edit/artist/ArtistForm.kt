@@ -167,7 +167,7 @@ class ArtistFormState(
 
         applyValue(textState.links, this.links, status, links, force)
         applyValue(textState.storeLinks, this.storeLinks, status, storeLinks, force)
-        applyValue(textState.catalogLinks, this.catalogLinks, status, catalogLinks, force)
+        applyValue(textState.catalogLinks, this.catalogLinks, status, artist.catalogLinks, force)
         applyValue(textState.commissions, this.commissions, status, commissions, force)
 
         applyValue(textState.seriesInferred, this.seriesInferred, status, seriesInferred, force)

@@ -13,40 +13,38 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_history_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
@@ -64,18 +62,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -123,6 +122,7 @@ object ArtistEditScreen {
             },
             onClickHistory = onClickHistory,
             onClickSave = viewModel::onClickSave,
+            onClickDone = viewModel::onClickDone,
         )
 
         LaunchedEffect(viewModel) {
@@ -142,24 +142,30 @@ object ArtistEditScreen {
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickHistory: (() -> Unit)? = null,
         onClickSave: () -> Unit,
+        onClickDone: () -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
-        LaunchedEffect(Unit) {
-            state.savingState.collectLatest {
-                if (it is JobProgress.Finished.Result<ArtistSave.Response.Result>) {
-                    when (val result = it.value) {
-                        is ArtistSave.Response.Result.Failed ->
+        val saveTaskState = state.saveTaskState
+        LaunchedEffect(saveTaskState) {
+            snapshotFlow { saveTaskState.lastResult }
+                .filterNotNull()
+                .collectLatest { (isManual, result) ->
+                    when (result) {
+                        is ArtistSave.Response.Result.Failed -> {
                             snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
+                            saveTaskState.clearError()
+                        }
                         is ArtistSave.Response.Result.Outdated -> {
                             // TODO
                         }
                         is ArtistSave.Response.Result.Success -> {
-                            state.savingState.value = JobProgress.Idle()
-                            onClickBack(true)
+                            saveTaskState.clearResult()
+                            if (isManual) {
+                                onClickBack(true)
+                            }
                         }
                     }
                 }
-            }
         }
 
         val windowSizeClass = currentWindowSizeClass()
@@ -195,24 +201,29 @@ object ArtistEditScreen {
                             }
                         }
                         val enabled = !errorState.hasAnyError
-                        TooltipBox(
-                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                                TooltipAnchorPosition.Below
-                            ),
-                            tooltip = {
-                                PlainTooltip {
-                                    Text(stringResource(Res.string.alley_edit_artist_action_save_tooltip))
-                                }
-                            },
-                            state = rememberTooltipState(),
-                        ) {
-                            IconButton(onClick = onClickSave, enabled = enabled) {
-                                Icon(
-                                    imageVector = Icons.Default.Save,
-                                    contentDescription = stringResource(Res.string.alley_edit_artist_action_save_tooltip),
-                                )
+                        Box(contentAlignment = Alignment.Center) {
+                            val isSaving = saveTaskState.isActive && !saveTaskState.isManualTrigger
+                            TooltipIconButton(
+                                icon = Icons.Default.Save,
+                                tooltipText = stringResource(Res.string.alley_edit_artist_action_save_tooltip),
+                                enabled = enabled,
+                                onClick = onClickSave,
+                                modifier = Modifier.alpha(if (isSaving) 0.5f else 1f)
+                            )
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = isSaving,
+                                modifier = Modifier.matchParentSize()
+                            ) {
+                                CircularWavyProgressIndicator(modifier = Modifier.padding(4.dp))
                             }
                         }
+                        TooltipIconButton(
+                            icon = Icons.Default.DoneAll,
+                            tooltipText = stringResource(Res.string.alley_edit_artist_action_save_and_exit_tooltip),
+                            enabled = enabled,
+                            onClick = onClickDone,
+                        )
                     },
                     modifier = Modifier
                         .conditionally(!isExpanded, Modifier.widthIn(max = 960.dp))
@@ -221,9 +232,8 @@ object ArtistEditScreen {
             snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
-            val jobProgress by state.savingState.collectAsStateWithLifecycle()
             ContentSavingBox(
-                saving = jobProgress is JobProgress.Loading,
+                saving = saveTaskState.isActive && saveTaskState.isManualTrigger,
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
@@ -294,7 +304,7 @@ object ArtistEditScreen {
             val errorMessage = stringResource(Res.string.alley_edit_artist_error_saving_bad_fields)
             GenericExitDialog(
                 onClickBack = { onClickBack(true) },
-                onClickSave = onClickSave,
+                onClickSave = onClickDone,
                 saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
             )
         }
@@ -334,6 +344,6 @@ object ArtistEditScreen {
     @Stable
     class State(
         val artistFormState: ArtistFormState,
-        val savingState: MutableStateFlow<JobProgress<ArtistSave.Response.Result>>,
+        val saveTaskState: TaskState<ArtistSave.Response.Result>,
     )
 }
