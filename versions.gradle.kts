@@ -5,18 +5,18 @@ import org.gradle.api.initialization.resolve.DependencyResolutionManagement
 
 object Versions {
     object android {
-        const val gradle = "8.13.1"
+        const val gradle = "8.13.2"
     }
 
     object androidx {
-        const val activity = "1.12.0-rc01"
+        const val activity = "1.12.2"
         const val annotation = "1.9.1"
         const val browser = "1.10.0-alpha02"
         const val core = "1.17.0"
         const val media3 = "1.8.0"
         const val paging = "3.4.0-alpha04"
         const val palette = "1.0.0"
-        const val room = "2.8.3"
+        const val room = "2.8.4"
         const val securityCrypto = "1.1.0"
         const val sqlite = "2.6.1"
         const val testExt = "1.2.1"
@@ -51,7 +51,7 @@ object Versions {
         const val appUpdate = "2.1.0"
         const val billing = "8.0.0"
         const val cronetOkHttp = "0.1.0"
-        const val ksp = "2.3.3"
+        const val ksp = "2.3.4"
         const val playServicesAds = "24.7.0"
         const val playServicesCronet = "18.1.1"
         const val truth = "1.4.5"
@@ -66,15 +66,15 @@ object Versions {
 
     object jetBrains {
         object androidX {
-            const val lifecycle = "2.10.0-alpha04"
+            const val lifecycle = "2.10.0-alpha07"
             const val navigation = "2.9.1"
-            const val navigation3 = "1.0.0-alpha04"
-            const val navigationevent = "1.0.0-rc01"
+            const val navigation3 = "1.1.0-alpha01"
+            const val navigationevent = "1.0.0-rc02"
         }
 
         object composeMultiplatform {
-            const val plugin = "1.10.0-rc01"
-            const val runtime = "1.10.0-rc01"
+            const val plugin = "1.11.0-alpha01"
+            const val runtime = "1.11.0-alpha01"
             const val windowSizeClass = "1.10.0-alpha04"
         }
     }
@@ -87,7 +87,7 @@ object Versions {
 
     object kotlin {
         const val browser = "0.5.0"
-        const val core = "2.3.0-RC2"
+        const val core = "2.3.0"
         const val coroutines = "1.10.2"
         const val datetime = "0.7.1-0.6.x-compat"
         const val io = "0.8.0"
@@ -100,7 +100,7 @@ object Versions {
     const val manifoldGraphql = "2025.1.27"
     const val markwon = "4.6.2"
     const val materialKolor = "4.0.5"
-    const val metro = "0.8.2"
+    const val metro = "0.9.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.2.0"
     const val multiplatformMarkdown = "0.38.0-b01"

@@ -70,7 +70,6 @@ goto fail
 :execute
 @rem Setup the command line
 
-set CLASSPATH=
 
 set GRADLE_USER_HOME=%APP_HOME%\gradle-home
 
