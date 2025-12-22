@@ -1,0 +1,7 @@
+getPublicKey:
+SELECT * FROM artistFormPublicKey
+WHERE artistId = :artistId;
+
+insertPublicKey:
+INSERT OR REPLACE INTO artistFormPublicKey
+VALUES ?;

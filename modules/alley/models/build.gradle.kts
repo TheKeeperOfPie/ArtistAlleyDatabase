@@ -11,6 +11,8 @@ kotlin {
         commonMain.dependencies {
             api("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.whyoleg.cryptography.core)
+            implementation(libs.whyoleg.cryptography.provider.optimal)
         }
     }
 }

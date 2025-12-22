@@ -362,7 +362,9 @@ tasks.register("webRelease") {
         val wranglerToml = folder.resolve("wrangler.toml")
         val wranglerTomlEdited = wranglerToml.readText()
             .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
+            .replace("artistAlleyFormDatabaseId", properties.getProperty("artistAlleyFormDatabaseId"))
             .replace("artistAlleyCacheKVId", properties.getProperty("artistAlleyCacheKVId"))
+            .replace("artistAlleyFormKeysKVId", properties.getProperty("artistAlleyFormKeysKVId"))
         wranglerToml.writeText(wranglerTomlEdited)
 
         // This is done here because syncing the site involves replacing all of the files in the

@@ -4,16 +4,16 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
-import app.cash.sqldelight.async.coroutines.awaitCreate
-import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptographyKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
@@ -26,7 +26,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import dev.whyoleg.cryptography.CryptographyProvider
+import dev.whyoleg.cryptography.algorithms.RSA
+import dev.whyoleg.cryptography.algorithms.SHA384
 import kotlinx.coroutines.await
+import kotlinx.io.bytestring.decodeToString
+import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.serialization.json.Json
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
@@ -34,24 +39,26 @@ import org.w3c.fetch.ResponseInit
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-object AlleyBackendDatabase {
+object AlleyEditBackend {
 
     suspend fun handleRequest(context: EventContext, path: String): Response {
         val pathSegments = path.removePrefix("/").split("/")
         val firstSegment = pathSegments.getOrNull(0)
+
+        // Assumes that middleware has authorized non-form requests already
         return when (firstSegment) {
             "image" -> loadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
             "uploadImage" ->
                 uploadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
-            else -> Json.decodeFromString<BackendRequest>(
-                context.request.text().await(),
-            ).run {
+            else -> Json.decodeFromString<BackendRequest>(context.request.text().await()).run {
                 when (this) {
                     is ArtistSave.Request -> makeResponse(saveArtist(context, this))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
+                    is BackendRequest.GenerateFormKey ->
+                        makeResponse(generateFormKey(context, this))
                     is BackendRequest.Merch -> makeResponse(loadMerch(context))
                     is BackendRequest.Series -> loadSeries(context)
                     is ListImages.Request -> makeResponse(listImages(context, this))
@@ -65,13 +72,13 @@ object AlleyBackendDatabase {
     private inline fun <reified Request : BackendRequest.WithResponse<Response>, reified Response> Request.makeResponse(
         response: Response?,
     ): org.w3c.fetch.Response = if (response == null) {
-        jsonResponse(null)
+        Utils.jsonResponse(null)
     } else {
-        jsonResponse<Response>(response)
+        Utils.jsonResponse<Response>(response)
     }
 
     private suspend fun loadArtists(context: EventContext): List<ArtistSummary> =
-        database(context).artistEntryAnimeExpo2026Queries
+        Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
             .getArtists()
             .awaitAsList()
             .map {
@@ -95,7 +102,7 @@ object AlleyBackendDatabase {
         request: BackendRequest.Artist,
     ): ArtistDatabaseEntry.Impl? =
         when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> database(context)
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
                 .artistEntryAnimeExpo2026Queries
                 .getArtist(request.artistId.toString())
                 .awaitAsOneOrNull()
@@ -113,7 +120,7 @@ object AlleyBackendDatabase {
         request: BackendRequest.ArtistHistory,
     ): List<ArtistHistoryEntry> =
         when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> database(context).artistEntryAnimeExpo2026Queries
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
                 .getHistory(request.artistId.toString())
                 .awaitAsList()
                 .map { it.toHistoryEntry() }
@@ -131,7 +138,7 @@ object AlleyBackendDatabase {
     ) = ArtistSave.Response(
         when (request.dataYear) {
             DataYear.ANIME_EXPO_2026 -> {
-                val database = database(context, tryCreate = true)
+                val database = Databases.editDatabase(context, tryCreate = true)
                 val currentArtist =
                     database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
                         .awaitAsOneOrNull()?.toArtistDatabaseEntry()
@@ -158,6 +165,27 @@ object AlleyBackendDatabase {
             )
         }
     )
+
+    private suspend fun generateFormKey(
+        context: EventContext,
+        request: BackendRequest.GenerateFormKey,
+    ): String {
+        val database = Databases.formDatabase(context)
+        val keys = AlleyCryptographyKeys.generate()
+        database.alleyFormPublicKeyQueries.insertPublicKey(
+            ArtistFormPublicKey(artistId = request.artistId, publicKey = keys.publicKey)
+        )
+
+        return CryptographyProvider.Default.get(RSA.OAEP)
+            .publicKeyDecoder(SHA384)
+            .decodeFromByteString(
+                format = RSA.PublicKey.Format.JWK,
+                byteString = request.publicKeyForResponse.encodeToByteString(),
+            )
+            .encryptor()
+            .encrypt(keys.privateKey.encodeToByteString())
+            .decodeToString()
+    }
 
     /**
      * Exposes image for local development so that it doesn't access the remote R2 bucket via the
@@ -206,7 +234,7 @@ object AlleyBackendDatabase {
     }
 
     private suspend fun loadSeriesIntoCache(context: EventContext) =
-        database(context)
+        Databases.editDatabase(context)
             .seriesEntryQueries
             .getSeries()
             .awaitAsList()
@@ -218,7 +246,7 @@ object AlleyBackendDatabase {
         context: EventContext,
         request: SeriesSave.Request,
     ): SeriesSave.Response {
-        val database = database(context, tryCreate = true)
+        val database = Databases.editDatabase(context, tryCreate = true)
         val currentSeries =
             database.seriesEntryQueries.getSeriesById(request.updated.id)
                 .awaitAsOneOrNull()?.toSeriesInfo()
@@ -231,7 +259,7 @@ object AlleyBackendDatabase {
     }
 
     private suspend fun loadMerch(context: EventContext): List<MerchInfo> =
-        database(context).merchEntryQueries
+        Databases.editDatabase(context).merchEntryQueries
             .getMerch()
             .awaitAsList()
             .map { it.toMerchInfo() }
@@ -240,7 +268,7 @@ object AlleyBackendDatabase {
         context: EventContext,
         request: MerchSave.Request,
     ): MerchSave.Response {
-        val database = database(context, tryCreate = true)
+        val database = Databases.editDatabase(context, tryCreate = true)
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.updated.name)
                 .awaitAsOneOrNull()?.toMerchInfo()
@@ -250,42 +278,6 @@ object AlleyBackendDatabase {
         database.merchEntryQueries.insertMerch(request.updated.toMerchEntry())
         return MerchSave.Response(MerchSave.Response.Result.Success)
     }
-
-    private suspend fun database(
-        context: EventContext,
-        tryCreate: Boolean = false,
-    ): AlleySqlDatabase {
-        val sqlDriver = WorkerSqlDriver(database = context.env.ARTIST_ALLEY_DB)
-        val database = AlleySqlDatabase(
-            driver = sqlDriver,
-            artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
-            artistEntryAnimeExpo2026HistoryAdapter = ArtistEntryAnimeExpo2026History.Adapter(
-                statusAdapter = ColumnAdapters.artistStatusAdapter,
-                linksAdapter = ColumnAdapters.listStringAdapter,
-                storeLinksAdapter = ColumnAdapters.listStringAdapter,
-                catalogLinksAdapter = ColumnAdapters.listStringAdapter,
-                seriesInferredAdapter = ColumnAdapters.listStringAdapter,
-                seriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
-                merchInferredAdapter = ColumnAdapters.listStringAdapter,
-                merchConfirmedAdapter = ColumnAdapters.listStringAdapter,
-                commissionsAdapter = ColumnAdapters.listStringAdapter,
-                imagesAdapter = ColumnAdapters.listCatalogImageAdapter,
-                lastEditTimeAdapter = ColumnAdapters.instantAdapter,
-            ),
-            seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
-        )
-        if (tryCreate) {
-            AlleySqlDatabase.Schema.awaitCreate(sqlDriver)
-        }
-        return database
-    }
-
-    private inline fun <reified T> jsonResponse(value: T) = Response(
-        body = Json.encodeToString(value),
-        init = ResponseInit(status = 200, headers = Headers().apply {
-            set("Content-Type", "application/json")
-        })
-    )
 
     private fun literalJsonResponse(value: String) = Response(
         body = value,

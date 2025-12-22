@@ -9,6 +9,12 @@ plugins {
 group = "com.thekeeperofpie.artistalleydatabase.alley.functions"
 
 kotlin {
+    compilerOptions {
+        optIn.addAll(
+            "kotlin.uuid.ExperimentalUuidApi",
+        )
+    }
+
     js {
         nodejs()
         binaries.executable()
@@ -17,6 +23,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
+            implementation(libs.whyoleg.cryptography.core)
+            implementation(libs.whyoleg.cryptography.provider.optimal)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.sqldelight.coroutines.extensions)
 
@@ -34,6 +42,13 @@ sqldelight {
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
             generateAsync = true
             dependency(project(":modules:alley:data"))
+            srcDirs(file("src/commonMain/sqldelight/alley"))
+        }
+        create("AlleyFormDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions.form")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
+            generateAsync = true
+            srcDirs(file("src/commonMain/sqldelight/form"))
         }
     }
 }

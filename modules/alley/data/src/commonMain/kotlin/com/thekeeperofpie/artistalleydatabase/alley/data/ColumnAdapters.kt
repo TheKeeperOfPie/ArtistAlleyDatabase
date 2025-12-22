@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import kotlinx.serialization.json.Json
 import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 object ColumnAdapters {
 
@@ -39,6 +40,12 @@ object ColumnAdapters {
         }
 
         override fun encode(value: Instant) = value.toString()
+    }
+
+    val uuidAdapter = object : ColumnAdapter<Uuid, String> {
+        override fun decode(databaseValue: String) = Uuid.parse(databaseValue)
+
+        override fun encode(value: Uuid) = value.toString()
     }
 
     val dataYearAdapter = object : ColumnAdapter<DataYear, String> {

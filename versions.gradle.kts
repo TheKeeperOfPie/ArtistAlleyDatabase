@@ -120,6 +120,7 @@ object Versions {
     const val unityAds = "4.16.3"
     const val uriKmp = "0.0.21"
     const val webpImageIo = "0.10.2"
+    const val whyolegCryptography = "0.5.0"
     const val xmlUtil = "0.91.2"
 }
 
@@ -348,6 +349,13 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                         library("app.cash.sqldelight:sqlite-driver")
                         library("app.cash.sqldelight:web-worker-driver-js")
                         library("app.cash.sqldelight:web-worker-driver-wasm-js")
+                    }
+                }
+
+                prefix("whyoleg") {
+                    withVersion(Versions.whyolegCryptography) {
+                        library("dev.whyoleg.cryptography:cryptography-core")
+                        library("dev.whyoleg.cryptography:cryptography-provider-optimal")
                     }
                 }
 

@@ -27,8 +27,10 @@ external interface PluginData {
 
 external interface Env {
     val ARTIST_ALLEY_DB: D1Database
+    val ARTIST_ALLEY_FORM_DB: D1Database
     val ARTIST_ALLEY_IMAGES_BUCKET: R2Bucket
     val ARTIST_ALLEY_CACHE_KV: KeyValueStore
+    val ARTIST_ALLEY_FORM_KEYS_KV: KeyValueStore
 }
 
 internal fun <T> promise(block: suspend CoroutineScope.() -> T) =

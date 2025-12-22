@@ -26,6 +26,11 @@ sealed interface BackendRequest {
     @Serializable
     data object Artists : BackendRequest, WithResponse<List<ArtistSummary>>
 
+    // TODO: Allow querying presence?
+    @Serializable
+    data class GenerateFormKey(val artistId: Uuid, val publicKeyForResponse: String) :
+        BackendRequest, WithResponse<String>
+
     @Serializable
     data object Series : BackendRequest, WithResponse<List<SeriesInfo>>
 

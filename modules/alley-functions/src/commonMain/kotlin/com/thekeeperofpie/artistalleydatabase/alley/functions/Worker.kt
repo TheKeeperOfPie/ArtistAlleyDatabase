@@ -13,7 +13,9 @@ class Worker {
         fun request(context: EventContext): Promise<Response> = promise {
             val functionPath = context.functionPath.orEmpty()
             when {
-                functionPath.startsWith("/database") -> AlleyBackendDatabase.handleRequest(
+                // TODO: Use non-prefixed path?
+                functionPath.startsWith("/database/form") -> AlleyFormBackend.handleRequest(context)
+                functionPath.startsWith("/database") -> AlleyEditBackend.handleRequest(
                     context = context,
                     path = functionPath.removePrefix("/database"),
                 )

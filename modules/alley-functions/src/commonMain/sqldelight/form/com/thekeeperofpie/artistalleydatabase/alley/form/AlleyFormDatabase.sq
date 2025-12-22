@@ -1,0 +1,15 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS artistFormNonce (
+    artistId TEXT AS Uuid NOT NULL,
+    nonce TEXT AS Uuid NOT NULL,
+    timestamp TEXT AS Instant NOT NULL,
+    PRIMARY KEY (artistId)
+);
+
+CREATE TABLE IF NOT EXISTS artistFormPublicKey (
+    artistId TEXT AS Uuid NOT NULL,
+    publicKey TEXT NOT NULL,
+    PRIMARY KEY (artistId)
+);
