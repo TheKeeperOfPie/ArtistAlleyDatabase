@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.functions.Databases.formDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptographyKeys
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -22,20 +22,19 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 internal object AlleyFormBackend {
 
-    suspend fun handleRequest(context: EventContext): Response {
-        return handleFormRequest(
+    suspend fun handleRequest(context: EventContext): Response =
+        handleFormRequest(
             context = context,
             request = Json.decodeFromString<BackendFormRequest>(
-                context.request.text().await()
+                context.request.text().await(),
             ),
         )
-    }
 
     private suspend fun handleFormRequest(
         context: EventContext,
         request: BackendFormRequest,
     ): Response {
-        val signature = context.request.headers.get("X-CustomSignature")
+        val signature = context.request.headers.get(AlleyCryptography.SIGNATURE_HEADER_KEY)
             ?: return Utils.unauthorizedResponse
         val formDatabase = formDatabase(context)
         val artistId = request.artistId
@@ -45,10 +44,10 @@ internal object AlleyFormBackend {
             .awaitAsOneOrNull()
             ?: return Utils.unauthorizedResponse
 
-        val valid = AlleyCryptographyKeys.verifySignature<BackendFormRequest>(
-            publicKey.publicKey,
-            signature,
-            request
+        val valid = AlleyCryptography.verifySignature<BackendFormRequest>(
+            publicKey = publicKey.publicKey,
+            signature = signature,
+            payload = request,
         )
         if (!valid) return Utils.unauthorizedResponse
 
@@ -63,7 +62,7 @@ internal object AlleyFormBackend {
                         ?.let { makeResponse(it) }
                         ?: Utils.unauthorizedResponse
                 is BackendFormRequest.Artist -> makeResponse(loadArtist(context, this))
-                is BackendFormRequest.SaveArtist -> TODO()
+                is BackendFormRequest.ArtistSave -> TODO()
             }
         }
     }

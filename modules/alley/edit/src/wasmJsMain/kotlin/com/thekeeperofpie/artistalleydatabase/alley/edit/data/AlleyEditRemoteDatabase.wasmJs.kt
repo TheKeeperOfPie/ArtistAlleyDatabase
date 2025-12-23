@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography.generateOneTimeEncryptionKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
@@ -152,6 +154,31 @@ actual class AlleyEditRemoteDatabase(
                 MerchSave.Response.Result.Failed(t)
             }
         }
+
+    actual suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? {
+        val oneTimeKeys = generateOneTimeEncryptionKeys()
+        return try {
+            val response = sendRequest(
+                BackendRequest.GenerateFormKey(
+                    artistId = artistId,
+                    publicKeyForResponse = oneTimeKeys.publicKey,
+                )
+            ) ?: return null
+            val accessKey = AlleyCryptography.oneTimeDecrypt(
+                privateKey = oneTimeKeys.privateKey,
+                payload = response,
+            )
+            Uri.parse(window.location.origin)
+                .buildUpon()
+                .path("/edit/form/artist")
+                .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)
+                .build()
+                .toString()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
+        }
+    }
 
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(

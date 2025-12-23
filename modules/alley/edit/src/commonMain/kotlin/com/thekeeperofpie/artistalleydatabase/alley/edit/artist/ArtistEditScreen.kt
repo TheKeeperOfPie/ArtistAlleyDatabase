@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,24 +15,30 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -38,26 +46,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_generate_link_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_history_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_generate
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description_generated
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
+import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
@@ -73,6 +96,7 @@ import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.stringResource
@@ -88,6 +112,7 @@ object ArtistEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
         onClickHistory: (() -> Unit)? = null,
+        onClickDebugForm: ((AlleyEditDestination.ArtistForm) -> Unit)? = null,
         viewModel: ArtistEditViewModel = viewModel {
             graph.artistEditViewModelFactory.create(
                 dataYear = dataYear,
@@ -106,6 +131,9 @@ object ArtistEditScreen {
         NavigationResultEffect(ArtistHistoryScreen.RESULT_KEY) {
             viewModel.initialize(force = true)
         }
+        LaunchedEffect(viewModel) {
+            viewModel.initialize()
+        }
         ArtistEditScreen(
             dataYear = dataYear,
             mode = viewModel.mode,
@@ -113,6 +141,7 @@ object ArtistEditScreen {
             seriesPredictions = viewModel::seriesPredictions,
             merchPredictions = viewModel::merchPredictions,
             seriesImage = viewModel::seriesImage,
+            generateFormLink = viewModel::generateFormLink,
             onClickBack = onClickBack,
             onClickEditImages = {
                 onClickEditImages(
@@ -123,11 +152,16 @@ object ArtistEditScreen {
             onClickHistory = onClickHistory,
             onClickSave = viewModel::onClickSave,
             onClickDone = viewModel::onClickDone,
+            onClickDebugForm = {
+                onClickDebugForm?.invoke(
+                    AlleyEditDestination.ArtistForm(
+                        dataYear = dataYear,
+                        artistId = artistId!!,
+                        privateKey = it.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}="),
+                    )
+                )
+            },
         )
-
-        LaunchedEffect(viewModel) {
-            viewModel.initialize()
-        }
     }
 
     @Composable
@@ -138,11 +172,13 @@ object ArtistEditScreen {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        generateFormLink: () -> Unit,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
-        onClickHistory: (() -> Unit)? = null,
+        onClickHistory: (() -> Unit)?,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
+        onClickDebugForm: (formLink: String) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
@@ -171,6 +207,7 @@ object ArtistEditScreen {
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
         val errorState = rememberErrorState(state.artistFormState.textState)
+        var showFormLinkDialog by mutableStateOf(false)
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -192,37 +229,14 @@ object ArtistEditScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {
-                        if (mode == Mode.EDIT && onClickHistory != null) {
-                            IconButton(onClick = onClickHistory) {
-                                Icon(
-                                    imageVector = Icons.Default.History,
-                                    contentDescription = stringResource(Res.string.alley_edit_artist_action_history_content_description),
-                                )
-                            }
-                        }
-                        val enabled = !errorState.hasAnyError
-                        Box(contentAlignment = Alignment.Center) {
-                            val isSaving = saveTaskState.isActive && !saveTaskState.isManualTrigger
-                            TooltipIconButton(
-                                icon = Icons.Default.Save,
-                                tooltipText = stringResource(Res.string.alley_edit_artist_action_save_tooltip),
-                                enabled = enabled,
-                                onClick = onClickSave,
-                                modifier = Modifier.alpha(if (isSaving) 0.5f else 1f)
-                            )
-
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = isSaving,
-                                modifier = Modifier.matchParentSize()
-                            ) {
-                                CircularWavyProgressIndicator(modifier = Modifier.padding(4.dp))
-                            }
-                        }
-                        TooltipIconButton(
-                            icon = Icons.Default.DoneAll,
-                            tooltipText = stringResource(Res.string.alley_edit_artist_action_save_and_exit_tooltip),
-                            enabled = enabled,
-                            onClick = onClickDone,
+                        AppBarActions(
+                            mode = mode,
+                            errorState = errorState,
+                            saveTaskState = saveTaskState,
+                            onClickGenerateFormLink = { showFormLinkDialog = true },
+                            onClickHistory = onClickHistory,
+                            onClickSave = onClickSave,
+                            onClickDone = onClickDone,
                         )
                     },
                     modifier = Modifier
@@ -301,13 +315,76 @@ object ArtistEditScreen {
                 }
             }
 
-            val errorMessage = stringResource(Res.string.alley_edit_artist_error_saving_bad_fields)
-            GenericExitDialog(
-                onClickBack = { onClickBack(true) },
-                onClickSave = onClickDone,
-                saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
-            )
+            if (showFormLinkDialog) {
+                val formLink by state.formLink.collectAsStateWithLifecycle()
+                FormLinkDialog(
+                    formLink = { formLink },
+                    onDismiss = { showFormLinkDialog = false },
+                    onClickGenerate = generateFormLink,
+                    onClickDebugForm = onClickDebugForm,
+                )
+            } else {
+                val errorMessage =
+                    stringResource(Res.string.alley_edit_artist_error_saving_bad_fields)
+                GenericExitDialog(
+                    onClickBack = { onClickBack(true) },
+                    onClickSave = onClickDone,
+                    saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
+                )
+            }
         }
+    }
+
+    @Composable
+    private fun RowScope.AppBarActions(
+        mode: Mode,
+        errorState: ArtistErrorState,
+        saveTaskState: TaskState<ArtistSave.Response.Result>,
+        onClickGenerateFormLink: (() -> Unit)?,
+        onClickHistory: (() -> Unit)?,
+        onClickSave: () -> Unit,
+        onClickDone: () -> Unit,
+    ) {
+        if (mode == Mode.EDIT) {
+            if (onClickGenerateFormLink != null) {
+                TooltipIconButton(
+                    icon = Icons.Default.AddLink,
+                    tooltipText = stringResource(Res.string.alley_edit_artist_action_generate_link_content_description),
+                    onClick = onClickGenerateFormLink,
+                )
+            }
+            if (onClickHistory != null) {
+                TooltipIconButton(
+                    icon = Icons.Default.History,
+                    tooltipText = stringResource(Res.string.alley_edit_artist_action_history_content_description),
+                    onClick = onClickHistory,
+                )
+            }
+        }
+        val enabled = !errorState.hasAnyError
+        Box(contentAlignment = Alignment.Center) {
+            val isSaving = saveTaskState.isActive && !saveTaskState.isManualTrigger
+            TooltipIconButton(
+                icon = Icons.Default.Save,
+                tooltipText = stringResource(Res.string.alley_edit_artist_action_save_tooltip),
+                enabled = enabled,
+                onClick = onClickSave,
+                modifier = Modifier.alpha(if (isSaving) 0.5f else 1f)
+            )
+
+            this@AppBarActions.AnimatedVisibility(
+                visible = isSaving,
+                modifier = Modifier.matchParentSize()
+            ) {
+                CircularWavyProgressIndicator(modifier = Modifier.padding(4.dp))
+            }
+        }
+        TooltipIconButton(
+            icon = Icons.Default.DoneAll,
+            tooltipText = stringResource(Res.string.alley_edit_artist_action_save_and_exit_tooltip),
+            enabled = enabled,
+            onClick = onClickDone,
+        )
     }
 
     @Composable
@@ -337,6 +414,63 @@ object ArtistEditScreen {
         }
     }
 
+    @Composable
+    private fun FormLinkDialog(
+        formLink: () -> String?,
+        onDismiss: () -> Unit,
+        onClickGenerate: () -> Unit,
+        onClickDebugForm: (formLink: String) -> Unit,
+    ) {
+        val onDismissUpdated by rememberUpdatedState(onDismiss)
+        NavigationBackHandler(
+            state = rememberNavigationEventState(NavigationEventInfo.None),
+        ) {
+            onDismissUpdated()
+        }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(Res.string.alley_edit_artist_edit_form_link_title)) },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // TODO: Surface errors
+                    val formLink = formLink()
+                    if (formLink == null) {
+                        Text(stringResource(Res.string.alley_edit_artist_edit_form_link_description))
+                    } else {
+                        Text(stringResource(Res.string.alley_edit_artist_edit_form_link_description_generated))
+                        OutlinedTextField(value = formLink, onValueChange = {}, readOnly = true)
+
+                        @Suppress("SimplifyBooleanWithConstants")
+                        if (PlatformSpecificConfig.type == PlatformType.DESKTOP || BuildKonfig.isWasmDebug) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                FilledTonalButton(onClick = { onClickDebugForm(formLink) }) {
+                                    Text("Open form")
+                                }
+                                FilledTonalButton(onClick = { onClickDebugForm(formLink.dropLast(10)) }) {
+                                    Text("Open broken form")
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onClickGenerate) {
+                    Text(stringResource(Res.string.alley_edit_artist_edit_form_link_action_generate))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(Res.string.alley_edit_artist_edit_form_link_action_cancel))
+                }
+            }
+        )
+    }
+
     enum class Mode {
         ADD, EDIT
     }
@@ -344,6 +478,7 @@ object ArtistEditScreen {
     @Stable
     class State(
         val artistFormState: ArtistFormState,
+        val formLink: StateFlow<String?>,
         val saveTaskState: TaskState<ArtistSave.Response.Result>,
     )
 }

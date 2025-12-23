@@ -23,13 +23,13 @@ sealed interface BackendFormRequest {
         WithResponse<ArtistDatabaseEntry.Impl>
 
     @Serializable
-    data class SaveArtist(
+    data class ArtistSave(
         override val artistId: Uuid,
         val nonce: Uuid,
         val dataYear: DataYear,
         val initial: ArtistDatabaseEntry.Impl?,
         val updated: ArtistDatabaseEntry.Impl,
-    ) : BackendFormRequest, WithResponse<SaveArtist.Response> {
+    ) : BackendFormRequest, WithResponse<ArtistSave.Response> {
 
         @Serializable
         data class Response(val result: Result) {

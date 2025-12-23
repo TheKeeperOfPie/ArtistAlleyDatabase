@@ -67,6 +67,12 @@ buildkonfig {
             )
         }
         buildConfigField(
+            type = FieldSpec.Type.BOOLEAN,
+            name = "isWasmDebug",
+            value = isWasmDebug.toString(),
+            const = true,
+        )
+        buildConfigField(
             type = FieldSpec.Type.STRING,
             name = "imagesUrl",
             value = if (isWasmDebug) "" else properties.getProperty("prodImagesUrl"),

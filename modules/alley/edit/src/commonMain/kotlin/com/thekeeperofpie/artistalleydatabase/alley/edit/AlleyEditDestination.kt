@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesColumn
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -23,6 +24,10 @@ sealed interface AlleyEditDestination : NavKey {
 
     @Serializable
     data class ArtistEdit(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
+
+    @Serializable
+    data class ArtistForm(val dataYear: DataYear, val artistId: Uuid, val privateKey: String) :
+        AlleyEditDestination
 
     @Serializable
     data class ArtistHistory(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
@@ -59,22 +64,30 @@ sealed interface AlleyEditDestination : NavKey {
                 route.isEmpty() || route.startsWith("home") -> Home
                 route == "series" -> Series
                 route == "merch" -> Merch
+                route.startsWith("form/artist") -> {
+                    val (dataYear, artistId) = parseDataYearThenArtistId(
+                        route.removePrefix("form/artist/")
+                    ) ?: return null
+                    // TODO: Actual URI parsing
+                    val privateKey = route.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
+                    ArtistForm(dataYear, artistId, privateKey)
+                }
                 route.startsWith("artist/history") -> {
-                    val (year, artist) = route.removePrefix("artist/history/").split("/")
-                    val artistId = Uuid.parse(artist)
-                    val dataYear = DataYear.deserialize(year) ?: return null
+                    val (dataYear, artistId) = parseDataYearThenArtistId(
+                        route.removePrefix("artist/history/")
+                    ) ?: return null
                     ArtistHistory(dataYear, artistId)
                 }
                 route.startsWith("artist/add") -> {
-                    val (year, artist) = route.removePrefix("artist/add/").split("/")
-                    val artistId = Uuid.parse(artist)
-                    val dataYear = DataYear.deserialize(year) ?: return null
+                    val (dataYear, artistId) = parseDataYearThenArtistId(
+                        route.removePrefix("artist/add/")
+                    ) ?: return null
                     ArtistAdd(dataYear, artistId)
                 }
                 route.startsWith("artist") -> {
-                    val (year, artist) = route.removePrefix("artist/").split("/")
-                    val artistId = Uuid.parse(artist)
-                    val dataYear = DataYear.deserialize(year) ?: return null
+                    val (dataYear, artistId) = parseDataYearThenArtistId(
+                        route.removePrefix("artist/")
+                    ) ?: return null
                     ArtistEdit(dataYear, artistId)
                 }
                 else -> {
@@ -92,6 +105,8 @@ sealed interface AlleyEditDestination : NavKey {
                     Uri.encode(destination.artistId.toString())
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
+            is ArtistForm -> "/form/artist/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.artistId.toString())
             is ArtistHistory -> "artist/history/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             Series -> "series"
@@ -103,6 +118,13 @@ sealed interface AlleyEditDestination : NavKey {
             is MerchEdit,
             is SeriesEdit,
                 -> null
+        }
+
+        private fun parseDataYearThenArtistId(trailingPathSegments: String): Pair<DataYear, Uuid>? {
+            val (year, artist) = trailingPathSegments.split("/")
+            val dataYear = DataYear.deserialize(year) ?: return null
+            val artistId = Uuid.parse(artist)
+            return dataYear to artistId
         }
     }
 }

@@ -36,4 +36,6 @@ expect class AlleyEditRemoteDatabase {
 
     suspend fun loadMerch(): List<MerchInfo>
     suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result
+
+    suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String?
 }

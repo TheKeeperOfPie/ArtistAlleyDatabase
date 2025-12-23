@@ -1,17 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.serialization.saved
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SearchUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
@@ -19,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -27,21 +24,12 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
-import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 @AssistedInject
@@ -54,71 +42,30 @@ class ArtistEditViewModel(
     @Assisted val mode: ArtistEditScreen.Mode,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val textState by savedStateHandle.saveable(saver = ArtistFormState.TextState.Saver) {
-        ArtistFormState.TextState().apply {
-            id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
-            id.lockState = EntryLockState.LOCKED
-        }
-    }
     private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response.Result> =
         ExclusiveTask(viewModelScope, ::save)
-    private val artistMetadata by savedStateHandle.saveable(saver = ArtistFormState.Metadata.Saver) {
-        ArtistFormState.Metadata()
-    }
+    private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
     val state = ArtistEditScreen.State(
-        ArtistFormState(
-            metadata = artistMetadata,
-            images = savedStateHandle.saveable(
-                "images",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            links = savedStateHandle.saveable(
-                "links",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            storeLinks = savedStateHandle.saveable(
-                "storeLinks",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            catalogLinks = savedStateHandle.saveable(
-                "catalogLinks",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            commissions = savedStateHandle.saveable(
-                "commissions",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            seriesInferred = savedStateHandle.saveable(
-                "seriesInferred",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            seriesConfirmed = savedStateHandle.saveable(
-                "seriesConfirmed",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            merchInferred = savedStateHandle.saveable(
-                "merchInferred",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            merchConfirmed = savedStateHandle.saveable(
-                "merchConfirmed",
-                saver = StateUtils.snapshotListJsonSaver()
-            ) { SnapshotStateList() },
-            textState = textState,
-        ),
+        artistFormState = savedStateHandle.saveable(
+            key = "artistFormState",
+            saver = ArtistFormState.Saver,
+        ) {
+            ArtistFormState().apply {
+                textState.id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
+                textState.id.lockState = EntryLockState.LOCKED
+            }
+        },
+        formLink = formLink,
         saveTaskState = saveTask.state,
     )
 
     private var hasLoaded by savedStateHandle.saved { mode == ArtistEditScreen.Mode.ADD }
-    private val seriesById = flowFromSuspend { database.loadSeries() }
-        .shareIn(viewModelScope, SharingStarted.Eagerly, 1)
-
-    private val merchById = flowFromSuspend { database.loadMerch() }
-        .shareIn(viewModelScope, SharingStarted.Eagerly, 1)
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
+    private val tagAutocomplete = TagAutocomplete(viewModelScope, database, dispatchers)
 
     private var artist: ArtistDatabaseEntry.Impl? = null
     private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
+    private val formLinkJob = ExclusiveProgressJob(viewModelScope, ::loadFormLink)
 
     fun initialize(force: Boolean = false) {
         if (!hasLoaded || force) {
@@ -135,8 +82,8 @@ class ArtistEditViewModel(
         this@ArtistEditViewModel.artist = artist
         state.artistFormState.applyDatabaseEntry(
             artist = artist,
-            seriesById = seriesById.first(),
-            merchById = merchById.first(),
+            seriesById = tagAutocomplete.seriesById.first(),
+            merchById = tagAutocomplete.merchById.first(),
             force = true,
         )
 
@@ -147,101 +94,25 @@ class ArtistEditViewModel(
         hasLoaded = true
     }
 
-    fun seriesPredictions(query: String) = if (query.length < 3) {
-        flowOf(emptyList())
-    } else {
-        seriesById.flatMapLatest {
-            flow {
-                SearchUtils.incrementallyPartition(
-                    values = it.values,
-                    { it.titlePreferred.contains(query, ignoreCase = true) },
-                    { it.titleRomaji.contains(query, ignoreCase = true) },
-                    { it.titleEnglish.contains(query, ignoreCase = true) },
-                    { it.synonyms.any { it.contains(query, ignoreCase = true) } },
-                )
-            }
-        }.flowOn(dispatchers.io)
-    }
-
-    fun merchPredictions(query: String) =
-        merchById
-            .mapLatest {
-                it.values
-                    .filter { it.name.contains(query, ignoreCase = true) }
-                    .sortedBy { it.name }
-            }
-            .flowOn(PlatformDispatchers.IO)
+    fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
+    fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }
 
+    fun generateFormLink() = formLinkJob.launch()
+
+    private suspend fun loadFormLink() = withContext(dispatchers.io) {
+        formLink.value = database.generateFormLink(dataYear, artistId)
+    }
+
     private fun captureDatabaseEntry(
         isManual: Boolean,
     ): Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean> {
-        val textState = state.artistFormState.textState
-        val id = Uuid.parse(textState.id.value.text.toString())
-        val status = ArtistStatus.entries[textState.status.selectedIndex]
-
-        val booth = textState.booth.value.text.toString()
-        val name = textState.name.value.text.toString()
-        val summary = textState.summary.value.text.toString()
-
-        val artistFormState = state.artistFormState
-        // TODO: Include pending value?
-        val links = artistFormState.links.toList().map { it.link }
-            .plus(textState.links.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val storeLinks = artistFormState.storeLinks.toList().map { it.link }
-            .plus(textState.storeLinks.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val catalogLinks = artistFormState.catalogLinks.toList()
-            .plus(textState.catalogLinks.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-
-        val notes = textState.notes.value.text.toString()
-        val editorNotes = textState.editorNotes.value.text.toString()
-        val commissions = artistFormState.commissions.toList().map { it.serializedValue }
-            .plus(textState.commissions.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val seriesInferred = artistFormState.seriesInferred.toList().map { it.id }
-        val seriesConfirmed = artistFormState.seriesConfirmed.toList().map { it.id }
-        val merchInferred = artistFormState.merchInferred.toList().map { it.name }
-        val merchConfirmed = artistFormState.merchConfirmed.toList().map { it.name }
-
-        val images = artistFormState.images.toList()
-        return Triple(
-            images,
-            ArtistDatabaseEntry.Impl(
-                year = dataYear,
-                id = id.toString(),
-                status = status,
-                booth = booth,
-                name = name,
-                summary = summary,
-                links = links,
-                storeLinks = storeLinks,
-                catalogLinks = catalogLinks,
-                driveLink = null,
-                notes = notes,
-                commissions = commissions,
-                seriesInferred = seriesInferred,
-                seriesConfirmed = seriesConfirmed,
-                merchInferred = merchInferred,
-                merchConfirmed = merchConfirmed,
-                images = emptyList(),
-                counter = 1,
-                editorNotes = editorNotes,
-                lastEditor = null, // This is filled on the backend
-                lastEditTime = Clock.System.now(),
-            ),
-            isManual,
-        )
+        val (images, databaseEntry) = state.artistFormState.captureDatabaseEntry(dataYear)
+        return Triple(images, databaseEntry, isManual)
     }
 
     private suspend fun save(triple: Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>) =
@@ -285,8 +156,8 @@ class ArtistEditViewModel(
                     if (!isManual) {
                         state.artistFormState.applyDatabaseEntry(
                             artist = updatedArtist,
-                            seriesById = seriesById.first(),
-                            merchById = merchById.first(),
+                            seriesById = tagAutocomplete.seriesById.first(),
+                            merchById = tagAutocomplete.merchById.first(),
                             force = false,
                         )
                         state.artistFormState.images.replaceAll(finalImages)

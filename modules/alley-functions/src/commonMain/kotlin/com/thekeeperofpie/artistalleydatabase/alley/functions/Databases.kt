@@ -55,7 +55,7 @@ internal object Databases {
             )
         )
         // TODO: Manually initiate create to avoid running on every invocation
-        AlleySqlDatabase.Schema.awaitCreate(sqlDriver)
+        AlleyFormDatabase.Schema.awaitCreate(sqlDriver)
         return database
     }
 }

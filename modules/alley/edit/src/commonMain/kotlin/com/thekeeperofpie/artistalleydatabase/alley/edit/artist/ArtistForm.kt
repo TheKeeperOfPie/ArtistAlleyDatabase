@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,8 +93,10 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -103,25 +106,60 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
+import kotlin.uuid.Uuid
 import artistalleydatabase.modules.alley.generated.resources.Res as AlleyRes
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 @Stable
 class ArtistFormState(
-    val metadata: Metadata,
-    val images: SnapshotStateList<EditImage>,
-    val links: SnapshotStateList<LinkModel>,
-    val storeLinks: SnapshotStateList<LinkModel>,
-    val catalogLinks: SnapshotStateList<String>,
-    val commissions: SnapshotStateList<CommissionModel>,
-    val seriesInferred: SnapshotStateList<SeriesInfo>,
-    val seriesConfirmed: SnapshotStateList<SeriesInfo>,
-    val merchInferred: SnapshotStateList<MerchInfo>,
-    val merchConfirmed: SnapshotStateList<MerchInfo>,
-    val textState: TextState,
+    val metadata: Metadata = Metadata(),
+    val images: SnapshotStateList<EditImage> = SnapshotStateList(),
+    val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
+    val storeLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
+    val catalogLinks: SnapshotStateList<String> = SnapshotStateList(),
+    val commissions: SnapshotStateList<CommissionModel> = SnapshotStateList(),
+    val seriesInferred: SnapshotStateList<SeriesInfo> = SnapshotStateList(),
+    val seriesConfirmed: SnapshotStateList<SeriesInfo> = SnapshotStateList(),
+    val merchInferred: SnapshotStateList<MerchInfo> = SnapshotStateList(),
+    val merchConfirmed: SnapshotStateList<MerchInfo> = SnapshotStateList(),
+    val textState: TextState = TextState(),
 ) {
+
+    object Saver : ComposeSaver<ArtistFormState, List<Any?>> {
+        override fun SaverScope.save(value: ArtistFormState) = listOf(
+            with(Metadata.Saver) { save(value.metadata) },
+            with(StateUtils.snapshotListJsonSaver<EditImage>()) { save(value.images) },
+            with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
+            with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.storeLinks) },
+            with(StateUtils.snapshotListJsonSaver<String>()) { save(value.catalogLinks) },
+            with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { save(value.commissions) },
+            with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { save(value.seriesInferred) },
+            with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { save(value.seriesConfirmed) },
+            with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { save(value.merchInferred) },
+            with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { save(value.merchConfirmed) },
+            with(TextState.Saver) { save(value.textState) },
+        )
+
+        @Suppress("UNCHECKED_CAST")
+        override fun restore(value: List<Any?>) = ArtistFormState(
+            metadata = with(Metadata.Saver) { restore(value[0] as List<Any?>) },
+            images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) }!!,
+            links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[2] as String) }!!,
+            storeLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[3] as String) }!!,
+            catalogLinks = with(StateUtils.snapshotListJsonSaver<String>()) { restore(value[4] as String) }!!,
+            commissions = with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { restore(value[5] as String) }!!,
+            seriesInferred = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[6] as String) }!!,
+            seriesConfirmed = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[7] as String) }!!,
+            merchInferred = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[8] as String) }!!,
+            merchConfirmed = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[9] as String) }!!,
+            textState = with(TextState.Saver) { restore(value[10] as List<Any>) }
+        )
+
+    }
+
     companion object {
         fun empty() = ArtistFormState(
             metadata = Metadata(),
@@ -177,6 +215,65 @@ class ArtistFormState(
 
         metadata.lastEditor = artist.lastEditor
         metadata.lastEditTime = artist.lastEditTime
+    }
+
+    fun captureDatabaseEntry(dataYear: DataYear): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
+        val id = Uuid.parse(textState.id.value.text.toString())
+        val status = ArtistStatus.entries[textState.status.selectedIndex]
+
+        val booth = textState.booth.value.text.toString()
+        val name = textState.name.value.text.toString()
+        val summary = textState.summary.value.text.toString()
+
+        // TODO: Include pending value?
+        val links = links.toList().map { it.link }
+            .plus(textState.links.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
+        val storeLinks = storeLinks.toList().map { it.link }
+            .plus(textState.storeLinks.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
+        val catalogLinks = catalogLinks.toList()
+            .plus(textState.catalogLinks.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
+
+        val notes = textState.notes.value.text.toString()
+        val editorNotes = textState.editorNotes.value.text.toString()
+        val commissions = commissions.toList().map { it.serializedValue }
+            .plus(textState.commissions.value.text.toString().takeIf { it.isNotBlank() })
+            .filterNotNull()
+            .distinct()
+        val seriesInferred = seriesInferred.toList().map { it.id }
+        val seriesConfirmed = seriesConfirmed.toList().map { it.id }
+        val merchInferred = merchInferred.toList().map { it.name }
+        val merchConfirmed = merchConfirmed.toList().map { it.name }
+
+        val images = images.toList()
+        return images to ArtistDatabaseEntry.Impl(
+            year = dataYear,
+            id = id.toString(),
+            status = status,
+            booth = booth,
+            name = name,
+            summary = summary,
+            links = links,
+            storeLinks = storeLinks,
+            catalogLinks = catalogLinks,
+            driveLink = null,
+            notes = notes,
+            commissions = commissions,
+            seriesInferred = seriesInferred,
+            seriesConfirmed = seriesConfirmed,
+            merchInferred = merchInferred,
+            merchConfirmed = merchConfirmed,
+            images = emptyList(),
+            counter = 1,
+            editorNotes = editorNotes,
+            lastEditor = null, // This is filled on the backend
+            lastEditTime = Clock.System.now(),
+        )
     }
 
     private fun applyValue(
@@ -334,7 +431,7 @@ fun rememberErrorState(state: ArtistFormState.TextState): ArtistErrorState {
 
 @Stable
 @Composable
-private fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): androidx.compose.runtime.State<String?> {
+private fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): State<String?> {
     val errorMessage = stringResource(Res.string.alley_edit_artist_error_booth)
     return remember {
         derivedStateOf {

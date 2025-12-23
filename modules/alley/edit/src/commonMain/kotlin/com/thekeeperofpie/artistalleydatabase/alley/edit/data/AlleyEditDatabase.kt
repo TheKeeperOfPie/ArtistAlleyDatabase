@@ -113,4 +113,7 @@ class AlleyEditDatabase(
 
     suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result =
         remoteDatabase.saveMerch(initial, updated)
+
+    suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? =
+        remoteDatabase.generateFormLink(dataYear, artistId)
 }

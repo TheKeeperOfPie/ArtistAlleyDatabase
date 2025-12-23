@@ -34,6 +34,12 @@
     <string name="alley_edit_artist_edit_last_modified_prefix">Last modified</string>
     <string name="alley_edit_artist_edit_last_modified_author_prefix">by</string>
 
+    <string name="alley_edit_artist_edit_form_link_title">Generate a new form link?</string>
+    <string name="alley_edit_artist_edit_form_link_description">This will invalidate any previously generated link</string>
+    <string name="alley_edit_artist_edit_form_link_description_generated">This link will not be visible again after this dialog closes, make sure you send it to the artist exactly as displayed</string>
+    <string name="alley_edit_artist_edit_form_link_action_generate">Generate</string>
+    <string name="alley_edit_artist_edit_form_link_action_cancel">Cancel</string>
+
     <string name="alley_edit_artist_action_delete">Delete</string>
     <string name="alley_edit_artist_action_add_images">Add images</string>
     <string name="alley_edit_artist_action_edit_images">Edit images</string>
@@ -44,6 +50,7 @@
 
     <string name="alley_edit_artist_action_save_tooltip">Save artist</string>
     <string name="alley_edit_artist_action_save_and_exit_tooltip">Save and exit</string>
+    <string name="alley_edit_artist_action_generate_link_content_description">Generate form link</string>
     <string name="alley_edit_artist_action_history_content_description">View history</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
 
@@ -103,7 +110,7 @@
 
     <string name="alley_edit_saving">Saving...</string>
 
-    <string name="alley_edit_aniList_type_none"/>
+    <string name="alley_edit_aniList_type_none" />
     <string name="alley_edit_aniList_type_anime">Anime</string>
     <string name="alley_edit_aniList_type_manga">Manga</string>
 
@@ -143,4 +150,7 @@
     <string name="alley_edit_artist_history_action_revert_tooltip">Revert fields\nto this point</string>
     <string name="alley_edit_artist_history_action_return_to_history_tooltip">Return to history</string>
     <string name="alley_edit_artist_history_action_refresh_tooltip">Refresh</string>
+
+    <string name="alley_edit_artist_form_private_key_prompt">Unable to read your access token,\npaste your access link below to try again</string>
+    <string name="alley_edit_artist_form_action_submit_private_key">Submit</string>
 </resources>

@@ -23,6 +23,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen
@@ -186,7 +187,17 @@ private fun entryProvider(
                         artistId = route.artistId,
                     )
                 )
-            }
+            },
+            onClickDebugForm = navStack::navigate,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.ArtistForm> { route ->
+        ArtistFormScreen(
+            dataYear = route.dataYear,
+            artistId = route.artistId,
+            privateKey = route.privateKey,
+            graph = graph,
+            onClickBack = onClickBack,
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistHistory> { route ->

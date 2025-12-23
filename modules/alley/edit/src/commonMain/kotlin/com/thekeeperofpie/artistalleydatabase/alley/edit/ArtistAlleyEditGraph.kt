@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListViewModel
@@ -30,6 +31,7 @@ interface ArtistAlleyEditGraph : ArtistAlleyComponent {
 
     val appFileSystem: AppFileSystem
     val artistEditViewModelFactory: ArtistEditViewModel.Factory
+    val artistFormViewModelFactory: ArtistFormViewModel.Factory
     val artistHistoryViewModelFactory: ArtistHistoryViewModel.Factory
     val artistListViewModelFactory: ArtistListViewModel.Factory
     val imagesEditViewModelFactory: ImagesEditViewModel.Factory

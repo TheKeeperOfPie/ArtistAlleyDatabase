@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
-import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptographyKeys
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
@@ -26,12 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import dev.whyoleg.cryptography.CryptographyProvider
-import dev.whyoleg.cryptography.algorithms.RSA
-import dev.whyoleg.cryptography.algorithms.SHA384
 import kotlinx.coroutines.await
-import kotlinx.io.bytestring.decodeToString
-import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.serialization.json.Json
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
@@ -171,20 +166,15 @@ object AlleyEditBackend {
         request: BackendRequest.GenerateFormKey,
     ): String {
         val database = Databases.formDatabase(context)
-        val keys = AlleyCryptographyKeys.generate()
+        val keys = AlleyCryptography.generate()
         database.alleyFormPublicKeyQueries.insertPublicKey(
             ArtistFormPublicKey(artistId = request.artistId, publicKey = keys.publicKey)
         )
 
-        return CryptographyProvider.Default.get(RSA.OAEP)
-            .publicKeyDecoder(SHA384)
-            .decodeFromByteString(
-                format = RSA.PublicKey.Format.JWK,
-                byteString = request.publicKeyForResponse.encodeToByteString(),
-            )
-            .encryptor()
-            .encrypt(keys.privateKey.encodeToByteString())
-            .decodeToString()
+        return AlleyCryptography.oneTimeEncrypt(
+            publicKey = request.publicKeyForResponse,
+            payload = keys.privateKey,
+        )
     }
 
     /**
