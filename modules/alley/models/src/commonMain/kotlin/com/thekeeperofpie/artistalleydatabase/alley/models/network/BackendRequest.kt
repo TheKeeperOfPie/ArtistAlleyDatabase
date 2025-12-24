@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models.network
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
@@ -22,6 +23,16 @@ sealed interface BackendRequest {
 
     @Serializable
     data object ArtistFormQueue : BackendRequest, WithResponse<List<ArtistFormQueueEntry>>
+
+    @Serializable
+    data class ArtistWithFormEntry(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,
+        WithResponse<ArtistWithFormEntry.Response> {
+        @Serializable
+        data class Response(
+            val artist: ArtistDatabaseEntry.Impl,
+            val formDiff: ArtistEntryDiff,
+        )
+    }
 
     @Serializable
     data class ArtistHistory(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,

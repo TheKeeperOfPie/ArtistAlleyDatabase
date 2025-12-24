@@ -5,11 +5,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCac
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
@@ -132,6 +134,15 @@ actual class AlleyEditRemoteDatabase {
                 previous = next
             }
 
+            val after = previous.copy(
+                name = previous.name + " - edited",
+                summary = "New description",
+                seriesInferred = previous.seriesInferred.drop(1) + "SeriesD",
+                merchConfirmed = previous.merchConfirmed.drop(1) + "MerchD",
+            )
+
+            artistFormQueue[Uuid.parse(previous.id)] = previous to after
+
             simulatedLatency = 5.seconds
         }
     }
@@ -236,6 +247,37 @@ actual class AlleyEditRemoteDatabase {
                 afterName = after.name,
             )
         }
+
+    actual suspend fun loadArtistWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): BackendRequest.ArtistWithFormEntry.Response? {
+        val (before, after) = artistFormQueue[artistId] ?: return null
+        return BackendRequest.ArtistWithFormEntry.Response(
+            artist = loadArtist(dataYear, artistId) ?: return null,
+            formDiff = ArtistEntryDiff(
+                booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
+                name = after.name.orEmpty().takeIf { it != before.name.orEmpty() },
+                summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
+                notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
+                links = ArtistEntryDiff.diffList(before.links, after.links),
+                storeLinks = ArtistEntryDiff.diffList(before.storeLinks, after.storeLinks),
+                catalogLinks = ArtistEntryDiff.diffList(before.catalogLinks, after.catalogLinks),
+                commissions = ArtistEntryDiff.diffList(before.commissions, after.commissions),
+                seriesInferred = ArtistEntryDiff.diffList(
+                    before.seriesInferred,
+                    after.seriesInferred
+                ),
+                seriesConfirmed =
+                    ArtistEntryDiff.diffList(before.seriesConfirmed, after.seriesConfirmed),
+                merchInferred = ArtistEntryDiff.diffList(before.merchInferred, after.merchInferred),
+                merchConfirmed = ArtistEntryDiff.diffList(
+                    before.merchConfirmed,
+                    after.merchConfirmed
+                ),
+            )
+        )
+    }
 
     private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
 }

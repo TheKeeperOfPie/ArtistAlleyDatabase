@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS artistFormPublicKey (
 );
 
 CREATE TABLE IF NOT EXISTS artistFormEntry (
-    artistId TEXT AS Uuid NOT NULL,
     dataYear TEXT AS DataYear NOT NULL,
+    artistId TEXT AS Uuid NOT NULL,
     beforeBooth TEXT,
     beforeName TEXT,
     beforeSummary TEXT,
@@ -49,5 +49,5 @@ CREATE TABLE IF NOT EXISTS artistFormEntry (
     afterMerchConfirmed TEXT AS List<String>,
     afterImages TEXT AS List<CatalogImage>,
     timestamp TEXT AS Instant NOT NULL,
-    PRIMARY KEY (artistId, dataYear)
+    PRIMARY KEY (dataYear, artistId)
 );

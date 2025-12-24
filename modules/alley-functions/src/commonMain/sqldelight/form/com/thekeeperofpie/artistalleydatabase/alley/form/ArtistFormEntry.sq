@@ -1,6 +1,6 @@
 getFormEntry:
 SELECT * FROM artistFormEntry
-WHERE artistId = :artistId;
+WHERE dataYear = :dataYear AND artistId = :artistId;
 
 getAllFormEntries:
 SELECT artistId, beforeBooth, afterBooth, beforeName, afterName FROM artistFormEntry

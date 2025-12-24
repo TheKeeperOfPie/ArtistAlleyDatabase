@@ -192,6 +192,19 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun loadArtistWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): BackendRequest.ArtistWithFormEntry.Response? =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.ArtistWithFormEntry(dataYear, artistId))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
+        }
+
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(
             BuildKonfig.imagesUrl.ifBlank { "${window.origin}/database/image" } + "/$key"

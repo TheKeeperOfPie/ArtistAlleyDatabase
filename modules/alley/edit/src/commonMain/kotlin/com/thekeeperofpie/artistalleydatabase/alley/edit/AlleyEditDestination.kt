@@ -30,6 +30,9 @@ sealed interface AlleyEditDestination : NavKey {
         AlleyEditDestination
 
     @Serializable
+    data class ArtistFormMerge(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
+
+    @Serializable
     data object ArtistFormQueue : AlleyEditDestination
 
     @Serializable
@@ -82,6 +85,12 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     ArtistHistory(dataYear, artistId)
                 }
+                route.startsWith("artist/merge") -> {
+                    val (dataYear, artistId) = parseDataYearThenArtistId(
+                        route.removePrefix("artist/merge/")
+                    ) ?: return null
+                    ArtistFormMerge(dataYear, artistId)
+                }
                 route.startsWith("artist/add") -> {
                     val (dataYear, artistId) = parseDataYearThenArtistId(
                         route.removePrefix("artist/add/")
@@ -110,6 +119,8 @@ sealed interface AlleyEditDestination : NavKey {
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ArtistForm -> "form/artist/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.artistId.toString())
+            is ArtistFormMerge -> "artist/merge/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ArtistFormQueue -> "queue"
             is ArtistHistory -> "artist/history/${Uri.encode(destination.dataYear.serializedName)}/" +

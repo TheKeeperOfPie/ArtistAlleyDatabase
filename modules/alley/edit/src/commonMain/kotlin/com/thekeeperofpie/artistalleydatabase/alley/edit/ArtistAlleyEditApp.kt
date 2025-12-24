@@ -23,6 +23,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
@@ -34,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArti
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberDecoratedNavEntries
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
@@ -201,10 +203,26 @@ private fun entryProvider(
             onClickBack = onClickBack,
         )
     }
+    sharedElementEntry<AlleyEditDestination.ArtistFormMerge> { route ->
+        ArtistFormMergeScreen(
+            dataYear = route.dataYear,
+            artistId = route.artistId,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
+    }
     sharedElementEntry<AlleyEditDestination.ArtistFormQueue> {
         ArtistFormQueueScreen(
             graph = graph,
-            onSelectEntry = {},
+            onSelectEntry = {
+                // TODO: Support other conventions?
+                navStack.navigate(
+                    AlleyEditDestination.ArtistFormMerge(
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                        artistId = it,
+                    )
+                )
+            },
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistHistory> { route ->

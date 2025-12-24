@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
@@ -120,4 +121,10 @@ class AlleyEditDatabase(
 
     suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
         remoteDatabase.loadArtistFormQueue()
+
+    suspend fun loadArtistWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): BackendRequest.ArtistWithFormEntry.Response? =
+        remoteDatabase.loadArtistWithFormEntry(dataYear, artistId)
 }

@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.Respons
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
@@ -51,6 +52,8 @@ object AlleyEditBackend {
                     is ArtistSave.Request -> makeResponse(saveArtist(context, this))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
                     is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
+                    is BackendRequest.ArtistWithFormEntry ->
+                        makeResponse(loadArtistWithFormEntry(context, this))
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
@@ -126,6 +129,74 @@ object AlleyEditBackend {
                     afterName = it.afterName,
                 )
             }
+
+    private suspend fun loadArtistWithFormEntry(
+        context: EventContext,
+        request: BackendRequest.ArtistWithFormEntry,
+    ): BackendRequest.ArtistWithFormEntry.Response? {
+        val formEntry = Databases.formDatabase(context)
+            .artistFormEntryQueries
+            .getFormEntry(request.dataYear, request.artistId)
+            .awaitAsOneOrNull()
+            ?: return null
+        val artist = when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
+                .artistEntryAnimeExpo2026Queries
+                .getArtist(request.artistId.toString())
+                .awaitAsOneOrNull()
+                ?.toArtistDatabaseEntry()
+            // TODO: Support other conventions?
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> null
+        } ?: return null
+
+        return BackendRequest.ArtistWithFormEntry.Response(
+            artist = artist,
+            formDiff = ArtistEntryDiff(
+                booth = formEntry.afterBooth.orEmpty()
+                    .takeIf { it != formEntry.beforeBooth.orEmpty() },
+                name = formEntry.afterName.orEmpty()
+                    .takeIf { it != formEntry.beforeName.orEmpty() },
+                summary = formEntry.afterSummary.orEmpty()
+                    .takeIf { it != formEntry.beforeSummary.orEmpty() },
+                notes = formEntry.afterNotes.orEmpty()
+                    .takeIf { it != formEntry.beforeNotes.orEmpty() },
+                links = ArtistEntryDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+                storeLinks = ArtistEntryDiff.diffList(
+                    formEntry.beforeStoreLinks,
+                    formEntry.afterStoreLinks
+                ),
+                catalogLinks = ArtistEntryDiff.diffList(
+                    formEntry.beforeCatalogLinks,
+                    formEntry.afterCatalogLinks
+                ),
+                commissions = ArtistEntryDiff.diffList(
+                    formEntry.beforeCommissions,
+                    formEntry.afterCommissions
+                ),
+                seriesInferred = ArtistEntryDiff.diffList(
+                    formEntry.beforeSeriesInferred,
+                    formEntry.afterSeriesInferred
+                ),
+                seriesConfirmed = ArtistEntryDiff.diffList(
+                    formEntry.beforeSeriesConfirmed,
+                    formEntry.afterSeriesConfirmed
+                ),
+                merchInferred = ArtistEntryDiff.diffList(
+                    formEntry.beforeMerchInferred,
+                    formEntry.afterMerchInferred
+                ),
+                merchConfirmed = ArtistEntryDiff.diffList(
+                    formEntry.beforeMerchConfirmed,
+                    formEntry.afterMerchConfirmed
+                ),
+            )
+        )
+    }
 
     private suspend fun loadArtistHistory(
         context: EventContext,

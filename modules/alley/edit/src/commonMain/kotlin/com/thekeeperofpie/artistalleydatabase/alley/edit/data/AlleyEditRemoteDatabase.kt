@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -41,4 +42,8 @@ expect class AlleyEditRemoteDatabase {
     suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String?
 
     suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry>
+    suspend fun loadArtistWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): BackendRequest.ArtistWithFormEntry.Response?
 }
