@@ -1,6 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,8 +39,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
@@ -45,6 +48,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -95,11 +99,13 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 
 object ArtistEditScreen {
@@ -421,13 +427,13 @@ object ArtistEditScreen {
         onClickGenerate: () -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
     ) {
-        val onDismissUpdated by rememberUpdatedState(onDismiss)
         NavigationBackHandler(
             state = rememberNavigationEventState(NavigationEventInfo.None),
-        ) {
-            onDismissUpdated()
-        }
+            onBackCompleted = onDismiss,
+        )
 
+        @Suppress("SimplifyBooleanWithConstants")
+        val isDebug = PlatformSpecificConfig.type == PlatformType.DESKTOP || BuildKonfig.isWasmDebug
         AlertDialog(
             onDismissRequest = onDismiss,
             title = { Text(stringResource(Res.string.alley_edit_artist_edit_form_link_title)) },
@@ -444,8 +450,7 @@ object ArtistEditScreen {
                         Text(stringResource(Res.string.alley_edit_artist_edit_form_link_description_generated))
                         OutlinedTextField(value = formLink, onValueChange = {}, readOnly = true)
 
-                        @Suppress("SimplifyBooleanWithConstants")
-                        if (PlatformSpecificConfig.type == PlatformType.DESKTOP || BuildKonfig.isWasmDebug) {
+                        if (isDebug) {
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 FilledTonalButton(onClick = { onClickDebugForm(formLink) }) {
                                     Text("Open form")
@@ -459,8 +464,34 @@ object ArtistEditScreen {
                 }
             },
             confirmButton = {
-                TextButton(onClick = onClickGenerate) {
-                    Text(stringResource(Res.string.alley_edit_artist_edit_form_link_action_generate))
+                val countdown by produceState(5) {
+                    (4 downTo 0).forEach {
+                        delay(1.seconds)
+                        value = it
+                    }
+                }
+                TextButton(
+                    onClick = {
+                        if (countdown <= 0 || isDebug) {
+                            onClickGenerate()
+                        }
+                    },
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        val textAlpha by animateFloatAsState(if (countdown <= 0) 1f else 0f)
+                        Text(
+                            text = stringResource(Res.string.alley_edit_artist_edit_form_link_action_generate),
+                            modifier = Modifier.graphicsLayer { alpha = textAlpha }
+                        )
+                        @Suppress("RemoveRedundantQualifierName")
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = countdown > 0,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            Text(countdown.toString())
+                        }
+                    }
                 }
             },
             dismissButton = {

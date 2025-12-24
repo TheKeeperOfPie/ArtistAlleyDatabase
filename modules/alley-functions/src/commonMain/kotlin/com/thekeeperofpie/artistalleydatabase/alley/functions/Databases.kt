@@ -4,6 +4,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitCreate
 import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
+import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
@@ -45,6 +46,29 @@ internal object Databases {
         val sqlDriver = WorkerSqlDriver(database = context.env.ARTIST_ALLEY_FORM_DB)
         val database = AlleyFormDatabase(
             driver = sqlDriver,
+            artistFormEntryAdapter = ArtistFormEntry.Adapter(
+                artistIdAdapter = ColumnAdapters.uuidAdapter,
+                dataYearAdapter = ColumnAdapters.dataYearAdapter,
+                beforeLinksAdapter = ColumnAdapters.listStringAdapter,
+                beforeStoreLinksAdapter = ColumnAdapters.listStringAdapter,
+                beforeCatalogLinksAdapter = ColumnAdapters.listStringAdapter,
+                beforeCommissionsAdapter = ColumnAdapters.listStringAdapter,
+                beforeSeriesInferredAdapter = ColumnAdapters.listStringAdapter,
+                beforeSeriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
+                beforeMerchInferredAdapter = ColumnAdapters.listStringAdapter,
+                beforeMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
+                beforeImagesAdapter = ColumnAdapters.listCatalogImageAdapter,
+                afterLinksAdapter = ColumnAdapters.listStringAdapter,
+                afterStoreLinksAdapter = ColumnAdapters.listStringAdapter,
+                afterCatalogLinksAdapter = ColumnAdapters.listStringAdapter,
+                afterCommissionsAdapter = ColumnAdapters.listStringAdapter,
+                afterSeriesInferredAdapter = ColumnAdapters.listStringAdapter,
+                afterSeriesConfirmedAdapter = ColumnAdapters.listStringAdapter,
+                afterMerchInferredAdapter = ColumnAdapters.listStringAdapter,
+                afterMerchConfirmedAdapter = ColumnAdapters.listStringAdapter,
+                afterImagesAdapter = ColumnAdapters.listCatalogImageAdapter,
+                timestampAdapter = ColumnAdapters.instantAdapter,
+            ),
             artistFormNonceAdapter = ArtistFormNonce.Adapter(
                 artistIdAdapter = ColumnAdapters.uuidAdapter,
                 nonceAdapter = ColumnAdapters.uuidAdapter,

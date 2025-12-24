@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
-import com.thekeeperofpie.artistalleydatabase.alley.functions.Databases.formDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -36,7 +36,7 @@ internal object AlleyFormBackend {
     ): Response {
         val signature = context.request.headers.get(AlleyCryptography.SIGNATURE_HEADER_KEY)
             ?: return Utils.unauthorizedResponse
-        val formDatabase = formDatabase(context)
+        val formDatabase = Databases.formDatabase(context)
         val artistId = request.artistId
         val publicKey = formDatabase
             .alleyFormPublicKeyQueries
@@ -62,7 +62,7 @@ internal object AlleyFormBackend {
                         ?.let { makeResponse(it) }
                         ?: Utils.unauthorizedResponse
                 is BackendFormRequest.Artist -> makeResponse(loadArtist(context, this))
-                is BackendFormRequest.ArtistSave -> TODO()
+                is BackendFormRequest.ArtistSave -> makeResponse(saveArtist(context, this))
             }
         }
     }
@@ -91,6 +91,11 @@ internal object AlleyFormBackend {
                 .getArtist(request.artistId.toString())
                 .awaitAsOneOrNull()
                 ?.toArtistDatabaseEntry()
+                ?.copy(
+                    editorNotes = null,
+                    lastEditor = null,
+                    lastEditTime = null
+                ) // Strip identifying info
             DataYear.ANIME_EXPO_2023,
             DataYear.ANIME_EXPO_2024,
             DataYear.ANIME_EXPO_2025,
@@ -98,6 +103,61 @@ internal object AlleyFormBackend {
             DataYear.ANIME_NYC_2025,
                 -> null // TODO: Return legacy years?
         }
+
+    private suspend fun saveArtist(
+        context: EventContext,
+        request: BackendFormRequest.ArtistSave,
+    ): BackendFormRequest.ArtistSave.Response {
+        val database = Databases.formDatabase(context)
+        try {
+            val expectedNonce =
+                database.alleyFormNonceQueries.getNonce(request.artistId).awaitAsOneOrNull()
+            if (expectedNonce == null || request.nonce != expectedNonce) {
+                return BackendFormRequest.ArtistSave.Response.Failed(
+                    IllegalArgumentException("Invalid nonce")
+                )
+            }
+        } finally {
+            database.alleyFormNonceQueries.clearNonce(request.artistId)
+        }
+
+        val before = request.before
+        val after = request.after
+        database.artistFormEntryQueries.insertFormEntry(
+            ArtistFormEntry(
+                artistId = request.artistId,
+                dataYear = request.dataYear,
+                beforeBooth = before.booth,
+                beforeName = before.name,
+                beforeSummary = before.summary,
+                beforeLinks = before.links,
+                beforeStoreLinks = before.storeLinks,
+                beforeCatalogLinks = before.catalogLinks,
+                beforeNotes = before.notes,
+                beforeCommissions = before.commissions,
+                beforeSeriesInferred = before.seriesInferred,
+                beforeSeriesConfirmed = before.seriesConfirmed,
+                beforeMerchInferred = before.merchInferred,
+                beforeMerchConfirmed = before.merchConfirmed,
+                beforeImages = before.images,
+                afterBooth = after.booth,
+                afterName = after.name,
+                afterSummary = after.summary,
+                afterLinks = after.links,
+                afterStoreLinks = after.storeLinks,
+                afterCatalogLinks = after.catalogLinks,
+                afterNotes = after.notes,
+                afterCommissions = after.commissions,
+                afterSeriesInferred = after.seriesInferred,
+                afterSeriesConfirmed = after.seriesConfirmed,
+                afterMerchInferred = after.merchInferred,
+                afterMerchConfirmed = after.merchConfirmed,
+                afterImages = after.images,
+                timestamp = Clock.System.now(),
+            )
+        )
+        return BackendFormRequest.ArtistSave.Response.Success
+    }
 
     private inline fun <reified Request : BackendFormRequest.WithResponse<Response>, reified Response> Request.makeResponse(
         response: Response?,

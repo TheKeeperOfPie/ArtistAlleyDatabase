@@ -23,6 +23,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
@@ -198,6 +199,12 @@ private fun entryProvider(
             privateKey = route.privateKey,
             graph = graph,
             onClickBack = onClickBack,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.ArtistFormQueue> {
+        ArtistFormQueueScreen(
+            graph = graph,
+            onSelectEntry = {},
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistHistory> { route ->

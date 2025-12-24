@@ -459,6 +459,9 @@ object ArtistForm {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
+        forceLockId: Boolean = false,
+        showStatus: Boolean = true,
+        showEditorNotes: Boolean = true,
         forceLocked: Boolean = false,
     ) {
         val textState = state.textState
@@ -493,30 +496,33 @@ object ArtistForm {
                 }
             }
 
-            DropdownSection(
-                state = textState.status,
-                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_status)) },
-                options = ArtistStatus.entries,
-                optionToText = { stringResource(it.title) },
-                leadingIcon = { Icon(imageVector = it.icon, null) },
-                expandedItemText = {
-                    Column {
-                        Text(stringResource(it.title))
-                        Text(
-                            text = it.description(metadata.lastEditor),
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(start = 32.dp)
-                        )
-                    }
-                },
-                nextFocus = textState.id.focusRequester
-            )
+            if (showStatus) {
+                DropdownSection(
+                    state = textState.status,
+                    headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_status)) },
+                    options = ArtistStatus.entries,
+                    optionToText = { stringResource(it.title) },
+                    leadingIcon = { Icon(imageVector = it.icon, null) },
+                    expandedItemText = {
+                        Column {
+                            Text(stringResource(it.title))
+                            Text(
+                                text = it.description(metadata.lastEditor),
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.padding(start = 32.dp)
+                            )
+                        }
+                    },
+                    nextFocus = textState.id.focusRequester
+                )
+            }
 
             SingleTextSection(
                 state = textState.id,
                 headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_id)) },
-                previousFocus = textState.status.focusRequester,
+                previousFocus = textState.status.focusRequester.takeIf { showStatus },
                 nextFocus = textState.booth.focusRequester,
+                forceLocked = forceLockId || forceLocked,
                 errorText = { errorState.idErrorMessage() },
             )
 
@@ -662,12 +668,15 @@ object ArtistForm {
                     Text(stringResource(Res.string.alley_edit_artist_edit_notes))
                 },
             )
-            LongTextSection(
-                textState.editorNotes,
-                headerText = {
-                    Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
-                },
-            )
+
+            if (showEditorNotes) {
+                LongTextSection(
+                    textState.editorNotes,
+                    headerText = {
+                        Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
+                    },
+                )
+            }
         }
     }
 

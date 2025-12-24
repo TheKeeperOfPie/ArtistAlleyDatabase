@@ -30,6 +30,9 @@ sealed interface AlleyEditDestination : NavKey {
         AlleyEditDestination
 
     @Serializable
+    data object ArtistFormQueue : AlleyEditDestination
+
+    @Serializable
     data class ArtistHistory(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
 
     @Serializable
@@ -64,6 +67,7 @@ sealed interface AlleyEditDestination : NavKey {
                 route.isEmpty() || route.startsWith("home") -> Home
                 route == "series" -> Series
                 route == "merch" -> Merch
+                route == "queue" -> ArtistFormQueue
                 route.startsWith("form/artist") -> {
                     val (dataYear, artistId) = parseDataYearThenArtistId(
                         route.removePrefix("form/artist/")
@@ -105,8 +109,9 @@ sealed interface AlleyEditDestination : NavKey {
                     Uri.encode(destination.artistId.toString())
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
-            is ArtistForm -> "/form/artist/${Uri.encode(destination.dataYear.serializedName)}/" +
+            is ArtistForm -> "form/artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
+            is ArtistFormQueue -> "queue"
             is ArtistHistory -> "artist/history/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             Series -> "series"

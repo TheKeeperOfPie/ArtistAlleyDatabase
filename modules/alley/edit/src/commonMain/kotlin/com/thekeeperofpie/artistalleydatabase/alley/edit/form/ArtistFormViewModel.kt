@@ -45,7 +45,7 @@ class ArtistFormViewModel(
     @Assisted private var privateKey: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveTask: ExclusiveTask<Pair<List<EditImage>, ArtistDatabaseEntry.Impl>, BackendFormRequest.ArtistSave.Response.Result> =
+    private val saveTask: ExclusiveTask<Pair<List<EditImage>, ArtistDatabaseEntry.Impl>, BackendFormRequest.ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
     private var progress = savedStateHandle.getMutableStateFlow(
         json = Json,
@@ -68,6 +68,7 @@ class ArtistFormViewModel(
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val tagAutocomplete = TagAutocomplete(viewModelScope, editDatabase, dispatchers)
 
+    private var artist: ArtistDatabaseEntry.Impl? = null
     private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
 
     fun initialize() {
@@ -83,6 +84,7 @@ class ArtistFormViewModel(
                 progress.value = ArtistFormScreen.State.Progress.BAD_AUTH
                 return@withContext
             }
+            this@ArtistFormViewModel.artist = artist
             state.artistFormState.applyDatabaseEntry(
                 artist = artist,
                 seriesById = tagAutocomplete.seriesById.first(),
@@ -111,8 +113,11 @@ class ArtistFormViewModel(
         artistJob.launch()
     }
 
-    private suspend fun save(triple: Pair<List<EditImage>, ArtistDatabaseEntry.Impl>): BackendFormRequest.ArtistSave.Response.Result =
-        TODO()
+    private suspend fun save(
+        pair: Pair<List<EditImage>, ArtistDatabaseEntry.Impl>,
+    ): BackendFormRequest.ArtistSave.Response =
+        // TODO: Image support
+        formDatabase.saveArtist(dataYear, artistId, privateKey, artist!!, pair.second)
 
     @AssistedFactory
     interface Factory {

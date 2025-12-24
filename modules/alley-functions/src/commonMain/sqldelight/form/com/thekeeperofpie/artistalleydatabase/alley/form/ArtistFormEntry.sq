@@ -1,0 +1,11 @@
+getFormEntry:
+SELECT * FROM artistFormEntry
+WHERE artistId = :artistId;
+
+getAllFormEntries:
+SELECT artistId, beforeBooth, afterBooth, beforeName, afterName FROM artistFormEntry
+ORDER BY timestamp DESC;
+
+insertFormEntry:
+INSERT OR REPLACE INTO artistFormEntry
+VALUES ?;

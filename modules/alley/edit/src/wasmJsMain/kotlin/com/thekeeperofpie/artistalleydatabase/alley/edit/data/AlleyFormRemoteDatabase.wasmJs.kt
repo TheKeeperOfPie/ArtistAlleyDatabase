@@ -17,6 +17,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.browser.window
+import kotlinx.coroutines.withContext
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -29,14 +31,47 @@ actual class AlleyFormRemoteDatabase(
         dataYear: DataYear,
         artistId: Uuid,
         privateKey: String,
-    ): ArtistDatabaseEntry.Impl? =
+    ): ArtistDatabaseEntry.Impl? = withContext(dispatchers.io) {
         sendRequest(BackendFormRequest.Artist(dataYear, artistId), privateKey)
+    }
+
+    actual suspend fun saveArtist(
+        dataYear: DataYear,
+        artistId: Uuid,
+        privateKey: String,
+        before: ArtistDatabaseEntry.Impl,
+        after: ArtistDatabaseEntry.Impl,
+    ): BackendFormRequest.ArtistSave.Response = withContext(dispatchers.io) {
+        val nonce =
+            sendRequest(
+                request = BackendFormRequest.Nonce(artistId, Clock.System.now()),
+                privateKey = privateKey,
+            ) ?: return@withContext BackendFormRequest.ArtistSave.Response.Failed(
+                IllegalStateException("Failed to generate nonce, check system clock")
+            )
+
+        sendRequest(
+            request = BackendFormRequest.ArtistSave(
+                artistId = artistId,
+                nonce = nonce,
+                dataYear = dataYear,
+                before = before,
+                after = after,
+            ),
+            privateKey = privateKey,
+        ) ?: BackendFormRequest.ArtistSave.Response.Failed(
+            IllegalStateException("Failed to save artist, check system clock")
+        )
+    }
 
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,
         privateKey: String,
     ): Response? where Request : BackendFormRequest, Request : BackendFormRequest.WithResponse<Response> {
-        val signature = AlleyCryptography.signRequest<BackendFormRequest>(privateKey = privateKey, payload = request)
+        val signature = AlleyCryptography.signRequest<BackendFormRequest>(
+            privateKey = privateKey,
+            payload = request
+        )
         // TODO: Use /form directly
         val response = ktorClient.post(window.origin + "/database/form") {
             headers {

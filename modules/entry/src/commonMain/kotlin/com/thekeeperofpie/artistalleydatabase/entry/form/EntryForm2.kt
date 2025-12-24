@@ -273,6 +273,7 @@ fun EntryFormScope.SingleTextSection(
     headerText: @Composable () -> Unit,
     previousFocus: FocusRequester? = null,
     nextFocus: FocusRequester? = null,
+    forceLocked: Boolean = this.forceLocked,
     trailingIcon: @Composable (() -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
     errorText: (() -> String?)? = null,
@@ -280,7 +281,7 @@ fun EntryFormScope.SingleTextSection(
     Column {
         SectionHeader(
             text = headerText,
-            lockState = state.lockState.takeUnless { this@SingleTextSection.forceLocked },
+            lockState = state.lockState.takeUnless { forceLocked },
             onClick = state::rotateLockState,
         )
 
@@ -293,7 +294,7 @@ fun EntryFormScope.SingleTextSection(
                 focusRequester?.requestFocus()
             }
         val errorText = errorText?.invoke()
-        if (state.lockState == EntryLockState.UNLOCKED && !this@SingleTextSection.forceLocked) {
+        if (state.lockState == EntryLockState.UNLOCKED && !forceLocked) {
             OutlinedTextField(
                 state = state.value,
                 supportingText = errorText?.let { { Text(it) } },

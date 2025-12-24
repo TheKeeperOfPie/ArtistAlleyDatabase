@@ -31,9 +31,16 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyEditDestination.Home.serializer())
             subclass(serializer = AlleyEditDestination.ArtistAdd.serializer())
             subclass(serializer = AlleyEditDestination.ArtistEdit.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistForm.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistFormQueue.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistHistory.serializer())
             subclass(serializer = AlleyEditDestination.ImagesEdit.serializer())
             subclass(serializer = AlleyEditDestination.Series.serializer())
+            subclass(serializer = AlleyEditDestination.SeriesAdd.serializer())
+            subclass(serializer = AlleyEditDestination.SeriesEdit.serializer())
             subclass(serializer = AlleyEditDestination.Merch.serializer())
+            subclass(serializer = AlleyEditDestination.MerchAdd.serializer())
+            subclass(serializer = AlleyEditDestination.MerchEdit.serializer())
         }
     }
 }

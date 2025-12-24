@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.Respons
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -49,6 +50,7 @@ object AlleyEditBackend {
                 when (this) {
                     is ArtistSave.Request -> makeResponse(saveArtist(context, this))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
+                    is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
@@ -109,6 +111,21 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2025,
                 -> null // TODO: Return legacy years?
         }
+
+    private suspend fun loadArtistFormQueue(context: EventContext): List<ArtistFormQueueEntry> =
+        Databases.formDatabase(context)
+            .artistFormEntryQueries
+            .getAllFormEntries()
+            .awaitAsList()
+            .map {
+                ArtistFormQueueEntry(
+                    artistId = it.artistId,
+                    beforeBooth = it.beforeBooth,
+                    beforeName = it.beforeName,
+                    afterBooth = it.afterBooth,
+                    afterName = it.afterName,
+                )
+            }
 
     private suspend fun loadArtistHistory(
         context: EventContext,

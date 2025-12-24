@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCac
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -42,6 +43,8 @@ actual class AlleyEditRemoteDatabase {
     private val merch = mutableMapOf<Uuid, MerchInfo>()
 
     internal val artistPublicKeys = mutableMapOf<Uuid, String>()
+    internal val artistFormQueue =
+        mutableMapOf<Uuid, Pair<ArtistDatabaseEntry.Impl, ArtistDatabaseEntry.Impl>>()
 
     private var simulatedLatency: Duration? = null
 
@@ -216,12 +219,23 @@ actual class AlleyEditRemoteDatabase {
         return MerchSave.Response.Result.Success
     }
 
-    private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
-
     actual suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? {
         val keys = AlleyCryptography.generate()
         artistPublicKeys[artistId] = keys.publicKey
         return "localhost://form/artist/${dataYear.serializedName}/$artistId" +
                 "?${AlleyCryptography.ACCESS_KEY_PARAM}=${keys.privateKey}"
     }
+
+    actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
+        artistFormQueue.values.map { (before, after) ->
+            ArtistFormQueueEntry(
+                artistId = Uuid.parse(before.id),
+                beforeBooth = before.booth,
+                beforeName = before.name,
+                afterBooth = after.booth,
+                afterName = after.name,
+            )
+        }
+
+    private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
 }

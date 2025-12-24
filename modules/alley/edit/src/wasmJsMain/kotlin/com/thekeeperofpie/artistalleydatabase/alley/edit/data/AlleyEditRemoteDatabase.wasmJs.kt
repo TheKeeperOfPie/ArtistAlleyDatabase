@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography.generateOneTimeEncryptionKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -155,30 +156,41 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? {
-        val oneTimeKeys = generateOneTimeEncryptionKeys()
-        return try {
-            val response = sendRequest(
-                BackendRequest.GenerateFormKey(
-                    artistId = artistId,
-                    publicKeyForResponse = oneTimeKeys.publicKey,
+    actual suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? =
+        withContext(dispatchers.io) {
+            val oneTimeKeys = generateOneTimeEncryptionKeys()
+            try {
+                val response = sendRequest(
+                    BackendRequest.GenerateFormKey(
+                        artistId = artistId,
+                        publicKeyForResponse = oneTimeKeys.publicKey,
+                    )
+                ) ?: return@withContext null
+                val accessKey = AlleyCryptography.oneTimeDecrypt(
+                    privateKey = oneTimeKeys.privateKey,
+                    payload = response,
                 )
-            ) ?: return null
-            val accessKey = AlleyCryptography.oneTimeDecrypt(
-                privateKey = oneTimeKeys.privateKey,
-                payload = response,
-            )
-            Uri.parse(window.location.origin)
-                .buildUpon()
-                .path("/edit/form/artist")
-                .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)
-                .build()
-                .toString()
-        } catch (t: Throwable) {
-            t.printStackTrace()
-            null
+                Uri.parse(window.location.origin)
+                    .buildUpon()
+                    .path("/edit/form/artist")
+                    .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)
+                    .build()
+                    .toString()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
         }
-    }
+
+    actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.ArtistFormQueue) ?: emptyList()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
 
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(

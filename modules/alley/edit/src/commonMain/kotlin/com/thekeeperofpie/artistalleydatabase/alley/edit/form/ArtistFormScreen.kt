@@ -20,6 +20,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -37,11 +38,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_action_save_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_action_submit_private_key
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_private_key_prompt
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_saved_changes
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
@@ -63,7 +65,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -115,19 +119,24 @@ object ArtistFormScreen {
         val saveTaskState = state.saveTaskState
         LaunchedEffect(saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
+                .map { it?.second }
                 .filterNotNull()
-                .collectLatest { (_, result) ->
-                    when (result) {
-                        is BackendFormRequest.ArtistSave.Response.Result.Failed -> {
-                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
+                .collectLatest {
+                    when (it) {
+                        is BackendFormRequest.ArtistSave.Response.Failed -> {
+                            snackbarHostState.showSnackbar(
+                                message = it.throwable.message.orEmpty(),
+                                withDismissAction = true,
+                                duration = SnackbarDuration.Indefinite,
+                            )
                             saveTaskState.clearError()
                         }
-                        is BackendFormRequest.ArtistSave.Response.Result.Outdated -> {
-                            // TODO
-                        }
-                        is BackendFormRequest.ArtistSave.Response.Result.Success -> {
+                        is BackendFormRequest.ArtistSave.Response.Success -> {
+                            snackbarHostState.showSnackbar(
+                                message = getString(Res.string.alley_edit_artist_form_saved_changes),
+                                duration = SnackbarDuration.Long,
+                            )
                             saveTaskState.clearResult()
-                            onClickBack(true)
                         }
                     }
                 }
@@ -153,7 +162,7 @@ object ArtistFormScreen {
                         val enabled = !errorState.hasAnyError
                         TooltipIconButton(
                             icon = Icons.Default.DoneAll,
-                            tooltipText = stringResource(Res.string.alley_edit_artist_action_save_and_exit_tooltip),
+                            tooltipText = stringResource(Res.string.alley_edit_artist_form_action_save_tooltip),
                             enabled = enabled,
                             onClick = onClickDone,
                         )
@@ -165,31 +174,36 @@ object ArtistFormScreen {
             snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
-            when (state.progress.collectAsStateWithLifecycle().value) {
-                State.Progress.LOADING ->
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        CircularWavyProgressIndicator()
-                    }
-                State.Progress.LOADED -> {
-                    Form(
-                        saveTaskState = saveTaskState,
-                        artistFormState = state.artistFormState,
-                        errorState = errorState,
-                        seriesPredictions = seriesPredictions,
-                        merchPredictions = merchPredictions,
-                        seriesImage = seriesImage,
-                        modifier = Modifier.padding(scaffoldPadding),
-                    )
+            Box(Modifier.padding(scaffoldPadding)) {
+                when (state.progress.collectAsStateWithLifecycle().value) {
+                    State.Progress.LOADING ->
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            CircularWavyProgressIndicator()
+                        }
+                    State.Progress.LOADED -> {
+                        Form(
+                            saveTaskState = saveTaskState,
+                            artistFormState = state.artistFormState,
+                            errorState = errorState,
+                            seriesPredictions = seriesPredictions,
+                            merchPredictions = merchPredictions,
+                            seriesImage = seriesImage,
+                            modifier = Modifier.padding(scaffoldPadding),
+                        )
 
-                    val errorMessage =
-                        stringResource(Res.string.alley_edit_artist_error_saving_bad_fields)
-                    GenericExitDialog(
-                        onClickBack = { onClickBack(true) },
-                        onClickSave = onClickDone,
-                        saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
-                    )
+                        val errorMessage =
+                            stringResource(Res.string.alley_edit_artist_error_saving_bad_fields)
+                        GenericExitDialog(
+                            onClickBack = { onClickBack(true) },
+                            onClickSave = onClickDone,
+                            saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
+                        )
+                    }
+                    State.Progress.BAD_AUTH -> PrivateKeyPrompt(onSubmitPrivateKey)
                 }
-                State.Progress.BAD_AUTH -> PrivateKeyPrompt(onSubmitPrivateKey)
             }
         }
     }
@@ -198,7 +212,7 @@ object ArtistFormScreen {
     private fun Form(
         artistFormState: ArtistFormState,
         errorState: ArtistErrorState,
-        saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response.Result>,
+        saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
@@ -218,6 +232,9 @@ object ArtistFormScreen {
                     seriesPredictions = seriesPredictions,
                     merchPredictions = merchPredictions,
                     seriesImage = seriesImage,
+                    forceLockId = true,
+                    showStatus = false,
+                    showEditorNotes = false,
                     modifier = Modifier.fillMaxHeight()
                         .width(960.dp)
                         .verticalScroll(rememberScrollState())
@@ -257,7 +274,7 @@ object ArtistFormScreen {
     class State(
         val progress: StateFlow<Progress>,
         val artistFormState: ArtistFormState,
-        val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response.Result>,
+        val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
     ) {
         @Serializable
         enum class Progress {

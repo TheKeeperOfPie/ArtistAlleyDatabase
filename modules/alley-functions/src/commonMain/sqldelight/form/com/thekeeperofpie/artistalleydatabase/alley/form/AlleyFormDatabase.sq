@@ -1,5 +1,10 @@
+import kotlin.String;
+import kotlin.collections.List;
 import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
 
 CREATE TABLE IF NOT EXISTS artistFormNonce (
     artistId TEXT AS Uuid NOT NULL,
@@ -12,4 +17,37 @@ CREATE TABLE IF NOT EXISTS artistFormPublicKey (
     artistId TEXT AS Uuid NOT NULL,
     publicKey TEXT NOT NULL,
     PRIMARY KEY (artistId)
+);
+
+CREATE TABLE IF NOT EXISTS artistFormEntry (
+    artistId TEXT AS Uuid NOT NULL,
+    dataYear TEXT AS DataYear NOT NULL,
+    beforeBooth TEXT,
+    beforeName TEXT,
+    beforeSummary TEXT,
+    beforeLinks TEXT AS List<String>,
+    beforeStoreLinks TEXT AS List<String>,
+    beforeCatalogLinks TEXT AS List<String>,
+    beforeNotes TEXT,
+    beforeCommissions TEXT AS List<String>,
+    beforeSeriesInferred TEXT AS List<String>,
+    beforeSeriesConfirmed TEXT AS List<String>,
+    beforeMerchInferred TEXT AS List<String>,
+    beforeMerchConfirmed TEXT AS List<String>,
+    beforeImages TEXT AS List<CatalogImage>,
+    afterBooth TEXT,
+    afterName TEXT,
+    afterSummary TEXT,
+    afterLinks TEXT AS List<String>,
+    afterStoreLinks TEXT AS List<String>,
+    afterCatalogLinks TEXT AS List<String>,
+    afterNotes TEXT,
+    afterCommissions TEXT AS List<String>,
+    afterSeriesInferred TEXT AS List<String>,
+    afterSeriesConfirmed TEXT AS List<String>,
+    afterMerchInferred TEXT AS List<String>,
+    afterMerchConfirmed TEXT AS List<String>,
+    afterImages TEXT AS List<CatalogImage>,
+    timestamp TEXT AS Instant NOT NULL,
+    PRIMARY KEY (artistId, dataYear)
 );

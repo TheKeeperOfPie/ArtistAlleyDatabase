@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -116,4 +117,7 @@ class AlleyEditDatabase(
 
     suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? =
         remoteDatabase.generateFormLink(dataYear, artistId)
+
+    suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
+        remoteDatabase.loadArtistFormQueue()
 }

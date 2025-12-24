@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -38,4 +39,6 @@ expect class AlleyEditRemoteDatabase {
     suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result
 
     suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String?
+
+    suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry>
 }

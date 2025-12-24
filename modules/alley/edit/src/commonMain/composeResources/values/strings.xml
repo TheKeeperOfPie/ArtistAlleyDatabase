@@ -3,6 +3,7 @@
     <string name="alley_edit_top_level_nav_artists">Artists</string>
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
+    <string name="alley_edit_top_level_nav_queue">Queue</string>
 
     <string name="alley_edit_artist_list_tab_all">All</string>
     <string name="alley_edit_artist_list_tab_missing_links">Missing links</string>
@@ -152,5 +153,8 @@
     <string name="alley_edit_artist_history_action_refresh_tooltip">Refresh</string>
 
     <string name="alley_edit_artist_form_private_key_prompt">Unable to read your access token,\npaste your access link below to try again</string>
+    <string name="alley_edit_artist_form_saved_changes">Saved changes</string>
+    <string name="alley_edit_artist_form_action_save_tooltip">Save changes</string>
+
     <string name="alley_edit_artist_form_action_submit_private_key">Submit</string>
 </resources>

@@ -5,3 +5,7 @@ WHERE artistId = :artistId;
 insertNonce:
 INSERT OR REPLACE INTO artistFormNonce
 VALUES ?;
+
+clearNonce:
+DELETE FROM artistFormNonce
+WHERE artistId = :artistId;
