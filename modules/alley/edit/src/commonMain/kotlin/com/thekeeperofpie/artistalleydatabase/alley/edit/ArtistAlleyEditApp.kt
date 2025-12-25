@@ -15,6 +15,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -197,10 +199,15 @@ private fun entryProvider(
     sharedElementEntry<AlleyEditDestination.ArtistForm> { route ->
         ArtistFormScreen(
             dataYear = route.dataYear,
-            artistId = route.artistId,
-            privateKey = route.privateKey,
-            graph = graph,
             onClickBack = onClickBack,
+            viewModel = viewModel {
+                graph.artistFormViewModelFactory.create(
+                    dataYear = route.dataYear,
+                    artistId = route.artistId,
+                    privateKey = route.privateKey,
+                    savedStateHandle = createSavedStateHandle(),
+                )
+            }
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistFormMerge> { route ->

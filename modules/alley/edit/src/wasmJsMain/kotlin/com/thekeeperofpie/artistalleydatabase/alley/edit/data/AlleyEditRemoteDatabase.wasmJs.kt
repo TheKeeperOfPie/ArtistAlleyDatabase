@@ -173,7 +173,7 @@ actual class AlleyEditRemoteDatabase(
                 )
                 Uri.parse(window.location.origin)
                     .buildUpon()
-                    .path("/edit/form/artist")
+                    .path("/form/artist")
                     .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)
                     .build()
                     .toString()

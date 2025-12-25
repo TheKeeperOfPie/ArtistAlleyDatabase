@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alley_form_queue_title">Artist form queue</string>
+    <string name="alley_form_queue_action_refresh">Refresh form queue</string>
+
+    <string name="alley_form_private_key_prompt">Unable to read your access token,\npaste your access link below to try again</string>
+    <string name="alley_form_saved_changes">Saved changes</string>
+    <string name="alley_form_action_save_tooltip">Save changes</string>
+
+    <string name="alley_form_action_submit_private_key">Submit</string>
+
+    <string name="alley_form_merge_title">Merging %1$s - %2$s</string>
+    <string name="alley_form_merge_action_save">Apply form merge</string>
+    <string name="alley_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>
+</resources>

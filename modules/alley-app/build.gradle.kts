@@ -130,6 +130,11 @@ val alleyEditOutput by configurations.creating {
     isCanBeResolved = true
 }
 
+val alleyFormOutput by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 val alleyFunctionsOutput by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
@@ -145,6 +150,9 @@ dependencies {
         targetConfiguration = "distribution"
     }
     alleyEditOutput(project(":modules:alley-edit")) {
+        targetConfiguration = "distribution"
+    }
+    alleyFormOutput(project(":modules:alley-form")) {
         targetConfiguration = "distribution"
     }
     alleyFunctionsOutput(project(":modules:alley-functions")) {
@@ -224,6 +232,42 @@ val copyAlleyEdit by tasks.registering(Copy::class) {
     }
 }
 
+val copyAlleyForm by tasks.registering(Copy::class) {
+    mustRunAfter(buildBothWebVariants)
+
+    val sourceFiles = alleyFormOutput.files
+    from(alleyFormOutput)
+    val destDir = layout.buildDirectory.dir(outputDir)
+    into(destDir)
+
+    val output = destDir.get().asFile
+
+    // DuplicatesStrategy doesn't work for not overwriting buildBothWebVariants, manually exclude
+    exclude {
+        if (it.path.contains("composeResources/artistalleydatabase")) {
+            if (
+                !it.path.contains("artistalleydatabase.modules.alley_edit.generated.resources") &&
+                !it.path.contains("artistalleydatabase.modules.alley.edit.generated.resources")
+            ) {
+                return@exclude true
+            }
+        }
+
+        // This is really inefficient, but good enough since edit has a small number of files
+        val sourceDir = sourceFiles.single()
+        val alleyAppFiles = output.resolve("alleyAppFiles.txt")
+            .readLines()
+            .map { sourceDir.resolve(File(it)) }
+            .toSet()
+        it.file in alleyAppFiles
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    doLast {
+        Utils.writeCopiedFiles(sourceFiles, destDir, "alleyFormFiles.txt")
+    }
+}
+
 val copyAlleyFunctions by tasks.registering(Copy::class) {
     mustRunAfter(buildBothWebVariants)
     from(alleyFunctionsOutput)
@@ -294,6 +338,7 @@ tasks.register("webRelease") {
         buildBothWebVariants,
         copyServiceWorkerOutput,
         copyAlleyEdit,
+        copyAlleyForm,
         copyAlleyFunctions,
         copyAlleyFunctionsMiddleware,
     )
@@ -319,7 +364,9 @@ tasks.register("webRelease") {
             .walkTopDown()
             .onEnter {
                 !it.path.contains("alley.edit.generated.resources") &&
-                        !it.path.contains("alley_edit.generated.resources")
+                        !it.path.contains("alley_edit.generated.resources") &&
+                        !it.path.contains("alley.form.generated.resources") &&
+                        !it.path.contains("alley_form.generated.resources")
             }
             .filter { it.isFile }
             .filter {
@@ -332,9 +379,11 @@ tasks.register("webRelease") {
             .mapTo(mutableSetOf()) { folder.resolve(File(it)) }
         val alleyEditFiles = folder.resolve("alleyEditFiles.txt").readLines()
             .mapTo(mutableSetOf()) { folder.resolve(File(it)) }
-        val editOnlyFiles = alleyEditFiles - alleyAppFiles
+        val alleyFormFiles = folder.resolve("alleyFormFiles.txt").readLines()
+            .mapTo(mutableSetOf()) { folder.resolve(File(it)) }
+        val editOrFormOnlyFiles = (alleyEditFiles + alleyFormFiles) - alleyAppFiles
 
-        val filesToCache = rootFiles + icons + resourceFiles - editOnlyFiles
+        val filesToCache = rootFiles + icons + resourceFiles - editOrFormOnlyFiles
 
         fun hash(file: File): Long {
             val crc32 = CRC32()
@@ -379,6 +428,10 @@ tasks.register("webRelease") {
         val editJsEdited = editJs.readText()
             .replace("webpackChunkalley_edit", "webpackChunkalley_app")
         editJs.writeText(editJsEdited)
+        val formJs = folder.resolve("alley-form.js")
+        val formJsEdited = formJs.readText()
+            .replace("webpackChunkalley_form", "webpackChunkalley_app")
+        formJs.writeText(formJsEdited)
     }
 }
 

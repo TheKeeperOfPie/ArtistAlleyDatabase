@@ -55,6 +55,7 @@ kotlin {
             implementation(libs.coil3.coil.compose)
             implementation(libs.colormath.ext.jetpack.compose)
             implementation(libs.jetBrainsAndroidX.lifecycle.runtime.compose)
+            implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.navigation3)
             implementation(libs.jetBrainsAndroidX.navigation.compose)
             implementation(libs.molecule.runtime)
             implementation(projects.modules.utils)

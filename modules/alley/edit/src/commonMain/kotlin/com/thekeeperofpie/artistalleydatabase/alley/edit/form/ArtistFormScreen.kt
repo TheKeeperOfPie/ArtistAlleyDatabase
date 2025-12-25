@@ -35,8 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
@@ -44,7 +42,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_action_submit_private_key
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_private_key_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_saved_changes
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
@@ -69,25 +66,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-import kotlin.uuid.Uuid
 
 object ArtistFormScreen {
 
     @Composable
     operator fun invoke(
         dataYear: DataYear,
-        artistId: Uuid,
-        privateKey: String,
-        graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: ArtistFormViewModel = viewModel {
-            graph.artistFormViewModelFactory.create(
-                dataYear = dataYear,
-                artistId = artistId,
-                privateKey = privateKey,
-                savedStateHandle = createSavedStateHandle(),
-            )
-        },
+        viewModel: ArtistFormViewModel,
     ) {
         LaunchedEffect(viewModel) {
             viewModel.initialize()

@@ -12,20 +12,46 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.util.fastForEachReversed
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.rememberDecoratedNavEntries
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigationevent.NavigationEventHandler
 import androidx.navigationevent.NavigationEventInfo
+import androidx.savedstate.serialization.SavedStateConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberDecoratedNavEntries
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberTwoWayStack
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
+
+
+private val SavedStateConfig = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(baseClass = NavKey::class) {
+            subclass(serializer = AlleyEditDestination.Home.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistAdd.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistEdit.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistForm.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistFormMerge.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistFormQueue.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistHistory.serializer())
+            subclass(serializer = AlleyEditDestination.ImagesEdit.serializer())
+            subclass(serializer = AlleyEditDestination.Series.serializer())
+            subclass(serializer = AlleyEditDestination.SeriesAdd.serializer())
+            subclass(serializer = AlleyEditDestination.SeriesEdit.serializer())
+            subclass(serializer = AlleyEditDestination.Merch.serializer())
+            subclass(serializer = AlleyEditDestination.MerchAdd.serializer())
+            subclass(serializer = AlleyEditDestination.MerchEdit.serializer())
+        }
+    }
+}
 
 @Composable
 fun rememberArtistAlleyEditTopLevelStacks(): ArtistAlleyEditTopLevelStacks {
     val stacks = TopLevelStackKey.entries.map {
         key(it) {
-            rememberTwoWayStack(it.initialDestination)
+            rememberTwoWayStack(it.initialDestination, SavedStateConfig)
         }
     }
     val topLevelStackIndex = rememberSaveable { mutableIntStateOf(0) }
@@ -43,24 +69,6 @@ fun rememberDecoratedNavEntries(
         rememberDecoratedNavEntries(stacks.twoWayStacks[index], entryProvider)
     }
 }
-
-@Composable
-private fun rememberDecoratedNavEntries(
-    twoWayStack: TwoWayStack,
-    entryProvider: (key: NavKey) -> NavEntry<NavKey>,
-) = (twoWayStack.navBackStack + twoWayStack.navForwardStack)
-    .flatMap {
-        key(it.toString()) {
-            rememberDecoratedNavEntries(
-                backStack = listOf(it),
-                entryDecorators = listOf(
-                    rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator()
-                ),
-                entryProvider = entryProvider,
-            )
-        }
-    }
 
 @Stable
 class ArtistAlleyEditTopLevelStacks internal constructor(
