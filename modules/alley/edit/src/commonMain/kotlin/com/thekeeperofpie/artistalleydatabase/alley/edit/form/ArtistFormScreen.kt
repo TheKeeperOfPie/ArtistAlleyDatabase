@@ -249,6 +249,7 @@ object ArtistFormScreen {
                 val state = remember { TextFieldState("") }
                 OutlinedTextField(state = state, modifier = Modifier.fillMaxWidth())
 
+                // TODO: Show a new error message if the key is incorrect
                 FilledTonalButton(onClick = { onSubmitKey(state.text.toString()) }) {
                     Text(stringResource(Res.string.alley_edit_artist_form_action_submit_private_key))
                 }

@@ -10,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
-import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
@@ -40,9 +39,6 @@ class ArtistFormViewModel(
     private val formDatabase: AlleyFormDatabase,
     seriesImagesStore: SeriesImagesStore,
     @Assisted private val dataYear: DataYear,
-    @Assisted private val artistId: Uuid,
-    // TODO: Actually read this from the URL
-    @Assisted private var privateKey: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveTask: ExclusiveTask<Pair<List<EditImage>, ArtistDatabaseEntry.Impl>, BackendFormRequest.ArtistSave.Response> =
@@ -58,7 +54,6 @@ class ArtistFormViewModel(
             saver = ArtistFormState.Saver,
         ) {
             ArtistFormState().apply {
-                textState.id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
                 textState.id.lockState = EntryLockState.LOCKED
             }
         },
@@ -79,7 +74,7 @@ class ArtistFormViewModel(
 
     private suspend fun loadArtistInfo() = try {
         withContext(PlatformDispatchers.IO) {
-            val artist = formDatabase.loadArtist(dataYear, artistId, privateKey)
+            val artist = formDatabase.loadArtist(dataYear)
             if (artist == null) {
                 progress.value = ArtistFormScreen.State.Progress.BAD_AUTH
                 return@withContext
@@ -109,7 +104,8 @@ class ArtistFormViewModel(
         saveTask.triggerManual { state.artistFormState.captureDatabaseEntry(dataYear) }
 
     fun onSubmitPrivateKey(privateKey: String) {
-        this.privateKey = privateKey.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
+        progress.value = ArtistFormScreen.State.Progress.LOADING
+        ArtistFormAccessKey.setKey(privateKey)
         artistJob.launch()
     }
 
@@ -117,14 +113,12 @@ class ArtistFormViewModel(
         pair: Pair<List<EditImage>, ArtistDatabaseEntry.Impl>,
     ): BackendFormRequest.ArtistSave.Response =
         // TODO: Image support
-        formDatabase.saveArtist(dataYear, artistId, privateKey, artist!!, pair.second)
+        formDatabase.saveArtist(dataYear = dataYear, before = artist!!, after = pair.second)
 
     @AssistedFactory
     interface Factory {
         fun create(
             dataYear: DataYear,
-            artistId: Uuid,
-            privateKey: String,
             savedStateHandle: SavedStateHandle,
         ): ArtistFormViewModel
     }

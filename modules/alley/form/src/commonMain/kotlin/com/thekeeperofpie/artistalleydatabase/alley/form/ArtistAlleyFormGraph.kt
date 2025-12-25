@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOptio
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import dev.zacsweers.metro.AppScope
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @SingleIn(AppScope::class)
 interface ArtistAlleyFormGraph : ArtistAlleyComponent {
+    val appFileSystem: AppFileSystem
     val artistFormViewModelFactory: ArtistFormViewModel.Factory
 
     @Provides

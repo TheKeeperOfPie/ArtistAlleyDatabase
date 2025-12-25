@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
@@ -19,7 +20,6 @@ import io.ktor.http.contentType
 import kotlinx.browser.window
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
-import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
 @Inject
@@ -29,36 +29,34 @@ actual class AlleyFormRemoteDatabase(
 ) {
     actual suspend fun loadArtist(
         dataYear: DataYear,
-        artistId: Uuid,
-        privateKey: String,
     ): ArtistDatabaseEntry.Impl? = withContext(dispatchers.io) {
-        sendRequest(BackendFormRequest.Artist(dataYear, artistId), privateKey)
+        val accessKey = ArtistFormAccessKey.key ?: return@withContext null
+        sendRequest(BackendFormRequest.Artist(dataYear), accessKey)
     }
 
     actual suspend fun saveArtist(
         dataYear: DataYear,
-        artistId: Uuid,
-        privateKey: String,
         before: ArtistDatabaseEntry.Impl,
         after: ArtistDatabaseEntry.Impl,
     ): BackendFormRequest.ArtistSave.Response = withContext(dispatchers.io) {
+        val accessKey = ArtistFormAccessKey.key
+            ?: return@withContext BackendFormRequest.ArtistSave.Response.Failed("Invalid access key")
         val nonce =
             sendRequest(
-                request = BackendFormRequest.Nonce(artistId, Clock.System.now()),
-                privateKey = privateKey,
+                request = BackendFormRequest.Nonce(Clock.System.now()),
+                accessKey = accessKey,
             ) ?: return@withContext BackendFormRequest.ArtistSave.Response.Failed(
                 "Failed to generate nonce, check system clock"
             )
 
         sendRequest(
             request = BackendFormRequest.ArtistSave(
-                artistId = artistId,
                 nonce = nonce,
                 dataYear = dataYear,
                 before = before,
                 after = after,
             ),
-            privateKey = privateKey,
+            accessKey = accessKey,
         ) ?: BackendFormRequest.ArtistSave.Response.Failed(
             "Failed to save artist, check system clock"
         )
@@ -66,11 +64,11 @@ actual class AlleyFormRemoteDatabase(
 
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,
-        privateKey: String,
+        accessKey: String,
     ): Response? where Request : BackendFormRequest, Request : BackendFormRequest.WithResponse<Response> {
         val signature = AlleyCryptography.signRequest<BackendFormRequest>(
-            privateKey = privateKey,
-            payload = request
+            privateKey = accessKey,
+            payload = request,
         )
         // TODO: Use /form directly
         val response = ktorClient.post(window.origin + "/form/api") {

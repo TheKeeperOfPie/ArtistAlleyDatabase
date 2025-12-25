@@ -6,11 +6,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
@@ -22,6 +24,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
@@ -108,19 +111,22 @@ fun ArtistAlleyFormApp(
                     entryProvider = entryProvider,
                 )
 
-                NavDisplay(
-                    entries = decoratedNavEntries,
-                    onBack = navStack::onBack,
-                    transitionSpec = {
-                        slideInHorizontally(initialOffsetX = { it }) togetherWith fadeOut()
-                    },
-                    popTransitionSpec = {
-                        fadeIn() togetherWith slideOutHorizontally(targetOffsetX = { it })
-                    },
-                    predictivePopTransitionSpec = {
-                        slideInHorizontally(initialOffsetX = { it }) togetherWith fadeOut()
-                    },
-                )
+                Scaffold {
+                    NavDisplay(
+                        entries = decoratedNavEntries.take(navStack.navBackStack.size),
+                        onBack = navStack::onBack,
+                        transitionSpec = {
+                            slideInHorizontally(initialOffsetX = { it }) togetherWith fadeOut()
+                        },
+                        popTransitionSpec = {
+                            fadeIn() togetherWith slideOutHorizontally(targetOffsetX = { it })
+                        },
+                        predictivePopTransitionSpec = {
+                            slideInHorizontally(initialOffsetX = { it }) togetherWith fadeOut()
+                        },
+                        modifier = Modifier.padding(it)
+                    )
+                }
             }
         }
     }
@@ -133,8 +139,13 @@ private fun entryProvider(
     onClickBack: (force: Boolean) -> Unit,
 ) = entryProvider<NavKey> {
     sharedElementEntry<AlleyFormDestination.Home> {
-        // TODO
-        Text("AlleyFormDestination.Home")
+        ArtistFormHomeScreen(
+            onClickNext = {
+                navStack.navigate(
+                    AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026)
+                )
+            },
+        )
     }
     sharedElementEntry<AlleyFormDestination.ArtistForm> { route ->
         ArtistFormScreen(
@@ -143,8 +154,6 @@ private fun entryProvider(
             viewModel = viewModel {
                 graph.artistFormViewModelFactory.create(
                     dataYear = route.dataYear,
-                    artistId = route.artistId,
-                    privateKey = route.privateKey,
                     savedStateHandle = createSavedStateHandle(),
                 )
             }

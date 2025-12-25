@@ -10,7 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
+import kotlinx.io.bytestring.hexToByteString
 import kotlinx.serialization.json.Json
+import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.get
 import org.w3c.fetch.Response
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
@@ -36,16 +39,35 @@ internal object AlleyFormBackend {
     ): Response {
         val signature = context.request.headers.get(AlleyCryptography.SIGNATURE_HEADER_KEY)
             ?: return Utils.unauthorizedResponse
+
+        val messageBytes = Uint8Array(
+            Json.encodeToString<BackendFormRequest>(request)
+                .encodeToByteArray()
+                .toTypedArray()
+        )
+        val signatureBytes = signature.hexToByteString().toByteArray()
+
         val formDatabase = Databases.formDatabase(context)
-        val artistId = request.artistId
-        val publicKey = formDatabase
-            .alleyFormPublicKeyQueries
-            .getPublicKey(artistId)
-            .awaitAsOneOrNull()
+        val publicKeyQueries = formDatabase.alleyFormPublicKeyQueries
+
+        suspend fun tryRecoverPublicKey(recoveryByte: Byte): Pair<Uuid, String>? {
+            val bytes = NobleCurves.P384.recoverPublicKey(
+                signature = Uint8Array((byteArrayOf(recoveryByte) + signatureBytes).toTypedArray()),
+                message = messageBytes,
+            ).let { bytes -> ByteArray(bytes.length) { bytes[it] } }
+            val candidatePublicKey = AlleyCryptography.convertRawPublicKey(bytes)
+            return publicKeyQueries
+                .getArtistId(candidatePublicKey)
+                .awaitAsOneOrNull()
+                ?.let { it to candidatePublicKey }
+        }
+
+        val (expectedArtistId, expectedPublicKey) = listOf<Byte>(0, 1, 2, 3)
+            .firstNotNullOfOrNull { tryRecoverPublicKey(it) }
             ?: return Utils.unauthorizedResponse
 
         val valid = AlleyCryptography.verifySignature<BackendFormRequest>(
-            publicKey = publicKey.publicKey,
+            publicKey = expectedPublicKey,
             signature = signature,
             payload = request,
         )
@@ -55,14 +77,26 @@ internal object AlleyFormBackend {
             when (this) {
                 is BackendFormRequest.Nonce ->
                     generateNonce(
-                        artistId = artistId,
+                        artistId = expectedArtistId,
                         database = formDatabase,
                         requestTimestamp = timestamp,
                     )
                         ?.let { makeResponse(it) }
                         ?: Utils.unauthorizedResponse
-                is BackendFormRequest.Artist -> makeResponse(loadArtist(context, this))
-                is BackendFormRequest.ArtistSave -> makeResponse(saveArtist(context, this))
+                is BackendFormRequest.Artist -> makeResponse(
+                    loadArtist(
+                        context,
+                        this,
+                        expectedArtistId
+                    )
+                )
+                is BackendFormRequest.ArtistSave -> {
+                    if (Uuid.parse(this.after.id) != expectedArtistId) {
+                        Utils.unauthorizedResponse
+                    } else {
+                        makeResponse(saveArtist(context, this, expectedArtistId))
+                    }
+                }
             }
         }
     }
@@ -84,11 +118,12 @@ internal object AlleyFormBackend {
     private suspend fun loadArtist(
         context: EventContext,
         request: BackendFormRequest.Artist,
+        artistId: Uuid,
     ): ArtistDatabaseEntry.Impl? =
         when (request.dataYear) {
             DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
                 .artistEntryAnimeExpo2026Queries
-                .getArtist(request.artistId.toString())
+                .getArtist(artistId.toString())
                 .awaitAsOneOrNull()
                 ?.toArtistDatabaseEntry()
                 ?.copy(
@@ -107,23 +142,24 @@ internal object AlleyFormBackend {
     private suspend fun saveArtist(
         context: EventContext,
         request: BackendFormRequest.ArtistSave,
+        artistId: Uuid,
     ): BackendFormRequest.ArtistSave.Response {
         val database = Databases.formDatabase(context)
         try {
             val expectedNonce =
-                database.alleyFormNonceQueries.getNonce(request.artistId).awaitAsOneOrNull()
+                database.alleyFormNonceQueries.getNonce(artistId).awaitAsOneOrNull()
             if (expectedNonce == null || request.nonce != expectedNonce.nonce) {
                 return BackendFormRequest.ArtistSave.Response.Failed("Invalid nonce")
             }
         } finally {
-            database.alleyFormNonceQueries.clearNonce(request.artistId)
+            database.alleyFormNonceQueries.clearNonce(artistId)
         }
 
         val before = request.before
         val after = request.after
         database.artistFormEntryQueries.insertFormEntry(
             ArtistFormEntry(
-                artistId = request.artistId,
+                artistId = artistId,
                 dataYear = request.dataYear,
                 beforeBooth = before.booth,
                 beforeName = before.name,

@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptographyKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
@@ -45,7 +46,7 @@ actual class AlleyEditRemoteDatabase {
     private val series = mutableMapOf<Uuid, SeriesInfo>()
     private val merch = mutableMapOf<Uuid, MerchInfo>()
 
-    internal val artistPublicKeys = mutableMapOf<Uuid, String>()
+    internal val artistKeys = mutableMapOf<Uuid, AlleyCryptographyKeys>()
     internal val artistFormQueue =
         mutableMapOf<Uuid, Triple<Instant, ArtistDatabaseEntry.Impl, ArtistDatabaseEntry.Impl>>()
 
@@ -233,7 +234,7 @@ actual class AlleyEditRemoteDatabase {
 
     actual suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? {
         val keys = AlleyCryptography.generate()
-        artistPublicKeys[artistId] = keys.publicKey
+        artistKeys[artistId] = keys
         return "localhost://form/artist/${dataYear.serializedName}/$artistId" +
                 "?${AlleyCryptography.ACCESS_KEY_PARAM}=${keys.privateKey}"
     }

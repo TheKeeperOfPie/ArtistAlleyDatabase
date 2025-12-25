@@ -12,19 +12,14 @@ import kotlin.uuid.Uuid
 class AlleyFormDatabase(
     private val remoteDatabase: AlleyFormRemoteDatabase,
 ) {
-    suspend fun loadArtist(dataYear: DataYear, artistId: Uuid, privateKey: String) =
-        remoteDatabase.loadArtist(dataYear, artistId, privateKey)
+    suspend fun loadArtist(dataYear: DataYear) = remoteDatabase.loadArtist(dataYear)
 
     suspend fun saveArtist(
         dataYear: DataYear,
-        artistId: Uuid,
-        privateKey: String,
         before: ArtistDatabaseEntry.Impl,
         after: ArtistDatabaseEntry.Impl,
     ) = remoteDatabase.saveArtist(
         dataYear = dataYear,
-        artistId = artistId,
-        privateKey = privateKey,
         before = before,
         after = after,
     )

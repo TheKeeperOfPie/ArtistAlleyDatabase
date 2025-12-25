@@ -203,8 +203,6 @@ private fun entryProvider(
             viewModel = viewModel {
                 graph.artistFormViewModelFactory.create(
                     dataYear = route.dataYear,
-                    artistId = route.artistId,
-                    privateKey = route.privateKey,
                     savedStateHandle = createSavedStateHandle(),
                 )
             }

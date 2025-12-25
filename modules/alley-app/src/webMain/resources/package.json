@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@cloudflare/pages-plugin-cloudflare-access" : "^1.0.5"
+    "@cloudflare/pages-plugin-cloudflare-access" : "^1.0.5",
+    "@noble/curves" : "^2.0.1"
   }
 }

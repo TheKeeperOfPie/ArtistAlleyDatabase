@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.form
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -20,9 +21,12 @@ import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -98,6 +102,12 @@ private fun Content(graph: ArtistAlleyFormGraph) {
                 screenWidthDp = density.run { windowSize.width.toDp() },
                 screenHeightDp = density.run { windowSize.height.toDp() },
             )
+        }
+
+        LaunchedEffect(Unit) {
+            Uri.parseOrNull(window.location.href)
+                ?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
+                ?.let(ArtistFormAccessKey::setKey)
         }
 
         CompositionLocalProvider(

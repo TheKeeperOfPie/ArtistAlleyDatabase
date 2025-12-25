@@ -9,22 +9,18 @@ import kotlin.uuid.Uuid
 @Serializable
 sealed interface BackendFormRequest {
 
-    val artistId: Uuid
-
     // Split out because KotlinX Serialization doesn't support <*> star type parameters
     interface WithResponse<Response>
 
     @Serializable
-    data class Nonce(override val artistId: Uuid, val timestamp: Instant) : BackendFormRequest,
-        WithResponse<Uuid>
+    data class Nonce(val timestamp: Instant) : BackendFormRequest, WithResponse<Uuid>
 
     @Serializable
-    data class Artist(val dataYear: DataYear, override val artistId: Uuid) : BackendFormRequest,
+    data class Artist(val dataYear: DataYear) : BackendFormRequest,
         WithResponse<ArtistDatabaseEntry.Impl>
 
     @Serializable
     data class ArtistSave(
-        override val artistId: Uuid,
         val nonce: Uuid,
         val dataYear: DataYear,
         val before: ArtistDatabaseEntry.Impl,

@@ -246,14 +246,14 @@ val copyAlleyForm by tasks.registering(Copy::class) {
     exclude {
         if (it.path.contains("composeResources/artistalleydatabase")) {
             if (
-                !it.path.contains("artistalleydatabase.modules.alley_edit.generated.resources") &&
-                !it.path.contains("artistalleydatabase.modules.alley.edit.generated.resources")
+                !it.path.contains("artistalleydatabase.modules.alley_form.generated.resources") &&
+                !it.path.contains("artistalleydatabase.modules.alley.form.generated.resources")
             ) {
                 return@exclude true
             }
         }
 
-        // This is really inefficient, but good enough since edit has a small number of files
+        // This is really inefficient, but good enough since form has a small number of files
         val sourceDir = sourceFiles.single()
         val alleyAppFiles = output.resolve("alleyAppFiles.txt")
             .readLines()

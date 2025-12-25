@@ -1,6 +1,6 @@
-getPublicKey:
-SELECT * FROM artistFormPublicKey
-WHERE artistId = :artistId;
+getArtistId:
+SELECT artistId FROM artistFormPublicKey
+WHERE publicKey = :publicKey;
 
 insertPublicKey:
 INSERT OR REPLACE INTO artistFormPublicKey

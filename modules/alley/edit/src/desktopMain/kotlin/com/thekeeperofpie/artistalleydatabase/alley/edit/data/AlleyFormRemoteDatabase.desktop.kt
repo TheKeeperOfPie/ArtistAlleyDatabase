@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
@@ -15,57 +16,49 @@ import kotlin.uuid.Uuid
 actual class AlleyFormRemoteDatabase(
     private val editDatabase: AlleyEditRemoteDatabase,
 ) {
-    actual suspend fun loadArtist(
-        dataYear: DataYear,
-        artistId: Uuid,
-        privateKey: String,
-    ): ArtistDatabaseEntry.Impl? {
-        val request = BackendFormRequest.Artist(dataYear, artistId)
-        val valid = assertSignature(artistId, privateKey, request)
-        if (!valid) return null
+    actual suspend fun loadArtist(dataYear: DataYear): ArtistDatabaseEntry.Impl? {
+        val request = BackendFormRequest.Artist(dataYear)
+        val artistId = assertSignatureAndGetArtistId(request) ?: return null
         return editDatabase.loadArtist(dataYear, artistId)
             ?.copy(editorNotes = null, lastEditor = null, lastEditTime = null)
     }
 
     actual suspend fun saveArtist(
         dataYear: DataYear,
-        artistId: Uuid,
-        privateKey: String,
         before: ArtistDatabaseEntry.Impl,
         after: ArtistDatabaseEntry.Impl,
     ): BackendFormRequest.ArtistSave.Response {
         val fakeNonce = Uuid.random()
         val request = BackendFormRequest.ArtistSave(
-            artistId = artistId,
             nonce = fakeNonce,
             dataYear = dataYear,
             before = before,
             after = after,
         )
-        val valid = assertSignature(artistId, privateKey, request)
-        if (!valid) {
-            return BackendFormRequest.ArtistSave.Response.Failed("Invalid access key")
-        }
+        val artistId = assertSignatureAndGetArtistId(request)
+            ?: return BackendFormRequest.ArtistSave.Response.Failed("Invalid access key")
 
         editDatabase.artistFormQueue[artistId] = Triple(Clock.System.now(), before, after)
         return BackendFormRequest.ArtistSave.Response.Success
     }
 
-    private suspend fun assertSignature(
-        artistId: Uuid,
-        privateKey: String,
-        request: BackendFormRequest,
-    ): Boolean {
-        val publicKey = editDatabase.artistPublicKeys[artistId] ?: return false
+    private suspend fun assertSignatureAndGetArtistId(request: BackendFormRequest): Uuid? {
+        val accessKey = ArtistFormAccessKey.key ?: return null
+        val artistId = editDatabase.artistKeys.entries
+            .find { it.value.privateKey == accessKey }
+            ?.key
+            ?: return null
+        val publicKey = editDatabase.artistKeys[artistId]?.publicKey ?: return null
 
         val signature = AlleyCryptography.signRequest<BackendFormRequest>(
-            privateKey = privateKey,
+            privateKey = accessKey,
             payload = request,
         )
-        return AlleyCryptography.verifySignature<BackendFormRequest>(
+        val valid = AlleyCryptography.verifySignature<BackendFormRequest>(
             publicKey = publicKey,
             signature = signature,
             payload = request,
         )
+        return artistId.takeIf { valid }
     }
 }

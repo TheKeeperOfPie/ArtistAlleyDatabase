@@ -35,12 +35,19 @@ object AlleyCryptography {
         payload: T,
     ): String {
         val ecdsa = CryptographyProvider.Default.get(ECDSA)
-        val publicKey = ecdsa.privateKeyDecoder(EC.Curve.P384)
+        val privateKey = ecdsa.privateKeyDecoder(EC.Curve.P384)
             .decodeFromByteString(EC.PrivateKey.Format.DER, privateKey.hexToByteString())
-        return publicKey.signatureGenerator(SHA384, ECDSA.SignatureFormat.RAW)
+        return privateKey.signatureGenerator(SHA384, ECDSA.SignatureFormat.RAW)
             .generateSignature(Json.encodeToString<T>(payload).encodeToByteString())
             .toHexString()
     }
+
+    suspend fun convertRawPublicKey(rawBytes: ByteArray) =
+        CryptographyProvider.Default.get(ECDSA)
+            .publicKeyDecoder(EC.Curve.P384)
+            .decodeFromByteArray(EC.PublicKey.Format.RAW, rawBytes)
+            .encodeToByteString(EC.PublicKey.Format.DER)
+            .toHexString()
 
     suspend inline fun <reified T> verifySignature(
         publicKey: String,
