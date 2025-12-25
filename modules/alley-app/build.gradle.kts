@@ -273,8 +273,8 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
     from(alleyFunctionsOutput)
     include("*.mjs")
     rename {
-        "/functions/database/" + if (it.contains("alley-functions")) {
-            "[[database]].mjs"
+        "/functions/" + if (it.contains("alley-functions")) {
+            "[[catchall]].mjs"
         } else {
             it
         }
@@ -286,7 +286,7 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
     doLast {
         // TODO: Expose onRequest directly and see if that just works
         outputDir.get().asFile
-            .resolve("functions/database/[[database]].mjs")
+            .resolve("functions/[[catchall]].mjs")
             .appendText(
                 """
                 export async function onRequest(context) {
@@ -303,7 +303,7 @@ val copyAlleyFunctionsMiddleware by tasks.registering(Copy::class) {
     // TODO: Does this need to manually dedupe with copyAlleyFunctions similar to copyAlleyEdit?
     from(alleyFunctionsMiddlewareOutput)
     include("*middleware.mjs")
-    rename { "/functions/database/_middleware.mjs" }
+    rename { "/functions/_middleware.mjs" }
     into(layout.buildDirectory.dir(outputDir))
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
@@ -311,7 +311,7 @@ val copyAlleyFunctionsMiddleware by tasks.registering(Copy::class) {
     doLast {
         // TODO: Expose onRequest directly and see if that just works
         outputDir.get().asFile
-            .resolve("functions/database/_middleware.mjs")
+            .resolve("functions/_middleware.mjs")
             .appendText(
                 """
                 export async function onRequest(context) {

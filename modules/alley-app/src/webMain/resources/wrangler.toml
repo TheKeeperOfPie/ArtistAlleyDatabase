@@ -23,6 +23,10 @@ IS_PRODUCTION = true
 [env.production.placement]
 mode = "smart"
 
+[env.production.assets]
+directory = "./"
+not_found_handling = "single-page-application"
+
 [[d1_databases]]
 database_id = "artistAlleyDatabaseId"
 binding = "ARTIST_ALLEY_DB"

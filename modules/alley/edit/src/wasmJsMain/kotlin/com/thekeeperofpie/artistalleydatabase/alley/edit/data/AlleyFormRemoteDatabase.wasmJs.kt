@@ -73,7 +73,7 @@ actual class AlleyFormRemoteDatabase(
             payload = request
         )
         // TODO: Use /form directly
-        val response = ktorClient.post(window.origin + "/database/form") {
+        val response = ktorClient.post(window.origin + "/form/api") {
             headers {
                 set(AlleyCryptography.SIGNATURE_HEADER_KEY, signature)
             }

@@ -14,10 +14,10 @@ class Worker {
             val functionPath = context.functionPath.orEmpty()
             when {
                 // TODO: Use non-prefixed path?
-                functionPath.startsWith("/database/form") -> AlleyFormBackend.handleRequest(context)
-                functionPath.startsWith("/database") -> AlleyEditBackend.handleRequest(
+                functionPath.startsWith("/form/api") -> AlleyFormBackend.handleRequest(context)
+                functionPath.startsWith("/edit/api") -> AlleyEditBackend.handleRequest(
                     context = context,
-                    path = functionPath.removePrefix("/database"),
+                    path = functionPath.removePrefix("/edit/api"),
                 )
                 else -> Response("", ResponseInit(status = 404))
             }

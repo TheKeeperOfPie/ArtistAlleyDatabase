@@ -111,7 +111,7 @@ actual class AlleyEditRemoteDatabase(
                 "/$id.${platformFile.extension}"
         val bytes = platformFile.readBytes()
 
-        ktorClient.put(window.origin + "/database/uploadImage/$key") {
+        ktorClient.put(window.origin + "/edit/api/uploadImage/$key") {
             contentType(ContentType.Application.OctetStream)
             setBody(bytes)
         }
@@ -230,7 +230,7 @@ actual class AlleyEditRemoteDatabase(
 
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(
-            BuildKonfig.imagesUrl.ifBlank { "${window.origin}/database/image" } + "/$key"
+            BuildKonfig.imagesUrl.ifBlank { "${window.origin}/edit/api/image" } + "/$key"
         ),
         id = id,
     )
@@ -238,7 +238,7 @@ actual class AlleyEditRemoteDatabase(
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,
     ): Response? where Request : BackendRequest, Request : BackendRequest.WithResponse<Response> {
-        val response = ktorClient.post(window.origin + "/database") {
+        val response = ktorClient.post(window.origin + "/edit/api") {
             contentType(ContentType.Application.Json)
             setBody<BackendRequest>(request)
         }
