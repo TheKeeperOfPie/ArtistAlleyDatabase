@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 data class ArtistEntryDiff(
@@ -16,6 +17,7 @@ data class ArtistEntryDiff(
     val seriesConfirmed: Diff?,
     val merchInferred: Diff?,
     val merchConfirmed: Diff?,
+    val timestamp: Instant,
 ) {
     companion object {
         fun diffList(previous: List<String>?, next: List<String>?) = if (next == null) {

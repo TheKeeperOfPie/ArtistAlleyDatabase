@@ -9,3 +9,7 @@ ORDER BY timestamp DESC;
 insertFormEntry:
 INSERT OR REPLACE INTO artistFormEntry
 VALUES ?;
+
+consumeFormEntry:
+DELETE FROM artistFormEntry
+WHERE dataYear = :dataYear AND artistId = :artistId AND timestamp = :timestamp;

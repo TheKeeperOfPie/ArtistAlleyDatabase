@@ -51,6 +51,12 @@ object AlleyEditBackend {
                 when (this) {
                     is ArtistSave.Request -> makeResponse(saveArtist(context, this))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
+                    is BackendRequest.ArtistCommitForm -> makeResponse(
+                        commitArtistForm(
+                            context,
+                            this
+                        )
+                    )
                     is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
                     is BackendRequest.ArtistWithFormEntry ->
                         makeResponse(loadArtistWithFormEntry(context, this))
@@ -194,8 +200,34 @@ object AlleyEditBackend {
                     formEntry.beforeMerchConfirmed,
                     formEntry.afterMerchConfirmed
                 ),
+                timestamp = formEntry.timestamp,
             )
         )
+    }
+
+    private suspend fun commitArtistForm(
+        context: EventContext,
+        request: BackendRequest.ArtistCommitForm,
+    ): BackendRequest.ArtistCommitForm.Response {
+        val saveRequest = ArtistSave.Request(
+            dataYear = request.dataYear,
+            initial = request.initial,
+            updated = request.updated,
+        )
+        when (val saveResponse = saveArtist(context, saveRequest)) {
+            is ArtistSave.Response.Failed ->
+                return BackendRequest.ArtistCommitForm.Response.Failed(saveResponse.errorMessage)
+            is ArtistSave.Response.Outdated ->
+                return BackendRequest.ArtistCommitForm.Response.Outdated(saveResponse.current)
+            ArtistSave.Response.Success -> Unit
+        }
+
+        Databases.formDatabase(context).artistFormEntryQueries.consumeFormEntry(
+            dataYear = request.dataYear,
+            artistId = Uuid.parse(request.updated.id),
+            timestamp = request.formEntryTimestamp,
+        )
+        return BackendRequest.ArtistCommitForm.Response.Success
     }
 
     private suspend fun loadArtistHistory(
@@ -218,36 +250,32 @@ object AlleyEditBackend {
     private suspend fun saveArtist(
         context: EventContext,
         request: ArtistSave.Request,
-    ) = ArtistSave.Response(
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> {
-                val database = Databases.editDatabase(context, tryCreate = true)
-                val currentArtist =
-                    database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
-                        .awaitAsOneOrNull()?.toArtistDatabaseEntry()
-                if (currentArtist != null && currentArtist != request.initial) {
-                    ArtistSave.Response.Result.Outdated(currentArtist)
-                } else {
-                    val updatedArtist = request.updated.copy(
-                        lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
-                    )
-                    val historyEntry = ArtistHistoryEntry.create(currentArtist, updatedArtist)
-                        .toDatabaseEntry(Uuid.parse(updatedArtist.id))
-                    database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
-                    database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
-                    ArtistSave.Response.Result.Success
-                }
+    ) = when (request.dataYear) {
+        DataYear.ANIME_EXPO_2026 -> {
+            val database = Databases.editDatabase(context, tryCreate = true)
+            val currentArtist =
+                database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
+                    .awaitAsOneOrNull()?.toArtistDatabaseEntry()
+            if (currentArtist != null && currentArtist != request.initial) {
+                ArtistSave.Response.Outdated(currentArtist)
+            } else {
+                val updatedArtist = request.updated.copy(
+                    lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
+                )
+                val historyEntry = ArtistHistoryEntry.create(currentArtist, updatedArtist)
+                    .toDatabaseEntry(Uuid.parse(updatedArtist.id))
+                database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
+                database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
+                ArtistSave.Response.Success
             }
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> ArtistSave.Response.Result.Failed(
-                UnsupportedOperationException("Editing legacy years not supported")
-            )
         }
-    )
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025,
+            -> ArtistSave.Response.Failed("Editing legacy years not supported")
+    }
 
     private suspend fun generateFormKey(
         context: EventContext,

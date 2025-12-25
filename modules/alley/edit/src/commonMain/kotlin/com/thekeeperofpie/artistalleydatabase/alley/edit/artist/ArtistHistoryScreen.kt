@@ -162,7 +162,7 @@ object ArtistHistoryScreen {
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        saveProgress: MutableStateFlow<JobProgress<ArtistSave.Response.Result>>,
+        saveProgress: MutableStateFlow<JobProgress<ArtistSave.Response>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickRefresh: () -> Unit,
@@ -172,14 +172,14 @@ object ArtistHistoryScreen {
         val navigationResults = LocalNavigationResults.current
         LaunchedEffect(navigationResults) {
             saveProgress.collectLatest {
-                if (it is JobProgress.Finished.Result<ArtistSave.Response.Result>) {
+                if (it is JobProgress.Finished.Result<ArtistSave.Response>) {
                     when (val result = it.value) {
-                        is ArtistSave.Response.Result.Failed ->
-                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
-                        is ArtistSave.Response.Result.Outdated -> {
+                        is ArtistSave.Response.Failed ->
+                            snackbarHostState.showSnackbar(message = result.errorMessage)
+                        is ArtistSave.Response.Outdated -> {
                             // TODO
                         }
-                        is ArtistSave.Response.Result.Success -> {
+                        is ArtistSave.Response.Success -> {
                             saveProgress.value = JobProgress.Idle()
                             navigationResults[RESULT_KEY] = Unit
                             onClickBack(true)

@@ -17,12 +17,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +35,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_catalog_links
@@ -50,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberErrorState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
@@ -60,8 +64,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -91,6 +100,7 @@ internal object ArtistFormMergeScreen {
             seriesById = { seriesById },
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
+            saveTaskState = viewModel.saveTaskState,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
         )
@@ -104,10 +114,48 @@ internal object ArtistFormMergeScreen {
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
+        saveTaskState: TaskState<BackendRequest.ArtistCommitForm.Response>,
         onClickBack: (force: Boolean) -> Unit,
-        onClickSave: () -> Unit,
+        onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
+        GenericTaskErrorEffect(saveTaskState, snackbarHostState)
+        LaunchedEffect(saveTaskState) {
+            snapshotFlow { saveTaskState.lastResult }
+                .filterNotNull()
+                .collectLatest { (_, result) ->
+                    when (result) {
+                        is BackendRequest.ArtistCommitForm.Response.Failed -> {
+                            snackbarHostState.showSnackbar(message = result.errorMessage)
+                            saveTaskState.clearResult()
+                        }
+                        is BackendRequest.ArtistCommitForm.Response.Outdated -> {
+                            snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_artist_form_merge_outdated))
+                            saveTaskState.clearResult()
+                        }
+                        is BackendRequest.ArtistCommitForm.Response.Success -> {
+                            saveTaskState.clearResult()
+                            onClickBack(true)
+                        }
+                    }
+                }
+        }
+
+        val entry = entry()
+        val fieldState = rememberFieldState(entry?.formDiff)
+        val seriesById = seriesById()
+        val merchById = merchById()
+        val artistFormState by remember(entry, fieldState, seriesById, merchById) {
+            derivedStateOf {
+                entry ?: return@derivedStateOf null
+                fieldState.applyChanges(
+                    base = entry.artist,
+                    seriesById = seriesById,
+                    merchById = merchById,
+                    diff = entry.formDiff,
+                )
+            }
+        }
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -126,7 +174,11 @@ internal object ArtistFormMergeScreen {
                         TooltipIconButton(
                             icon = Icons.Default.Save,
                             tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save),
-                            onClick = onClickSave,
+                            onClick = {
+                                artistFormState?.captureDatabaseEntry(dataYear)?.let {
+                                    onClickSave(it.first, it.second)
+                                }
+                            },
                         )
                     },
                 )
@@ -135,25 +187,10 @@ internal object ArtistFormMergeScreen {
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
             ContentSavingBox(
-                saving = false, // TODO
+                saving = saveTaskState.showBlockingLoadingIndicator,
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
                 Row(modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)) {
-                    val entry = entry()
-                    val fieldState = rememberFieldState(entry?.formDiff)
-                    val seriesById = seriesById()
-                    val merchById = merchById()
-                    val artistFormState by remember(entry, fieldState, seriesById, merchById) {
-                        derivedStateOf {
-                            entry ?: return@derivedStateOf null
-                            fieldState.applyChanges(
-                                base = entry.artist,
-                                seriesById = seriesById,
-                                merchById = merchById,
-                                diff = entry.formDiff,
-                            )
-                        }
-                    }
                     ArtistPreview(
                         artistFormState = artistFormState,
                         seriesImage = seriesImage,

@@ -13,14 +13,12 @@ object ArtistSave {
     ): BackendRequest, BackendRequest.WithResponse<Response>
 
     @Serializable
-    data class Response(val result: Result) {
+    sealed interface Response {
         @Serializable
-        sealed interface Result {
-            @Serializable
-            data object Success : Result
-            @Serializable
-            data class Outdated(val current: ArtistDatabaseEntry.Impl) : Result
-            data class Failed(val throwable: Throwable) : Result
-        }
+        data object Success : Response
+        @Serializable
+        data class Outdated(val current: ArtistDatabaseEntry.Impl) : Response
+        @Serializable
+        data class Failed(val errorMessage: String) : Response
     }
 }

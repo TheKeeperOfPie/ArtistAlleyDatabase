@@ -93,6 +93,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
@@ -188,19 +189,20 @@ object ArtistEditScreen {
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
+        GenericTaskErrorEffect(saveTaskState, snackbarHostState)
         LaunchedEffect(saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .filterNotNull()
                 .collectLatest { (isManual, result) ->
                     when (result) {
-                        is ArtistSave.Response.Result.Failed -> {
-                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
-                            saveTaskState.clearError()
+                        is ArtistSave.Response.Failed -> {
+                            snackbarHostState.showSnackbar(message = result.errorMessage)
+                            saveTaskState.clearResult()
                         }
-                        is ArtistSave.Response.Result.Outdated -> {
+                        is ArtistSave.Response.Outdated -> {
                             // TODO
                         }
-                        is ArtistSave.Response.Result.Success -> {
+                        is ArtistSave.Response.Success -> {
                             saveTaskState.clearResult()
                             if (isManual) {
                                 onClickBack(true)
@@ -253,7 +255,7 @@ object ArtistEditScreen {
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
             ContentSavingBox(
-                saving = saveTaskState.isActive && saveTaskState.isManualTrigger,
+                saving = saveTaskState.showBlockingLoadingIndicator,
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
@@ -345,7 +347,7 @@ object ArtistEditScreen {
     private fun RowScope.AppBarActions(
         mode: Mode,
         errorState: ArtistErrorState,
-        saveTaskState: TaskState<ArtistSave.Response.Result>,
+        saveTaskState: TaskState<ArtistSave.Response>,
         onClickGenerateFormLink: (() -> Unit)?,
         onClickHistory: (() -> Unit)?,
         onClickSave: () -> Unit,
@@ -510,6 +512,6 @@ object ArtistEditScreen {
     class State(
         val artistFormState: ArtistFormState,
         val formLink: StateFlow<String?>,
-        val saveTaskState: TaskState<ArtistSave.Response.Result>,
+        val saveTaskState: TaskState<ArtistSave.Response>,
     )
 }

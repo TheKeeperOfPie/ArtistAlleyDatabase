@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Save
@@ -133,7 +135,7 @@ object SeriesEditScreen {
                 if (it is JobProgress.Finished.Result<SeriesSave.Response.Result>) {
                     when (val result = it.value) {
                         is SeriesSave.Response.Result.Failed ->
-                            snackbarHostState.showSnackbar(message = result.throwable.message.orEmpty())
+                            snackbarHostState.showSnackbar(message = result.errorMessage)
                         is SeriesSave.Response.Result.Outdated -> {
                             // TODO
                         }
@@ -169,7 +171,10 @@ object SeriesEditScreen {
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
-                    EntryForm2(modifier = Modifier.width(600.dp)) {
+                    EntryForm2(
+                        modifier = Modifier.width(600.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
                         SingleTextSection(
                             state = state.id,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_canonical)) },

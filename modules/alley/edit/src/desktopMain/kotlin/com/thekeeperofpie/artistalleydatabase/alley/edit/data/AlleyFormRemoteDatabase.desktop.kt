@@ -2,12 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -44,12 +44,10 @@ actual class AlleyFormRemoteDatabase(
         )
         val valid = assertSignature(artistId, privateKey, request)
         if (!valid) {
-            return BackendFormRequest.ArtistSave.Response.Failed(
-                IllegalStateException("Invalid access key")
-            )
+            return BackendFormRequest.ArtistSave.Response.Failed("Invalid access key")
         }
 
-        editDatabase.artistFormQueue[artistId] = before to after
+        editDatabase.artistFormQueue[artistId] = Triple(Clock.System.now(), before, after)
         return BackendFormRequest.ArtistSave.Response.Success
     }
 

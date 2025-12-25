@@ -1,15 +1,21 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -25,12 +31,25 @@ class TaskState<Result> {
     var lastResult: Pair<Boolean, Result>? by mutableStateOf(null)
         internal set
 
+    val showBlockingLoadingIndicator: Boolean get() = isActive && isManualTrigger
+
     fun clearError() {
         lastError = null
     }
 
     fun clearResult() {
         lastResult = null
+    }
+}
+
+@Composable
+fun <T> GenericTaskErrorEffect(taskState: TaskState<T>, snackbarHostState: SnackbarHostState) {
+    LaunchedEffect(taskState) {
+        snapshotFlow { taskState.lastError }
+            .collectLatest {
+                val message = it?.message ?: return@collectLatest
+                snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Long)
+            }
     }
 }
 

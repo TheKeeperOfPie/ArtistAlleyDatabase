@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,8 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_action_refresh
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_title
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
+import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
+import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
 internal object ArtistFormQueueScreen {
@@ -54,7 +62,21 @@ internal object ArtistFormQueueScreen {
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             val entries = entries()
-            Scaffold(modifier = Modifier.widthIn(max = 1200.dp)) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(Res.string.alley_edit_artist_form_queue_title)) },
+                        actions = {
+                            TooltipIconButton(
+                                icon = Icons.Default.Refresh,
+                                tooltipText = stringResource(Res.string.alley_edit_artist_form_queue_action_refresh),
+                                onClick = onRefresh,
+                            )
+                        }
+                    )
+                },
+                modifier = Modifier.widthIn(max = 1200.dp)
+            ) {
                 LazyColumn(
                     contentPadding = PaddingValues(bottom = 72.dp),
                     modifier = Modifier.padding(it)

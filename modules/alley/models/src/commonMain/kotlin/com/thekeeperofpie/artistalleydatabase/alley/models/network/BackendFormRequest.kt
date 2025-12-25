@@ -36,7 +36,8 @@ sealed interface BackendFormRequest {
             @Serializable
             data object Success : Response
 
-            data class Failed(val throwable: Throwable) : Response
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
         }
     }
 }

@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
@@ -23,6 +24,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -127,4 +129,16 @@ class AlleyEditDatabase(
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response? =
         remoteDatabase.loadArtistWithFormEntry(dataYear, artistId)
+
+    suspend fun saveArtistAndClearFormEntry(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl,
+        updated: ArtistDatabaseEntry.Impl,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.ArtistCommitForm.Response = remoteDatabase.saveArtistAndClearFormEntry(
+        dataYear = dataYear,
+        initial = initial,
+        updated = updated,
+        formEntryTimestamp = formEntryTimestamp,
+    )
 }

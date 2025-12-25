@@ -42,7 +42,7 @@ class ArtistEditViewModel(
     @Assisted val mode: ArtistEditScreen.Mode,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response.Result> =
+    private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
     private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
     val state = ArtistEditScreen.State(
@@ -122,7 +122,7 @@ class ArtistEditViewModel(
             val hasChanged = ArtistDatabaseEntry.hasChanged(artist, databaseEntry)
             if (!isManual && !hasChanged && images.none { it is EditImage.LocalImage }) {
                 // Don't save if no data has changed
-                return@withContext ArtistSave.Response.Result.Success
+                return@withContext ArtistSave.Response.Success
             }
             val finalImages = images.mapNotNull {
                 when (it) {
@@ -150,7 +150,7 @@ class ArtistEditViewModel(
                 initial = artist,
                 updated = updatedArtist,
             ).also {
-                if (it is ArtistSave.Response.Result.Success) {
+                if (it is ArtistSave.Response.Success) {
                     hasLoaded = false
                     artist = updatedArtist
                     if (!isManual) {

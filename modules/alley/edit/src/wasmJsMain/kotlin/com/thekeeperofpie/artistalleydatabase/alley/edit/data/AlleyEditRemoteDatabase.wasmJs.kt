@@ -34,6 +34,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.browser.window
 import kotlinx.coroutines.withContext
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -65,7 +66,7 @@ actual class AlleyEditRemoteDatabase(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
-    ): ArtistSave.Response.Result =
+    ): ArtistSave.Response =
         withContext(dispatchers.io) {
             try {
                 sendRequest(
@@ -74,10 +75,10 @@ actual class AlleyEditRemoteDatabase(
                         initial = initial,
                         updated = updated,
                     )
-                )!!.result
+                )!!
             } catch (t: Throwable) {
                 t.printStackTrace()
-                ArtistSave.Response.Result.Failed(t)
+                ArtistSave.Response.Failed(t.message.orEmpty())
             }
         }
 
@@ -133,7 +134,7 @@ actual class AlleyEditRemoteDatabase(
                 sendRequest(SeriesSave.Request(initial = initial, updated = updated))!!.result
             } catch (t: Throwable) {
                 t.printStackTrace()
-                SeriesSave.Response.Result.Failed(t)
+                SeriesSave.Response.Result.Failed(t.message.orEmpty())
             }
         }
 
@@ -152,7 +153,7 @@ actual class AlleyEditRemoteDatabase(
                 sendRequest(MerchSave.Request(initial = initial, updated = updated))!!.result
             } catch (t: Throwable) {
                 t.printStackTrace()
-                MerchSave.Response.Result.Failed(t)
+                MerchSave.Response.Result.Failed(t.message.orEmpty())
             }
         }
 
@@ -202,6 +203,28 @@ actual class AlleyEditRemoteDatabase(
             } catch (t: Throwable) {
                 t.printStackTrace()
                 null
+            }
+        }
+
+    actual suspend fun saveArtistAndClearFormEntry(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl,
+        updated: ArtistDatabaseEntry.Impl,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.ArtistCommitForm.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.ArtistCommitForm(
+                        dataYear = dataYear,
+                        initial = initial,
+                        updated = updated,
+                        formEntryTimestamp = formEntryTimestamp
+                    )
+                ) ?: BackendRequest.ArtistCommitForm.Response.Failed("Failed to commit form diff")
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.ArtistCommitForm.Response.Failed(t.message.orEmpty())
             }
         }
 

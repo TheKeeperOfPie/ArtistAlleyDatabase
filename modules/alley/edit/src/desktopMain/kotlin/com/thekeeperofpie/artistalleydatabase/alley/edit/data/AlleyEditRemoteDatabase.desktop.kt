@@ -29,6 +29,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -46,7 +47,7 @@ actual class AlleyEditRemoteDatabase {
 
     internal val artistPublicKeys = mutableMapOf<Uuid, String>()
     internal val artistFormQueue =
-        mutableMapOf<Uuid, Pair<ArtistDatabaseEntry.Impl, ArtistDatabaseEntry.Impl>>()
+        mutableMapOf<Uuid, Triple<Instant, ArtistDatabaseEntry.Impl, ArtistDatabaseEntry.Impl>>()
 
     private var simulatedLatency: Duration? = null
 
@@ -141,7 +142,7 @@ actual class AlleyEditRemoteDatabase {
                 merchConfirmed = previous.merchConfirmed.drop(1) + "MerchD",
             )
 
-            artistFormQueue[Uuid.parse(previous.id)] = previous to after
+            artistFormQueue[Uuid.parse(previous.id)] = Triple(Clock.System.now(), previous, after)
 
             simulatedLatency = 5.seconds
         }
@@ -164,7 +165,7 @@ actual class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
-    ): ArtistSave.Response.Result {
+    ): ArtistSave.Response {
         simulateLatency()
         val oldArtist = loadArtist(dataYear, Uuid.parse(updated.id))
         val historyEntry = ArtistHistoryEntry.create(oldArtist, updated)
@@ -172,7 +173,7 @@ actual class AlleyEditRemoteDatabase {
             .getOrPut(updated.id) { mutableListOf() }
             .add(historyEntry)
         artistsByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }[updated.id] = updated
-        return ArtistSave.Response.Result.Success
+        return ArtistSave.Response.Success
     }
 
     actual suspend fun listImages(
@@ -238,7 +239,7 @@ actual class AlleyEditRemoteDatabase {
     }
 
     actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
-        artistFormQueue.values.map { (before, after) ->
+        artistFormQueue.values.map { (id, before, after) ->
             ArtistFormQueueEntry(
                 artistId = Uuid.parse(before.id),
                 beforeBooth = before.booth,
@@ -252,7 +253,7 @@ actual class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response? {
-        val (before, after) = artistFormQueue[artistId] ?: return null
+        val (timestamp, before, after) = artistFormQueue[artistId] ?: return null
         return BackendRequest.ArtistWithFormEntry.Response(
             artist = loadArtist(dataYear, artistId) ?: return null,
             formDiff = ArtistEntryDiff(
@@ -275,8 +276,23 @@ actual class AlleyEditRemoteDatabase {
                     before.merchConfirmed,
                     after.merchConfirmed
                 ),
+                timestamp = timestamp,
             )
         )
+    }
+
+    actual suspend fun saveArtistAndClearFormEntry(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl,
+        updated: ArtistDatabaseEntry.Impl,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.ArtistCommitForm.Response {
+        saveArtist(dataYear = dataYear, initial = initial, updated = updated)
+        val artistId = Uuid.parse(updated.id)
+        if (artistFormQueue[artistId]?.first == formEntryTimestamp) {
+            artistFormQueue.remove(artistId)
+        }
+        return BackendRequest.ArtistCommitForm.Response.Success
     }
 
     private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }

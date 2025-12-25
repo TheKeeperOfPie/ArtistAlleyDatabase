@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import io.github.vinceglb.filekit.PlatformFile
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
@@ -23,7 +24,7 @@ expect class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
-    ): ArtistSave.Response.Result
+    ): ArtistSave.Response
 
     suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage>
     suspend fun uploadImage(
@@ -46,4 +47,10 @@ expect class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response?
+    suspend fun saveArtistAndClearFormEntry(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl,
+        updated: ArtistDatabaseEntry.Impl,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.ArtistCommitForm.Response
 }

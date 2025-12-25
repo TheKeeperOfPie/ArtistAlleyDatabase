@@ -125,7 +125,7 @@ object ArtistFormScreen {
                     when (it) {
                         is BackendFormRequest.ArtistSave.Response.Failed -> {
                             snackbarHostState.showSnackbar(
-                                message = it.throwable.message.orEmpty(),
+                                message = it.errorMessage,
                                 withDismissAction = true,
                                 duration = SnackbarDuration.Indefinite,
                             )

@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @Serializable
@@ -37,6 +38,24 @@ sealed interface BackendRequest {
     @Serializable
     data class ArtistHistory(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,
         WithResponse<List<ArtistHistoryEntry>>
+
+    @Serializable
+    data class ArtistCommitForm(
+        val dataYear: DataYear,
+        val initial: ArtistDatabaseEntry.Impl,
+        val updated: ArtistDatabaseEntry.Impl,
+        val formEntryTimestamp: Instant,
+    ) : BackendRequest, WithResponse<ArtistCommitForm.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+            @Serializable
+            data class Outdated(val current: ArtistDatabaseEntry.Impl) : Response
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
 
     @Serializable
     data object Artists : BackendRequest, WithResponse<List<ArtistSummary>>

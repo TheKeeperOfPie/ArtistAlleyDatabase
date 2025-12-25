@@ -47,7 +47,7 @@ actual class AlleyFormRemoteDatabase(
                 request = BackendFormRequest.Nonce(artistId, Clock.System.now()),
                 privateKey = privateKey,
             ) ?: return@withContext BackendFormRequest.ArtistSave.Response.Failed(
-                IllegalStateException("Failed to generate nonce, check system clock")
+                "Failed to generate nonce, check system clock"
             )
 
         sendRequest(
@@ -60,7 +60,7 @@ actual class AlleyFormRemoteDatabase(
             ),
             privateKey = privateKey,
         ) ?: BackendFormRequest.ArtistSave.Response.Failed(
-            IllegalStateException("Failed to save artist, check system clock")
+            "Failed to save artist, check system clock"
         )
     }
 

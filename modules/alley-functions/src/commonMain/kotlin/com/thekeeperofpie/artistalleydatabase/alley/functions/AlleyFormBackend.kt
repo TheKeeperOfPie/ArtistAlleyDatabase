@@ -112,10 +112,8 @@ internal object AlleyFormBackend {
         try {
             val expectedNonce =
                 database.alleyFormNonceQueries.getNonce(request.artistId).awaitAsOneOrNull()
-            if (expectedNonce == null || request.nonce != expectedNonce) {
-                return BackendFormRequest.ArtistSave.Response.Failed(
-                    IllegalArgumentException("Invalid nonce")
-                )
+            if (expectedNonce == null || request.nonce != expectedNonce.nonce) {
+                return BackendFormRequest.ArtistSave.Response.Failed("Invalid nonce")
             }
         } finally {
             database.alleyFormNonceQueries.clearNonce(request.artistId)
