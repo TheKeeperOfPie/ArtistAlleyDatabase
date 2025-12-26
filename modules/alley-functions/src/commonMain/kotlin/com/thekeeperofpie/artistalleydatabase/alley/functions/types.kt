@@ -15,7 +15,6 @@ import kotlin.js.Promise
 
 external interface EventContext {
     val request: Request
-    val waitUntil: (promise: Promise<Any>) -> Unit
     val env: Env
     val functionPath: String?
     val data: PluginData?

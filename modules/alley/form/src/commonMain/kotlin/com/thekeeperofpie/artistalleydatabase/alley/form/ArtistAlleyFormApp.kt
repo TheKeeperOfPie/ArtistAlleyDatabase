@@ -55,6 +55,7 @@ fun rememberFormTwoWayStack() = rememberTwoWayStack(AlleyFormDestination.Home, S
 fun ArtistAlleyFormApp(
     graph: ArtistAlleyFormGraph,
     navStack: TwoWayStack = rememberFormTwoWayStack(),
+    onOpenForm: (() -> Unit)? = null,
 ) {
     CompositionLocalProvider(LocalNavigationController provides remember {
         object : NavigationController {
@@ -104,6 +105,7 @@ fun ArtistAlleyFormApp(
                     graph = graph,
                     navStack = navStack,
                     onClickBack = onClickBack,
+                    onOpenForm = onOpenForm,
                 )
 
                 val decoratedNavEntries = rememberDecoratedNavEntries(
@@ -137,13 +139,18 @@ private fun entryProvider(
     graph: ArtistAlleyFormGraph,
     navStack: TwoWayStack,
     onClickBack: (force: Boolean) -> Unit,
+    onOpenForm: (() -> Unit)?,
 ) = entryProvider<NavKey> {
     sharedElementEntry<AlleyFormDestination.Home> {
         ArtistFormHomeScreen(
-            onClickNext = {
-                navStack.navigate(
-                    AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026)
-                )
+            onOpenForm = {
+                if (onOpenForm != null) {
+                    onOpenForm()
+                } else {
+                    navStack.navigate(
+                        AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026)
+                    )
+                }
             },
         )
     }

@@ -18,7 +18,6 @@ inline fun PluginArgs(domain: String? = undefined, aud: String? = undefined): dy
 external interface EventContext<Env> {
     val request: Request
     val env: Env
-    val functionPath: String?
     fun next(request: Request): Promise<Response>
 }
 

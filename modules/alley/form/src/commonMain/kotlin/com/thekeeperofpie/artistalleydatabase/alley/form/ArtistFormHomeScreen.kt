@@ -27,7 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 internal object ArtistFormHomeScreen {
 
     @Composable
-    operator fun invoke(onClickNext: () -> Unit) {
+    operator fun invoke(onOpenForm: () -> Unit) {
         Scaffold {
             Box(
                 contentAlignment = Alignment.Center,
@@ -40,7 +40,7 @@ internal object ArtistFormHomeScreen {
                     ) {
                         IntroText()
 
-                        FilledTonalButton(onClick = onClickNext) {
+                        FilledTonalButton(onClick = onOpenForm) {
                             Text(text = "Open form")
                         }
                     }
@@ -73,14 +73,23 @@ internal object ArtistFormHomeScreen {
             appendLine()
             append(
                 "On the next page, you will be required to log in with a Google account. This is " +
-                        "for spam protection. Cloudflare will get access to your email, but we do"
+                        "for spam protection. Cloudflare will see your email address and will " +
+                        "retain access logs per their "
             )
+
+            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                withLink(LinkAnnotation.Url("https://developers.cloudflare.com/cloudflare-one/insights/logs/#log-retention")) {
+                    append("retention policy")
+                }
+            }
+            append(", but we do")
             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                 append(" NOT ")
             }
             appendLine(
-                "collect this information. The access key in the link you were provided is " +
-                        "used to identify you and should not be shared with anyone."
+                "use this information for anything else. The access key in the link " +
+                        "you were provided is used to identify you and should not be shared with " +
+                        "anyone."
             )
             appendLine()
             appendLine(

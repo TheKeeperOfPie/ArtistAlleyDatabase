@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCac
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
@@ -104,17 +105,22 @@ private fun Content(graph: ArtistAlleyFormGraph) {
             )
         }
 
-        LaunchedEffect(Unit) {
-            Uri.parseOrNull(window.location.href)
-                ?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
+        val navStack = rememberFormTwoWayStack()
+        LaunchedEffect(window.location.href) {
+            val uri = Uri.parseOrNull(window.location.href)
+            uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
                 ?.let(ArtistFormAccessKey::setKey)
+            if (uri?.getQueryParameter("openForm").toBoolean()) {
+                navStack.navigate(AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026))
+            }
         }
 
         CompositionLocalProvider(
             LocalWindowConfiguration provides windowConfiguration,
         ) {
-            val navStack = rememberFormTwoWayStack()
-            ArtistAlleyFormApp(graph = graph, navStack = navStack)
+            ArtistAlleyFormApp(graph = graph, navStack = navStack, onOpenForm = {
+                window.open(window.location.origin + "/form/login?openForm=true")
+            })
 
             val scope = rememberCoroutineScope()
             val browserInput = remember(scope, navStack) { BrowserInput(scope, navStack) }

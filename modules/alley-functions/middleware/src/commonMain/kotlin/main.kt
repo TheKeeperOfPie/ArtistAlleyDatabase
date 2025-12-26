@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.w3c.dom.url.URL
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
 import kotlin.js.Promise
@@ -16,24 +17,27 @@ import kotlin.js.Promise
 class Middleware {
     companion object {
         @JsStatic
-        fun request(@Suppress("unused") context: EventContext<Env>): Promise<Response> {
-            val functionPath = context.functionPath.orEmpty()
-            console.log("requested $functionPath")
+        fun request(context: EventContext<Env>): Promise<Response> {
+            val pathSegments = URL(context.request.url).pathname.split("/")
             return if (BuildKonfig.debug) {
                 context.next(context.request)
             } else when {
-                functionPath.startsWith("/form/api") -> cloudflare.onRequest(
-                    pluginData = PluginArgs(
-                        domain = BuildKonfig.cloudflareAccessDomain,
-                        aud = BuildKonfig.cloudflareAccessFormAudienceTag,
-                    )
-                )(context)
-                functionPath.startsWith("/edit/api") -> cloudflare.onRequest(
-                    pluginData = PluginArgs(
-                        domain = BuildKonfig.cloudflareAccessDomain,
-                        aud = BuildKonfig.cloudflareAccessEditAudienceTag,
-                    )
-                )(context)
+                pathSegments.getOrNull(1) == "form" &&
+                        pathSegments.getOrNull(2) == "api" ->
+                    cloudflare.onRequest(
+                        pluginData = PluginArgs(
+                            domain = BuildKonfig.cloudflareAccessDomain,
+                            aud = BuildKonfig.cloudflareAccessFormAudienceTag,
+                        )
+                    )(context)
+                pathSegments.getOrNull(1) == "edit" &&
+                        pathSegments.getOrNull(2) == "api" ->
+                    cloudflare.onRequest(
+                        pluginData = PluginArgs(
+                            domain = BuildKonfig.cloudflareAccessDomain,
+                            aud = BuildKonfig.cloudflareAccessEditAudienceTag,
+                        )
+                    )(context)
                 else -> promise { Response("", ResponseInit(status = 404)) }
             }
         }
