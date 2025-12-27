@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.form
 
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,7 +29,6 @@ import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlin.uuid.Uuid
 
 @AssistedInject
 class ArtistFormViewModel(

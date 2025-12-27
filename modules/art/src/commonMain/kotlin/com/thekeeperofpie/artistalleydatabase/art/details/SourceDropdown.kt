@@ -235,16 +235,15 @@ object SourceDropdown {
 @Preview(showBackground = true)
 @Composable
 private fun Convention() {
-    EntryForm2 {
+    val dropdownState = EntryForm2.DropdownState(
+        initialSelectedIndex = SourceDropdown.Option.entries.indexOf(
+            SourceDropdown.Option.CONVENTION
+        )
+    )
+    EntryForm2(focusState = EntryForm2.rememberFocusState(listOf(dropdownState))) {
         SourceDropdown(
             state = remember {
-                SourceDropdown.State(
-                    dropdownState = EntryForm2.DropdownState(
-                        initialSelectedIndex = SourceDropdown.Option.entries.indexOf(
-                            SourceDropdown.Option.CONVENTION
-                        )
-                    )
-                )
+                SourceDropdown.State(dropdownState = dropdownState)
             },
         )
     }
@@ -274,15 +273,16 @@ private fun ConventionLockedSecondRow() {
 @Preview(showBackground = true)
 @Composable
 private fun Custom() {
-    EntryForm2 {
+    val dropdownState = EntryForm2.DropdownState(
+        initialSelectedIndex = SourceDropdown.Option.entries.indexOf(
+            SourceDropdown.Option.CUSTOM
+        )
+    )
+    EntryForm2(focusState = EntryForm2.rememberFocusState(listOf(dropdownState))) {
         SourceDropdown(
             state = remember {
                 SourceDropdown.State(
-                    dropdownState = EntryForm2.DropdownState(
-                        initialSelectedIndex = SourceDropdown.Option.entries.indexOf(
-                            SourceDropdown.Option.CUSTOM
-                        )
-                    ),
+                    dropdownState = dropdownState,
                     customTextState = TextFieldState("Some custom source entry")
                 )
             },

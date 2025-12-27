@@ -3,8 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.entry
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -54,12 +52,10 @@ class EntryFormLongTextTest {
 
     @Composable
     private fun Content(state: EntryForm2.SingleTextState) {
-        EntryForm2 {
+        EntryForm2(focusState = EntryForm2.rememberFocusState(listOf(state))) {
             LongTextSection(
                 state = state,
                 headerText = { Text("Header") },
-                focusRequester = remember { FocusRequester() },
-                onFocusChanged = {},
             )
         }
     }

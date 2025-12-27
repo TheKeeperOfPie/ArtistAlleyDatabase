@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropControllerFactory
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropControllerParams
 import com.thekeeperofpie.artistalleydatabase.utils.io.AppFileSystem
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Inject
@@ -26,7 +28,7 @@ internal class TestViewModel(
     "test",
     json = json,
     settings = TestSettings(cropUri),
-    cropControllerFunction = { cropController },
+    cropControllerFactory = CropControllerFactory(CropControllerParams()),
     customDispatchers = customDispatchers,
 ) {
     val entries = MutableStateFlow(entries)

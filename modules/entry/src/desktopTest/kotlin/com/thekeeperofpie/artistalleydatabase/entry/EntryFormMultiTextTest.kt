@@ -2,10 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ComposeUiTest
@@ -34,6 +32,7 @@ import androidx.compose.ui.test.waitUntilExactlyOneExists
 import androidx.compose.ui.text.TextRange
 import app.cash.burst.Burst
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlin.test.Test
@@ -258,17 +257,15 @@ class EntryFormMultiTextTest {
         contents: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
         onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
     ) {
-        EntryForm2 {
+        EntryForm2(focusState = EntryForm2.rememberFocusState(listOf(state))) {
             MultiTextSection(
                 state = state,
                 headerText = { Text("Header") },
-                focusRequester = remember { FocusRequester() },
-                onFocusChanged = {},
-                trailingIcon = { null },
                 entryPredictions = ::predictions,
+                trailingIcon = { null },
                 onNavigate = onNavigate,
                 items = contents,
-                onItemCommitted = { contents += it },
+                onItemCommitted = { contents += EntryForm2.MultiTextState.Entry.Custom(it) },
                 removeLastItem = { contents.removeLastOrNull()?.text },
             )
         }

@@ -1,5 +1,6 @@
 /androidTestResultsUserPreferences.xml
 /appInsightsSettings.xml
+/artifacts/
 /assetWizardSettings.xml
 /caches
 /compiler.xml
@@ -9,13 +10,14 @@
 /libraries
 /markdown.xml
 /material_theme_project_new.xml
+/migrations.xml
 /misc.xml
 /modules.xml
 /modules/
 /navEditor.xml
 /other.xml
-/shelf/
-/workspace.xml
+/runConfigurations
 /runConfigurations.xml
-/artifacts/
-/migrations.xml
+/shelf/
+/studiobot.xml
+/workspace.xml

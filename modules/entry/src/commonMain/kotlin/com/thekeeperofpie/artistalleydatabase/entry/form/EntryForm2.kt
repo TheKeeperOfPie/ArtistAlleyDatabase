@@ -128,30 +128,57 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res as Util
 
 @LayoutScopeMarker
 @Immutable
-abstract class EntryFormScope(columnScope: ColumnScope) : ColumnScope by columnScope {
-    internal abstract val forceLocked: Boolean
+interface EntryFormScope : ColumnScope {
+    val forceLocked: Boolean
+    val focusState: EntryForm2.FocusState
 }
 
-private class EntryFormScopeImpl(columnScope: ColumnScope, override val forceLocked: Boolean) :
-    EntryFormScope(columnScope)
+@LayoutScopeMarker
+@Immutable
+private class EntryFormScopeImpl(
+    columnScope: ColumnScope,
+    override val focusState: EntryForm2.FocusState,
+    override val forceLocked: Boolean,
+) : EntryFormScope, ColumnScope by columnScope
 
 object EntryForm2 {
+
+    @Stable
+    data class FocusState(val focusRequesters: List<FocusRequester>) {
+        fun previous(state: State) =
+            focusRequesters.indexOf(state.focusRequester)
+                .takeIf { it > 0 }
+                ?.let { focusRequesters[it - 1] }
+
+        fun next(state: State) =
+            focusRequesters.indexOf(state.focusRequester)
+                .takeIf { it < focusRequesters.lastIndex }
+                ?.let { focusRequesters[it + 1] }
+    }
+
+    @Composable
+    fun rememberFocusState(states: List<State>) = remember(states) {
+        FocusState(states.map { it.focusRequester })
+    }
 
     @Composable
     operator fun invoke(
         modifier: Modifier = Modifier,
         forceLocked: Boolean = false,
+        focusState: FocusState,
         content: @Composable EntryFormScope.() -> Unit,
     ) {
         Column(modifier = modifier) {
-            EntryFormScopeImpl(this, forceLocked).content()
+            EntryFormScopeImpl(this, focusState, forceLocked).content()
             Spacer(Modifier.height(80.dp))
         }
     }
 
+    @Stable
     abstract class State {
         abstract var lockState: EntryLockState
         protected abstract val wasEverDifferent: Boolean
+        val focusRequester = FocusRequester()
 
         fun rotateLockState() {
             lockState = lockState.rotateLockState(wasEverDifferent)
@@ -165,7 +192,6 @@ object EntryForm2 {
         override var wasEverDifferent: Boolean = initialLockState == EntryLockState.DIFFERENT,
     ) : State() {
         override var lockState by mutableStateOf(initialLockState)
-        val focusRequester = FocusRequester()
         var isFocused by mutableStateOf(false)
 
         companion object {
@@ -243,7 +269,6 @@ object EntryForm2 {
     ) : State() {
         var selectedIndex by mutableIntStateOf(initialSelectedIndex)
         var expanded by mutableStateOf(false)
-        val focusRequester = FocusRequester()
         override var lockState by mutableStateOf(initialLockState)
 
         object Saver : ComposeSaver<DropdownState, Any> {
@@ -271,8 +296,6 @@ object EntryForm2 {
 fun EntryFormScope.SingleTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
-    previousFocus: FocusRequester? = null,
-    nextFocus: FocusRequester? = null,
     forceLocked: Boolean = this.forceLocked,
     trailingIcon: @Composable (() -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
@@ -290,7 +313,11 @@ fun EntryFormScope.SingleTextSection(
             .focusRequester(state.focusRequester)
             .padding(horizontal = 16.dp)
             .interceptTab {
-                val focusRequester = if (it) nextFocus else previousFocus
+                val focusRequester = if (it) {
+                    this@SingleTextSection.focusState.next(state)
+                } else {
+                    this@SingleTextSection.focusState.previous(state)
+                }
                 focusRequester?.requestFocus()
             }
         val errorText = errorText?.invoke()
@@ -317,8 +344,9 @@ fun EntryFormScope.SingleTextSection(
     }
 }
 
+context(formScope: EntryFormScope)
 @Composable
-fun EntryFormScope.MultiTextSection(
+fun MultiTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     entryPredictions: suspend (String) -> Flow<List<EntryForm2.MultiTextState.Entry>> = { emptyFlow() },
@@ -462,8 +490,9 @@ fun EntryFormScope.MultiTextSection(
     )
 }
 
+context(formScope: EntryFormScope)
 @Composable
-fun <T> EntryFormScope.MultiTextSection(
+fun <T> MultiTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     items: SnapshotStateList<T>?,
@@ -480,12 +509,10 @@ fun <T> EntryFormScope.MultiTextSection(
         }
     },
     pendingErrorMessage: () -> String? = { null },
-    previousFocus: FocusRequester? = null,
-    nextFocus: FocusRequester? = null,
 ) {
     SectionHeader(
         text = headerText,
-        lockState = state.lockState.takeUnless { forceLocked },
+        lockState = state.lockState.takeUnless { formScope.forceLocked },
         onClick = {
             val newValue = state.value.text
             if (newValue.isNotBlank() && pendingErrorMessage() == null) {
@@ -549,6 +576,9 @@ fun <T> EntryFormScope.MultiTextSection(
                 }
             }
             var dropdownExpanded by remember { mutableStateOf(false) }
+            val dropdownShowing by remember {
+                derivedStateOf { dropdownExpanded && showPredictions && predictions.isNotEmpty() }
+            }
             val scope = rememberCoroutineScope()
             EntryAutocompleteDropdown(
                 expanded = { dropdownExpanded },
@@ -563,7 +593,7 @@ fun <T> EntryFormScope.MultiTextSection(
                 modifier = Modifier.onPreviewKeyEvent {
                     if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     if (it.isTabKeyDownOrTyped) {
-                        if (dropdownExpanded) {
+                        if (dropdownShowing) {
                             scope.launch {
                                 // Delay long enough for the popup to capture focus,
                                 // then move to first dropdown item
@@ -575,7 +605,7 @@ fun <T> EntryFormScope.MultiTextSection(
                     } else {
                         when (it.key) {
                             // TODO: Re-add backspace to move up behavior on mobile
-                            Key.DirectionUp -> if (dropdownExpanded) {
+                            Key.DirectionUp -> if (dropdownShowing) {
                                 scope.launch {
                                     delay(100.milliseconds)
                                     dropdownFocusRequester.requestFocus(FocusDirection.Next)
@@ -597,7 +627,7 @@ fun <T> EntryFormScope.MultiTextSection(
                                 false
                             }
                             Key.DirectionDown -> {
-                                if (dropdownExpanded) {
+                                if (dropdownShowing) {
                                     scope.launch {
                                         delay(100.milliseconds)
                                         dropdownFocusRequester.requestFocus(FocusDirection.Next)
@@ -632,7 +662,7 @@ fun <T> EntryFormScope.MultiTextSection(
                         .onFocusChanged { state.isFocused = it.isFocused }
                         .focusRequester(state.focusRequester)
                         .onPreviewKeyEvent {
-                            if (it.type != KeyEventType.KeyDown || !dropdownExpanded ||
+                            if (it.type != KeyEventType.KeyDown || !dropdownShowing ||
                                 it.key != Key.Escape
                             ) {
                                 return@onPreviewKeyEvent false
@@ -641,10 +671,14 @@ fun <T> EntryFormScope.MultiTextSection(
                             true
                         }
                         .interceptTab {
-                            if (dropdownExpanded) {
+                            if (dropdownShowing) {
                                 dropdownFocusRequester.requestFocus()
                             } else {
-                                val focusRequester = if (it) nextFocus else previousFocus
+                                val focusRequester = if (it) {
+                                    formScope.focusState.next(state)
+                                } else {
+                                    formScope.focusState.previous(state)
+                                }
                                 focusRequester?.requestFocus()
                             }
                         }
@@ -1160,7 +1194,6 @@ private fun <T> EntryAutocompleteDropdown(
     }
 }
 
-@Suppress("UnusedReceiverParameter")
 @Composable
 fun EntryFormScope.LongTextSection(
     state: EntryForm2.SingleTextState,
@@ -1178,11 +1211,17 @@ fun EntryFormScope.LongTextSection(
             .focusable(editable)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
+            .interceptTab {
+                val focusRequester = if (it) {
+                    this@LongTextSection.focusState.next(state)
+                } else {
+                    this@LongTextSection.focusState.previous(state)
+                }
+                focusRequester?.requestFocus()
+            }
     )
 }
 
-
-@Suppress("UnusedReceiverParameter")
 @Composable
 fun <T> EntryFormScope.DropdownSection(
     state: EntryForm2.DropdownState,
@@ -1192,8 +1231,6 @@ fun <T> EntryFormScope.DropdownSection(
     leadingIcon: (@Composable (T) -> Unit)? = null,
     expandedItemText: @Composable (T) -> Unit = { Text(optionToText(it)) },
     errorText: (() -> String?)? = null,
-    previousFocus: FocusRequester? = null,
-    nextFocus: FocusRequester? = null,
 ) {
     SectionHeader(text = headerText, state = state)
 
@@ -1203,6 +1240,8 @@ fun <T> EntryFormScope.DropdownSection(
             .padding(start = 16.dp, end = 16.dp)
     ) {
         val editable = state.lockState.editable
+        val previousFocus = this@DropdownSection.focusState.previous(state)
+        val nextFocus = this@DropdownSection.focusState.next(state)
         ExposedDropdownMenuBox(
             expanded = state.expanded && editable,
             onExpandedChange = {

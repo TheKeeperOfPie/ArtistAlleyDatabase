@@ -15,5 +15,4 @@ interface EntryTestComponent {
     fun provideJson(): Json = Json.Default
 
     val appFileSystem: AppFileSystem
-    val cropController: CropController
 }

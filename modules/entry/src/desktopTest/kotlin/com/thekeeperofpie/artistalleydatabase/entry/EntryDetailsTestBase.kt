@@ -1,11 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import com.google.common.truth.Truth.assertThat
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropController
+import com.thekeeperofpie.artistalleydatabase.image.crop.CropControllerParams
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.createGraph
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class EntryDetailsTestBase {
@@ -22,15 +25,15 @@ abstract class EntryDetailsTestBase {
         hasError = hasError,
         cropUri = cropUri,
         entries = entries.associateBy { it.id }.toMutableMap(),
-        json = component.json,
-        cropController = component.cropController,
+        json = Json,
+        cropController = CropController(CropControllerParams(), this),
         customDispatchers = CustomDispatchers(UnconfinedTestDispatcher(testScheduler)),
     ).apply { initialize(entryIds) }
 
     protected fun assertModel(
         model: TestEntry,
         data: String? = null,
-        skipIgnoreableErrors: Boolean = false
+        skipIgnoreableErrors: Boolean = false,
     ) {
         assertThat(model.id).isNotEmpty()
         assertThat(model.data).isEqualTo(data)

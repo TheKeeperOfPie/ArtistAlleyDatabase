@@ -22,7 +22,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.art.generated.resources.Res
@@ -113,8 +112,18 @@ object ArtEntryDetailsScreen {
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
         ) {
-            EntryForm2 {
-                val focusRequester = remember { FocusRequester() }
+            EntryForm2(
+                focusState = EntryForm2.rememberFocusState(
+                    listOf(
+                        state.series,
+                        state.characters,
+                        state.artists,
+                        sourceState.dropdownState,
+                        state.tags,
+                        state.notes,
+                    )
+                )
+            ) {
                 MultiTextSection(
                     state = state.series,
                     headerText = {

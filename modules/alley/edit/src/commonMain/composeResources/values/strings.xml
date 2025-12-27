@@ -164,4 +164,5 @@
     <string name="alley_edit_artist_form_merge_title">Merging %1$s - %2$s</string>
     <string name="alley_edit_artist_form_merge_action_save">Apply form merge</string>
     <string name="alley_edit_artist_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>
+    <string name="alley_edit_artist_form_paste_link_prompt">Paste a social/store/etc. link here to automatically place it</string>
 </resources>

@@ -118,29 +118,26 @@ object MerchEditScreen {
             ) {
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
                     EntryForm2(
+                        focusState = EntryForm2.rememberFocusState(
+                            listOf(state.id, state.uuid, state.notes)
+                        ),
                         modifier = Modifier.width(600.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
                         SingleTextSection(
                             state = state.id,
                             headerText = { Text(stringResource(Res.string.alley_edit_merch_header_canonical)) },
-                            previousFocus = null,
-                            nextFocus = state.uuid.focusRequester,
                         )
 
                         val uuidErrorMessage by rememberUuidValidator(state.uuid)
                         SingleTextSection(
                             state = state.uuid,
                             headerText = { Text(stringResource(Res.string.alley_edit_merch_header_uuid)) },
-                            previousFocus = state.id.focusRequester,
-                            nextFocus = state.notes.focusRequester,
                             errorText = { uuidErrorMessage },
                         )
                         SingleTextSection(
                             state = state.notes,
                             headerText = { Text(stringResource(Res.string.alley_edit_merch_header_notes)) },
-                            previousFocus = state.uuid.focusRequester,
-                            nextFocus = null,
                         )
                     }
                 }

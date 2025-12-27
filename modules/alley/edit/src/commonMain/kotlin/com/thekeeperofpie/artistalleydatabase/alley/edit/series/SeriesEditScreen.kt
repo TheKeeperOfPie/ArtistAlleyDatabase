@@ -172,22 +172,35 @@ object SeriesEditScreen {
             ) {
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
                     EntryForm2(
+                        focusState = EntryForm2.rememberFocusState(
+                            listOf(
+                                state.id,
+                                state.uuid,
+                                state.aniListId,
+                                state.aniListType,
+                                state.wikipediaId,
+                                state.source,
+                                state.titleEnglish,
+                                state.titleRomaji,
+                                state.titleNative,
+                                state.titlePreferred,
+                                state.synonymsValue,
+                                state.link,
+                                state.notes,
+                            )
+                        ),
                         modifier = Modifier.width(600.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
                         SingleTextSection(
                             state = state.id,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_canonical)) },
-                            previousFocus = null,
-                            nextFocus = state.uuid.focusRequester,
                         )
 
                         val uuidErrorMessage by rememberUuidValidator(state.uuid)
                         SingleTextSection(
                             state = state.uuid,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_uuid)) },
-                            previousFocus = state.id.focusRequester,
-                            nextFocus = state.aniListId.focusRequester,
                             errorText = { uuidErrorMessage },
                         )
 
@@ -195,8 +208,6 @@ object SeriesEditScreen {
                         SingleTextSection(
                             state = state.aniListId,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_aniList_id)) },
-                            previousFocus = state.uuid.focusRequester,
-                            nextFocus = state.aniListType.focusRequester,
                             errorText = { aniListIdErrorMessage },
                         )
 
@@ -213,16 +224,12 @@ object SeriesEditScreen {
                             options = AniListType.entries,
                             optionToText = { stringResource(it.textRes) },
                             errorText = { aniListTypeErrorMessage },
-                            previousFocus = state.aniListId.focusRequester,
-                            nextFocus = state.wikipediaId.focusRequester,
                         )
 
                         val wikipediaIdErrorMessage by rememberLongValidator(state.wikipediaId)
                         SingleTextSection(
                             state = state.wikipediaId,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_wikipedia_id)) },
-                            previousFocus = state.aniListType.focusRequester,
-                            nextFocus = state.source.focusRequester,
                             errorText = { wikipediaIdErrorMessage },
                         )
                         DropdownSection(
@@ -232,32 +239,22 @@ object SeriesEditScreen {
                             },
                             options = SeriesSource.entries,
                             optionToText = { stringResource(it.textRes) },
-                            previousFocus = state.wikipediaId.focusRequester,
-                            nextFocus = state.titleEnglish.focusRequester,
                         )
                         SingleTextSection(
                             state = state.titleEnglish,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_english)) },
-                            previousFocus = state.source.focusRequester,
-                            nextFocus = state.titleRomaji.focusRequester,
                         )
                         SingleTextSection(
                             state = state.titleRomaji,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_romaji)) },
-                            previousFocus = state.titleEnglish.focusRequester,
-                            nextFocus = state.titleNative.focusRequester,
                         )
                         SingleTextSection(
                             state = state.titleNative,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_native)) },
-                            previousFocus = state.titleRomaji.focusRequester,
-                            nextFocus = state.titlePreferred.focusRequester,
                         )
                         SingleTextSection(
                             state = state.titlePreferred,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_title_preferred)) },
-                            previousFocus = state.titleNative.focusRequester,
-                            nextFocus = state.link.focusRequester,
                         )
                         MultiTextSection(
                             state = state.synonymsValue,
@@ -268,8 +265,6 @@ object SeriesEditScreen {
                                 state.synonymsValue.value.clearText()
                             },
                             removeLastItem = { state.synonyms.removeLastOrNull() },
-                            previousFocus = state.titlePreferred.focusRequester,
-                            nextFocus = state.link.focusRequester,
                             item = { _, synonym ->
                                 Text(
                                     text = synonym,
@@ -300,15 +295,11 @@ object SeriesEditScreen {
                                     }
                                 }
                             },
-                            previousFocus = state.synonymsValue.focusRequester,
-                            nextFocus = state.notes.focusRequester,
                             errorText = { linkErrorMessage },
                         )
                         SingleTextSection(
                             state = state.notes,
                             headerText = { Text(stringResource(Res.string.alley_edit_series_header_notes)) },
-                            previousFocus = state.link.focusRequester,
-                            nextFocus = null,
                         )
                     }
                 }

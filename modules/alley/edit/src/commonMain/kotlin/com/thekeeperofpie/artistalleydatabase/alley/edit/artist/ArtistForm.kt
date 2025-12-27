@@ -7,13 +7,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.LayoutScopeMarker
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
@@ -25,24 +25,23 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -68,36 +67,30 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_status
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_duplicate_entry
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_paste_link_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
-import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
-import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
-import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -106,346 +99,375 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
-import kotlin.uuid.Uuid
 import artistalleydatabase.modules.alley.generated.resources.Res as AlleyRes
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
-@Stable
-class ArtistFormState(
-    val metadata: Metadata = Metadata(),
-    val images: SnapshotStateList<EditImage> = SnapshotStateList(),
-    val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
-    val storeLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
-    val catalogLinks: SnapshotStateList<String> = SnapshotStateList(),
-    val commissions: SnapshotStateList<CommissionModel> = SnapshotStateList(),
-    val seriesInferred: SnapshotStateList<SeriesInfo> = SnapshotStateList(),
-    val seriesConfirmed: SnapshotStateList<SeriesInfo> = SnapshotStateList(),
-    val merchInferred: SnapshotStateList<MerchInfo> = SnapshotStateList(),
-    val merchConfirmed: SnapshotStateList<MerchInfo> = SnapshotStateList(),
-    val textState: TextState = TextState(),
-) {
+@LayoutScopeMarker
+@Immutable
+interface ArtistFormScope : EntryFormScope {
+    @Composable
+    fun MetadataSection(metadata: ArtistFormState.Metadata)
 
-    object Saver : ComposeSaver<ArtistFormState, List<Any?>> {
-        override fun SaverScope.save(value: ArtistFormState) = listOf(
-            with(Metadata.Saver) { save(value.metadata) },
-            with(StateUtils.snapshotListJsonSaver<EditImage>()) { save(value.images) },
-            with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
-            with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.storeLinks) },
-            with(StateUtils.snapshotListJsonSaver<String>()) { save(value.catalogLinks) },
-            with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { save(value.commissions) },
-            with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { save(value.seriesInferred) },
-            with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { save(value.seriesConfirmed) },
-            with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { save(value.merchInferred) },
-            with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { save(value.merchConfirmed) },
-            with(TextState.Saver) { save(value.textState) },
-        )
+    @Composable
+    fun PasteLinkSection(
+        links: SnapshotStateList<LinkModel>,
+        storeLinks: SnapshotStateList<LinkModel>,
+        commissions: SnapshotStateList<CommissionModel>,
+    )
 
-        @Suppress("UNCHECKED_CAST")
-        override fun restore(value: List<Any?>) = ArtistFormState(
-            metadata = with(Metadata.Saver) { restore(value[0] as List<Any?>) },
-            images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) }!!,
-            links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[2] as String) }!!,
-            storeLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[3] as String) }!!,
-            catalogLinks = with(StateUtils.snapshotListJsonSaver<String>()) { restore(value[4] as String) }!!,
-            commissions = with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { restore(value[5] as String) }!!,
-            seriesInferred = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[6] as String) }!!,
-            seriesConfirmed = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[7] as String) }!!,
-            merchInferred = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[8] as String) }!!,
-            merchConfirmed = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[9] as String) }!!,
-            textState = with(TextState.Saver) { restore(value[10] as List<Any>) }
-        )
+    @Composable
+    fun StatusSection(
+        state: EntryForm2.DropdownState,
+        metadata: ArtistFormState.Metadata,
+    )
 
-    }
-
-    companion object {
-        fun empty() = ArtistFormState(
-            metadata = Metadata(),
-            images = SnapshotStateList(),
-            links = SnapshotStateList(),
-            storeLinks = SnapshotStateList(),
-            catalogLinks = SnapshotStateList(),
-            commissions = SnapshotStateList(),
-            seriesInferred = SnapshotStateList(),
-            seriesConfirmed = SnapshotStateList(),
-            merchInferred = SnapshotStateList(),
-            merchConfirmed = SnapshotStateList(),
-            textState = TextState(),
-        )
-    }
-
-    fun applyDatabaseEntry(
-        artist: ArtistDatabaseEntry,
-        seriesById: Map<String, SeriesInfo>,
-        merchById: Map<String, MerchInfo>,
-        force: Boolean = false,
-    ) = apply {
-        val links = artist.links.map(LinkModel::parse).sortedBy { it.logo }
-        val storeLinks = artist.storeLinks.map(LinkModel::parse).sortedBy { it.logo }
-        val commissions = artist.commissions.map(CommissionModel::parse)
-
-        val seriesInferred = artist.seriesInferred.map { seriesById[it] ?: SeriesInfo.fake(it) }
-        val seriesConfirmed = artist.seriesConfirmed.map { seriesById[it] ?: SeriesInfo.fake(it) }
-        val merchInferred = artist.merchInferred.map { merchById[it] ?: MerchInfo.fake(it) }
-        val merchConfirmed = artist.merchConfirmed.map { merchById[it] ?: MerchInfo.fake(it) }
-
-        val status = artist.status
-        textState.status.selectedIndex = ArtistStatus.entries.indexOf(status)
-
-        textState.id.value.setTextAndPlaceCursorAtEnd(artist.id)
-        textState.id.lockState = EntryLockState.LOCKED
-
-        applyValue(textState.booth, status, artist.booth, force)
-        applyValue(textState.name, status, artist.name, force)
-        applyValue(textState.summary, status, artist.summary, force)
-        applyValue(textState.notes, status, artist.notes, force)
-        applyValue(textState.editorNotes, status, artist.editorNotes, force)
-
-        applyValue(textState.links, this.links, status, links, force)
-        applyValue(textState.storeLinks, this.storeLinks, status, storeLinks, force)
-        applyValue(textState.catalogLinks, this.catalogLinks, status, artist.catalogLinks, force)
-        applyValue(textState.commissions, this.commissions, status, commissions, force)
-
-        applyValue(textState.seriesInferred, this.seriesInferred, status, seriesInferred, force)
-        applyValue(textState.seriesConfirmed, this.seriesConfirmed, status, seriesConfirmed, force)
-        applyValue(textState.merchInferred, this.merchInferred, status, merchInferred, force)
-        applyValue(textState.merchConfirmed, this.merchConfirmed, status, merchConfirmed, force)
-
-        metadata.lastEditor = artist.lastEditor
-        metadata.lastEditTime = artist.lastEditTime
-    }
-
-    fun captureDatabaseEntry(dataYear: DataYear): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
-        val id = Uuid.parse(textState.id.value.text.toString())
-        val status = ArtistStatus.entries[textState.status.selectedIndex]
-
-        val booth = textState.booth.value.text.toString()
-        val name = textState.name.value.text.toString()
-        val summary = textState.summary.value.text.toString()
-
-        // TODO: Include pending value?
-        val links = links.toList().map { it.link }
-            .plus(textState.links.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val storeLinks = storeLinks.toList().map { it.link }
-            .plus(textState.storeLinks.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val catalogLinks = catalogLinks.toList()
-            .plus(textState.catalogLinks.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-
-        val notes = textState.notes.value.text.toString()
-        val editorNotes = textState.editorNotes.value.text.toString()
-        val commissions = commissions.toList().map { it.serializedValue }
-            .plus(textState.commissions.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val seriesInferred = seriesInferred.toList().map { it.id }
-        val seriesConfirmed = seriesConfirmed.toList().map { it.id }
-        val merchInferred = merchInferred.toList().map { it.name }
-        val merchConfirmed = merchConfirmed.toList().map { it.name }
-
-        val images = images.toList()
-        return images to ArtistDatabaseEntry.Impl(
-            year = dataYear,
-            id = id.toString(),
-            status = status,
-            booth = booth,
-            name = name,
-            summary = summary,
-            links = links,
-            storeLinks = storeLinks,
-            catalogLinks = catalogLinks,
-            driveLink = null,
-            notes = notes,
-            commissions = commissions,
-            seriesInferred = seriesInferred,
-            seriesConfirmed = seriesConfirmed,
-            merchInferred = merchInferred,
-            merchConfirmed = merchConfirmed,
-            images = emptyList(),
-            counter = 1,
-            editorNotes = editorNotes,
-            lastEditor = null, // This is filled on the backend
-            lastEditTime = Clock.System.now(),
-        )
-    }
-
-    private fun applyValue(
+    @Composable
+    fun IdSection(
         state: EntryForm2.SingleTextState,
-        status: ArtistStatus,
-        value: String?,
-        force: Boolean,
-    ) {
-        val valueOrEmpty = value.orEmpty()
-        if (valueOrEmpty.isNotBlank() || force) {
-            state.value.setTextAndPlaceCursorAtEnd(valueOrEmpty)
-        }
-        if (valueOrEmpty.isNotBlank() || status.shouldStartLocked) {
-            state.lockState = EntryLockState.LOCKED
-        } else if (valueOrEmpty.isEmpty()) {
-            state.lockState = EntryLockState.UNLOCKED
-        }
-    }
+        forceLock: Boolean = false,
+        errorText: (() -> String?)? = null,
+    )
 
-    private fun <T> applyValue(
+    @Composable
+    fun BoothSection(state: EntryForm2.SingleTextState, errorText: (() -> String?)? = null)
+
+    @Composable
+    fun NameSection(state: EntryForm2.SingleTextState)
+
+    @Composable
+    fun SummarySection(state: EntryForm2.SingleTextState)
+
+    @Composable
+    fun LinksSection(
         state: EntryForm2.SingleTextState,
-        list: SnapshotStateList<T>,
-        status: ArtistStatus,
-        value: List<T>,
-        force: Boolean,
-    ) {
-        if (value.isNotEmpty() || force) {
-            list.replaceAll(value)
-        }
-        if (value.isNotEmpty() || status.shouldStartLocked) {
-            state.lockState = EntryLockState.LOCKED
-        } else if (value.isEmpty()) {
-            state.lockState = EntryLockState.UNLOCKED
+        links: SnapshotStateList<LinkModel>,
+        pendingErrorMessage: () -> String? = { null },
+    )
+
+    @Composable
+    fun StoreLinksSection(
+        state: EntryForm2.SingleTextState,
+        storeLinks: SnapshotStateList<LinkModel>,
+        pendingErrorMessage: () -> String? = { null },
+    )
+
+    @Composable
+    fun CatalogLinksSection(
+        state: EntryForm2.SingleTextState,
+        catalogLinks: SnapshotStateList<String>,
+        pendingErrorMessage: () -> String? = { null },
+    )
+
+    @Composable
+    fun CommissionsSection(
+        state: EntryForm2.SingleTextState,
+        commissions: SnapshotStateList<CommissionModel>,
+    )
+
+    @Composable
+    fun SeriesSection(
+        stateSeriesInferred: EntryForm2.SingleTextState,
+        stateSeriesConfirmed: EntryForm2.SingleTextState,
+        seriesInferred: SnapshotStateList<SeriesInfo>,
+        seriesConfirmed: SnapshotStateList<SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+    )
+
+    @Composable
+    fun MerchSection(
+        stateMerchInferred: EntryForm2.SingleTextState,
+        stateMerchConfirmed: EntryForm2.SingleTextState,
+        merchInferred: SnapshotStateList<MerchInfo>,
+        merchConfirmed: SnapshotStateList<MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+    )
+
+    @Composable
+    fun NotesSection(state: EntryForm2.SingleTextState)
+
+    @Composable
+    fun EditorNotesSection(state: EntryForm2.SingleTextState)
+}
+
+@LayoutScopeMarker
+@Immutable
+private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormScope,
+    EntryFormScope by entryFormScope {
+
+    @Composable
+    override fun MetadataSection(metadata: ArtistFormState.Metadata) {
+        val lastEditTime = metadata.lastEditTime
+        if (lastEditTime != null) {
+            ArtistForm.LastEditedText(metadata.lastEditor, lastEditTime)
         }
     }
 
-    @Stable
-    class Metadata(
-        lastEditor: String? = null,
-        lastEditTime: Instant? = null,
+    @Composable
+    override fun PasteLinkSection(
+        links: SnapshotStateList<LinkModel>,
+        storeLinks: SnapshotStateList<LinkModel>,
+        commissions: SnapshotStateList<CommissionModel>,
     ) {
-        var lastEditor by mutableStateOf(lastEditor)
-        var lastEditTime by mutableStateOf(lastEditTime)
-
-        object Saver : ComposeSaver<Metadata, List<Any?>> {
-            override fun SaverScope.save(value: Metadata) = listOf(
-                value.lastEditor,
-                value.lastEditTime?.toString()
-            )
-
-            override fun restore(value: List<Any?>): Metadata {
-                val (lastEditor, lastEditTime) = value
-                return Metadata(
-                    lastEditor = lastEditor as String?,
-                    lastEditTime = (lastEditTime as? String?)?.let(Instant::parseOrNull)
+        if (!forceLocked) {
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {
+                        ArtistForm.processPastedLink(
+                            links = links,
+                            storeLinks = storeLinks,
+                            commissions = commissions,
+                            link = it,
+                        )
+                    },
+                    placeholder = {
+                        Text(stringResource(Res.string.alley_edit_artist_form_paste_link_prompt))
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
     }
 
-    @Stable
-    class TextState(
-        val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(
-            initialLockState = EntryLockState.LOCKED,
-        ),
-        val status: EntryForm2.DropdownState = EntryForm2.DropdownState(),
-        val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val summary: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val links: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val storeLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val catalogLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val commissions: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val seriesInferred: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val seriesConfirmed: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val merchInferred: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val merchConfirmed: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val editorNotes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+    @Composable
+    override fun StatusSection(
+        state: EntryForm2.DropdownState,
+        metadata: ArtistFormState.Metadata,
     ) {
-        object Saver : ComposeSaver<TextState, List<Any>> {
-            override fun SaverScope.save(value: TextState) = listOf(
-                with(EntryForm2.SingleTextState.Saver) { save(value.id) },
-                with(EntryForm2.DropdownState.Saver) { save(value.status) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.booth) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.name) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.summary) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.links) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.storeLinks) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.catalogLinks) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.commissions) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.seriesInferred) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.seriesConfirmed) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.merchInferred) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.merchConfirmed) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.notes) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.editorNotes) },
-            )
+        DropdownSection(
+            state = state,
+            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_status)) },
+            options = ArtistStatus.entries,
+            optionToText = { stringResource(it.title) },
+            leadingIcon = { Icon(imageVector = it.icon, null) },
+            expandedItemText = {
+                Column {
+                    Text(stringResource(it.title))
+                    Text(
+                        text = it.description(metadata.lastEditor),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(start = 32.dp)
+                    )
+                }
+            },
+        )
+    }
 
-            override fun restore(value: List<Any>) = TextState(
-                id = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
-                status = with(EntryForm2.DropdownState.Saver) { restore(value[1]) },
-                booth = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
-                name = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
-                summary = with(EntryForm2.SingleTextState.Saver) { restore(value[4]) },
-                links = with(EntryForm2.SingleTextState.Saver) { restore(value[5]) },
-                storeLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[6]) },
-                catalogLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[7]) },
-                commissions = with(EntryForm2.SingleTextState.Saver) { restore(value[8]) },
-                seriesInferred = with(EntryForm2.SingleTextState.Saver) { restore(value[9]) },
-                seriesConfirmed = with(EntryForm2.SingleTextState.Saver) { restore(value[10]) },
-                merchInferred = with(EntryForm2.SingleTextState.Saver) { restore(value[11]) },
-                merchConfirmed = with(EntryForm2.SingleTextState.Saver) { restore(value[12]) },
-                notes = with(EntryForm2.SingleTextState.Saver) { restore(value[13]) },
-                editorNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[14]) },
+    @Composable
+    override fun IdSection(
+        state: EntryForm2.SingleTextState,
+        forceLock: Boolean,
+        errorText: (() -> String?)?,
+    ) {
+        SingleTextSection(
+            state = state,
+            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_id)) },
+            forceLocked = forceLock || forceLocked,
+            errorText = errorText,
+        )
+    }
+
+    @Composable
+    override fun BoothSection(state: EntryForm2.SingleTextState, errorText: (() -> String?)?) {
+        SingleTextSection(
+            state = state,
+            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
+            inputTransformation = InputTransformation.maxLength(3),
+            errorText = errorText,
+        )
+    }
+
+    @Composable
+    override fun NameSection(state: EntryForm2.SingleTextState) {
+        SingleTextSection(
+            state = state,
+            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
+        )
+    }
+
+    @Composable
+    override fun SummarySection(state: EntryForm2.SingleTextState) {
+        SingleTextSection(
+            state = state,
+            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
+        )
+    }
+
+    @Composable
+    override fun LinksSection(
+        state: EntryForm2.SingleTextState,
+        links: SnapshotStateList<LinkModel>,
+        pendingErrorMessage: () -> String?,
+    ) {
+        ArtistForm.LinksSection(
+            state = state,
+            title = Res.string.alley_edit_artist_edit_links,
+            items = links,
+            pendingErrorMessage = pendingErrorMessage,
+        )
+    }
+
+    @Composable
+    override fun StoreLinksSection(
+        state: EntryForm2.SingleTextState,
+        storeLinks: SnapshotStateList<LinkModel>,
+        pendingErrorMessage: () -> String?,
+    ) {
+        ArtistForm.LinksSection(
+            state = state,
+            title = Res.string.alley_edit_artist_edit_store_links,
+            items = storeLinks,
+            pendingErrorMessage = pendingErrorMessage,
+        )
+    }
+
+    @Composable
+    override fun CatalogLinksSection(
+        state: EntryForm2.SingleTextState,
+        catalogLinks: SnapshotStateList<String>,
+        pendingErrorMessage: () -> String?,
+    ) {
+        ArtistForm.MultiTextSection(
+            state = state,
+            title = Res.string.alley_edit_artist_edit_catalog_links,
+            items = catalogLinks,
+            itemToText = { it },
+            itemToSerializedValue = { it },
+            itemToCommitted = { it },
+            pendingErrorMessage = pendingErrorMessage,
+        )
+    }
+
+    @Composable
+    override fun CommissionsSection(
+        state: EntryForm2.SingleTextState,
+        commissions: SnapshotStateList<CommissionModel>,
+    ) {
+        val onSiteText = stringResource(AlleyRes.string.alley_artist_commission_on_site)
+        val onlineText = stringResource(AlleyRes.string.alley_artist_commission_online)
+        with(ArtistForm) {
+            MultiTextSection(
+                state = state,
+                title = Res.string.alley_edit_artist_edit_commissions,
+                items = commissions,
+                itemToText = {
+                    when (it) {
+                        is CommissionModel.Link -> it.host ?: it.link
+                        CommissionModel.OnSite -> onSiteText
+                        CommissionModel.Online -> onlineText
+                        is CommissionModel.Unknown -> it.value
+                    }
+                },
+                itemToSerializedValue = { it.serializedValue },
+                itemToCommitted = CommissionModel::parse,
+                predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
             )
         }
     }
-}
 
-// Not saved since it's purely derived from input fields
-@Stable
-class ArtistErrorState(
-    val idErrorMessage: () -> String?,
-    val boothErrorMessage: () -> String?,
-    val linksErrorMessage: () -> String?,
-    val storeLinksErrorMessage: () -> String?,
-    val catalogLinksErrorMessage: () -> String?,
-) {
-    val hasAnyError by derivedStateOf {
-        idErrorMessage() != null ||
-                boothErrorMessage() != null ||
-                linksErrorMessage() != null ||
-                storeLinksErrorMessage() != null ||
-                catalogLinksErrorMessage() != null
-    }
-}
+    @Composable
+    override fun SeriesSection(
+        stateSeriesInferred: EntryForm2.SingleTextState,
+        stateSeriesConfirmed: EntryForm2.SingleTextState,
+        seriesInferred: SnapshotStateList<SeriesInfo>,
+        seriesConfirmed: SnapshotStateList<SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+    ) {
+        val hasConfirmedSeries by derivedStateOf { seriesConfirmed.isNotEmpty() }
+        var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
+        val showSeriesInferred =
+            forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred
+        with(ArtistForm) {
+            SeriesSection(
+                state = stateSeriesInferred,
+                title = Res.string.alley_edit_artist_edit_series_inferred,
+                items = seriesInferred,
+                showItems = { showSeriesInferred },
+                predictions = seriesPredictions,
+                image = seriesImage,
+            )
 
-@Stable
-@Composable
-fun rememberErrorState(state: ArtistFormState.TextState): ArtistErrorState {
-    val idErrorMessage by rememberUuidValidator(state.id)
-    val boothErrorMessage by rememberBoothValidator(state.booth)
-    val linksErrorMessage by rememberLinkValidator(state.links)
-    val storeLinksErrorMessage by rememberLinkValidator(state.storeLinks)
-    val catalogLinksErrorMessage by rememberLinkValidator(state.catalogLinks)
-    return ArtistErrorState(
-        idErrorMessage = { idErrorMessage },
-        boothErrorMessage = { boothErrorMessage },
-        linksErrorMessage = { linksErrorMessage },
-        storeLinksErrorMessage = { storeLinksErrorMessage },
-        catalogLinksErrorMessage = { catalogLinksErrorMessage },
-    )
-}
-
-@Stable
-@Composable
-private fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): State<String?> {
-    val errorMessage = stringResource(Res.string.alley_edit_artist_error_booth)
-    return remember {
-        derivedStateOf {
-            val booth = boothState.value.text.toString()
-            if (booth.isNotBlank() && (
-                        booth.length != 3 ||
-                                !booth.first().isLetter() ||
-                                booth.drop(1).toIntOrNull() == null)
-            ) {
-                errorMessage
-            } else {
-                null
+            if (!forceLocked) {
+                ArtistForm.ShowInferredButton(
+                    hasConfirmed = hasConfirmedSeries,
+                    showingInferred = showSeriesInferred,
+                    onClick = { requestedShowSeriesInferred = it },
+                )
             }
+
+            SeriesSection(
+                state = stateSeriesConfirmed,
+                title = Res.string.alley_edit_artist_edit_series_confirmed,
+                items = seriesConfirmed,
+                predictions = seriesPredictions,
+                image = seriesImage,
+            )
         }
+    }
+
+    @Composable
+    override fun MerchSection(
+        stateMerchInferred: EntryForm2.SingleTextState,
+        stateMerchConfirmed: EntryForm2.SingleTextState,
+        merchInferred: SnapshotStateList<MerchInfo>,
+        merchConfirmed: SnapshotStateList<MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+    ) {
+        val hasConfirmedMerch by derivedStateOf { merchConfirmed.isNotEmpty() }
+        var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
+        val showMerchInferred = forceLocked || !hasConfirmedMerch || requestedShowMerchInferred
+        with(ArtistForm) {
+            MultiTextSection(
+                state = stateMerchInferred,
+                title = Res.string.alley_edit_artist_edit_merch_inferred,
+                items = merchInferred,
+                showItems = { showMerchInferred },
+                predictions = merchPredictions,
+                itemToText = { it.name },
+                itemToSerializedValue = { it.name },
+            )
+
+            if (!forceLocked) {
+                ArtistForm.ShowInferredButton(
+                    hasConfirmed = hasConfirmedMerch,
+                    showingInferred = showMerchInferred,
+                    onClick = { requestedShowMerchInferred = it },
+                )
+            }
+
+            MultiTextSection(
+                state = stateMerchConfirmed,
+                title = Res.string.alley_edit_artist_edit_merch_confirmed,
+                items = merchConfirmed,
+                predictions = merchPredictions,
+                itemToText = { it.name },
+                itemToSerializedValue = { it.name },
+            )
+        }
+    }
+
+    @Composable
+    override fun NotesSection(state: EntryForm2.SingleTextState) {
+        LongTextSection(
+            state = state,
+            headerText = {
+                Text(stringResource(Res.string.alley_edit_artist_edit_notes))
+            },
+        )
+    }
+
+    @Composable
+    override fun EditorNotesSection(state: EntryForm2.SingleTextState) {
+        LongTextSection(
+            state = state,
+            headerText = {
+                Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
+            },
+        )
     }
 }
 
@@ -465,223 +487,180 @@ object ArtistForm {
         forceLocked: Boolean = false,
     ) {
         val textState = state.textState
-        EntryForm2(forceLocked = forceLocked, modifier = modifier) {
-            val metadata = state.metadata
-            val lastEditTime = metadata.lastEditTime
-            if (lastEditTime != null) {
-                OutlinedCard(modifier = Modifier.padding(16.dp)) {
-                    val textColorDim = LocalContentColor.current.copy(alpha = 0.6f)
-                    val colorPrimary = MaterialTheme.colorScheme.primary
-                    val lastEditor = metadata.lastEditor
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = textColorDim)) {
-                                append(stringResource(Res.string.alley_edit_artist_edit_last_modified_prefix))
-                            }
-                            append(' ')
-                            withStyle(SpanStyle(color = colorPrimary)) {
-                                append(LocalDateTimeFormatter.current.formatDateTime(lastEditTime))
-                            }
-                            if (lastEditor != null) {
-                                append(' ')
-                                withStyle(SpanStyle(color = textColorDim)) {
-                                    append(stringResource(Res.string.alley_edit_artist_edit_last_modified_author_prefix))
-                                }
-                                append(' ')
-                                append(lastEditor)
-                            }
-                        },
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                    )
-                }
-            }
-
+        val focusState = rememberFocusState(
+            listOfNotNull(
+                textState.status.takeIf { showStatus },
+                textState.id,
+                textState.booth,
+                textState.name,
+                textState.summary,
+                textState.links,
+                textState.storeLinks,
+                textState.catalogLinks,
+                textState.commissions,
+                textState.seriesInferred,
+                textState.seriesConfirmed,
+                textState.merchInferred,
+                textState.merchConfirmed,
+                textState.notes,
+                textState.editorNotes.takeIf { showEditorNotes },
+            )
+        )
+        ArtistForm(focusState, forceLocked, modifier) {
+            MetadataSection(state.metadata)
+            PasteLinkSection(
+                links = state.links,
+                storeLinks = state.storeLinks,
+                commissions = state.commissions,
+            )
             if (showStatus) {
-                DropdownSection(
-                    state = textState.status,
-                    headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_status)) },
-                    options = ArtistStatus.entries,
-                    optionToText = { stringResource(it.title) },
-                    leadingIcon = { Icon(imageVector = it.icon, null) },
-                    expandedItemText = {
-                        Column {
-                            Text(stringResource(it.title))
-                            Text(
-                                text = it.description(metadata.lastEditor),
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(start = 32.dp)
-                            )
-                        }
-                    },
-                    nextFocus = textState.id.focusRequester
-                )
+                StatusSection(state = textState.status, metadata = state.metadata)
             }
-
-            SingleTextSection(
+            IdSection(
                 state = textState.id,
-                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_id)) },
-                previousFocus = textState.status.focusRequester.takeIf { showStatus },
-                nextFocus = textState.booth.focusRequester,
-                forceLocked = forceLockId || forceLocked,
-                errorText = { errorState.idErrorMessage() },
+                forceLock = forceLockId,
+                errorText = errorState.idErrorMessage,
             )
-
-            SingleTextSection(
-                state = textState.booth,
-                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
-                previousFocus = textState.id.focusRequester,
-                nextFocus = textState.name.focusRequester,
-                inputTransformation = InputTransformation.maxLength(3),
-                errorText = { errorState.boothErrorMessage() },
-            )
-            SingleTextSection(
-                state = textState.name,
-                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
-                previousFocus = textState.booth.focusRequester,
-                nextFocus = textState.summary.focusRequester,
-            )
-            SingleTextSection(
-                state = textState.summary,
-                headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
-                previousFocus = textState.name.focusRequester,
-                nextFocus = textState.links.focusRequester,
-            )
+            BoothSection(state = textState.booth, errorText = errorState.boothErrorMessage)
+            NameSection(textState.name)
+            SummarySection(textState.summary)
             LinksSection(
                 state = textState.links,
-                title = Res.string.alley_edit_artist_edit_links,
-                items = state.links,
-                pendingErrorMessage = { errorState.linksErrorMessage() },
-                previousFocus = textState.summary.focusRequester,
-                nextFocus = textState.storeLinks.focusRequester,
+                links = state.links,
+                pendingErrorMessage = errorState.linksErrorMessage,
             )
-            LinksSection(
+            StoreLinksSection(
                 state = textState.storeLinks,
-                title = Res.string.alley_edit_artist_edit_store_links,
-                items = state.storeLinks,
-                pendingErrorMessage = { errorState.storeLinksErrorMessage() },
-                previousFocus = textState.links.focusRequester,
-                nextFocus = textState.catalogLinks.focusRequester,
+                storeLinks = state.storeLinks,
+                pendingErrorMessage = errorState.storeLinksErrorMessage,
             )
-            MultiTextSection(
+            CatalogLinksSection(
                 state = textState.catalogLinks,
-                title = Res.string.alley_edit_artist_edit_catalog_links,
-                items = state.catalogLinks,
-                itemToText = { it },
-                itemToSerializedValue = { it },
-                itemToCommitted = { it },
-                previousFocus = textState.storeLinks.focusRequester,
-                nextFocus = textState.commissions.focusRequester,
-                pendingErrorMessage = { errorState.catalogLinksErrorMessage() },
+                catalogLinks = state.catalogLinks,
+                pendingErrorMessage = errorState.catalogLinksErrorMessage,
             )
-
-
-            val onSiteText = stringResource(AlleyRes.string.alley_artist_commission_on_site)
-            val onlineText = stringResource(AlleyRes.string.alley_artist_commission_online)
-            MultiTextSection(
-                state = textState.commissions,
-                title = Res.string.alley_edit_artist_edit_commissions,
-                items = state.commissions,
-                itemToText = {
-                    when (it) {
-                        is CommissionModel.Link -> it.host ?: it.link
-                        CommissionModel.OnSite -> onSiteText
-                        CommissionModel.Online -> onlineText
-                        is CommissionModel.Unknown -> it.value
-                    }
-                },
-                itemToSerializedValue = { it.serializedValue },
-                itemToCommitted = CommissionModel::parse,
-                predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
-                previousFocus = textState.catalogLinks.focusRequester,
-                nextFocus = textState.seriesInferred.focusRequester,
-            )
-
-            val hasConfirmedSeries by derivedStateOf { state.seriesConfirmed.isNotEmpty() }
-            var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
-            val showSeriesInferred =
-                forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred
+            CommissionsSection(textState.commissions, state.commissions)
             SeriesSection(
-                state = textState.seriesInferred,
-                title = Res.string.alley_edit_artist_edit_series_inferred,
-                items = state.seriesInferred,
-                showItems = { showSeriesInferred },
-                predictions = seriesPredictions,
-                image = seriesImage,
-                previousFocus = textState.commissions.focusRequester,
-                nextFocus = textState.seriesConfirmed.focusRequester,
+                stateSeriesInferred = textState.seriesInferred,
+                stateSeriesConfirmed = textState.seriesConfirmed,
+                seriesInferred = state.seriesInferred,
+                seriesConfirmed = state.seriesConfirmed,
+                seriesPredictions = seriesPredictions,
+                seriesImage = seriesImage,
             )
-
-            if (!forceLocked) {
-                ShowInferredButton(
-                    hasConfirmed = hasConfirmedSeries,
-                    showingInferred = showSeriesInferred,
-                    onClick = { requestedShowSeriesInferred = it },
-                )
-            }
-
-            SeriesSection(
-                state = textState.seriesConfirmed,
-                title = Res.string.alley_edit_artist_edit_series_confirmed,
-                items = state.seriesConfirmed,
-                predictions = seriesPredictions,
-                image = seriesImage,
-                previousFocus = textState.seriesInferred.focusRequester,
-                nextFocus = textState.merchInferred.focusRequester,
+            MerchSection(
+                stateMerchInferred = textState.merchInferred,
+                stateMerchConfirmed = textState.merchConfirmed,
+                merchInferred = state.merchInferred,
+                merchConfirmed = state.merchConfirmed,
+                merchPredictions = merchPredictions,
             )
-
-            val hasConfirmedMerch by derivedStateOf { state.merchConfirmed.isNotEmpty() }
-            var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
-            val showMerchInferred = forceLocked || !hasConfirmedMerch || requestedShowMerchInferred
-            MultiTextSection(
-                state = textState.merchInferred,
-                title = Res.string.alley_edit_artist_edit_merch_inferred,
-                items = state.merchInferred,
-                showItems = { showMerchInferred },
-                predictions = merchPredictions,
-                itemToText = { it.name },
-                itemToSerializedValue = { it.name },
-                previousFocus = textState.seriesConfirmed.focusRequester,
-                nextFocus = textState.merchConfirmed.focusRequester,
-            )
-
-            if (!forceLocked) {
-                ShowInferredButton(
-                    hasConfirmed = hasConfirmedMerch,
-                    showingInferred = showMerchInferred,
-                    onClick = { requestedShowMerchInferred = it },
-                )
-            }
-
-            MultiTextSection(
-                state = textState.merchConfirmed,
-                title = Res.string.alley_edit_artist_edit_merch_confirmed,
-                items = state.merchConfirmed,
-                predictions = merchPredictions,
-                itemToText = { it.name },
-                itemToSerializedValue = { it.name },
-                previousFocus = textState.merchInferred.focusRequester,
-                nextFocus = textState.notes.focusRequester,
-            )
-            LongTextSection(
-                textState.notes,
-                headerText = {
-                    Text(stringResource(Res.string.alley_edit_artist_edit_notes))
-                },
-            )
-
+            NotesSection(textState.notes)
             if (showEditorNotes) {
-                LongTextSection(
-                    textState.editorNotes,
-                    headerText = {
-                        Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
-                    },
-                )
+                EditorNotesSection(textState.editorNotes)
             }
         }
     }
 
     @Composable
-    private fun <T> EntryFormScope.MultiTextSection(
+    fun ArtistForm(
+        focusState: EntryForm2.FocusState,
+        forceLocked: Boolean = false,
+        modifier: Modifier = Modifier,
+        content: @Composable ArtistFormScope.() -> Unit,
+    ) {
+        EntryForm2(forceLocked = forceLocked, focusState = focusState, modifier = modifier) {
+            ArtistFormScopeImpl(this).content()
+        }
+    }
+
+    @Composable
+    internal fun LastEditedText(lastEditor: String?, lastEditTime: Instant) {
+        OutlinedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            val textColorDim = LocalContentColor.current.copy(alpha = 0.6f)
+            val colorPrimary = MaterialTheme.colorScheme.primary
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(color = textColorDim)) {
+                        append(stringResource(Res.string.alley_edit_artist_edit_last_modified_prefix))
+                    }
+                    append(' ')
+                    withStyle(SpanStyle(color = colorPrimary)) {
+                        append(LocalDateTimeFormatter.current.formatDateTime(lastEditTime))
+                    }
+                    if (lastEditor != null) {
+                        append(' ')
+                        withStyle(SpanStyle(color = textColorDim)) {
+                            append(stringResource(Res.string.alley_edit_artist_edit_last_modified_author_prefix))
+                        }
+                        append(' ')
+                        append(lastEditor)
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            )
+        }
+    }
+
+    internal fun processPastedLink(
+        links: SnapshotStateList<LinkModel>,
+        storeLinks: SnapshotStateList<LinkModel>,
+        commissions: SnapshotStateList<CommissionModel>,
+        link: String,
+    ) {
+        val fixedLink = Uri.parseOrNull(link)
+            ?.buildUpon()
+            ?.clearQuery()
+            ?.scheme("https")
+            ?.toString()
+            ?: link
+        val linkModel = LinkModel.parse(fixedLink)
+        when (linkModel.logo) {
+            Logo.BIG_CARTEL,
+            Logo.ETSY,
+            Logo.FAIRE,
+            Logo.GALLERY_NUCLEUS,
+            Logo.GUMROAD,
+            Logo.INPRNT,
+            Logo.ITCH_IO,
+            Logo.REDBUBBLE,
+            Logo.SHOPIFY,
+            Logo.STORENVY,
+            Logo.THREADLESS,
+                -> storeLinks += linkModel
+
+            Logo.VGEN -> commissions += CommissionModel.parse(fixedLink)
+
+            Logo.ART_STATION,
+            Logo.BLUESKY,
+            Logo.CARRD,
+            Logo.DEVIANT_ART,
+            Logo.DISCORD,
+            Logo.FACEBOOK,
+            Logo.GAME_JOLT,
+            Logo.GITHUB,
+            Logo.INSTAGRAM,
+            Logo.KICKSTARTER,
+            Logo.KO_FI,
+            Logo.LINKTREE,
+            Logo.PATREON,
+            Logo.PIXIV,
+            Logo.SUBSTACK,
+            Logo.THREADS,
+            Logo.TIK_TOK,
+            Logo.TUMBLR,
+            Logo.TWITCH,
+            Logo.WEEBLY,
+            Logo.X,
+            Logo.YOU_TUBE,
+            null,
+                -> links += linkModel
+        }
+    }
+
+    context(formScope: EntryFormScope)
+    @Composable
+    internal fun <T> MultiTextSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<T>,
@@ -689,8 +668,6 @@ object ArtistForm {
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
         itemToText: (T) -> String,
         itemToSerializedValue: (T) -> String,
-        previousFocus: FocusRequester? = null,
-        nextFocus: FocusRequester? = null,
         itemToCommitted: ((String) -> T)? = null,
         pendingErrorMessage: () -> String? = { null },
     ) {
@@ -736,22 +713,18 @@ object ArtistForm {
                 }
             },
             prediction = { _, value -> Text(text = itemToText(value)) },
-            previousFocus = previousFocus,
-            nextFocus = nextFocus,
             pendingErrorMessage = pendingErrorMessage,
         )
     }
 
     @Composable
-    private fun EntryFormScope.SeriesSection(
+    internal fun EntryFormScope.SeriesSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<SeriesInfo>,
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
         image: (SeriesInfo) -> String?,
-        previousFocus: FocusRequester?,
-        nextFocus: FocusRequester?,
     ) {
         MultiTextSection(
             state = state,
@@ -788,13 +761,12 @@ object ArtistForm {
                     }
                 }
             },
-            previousFocus = previousFocus,
-            nextFocus = nextFocus,
         )
     }
 
+    context(formScope: EntryFormScope)
     @Composable
-    fun <T> EntryFormScope.MultiTextSection(
+    internal fun <T> MultiTextSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<T>,
@@ -806,8 +778,6 @@ object ArtistForm {
         prediction: @Composable (index: Int, T) -> Unit = item,
         sortValue: ((T) -> String)? = null,
         pendingErrorMessage: () -> String? = { null },
-        previousFocus: FocusRequester? = null,
-        nextFocus: FocusRequester? = null,
     ) {
         val addUniqueErrorState =
             rememberAddUniqueErrorState(state = state, items = items, sortValue = sortValue)
@@ -827,8 +797,6 @@ object ArtistForm {
             preferPrediction = true,
             onPredictionChosen = addUniqueErrorState::addAndEnforceUnique,
             pendingErrorMessage = { addUniqueErrorState.errorMessage ?: pendingErrorMessage() },
-            previousFocus = previousFocus,
-            nextFocus = nextFocus,
         )
     }
 
@@ -851,7 +819,7 @@ object ArtistForm {
     }
 
     @Composable
-    private fun ShowInferredButton(
+    internal fun ShowInferredButton(
         hasConfirmed: Boolean,
         showingInferred: Boolean,
         onClick: (requestShowInferred: Boolean) -> Unit,
@@ -878,14 +846,13 @@ object ArtistForm {
         }
     }
 
+    context(scope: EntryFormScope)
     @Composable
-    private fun EntryFormScope.LinksSection(
+    internal fun LinksSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<LinkModel>,
         pendingErrorMessage: () -> String?,
-        previousFocus: FocusRequester?,
-        nextFocus: FocusRequester?,
     ) {
         MultiTextSection(
             state = state,
@@ -922,8 +889,6 @@ object ArtistForm {
                 )
             },
             pendingErrorMessage = pendingErrorMessage,
-            previousFocus = previousFocus,
-            nextFocus = nextFocus,
         )
     }
 
