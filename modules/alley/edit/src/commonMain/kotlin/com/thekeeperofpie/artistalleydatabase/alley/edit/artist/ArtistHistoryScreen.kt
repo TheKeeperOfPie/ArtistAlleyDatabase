@@ -326,8 +326,7 @@ object ArtistHistoryScreen {
                         .filterNotNull()
                         .mapLatest {
                             withContext(PlatformDispatchers.IO) {
-                                ArtistFormState.empty()
-                                    .applyDatabaseEntry(it, seriesById, merchById)
+                                ArtistFormState().applyDatabaseEntry(it, seriesById, merchById)
                             }
                         }
                         .collectLatest { value = it }

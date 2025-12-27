@@ -168,20 +168,14 @@ interface ArtistFormScope : EntryFormScope {
 
     @Composable
     fun SeriesSection(
-        stateSeriesInferred: EntryForm2.SingleTextState,
-        stateSeriesConfirmed: EntryForm2.SingleTextState,
-        seriesInferred: SnapshotStateList<SeriesInfo>,
-        seriesConfirmed: SnapshotStateList<SeriesInfo>,
+        state: ArtistFormState.SeriesState,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
     )
 
     @Composable
     fun MerchSection(
-        stateMerchInferred: EntryForm2.SingleTextState,
-        stateMerchConfirmed: EntryForm2.SingleTextState,
-        merchInferred: SnapshotStateList<MerchInfo>,
-        merchConfirmed: SnapshotStateList<MerchInfo>,
+        state: ArtistFormState.MerchState,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
     )
 
@@ -370,22 +364,19 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
 
     @Composable
     override fun SeriesSection(
-        stateSeriesInferred: EntryForm2.SingleTextState,
-        stateSeriesConfirmed: EntryForm2.SingleTextState,
-        seriesInferred: SnapshotStateList<SeriesInfo>,
-        seriesConfirmed: SnapshotStateList<SeriesInfo>,
+        state: ArtistFormState.SeriesState,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
     ) {
-        val hasConfirmedSeries by derivedStateOf { seriesConfirmed.isNotEmpty() }
+        val hasConfirmedSeries by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
         val showSeriesInferred =
             forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred
         with(ArtistForm) {
             SeriesSection(
-                state = stateSeriesInferred,
+                state = state.stateInferred,
                 title = Res.string.alley_edit_artist_edit_series_inferred,
-                items = seriesInferred,
+                items = state.inferred,
                 showItems = { showSeriesInferred },
                 predictions = seriesPredictions,
                 image = seriesImage,
@@ -400,9 +391,9 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             }
 
             SeriesSection(
-                state = stateSeriesConfirmed,
+                state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_series_confirmed,
-                items = seriesConfirmed,
+                items = state.confirmed,
                 predictions = seriesPredictions,
                 image = seriesImage,
             )
@@ -411,20 +402,17 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
 
     @Composable
     override fun MerchSection(
-        stateMerchInferred: EntryForm2.SingleTextState,
-        stateMerchConfirmed: EntryForm2.SingleTextState,
-        merchInferred: SnapshotStateList<MerchInfo>,
-        merchConfirmed: SnapshotStateList<MerchInfo>,
+        state: ArtistFormState.MerchState,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
     ) {
-        val hasConfirmedMerch by derivedStateOf { merchConfirmed.isNotEmpty() }
+        val hasConfirmedMerch by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
         val showMerchInferred = forceLocked || !hasConfirmedMerch || requestedShowMerchInferred
         with(ArtistForm) {
             MultiTextSection(
-                state = stateMerchInferred,
+                state = state.stateInferred,
                 title = Res.string.alley_edit_artist_edit_merch_inferred,
-                items = merchInferred,
+                items = state.inferred,
                 showItems = { showMerchInferred },
                 predictions = merchPredictions,
                 itemToText = { it.name },
@@ -440,9 +428,9 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             }
 
             MultiTextSection(
-                state = stateMerchConfirmed,
+                state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_merch_confirmed,
-                items = merchConfirmed,
+                items = state.confirmed,
                 predictions = merchPredictions,
                 itemToText = { it.name },
                 itemToSerializedValue = { it.name },
@@ -498,10 +486,10 @@ object ArtistForm {
                 textState.storeLinks,
                 textState.catalogLinks,
                 textState.commissions,
-                textState.seriesInferred,
-                textState.seriesConfirmed,
-                textState.merchInferred,
-                textState.merchConfirmed,
+                state.series.stateInferred,
+                state.series.stateConfirmed,
+                state.merch.stateInferred,
+                state.merch.stateConfirmed,
                 textState.notes,
                 textState.editorNotes.takeIf { showEditorNotes },
             )
@@ -541,20 +529,11 @@ object ArtistForm {
             )
             CommissionsSection(textState.commissions, state.commissions)
             SeriesSection(
-                stateSeriesInferred = textState.seriesInferred,
-                stateSeriesConfirmed = textState.seriesConfirmed,
-                seriesInferred = state.seriesInferred,
-                seriesConfirmed = state.seriesConfirmed,
+                state = state.series,
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
             )
-            MerchSection(
-                stateMerchInferred = textState.merchInferred,
-                stateMerchConfirmed = textState.merchConfirmed,
-                merchInferred = state.merchInferred,
-                merchConfirmed = state.merchConfirmed,
-                merchPredictions = merchPredictions,
-            )
+            MerchSection(state = state.merch, merchPredictions = merchPredictions)
             NotesSection(textState.notes)
             if (showEditorNotes) {
                 EditorNotesSection(textState.editorNotes)
@@ -563,7 +542,7 @@ object ArtistForm {
     }
 
     @Composable
-    fun ArtistForm(
+    operator fun invoke(
         focusState: EntryForm2.FocusState,
         forceLocked: Boolean = false,
         modifier: Modifier = Modifier,
@@ -576,7 +555,7 @@ object ArtistForm {
 
     @Composable
     internal fun LastEditedText(lastEditor: String?, lastEditTime: Instant) {
-        OutlinedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        OutlinedCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
             val textColorDim = LocalContentColor.current.copy(alpha = 0.6f)
             val colorPrimary = MaterialTheme.colorScheme.primary
             Text(
@@ -608,6 +587,7 @@ object ArtistForm {
         commissions: SnapshotStateList<CommissionModel>,
         link: String,
     ) {
+        if (link.length < 6) return
         val fixedLink = Uri.parseOrNull(link)
             ?.buildUpon()
             ?.clearQuery()

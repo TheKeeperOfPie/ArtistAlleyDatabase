@@ -369,13 +369,12 @@ internal object ArtistFormMergeScreen {
                     ArtistField.MERCH_CONFIRMED_REMOVED,
                 ),
             )
-            return ArtistFormState.empty()
-                .applyDatabaseEntry(
-                    artist = artist,
-                    seriesById = seriesById,
-                    merchById = merchById,
-                    force = true,
-                )
+            return ArtistFormState().applyDatabaseEntry(
+                artist = artist,
+                seriesById = seriesById,
+                merchById = merchById,
+                force = true,
+            )
         }
     }
 

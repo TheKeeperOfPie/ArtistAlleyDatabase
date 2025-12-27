@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -15,7 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRe
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
-import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -47,13 +45,17 @@ class ArtistFormViewModel(
     ) { ArtistFormScreen.State.Progress.LOADING }
     val state = ArtistFormScreen.State(
         progress = progress,
-        artistFormState = savedStateHandle.saveable(
-            key = "artistFormState",
-            saver = ArtistFormState.Saver,
+        formState = savedStateHandle.saveable(
+            key = "formState",
+            saver = ArtistFormScreen.State.FormState.Saver,
         ) {
-            ArtistFormState().apply {
-                textState.id.lockState = EntryLockState.LOCKED
-            }
+            ArtistFormScreen.State.FormState()
+        },
+        textState = savedStateHandle.saveable(
+            key = "textState",
+            saver = ArtistFormScreen.State.TextState.Saver,
+        ) {
+            ArtistFormScreen.State.TextState()
         },
         saveTaskState = saveTask.state,
     )
@@ -78,7 +80,7 @@ class ArtistFormViewModel(
                 return@withContext
             }
             this@ArtistFormViewModel.artist = artist
-            state.artistFormState.applyDatabaseEntry(
+            state.applyDatabaseEntry(
                 artist = artist,
                 seriesById = tagAutocomplete.seriesById.first(),
                 merchById = tagAutocomplete.merchById.first(),
@@ -98,8 +100,10 @@ class ArtistFormViewModel(
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
-    fun onClickDone() =
-        saveTask.triggerManual { state.artistFormState.captureDatabaseEntry(dataYear) }
+    fun onClickDone() {
+        val artist = artist ?: return
+        saveTask.triggerManual { state.captureDatabaseEntry(artist) }
+    }
 
     fun onSubmitPrivateKey(privateKey: String) {
         progress.value = ArtistFormScreen.State.Progress.LOADING

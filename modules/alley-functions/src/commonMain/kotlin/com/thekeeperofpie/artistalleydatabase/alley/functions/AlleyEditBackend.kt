@@ -33,6 +33,7 @@ import kotlinx.serialization.json.Json
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
+import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -261,6 +262,7 @@ object AlleyEditBackend {
             } else {
                 val updatedArtist = request.updated.copy(
                     lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
+                    lastEditTime = Clock.System.now(),
                 )
                 val historyEntry = ArtistHistoryEntry.create(currentArtist, updatedArtist)
                     .toDatabaseEntry(Uuid.parse(updatedArtist.id))

@@ -50,7 +50,7 @@ fun rememberErrorState(state: ArtistFormState.TextState): ArtistErrorState {
 
 @Stable
 @Composable
-private fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): State<String?> {
+fun rememberBoothValidator(boothState: EntryForm2.SingleTextState): State<String?> {
     val errorMessage = stringResource(Res.string.alley_edit_artist_error_booth)
     return remember {
         derivedStateOf {

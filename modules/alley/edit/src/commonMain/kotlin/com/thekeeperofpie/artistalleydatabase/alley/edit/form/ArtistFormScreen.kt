@@ -29,8 +29,12 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -42,22 +46,31 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_action_submit_private_key
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_private_key_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_saved_changes
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberErrorState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen.State.ErrorState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
+import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
+import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -130,7 +143,7 @@ object ArtistFormScreen {
 
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
-        val errorState = rememberErrorState(state.artistFormState.textState)
+        val errorState = rememberErrorState(state.textState)
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -139,7 +152,7 @@ object ArtistFormScreen {
                             stringResource(
                                 Res.string.alley_edit_artist_edit_title_editing,
                                 stringResource(dataYear.shortName),
-                                state.artistFormState.textState.name.value.text.ifBlank { state.artistFormState.textState.id.value.text.toString() },
+                                state.textState.name.value.text,
                             )
                         )
                     },
@@ -172,7 +185,8 @@ object ArtistFormScreen {
                     State.Progress.LOADED -> {
                         Form(
                             saveTaskState = saveTaskState,
-                            artistFormState = state.artistFormState,
+                            formState = state.formState,
+                            textState = state.textState,
                             errorState = errorState,
                             seriesPredictions = seriesPredictions,
                             merchPredictions = merchPredictions,
@@ -196,8 +210,9 @@ object ArtistFormScreen {
 
     @Composable
     private fun Form(
-        artistFormState: ArtistFormState,
-        errorState: ArtistErrorState,
+        formState: State.FormState,
+        textState: State.TextState,
+        errorState: State.ErrorState,
         saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
@@ -212,19 +227,64 @@ object ArtistFormScreen {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()
             ) {
+                val focusState = rememberFocusState(
+                    listOfNotNull(
+                        textState.booth,
+                        textState.name,
+                        textState.summary,
+                        textState.links,
+                        textState.storeLinks,
+                        textState.catalogLinks,
+                        textState.commissions,
+                        formState.series.stateInferred,
+                        formState.series.stateConfirmed,
+                        formState.merch.stateInferred,
+                        formState.merch.stateConfirmed,
+                        textState.notes,
+                    )
+                )
+
                 ArtistForm(
-                    state = artistFormState,
-                    errorState = errorState,
-                    seriesPredictions = seriesPredictions,
-                    merchPredictions = merchPredictions,
-                    seriesImage = seriesImage,
-                    forceLockId = true,
-                    showStatus = false,
-                    showEditorNotes = false,
+                    focusState = focusState,
                     modifier = Modifier.fillMaxHeight()
                         .width(960.dp)
                         .verticalScroll(rememberScrollState())
-                )
+                ) {
+                    PasteLinkSection(
+                        links = formState.links,
+                        storeLinks = formState.storeLinks,
+                        commissions = formState.commissions,
+                    )
+                    BoothSection(state = textState.booth, errorText = errorState.boothErrorMessage)
+                    NameSection(textState.name)
+                    SummarySection(textState.summary)
+                    LinksSection(
+                        state = textState.links,
+                        links = formState.links,
+                        pendingErrorMessage = errorState.linksErrorMessage,
+                    )
+                    StoreLinksSection(
+                        state = textState.storeLinks,
+                        storeLinks = formState.storeLinks,
+                        pendingErrorMessage = errorState.storeLinksErrorMessage,
+                    )
+                    CatalogLinksSection(
+                        state = textState.catalogLinks,
+                        catalogLinks = formState.catalogLinks,
+                        pendingErrorMessage = errorState.catalogLinksErrorMessage,
+                    )
+                    CommissionsSection(textState.commissions, formState.commissions)
+                    SeriesSection(
+                        formState.series,
+                        seriesPredictions = seriesPredictions,
+                        seriesImage = seriesImage,
+                    )
+                    MerchSection(
+                        formState.merch,
+                        merchPredictions = merchPredictions,
+                    )
+                    NotesSection(textState.notes)
+                }
                 // TODO: Support images?
             }
         }
@@ -258,14 +318,220 @@ object ArtistFormScreen {
     }
 
     @Stable
+    @Composable
+    fun rememberErrorState(state: State.TextState): ErrorState {
+        val boothErrorMessage by rememberBoothValidator(state.booth)
+        val linksErrorMessage by rememberLinkValidator(state.links)
+        val storeLinksErrorMessage by rememberLinkValidator(state.storeLinks)
+        val catalogLinksErrorMessage by rememberLinkValidator(state.catalogLinks)
+        return ErrorState(
+            boothErrorMessage = { boothErrorMessage },
+            linksErrorMessage = { linksErrorMessage },
+            storeLinksErrorMessage = { storeLinksErrorMessage },
+            catalogLinksErrorMessage = { catalogLinksErrorMessage },
+        )
+    }
+
+    @Stable
     class State(
         val progress: StateFlow<Progress>,
-        val artistFormState: ArtistFormState,
+        val formState: FormState,
+        val textState: TextState,
         val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
     ) {
+        fun applyDatabaseEntry(
+            artist: ArtistDatabaseEntry.Impl,
+            seriesById: Map<String, SeriesInfo>,
+            merchById: Map<String, MerchInfo>,
+            force: Boolean,
+        ) = apply {
+            val links = artist.links.map(LinkModel.Companion::parse).sortedBy { it.logo }
+            val storeLinks =
+                artist.storeLinks.map(LinkModel.Companion::parse).sortedBy { it.logo }
+            val commissions = artist.commissions.map(CommissionModel.Companion::parse)
+
+            val seriesInferred =
+                artist.seriesInferred.map { seriesById[it] ?: SeriesInfo.fake(it) }
+            val seriesConfirmed =
+                artist.seriesConfirmed.map { seriesById[it] ?: SeriesInfo.fake(it) }
+            val merchInferred =
+                artist.merchInferred.map { merchById[it] ?: MerchInfo.fake(it) }
+            val merchConfirmed =
+                artist.merchConfirmed.map { merchById[it] ?: MerchInfo.fake(it) }
+
+            ArtistFormState.applyValue(textState.booth, artist.booth, force)
+            ArtistFormState.applyValue(textState.name, artist.name, force)
+            ArtistFormState.applyValue(textState.summary, artist.summary, force)
+            ArtistFormState.applyValue(textState.notes, artist.notes, force)
+
+            ArtistFormState.applyValue(textState.links, formState.links, links, force)
+            ArtistFormState.applyValue(
+                state = textState.storeLinks,
+                list = formState.storeLinks,
+                value = storeLinks,
+                force = force,
+            )
+            ArtistFormState.applyValue(
+                state = textState.catalogLinks,
+                list = formState.catalogLinks,
+                value = artist.catalogLinks,
+                force = force,
+            )
+            ArtistFormState.applyValue(
+                state = textState.commissions,
+                list = formState.commissions,
+                value = commissions,
+                force = force,
+            )
+
+            formState.series.applyValue(
+                inferred = seriesInferred,
+                confirmed = seriesConfirmed,
+                force = force,
+            )
+            formState.merch.applyValue(
+                inferred = merchInferred,
+                confirmed = merchConfirmed,
+                force = force,
+            )
+        }
+
+        fun captureDatabaseEntry(
+            artist: ArtistDatabaseEntry.Impl,
+        ): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
+            val booth = textState.booth.value.text.toString()
+            val name = textState.name.value.text.toString()
+            val summary = textState.summary.value.text.toString()
+
+            // TODO: Include pending value?
+            val links = formState.links.toList().map { it.link }
+                .plus(textState.links.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+            val storeLinks = formState.storeLinks.toList().map { it.link }
+                .plus(textState.storeLinks.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+            val catalogLinks = formState.catalogLinks.toList()
+                .plus(textState.catalogLinks.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+
+            val notes = textState.notes.value.text.toString()
+            val commissions = formState.commissions.toList().map { it.serializedValue }
+                .plus(textState.commissions.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+
+            val (seriesInferred, seriesConfirmed) = formState.series.captureInferredAndConfirmed()
+            val (merchInferred, merchConfirmed) = formState.merch.captureInferredAndConfirmed()
+
+            // TODO: Image support
+            val images = emptyList<EditImage>()
+            return images to artist.copy(
+                booth = booth,
+                name = name,
+                summary = summary,
+                links = links,
+                storeLinks = storeLinks,
+                catalogLinks = catalogLinks,
+                notes = notes,
+                commissions = commissions,
+                seriesInferred = seriesInferred,
+                seriesConfirmed = seriesConfirmed,
+                merchInferred = merchInferred,
+                merchConfirmed = merchConfirmed,
+            )
+        }
+
         @Serializable
         enum class Progress {
             LOADING, LOADED, BAD_AUTH,
+        }
+
+        @Stable
+        class FormState(
+            val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
+            val storeLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
+            val catalogLinks: SnapshotStateList<String> = SnapshotStateList(),
+            val commissions: SnapshotStateList<CommissionModel> = SnapshotStateList(),
+            val series: ArtistFormState.SeriesState = ArtistFormState.SeriesState(),
+            val merch: ArtistFormState.MerchState = ArtistFormState.MerchState(),
+        ) {
+            object Saver : ComposeSaver<FormState, List<Any?>> {
+                override fun SaverScope.save(value: FormState) = listOf(
+                    with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
+                    with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.storeLinks) },
+                    with(StateUtils.snapshotListJsonSaver<String>()) { save(value.catalogLinks) },
+                    with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { save(value.commissions) },
+                    with(ArtistFormState.SeriesState.Saver) { save(value.series) },
+                    with(ArtistFormState.MerchState.Saver) { save(value.merch) },
+                )
+
+                override fun restore(value: List<Any?>) = FormState(
+                    links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[0] as String) }!!,
+                    storeLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[1] as String) }!!,
+                    catalogLinks = with(StateUtils.snapshotListJsonSaver<String>()) { restore(value[2] as String) }!!,
+                    commissions = with(StateUtils.snapshotListJsonSaver<CommissionModel>()) {
+                        restore(
+                            value[3] as String
+                        )
+                    }!!,
+                    series = with(ArtistFormState.SeriesState.Saver) { restore(value[4] as List<Any?>) },
+                    merch = with(ArtistFormState.MerchState.Saver) { restore(value[5] as List<Any?>) },
+                )
+            }
+        }
+
+        @Stable
+        class TextState(
+            val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val summary: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val links: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val storeLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val catalogLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val commissions: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        ) {
+            object Saver : ComposeSaver<TextState, List<Any>> {
+                override fun SaverScope.save(value: TextState) = listOf(
+                    with(EntryForm2.SingleTextState.Saver) { save(value.booth) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.name) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.summary) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.links) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.storeLinks) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.catalogLinks) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.commissions) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.notes) },
+                )
+
+                override fun restore(value: List<Any>) = TextState(
+                    booth = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
+                    name = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
+                    summary = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+                    links = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
+                    storeLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[4]) },
+                    catalogLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[5]) },
+                    commissions = with(EntryForm2.SingleTextState.Saver) { restore(value[6]) },
+                    notes = with(EntryForm2.SingleTextState.Saver) { restore(value[7]) },
+                )
+            }
+        }
+
+        @Stable
+        class ErrorState(
+            val boothErrorMessage: () -> String?,
+            val linksErrorMessage: () -> String?,
+            val storeLinksErrorMessage: () -> String?,
+            val catalogLinksErrorMessage: () -> String?,
+        ) {
+            val hasAnyError by derivedStateOf {
+                boothErrorMessage() != null ||
+                        linksErrorMessage() != null ||
+                        storeLinksErrorMessage() != null ||
+                        catalogLinksErrorMessage() != null
+            }
         }
     }
 }
