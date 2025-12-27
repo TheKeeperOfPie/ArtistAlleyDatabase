@@ -41,6 +41,7 @@ import androidx.compose.foundation.text.input.insert
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.DropdownMenuItem
@@ -99,11 +100,13 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.different
 import artistalleydatabase.modules.entry.generated.resources.different_indicator_content_description
+import artistalleydatabase.modules.entry.generated.resources.entry_multi_text_submit
 import artistalleydatabase.modules.entry.generated.resources.entry_open_more_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
@@ -353,7 +356,7 @@ fun MultiTextSection(
     trailingIcon: (EntryForm2.MultiTextState.Entry) -> Pair<ImageVector, StringResource>? = { null },
     onNavigate: (EntryForm2.MultiTextState.Entry) -> Unit = {},
     items: SnapshotStateList<EntryForm2.MultiTextState.Entry>,
-    onItemCommitted: (String) -> Unit,
+    onItemCommitted: ((String) -> Unit)?,
     removeLastItem: () -> String?,
 ) {
     // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
@@ -363,10 +366,12 @@ fun MultiTextSection(
         headerText = headerText,
         entryPredictions = entryPredictions,
         items = items,
-        onItemCommitted = {
-            onItemCommitted(it)
-            state.value.clearText()
-        },
+        onItemCommitted = if (onItemCommitted != null) {
+            {
+                onItemCommitted(it)
+                state.value.clearText()
+            }
+        } else null,
         removeLastItem = removeLastItem,
         item = { index, value ->
             var showOverflow by remember { mutableStateOf(false) }
@@ -496,7 +501,6 @@ fun <T> MultiTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     items: SnapshotStateList<T>?,
-    onItemCommitted: (String) -> Unit,
     removeLastItem: () -> String?,
     item: @Composable (index: Int, T) -> Unit,
     entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
@@ -509,6 +513,7 @@ fun <T> MultiTextSection(
         }
     },
     pendingErrorMessage: () -> String? = { null },
+    onItemCommitted: ((String) -> Unit)? = null,
 ) {
     SectionHeader(
         text = headerText,
@@ -516,7 +521,7 @@ fun <T> MultiTextSection(
         onClick = {
             val newValue = state.value.text
             if (newValue.isNotBlank() && pendingErrorMessage() == null) {
-                onItemCommitted(newValue.trim().toString())
+                onItemCommitted?.invoke(newValue.trim().toString())
             }
             state.rotateLockState()
         }
@@ -641,23 +646,33 @@ fun <T> MultiTextSection(
                 }
             ) {
                 val pendingErrorMessage = pendingErrorMessage()
+                val focusManager = LocalFocusManager.current
                 OpenSectionField(
                     state = state.value,
                     lockState = { state.lockState },
-                    totalSize = { items.size },
+                    onNext = {
+                        if (items.isNotEmpty()) {
+                            state.lockState = EntryLockState.LOCKED
+                        }
+                        focusManager.moveFocus(FocusDirection.Next)
+                    },
                     supportingText = pendingErrorMessage?.let { { Text(pendingErrorMessage) } },
                     isError = pendingErrorMessage != null,
-                    onLock = { state.lockState = EntryLockState.LOCKED },
-                    onDone = {
-                        if (preferPrediction && predictions.isNotEmpty()) {
+                    onDone = { manuallyClicked ->
+                        val newValue = state.value.text.trim().toString()
+                        if (newValue.isBlank()) return@OpenSectionField
+                        if (manuallyClicked &&
+                            onItemCommitted != null &&
+                            pendingErrorMessage() == null
+                        ) {
+                            onItemCommitted(newValue)
+                        } else if (preferPrediction && predictions.isNotEmpty()) {
                             onPredictionChosen(predictions.first())
                         } else if (pendingErrorMessage() == null) {
-                            val newValue = state.value.text
-                            if (newValue.isNotBlank()) {
-                                onItemCommitted(newValue.trim().toString())
-                            }
+                            onItemCommitted?.invoke(newValue)
                         }
                     },
+                    showSubmitButton = !preferPrediction || onItemCommitted != null,
                     modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
                         .onFocusChanged { state.isFocused = it.isFocused }
                         .focusRequester(state.focusRequester)
@@ -735,36 +750,9 @@ private fun EntryFormScope.SectionHeader(
 private fun OpenSectionField(
     state: TextFieldState,
     lockState: () -> EntryLockState?,
-    totalSize: () -> Int,
-    onLock: () -> Unit,
-    onDone: () -> Unit = {},
-    modifier: Modifier = Modifier,
-    supportingText: (@Composable () -> Unit)? = null,
-    isError: Boolean = false,
-) {
-    val focusManager = LocalFocusManager.current
-    OpenSectionField(
-        state = state,
-        onNext = {
-            if (totalSize() > 0) {
-                onLock()
-            }
-            focusManager.moveFocus(FocusDirection.Next)
-        },
-        onDone = onDone,
-        lockState = lockState,
-        supportingText = supportingText,
-        isError = isError,
-        modifier = modifier,
-    )
-}
-
-@Composable
-private fun OpenSectionField(
-    state: TextFieldState,
-    lockState: () -> EntryLockState?,
     onNext: () -> Unit,
-    onDone: () -> Unit,
+    onDone: (manuallyClicked: Boolean) -> Unit,
+    showSubmitButton: Boolean,
     modifier: Modifier = Modifier,
     supportingText: (@Composable () -> Unit)? = null,
     isError: Boolean = false,
@@ -778,12 +766,27 @@ private fun OpenSectionField(
             if (isBlank) {
                 onNext()
             } else {
-                onDone()
+                onDone(false)
             }
         },
         lineLimits = TextFieldLineLimits.SingleLine,
         supportingText = supportingText,
         isError = isError,
+        trailingIcon = if (showSubmitButton) {
+            {
+                AnimatedVisibility(
+                    visible = !isBlank,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    TooltipIconButton(
+                        icon = Icons.Default.CheckCircle,
+                        tooltipText = stringResource(Res.string.entry_multi_text_submit),
+                        onClick = { onDone(true) },
+                    )
+                }
+            }
+        } else null,
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
@@ -795,7 +798,7 @@ private fun OpenSectionField(
                             true
                         }
                         Key.Enter -> {
-                            onDone()
+                            onDone(false)
                             true
                         }
                         else -> false

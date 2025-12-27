@@ -15,10 +15,11 @@ import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,12 +43,12 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_hide_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_show_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_booth
@@ -69,7 +70,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_duplicate_entry
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_paste_link_prompt
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_tag_delete_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
@@ -81,7 +82,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
-import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
@@ -91,6 +91,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -187,12 +188,16 @@ interface ArtistFormScope : EntryFormScope {
         state: ArtistFormState.SeriesState,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        showConfirmed: Boolean = true,
+        allowCustomInput: Boolean = false,
     )
 
     @Composable
     fun MerchSection(
         state: ArtistFormState.MerchState,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        showConfirmed: Boolean = true,
+        allowCustomInput: Boolean = false,
     )
 
     @Composable
@@ -389,24 +394,31 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
     ) {
         val onSiteText = stringResource(AlleyRes.string.alley_artist_commission_on_site)
         val onlineText = stringResource(AlleyRes.string.alley_artist_commission_online)
-        with(ArtistForm) {
-            MultiTextSection(
-                state = state,
-                title = Res.string.alley_edit_artist_edit_commissions,
-                items = commissions,
-                itemToText = {
-                    when (it) {
-                        is CommissionModel.Link -> it.host ?: it.link
-                        CommissionModel.OnSite -> onSiteText
-                        CommissionModel.Online -> onlineText
-                        is CommissionModel.Unknown -> it.value
-                    }
-                },
-                itemToSerializedValue = { it.serializedValue },
-                itemToCommitted = CommissionModel::parse,
-                predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
-            )
-        }
+        ArtistForm.MultiTextSection(
+            state = state,
+            title = Res.string.alley_edit_artist_edit_commissions,
+            items = commissions,
+            leadingIcon = {
+                when (it) {
+                    is CommissionModel.Link -> Icons.Default.Link
+                    CommissionModel.OnSite -> Icons.Default.TableRestaurant
+                    CommissionModel.Online -> Icons.AutoMirrored.Default.Assignment
+                    is CommissionModel.Unknown -> null
+                }
+            },
+            itemToText = {
+                when (it) {
+                    is CommissionModel.Link -> it.host ?: it.link
+                    CommissionModel.OnSite -> onSiteText
+                    CommissionModel.Online -> onlineText
+                    is CommissionModel.Unknown -> it.value
+                }
+            },
+            itemToSerializedValue = { it.serializedValue },
+            itemToCommitted = CommissionModel::parse,
+            predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
+            preferPrediction = false,
+        )
     }
 
     @Composable
@@ -430,35 +442,39 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         state: ArtistFormState.SeriesState,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        showConfirmed: Boolean,
+        allowCustomInput: Boolean,
     ) {
         val hasConfirmedSeries by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
         val showSeriesInferred =
-            forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred
-        with(ArtistForm) {
-            SeriesSection(
-                state = state.stateInferred,
-                title = Res.string.alley_edit_artist_edit_series_inferred,
-                items = state.inferred,
-                showItems = { showSeriesInferred },
-                predictions = seriesPredictions,
-                image = seriesImage,
+            forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred || !showConfirmed
+        ArtistForm.SeriesSection(
+            state = state.stateInferred,
+            title = Res.string.alley_edit_artist_edit_series_inferred,
+            items = state.inferred,
+            showItems = { showSeriesInferred },
+            predictions = seriesPredictions,
+            image = seriesImage,
+            allowCustomInput = allowCustomInput,
+        )
+
+        if (!forceLocked && showConfirmed) {
+            ArtistForm.ShowInferredButton(
+                hasConfirmed = hasConfirmedSeries,
+                showingInferred = showSeriesInferred,
+                onClick = { requestedShowSeriesInferred = it },
             )
+        }
 
-            if (!forceLocked) {
-                ArtistForm.ShowInferredButton(
-                    hasConfirmed = hasConfirmedSeries,
-                    showingInferred = showSeriesInferred,
-                    onClick = { requestedShowSeriesInferred = it },
-                )
-            }
-
-            SeriesSection(
+        if (showConfirmed) {
+            ArtistForm.SeriesSection(
                 state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_series_confirmed,
                 items = state.confirmed,
                 predictions = seriesPredictions,
                 image = seriesImage,
+                allowCustomInput = allowCustomInput,
             )
         }
     }
@@ -467,10 +483,13 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
     override fun MerchSection(
         state: ArtistFormState.MerchState,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        showConfirmed: Boolean,
+        allowCustomInput: Boolean,
     ) {
         val hasConfirmedMerch by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
-        val showMerchInferred = forceLocked || !hasConfirmedMerch || requestedShowMerchInferred
+        val showMerchInferred =
+            forceLocked || !hasConfirmedMerch || requestedShowMerchInferred || !showConfirmed
         with(ArtistForm) {
             MultiTextSection(
                 state = state.stateInferred,
@@ -478,11 +497,12 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
                 items = state.inferred,
                 showItems = { showMerchInferred },
                 predictions = merchPredictions,
+                itemToCommitted = { MerchInfo.fake(it) },
                 itemToText = { it.name },
                 itemToSerializedValue = { it.name },
             )
 
-            if (!forceLocked) {
+            if (!forceLocked && showConfirmed) {
                 ArtistForm.ShowInferredButton(
                     hasConfirmed = hasConfirmedMerch,
                     showingInferred = showMerchInferred,
@@ -490,14 +510,17 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
                 )
             }
 
-            MultiTextSection(
-                state = state.stateConfirmed,
-                title = Res.string.alley_edit_artist_edit_merch_confirmed,
-                items = state.confirmed,
-                predictions = merchPredictions,
-                itemToText = { it.name },
-                itemToSerializedValue = { it.name },
-            )
+            if (showConfirmed) {
+                MultiTextSection(
+                    state = state.stateConfirmed,
+                    title = Res.string.alley_edit_artist_edit_merch_confirmed,
+                    items = state.confirmed,
+                    predictions = merchPredictions,
+                    itemToCommitted = { MerchInfo.fake(it) },
+                    itemToText = { it.name },
+                    itemToSerializedValue = { it.name },
+                )
+            }
         }
     }
 
@@ -701,7 +724,9 @@ object ArtistForm {
         itemToText: (T) -> String,
         itemToSerializedValue: (T) -> String,
         itemToCommitted: ((String) -> T)? = null,
+        leadingIcon: (T) -> ImageVector? = { null },
         pendingErrorMessage: () -> String? = { null },
+        preferPrediction: Boolean = true,
     ) {
         MultiTextSection(
             state = state,
@@ -714,30 +739,30 @@ object ArtistForm {
             sortValue = itemToText,
             item = { _, item ->
                 Box {
+                    val leadingIcon = leadingIcon(item)
                     TextField(
                         value = itemToText(item),
                         onValueChange = {},
                         readOnly = true,
-                        trailingIcon = {
-                            Box {
-                                var showMenu by remember { mutableStateOf(false) }
-                                MenuIcon(
-                                    visible = state.lockState.editable,
-                                    onClick = { showMenu = true },
+                        leadingIcon = leadingIcon?.let {
+                            {
+                                Icon(
+                                    imageVector = leadingIcon,
+                                    contentDescription = null,
                                 )
-
-                                DropdownMenu(
-                                    expanded = showMenu,
-                                    onDismissRequest = { showMenu = false },
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(Res.string.alley_edit_artist_action_delete)) },
-                                        onClick = {
-                                            items.remove(item)
-                                            showMenu = false
-                                        }
-                                    )
-                                }
+                            }
+                        },
+                        trailingIcon = {
+                            AnimatedVisibility(
+                                visible = state.lockState.editable,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                TooltipIconButton(
+                                    icon = Icons.Default.Delete,
+                                    tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
+                                    onClick = { items.remove(item) },
+                                )
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -746,23 +771,28 @@ object ArtistForm {
             },
             prediction = { _, value -> Text(text = itemToText(value)) },
             pendingErrorMessage = pendingErrorMessage,
+            preferPrediction = preferPrediction,
         )
     }
 
+    context(formScope: EntryFormScope)
     @Composable
-    internal fun EntryFormScope.SeriesSection(
+    internal fun SeriesSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
         items: SnapshotStateList<SeriesInfo>,
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
         image: (SeriesInfo) -> String?,
+        allowCustomInput: Boolean,
     ) {
         MultiTextSection(
             state = state,
             title = title,
             items = items,
-            itemToCommitted = null,
+            itemToCommitted = if (allowCustomInput) {
+                { SeriesInfo.fake(it) }
+            } else null,
             showItems = showItems,
             entryPredictions = predictions,
             removeLastItem = { items.removeLastOrNull()?.titlePreferred },
@@ -781,14 +811,10 @@ object ArtistForm {
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
-                        val contentDescription = stringResource(
-                            Res.string.alley_edit_tag_delete_content_description
-                        )
                         TooltipIconButton(
                             icon = Icons.Default.Delete,
-                            tooltipText = contentDescription,
+                            tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
                             onClick = { items.remove(value) },
-                            contentDescription = contentDescription,
                         )
                     }
                 }
@@ -810,6 +836,7 @@ object ArtistForm {
         prediction: @Composable (index: Int, T) -> Unit = item,
         sortValue: ((T) -> String)? = null,
         pendingErrorMessage: () -> String? = { null },
+        preferPrediction: Boolean = true,
     ) {
         val addUniqueErrorState =
             rememberAddUniqueErrorState(state = state, items = items, sortValue = sortValue)
@@ -817,16 +844,16 @@ object ArtistForm {
             state = state,
             headerText = { Text(stringResource(title)) },
             items = items.takeIf { showItems() },
-            onItemCommitted = {
-                if (itemToCommitted != null) {
+            onItemCommitted = if (itemToCommitted != null) {
+                {
                     addUniqueErrorState.addAndEnforceUnique(itemToCommitted(it))
                 }
-            },
+            } else null,
             removeLastItem = removeLastItem,
             item = item,
             entryPredictions = entryPredictions,
             prediction = prediction,
-            preferPrediction = true,
+            preferPrediction = preferPrediction,
             onPredictionChosen = addUniqueErrorState::addAndEnforceUnique,
             pendingErrorMessage = { addUniqueErrorState.errorMessage ?: pendingErrorMessage() },
         )
@@ -897,25 +924,16 @@ object ArtistForm {
                     link = value,
                     isLast = index == items.lastIndex && !state.lockState.editable,
                     additionalActions = {
-                        Box {
-                            var showMenu by remember { mutableStateOf(false) }
-                            MenuIcon(
-                                visible = state.lockState.editable,
-                                onClick = { showMenu = true },
+                        AnimatedVisibility(
+                            visible = state.lockState.editable,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            TooltipIconButton(
+                                icon = Icons.Default.Delete,
+                                tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
+                                onClick = { items.remove(value) },
                             )
-
-                            DropdownMenu(
-                                expanded = showMenu,
-                                onDismissRequest = { showMenu = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(Res.string.alley_edit_artist_action_delete)) },
-                                    onClick = {
-                                        items.removeAt(index)
-                                        showMenu = false
-                                    }
-                                )
-                            }
                         }
                     },
                 )

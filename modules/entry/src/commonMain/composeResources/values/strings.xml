@@ -51,4 +51,6 @@
     <string name="entry_error_invalid_number">Invalid number</string>
     <string name="entry_error_invalid_link">Invalid link</string>
     <string name="entry_error_invalid_link_scheme">Link must be https</string>
+
+    <string name="entry_multi_text_submit">Submit</string>
 </resources>

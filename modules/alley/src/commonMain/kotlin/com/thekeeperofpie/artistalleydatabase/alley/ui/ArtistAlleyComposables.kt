@@ -20,9 +20,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -89,7 +86,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalUriHandler
@@ -499,120 +495,6 @@ fun IconWithTooltip(
             imageVector = imageVector,
             contentDescription = contentDescription,
         )
-    }
-}
-
-@Composable
-fun TooltipIconButton(
-    icon: ImageVector,
-    tooltipText: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    positioning: TooltipAnchorPosition = TooltipAnchorPosition.Below,
-    enabled: Boolean = true,
-    useButtonOnClickForTooltipOnClick: Boolean = false,
-    contentDescription: String? = tooltipText,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-            positioning = positioning,
-            spacingBetweenTooltipAndAnchor = 0.dp,
-        ),
-        tooltip = {
-            val clipboardManager = LocalClipboardManager.current
-            PlainTooltip(
-                modifier = Modifier
-                    .hoverable(interactionSource)
-                    .run {
-                        if (useButtonOnClickForTooltipOnClick) {
-                            clickable(onClick = onClick)
-                        } else {
-                            clickable { clipboardManager.setText(AnnotatedString(tooltipText)) }
-                        }
-                    }
-            ) {
-                Text(tooltipText)
-            }
-        },
-        state = rememberCustomTooltipState(isHovered = { isHovered }),
-        focusable = true,
-        enableUserInput = true,
-        hasAction = true,
-        modifier = modifier,
-    ) {
-        IconButton(onClick = onClick, enabled = enabled) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-            )
-        }
-    }
-}
-
-private val GlobalMutatorMutex: MutatorMutex = MutatorMutex()
-
-@Composable
-private fun rememberCustomTooltipState(
-    isHovered: () -> Boolean,
-): TooltipState =
-    remember(isHovered) {
-        TooltipStateImpl(isHovered)
-    }
-
-/**
- * Custom implementation of [TooltipState] which adds a delay when dismissing and keeps the tooltip
- * visible when hovered.
- */
-@Stable
-private class TooltipStateImpl(
-    private val isHovered: () -> Boolean,
-) : TooltipState {
-    override val isPersistent: Boolean = false
-
-    override val transition: MutableTransitionState<Boolean> =
-        MutableTransitionState(false)
-
-    override val isVisible: Boolean
-        get() = transition.currentState || transition.targetState
-
-    private var job: (CancellableContinuation<Unit>)? = null
-
-    override suspend fun show(mutatePriority: MutatePriority) {
-        val cancellableShow: suspend () -> Unit = {
-            suspendCancellableCoroutine { continuation ->
-                transition.targetState = true
-                job = continuation
-            }
-        }
-
-        GlobalMutatorMutex.mutate(mutatePriority) {
-            try {
-                if (isPersistent || mutatePriority == MutatePriority.UserInput) {
-                    cancellableShow()
-                } else {
-                    withTimeout(BasicTooltipDefaults.TooltipDuration) { cancellableShow() }
-                }
-            } finally {
-                if (mutatePriority != MutatePriority.PreventUserInput) {
-                    try {
-                        delay(500.milliseconds)
-                        snapshotFlow { isHovered() }.filter { !it }.first()
-                    } finally {
-                        transition.targetState = false
-                    }
-                }
-            }
-        }
-    }
-
-    override fun dismiss() {
-        job?.cancel()
-    }
-
-    override fun onDispose() {
-        job?.cancel()
     }
 }
 

@@ -41,7 +41,6 @@
     <string name="alley_edit_artist_edit_form_link_action_generate">Generate</string>
     <string name="alley_edit_artist_edit_form_link_action_cancel">Cancel</string>
 
-    <string name="alley_edit_artist_action_delete">Delete</string>
     <string name="alley_edit_artist_action_add_images">Add images</string>
     <string name="alley_edit_artist_action_edit_images">Edit images</string>
     <string name="alley_edit_artist_save_changes_title">Save changes?</string>
@@ -78,7 +77,7 @@
 
     <string name="alley_edit_drag_handle_content_description">Drag handle</string>
 
-    <string name="alley_edit_tag_delete_content_description">Delete tag</string>
+    <string name="alley_edit_row_delete_tooltip">Delete row</string>
 
     <string name="alley_edit_series_header_image">Image</string>
     <string name="alley_edit_series_header_canonical">Series</string>

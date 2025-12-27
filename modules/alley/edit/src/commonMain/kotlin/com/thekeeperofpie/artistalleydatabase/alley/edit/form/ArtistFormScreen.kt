@@ -57,7 +57,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
-import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
@@ -65,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import kotlinx.coroutines.flow.Flow
@@ -245,19 +245,30 @@ object ArtistFormScreen {
                         .verticalScroll(rememberScrollState())
                 ) {
                     PasteLinkSection(formState.links)
-                    InfoSections(state = formState.info, boothErrorMessage = errorState.boothErrorMessage)
+                    InfoSections(
+                        state = formState.info,
+                        boothErrorMessage = errorState.boothErrorMessage
+                    )
                     LinkSections(
                         state = formState.links,
                         linksErrorMessage = errorState.linksErrorMessage,
                         storeLinksErrorMessage = errorState.storeLinksErrorMessage,
                         catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
                     )
-                    TagSections(
-                        series = formState.series,
-                        merch = formState.merch,
+
+                    // TODO: Confirmed tag support
+                    SeriesSection(
+                        state = formState.series,
                         seriesPredictions = seriesPredictions,
                         seriesImage = seriesImage,
+                        showConfirmed = false,
+                        allowCustomInput = true,
+                    )
+                    MerchSection(
+                        state = formState.merch,
                         merchPredictions = merchPredictions,
+                        showConfirmed = false,
+                        allowCustomInput = true,
                     )
                     NotesSection(formState.notes)
                 }

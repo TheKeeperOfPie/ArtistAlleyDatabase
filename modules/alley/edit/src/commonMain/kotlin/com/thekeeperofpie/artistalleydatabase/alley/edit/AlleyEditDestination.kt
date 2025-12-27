@@ -4,7 +4,6 @@ import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesColumn
-import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -26,8 +25,7 @@ sealed interface AlleyEditDestination : NavKey {
     data class ArtistEdit(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
 
     @Serializable
-    data class ArtistForm(val dataYear: DataYear, val artistId: Uuid, val privateKey: String) :
-        AlleyEditDestination
+    data class ArtistForm(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
 
     @Serializable
     data class ArtistFormMerge(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
@@ -75,9 +73,7 @@ sealed interface AlleyEditDestination : NavKey {
                     val (dataYear, artistId) = parseDataYearThenArtistId(
                         route.removePrefix("form/artist/")
                     ) ?: return null
-                    // TODO: Actual URI parsing
-                    val privateKey = route.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
-                    ArtistForm(dataYear, artistId, privateKey)
+                    ArtistForm(dataYear, artistId)
                 }
                 route.startsWith("artist/history") -> {
                     val (dataYear, artistId) = parseDataYearThenArtistId(

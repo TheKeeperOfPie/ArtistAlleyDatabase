@@ -38,7 +38,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_copy_link_ico
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.alley.ui.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
