@@ -51,12 +51,6 @@ class ArtistFormViewModel(
         ) {
             ArtistFormScreen.State.FormState()
         },
-        textState = savedStateHandle.saveable(
-            key = "textState",
-            saver = ArtistFormScreen.State.TextState.Saver,
-        ) {
-            ArtistFormScreen.State.TextState()
-        },
         saveTaskState = saveTask.state,
     )
 

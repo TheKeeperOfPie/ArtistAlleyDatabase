@@ -1,10 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose.state
 
 import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -49,12 +51,19 @@ object StateUtils {
         )
     }
 
-    inline fun <reified T : Any> snapshotListJsonSaver(): Saver<SnapshotStateList<T>, String> {
+    inline fun <reified T : Any> snapshotListJsonSaver(): SnapshotListJsonSaver<T> {
         val listSerializer = ListSerializer(T::class.serializer())
-        return Saver(
-            save = { Json.encodeToString(listSerializer, it) },
-            restore = { Json.decodeFromString(listSerializer, it).toMutableStateList() },
-        )
+        return SnapshotListJsonSaver(listSerializer)
+    }
+
+    class SnapshotListJsonSaver<T>(private val listSerializer: KSerializer<List<T>>) :
+        Saver<SnapshotStateList<T>, String> {
+        override fun SaverScope.save(value: SnapshotStateList<T>) =
+            Json.encodeToString(listSerializer, value)
+
+        override fun restore(value: String): SnapshotStateList<T> =
+            Json.decodeFromString(listSerializer, value).toMutableStateList()
+
     }
 }
 

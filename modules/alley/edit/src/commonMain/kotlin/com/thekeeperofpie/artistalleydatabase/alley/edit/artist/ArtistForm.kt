@@ -111,11 +111,7 @@ interface ArtistFormScope : EntryFormScope {
     fun MetadataSection(metadata: ArtistFormState.Metadata)
 
     @Composable
-    fun PasteLinkSection(
-        links: SnapshotStateList<LinkModel>,
-        storeLinks: SnapshotStateList<LinkModel>,
-        commissions: SnapshotStateList<CommissionModel>,
-    )
+    fun PasteLinkSection(state: ArtistFormState.LinksState)
 
     @Composable
     fun StatusSection(
@@ -131,6 +127,9 @@ interface ArtistFormScope : EntryFormScope {
     )
 
     @Composable
+    fun InfoSections(state: ArtistFormState.InfoState, boothErrorMessage: (() -> String?)? = null)
+
+    @Composable
     fun BoothSection(state: EntryForm2.SingleTextState, errorText: (() -> String?)? = null)
 
     @Composable
@@ -138,6 +137,14 @@ interface ArtistFormScope : EntryFormScope {
 
     @Composable
     fun SummarySection(state: EntryForm2.SingleTextState)
+
+    @Composable
+    fun LinkSections(
+        state: ArtistFormState.LinksState,
+        linksErrorMessage: () -> String? = { null },
+        storeLinksErrorMessage: () -> String? = { null },
+        catalogLinksErrorMessage: () -> String? = { null },
+    )
 
     @Composable
     fun LinksSection(
@@ -164,6 +171,15 @@ interface ArtistFormScope : EntryFormScope {
     fun CommissionsSection(
         state: EntryForm2.SingleTextState,
         commissions: SnapshotStateList<CommissionModel>,
+    )
+
+    @Composable
+    fun TagSections(
+        series: ArtistFormState.SeriesState,
+        merch: ArtistFormState.MerchState,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
     )
 
     @Composable
@@ -200,20 +216,16 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
     }
 
     @Composable
-    override fun PasteLinkSection(
-        links: SnapshotStateList<LinkModel>,
-        storeLinks: SnapshotStateList<LinkModel>,
-        commissions: SnapshotStateList<CommissionModel>,
-    ) {
+    override fun PasteLinkSection(state: ArtistFormState.LinksState) {
         if (!forceLocked) {
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 OutlinedTextField(
                     value = "",
                     onValueChange = {
                         ArtistForm.processPastedLink(
-                            links = links,
-                            storeLinks = storeLinks,
-                            commissions = commissions,
+                            links = state.links,
+                            storeLinks = state.storeLinks,
+                            commissions = state.commissions,
                             link = it,
                         )
                     },
@@ -265,6 +277,16 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
     }
 
     @Composable
+    override fun InfoSections(
+        state: ArtistFormState.InfoState,
+        boothErrorMessage: (() -> String?)?,
+    ) {
+        BoothSection(state = state.booth, errorText = boothErrorMessage)
+        NameSection(state.name)
+        SummarySection(state.summary)
+    }
+
+    @Composable
     override fun BoothSection(state: EntryForm2.SingleTextState, errorText: (() -> String?)?) {
         SingleTextSection(
             state = state,
@@ -288,6 +310,31 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
         )
+    }
+
+    @Composable
+    override fun LinkSections(
+        state: ArtistFormState.LinksState,
+        linksErrorMessage: () -> String?,
+        storeLinksErrorMessage: () -> String?,
+        catalogLinksErrorMessage: () -> String?,
+    ) {
+        LinksSection(
+            state = state.stateLinks,
+            links = state.links,
+            pendingErrorMessage = linksErrorMessage,
+        )
+        StoreLinksSection(
+            state = state.stateStoreLinks,
+            storeLinks = state.storeLinks,
+            pendingErrorMessage = storeLinksErrorMessage,
+        )
+        CatalogLinksSection(
+            state = state.stateCatalogLinks,
+            catalogLinks = state.catalogLinks,
+            pendingErrorMessage = catalogLinksErrorMessage,
+        )
+        CommissionsSection(state.stateCommissions, state.commissions)
     }
 
     @Composable
@@ -360,6 +407,22 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
                 predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
             )
         }
+    }
+
+    @Composable
+    override fun TagSections(
+        series: ArtistFormState.SeriesState,
+        merch: ArtistFormState.MerchState,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+    ) {
+        SeriesSection(
+            state = series,
+            seriesPredictions = seriesPredictions,
+            seriesImage = seriesImage,
+        )
+        MerchSection(state = merch, merchPredictions = merchPredictions)
     }
 
     @Composable
@@ -474,69 +537,56 @@ object ArtistForm {
         showEditorNotes: Boolean = true,
         forceLocked: Boolean = false,
     ) {
-        val textState = state.textState
         val focusState = rememberFocusState(
             listOfNotNull(
-                textState.status.takeIf { showStatus },
-                textState.id,
-                textState.booth,
-                textState.name,
-                textState.summary,
-                textState.links,
-                textState.storeLinks,
-                textState.catalogLinks,
-                textState.commissions,
+                state.editorState.status.takeIf { showStatus },
+                state.editorState.id,
+                state.info.booth,
+                state.info.name,
+                state.info.summary,
+                state.links.stateLinks,
+                state.links.stateStoreLinks,
+                state.links.stateCatalogLinks,
+                state.links.stateCommissions,
                 state.series.stateInferred,
                 state.series.stateConfirmed,
                 state.merch.stateInferred,
                 state.merch.stateConfirmed,
-                textState.notes,
-                textState.editorNotes.takeIf { showEditorNotes },
+                state.info.notes,
+                state.editorState.editorNotes.takeIf { showEditorNotes },
             )
         )
         ArtistForm(focusState, forceLocked, modifier) {
             MetadataSection(state.metadata)
-            PasteLinkSection(
-                links = state.links,
-                storeLinks = state.storeLinks,
-                commissions = state.commissions,
-            )
+            PasteLinkSection(state = state.links)
             if (showStatus) {
-                StatusSection(state = textState.status, metadata = state.metadata)
+                StatusSection(state = state.editorState.status, metadata = state.metadata)
             }
             IdSection(
-                state = textState.id,
+                state = state.editorState.id,
                 forceLock = forceLockId,
                 errorText = errorState.idErrorMessage,
             )
-            BoothSection(state = textState.booth, errorText = errorState.boothErrorMessage)
-            NameSection(textState.name)
-            SummarySection(textState.summary)
-            LinksSection(
-                state = textState.links,
-                links = state.links,
-                pendingErrorMessage = errorState.linksErrorMessage,
+            InfoSections(state.info)
+
+            LinkSections(
+                state.links,
+                linksErrorMessage = errorState.linksErrorMessage,
+                storeLinksErrorMessage = errorState.storeLinksErrorMessage,
+                catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
             )
-            StoreLinksSection(
-                state = textState.storeLinks,
-                storeLinks = state.storeLinks,
-                pendingErrorMessage = errorState.storeLinksErrorMessage,
-            )
-            CatalogLinksSection(
-                state = textState.catalogLinks,
-                catalogLinks = state.catalogLinks,
-                pendingErrorMessage = errorState.catalogLinksErrorMessage,
-            )
-            CommissionsSection(textState.commissions, state.commissions)
-            SeriesSection(
-                state = state.series,
+
+            TagSections(
+                series = state.series,
+                merch = state.merch,
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
+                merchPredictions = merchPredictions
             )
-            MerchSection(state = state.merch, merchPredictions = merchPredictions)
-            NotesSection(textState.notes)
+
+            NotesSection(state.info.notes)
             if (showEditorNotes) {
-                EditorNotesSection(textState.editorNotes)
+                EditorNotesSection(state.editorState.editorNotes)
             }
         }
     }
@@ -555,7 +605,9 @@ object ArtistForm {
 
     @Composable
     internal fun LastEditedText(lastEditor: String?, lastEditTime: Instant) {
-        OutlinedCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+        OutlinedCard(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             val textColorDim = LocalContentColor.current.copy(alpha = 0.6f)
             val colorPrimary = MaterialTheme.colorScheme.primary
             Text(

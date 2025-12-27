@@ -152,7 +152,7 @@ object ArtistEditScreen {
             onClickBack = onClickBack,
             onClickEditImages = {
                 onClickEditImages(
-                    viewModel.state.artistFormState.textState.name.value.text.toString(),
+                    viewModel.state.artistFormState.info.name.value.text.toString(),
                     it
                 )
             },
@@ -214,7 +214,7 @@ object ArtistEditScreen {
 
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
-        val errorState = rememberErrorState(state.artistFormState.textState)
+        val errorState = rememberErrorState(state.artistFormState)
         var showFormLinkDialog by mutableStateOf(false)
         Scaffold(
             topBar = {
@@ -230,7 +230,9 @@ object ArtistEditScreen {
                                 stringResource(
                                     Res.string.alley_edit_artist_edit_title_editing,
                                     stringResource(dataYear.shortName),
-                                    state.artistFormState.textState.name.value.text.ifBlank { state.artistFormState.textState.id.value.text.toString() },
+                                    state.artistFormState.info.name.value.text.ifBlank {
+                                        state.artistFormState.editorState.id.value.text.toString()
+                                    },
                                 )
                         }
                         Text(text)
@@ -311,7 +313,7 @@ object ArtistEditScreen {
                             ImagePager(
                                 images = state.artistFormState.images,
                                 pagerState = imagePagerState,
-                                sharedElementId = state.artistFormState.textState.id.value.text.toString(),
+                                sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
                                 onClickPage = {
                                     // TODO: Open images screen
                                 },

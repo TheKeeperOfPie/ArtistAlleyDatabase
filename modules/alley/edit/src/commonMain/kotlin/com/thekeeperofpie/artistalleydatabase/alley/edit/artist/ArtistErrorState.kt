@@ -33,12 +33,12 @@ class ArtistErrorState(
 
 @Stable
 @Composable
-fun rememberErrorState(state: ArtistFormState.TextState): ArtistErrorState {
-    val idErrorMessage by rememberUuidValidator(state.id)
-    val boothErrorMessage by rememberBoothValidator(state.booth)
-    val linksErrorMessage by rememberLinkValidator(state.links)
-    val storeLinksErrorMessage by rememberLinkValidator(state.storeLinks)
-    val catalogLinksErrorMessage by rememberLinkValidator(state.catalogLinks)
+fun rememberErrorState(state: ArtistFormState): ArtistErrorState {
+    val idErrorMessage by rememberUuidValidator(state.editorState.id)
+    val boothErrorMessage by rememberBoothValidator(state.info.booth)
+    val linksErrorMessage by rememberLinkValidator(state.links.stateLinks)
+    val storeLinksErrorMessage by rememberLinkValidator(state.links.stateStoreLinks)
+    val catalogLinksErrorMessage by rememberLinkValidator(state.links.stateCatalogLinks)
     return ArtistErrorState(
         idErrorMessage = { idErrorMessage },
         boothErrorMessage = { boothErrorMessage },

@@ -217,7 +217,7 @@ internal object ArtistFormMergeScreen {
             Column(modifier.verticalScroll(rememberScrollState())) {
                 ArtistForm(
                     state = artistFormState,
-                    errorState = rememberErrorState(artistFormState.textState),
+                    errorState = rememberErrorState(artistFormState),
                     seriesPredictions = { emptyFlow() },
                     merchPredictions = { emptyFlow() },
                     seriesImage = seriesImage,

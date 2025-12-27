@@ -28,13 +28,11 @@ import kotlin.uuid.Uuid
 class ArtistFormState(
     val metadata: Metadata = Metadata(),
     val images: SnapshotStateList<EditImage> = SnapshotStateList(),
-    val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
-    val storeLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
-    val catalogLinks: SnapshotStateList<String> = SnapshotStateList(),
-    val commissions: SnapshotStateList<CommissionModel> = SnapshotStateList(),
+    val editorState: EditorState = EditorState(),
+    val info: InfoState = InfoState(),
+    val links: LinksState = LinksState(),
     val series: SeriesState = SeriesState(),
     val merch: MerchState = MerchState(),
-    val textState: TextState = TextState(),
 ) {
     companion object {
         fun <T> applyValue(
@@ -74,26 +72,22 @@ class ArtistFormState(
         override fun SaverScope.save(value: ArtistFormState) = listOf(
             with(Metadata.Saver) { save(value.metadata) },
             with(StateUtils.snapshotListJsonSaver<EditImage>()) { save(value.images) },
-            with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
-            with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.storeLinks) },
-            with(StateUtils.snapshotListJsonSaver<String>()) { save(value.catalogLinks) },
-            with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { save(value.commissions) },
+            with(EditorState.Saver) { save(value.editorState) },
+            with(InfoState.Saver) { save(value.info) },
+            with(LinksState.Saver) { save(value.links) },
             with(SeriesState.Saver) { save(value.series) },
             with(MerchState.Saver) { save(value.merch) },
-            with(TextState.Saver) { save(value.textState) },
         )
 
         @Suppress("UNCHECKED_CAST")
         override fun restore(value: List<Any?>) = ArtistFormState(
             metadata = with(Metadata.Saver) { restore(value[0] as List<Any?>) },
-            images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) }!!,
-            links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[2] as String) }!!,
-            storeLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[3] as String) }!!,
-            catalogLinks = with(StateUtils.snapshotListJsonSaver<String>()) { restore(value[4] as String) }!!,
-            commissions = with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { restore(value[5] as String) }!!,
-            series = with(SeriesState.Saver) { restore(value[4] as List<Any?>) },
-            merch = with(MerchState.Saver) { restore(value[5] as List<Any?>) },
-            textState = with(TextState.Saver) { restore(value[10] as List<Any>) }
+            images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) },
+            editorState = with(EditorState.Saver) { restore(value[2] as List<Any>) },
+            info = with(InfoState.Saver) { restore(value[3] as List<Any>) },
+            links = with(LinksState.Saver) { restore(value[4] as List<Any>) },
+            series = with(SeriesState.Saver) { restore(value[5] as List<Any?>) },
+            merch = with(MerchState.Saver) { restore(value[6] as List<Any>) },
         )
     }
 
@@ -103,75 +97,54 @@ class ArtistFormState(
         merchById: Map<String, MerchInfo>,
         force: Boolean = false,
     ) = apply {
-        val links = artist.links.map(LinkModel.Companion::parse).sortedBy { it.logo }
-        val storeLinks = artist.storeLinks.map(LinkModel.Companion::parse).sortedBy { it.logo }
-        val commissions = artist.commissions.map(CommissionModel.Companion::parse)
-
-        val seriesInferred =
-            artist.seriesInferred.map { seriesById[it] ?: SeriesInfo.Companion.fake(it) }
-        val seriesConfirmed =
-            artist.seriesConfirmed.map { seriesById[it] ?: SeriesInfo.Companion.fake(it) }
-        val merchInferred =
-            artist.merchInferred.map { merchById[it] ?: MerchInfo.Companion.fake(it) }
-        val merchConfirmed =
-            artist.merchConfirmed.map { merchById[it] ?: MerchInfo.Companion.fake(it) }
-
         val status = artist.status
-        textState.status.selectedIndex = ArtistStatus.entries.indexOf(status)
+        editorState.applyValues(
+            id = artist.id,
+            status = status,
+            editorNotes = artist.editorNotes,
+            force = force,
+        )
 
-        textState.id.value.setTextAndPlaceCursorAtEnd(artist.id)
-        textState.id.lockState = EntryLockState.LOCKED
+        info.applyValues(
+            booth = artist.booth,
+            name = artist.name,
+            summary = artist.summary,
+            notes = artist.notes,
+            force = force,
+        )
 
-        applyValue(textState.booth, artist.booth, force)
-        applyValue(textState.name, artist.name, force)
-        applyValue(textState.summary, artist.summary, force)
-        applyValue(textState.notes, artist.notes, force)
-        applyValue(textState.editorNotes, artist.editorNotes, force)
+        links.applyRawValues(
+            links = artist.links,
+            storeLinks = artist.storeLinks,
+            catalogLinks = artist.catalogLinks,
+            commissions = artist.commissions,
+            force = force,
+        )
 
-        applyValue(textState.links, this.links, links, force)
-        applyValue(textState.storeLinks, this.storeLinks, storeLinks, force)
-        applyValue(textState.catalogLinks, this.catalogLinks, artist.catalogLinks, force)
-        applyValue(textState.commissions, this.commissions, commissions, force)
-
-        series.applyValue(inferred = seriesInferred, confirmed = seriesConfirmed, force = force)
-        merch.applyValue(inferred = merchInferred, confirmed = merchConfirmed, force = force)
+        series.applyValues(
+            inferred = artist.seriesInferred,
+            confirmed = artist.seriesConfirmed,
+            seriesById = seriesById,
+            force = force,
+        )
+        merch.applyValues(
+            inferred = artist.merchInferred,
+            confirmed = artist.merchConfirmed,
+            merchById = merchById,
+            force = force,
+        )
 
         metadata.lastEditor = artist.lastEditor
         metadata.lastEditTime = artist.lastEditTime
     }
 
     fun captureDatabaseEntry(dataYear: DataYear): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
-        val id = Uuid.Companion.parse(textState.id.value.text.toString())
-        val status = ArtistStatus.entries[textState.status.selectedIndex]
+        val (id, status, editorNotes) = editorState.captureValues()
+        val (booth, name, summary, notes) = info.captureValues()
+        val (links, storeLinks, catalogLinks, commissions) = links.captureValues()
 
-        val booth = textState.booth.value.text.toString()
-        val name = textState.name.value.text.toString()
-        val summary = textState.summary.value.text.toString()
-
-        // TODO: Include pending value?
-        val links = links.toList().map { it.link }
-            .plus(textState.links.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val storeLinks = storeLinks.toList().map { it.link }
-            .plus(textState.storeLinks.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val catalogLinks = catalogLinks.toList()
-            .plus(textState.catalogLinks.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-
-        val notes = textState.notes.value.text.toString()
-        val editorNotes = textState.editorNotes.value.text.toString()
-        val commissions = commissions.toList().map { it.serializedValue }
-            .plus(textState.commissions.value.text.toString().takeIf { it.isNotBlank() })
-            .filterNotNull()
-            .distinct()
-        val seriesInferred = series.inferred.toList().map { it.id }
-        val seriesConfirmed = series.confirmed.toList().map { it.id }
-        val merchInferred = merch.inferred.toList().map { it.name }
-        val merchConfirmed = merch.confirmed.toList().map { it.name }
+        val (seriesInferred, seriesConfirmed) = series.captureValues()
+        val (merchInferred, merchConfirmed) = merch.captureValues()
 
         val images = images.toList()
         return images to ArtistDatabaseEntry.Impl(
@@ -224,48 +197,198 @@ class ArtistFormState(
     }
 
     @Stable
-    class TextState(
+    class EditorState(
         val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(
             initialLockState = EntryLockState.LOCKED,
         ),
         val status: EntryForm2.DropdownState = EntryForm2.DropdownState(),
-        val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val summary: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val links: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val storeLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val catalogLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val commissions: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-        val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+
+        // TODO: Remove this field entirely
+        // Intentionally prefixed with "editor" to avoid confusion with regular notes field
         val editorNotes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     ) {
-        object Saver : ComposeSaver<TextState, List<Any>> {
-            override fun SaverScope.save(value: TextState) = listOf(
+        fun applyValues(
+            id: String,
+            status: ArtistStatus,
+            editorNotes: String?,
+            force: Boolean,
+        ) {
+            this.id.value.setTextAndPlaceCursorAtEnd(id)
+            this.status.selectedIndex = ArtistStatus.entries.indexOf(status)
+            applyValue(this.editorNotes, editorNotes, force)
+        }
+
+        fun captureValues() = InternalDatabaseValues(
+            id = Uuid.parse(id.value.text.toString()),
+            status = ArtistStatus.entries[status.selectedIndex],
+            editorNotes = editorNotes.value.text.toString(),
+        )
+
+        data class InternalDatabaseValues(
+            val id: Uuid,
+            val status: ArtistStatus,
+            val editorNotes: String?,
+        )
+
+        object Saver : ComposeSaver<EditorState, List<Any>> {
+            override fun SaverScope.save(value: EditorState) = listOf(
                 with(EntryForm2.SingleTextState.Saver) { save(value.id) },
                 with(EntryForm2.DropdownState.Saver) { save(value.status) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.booth) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.name) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.summary) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.links) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.storeLinks) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.catalogLinks) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.commissions) },
-                with(EntryForm2.SingleTextState.Saver) { save(value.notes) },
                 with(EntryForm2.SingleTextState.Saver) { save(value.editorNotes) },
             )
 
-            override fun restore(value: List<Any>) = TextState(
+            override fun restore(value: List<Any>) = EditorState(
                 id = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
                 status = with(EntryForm2.DropdownState.Saver) { restore(value[1]) },
-                booth = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
-                name = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
-                summary = with(EntryForm2.SingleTextState.Saver) { restore(value[4]) },
-                links = with(EntryForm2.SingleTextState.Saver) { restore(value[5]) },
-                storeLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[6]) },
-                catalogLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[7]) },
-                commissions = with(EntryForm2.SingleTextState.Saver) { restore(value[8]) },
-                notes = with(EntryForm2.SingleTextState.Saver) { restore(value[9]) },
-                editorNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[10]) },
+                editorNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+            )
+        }
+    }
+
+    @Stable
+    class InfoState(
+        val booth: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val name: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val summary: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+    ) {
+        fun applyValues(
+            booth: String?,
+            name: String,
+            summary: String?,
+            notes: String?,
+            force: Boolean,
+        ) {
+            applyValue(this.booth, booth, force)
+            applyValue(this.name, name, force)
+            applyValue(this.summary, summary, force)
+            applyValue(this.notes, notes, force)
+        }
+
+        fun captureValues() = InfoDatabaseValues(
+            booth = booth.value.text.toString(),
+            name = name.value.text.toString(),
+            summary = summary.value.text.toString(),
+            notes = notes.value.text.toString(),
+        )
+
+        data class InfoDatabaseValues(
+            val booth: String?,
+            val name: String,
+            val summary: String?,
+            val notes: String?,
+        )
+
+        object Saver : ComposeSaver<InfoState, List<Any>> {
+            override fun SaverScope.save(value: InfoState) = listOf(
+                with(EntryForm2.SingleTextState.Saver) { save(value.booth) },
+                with(EntryForm2.SingleTextState.Saver) { save(value.name) },
+                with(EntryForm2.SingleTextState.Saver) { save(value.summary) },
+                with(EntryForm2.SingleTextState.Saver) { save(value.notes) },
+            )
+
+            override fun restore(value: List<Any>) = InfoState(
+                booth = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
+                name = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
+                summary = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+                notes = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
+            )
+        }
+    }
+
+    @Stable
+    class LinksState(
+        val stateLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val stateStoreLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val stateCatalogLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val stateCommissions: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
+        val storeLinks: SnapshotStateList<LinkModel> = SnapshotStateList(),
+        val catalogLinks: SnapshotStateList<String> = SnapshotStateList(),
+        val commissions: SnapshotStateList<CommissionModel> = SnapshotStateList(),
+    ) {
+        fun applyValues(
+            links: List<LinkModel>,
+            storeLinks: List<LinkModel>,
+            catalogLinks: List<String>,
+            commissions: List<CommissionModel>,
+            force: Boolean,
+        ) {
+            applyValue(stateLinks, this.links, links, force)
+            applyValue(stateStoreLinks, this.storeLinks, storeLinks, force)
+            applyValue(stateCatalogLinks, this.catalogLinks, catalogLinks, force)
+            applyValue(stateCommissions, this.commissions, commissions, force)
+        }
+
+        fun applyRawValues(
+            links: List<String>,
+            storeLinks: List<String>,
+            catalogLinks: List<String>,
+            commissions: List<String>,
+            force: Boolean,
+        ) = applyValues(
+            links = links.map(LinkModel.Companion::parse).sortedBy { it.logo },
+            storeLinks = storeLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
+            catalogLinks = catalogLinks,
+            commissions = commissions.map(CommissionModel.Companion::parse),
+            force = force,
+        )
+
+        fun captureValues(): LinksDatabaseValues {
+            val links = links.toList().map { it.link }
+                .plus(stateLinks.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+            val storeLinks = storeLinks.toList().map { it.link }
+                .plus(stateStoreLinks.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+            val catalogLinks = catalogLinks.toList()
+                .plus(stateCatalogLinks.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+            val commissions = commissions.toList().map { it.serializedValue }
+                .plus(stateCommissions.value.text.toString().takeIf { it.isNotBlank() })
+                .filterNotNull()
+                .distinct()
+            return LinksDatabaseValues(
+                links = links,
+                storeLinks = storeLinks,
+                catalogLinks = catalogLinks,
+                commissions = commissions,
+            )
+        }
+
+        data class LinksDatabaseValues(
+            val links: List<String>,
+            val storeLinks: List<String>,
+            val catalogLinks: List<String>,
+            val commissions: List<String>,
+        )
+
+        object Saver : ComposeSaver<LinksState, List<Any>> {
+            override fun SaverScope.save(value: LinksState) = listOf(
+                with(EntryForm2.SingleTextState.Saver) { save(value.stateLinks) },
+                with(EntryForm2.SingleTextState.Saver) { save(value.stateStoreLinks) },
+                with(EntryForm2.SingleTextState.Saver) { save(value.stateCatalogLinks) },
+                with(EntryForm2.SingleTextState.Saver) { save(value.stateCommissions) },
+                with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
+                with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.storeLinks) },
+                with(StateUtils.snapshotListJsonSaver<String>()) { save(value.catalogLinks) },
+                with(StateUtils.snapshotListJsonSaver<CommissionModel>()) { save(value.commissions) },
+            )
+
+            override fun restore(value: List<Any>) = LinksState(
+                stateLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
+                stateStoreLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
+                stateCatalogLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+                stateCommissions = with(EntryForm2.SingleTextState.Saver) { restore(value[3]) },
+                links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[4] as String) },
+                storeLinks = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[5] as String) },
+                catalogLinks = with(StateUtils.snapshotListJsonSaver<String>()) { restore(value[6] as String) },
+                commissions = with(StateUtils.snapshotListJsonSaver<CommissionModel>()) {
+                    restore(value[7] as String)
+                },
             )
         }
     }
@@ -277,7 +400,7 @@ class ArtistFormState(
         val inferred: SnapshotStateList<SeriesInfo> = SnapshotStateList(),
         val confirmed: SnapshotStateList<SeriesInfo> = SnapshotStateList(),
     ) {
-        fun applyValue(
+        fun applyValues(
             inferred: List<SeriesInfo>,
             confirmed: List<SeriesInfo>,
             force: Boolean,
@@ -286,7 +409,18 @@ class ArtistFormState(
             applyValue(this.stateConfirmed, this.confirmed, confirmed, force)
         }
 
-        fun captureInferredAndConfirmed(): Pair<List<String>, List<String>> =
+        fun applyValues(
+            inferred: List<String>,
+            confirmed: List<String>,
+            seriesById: Map<String, SeriesInfo>,
+            force: Boolean,
+        ) = applyValues(
+            inferred = inferred.map { seriesById[it] ?: SeriesInfo.fake(it) },
+            confirmed = confirmed.map { seriesById[it] ?: SeriesInfo.fake(it) },
+            force = force,
+        )
+
+        fun captureValues(): Pair<List<String>, List<String>> =
             inferred.toList().map { it.id } to confirmed.toList().map { it.id }
 
         object Saver : ComposeSaver<SeriesState, List<Any?>> {
@@ -302,10 +436,10 @@ class ArtistFormState(
                 stateConfirmed = with(EntryForm2.SingleTextState.Saver) { restore(value[1] as Any) },
                 inferred = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) {
                     restore(value[2] as String)
-                }!!,
+                },
                 confirmed = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) {
                     restore(value[3] as String)
-                }!!,
+                },
             )
         }
     }
@@ -317,7 +451,7 @@ class ArtistFormState(
         val inferred: SnapshotStateList<MerchInfo> = SnapshotStateList(),
         val confirmed: SnapshotStateList<MerchInfo> = SnapshotStateList(),
     ) {
-        fun applyValue(
+        fun applyValues(
             inferred: List<MerchInfo>,
             confirmed: List<MerchInfo>,
             force: Boolean,
@@ -326,10 +460,21 @@ class ArtistFormState(
             applyValue(this.stateConfirmed, this.confirmed, confirmed, force)
         }
 
-        fun captureInferredAndConfirmed(): Pair<List<String>, List<String>> =
+        fun applyValues(
+            inferred: List<String>,
+            confirmed: List<String>,
+            merchById: Map<String, MerchInfo>,
+            force: Boolean,
+        ) = applyValues(
+            inferred = inferred.map { merchById[it] ?: MerchInfo.fake(it) },
+            confirmed = confirmed.map { merchById[it] ?: MerchInfo.fake(it) },
+            force = force,
+        )
+
+        fun captureValues(): Pair<List<String>, List<String>> =
             inferred.toList().map { it.name } to confirmed.toList().map { it.name }
 
-        object Saver : ComposeSaver<MerchState, List<Any?>> {
+        object Saver : ComposeSaver<MerchState, List<Any>> {
             override fun SaverScope.save(value: MerchState) = listOf(
                 with(EntryForm2.SingleTextState.Saver) { save(value.stateInferred) },
                 with(EntryForm2.SingleTextState.Saver) { save(value.stateConfirmed) },
@@ -337,15 +482,15 @@ class ArtistFormState(
                 with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { save(value.confirmed) },
             )
 
-            override fun restore(value: List<Any?>) = MerchState(
-                stateInferred = with(EntryForm2.SingleTextState.Saver) { restore(value[0] as Any) },
-                stateConfirmed = with(EntryForm2.SingleTextState.Saver) { restore(value[1] as Any) },
+            override fun restore(value: List<Any>) = MerchState(
+                stateInferred = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
+                stateConfirmed = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
                 inferred = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) {
                     restore(value[2] as String)
-                }!!,
+                },
                 confirmed = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) {
                     restore(value[3] as String)
-                }!!,
+                },
             )
         }
     }

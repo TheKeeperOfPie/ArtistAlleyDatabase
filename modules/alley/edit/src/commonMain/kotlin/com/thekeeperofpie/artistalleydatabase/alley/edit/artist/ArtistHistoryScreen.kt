@@ -338,7 +338,7 @@ object ArtistHistoryScreen {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     ArtistForm(
                         state = formState,
-                        errorState = rememberErrorState(formState.textState),
+                        errorState = rememberErrorState(formState),
                         seriesPredictions = { emptyFlow() },
                         merchPredictions = { emptyFlow() },
                         seriesImage = seriesImage,

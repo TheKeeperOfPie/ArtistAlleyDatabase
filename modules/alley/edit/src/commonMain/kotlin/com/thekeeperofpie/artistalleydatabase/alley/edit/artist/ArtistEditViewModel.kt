@@ -51,8 +51,8 @@ class ArtistEditViewModel(
             saver = ArtistFormState.Saver,
         ) {
             ArtistFormState().apply {
-                textState.id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
-                textState.id.lockState = EntryLockState.LOCKED
+                editorState.id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
+                editorState.id.lockState = EntryLockState.LOCKED
             }
         },
         formLink = formLink,
