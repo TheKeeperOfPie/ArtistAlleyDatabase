@@ -179,10 +179,12 @@ object ArtistFormScreen {
                             CircularWavyProgressIndicator()
                         }
                     State.Progress.LOADED -> {
+                        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                         Form(
                             saveTaskState = saveTaskState,
                             formState = state.formState,
                             errorState = errorState,
+                            initialArtist = { initialArtist },
                             seriesPredictions = seriesPredictions,
                             merchPredictions = merchPredictions,
                             seriesImage = seriesImage,
@@ -207,6 +209,7 @@ object ArtistFormScreen {
     private fun Form(
         formState: State.FormState,
         errorState: ErrorState,
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
@@ -239,6 +242,7 @@ object ArtistFormScreen {
                 )
 
                 ArtistForm(
+                    initialArtist = initialArtist,
                     focusState = focusState,
                     modifier = Modifier.fillMaxHeight()
                         .width(960.dp)
@@ -321,6 +325,7 @@ object ArtistFormScreen {
 
     @Stable
     class State(
+        val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val progress: StateFlow<Progress>,
         val formState: FormState,
         val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,

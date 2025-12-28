@@ -27,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
@@ -46,6 +48,7 @@ fun LinkRow(
     link: LinkModel?,
     isLast: Boolean,
     modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
     Row(
@@ -118,7 +121,11 @@ fun LinkRow(
 
                     Text(
                         text = text,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = if (color.isSpecified) {
+                            MaterialTheme.typography.bodyMedium.copy(color = color)
+                        } else {
+                            MaterialTheme.typography.bodyMedium
+                        },
                     )
                 }
             }

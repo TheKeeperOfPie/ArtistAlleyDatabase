@@ -260,6 +260,7 @@ object ArtistHistoryScreen {
                         }
 
                         ArtistPreview(
+                            initialArtist = initialArtist,
                             artist = { artist },
                             seriesById = seriesById(),
                             merchById = merchById(),
@@ -286,6 +287,7 @@ object ArtistHistoryScreen {
                             }
                         }
                         ArtistPreview(
+                            initialArtist = initialArtist,
                             artist = { artist },
                             seriesById = seriesById(),
                             merchById = merchById(),
@@ -309,6 +311,7 @@ object ArtistHistoryScreen {
 
     @Composable
     private fun ArtistPreview(
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         artist: () -> ArtistDatabaseEntry?,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
@@ -337,6 +340,7 @@ object ArtistHistoryScreen {
             if (formState != null) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     ArtistForm(
+                        initialArtist = initialArtist,
                         state = formState,
                         errorState = rememberErrorState(formState),
                         seriesPredictions = { emptyFlow() },

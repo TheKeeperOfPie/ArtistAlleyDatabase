@@ -192,6 +192,7 @@ internal object ArtistFormMergeScreen {
             ) {
                 Row(modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)) {
                     ArtistPreview(
+                        initialArtist = { entry()?.artist },
                         artistFormState = artistFormState,
                         seriesImage = seriesImage,
                         modifier = Modifier.weight(1f)
@@ -209,6 +210,7 @@ internal object ArtistFormMergeScreen {
 
     @Composable
     private fun ArtistPreview(
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         artistFormState: ArtistFormState?,
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
@@ -216,6 +218,7 @@ internal object ArtistFormMergeScreen {
         if (artistFormState != null) {
             Column(modifier.verticalScroll(rememberScrollState())) {
                 ArtistForm(
+                    initialArtist = initialArtist,
                     state = artistFormState,
                     errorState = rememberErrorState(artistFormState),
                     seriesPredictions = { emptyFlow() },

@@ -75,6 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
@@ -84,6 +85,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
@@ -258,7 +261,9 @@ object ArtistEditScreen {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
                 val form = remember {
                     movableContentOf { modifier: Modifier ->
+                        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                         ArtistForm(
+                            initialArtist = { initialArtist },
                             state = state.artistFormState,
                             errorState = errorState,
                             seriesPredictions = seriesPredictions,
@@ -452,6 +457,7 @@ object ArtistEditScreen {
                         if (isDebug) {
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 FilledTonalButton(onClick = { onClickDebugForm(formLink) }) {
+                                    ArtistFormAccessKey.setKey(formLink.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}="))
                                     Text("Open form")
                                 }
                                 FilledTonalButton(onClick = { onClickDebugForm(formLink.dropLast(10)) }) {
@@ -507,6 +513,7 @@ object ArtistEditScreen {
 
     @Stable
     class State(
+        val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val artistFormState: ArtistFormState,
         val formLink: StateFlow<String?>,
         val saveTaskState: TaskState<ArtistSave.Response>,

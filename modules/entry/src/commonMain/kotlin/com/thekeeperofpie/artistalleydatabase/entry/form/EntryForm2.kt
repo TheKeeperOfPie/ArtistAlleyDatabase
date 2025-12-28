@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -302,6 +303,7 @@ fun EntryFormScope.SingleTextSection(
     forceLocked: Boolean = this.forceLocked,
     trailingIcon: @Composable (() -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
+    outputTransformation: OutputTransformation? = null,
     errorText: (() -> String?)? = null,
 ) {
     Column {
@@ -331,6 +333,7 @@ fun EntryFormScope.SingleTextSection(
                 trailingIcon = trailingIcon,
                 isError = errorText != null,
                 inputTransformation = inputTransformation,
+                outputTransformation = outputTransformation,
                 modifier = modifier
             )
         } else {
@@ -341,6 +344,7 @@ fun EntryFormScope.SingleTextSection(
                 trailingIcon = trailingIcon,
                 isError = errorText != null,
                 inputTransformation = inputTransformation,
+                outputTransformation = outputTransformation,
                 modifier = modifier
             )
         }
@@ -1201,6 +1205,7 @@ private fun <T> EntryAutocompleteDropdown(
 fun EntryFormScope.LongTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
+    outputTransformation: OutputTransformation? = null,
 ) {
     SectionHeader(text = headerText, state = state)
 
@@ -1208,6 +1213,7 @@ fun EntryFormScope.LongTextSection(
     OutlinedTextField(
         state = state.value,
         readOnly = !editable,
+        outputTransformation = outputTransformation,
         modifier = Modifier
             .onFocusChanged { state.isFocused = it.isFocused }
             .focusRequester(state.focusRequester)

@@ -24,12 +24,14 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
+import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import kotlin.uuid.Uuid
 
 @AssistedInject
@@ -45,7 +47,10 @@ class ArtistEditViewModel(
     private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
     private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
+    private val artist =
+        savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>(Json, "artist", null)
     val state = ArtistEditScreen.State(
+        initialArtist = artist,
         artistFormState = savedStateHandle.saveable(
             key = "artistFormState",
             saver = ArtistFormState.Saver,
@@ -63,7 +68,6 @@ class ArtistEditViewModel(
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val tagAutocomplete = TagAutocomplete(viewModelScope, database, dispatchers)
 
-    private var artist: ArtistDatabaseEntry.Impl? = null
     private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
     private val formLinkJob = ExclusiveProgressJob(viewModelScope, ::loadFormLink)
 
@@ -79,7 +83,7 @@ class ArtistEditViewModel(
             hasLoaded = true
             return@withContext
         }
-        this@ArtistEditViewModel.artist = artist
+        this@ArtistEditViewModel.artist.value = artist
         state.artistFormState.applyDatabaseEntry(
             artist = artist,
             seriesById = tagAutocomplete.seriesById.first(),
@@ -119,7 +123,7 @@ class ArtistEditViewModel(
         withContext(dispatchers.io) {
             val (images, databaseEntry, isManual) = triple
 
-            val hasChanged = ArtistDatabaseEntry.hasChanged(artist, databaseEntry)
+            val hasChanged = ArtistDatabaseEntry.hasChanged(artist.value, databaseEntry)
             if (!isManual && !hasChanged && images.none { it is EditImage.LocalImage }) {
                 // Don't save if no data has changed
                 return@withContext ArtistSave.Response.Success
@@ -147,12 +151,12 @@ class ArtistEditViewModel(
             })
             database.saveArtist(
                 dataYear = dataYear,
-                initial = artist,
+                initial = artist.value,
                 updated = updatedArtist,
             ).also {
                 if (it is ArtistSave.Response.Success) {
                     hasLoaded = false
-                    artist = updatedArtist
+                    artist.value = updatedArtist
                     if (!isManual) {
                         state.artistFormState.applyDatabaseEntry(
                             artist = updatedArtist,

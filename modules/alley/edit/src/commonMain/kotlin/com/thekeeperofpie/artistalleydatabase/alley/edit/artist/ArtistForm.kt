@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.OutputTransformation
+import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material.icons.Icons
@@ -24,6 +26,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -43,6 +46,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -69,7 +73,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_duplicate_entry
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_paste_link_prompt
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_paste_link_label
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_paste_link_placeholder
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
@@ -79,6 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
@@ -209,8 +215,10 @@ interface ArtistFormScope : EntryFormScope {
 
 @LayoutScopeMarker
 @Immutable
-private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormScope,
-    EntryFormScope by entryFormScope {
+private class ArtistFormScopeImpl(
+    entryFormScope: EntryFormScope,
+    private val initialArtist: ArtistDatabaseEntry.Impl?,
+) : ArtistFormScope, EntryFormScope by entryFormScope {
 
     @Composable
     override fun MetadataSection(metadata: ArtistFormState.Metadata) {
@@ -234,8 +242,11 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
                             link = it,
                         )
                     },
+                    label = {
+                        Text(stringResource(Res.string.alley_edit_artist_form_paste_link_label))
+                    },
                     placeholder = {
-                        Text(stringResource(Res.string.alley_edit_artist_form_paste_link_prompt))
+                        Text(stringResource(Res.string.alley_edit_artist_form_paste_link_placeholder))
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -277,6 +288,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_id)) },
             forceLocked = forceLock || forceLocked,
+            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.id),
             errorText = errorText,
         )
     }
@@ -297,6 +309,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
             inputTransformation = InputTransformation.maxLength(3),
+            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.booth),
             errorText = errorText,
         )
     }
@@ -306,6 +319,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
+            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.name),
         )
     }
 
@@ -314,6 +328,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
+            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.summary),
         )
     }
 
@@ -351,6 +366,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         ArtistForm.LinksSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_links,
+            initialItems = initialArtist?.links,
             items = links,
             pendingErrorMessage = pendingErrorMessage,
         )
@@ -365,6 +381,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         ArtistForm.LinksSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_store_links,
+            initialItems = initialArtist?.storeLinks,
             items = storeLinks,
             pendingErrorMessage = pendingErrorMessage,
         )
@@ -379,6 +396,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         ArtistForm.MultiTextSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_catalog_links,
+            initialItems = initialArtist?.catalogLinks,
             items = catalogLinks,
             itemToText = { it },
             itemToSerializedValue = { it },
@@ -394,10 +412,14 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
     ) {
         val onSiteText = stringResource(AlleyRes.string.alley_artist_commission_on_site)
         val onlineText = stringResource(AlleyRes.string.alley_artist_commission_online)
+        val initialCommissions = remember(initialArtist?.commissions) {
+            initialArtist?.commissions?.map(CommissionModel::parse).orEmpty()
+        }
         ArtistForm.MultiTextSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_commissions,
             items = commissions,
+            initialItems = initialCommissions,
             leadingIcon = {
                 when (it) {
                     is CommissionModel.Link -> Icons.Default.Link
@@ -449,9 +471,18 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
         val showSeriesInferred =
             forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred || !showConfirmed
+
+        val initialInferred = remember(initialArtist?.seriesInferred) {
+            initialArtist?.seriesInferred?.map(SeriesInfo::fake).orEmpty()
+        }
+        val initialConfirmed = remember(initialArtist?.seriesConfirmed) {
+            initialArtist?.seriesConfirmed?.map(SeriesInfo::fake).orEmpty()
+        }
+
         ArtistForm.SeriesSection(
             state = state.stateInferred,
             title = Res.string.alley_edit_artist_edit_series_inferred,
+            initialItems = initialInferred,
             items = state.inferred,
             showItems = { showSeriesInferred },
             predictions = seriesPredictions,
@@ -471,6 +502,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             ArtistForm.SeriesSection(
                 state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_series_confirmed,
+                initialItems = initialConfirmed,
                 items = state.confirmed,
                 predictions = seriesPredictions,
                 image = seriesImage,
@@ -490,37 +522,47 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
         var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
         val showMerchInferred =
             forceLocked || !hasConfirmedMerch || requestedShowMerchInferred || !showConfirmed
-        with(ArtistForm) {
-            MultiTextSection(
-                state = state.stateInferred,
-                title = Res.string.alley_edit_artist_edit_merch_inferred,
-                items = state.inferred,
-                showItems = { showMerchInferred },
+
+        val initialInferred = remember(initialArtist?.merchInferred) {
+            initialArtist?.merchInferred?.map(MerchInfo::fake).orEmpty()
+        }
+        val initialConfirmed = remember(initialArtist?.merchConfirmed) {
+            initialArtist?.merchConfirmed?.map(MerchInfo::fake).orEmpty()
+        }
+
+        ArtistForm.MultiTextSection(
+            state = state.stateInferred,
+            title = Res.string.alley_edit_artist_edit_merch_inferred,
+            initialItems = initialInferred,
+            equalsComparison = { it.name },
+            items = state.inferred,
+            showItems = { showMerchInferred },
+            predictions = merchPredictions,
+            itemToCommitted = { MerchInfo.fake(it) },
+            itemToText = { it.name },
+            itemToSerializedValue = { it.name },
+        )
+
+        if (!forceLocked && showConfirmed) {
+            ArtistForm.ShowInferredButton(
+                hasConfirmed = hasConfirmedMerch,
+                showingInferred = showMerchInferred,
+                onClick = { requestedShowMerchInferred = it },
+            )
+        }
+
+        if (showConfirmed) {
+            ArtistForm.MultiTextSection(
+                state = state.stateConfirmed,
+                title = Res.string.alley_edit_artist_edit_merch_confirmed,
+                initialItems = initialConfirmed,
+                equalsComparison = { it.name },
+                items = state.confirmed,
                 predictions = merchPredictions,
                 itemToCommitted = { MerchInfo.fake(it) },
                 itemToText = { it.name },
                 itemToSerializedValue = { it.name },
             )
-
-            if (!forceLocked && showConfirmed) {
-                ArtistForm.ShowInferredButton(
-                    hasConfirmed = hasConfirmedMerch,
-                    showingInferred = showMerchInferred,
-                    onClick = { requestedShowMerchInferred = it },
-                )
-            }
-
-            if (showConfirmed) {
-                MultiTextSection(
-                    state = state.stateConfirmed,
-                    title = Res.string.alley_edit_artist_edit_merch_confirmed,
-                    items = state.confirmed,
-                    predictions = merchPredictions,
-                    itemToCommitted = { MerchInfo.fake(it) },
-                    itemToText = { it.name },
-                    itemToSerializedValue = { it.name },
-                )
-            }
         }
     }
 
@@ -531,6 +573,7 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             headerText = {
                 Text(stringResource(Res.string.alley_edit_artist_edit_notes))
             },
+            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.notes),
         )
     }
 
@@ -541,7 +584,29 @@ private class ArtistFormScopeImpl(entryFormScope: EntryFormScope) : ArtistFormSc
             headerText = {
                 Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
             },
+            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.editorNotes),
         )
+    }
+
+    @Stable
+    @Composable
+    private fun rememberOnChangedOutputTransformation(initialValue: String?): OutputTransformation? {
+        return if (initialArtist != null) {
+            remember(initialValue) { GreenOnChangedOutputTransformation(initialValue.orEmpty()) }
+        } else {
+            null
+        }
+    }
+
+    @Immutable
+    private class GreenOnChangedOutputTransformation(
+        private val initialValue: String,
+    ) : OutputTransformation {
+        override fun TextFieldBuffer.transformOutput() {
+            if (originalText.toString() != initialValue) {
+                addStyle(SpanStyle(color = Color.Green), 0, length)
+            }
+        }
     }
 }
 
@@ -551,6 +616,7 @@ object ArtistForm {
     operator fun invoke(
         state: ArtistFormState,
         errorState: ArtistErrorState,
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
@@ -579,7 +645,12 @@ object ArtistForm {
                 state.editorState.editorNotes.takeIf { showEditorNotes },
             )
         )
-        ArtistForm(focusState, forceLocked, modifier) {
+        ArtistForm(
+            focusState = focusState,
+            initialArtist = initialArtist,
+            forceLocked = forceLocked,
+            modifier = modifier
+        ) {
             MetadataSection(state.metadata)
             PasteLinkSection(state = state.links)
             if (showStatus) {
@@ -617,12 +688,13 @@ object ArtistForm {
     @Composable
     operator fun invoke(
         focusState: EntryForm2.FocusState,
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         forceLocked: Boolean = false,
         modifier: Modifier = Modifier,
         content: @Composable ArtistFormScope.() -> Unit,
     ) {
         EntryForm2(forceLocked = forceLocked, focusState = focusState, modifier = modifier) {
-            ArtistFormScopeImpl(this).content()
+            ArtistFormScopeImpl(this, initialArtist()).content()
         }
     }
 
@@ -718,6 +790,7 @@ object ArtistForm {
     internal fun <T> MultiTextSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
+        initialItems: List<T>?,
         items: SnapshotStateList<T>,
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
@@ -727,6 +800,7 @@ object ArtistForm {
         leadingIcon: (T) -> ImageVector? = { null },
         pendingErrorMessage: () -> String? = { null },
         preferPrediction: Boolean = true,
+        equalsComparison: (T) -> Any? = { it },
     ) {
         MultiTextSection(
             state = state,
@@ -740,10 +814,20 @@ object ArtistForm {
             item = { _, item ->
                 Box {
                     val leadingIcon = leadingIcon(item)
+                    val existed = initialItems?.any {
+                        equalsComparison(it) == equalsComparison(item)
+                    }
                     TextField(
                         value = itemToText(item),
                         onValueChange = {},
                         readOnly = true,
+                        textStyle = LocalTextStyle.current.copy(
+                            color = if (existed != false) {
+                                LocalTextStyle.current.color
+                            } else {
+                                Color.Green
+                            }
+                        ),
                         leadingIcon = leadingIcon?.let {
                             {
                                 Icon(
@@ -780,6 +864,7 @@ object ArtistForm {
     internal fun SeriesSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
+        initialItems: List<SeriesInfo>?,
         items: SnapshotStateList<SeriesInfo>,
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
@@ -800,9 +885,16 @@ object ArtistForm {
             sortValue = { it.titlePreferred },
             item = { _, value ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val existed = initialItems?.any { it.id == value.id }
+                    val textStyle = if (existed != false) {
+                        MaterialTheme.typography.bodyMedium
+                    } else {
+                        MaterialTheme.typography.bodyMedium.copy(color = Color.Green)
+                    }
                     SeriesRow(
                         series = value,
                         image = { image(value) },
+                        textStyle = textStyle,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -910,9 +1002,13 @@ object ArtistForm {
     internal fun LinksSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
+        initialItems: List<String>?,
         items: SnapshotStateList<LinkModel>,
         pendingErrorMessage: () -> String?,
     ) {
+        val initialLinks = remember(initialItems) {
+            initialItems?.map(LinkModel::parse).orEmpty()
+        }
         MultiTextSection(
             state = state,
             title = title,
@@ -923,6 +1019,7 @@ object ArtistForm {
                 LinkRow(
                     link = value,
                     isLast = index == items.lastIndex && !state.lockState.editable,
+                    color = if (initialLinks.contains(value)) Color.Unspecified else Color.Green,
                     additionalActions = {
                         AnimatedVisibility(
                             visible = state.lockState.editable,
