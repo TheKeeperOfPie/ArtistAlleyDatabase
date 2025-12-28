@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -31,6 +32,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -257,6 +259,29 @@ internal object ArtistFormMergeScreen {
                     )
                 }
             }
+
+            val groupState = when {
+                fieldState.values.all { it } -> ToggleableState.On
+                fieldState.values.any { it } -> ToggleableState.Indeterminate
+                else -> ToggleableState.Off
+            }
+
+            TriStateCheckbox(
+                state = groupState,
+                onClick = {
+                    val newValue = when (groupState) {
+                        ToggleableState.On -> false
+                        ToggleableState.Off,
+                        ToggleableState.Indeterminate,
+                            -> true
+                    }
+                    fieldState.keys.toSet().forEach {
+                        fieldState[it] = newValue
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+
             ArtistField.entries.forEach { field ->
                 if (!fieldState.keys.contains(field)) return@forEach
                 Row(
@@ -304,6 +329,7 @@ internal object ArtistFormMergeScreen {
     @Stable
     private class FieldState(private val map: SnapshotStateMap<ArtistField, Boolean>) {
         val keys get() = map.keys
+        val values get() = map.values
         operator fun get(field: ArtistField) = map[field] ?: false
         operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
 
