@@ -12,5 +12,6 @@ expect class AlleyFormRemoteDatabase {
         dataYear: DataYear,
         before: ArtistDatabaseEntry.Impl,
         after: ArtistDatabaseEntry.Impl,
+        formNotes: String,
     ): BackendFormRequest.ArtistSave.Response
 }

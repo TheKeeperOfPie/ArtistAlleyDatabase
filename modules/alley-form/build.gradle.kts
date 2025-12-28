@@ -62,6 +62,7 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(compose.materialIconsExtended)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.ktor.client.java)
             }

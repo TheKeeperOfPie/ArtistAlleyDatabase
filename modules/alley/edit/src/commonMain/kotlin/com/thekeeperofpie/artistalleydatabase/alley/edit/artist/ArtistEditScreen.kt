@@ -73,7 +73,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
-import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -121,7 +120,7 @@ object ArtistEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
         onClickHistory: (() -> Unit)? = null,
-        onClickDebugForm: ((AlleyEditDestination.ArtistForm) -> Unit)? = null,
+        onClickDebugForm: (() -> Unit)? = null,
         viewModel: ArtistEditViewModel = viewModel {
             graph.artistEditViewModelFactory.create(
                 dataYear = dataYear,
@@ -161,11 +160,7 @@ object ArtistEditScreen {
             onClickHistory = onClickHistory,
             onClickSave = viewModel::onClickSave,
             onClickDone = viewModel::onClickDone,
-            onClickDebugForm = {
-                onClickDebugForm?.invoke(
-                    AlleyEditDestination.ArtistForm(dataYear = dataYear, artistId = artistId!!)
-                )
-            },
+            onClickDebugForm = { onClickDebugForm?.invoke() },
         )
     }
 
@@ -456,11 +451,17 @@ object ArtistEditScreen {
 
                         if (isDebug) {
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                FilledTonalButton(onClick = { onClickDebugForm(formLink) }) {
+                                FilledTonalButton(onClick = {
+                                    onClickDebugForm(formLink)
+                                    onDismiss()
+                                }) {
                                     ArtistFormAccessKey.setKey(formLink.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}="))
                                     Text("Open form")
                                 }
-                                FilledTonalButton(onClick = { onClickDebugForm(formLink.dropLast(10)) }) {
+                                FilledTonalButton(onClick = {
+                                    onClickDebugForm(formLink.dropLast(10))
+                                    onDismiss()
+                                }) {
                                     Text("Open broken form")
                                 }
                             }

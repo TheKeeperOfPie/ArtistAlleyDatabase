@@ -38,6 +38,7 @@ actual class AlleyFormRemoteDatabase(
         dataYear: DataYear,
         before: ArtistDatabaseEntry.Impl,
         after: ArtistDatabaseEntry.Impl,
+        formNotes: String,
     ): BackendFormRequest.ArtistSave.Response = withContext(dispatchers.io) {
         val accessKey = ArtistFormAccessKey.key
             ?: return@withContext BackendFormRequest.ArtistSave.Response.Failed("Invalid access key")
@@ -55,6 +56,7 @@ actual class AlleyFormRemoteDatabase(
                 dataYear = dataYear,
                 before = before,
                 after = after,
+                formNotes = formNotes,
             ),
             accessKey = accessKey,
         ) ?: BackendFormRequest.ArtistSave.Response.Failed(

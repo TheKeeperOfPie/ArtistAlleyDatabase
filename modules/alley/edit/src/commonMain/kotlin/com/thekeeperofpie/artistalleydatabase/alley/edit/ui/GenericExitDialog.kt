@@ -19,7 +19,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sav
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun GenericExitDialog(
+fun GenericExitDialog(
     onClickBack: () -> Unit,
     onClickSave: () -> Unit,
     saveErrorMessage: () -> String? = { null },

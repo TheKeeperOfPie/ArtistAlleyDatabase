@@ -17,6 +17,7 @@ data class ArtistEntryDiff(
     val seriesConfirmed: Diff?,
     val merchInferred: Diff?,
     val merchConfirmed: Diff?,
+    val formNotes: String,
     val timestamp: Instant,
 ) {
     companion object {

@@ -17,9 +17,11 @@ class AlleyFormDatabase(
         dataYear: DataYear,
         before: ArtistDatabaseEntry.Impl,
         after: ArtistDatabaseEntry.Impl,
+        formNotes: String,
     ) = remoteDatabase.saveArtist(
         dataYear = dataYear,
         before = before,
         after = after,
+        formNotes = formNotes,
     )
 }

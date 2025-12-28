@@ -25,6 +25,7 @@ sealed interface BackendFormRequest {
         val dataYear: DataYear,
         val before: ArtistDatabaseEntry.Impl,
         val after: ArtistDatabaseEntry.Impl,
+        val formNotes: String,
     ) : BackendFormRequest, WithResponse<ArtistSave.Response> {
 
         @Serializable

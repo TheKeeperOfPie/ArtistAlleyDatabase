@@ -2,15 +2,28 @@ package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.decode.DataSource
@@ -23,8 +36,10 @@ import coil3.memory.MemoryCache
 import coil3.request.Options
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditApp
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -106,7 +121,32 @@ fun main() {
                     LocalWindowConfiguration provides windowConfiguration,
                 ) {
                     Box(modifier = Modifier.mouseNavigationEvents()) {
-                        ArtistAlleyFormApp(graph = graph)
+                        var showForm by rememberSaveable { mutableStateOf(false) }
+                        val navStack = rememberArtistAlleyEditTopLevelStacks()
+                        ArtistAlleyEditApp(
+                            graph = graph,
+                            navStack = navStack,
+                            onOpenForm = { showForm = true },
+                        )
+
+                        // Simulates opening the form app in a different browser tab
+                        if (showForm) {
+                            NavigationBackHandler(
+                                state = rememberNavigationEventState(NavigationEventInfo.None),
+                                onBackCompleted = { showForm = false },
+                            )
+                            Surface {
+                                Column {
+                                    IconButton(onClick = { showForm = false }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = null,
+                                        )
+                                    }
+                                    ArtistAlleyFormApp(graph = graph)
+                                }
+                            }
+                        }
                     }
                 }
             }

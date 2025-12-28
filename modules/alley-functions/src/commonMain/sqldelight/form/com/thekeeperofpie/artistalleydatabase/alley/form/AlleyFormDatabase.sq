@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS artistFormEntry (
     afterMerchInferred TEXT AS List<String>,
     afterMerchConfirmed TEXT AS List<String>,
     afterImages TEXT AS List<CatalogImage>,
+    formNotes TEXT,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId)
 );

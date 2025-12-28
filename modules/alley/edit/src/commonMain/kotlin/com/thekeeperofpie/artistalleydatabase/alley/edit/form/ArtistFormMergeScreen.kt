@@ -11,6 +11,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -35,6 +37,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_booth
@@ -240,6 +243,20 @@ internal object ArtistFormMergeScreen {
         modifier: Modifier = Modifier,
     ) {
         Column(modifier = modifier.fillMaxWidth()) {
+            val formNotes = diff?.formNotes
+            if (formNotes != null) {
+                OutlinedCard(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stringResource(Res.string.alley_edit_artist_form_merge_notes),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                    )
+                    Text(
+                        text = formNotes,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+            }
             ArtistField.entries.forEach { field ->
                 if (!fieldState.keys.contains(field)) return@forEach
                 Row(

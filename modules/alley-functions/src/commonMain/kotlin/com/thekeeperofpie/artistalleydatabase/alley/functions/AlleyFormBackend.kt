@@ -187,6 +187,7 @@ internal object AlleyFormBackend {
                 afterMerchInferred = after.merchInferred,
                 afterMerchConfirmed = after.merchConfirmed,
                 afterImages = after.images,
+                formNotes = request.formNotes,
                 timestamp = Clock.System.now(),
             )
         )

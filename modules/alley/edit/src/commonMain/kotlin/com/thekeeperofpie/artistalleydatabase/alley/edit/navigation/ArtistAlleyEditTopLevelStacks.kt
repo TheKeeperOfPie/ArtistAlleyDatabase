@@ -32,7 +32,6 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyEditDestination.Home.serializer())
             subclass(serializer = AlleyEditDestination.ArtistAdd.serializer())
             subclass(serializer = AlleyEditDestination.ArtistEdit.serializer())
-            subclass(serializer = AlleyEditDestination.ArtistForm.serializer())
             subclass(serializer = AlleyEditDestination.ArtistFormMerge.serializer())
             subclass(serializer = AlleyEditDestination.ArtistFormQueue.serializer())
             subclass(serializer = AlleyEditDestination.ArtistHistory.serializer())
@@ -97,7 +96,7 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
         }
     }
 
-    fun navigate(destination: AlleyEditDestination) {
+    fun navigate(destination: NavKey) {
         val resetIndex =
             TopLevelStackKey.entries.indexOfFirst { it.initialDestination == destination }
         if (resetIndex > 0) {
@@ -108,7 +107,7 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
         updateInfo()
     }
 
-    fun navigateOnBrowserBack(destination: AlleyEditDestination) {
+    fun navigateOnBrowserBack(destination: NavKey) {
         val resetIndex = twoWayStacks.indexOfFirst {
             it.navBackStack.find { it == destination } != null
         }

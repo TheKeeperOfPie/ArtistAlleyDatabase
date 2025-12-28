@@ -14,6 +14,8 @@ kotlin {
         commonMain.dependencies {
             api(libs.jetBrainsAndroidX.navigation3.ui)
 
+            implementation(libs.jetBrainsCompose.material3.windowSizeClass)
+
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.edit)
             implementation(projects.modules.utils)

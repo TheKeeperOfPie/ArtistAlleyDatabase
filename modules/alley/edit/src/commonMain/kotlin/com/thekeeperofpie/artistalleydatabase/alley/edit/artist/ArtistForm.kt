@@ -73,8 +73,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_duplicate_entry
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_paste_link_label
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_paste_link_placeholder
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_label
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_placeholder
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
@@ -207,10 +207,12 @@ interface ArtistFormScope : EntryFormScope {
     )
 
     @Composable
-    fun NotesSection(state: EntryForm2.SingleTextState)
-
-    @Composable
-    fun EditorNotesSection(state: EntryForm2.SingleTextState)
+    fun NotesSection(
+        state: EntryForm2.SingleTextState,
+        headerText: @Composable () -> Unit = {
+            Text(stringResource(Res.string.alley_edit_artist_edit_notes))
+        },
+    )
 }
 
 @LayoutScopeMarker
@@ -243,10 +245,10 @@ private class ArtistFormScopeImpl(
                         )
                     },
                     label = {
-                        Text(stringResource(Res.string.alley_edit_artist_form_paste_link_label))
+                        Text(stringResource(Res.string.alley_edit_paste_link_label))
                     },
                     placeholder = {
-                        Text(stringResource(Res.string.alley_edit_artist_form_paste_link_placeholder))
+                        Text(stringResource(Res.string.alley_edit_paste_link_placeholder))
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -567,24 +569,14 @@ private class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun NotesSection(state: EntryForm2.SingleTextState) {
+    override fun NotesSection(
+        state: EntryForm2.SingleTextState,
+        headerText: @Composable () -> Unit,
+    ) {
         LongTextSection(
             state = state,
-            headerText = {
-                Text(stringResource(Res.string.alley_edit_artist_edit_notes))
-            },
+            headerText = headerText,
             outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.notes),
-        )
-    }
-
-    @Composable
-    override fun EditorNotesSection(state: EntryForm2.SingleTextState) {
-        LongTextSection(
-            state = state,
-            headerText = {
-                Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
-            },
-            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.editorNotes),
         )
     }
 
@@ -680,7 +672,12 @@ object ArtistForm {
 
             NotesSection(state.info.notes)
             if (showEditorNotes) {
-                EditorNotesSection(state.editorState.editorNotes)
+                NotesSection(
+                    state = state.editorState.editorNotes,
+                    headerText = {
+                        Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
+                    },
+                )
             }
         }
     }

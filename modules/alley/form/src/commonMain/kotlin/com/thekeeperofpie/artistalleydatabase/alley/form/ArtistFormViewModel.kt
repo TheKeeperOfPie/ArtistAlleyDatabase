@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -37,8 +38,7 @@ class ArtistFormViewModel(
     @Assisted private val dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveTask: ExclusiveTask<Pair<List<EditImage>, ArtistDatabaseEntry.Impl>, BackendFormRequest.ArtistSave.Response> =
-        ExclusiveTask(viewModelScope, ::save)
+    private val saveTask = ExclusiveTask(viewModelScope, ::save)
     private var progress = savedStateHandle.getMutableStateFlow(
         json = Json,
         key = "progress",
@@ -98,7 +98,14 @@ class ArtistFormViewModel(
 
     fun onClickDone() {
         val artist = artist.value ?: return
-        saveTask.triggerManual { state.captureDatabaseEntry(artist) }
+        saveTask.triggerManual {
+            val (images, artist) = state.captureDatabaseEntry(artist)
+            CapturedState(
+                images = images,
+                artist = artist,
+                formNotes = state.formState.formNotes.value.text.toString(),
+            )
+        }
     }
 
     fun onSubmitPrivateKey(privateKey: String) {
@@ -107,11 +114,20 @@ class ArtistFormViewModel(
         artistJob.launch()
     }
 
-    private suspend fun save(
-        pair: Pair<List<EditImage>, ArtistDatabaseEntry.Impl>,
-    ): BackendFormRequest.ArtistSave.Response =
+    private suspend fun save(data: CapturedState): BackendFormRequest.ArtistSave.Response =
         // TODO: Image support
-        formDatabase.saveArtist(dataYear = dataYear, before = artist.value!!, after = pair.second)
+        formDatabase.saveArtist(
+            dataYear = dataYear,
+            before = artist.value!!,
+            after = data.artist,
+            formNotes = data.formNotes,
+        )
+
+    data class CapturedState(
+        val images: List<EditImage>,
+        val artist: ArtistDatabaseEntry.Impl,
+        val formNotes: String,
+    )
 
     @AssistedFactory
     interface Factory {

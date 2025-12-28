@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -23,7 +24,6 @@ import androidx.navigationevent.NavigationEventHandler
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -101,12 +101,14 @@ fun ArtistAlleyFormApp(
                         onClickBackInput.backCompleted()
                     }
                 }
-                val entryProvider = entryProvider(
-                    graph = graph,
-                    navStack = navStack,
-                    onClickBack = onClickBack,
-                    onOpenForm = onOpenForm,
-                )
+                val entryProvider = entryProvider {
+                    addFormEntryProviders(
+                        graph = graph,
+                        onNavigate = navStack::navigate,
+                        onClickBack = onClickBack,
+                        onOpenForm = onOpenForm,
+                    )
+                }
 
                 val decoratedNavEntries = rememberDecoratedNavEntries(
                     twoWayStack = navStack,
@@ -134,20 +136,19 @@ fun ArtistAlleyFormApp(
     }
 }
 
-@Composable
-private fun entryProvider(
+fun EntryProviderScope<NavKey>.addFormEntryProviders(
     graph: ArtistAlleyFormGraph,
-    navStack: TwoWayStack,
+    onNavigate: (NavKey) -> Unit,
     onClickBack: (force: Boolean) -> Unit,
     onOpenForm: (() -> Unit)?,
-) = entryProvider<NavKey> {
+) {
     sharedElementEntry<AlleyFormDestination.Home> {
         ArtistFormHomeScreen(
             onOpenForm = {
                 if (onOpenForm != null) {
                     onOpenForm()
                 } else {
-                    navStack.navigate(
+                    onNavigate(
                         AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026)
                     )
                 }

@@ -8,7 +8,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -27,6 +26,7 @@ actual class AlleyFormRemoteDatabase(
         dataYear: DataYear,
         before: ArtistDatabaseEntry.Impl,
         after: ArtistDatabaseEntry.Impl,
+        formNotes: String,
     ): BackendFormRequest.ArtistSave.Response {
         val fakeNonce = Uuid.random()
         val request = BackendFormRequest.ArtistSave(
@@ -34,11 +34,13 @@ actual class AlleyFormRemoteDatabase(
             dataYear = dataYear,
             before = before,
             after = after,
+            formNotes = formNotes,
         )
         val artistId = assertSignatureAndGetArtistId(request)
             ?: return BackendFormRequest.ArtistSave.Response.Failed("Invalid access key")
 
-        editDatabase.artistFormQueue[artistId] = Triple(Clock.System.now(), before, after)
+        editDatabase.artistFormQueue[artistId] =
+            AlleyEditRemoteDatabase.FormSubmission(before, after, formNotes)
         return BackendFormRequest.ArtistSave.Response.Success
     }
 

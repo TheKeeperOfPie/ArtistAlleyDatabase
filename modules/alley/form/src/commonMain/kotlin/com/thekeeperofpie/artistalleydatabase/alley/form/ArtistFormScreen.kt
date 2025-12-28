@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,20 +38,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_action_save_tooltip
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_action_submit_private_key
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_private_key_prompt
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_saved_changes
+import artistalleydatabase.modules.alley.form.generated.resources.Res
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_submit_private_key
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_error_saving_bad_fields
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_notes
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen.State.ErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
+import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.ErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -128,7 +129,7 @@ object ArtistFormScreen {
                         }
                         is BackendFormRequest.ArtistSave.Response.Success -> {
                             snackbarHostState.showSnackbar(
-                                message = getString(Res.string.alley_edit_artist_form_saved_changes),
+                                message = getString(Res.string.alley_form_saved_changes),
                                 duration = SnackbarDuration.Long,
                             )
                             saveTaskState.clearResult()
@@ -146,7 +147,7 @@ object ArtistFormScreen {
                     title = {
                         Text(
                             stringResource(
-                                Res.string.alley_edit_artist_edit_title_editing,
+                                Res.string.alley_form_artist_title,
                                 stringResource(dataYear.shortName),
                                 state.formState.info.name.value.text,
                             )
@@ -157,7 +158,7 @@ object ArtistFormScreen {
                         val enabled = !errorState.hasAnyError
                         TooltipIconButton(
                             icon = Icons.Default.DoneAll,
-                            tooltipText = stringResource(Res.string.alley_edit_artist_form_action_save_tooltip),
+                            tooltipText = stringResource(Res.string.alley_form_action_save_tooltip),
                             enabled = enabled,
                             onClick = onClickDone,
                         )
@@ -192,7 +193,7 @@ object ArtistFormScreen {
                         )
 
                         val errorMessage =
-                            stringResource(Res.string.alley_edit_artist_error_saving_bad_fields)
+                            stringResource(Res.string.alley_form_error_saving_bad_fields)
                         GenericExitDialog(
                             onClickBack = { onClickBack(true) },
                             onClickSave = onClickDone,
@@ -238,6 +239,7 @@ object ArtistFormScreen {
                         formState.merch.stateInferred,
                         formState.merch.stateConfirmed,
                         formState.notes,
+                        formState.formNotes,
                     )
                 )
 
@@ -275,6 +277,12 @@ object ArtistFormScreen {
                         allowCustomInput = true,
                     )
                     NotesSection(formState.notes)
+                    NotesSection(
+                        state = formState.formNotes,
+                        headerText = {
+                            Text(stringResource(Res.string.alley_form_notes))
+                        },
+                    )
                 }
                 // TODO: Support images?
             }
@@ -292,7 +300,7 @@ object ArtistFormScreen {
                     .widthIn(max = 960.dp)
             ) {
                 Text(
-                    text = stringResource(Res.string.alley_edit_artist_form_private_key_prompt),
+                    text = stringResource(Res.string.alley_form_private_key_prompt),
                     style = MaterialTheme.typography.titleMedium,
                 )
 
@@ -302,7 +310,7 @@ object ArtistFormScreen {
 
                 // TODO: Show a new error message if the key is incorrect
                 FilledTonalButton(onClick = { onSubmitKey(state.text.toString()) }) {
-                    Text(stringResource(Res.string.alley_edit_artist_form_action_submit_private_key))
+                    Text(stringResource(Res.string.alley_form_action_submit_private_key))
                 }
             }
         }
@@ -405,6 +413,7 @@ object ArtistFormScreen {
             val series: ArtistFormState.SeriesState = ArtistFormState.SeriesState(),
             val merch: ArtistFormState.MerchState = ArtistFormState.MerchState(),
             val notes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+            val formNotes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
         ) {
             object Saver : ComposeSaver<FormState, List<Any>> {
                 override fun SaverScope.save(value: FormState) = listOf(
@@ -413,6 +422,7 @@ object ArtistFormScreen {
                     with(ArtistFormState.SeriesState.Saver) { save(value.series) },
                     with(ArtistFormState.MerchState.Saver) { save(value.merch) },
                     with(EntryForm2.SingleTextState.Saver) { save(value.notes) },
+                    with(EntryForm2.SingleTextState.Saver) { save(value.formNotes) },
                 )
 
                 @Suppress("UNCHECKED_CAST")
@@ -422,6 +432,7 @@ object ArtistFormScreen {
                     series = with(ArtistFormState.SeriesState.Saver) { restore(value[2] as List<Any>) },
                     merch = with(ArtistFormState.MerchState.Saver) { restore(value[3] as List<Any>) },
                     notes = with(EntryForm2.SingleTextState.Saver) { restore(value[4]) },
+                    formNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[5]) },
                 )
             }
         }

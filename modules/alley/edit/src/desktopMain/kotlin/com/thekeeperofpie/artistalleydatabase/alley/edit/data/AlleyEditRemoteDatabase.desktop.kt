@@ -47,8 +47,7 @@ actual class AlleyEditRemoteDatabase {
     private val merch = mutableMapOf<Uuid, MerchInfo>()
 
     internal val artistKeys = mutableMapOf<Uuid, AlleyCryptographyKeys>()
-    internal val artistFormQueue =
-        mutableMapOf<Uuid, Triple<Instant, ArtistDatabaseEntry.Impl, ArtistDatabaseEntry.Impl>>()
+    internal val artistFormQueue = mutableMapOf<Uuid, FormSubmission>()
 
     private var simulatedLatency: Duration? = null
 
@@ -143,7 +142,8 @@ actual class AlleyEditRemoteDatabase {
                 merchConfirmed = previous.merchConfirmed.drop(1) + "MerchD",
             )
 
-            artistFormQueue[Uuid.parse(previous.id)] = Triple(Clock.System.now(), previous, after)
+            artistFormQueue[Uuid.parse(previous.id)] =
+                FormSubmission(previous, after, "Some test artist form notes")
 
             simulatedLatency = 5.seconds
         }
@@ -240,7 +240,7 @@ actual class AlleyEditRemoteDatabase {
     }
 
     actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
-        artistFormQueue.values.map { (id, before, after) ->
+        artistFormQueue.values.map { (before, after, formNotes, _) ->
             ArtistFormQueueEntry(
                 artistId = Uuid.parse(before.id),
                 beforeBooth = before.booth,
@@ -254,7 +254,7 @@ actual class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response? {
-        val (timestamp, before, after) = artistFormQueue[artistId] ?: return null
+        val (before, after, formNotes, timestamp) = artistFormQueue[artistId] ?: return null
         return BackendRequest.ArtistWithFormEntry.Response(
             artist = loadArtist(dataYear, artistId) ?: return null,
             formDiff = ArtistEntryDiff(
@@ -277,6 +277,7 @@ actual class AlleyEditRemoteDatabase {
                     before.merchConfirmed,
                     after.merchConfirmed
                 ),
+                formNotes = formNotes,
                 timestamp = timestamp,
             )
         )
@@ -290,11 +291,18 @@ actual class AlleyEditRemoteDatabase {
     ): BackendRequest.ArtistCommitForm.Response {
         saveArtist(dataYear = dataYear, initial = initial, updated = updated)
         val artistId = Uuid.parse(updated.id)
-        if (artistFormQueue[artistId]?.first == formEntryTimestamp) {
+        if (artistFormQueue[artistId]?.timestamp == formEntryTimestamp) {
             artistFormQueue.remove(artistId)
         }
         return BackendRequest.ArtistCommitForm.Response.Success
     }
 
     private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
+
+    internal data class FormSubmission(
+        val before: ArtistDatabaseEntry.Impl,
+        val after: ArtistDatabaseEntry.Impl,
+        val formNotes: String,
+        val timestamp: Instant = Clock.System.now(),
+    )
 }

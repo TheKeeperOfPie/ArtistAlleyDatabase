@@ -15,8 +15,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -27,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScr
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen
@@ -51,6 +48,7 @@ import org.jetbrains.compose.resources.stringResource
 fun ArtistAlleyEditApp(
     graph: ArtistAlleyEditGraph,
     navStack: ArtistAlleyEditTopLevelStacks = rememberArtistAlleyEditTopLevelStacks(),
+    onOpenForm: () -> Unit = {},
 ) {
     CompositionLocalProvider(LocalNavigationController provides remember {
         object : NavigationController {
@@ -90,6 +88,7 @@ fun ArtistAlleyEditApp(
                     graph = graph,
                     navStack = navStack,
                     onClickBack = onClickBack,
+                    onOpenForm = onOpenForm,
                 )
 
                 val decoratedNavEntries = rememberDecoratedNavEntries(navStack, entryProvider)
@@ -136,6 +135,7 @@ private fun entryProvider(
     graph: ArtistAlleyEditGraph,
     navStack: ArtistAlleyEditTopLevelStacks,
     onClickBack: (force: Boolean) -> Unit,
+    onOpenForm: () -> Unit,
 ) = entryProvider<NavKey> {
     sharedElementEntry<AlleyEditDestination.Home> {
         ArtistListScreen(
@@ -193,19 +193,7 @@ private fun entryProvider(
                     )
                 )
             },
-            onClickDebugForm = navStack::navigate,
-        )
-    }
-    sharedElementEntry<AlleyEditDestination.ArtistForm> { route ->
-        ArtistFormScreen(
-            dataYear = route.dataYear,
-            onClickBack = onClickBack,
-            viewModel = viewModel {
-                graph.artistFormViewModelFactory.create(
-                    dataYear = route.dataYear,
-                    savedStateHandle = createSavedStateHandle(),
-                )
-            }
+            onClickDebugForm = onOpenForm,
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistFormMerge> { route ->

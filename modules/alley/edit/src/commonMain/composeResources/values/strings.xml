@@ -150,19 +150,13 @@
     <string name="alley_edit_artist_history_action_revert_tooltip">Revert fields\nto this point</string>
     <string name="alley_edit_artist_history_action_return_to_history_tooltip">Return to history</string>
     <string name="alley_edit_artist_history_action_refresh_tooltip">Refresh</string>
+    <string name="alley_edit_paste_link_label">Generic link input</string>
+    <string name="alley_edit_paste_link_placeholder">Paste a social/store/etc. link here to automatically place it in the right section</string>
 
     <string name="alley_edit_artist_form_queue_title">Artist form queue</string>
     <string name="alley_edit_artist_form_queue_action_refresh">Refresh form queue</string>
-
-    <string name="alley_edit_artist_form_private_key_prompt">Unable to read your access token,\npaste your access link below to try again</string>
-    <string name="alley_edit_artist_form_saved_changes">Saved changes</string>
-    <string name="alley_edit_artist_form_action_save_tooltip">Save changes</string>
-
-    <string name="alley_edit_artist_form_action_submit_private_key">Submit</string>
-
     <string name="alley_edit_artist_form_merge_title">Merging %1$s - %2$s</string>
+    <string name="alley_edit_artist_form_merge_notes">Notes from submission</string>
     <string name="alley_edit_artist_form_merge_action_save">Apply form merge</string>
     <string name="alley_edit_artist_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>
-    <string name="alley_edit_artist_form_paste_link_label">Generic link input</string>
-    <string name="alley_edit_artist_form_paste_link_placeholder">Paste a social/store/etc. link here to automatically place it in the right section</string>
 </resources>
