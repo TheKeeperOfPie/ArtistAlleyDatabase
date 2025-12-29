@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -45,7 +46,7 @@ class ArtistAddViewModel(
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
     @Assisted private val dataYear: DataYear,
-    @Assisted private val artistId: Uuid,
+    @Assisted artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response> =
@@ -108,48 +109,14 @@ class ArtistAddViewModel(
         mergingArtistId.value = artistId
     }
 
-    internal fun onConfirmMerge(fieldState: Map<ArtistAddScreen.ArtistField, Boolean>) {
-        val artist = mergingArtist.value.result ?: return
-        val seriesById =
-            tagAutocomplete.seriesById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
-                ?: return
-        val merchById =
-            tagAutocomplete.merchById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
-                ?: return
+    internal fun onDenySameArtist() {
+        mergingArtistId.value = null
+    }
 
-        val formEntry = artistFormState.captureDatabaseEntry(dataYear).second
-        val entryToMerge = formEntry
-            .copy(
-                name = artist.name.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.NAME] ?: false
-                } ?: formEntry.name,
-                links = artist.links.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.LINKS] ?: false
-                }.orEmpty(),
-                storeLinks = artist.storeLinks.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.STORE_LINKS] ?: false
-                }.orEmpty(),
-                catalogLinks = artist.catalogLinks.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.CATALOG_LINKS] ?: false
-                }.orEmpty(),
-                seriesInferred = artist.seriesInferred.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.SERIES_INFERRED] ?: false
-                }.orEmpty(),
-                seriesConfirmed = artist.seriesConfirmed.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.SERIES_CONFIRMED] ?: false
-                }.orEmpty(),
-                merchInferred = artist.merchInferred.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.MERCH_INFERRED] ?: false
-                }.orEmpty(),
-                merchConfirmed = artist.merchConfirmed.takeIf {
-                    fieldState[ArtistAddScreen.ArtistField.MERCH_CONFIRMED] ?: false
-                }.orEmpty(),
-            )
-        artistFormState.applyDatabaseEntry(
-            artist = entryToMerge,
-            seriesById = seriesById,
-            merchById = merchById,
-        )
+    internal fun onConfirmSameArtist() {
+        val artist = mergingArtist.value.result ?: return
+        artistFormState.editorState.id.value.setTextAndPlaceCursorAtEnd(artist.id)
+        artistFormState.info.name.value.setTextAndPlaceCursorAtEnd(artist.name)
         mergingArtistId.value = null
     }
 

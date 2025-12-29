@@ -1,3 +1,4 @@
+
 import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
@@ -22,7 +23,9 @@ import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.MutationQueries
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import kotlinx.coroutines.runBlocking
@@ -131,69 +134,94 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             driver = pair.first
             database = pair.second
 
-            fixLegacyArtistImages(database, imageCacheDir)
-
-            database.mutationQueries.getAllArtistEntryAnimeExpo2026Images().executeAsList()
-                .forEach {
-                    val images =
-                        findArtistImages(imageCacheDir, DataYear.ANIME_EXPO_2026, it.id)
-                    val updatedImages = it.images.map { original ->
-                        images.first { it.name.contains(original.name) }
-                    }
-                    database.mutationQueries
-                        .updateArtistEntryAnimeExpo2026Images(updatedImages, it.id)
-                }
-
-            buildStampRallyConnections(database)
-
-            val artistTagConnections = buildArtistConnections(database)
-            updateSeriesInferredConfirmedCounts(database, artistTagConnections)
-            updateMerchYearFlags(database, artistTagConnections)
-
-            val (seriesConnections, merchConnections) = artistTagConnections
-            val mutationQueries = database.mutationQueries
-            mutationQueries.transaction {
-                seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
-                merchConnections.values.forEach(mutationQueries::insertMerchConnection)
-            }
-
-            val allEnteredSeriesIds = seriesConnections.map { it.value.seriesId }.toSet()
-            val allValidSeriesIds =
-                database.seriesQueries.getSeries().executeAsList().map { it.id }.toSet()
-            val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
-            if (seriesDiff.isNotEmpty()) {
-                seriesDiff.forEach { badSeries ->
-                    logger.warn("Entered series does not match valid series: $badSeries")
-                    val brokenArtists = seriesConnections
-                        .filter { it.value.seriesId == badSeries }
-                        .map { it.value.artistId }
-                    logger.warn("Broken artists: $brokenArtists")
-                }
-            }
-            val seriesWithExtraSpaces = allValidSeriesIds.filter { it.endsWith(" ") }
-            if (seriesWithExtraSpaces.isNotEmpty()) {
-                logger.error("Series with extra spaces: $seriesWithExtraSpaces")
-            }
-
-            val allEnteredMerchIds = merchConnections.map { it.value.merchId }.toSet()
-            val allValidMerchIds =
-                database.merchQueries.getMerch().executeAsList().map { it.name }.toSet()
-            val merchDiff = allEnteredMerchIds - allValidMerchIds
-            if (merchDiff.isNotEmpty()) {
-                merchDiff.forEach { badSeries ->
-                    logger.warn("Entered merch does not match valid merch: $badSeries")
-                    val brokenArtists = merchConnections
-                        .filter { it.value.merchId == badSeries }
-                        .map { it.value.artistId }
-                    logger.warn("Broken artists: $brokenArtists")
-                }
-            }
-            val merchWithExtraSpaces = allValidMerchIds.filter { it.endsWith(" ") }
-            if (merchWithExtraSpaces.isNotEmpty()) {
-                logger.error("Merch with extra spaces: $merchWithExtraSpaces")
-            }
-
             runBlocking {
+                fixLegacyArtistImages(database, imageCacheDir)
+
+                database.mutationQueries.getAllArtistEntryAnimeExpo2026()
+                    .executeAsList()
+                    .forEach {
+                        val images =
+                            findArtistImages(imageCacheDir, DataYear.ANIME_EXPO_2026, it.id)
+                        val updatedImages = it.images.map { original ->
+                            images.first { it.name.contains(original.name) }
+                        }
+
+                        val inference = ArtistInferenceProvider(database, it.id)
+                        val links = it.links.ifEmpty { inference.links }
+                        val storeLinks = it.storeLinks.ifEmpty { inference.storeLinks }
+                        val seriesInferred = it.seriesInferred.ifEmpty { inference.seriesInferred }
+                        val merchInferred = it.merchInferred.ifEmpty { inference.merchInferred }
+
+                        val (linkFlags, linkFlags2) = Link.parseFlags(
+                            links = links,
+                            storeLinks = storeLinks,
+                            catalogLinks = it.catalogLinks,
+                        )
+                        val commissionFlags = CommissionType.parseFlags(it.commissions)
+
+                        database.mutationQueries.updateArtistEntryAnimeExpo2026(
+                            it.copy(
+                                links = links,
+                                storeLinks = storeLinks,
+                                seriesInferred = seriesInferred,
+                                merchInferred = merchInferred,
+                                linkFlags = linkFlags,
+                                linkFlags2 = linkFlags2,
+                                commissionFlags = commissionFlags,
+                                images = updatedImages,
+                            )
+                        ).await()
+                    }
+
+                buildStampRallyConnections(database)
+
+                val artistTagConnections = buildArtistConnections(database)
+                updateSeriesInferredConfirmedCounts(database, artistTagConnections)
+                updateMerchYearFlags(database, artistTagConnections)
+
+                val (seriesConnections, merchConnections) = artistTagConnections
+                val mutationQueries = database.mutationQueries
+                mutationQueries.transaction {
+                    seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
+                    merchConnections.values.forEach(mutationQueries::insertMerchConnection)
+                }
+
+                val allEnteredSeriesIds = seriesConnections.map { it.value.seriesId }.toSet()
+                val allValidSeriesIds =
+                    database.seriesQueries.getSeries().executeAsList().map { it.id }.toSet()
+                val seriesDiff = allEnteredSeriesIds - allValidSeriesIds
+                if (seriesDiff.isNotEmpty()) {
+                    seriesDiff.forEach { badSeries ->
+                        logger.warn("Entered series does not match valid series: $badSeries")
+                        val brokenArtists = seriesConnections
+                            .filter { it.value.seriesId == badSeries }
+                            .map { it.value.artistId }
+                        logger.warn("Broken artists: $brokenArtists")
+                    }
+                }
+                val seriesWithExtraSpaces = allValidSeriesIds.filter { it.endsWith(" ") }
+                if (seriesWithExtraSpaces.isNotEmpty()) {
+                    logger.error("Series with extra spaces: $seriesWithExtraSpaces")
+                }
+
+                val allEnteredMerchIds = merchConnections.map { it.value.merchId }.toSet()
+                val allValidMerchIds =
+                    database.merchQueries.getMerch().executeAsList().map { it.name }.toSet()
+                val merchDiff = allEnteredMerchIds - allValidMerchIds
+                if (merchDiff.isNotEmpty()) {
+                    merchDiff.forEach { badSeries ->
+                        logger.warn("Entered merch does not match valid merch: $badSeries")
+                        val brokenArtists = merchConnections
+                            .filter { it.value.merchId == badSeries }
+                            .map { it.value.artistId }
+                        logger.warn("Broken artists: $brokenArtists")
+                    }
+                }
+                val merchWithExtraSpaces = allValidMerchIds.filter { it.endsWith(" ") }
+                if (merchWithExtraSpaces.isNotEmpty()) {
+                    logger.error("Merch with extra spaces: $merchWithExtraSpaces")
+                }
+
                 database.mutationQueries.cleanUpForRelease().await()
                 // Don't retain user tables (merged from depending on :modules:alley:user)
                 listOf(
@@ -837,5 +865,75 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 .fold(0L) { flags, connection -> flags or connection.yearFlags }
             database.mutationQueries.updateMerchYearFlags(yearFlags, merchId)
         }
+    }
+
+    private class ArtistInferenceProvider(database: BuildLogicDatabase, artistId: String) {
+        private val animeExpo2023 by lazy {
+            database.artistEntry2023Queries.getEntry(artistId).executeAsOneOrNull()
+        }
+        private val animeExpo2024 by lazy {
+            database.artistEntry2024Queries.getEntry(artistId).executeAsOneOrNull()
+        }
+        private val animeExpo2025 by lazy {
+            database.artistEntry2025Queries.getEntry(artistId).executeAsOneOrNull()
+        }
+        private val animeNyc2024 by lazy {
+            database.artistEntryAnimeNyc2024Queries.getEntry(artistId).executeAsOneOrNull()
+        }
+        private val animeNyc2025 by lazy {
+            database.artistEntryAnimeNyc2025Queries.getEntry(artistId).executeAsOneOrNull()
+        }
+
+        private fun List<String>?.ifNullOrEmpty(defaultValue: () -> List<String>?) =
+            if (this.isNullOrEmpty()) defaultValue() else this
+
+        private fun cascadeAll(
+            valueAnimeExpo2023: com.thekeeperofpie.artistalleydatabase.alley.artistEntry2023.GetEntry.() -> List<String>,
+            valueAnimeExpo2024: com.thekeeperofpie.artistalleydatabase.alley.artistEntry2024.GetEntry.() -> List<String>,
+            valueAnimeExpo2025: com.thekeeperofpie.artistalleydatabase.alley.artistEntry2025.GetEntry.() -> List<String>,
+            valueAnimeNyc2024: com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2024.GetEntry.() -> List<String>,
+            valueAnimeNyc2025: com.thekeeperofpie.artistalleydatabase.alley.artistEntryAnimeNyc2025.GetEntry.() -> List<String>,
+        ): List<String> = animeExpo2025?.valueAnimeExpo2025()
+            .ifNullOrEmpty { animeExpo2024?.valueAnimeExpo2024() }
+            .ifNullOrEmpty { animeNyc2025?.valueAnimeNyc2025() }
+            .ifNullOrEmpty { animeNyc2024?.valueAnimeNyc2024() }
+            .ifNullOrEmpty { animeExpo2023?.valueAnimeExpo2023() }
+            .orEmpty()
+
+        val links
+            get() = cascadeAll(
+                { links },
+                { links },
+                { links },
+                { links },
+                { links },
+            )
+
+        val storeLinks
+            get() = cascadeAll(
+                { emptyList() },
+                { storeLinks },
+                { storeLinks },
+                { storeLinks },
+                { storeLinks },
+            )
+
+        val seriesInferred
+            get() = cascadeAll(
+                { emptyList() },
+                { seriesConfirmed.ifEmpty { seriesInferred } },
+                { seriesConfirmed.ifEmpty { seriesInferred } },
+                { seriesConfirmed.ifEmpty { seriesInferred } },
+                { seriesConfirmed.ifEmpty { seriesInferred } },
+            )
+
+        val merchInferred
+            get() = cascadeAll(
+                { emptyList() },
+                { merchConfirmed.ifEmpty { merchInferred } },
+                { merchConfirmed.ifEmpty { merchInferred } },
+                { merchConfirmed.ifEmpty { merchInferred } },
+                { merchConfirmed.ifEmpty { merchInferred } },
+            )
     }
 }

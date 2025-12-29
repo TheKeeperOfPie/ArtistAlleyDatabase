@@ -163,9 +163,9 @@
     <string name="alley_edit_artist_form_merge_action_save">Apply form merge</string>
     <string name="alley_edit_artist_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>
 
-    <string name="alley_edit_artist_add_potential_duplicates">Potential duplicates</string>
-    <string name="alley_edit_artist_add_potential_duplicate_via">%1$s via %2$s</string>
-    <string name="alley_edit_artist_add_action_merge_tooltip">Merge from candidate</string>
+    <string name="alley_edit_artist_add_potential_same_artists">Potential same artists</string>
     <string name="alley_edit_artist_add_error_loading_merge">Error loading merge source</string>
-    <string name="alley_edit_artist_add_action_confirm_merge">Confirm merge</string>
+    <string name="alley_edit_artist_add_action_same_artist_confirm">Yes</string>
+    <string name="alley_edit_artist_add_action_same_artist_deny">No</string>
+    <string name="alley_edit_artist_add_same_artist_confirm_prompt">Is this the same artist?</string>
 </resources>

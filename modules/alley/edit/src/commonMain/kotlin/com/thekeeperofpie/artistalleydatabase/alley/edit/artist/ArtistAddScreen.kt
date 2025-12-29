@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -29,7 +28,6 @@ import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -37,23 +35,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_action_confirm_merge
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_potential_duplicates
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_action_same_artist_confirm
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_action_same_artist_deny
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_potential_same_artists
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_same_artist_confirm_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
@@ -134,7 +130,8 @@ object ArtistAddScreen {
             onClickSave = viewModel::onClickSave,
             onClickDone = viewModel::onClickDone,
             onClickMerge = viewModel::onClickMerge,
-            onConfirmMerge = viewModel::onConfirmMerge,
+            onDenySameArtist = viewModel::onDenySameArtist,
+            onConfirmSameArtist = viewModel::onConfirmSameArtist,
         )
     }
 
@@ -150,7 +147,8 @@ object ArtistAddScreen {
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
         onClickMerge: (artistId: Uuid) -> Unit,
-        onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
+        onDenySameArtist: () -> Unit,
+        onConfirmSameArtist: () -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
@@ -229,11 +227,10 @@ object ArtistAddScreen {
                 }
                 val mergeList = remember {
                     movableContentOf {
-                        val fieldState = rememberFieldState()
                         MergeList(
                             mergingArtist = mergingArtist,
-                            fieldState = fieldState,
-                            onConfirmMerge = onConfirmMerge,
+                            onDenySameArtist = onDenySameArtist,
+                            onConfirmSameArtist = onConfirmSameArtist,
                         )
                     }
                 }
@@ -337,7 +334,7 @@ object ArtistAddScreen {
     ) {
         val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
         Column(modifier = modifier) {
-            PotentialDuplicates(state.inferredArtists, onClickMerge)
+            PotentialSameArtists(state.inferredArtists, onClickMerge)
 
             ArtistForm(
                 initialArtist = { initialArtist },
@@ -354,36 +351,11 @@ object ArtistAddScreen {
     @Composable
     private fun MergeList(
         mergingArtist: LoadingResult<ArtistEntry>,
-        fieldState: FieldState,
-        onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
+        onDenySameArtist: () -> Unit,
+        onConfirmSameArtist: () -> Unit,
     ) {
-        // TODO: There are 3 instances of a similar UI (history, form merge, add artist merge),
-        //  can these share more code?
         Column {
             val artist = mergingArtist.result
-
-            val groupState = when {
-                fieldState.map.values.all { it } -> ToggleableState.On
-                fieldState.map.values.any { it } -> ToggleableState.Indeterminate
-                else -> ToggleableState.Off
-            }
-
-            TriStateCheckbox(
-                state = groupState,
-                onClick = {
-                    val newValue = when (groupState) {
-                        ToggleableState.On -> false
-                        ToggleableState.Off,
-                        ToggleableState.Indeterminate,
-                            -> true
-                    }
-                    fieldState.map.keys.toSet().forEach {
-                        fieldState[it] = newValue
-                    }
-                },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            )
-
             ArtistField.entries.forEach { field ->
                 val fieldText = when (field) {
                     ArtistField.NAME -> artist?.name?.ifBlank { null }
@@ -407,10 +379,6 @@ object ArtistAddScreen {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Checkbox(
-                                checked = fieldState[field],
-                                onCheckedChange = { fieldState[field] = it },
-                            )
                             Text(stringResource(field.label))
                             if (fieldText.length < 40) {
                                 Text(text = fieldText)
@@ -423,18 +391,28 @@ object ArtistAddScreen {
                 }
             }
 
-            FilledTonalButton(
-                onClick = { onConfirmMerge(fieldState.map.toMap()) },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-                    .padding(16.dp)
-            ) {
-                Text(stringResource(Res.string.alley_edit_artist_add_action_confirm_merge))
+            OutlinedCard(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)) {
+                Text(
+                    text = stringResource(Res.string.alley_edit_artist_add_same_artist_confirm_prompt),
+                    modifier = Modifier.padding(16.dp)
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+                ) {
+                    FilledTonalButton(onClick = { onDenySameArtist() }) {
+                        Text(stringResource(Res.string.alley_edit_artist_add_action_same_artist_deny))
+                    }
+                    FilledTonalButton(onClick = { onConfirmSameArtist() }) {
+                        Text(stringResource(Res.string.alley_edit_artist_add_action_same_artist_confirm))
+                    }
+                }
             }
         }
     }
 
     @Composable
-    fun PotentialDuplicates(
+    fun PotentialSameArtists(
         inferredArtists: StateFlow<List<ArtistInference.MatchResult>>,
         onClickMerge: (artistId: Uuid) -> Unit,
     ) {
@@ -442,7 +420,7 @@ object ArtistAddScreen {
         if (inferredArtists.isNotEmpty()) {
             OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
                 Text(
-                    text = stringResource(Res.string.alley_edit_artist_add_potential_duplicates),
+                    text = stringResource(Res.string.alley_edit_artist_add_potential_same_artists),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
@@ -479,25 +457,7 @@ object ArtistAddScreen {
         }
     }
 
-    @Stable
-    private class FieldState(val map: SnapshotStateMap<ArtistField, Boolean>) {
-        operator fun get(field: ArtistField) = map[field] ?: false
-        operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
-    }
-
-    @Composable
-    private fun rememberFieldState(): FieldState {
-        val map = rememberSaveable {
-            mutableStateMapOf<ArtistField, Boolean>().apply {
-                ArtistField.entries.forEach {
-                    this[it] = false
-                }
-            }
-        }
-        return remember(map) { FieldState(map) }
-    }
-
-    internal enum class ArtistField(val label: StringResource) {
+    private enum class ArtistField(val label: StringResource) {
         NAME(Res.string.alley_edit_artist_field_label_name),
         LINKS(Res.string.alley_edit_artist_field_label_links),
         STORE_LINKS(Res.string.alley_edit_artist_field_label_store_links),

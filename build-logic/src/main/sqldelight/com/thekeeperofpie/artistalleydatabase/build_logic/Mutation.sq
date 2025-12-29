@@ -38,11 +38,12 @@ UPDATE stampRallyEntry2024 SET images = :images WHERE id = :id;
 updateStampRallyAnimeExpo2025Images:
 UPDATE stampRallyEntry2025 SET images = :images WHERE id = :id;
 
-getAllArtistEntryAnimeExpo2026Images:
-SELECT id, images FROM artistEntryAnimeExpo2026;
+getAllArtistEntryAnimeExpo2026:
+SELECT * FROM artistEntryAnimeExpo2026;
 
-updateArtistEntryAnimeExpo2026Images:
-UPDATE artistEntryAnimeExpo2026 SET images = :images WHERE id = :id;
+updateArtistEntryAnimeExpo2026:
+INSERT OR REPLACE INTO artistEntryAnimeExpo2026
+VALUES ?;
 
 updateSeriesTagCounts:
 UPDATE seriesEntry SET

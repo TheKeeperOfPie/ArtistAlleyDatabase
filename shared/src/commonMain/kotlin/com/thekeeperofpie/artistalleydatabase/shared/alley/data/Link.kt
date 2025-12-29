@@ -32,7 +32,14 @@ data class Link(
             return null
         }
 
-        fun parseFlags(types: Collection<Type>): Pair<Long, Long> {
+        fun parseFlags(
+            links: List<String>,
+            storeLinks: List<String>,
+            catalogLinks: List<String>,
+        ): Pair<Long, Long> {
+            val linkTypes = (links + catalogLinks).map { parse(it)?.type ?: Type.OTHER_NON_STORE }
+            val storeLinkTypes = storeLinks.map { parse(it)?.type ?: Type.OTHER_STORE }
+            val types = linkTypes + storeLinkTypes
             // TODO: SQLite theoretically supports 64 bits, but it didn't work for some reason
             val entries = Type.entries
             var flagOne = 0L
