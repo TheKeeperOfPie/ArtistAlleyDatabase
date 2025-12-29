@@ -86,23 +86,23 @@ actual class AlleyEditRemoteDatabase {
                 {
                     it.copy(
                         seriesInferred = listOf("SeriesA", "SeriesB"),
-                        merchInferred = listOf("MerchA"),
+                        merchInferred = listOf("Prints"),
                         editorNotes = "",
                     )
                 },
                 {
                     it.copy(
                         seriesInferred = it.seriesInferred + listOf("SeriesC"),
-                        merchInferred = it.merchInferred + listOf("MerchB"),
+                        merchInferred = it.merchInferred + listOf("Charms"),
                         lastEditor = "firstlast@example.com",
                     )
                 },
                 {
                     it.copy(
                         seriesInferred = it.seriesInferred - listOf("SeriesA"),
-                        merchInferred = it.merchInferred - listOf("MerchA"),
+                        merchInferred = it.merchInferred - listOf("Prints"),
                         seriesConfirmed = listOf("SeriesA", "SeriesC"),
-                        merchConfirmed = listOf("MerchA", "MerchC"),
+                        merchConfirmed = listOf("Prints", "Washi tape"),
                     )
                 },
             )
@@ -141,7 +141,7 @@ actual class AlleyEditRemoteDatabase {
                 name = previous.name + " - edited",
                 summary = "New description",
                 seriesInferred = previous.seriesInferred.drop(1) + "SeriesD",
-                merchConfirmed = previous.merchConfirmed.drop(1) + "MerchD",
+                merchConfirmed = previous.merchConfirmed.drop(1) + "Photocards",
             )
 
             artistFormQueue[Uuid.parse(previous.id)] =

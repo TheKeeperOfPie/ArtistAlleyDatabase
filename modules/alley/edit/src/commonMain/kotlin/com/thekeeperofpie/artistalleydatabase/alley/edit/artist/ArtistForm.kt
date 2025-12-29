@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.LayoutScopeMarker
@@ -27,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -77,7 +77,9 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_pas
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_placeholder
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -405,6 +407,7 @@ private class ArtistFormScopeImpl(
             initialItems = initialArtist?.catalogLinks,
             items = catalogLinks,
             itemToText = { it },
+            itemToSubText = { null },
             itemToSerializedValue = { it },
             itemToCommitted = { it },
             pendingErrorMessage = pendingErrorMessage,
@@ -417,7 +420,9 @@ private class ArtistFormScopeImpl(
         commissions: SnapshotStateList<CommissionModel>,
     ) {
         val onSiteText = stringResource(AlleyRes.string.alley_artist_commission_on_site)
+        val onSiteSubText = stringResource(AlleyRes.string.alley_artist_commission_on_site_tooltip)
         val onlineText = stringResource(AlleyRes.string.alley_artist_commission_online)
+        val onlineSubText = stringResource(AlleyRes.string.alley_artist_commission_online_tooltip)
         val initialCommissions = remember(initialArtist?.commissions) {
             initialArtist?.commissions?.map(CommissionModel::parse).orEmpty()
         }
@@ -440,6 +445,14 @@ private class ArtistFormScopeImpl(
                     CommissionModel.OnSite -> onSiteText
                     CommissionModel.Online -> onlineText
                     is CommissionModel.Unknown -> it.value
+                }
+            },
+            itemToSubText = {
+                when (it) {
+                    is CommissionModel.Link -> if (it.host == null) null else it.link
+                    CommissionModel.OnSite -> onSiteSubText
+                    CommissionModel.Online -> onlineSubText
+                    is CommissionModel.Unknown -> null
                 }
             },
             itemToSerializedValue = { it.serializedValue },
@@ -546,6 +559,7 @@ private class ArtistFormScopeImpl(
             predictions = merchPredictions,
             itemToCommitted = { MerchInfo.fake(it) },
             itemToText = { it.name },
+            itemToSubText = { it.notes },
             itemToSerializedValue = { it.name },
         )
 
@@ -567,6 +581,7 @@ private class ArtistFormScopeImpl(
                 predictions = merchPredictions,
                 itemToCommitted = { MerchInfo.fake(it) },
                 itemToText = { it.name },
+                itemToSubText = { it.notes },
                 itemToSerializedValue = { it.name },
             )
         }
@@ -803,6 +818,7 @@ object ArtistForm {
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
         itemToText: (T) -> String,
+        itemToSubText: (T) -> String?,
         itemToSerializedValue: (T) -> String,
         itemToCommitted: ((String) -> T)? = null,
         leadingIcon: (T) -> ImageVector? = { null },
@@ -825,43 +841,68 @@ object ArtistForm {
                     val existed = initialItems?.any {
                         equalsComparison(it) == equalsComparison(item)
                     }
-                    TextField(
-                        value = itemToText(item),
-                        onValueChange = {},
-                        readOnly = true,
-                        textStyle = LocalTextStyle.current.copy(
-                            color = if (formScope.initialArtist == null || existed != false) {
-                                LocalTextStyle.current.color
-                            } else {
-                                Color.Green
-                            }
-                        ),
-                        leadingIcon = leadingIcon?.let {
-                            {
-                                Icon(
-                                    imageVector = leadingIcon,
-                                    contentDescription = null,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
+                        if (leadingIcon != null) {
+                            Icon(
+                                imageVector = leadingIcon,
+                                contentDescription = null,
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.weight(1f)
+                                .padding(top = 16.dp, bottom = 16.dp, end = 16.dp)
+                        ) {
+                            Text(
+                                text = itemToText(item),
+                                style = LocalTextStyle.current.copy(
+                                    color = if (formScope.initialArtist == null || existed != false) {
+                                        LocalTextStyle.current.color
+                                    } else {
+                                        Color.Green
+                                    }
+                                ),
+                            )
+                            val subText = itemToSubText(item)
+                            if (!subText.isNullOrBlank()) {
+                                Text(
+                                    text = subText,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(start = 24.dp)
                                 )
                             }
-                        },
-                        trailingIcon = {
-                            AnimatedVisibility(
-                                visible = state.lockState.editable,
-                                enter = fadeIn(),
-                                exit = fadeOut(),
-                            ) {
-                                TooltipIconButton(
-                                    icon = Icons.Default.Delete,
-                                    tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
-                                    onClick = { items.remove(item) },
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        }
+
+                        AnimatedVisibility(
+                            visible = state.lockState.editable,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            TooltipIconButton(
+                                icon = Icons.Default.Delete,
+                                tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
+                                onClick = { items.remove(item) },
+                            )
+                        }
+                    }
                 }
             },
-            prediction = { _, value -> Text(text = itemToText(value)) },
+            prediction = { _, value ->
+                Column {
+                    Text(text = itemToText(value))
+                    val subText = itemToSubText(value)
+                    if (!subText.isNullOrBlank()) {
+                        Text(
+                            text = subText,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 24.dp)
+                        )
+                    }
+                }
+            },
             pendingErrorMessage = pendingErrorMessage,
             preferPrediction = preferPrediction,
         )

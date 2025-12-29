@@ -579,14 +579,9 @@ fun <T> MultiTextSection(
                     .collectLatest { value = it }
             }
             val dropdownFocusRequester = remember { FocusRequester() }
-            val showPredictions by remember {
-                derivedStateOf {
-                    state.lockState.editable && state.value.text.isNotBlank()
-                }
-            }
             var dropdownExpanded by remember { mutableStateOf(false) }
             val dropdownShowing by remember {
-                derivedStateOf { dropdownExpanded && showPredictions && predictions.isNotEmpty() }
+                derivedStateOf { dropdownExpanded && state.lockState.editable && predictions.isNotEmpty() }
             }
             val scope = rememberCoroutineScope()
             EntryAutocompleteDropdown(
@@ -594,7 +589,7 @@ fun <T> MultiTextSection(
                 onExpandedChange = { dropdownExpanded = it },
                 text = state.value,
                 predictions = { predictions },
-                showPredictions = { showPredictions },
+                showPredictions = { state.lockState.editable },
                 onPredictionChosen = onPredictionChosen,
                 item = prediction,
                 fieldFocusRequester = state.focusRequester,
