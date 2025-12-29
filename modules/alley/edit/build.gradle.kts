@@ -80,3 +80,9 @@ buildkonfig {
         )
     }
 }
+
+compose {
+    resources {
+        publicResClass = true
+    }
+}

@@ -3,7 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.tags
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SearchUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
@@ -13,16 +17,18 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 
+@SingleIn(AppScope::class)
+@Inject
 class TagAutocomplete(
-    scope: CoroutineScope,
+    applicationScope: ApplicationScope,
     database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
 ) {
     val seriesById = flowFromSuspend { database.loadSeries() }
-        .shareIn(scope, SharingStarted.Eagerly, 1)
+        .shareIn(applicationScope, SharingStarted.Eagerly, 1)
 
     val merchById = flowFromSuspend { database.loadMerch() }
-        .shareIn(scope, SharingStarted.Eagerly, 1)
+        .shareIn(applicationScope, SharingStarted.Eagerly, 1)
 
     fun seriesPredictions(query: String) = if (query.length < 3) {
         flowOf(emptyList())

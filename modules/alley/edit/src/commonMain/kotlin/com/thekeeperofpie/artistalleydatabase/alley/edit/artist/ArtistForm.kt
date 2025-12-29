@@ -44,8 +44,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
@@ -83,6 +87,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
@@ -229,19 +234,22 @@ private class ArtistFormScopeImpl(
     @Composable
     override fun PasteLinkSection(state: ArtistFormState.LinksState) {
         if (!forceLocked) {
+            val placeholder =
+                AnnotatedString(stringResource(Res.string.alley_edit_paste_link_placeholder))
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 OutlinedTextField(
                     value = "",
                     onValueChange = {
-                        ArtistForm.processPastedLink(
-                            links = state.links,
-                            storeLinks = state.storeLinks,
-                            commissions = state.commissions,
-                            link = it,
-                        )
+                        ArtistForm.processPastedLink(state, link = it)
                     },
                     label = {
                         Text(stringResource(Res.string.alley_edit_paste_link_label))
+                    },
+                    visualTransformation = VisualTransformation {
+                        TransformedText(placeholder, object : OffsetMapping {
+                            override fun originalToTransformed(offset: Int) = 0
+                            override fun transformedToOriginal(offset: Int) = 0
+                        })
                     },
                     placeholder = {
                         Text(stringResource(Res.string.alley_edit_paste_link_placeholder))
@@ -722,9 +730,7 @@ object ArtistForm {
     }
 
     internal fun processPastedLink(
-        links: SnapshotStateList<LinkModel>,
-        storeLinks: SnapshotStateList<LinkModel>,
-        commissions: SnapshotStateList<CommissionModel>,
+        state: ArtistFormState.LinksState,
         link: String,
     ) {
         if (link.length < 6) return
@@ -747,9 +753,15 @@ object ArtistForm {
             Logo.SHOPIFY,
             Logo.STORENVY,
             Logo.THREADLESS,
-                -> storeLinks += linkModel
+                -> {
+                state.storeLinks += linkModel
+                state.stateStoreLinks.lockState = EntryLockState.UNLOCKED
+            }
 
-            Logo.VGEN -> commissions += CommissionModel.parse(fixedLink)
+            Logo.VGEN -> {
+                state.commissions += CommissionModel.parse(fixedLink)
+                state.stateCommissions.lockState = EntryLockState.UNLOCKED
+            }
 
             Logo.ART_STATION,
             Logo.BLUESKY,
@@ -774,7 +786,10 @@ object ArtistForm {
             Logo.X,
             Logo.YOU_TUBE,
             null,
-                -> links += linkModel
+                -> {
+                state.links += linkModel
+                state.stateLinks.lockState = EntryLockState.UNLOCKED
+            }
         }
     }
 

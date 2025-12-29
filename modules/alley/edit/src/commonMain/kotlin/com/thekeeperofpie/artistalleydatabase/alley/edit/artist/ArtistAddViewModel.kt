@@ -13,12 +13,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
+import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -45,6 +45,7 @@ class ArtistAddViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
+    val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -95,7 +96,6 @@ class ArtistAddViewModel(
     )
 
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
-    val tagAutocomplete = TagAutocomplete(viewModelScope, database, dispatchers)
 
     fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
@@ -117,6 +117,7 @@ class ArtistAddViewModel(
         val artist = mergingArtist.value.result ?: return
         artistFormState.editorState.id.value.setTextAndPlaceCursorAtEnd(artist.id)
         artistFormState.info.name.value.setTextAndPlaceCursorAtEnd(artist.name)
+        artistFormState.info.name.lockState = EntryLockState.LOCKED
         mergingArtistId.value = null
     }
 
@@ -169,7 +170,6 @@ class ArtistAddViewModel(
                             artist = updatedArtist,
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
-                            force = false,
                         )
                         state.artistFormState.images.replaceAll(finalImages)
                     }

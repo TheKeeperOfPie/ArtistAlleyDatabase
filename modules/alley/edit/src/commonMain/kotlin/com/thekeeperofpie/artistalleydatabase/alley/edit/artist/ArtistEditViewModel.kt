@@ -37,6 +37,7 @@ class ArtistEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
+    private val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
@@ -59,7 +60,6 @@ class ArtistEditViewModel(
 
     private var hasLoaded by savedStateHandle.saved { false }
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
-    private val tagAutocomplete = TagAutocomplete(viewModelScope, database, dispatchers)
 
     private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
     private val formLinkJob = ExclusiveProgressJob(viewModelScope, ::loadFormLink)
@@ -81,7 +81,7 @@ class ArtistEditViewModel(
             artist = artist,
             seriesById = tagAutocomplete.seriesById.first(),
             merchById = tagAutocomplete.merchById.first(),
-            force = true,
+            mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
         )
 
         val images = database.loadArtistImages(dataYear, artist)
@@ -155,7 +155,6 @@ class ArtistEditViewModel(
                             artist = updatedArtist,
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
-                            force = false,
                         )
                         state.artistFormState.images.replaceAll(finalImages)
                     }

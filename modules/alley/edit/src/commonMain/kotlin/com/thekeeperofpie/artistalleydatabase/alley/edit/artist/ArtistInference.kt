@@ -8,13 +8,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.StringUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.yield
 import kotlin.uuid.Uuid
 
+@SingleIn(AppScope::class)
 @Inject
 class ArtistInference(
     private val applicationScope: ApplicationScope,
@@ -74,6 +77,7 @@ class ArtistInference(
             .take(5)
     }
 
+    // TODO: Merge all years before returning?
     suspend fun getArtistForMerge(artistId: Uuid): ArtistEntry? =
         listOf(
             // In order of data quality

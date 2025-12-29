@@ -419,7 +419,7 @@ internal object ArtistFormMergeScreen {
                 artist = artist,
                 seriesById = seriesById,
                 merchById = merchById,
-                force = true,
+                mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
             )
         }
     }

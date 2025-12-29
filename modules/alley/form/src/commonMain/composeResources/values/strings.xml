@@ -12,4 +12,9 @@
     <string name="alley_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>
     <string name="alley_form_error_saving_bad_fields">Could not save because some fields have errors</string>
     <string name="alley_form_notes">Form notes (private, for maintainers)</string>
+
+    <string name="alley_form_action_confirm_merge">Confirm merge</string>
+    <string name="alley_form_previous_year_prompt">Data from a previous year is available, would you like to autofill that as a starting point?</string>
+    <string name="alley_form_previous_year_action_confirm">Yes</string>
+    <string name="alley_form_previous_year_select_all">Select all</string>
 </resources>

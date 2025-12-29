@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,9 +16,11 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -25,27 +28,44 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
 import artistalleydatabase.modules.alley.form.generated.resources.Res
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_confirm_merge
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_submit_private_key
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_error_saving_bad_fields
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_notes
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_action_confirm
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_prompt
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_select_all
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
@@ -74,8 +94,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.alley.edit.generated.resources.Res as EditRes
 
 object ArtistFormScreen {
 
@@ -96,6 +118,7 @@ object ArtistFormScreen {
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickDone = viewModel::onClickDone,
+            onConfirmMerge = viewModel::onConfirmMerge,
             onSubmitPrivateKey = viewModel::onSubmitPrivateKey,
         )
     }
@@ -109,6 +132,7 @@ object ArtistFormScreen {
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickDone: () -> Unit,
+        onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
         onSubmitPrivateKey: (String) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -181,15 +205,17 @@ object ArtistFormScreen {
                         }
                     State.Progress.LOADED -> {
                         val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+                        val previousYearEntry by state.previousYearEntry.collectAsStateWithLifecycle()
                         Form(
                             saveTaskState = saveTaskState,
                             formState = state.formState,
                             errorState = errorState,
                             initialArtist = { initialArtist },
+                            previousYearEntry = { previousYearEntry },
                             seriesPredictions = seriesPredictions,
                             merchPredictions = merchPredictions,
                             seriesImage = seriesImage,
-                            modifier = Modifier.padding(scaffoldPadding),
+                            onConfirmMerge = onConfirmMerge,
                         )
 
                         val errorMessage =
@@ -211,10 +237,12 @@ object ArtistFormScreen {
         formState: State.FormState,
         errorState: ErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
+        previousYearEntry: () -> ArtistEntry?,
         saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         ContentSavingBox(
@@ -225,64 +253,83 @@ object ArtistFormScreen {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()
             ) {
-                val focusState = rememberFocusState(
-                    listOfNotNull(
-                        formState.info.booth,
-                        formState.info.name,
-                        formState.info.summary,
-                        formState.links.stateLinks,
-                        formState.links.stateStoreLinks,
-                        formState.links.stateCatalogLinks,
-                        formState.links.stateCommissions,
-                        formState.series.stateInferred,
-                        formState.series.stateConfirmed,
-                        formState.merch.stateInferred,
-                        formState.merch.stateConfirmed,
-                        formState.notes,
-                        formState.formNotes,
-                    )
-                )
-
-                ArtistForm(
-                    initialArtist = initialArtist,
-                    focusState = focusState,
-                    modifier = Modifier.fillMaxHeight()
-                        .width(960.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    PasteLinkSection(formState.links)
-                    InfoSections(
-                        state = formState.info,
-                        boothErrorMessage = errorState.boothErrorMessage
-                    )
-                    LinkSections(
-                        state = formState.links,
-                        linksErrorMessage = errorState.linksErrorMessage,
-                        storeLinksErrorMessage = errorState.storeLinksErrorMessage,
-                        catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
+                Row {
+                    val focusState = rememberFocusState(
+                        listOfNotNull(
+                            formState.info.booth,
+                            formState.info.name,
+                            formState.info.summary,
+                            formState.links.stateLinks,
+                            formState.links.stateStoreLinks,
+                            formState.links.stateCatalogLinks,
+                            formState.links.stateCommissions,
+                            formState.series.stateInferred,
+                            formState.series.stateConfirmed,
+                            formState.merch.stateInferred,
+                            formState.merch.stateConfirmed,
+                            formState.notes,
+                            formState.formNotes,
+                        )
                     )
 
-                    // TODO: Confirmed tag support
-                    SeriesSection(
-                        state = formState.series,
-                        seriesPredictions = seriesPredictions,
-                        seriesImage = seriesImage,
-                        showConfirmed = false,
-                        allowCustomInput = true,
-                    )
-                    MerchSection(
-                        state = formState.merch,
-                        merchPredictions = merchPredictions,
-                        showConfirmed = false,
-                        allowCustomInput = true,
-                    )
-                    NotesSection(formState.notes)
-                    NotesSection(
-                        state = formState.formNotes,
-                        headerText = {
-                            Text(stringResource(Res.string.alley_form_notes))
-                        },
-                    )
+                    var showMerge by rememberSaveable { mutableStateOf(false) }
+
+                    ArtistForm(
+                        initialArtist = initialArtist,
+                        focusState = focusState,
+                        modifier = Modifier.fillMaxHeight()
+                            .width(960.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        if (previousYearEntry() != null) {
+                            PreviousYearPrompt(onClickMerge = { showMerge = true })
+                        }
+
+                        PasteLinkSection(formState.links)
+                        InfoSections(
+                            state = formState.info,
+                            boothErrorMessage = errorState.boothErrorMessage
+                        )
+                        LinkSections(
+                            state = formState.links,
+                            linksErrorMessage = errorState.linksErrorMessage,
+                            storeLinksErrorMessage = errorState.storeLinksErrorMessage,
+                            catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
+                        )
+
+                        // TODO: Confirmed tag support
+                        SeriesSection(
+                            state = formState.series,
+                            seriesPredictions = seriesPredictions,
+                            seriesImage = seriesImage,
+                            showConfirmed = false,
+                            allowCustomInput = true,
+                        )
+                        MerchSection(
+                            state = formState.merch,
+                            merchPredictions = merchPredictions,
+                            showConfirmed = false,
+                            allowCustomInput = true,
+                        )
+                        NotesSection(formState.notes)
+                        NotesSection(
+                            state = formState.formNotes,
+                            headerText = {
+                                Text(stringResource(Res.string.alley_form_notes))
+                            },
+                        )
+                    }
+
+                    val previousYearEntry = previousYearEntry()
+                    if (showMerge && previousYearEntry != null) {
+                        MergeList(
+                            previousYearEntry = previousYearEntry,
+                            onConfirmMerge = {
+                                onConfirmMerge(it)
+                                showMerge = false
+                            },
+                        )
+                    }
                 }
                 // TODO: Support images?
             }
@@ -331,9 +378,139 @@ object ArtistFormScreen {
         )
     }
 
+    @Composable
+    private fun MergeList(
+        previousYearEntry: ArtistEntry,
+        onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
+    ) {
+        // TODO: There are 3 instances of a similar UI (history, form merge, add artist merge),
+        //  can these share more code?
+        Column {
+            val fieldState = rememberFieldState()
+            val groupState = when {
+                fieldState.map.values.all { it } -> ToggleableState.On
+                fieldState.map.values.any { it } -> ToggleableState.Indeterminate
+                else -> ToggleableState.Off
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                TriStateCheckbox(
+                    state = groupState,
+                    onClick = {
+                        val newValue = when (groupState) {
+                            ToggleableState.On -> false
+                            ToggleableState.Off,
+                            ToggleableState.Indeterminate,
+                                -> true
+                        }
+                        fieldState.map.keys.toSet().forEach {
+                            fieldState[it] = newValue
+                        }
+                    },
+                )
+                Text(stringResource(Res.string.alley_form_previous_year_select_all))
+            }
+
+            ArtistField.entries.forEach { field ->
+                val fieldText = when (field) {
+                    ArtistField.SUMMARY -> previousYearEntry.summary?.ifBlank { null }
+                    ArtistField.LINKS -> previousYearEntry.links.ifEmpty { null }
+                        ?.joinToString("\n")
+                    ArtistField.STORE_LINKS -> previousYearEntry.storeLinks.ifEmpty { null }
+                        ?.joinToString("\n")
+                    ArtistField.SERIES -> previousYearEntry.seriesConfirmed
+                        .ifEmpty { previousYearEntry.seriesInferred }
+                        .ifEmpty { null }
+                        ?.joinToString()
+                    ArtistField.MERCH -> previousYearEntry.merchConfirmed
+                        .ifEmpty { previousYearEntry.merchInferred }
+                        .ifEmpty { null }
+                        ?.joinToString()
+                }
+                if (fieldText != null) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Checkbox(
+                                checked = fieldState[field],
+                                onCheckedChange = { fieldState[field] = it },
+                            )
+                            Text(stringResource(field.label))
+                            if (fieldText.length < 40) {
+                                Text(text = fieldText)
+                            }
+                        }
+                        if (fieldText.length >= 40) {
+                            Text(text = fieldText, modifier = Modifier.padding(start = 80.dp))
+                        }
+                    }
+                }
+            }
+
+            FilledTonalButton(
+                onClick = { onConfirmMerge(fieldState.map.toMap()) },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+                    .padding(16.dp)
+            ) {
+                Text(stringResource(Res.string.alley_form_action_confirm_merge))
+            }
+        }
+    }
+
+    @Composable
+    fun PreviousYearPrompt(onClickMerge: () -> Unit) {
+        OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = stringResource(Res.string.alley_form_previous_year_prompt),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(weight = 1f, fill = false)
+                )
+                FilledTonalButton(onClick = onClickMerge) {
+                    Text(stringResource(Res.string.alley_form_previous_year_action_confirm))
+                }
+            }
+        }
+    }
+
+    @Stable
+    private class FieldState(val map: SnapshotStateMap<ArtistField, Boolean>) {
+        operator fun get(field: ArtistField) = map[field] ?: false
+        operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
+    }
+
+    @Composable
+    private fun rememberFieldState(): FieldState {
+        val map = rememberSaveable {
+            mutableStateMapOf<ArtistField, Boolean>().apply {
+                ArtistField.entries.forEach { this[it] = true }
+            }
+        }
+        return remember(map) { FieldState(map) }
+    }
+
+    enum class ArtistField(val label: StringResource) {
+        SUMMARY(EditRes.string.alley_edit_artist_field_label_summary),
+        LINKS(EditRes.string.alley_edit_artist_field_label_links),
+        STORE_LINKS(EditRes.string.alley_edit_artist_field_label_store_links),
+        SERIES(EditRes.string.alley_edit_artist_field_label_series_inferred),
+        MERCH(EditRes.string.alley_edit_artist_field_label_merch_inferred),
+    }
+
     @Stable
     class State(
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
+        val previousYearEntry: StateFlow<ArtistEntry?>,
         val progress: StateFlow<Progress>,
         val formState: FormState,
         val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
@@ -342,14 +519,14 @@ object ArtistFormScreen {
             artist: ArtistDatabaseEntry.Impl,
             seriesById: Map<String, SeriesInfo>,
             merchById: Map<String, MerchInfo>,
-            force: Boolean,
+            mergeBehavior: ArtistFormState.MergeBehavior,
         ) = apply {
             formState.info.applyValues(
                 booth = artist.booth,
                 name = artist.name,
                 summary = artist.summary,
                 notes = artist.notes,
-                force = force,
+                mergeBehavior = mergeBehavior,
             )
 
             formState.links.applyRawValues(
@@ -357,20 +534,20 @@ object ArtistFormScreen {
                 storeLinks = artist.storeLinks,
                 catalogLinks = artist.catalogLinks,
                 commissions = artist.commissions,
-                force = force,
+                mergeBehavior = mergeBehavior,
             )
 
             formState.series.applyValues(
                 inferred = artist.seriesInferred,
                 confirmed = artist.seriesConfirmed,
                 seriesById = seriesById,
-                force = force,
+                mergeBehavior = mergeBehavior,
             )
             formState.merch.applyValues(
                 inferred = artist.merchInferred,
                 confirmed = artist.merchConfirmed,
                 merchById = merchById,
-                force = force,
+                mergeBehavior = mergeBehavior,
             )
         }
 

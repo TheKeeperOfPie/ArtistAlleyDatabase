@@ -39,31 +39,54 @@ class ArtistFormState(
             state: EntryForm2.SingleTextState,
             list: SnapshotStateList<T>,
             value: List<T>,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) {
-            if (value.isNotEmpty() || force) {
-                list.replaceAll(value)
-            }
-            if (value.isNotEmpty()) {
-                state.lockState = EntryLockState.LOCKED
-            } else if (value.isEmpty()) {
-                state.lockState = EntryLockState.UNLOCKED
+            when (mergeBehavior) {
+                MergeBehavior.APPEND -> {
+                    if (value.isNotEmpty()) {
+                        list.replaceAll((list.toList() + value).distinct())
+                    }
+                }
+                MergeBehavior.REPLACE -> {
+                    list.replaceAll(value)
+                    state.lockState = if (value.isEmpty()) {
+                        EntryLockState.UNLOCKED
+                    } else {
+                        EntryLockState.LOCKED
+                    }
+                }
+                MergeBehavior.IGNORE -> {
+                    if (list.isNotEmpty()) {
+                        list.replaceAll(value)
+                        if (value.isNotEmpty()) {
+                            state.lockState = EntryLockState.LOCKED
+                        }
+                    }
+                }
             }
         }
 
         fun applyValue(
             state: EntryForm2.SingleTextState,
             value: String?,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) {
             val valueOrEmpty = value.orEmpty()
-            if (valueOrEmpty.isNotBlank() || force) {
-                state.value.setTextAndPlaceCursorAtEnd(valueOrEmpty)
+            when (mergeBehavior) {
+                // For non-lists, both append and replace do a replace
+                MergeBehavior.APPEND,
+                MergeBehavior.REPLACE -> {
+                    state.value.setTextAndPlaceCursorAtEnd(valueOrEmpty)
+                }
+                MergeBehavior.IGNORE -> {
+                    if (state.value.text.isEmpty()) {
+                        state.value.setTextAndPlaceCursorAtEnd(valueOrEmpty)
+                    }
+                }
             }
+
             if (valueOrEmpty.isNotBlank()) {
                 state.lockState = EntryLockState.LOCKED
-            } else if (valueOrEmpty.isEmpty()) {
-                state.lockState = EntryLockState.UNLOCKED
             }
         }
     }
@@ -99,14 +122,14 @@ class ArtistFormState(
         artist: ArtistDatabaseEntry,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
-        force: Boolean = false,
+        mergeBehavior: MergeBehavior = MergeBehavior.IGNORE,
     ) = apply {
         val status = artist.status
         editorState.applyValues(
             id = artist.id,
             status = status,
             editorNotes = artist.editorNotes,
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
 
         info.applyValues(
@@ -114,7 +137,7 @@ class ArtistFormState(
             name = artist.name,
             summary = artist.summary,
             notes = artist.notes,
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
 
         links.applyRawValues(
@@ -122,20 +145,20 @@ class ArtistFormState(
             storeLinks = artist.storeLinks,
             catalogLinks = artist.catalogLinks,
             commissions = artist.commissions,
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
 
         series.applyValues(
             inferred = artist.seriesInferred,
             confirmed = artist.seriesConfirmed,
             seriesById = seriesById,
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
         merch.applyValues(
             inferred = artist.merchInferred,
             confirmed = artist.merchConfirmed,
             merchById = merchById,
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
 
         metadata.lastEditor = artist.lastEditor
@@ -215,11 +238,11 @@ class ArtistFormState(
             id: String,
             status: ArtistStatus,
             editorNotes: String?,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) {
             this.id.value.setTextAndPlaceCursorAtEnd(id)
             this.status.selectedIndex = ArtistStatus.entries.indexOf(status)
-            applyValue(this.editorNotes, editorNotes, force)
+            applyValue(this.editorNotes, editorNotes, mergeBehavior)
         }
 
         fun captureValues() = InternalDatabaseValues(
@@ -261,12 +284,12 @@ class ArtistFormState(
             name: String,
             summary: String?,
             notes: String?,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) {
-            applyValue(this.booth, booth, force)
-            applyValue(this.name, name, force)
-            applyValue(this.summary, summary, force)
-            applyValue(this.notes, notes, force)
+            applyValue(this.booth, booth, mergeBehavior)
+            applyValue(this.name, name, mergeBehavior)
+            applyValue(this.summary, summary, mergeBehavior)
+            applyValue(this.notes, notes, mergeBehavior)
         }
 
         fun captureValues() = InfoDatabaseValues(
@@ -316,12 +339,12 @@ class ArtistFormState(
             storeLinks: List<LinkModel>,
             catalogLinks: List<String>,
             commissions: List<CommissionModel>,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) {
-            applyValue(stateLinks, this.links, links, force)
-            applyValue(stateStoreLinks, this.storeLinks, storeLinks, force)
-            applyValue(stateCatalogLinks, this.catalogLinks, catalogLinks, force)
-            applyValue(stateCommissions, this.commissions, commissions, force)
+            applyValue(stateLinks, this.links, links, mergeBehavior)
+            applyValue(stateStoreLinks, this.storeLinks, storeLinks, mergeBehavior)
+            applyValue(stateCatalogLinks, this.catalogLinks, catalogLinks, mergeBehavior)
+            applyValue(stateCommissions, this.commissions, commissions, mergeBehavior)
         }
 
         fun applyRawValues(
@@ -329,13 +352,13 @@ class ArtistFormState(
             storeLinks: List<String>,
             catalogLinks: List<String>,
             commissions: List<String>,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) = applyValues(
             links = links.map(LinkModel.Companion::parse).sortedBy { it.logo },
             storeLinks = storeLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
             catalogLinks = catalogLinks,
             commissions = commissions.map(CommissionModel.Companion::parse),
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
 
         fun captureValues(): LinksDatabaseValues {
@@ -407,21 +430,21 @@ class ArtistFormState(
         fun applyValues(
             inferred: List<SeriesInfo>,
             confirmed: List<SeriesInfo>,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) {
-            applyValue(this.stateInferred, this.inferred, inferred, force)
-            applyValue(this.stateConfirmed, this.confirmed, confirmed, force)
+            applyValue(this.stateInferred, this.inferred, inferred, mergeBehavior)
+            applyValue(this.stateConfirmed, this.confirmed, confirmed, mergeBehavior)
         }
 
         fun applyValues(
             inferred: List<String>,
             confirmed: List<String>,
             seriesById: Map<String, SeriesInfo>,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) = applyValues(
             inferred = inferred.map { seriesById[it] ?: SeriesInfo.fake(it) },
             confirmed = confirmed.map { seriesById[it] ?: SeriesInfo.fake(it) },
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
 
         fun captureValues(): Pair<List<String>, List<String>> =
@@ -458,21 +481,21 @@ class ArtistFormState(
         fun applyValues(
             inferred: List<MerchInfo>,
             confirmed: List<MerchInfo>,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) {
-            applyValue(this.stateInferred, this.inferred, inferred, force)
-            applyValue(this.stateConfirmed, this.confirmed, confirmed, force)
+            applyValue(this.stateInferred, this.inferred, inferred, mergeBehavior)
+            applyValue(this.stateConfirmed, this.confirmed, confirmed, mergeBehavior)
         }
 
         fun applyValues(
             inferred: List<String>,
             confirmed: List<String>,
             merchById: Map<String, MerchInfo>,
-            force: Boolean,
+            mergeBehavior: MergeBehavior,
         ) = applyValues(
             inferred = inferred.map { merchById[it] ?: MerchInfo.fake(it) },
             confirmed = confirmed.map { merchById[it] ?: MerchInfo.fake(it) },
-            force = force,
+            mergeBehavior = mergeBehavior,
         )
 
         fun captureValues(): Pair<List<String>, List<String>> =
@@ -497,5 +520,9 @@ class ArtistFormState(
                 },
             )
         }
+    }
+
+    enum class MergeBehavior {
+        APPEND, REPLACE, IGNORE
     }
 }

@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
@@ -19,22 +21,29 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlin.uuid.Uuid
 
 @AssistedInject
 class ArtistFormViewModel(
+    artistInference: ArtistInference,
     dispatchers: CustomDispatchers,
     editDatabase: AlleyEditDatabase,
     private val formDatabase: AlleyFormDatabase,
     seriesImagesStore: SeriesImagesStore,
+    private val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -45,8 +54,18 @@ class ArtistFormViewModel(
     ) { ArtistFormScreen.State.Progress.LOADING }
     private val artist =
         savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>(Json, "artist", null)
+    private val previousYearEntry =
+        artist.mapLatestNotNull { it?.id?.let(Uuid::parseOrNull) }
+            .mapLatest {
+                // These are used when merging, wait for them to be available before offering merge
+                tagAutocomplete.seriesById.first()
+                tagAutocomplete.merchById.first()
+                artistInference.getArtistForMerge(it)
+            }
+            .stateIn(viewModelScope, SharingStarted.Lazily, null)
     val state = ArtistFormScreen.State(
         initialArtist = artist,
+        previousYearEntry = previousYearEntry,
         progress = progress,
         formState = savedStateHandle.saveable(
             key = "formState",
@@ -58,7 +77,6 @@ class ArtistFormViewModel(
     )
 
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
-    private val tagAutocomplete = TagAutocomplete(viewModelScope, editDatabase, dispatchers)
 
     private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
 
@@ -80,7 +98,7 @@ class ArtistFormViewModel(
                 artist = artist,
                 seriesById = tagAutocomplete.seriesById.first(),
                 merchById = tagAutocomplete.merchById.first(),
-                force = true,
+                mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
             )
 
             // TODO: Support images?
@@ -106,6 +124,45 @@ class ArtistFormViewModel(
                 formNotes = state.formState.formNotes.value.text.toString(),
             )
         }
+    }
+
+    fun onConfirmMerge(fieldState: Map<ArtistFormScreen.ArtistField, Boolean>) {
+        val artist = artist.value ?: return
+        val previousYearEntry = this@ArtistFormViewModel.previousYearEntry.value ?: return
+        val seriesById =
+            tagAutocomplete.seriesById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
+                ?: return
+        val merchById =
+            tagAutocomplete.merchById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
+                ?: return
+
+        val formEntry = state.captureDatabaseEntry(artist).second
+        val entryToMerge = formEntry
+            .copy(
+                summary = previousYearEntry.summary.takeIf {
+                    fieldState[ArtistFormScreen.ArtistField.SUMMARY] ?: false
+                },
+                links = previousYearEntry.links.takeIf {
+                    fieldState[ArtistFormScreen.ArtistField.LINKS] ?: false
+                }.orEmpty(),
+                storeLinks = previousYearEntry.storeLinks.takeIf {
+                    fieldState[ArtistFormScreen.ArtistField.STORE_LINKS] ?: false
+                }.orEmpty(),
+                seriesInferred = previousYearEntry.seriesConfirmed
+                    .ifEmpty { previousYearEntry.seriesInferred }
+                    .takeIf { fieldState[ArtistFormScreen.ArtistField.SERIES] ?: false }
+                    .orEmpty(),
+                merchInferred = previousYearEntry.merchConfirmed
+                    .ifEmpty { previousYearEntry.merchInferred }
+                    .takeIf { fieldState[ArtistFormScreen.ArtistField.MERCH] ?: false }
+                    .orEmpty(),
+            )
+        state.applyDatabaseEntry(
+            artist = entryToMerge,
+            seriesById = seriesById,
+            merchById = merchById,
+            mergeBehavior = ArtistFormState.MergeBehavior.APPEND,
+        )
     }
 
     fun onSubmitPrivateKey(privateKey: String) {
