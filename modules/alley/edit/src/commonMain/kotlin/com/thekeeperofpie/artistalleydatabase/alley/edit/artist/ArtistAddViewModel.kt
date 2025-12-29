@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.serialization.saved
@@ -15,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
+import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -33,7 +35,7 @@ import kotlinx.serialization.json.Json
 import kotlin.uuid.Uuid
 
 @AssistedInject
-class ArtistEditViewModel(
+class ArtistAddViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
@@ -43,53 +45,20 @@ class ArtistEditViewModel(
 ) : ViewModel() {
     private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
-    private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
     private val artist =
         savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>(Json, "artist", null)
-    val state = ArtistEditScreen.State(
+    val state = ArtistAddScreen.State(
         initialArtist = artist,
         artistFormState = savedStateHandle.saveable(
             key = "artistFormState",
             saver = ArtistFormState.Saver,
             init = { ArtistFormState(artistId) },
         ),
-        formLink = formLink,
         saveTaskState = saveTask.state,
     )
 
-    private var hasLoaded by savedStateHandle.saved { false }
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val tagAutocomplete = TagAutocomplete(viewModelScope, database, dispatchers)
-
-    private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
-    private val formLinkJob = ExclusiveProgressJob(viewModelScope, ::loadFormLink)
-
-    fun initialize(force: Boolean = false) {
-        if (!hasLoaded || force) {
-            artistJob.launch()
-        }
-    }
-
-    private suspend fun loadArtistInfo() = withContext(PlatformDispatchers.IO) {
-        val artist = database.loadArtist(dataYear, artistId)
-        if (artist == null) {
-            hasLoaded = true
-            return@withContext
-        }
-        this@ArtistEditViewModel.artist.value = artist
-        state.artistFormState.applyDatabaseEntry(
-            artist = artist,
-            seriesById = tagAutocomplete.seriesById.first(),
-            merchById = tagAutocomplete.merchById.first(),
-            force = true,
-        )
-
-        val images = database.loadArtistImages(dataYear, artist)
-        if (images.isNotEmpty()) {
-            state.artistFormState.images.replaceAll(images)
-        }
-        hasLoaded = true
-    }
 
     fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
     fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
@@ -98,12 +67,6 @@ class ArtistEditViewModel(
 
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }
-
-    fun generateFormLink() = formLinkJob.launch()
-
-    private suspend fun loadFormLink() = withContext(dispatchers.io) {
-        formLink.value = database.generateFormLink(dataYear, artistId)
-    }
 
     private fun captureDatabaseEntry(
         isManual: Boolean,
@@ -148,7 +111,6 @@ class ArtistEditViewModel(
                 updated = updatedArtist,
             ).also {
                 if (it is ArtistSave.Response.Success) {
-                    hasLoaded = false
                     artist.value = updatedArtist
                     if (!isManual) {
                         state.artistFormState.applyDatabaseEntry(
@@ -169,6 +131,6 @@ class ArtistEditViewModel(
             dataYear: DataYear,
             artistId: Uuid,
             savedStateHandle: SavedStateHandle,
-        ): ArtistEditViewModel
+        ): ArtistAddViewModel
     }
 }

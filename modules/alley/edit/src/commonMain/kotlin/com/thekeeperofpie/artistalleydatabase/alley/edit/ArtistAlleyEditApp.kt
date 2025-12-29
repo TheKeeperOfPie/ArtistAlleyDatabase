@@ -20,6 +20,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
@@ -154,9 +155,9 @@ private fun entryProvider(
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistAdd> { route ->
-        ArtistEditScreen(
+        ArtistAddScreen(
             dataYear = route.dataYear,
-            artistId = null,
+            artistId = route.artistId,
             graph = graph,
             onClickBack = onClickBack,
             onClickEditImages = { displayName, images ->

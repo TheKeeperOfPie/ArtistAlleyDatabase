@@ -91,6 +91,10 @@ class ArtistFormState(
         )
     }
 
+    constructor(artistId: Uuid): this() {
+        editorState.id.value.setTextAndPlaceCursorAtEnd(artistId.toString())
+    }
+
     fun applyDatabaseEntry(
         artist: ArtistDatabaseEntry,
         seriesById: Map<String, SeriesInfo>,
