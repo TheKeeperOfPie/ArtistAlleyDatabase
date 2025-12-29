@@ -128,24 +128,24 @@
 
     <string name="alley_edit_open_link_content_description">Open link</string>
 
-    <string name="alley_edit_artist_history_title">History for %1$s - %2$s</string>
-    <string name="alley_edit_artist_history_label_status">Status:</string>
-    <string name="alley_edit_artist_history_label_booth">Booth:</string>
-    <string name="alley_edit_artist_history_label_name">Name:</string>
-    <string name="alley_edit_artist_history_label_summary">Description:</string>
-    <string name="alley_edit_artist_history_label_links">Links:</string>
-    <string name="alley_edit_artist_history_label_store_links">Store links:</string>
-    <string name="alley_edit_artist_history_label_catalog_links">Catalog links:</string>
-    <string name="alley_edit_artist_history_label_notes">Notes:</string>
-    <string name="alley_edit_artist_history_label_commissions">Commissions:</string>
-    <string name="alley_edit_artist_history_label_series_inferred">Series - Inferred:</string>
-    <string name="alley_edit_artist_history_label_series_confirmed">Series - Confirmed:</string>
-    <string name="alley_edit_artist_history_label_merch_inferred">Merch - Inferred:</string>
-    <string name="alley_edit_artist_history_label_merch_confirmed">Merch - Confirmed:</string>
-    <string name="alley_edit_artist_history_label_editor_notes">Editor notes:</string>
-    <string name="alley_edit_artist_history_label_list_added">+ %1$s</string>
-    <string name="alley_edit_artist_history_label_list_deleted">- %1$s</string>
+    <string name="alley_edit_artist_field_label_status">Status:</string>
+    <string name="alley_edit_artist_field_label_booth">Booth:</string>
+    <string name="alley_edit_artist_field_label_name">Name:</string>
+    <string name="alley_edit_artist_field_label_summary">Description:</string>
+    <string name="alley_edit_artist_field_label_links">Links:</string>
+    <string name="alley_edit_artist_field_label_store_links">Store links:</string>
+    <string name="alley_edit_artist_field_label_catalog_links">Catalog links:</string>
+    <string name="alley_edit_artist_field_label_notes">Notes:</string>
+    <string name="alley_edit_artist_field_label_commissions">Commissions:</string>
+    <string name="alley_edit_artist_field_label_series_inferred">Series - Inferred:</string>
+    <string name="alley_edit_artist_field_label_series_confirmed">Series - Confirmed:</string>
+    <string name="alley_edit_artist_field_label_merch_inferred">Merch - Inferred:</string>
+    <string name="alley_edit_artist_field_label_merch_confirmed">Merch - Confirmed:</string>
+    <string name="alley_edit_artist_field_label_editor_notes">Editor notes:</string>
+    <string name="alley_edit_artist_field_label_list_added">+ %1$s</string>
+    <string name="alley_edit_artist_field_label_list_deleted">- %1$s</string>
 
+    <string name="alley_edit_artist_history_title">History for %1$s - %2$s</string>
     <string name="alley_edit_artist_history_action_apply_changes">Apply changes</string>
     <string name="alley_edit_artist_history_action_revert_tooltip">Revert fields\nto this point</string>
     <string name="alley_edit_artist_history_action_return_to_history_tooltip">Return to history</string>
@@ -162,4 +162,10 @@
     <string name="alley_edit_artist_form_merge_notes">Notes from submission</string>
     <string name="alley_edit_artist_form_merge_action_save">Apply form merge</string>
     <string name="alley_edit_artist_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>
+
+    <string name="alley_edit_artist_add_potential_duplicates">Potential duplicates</string>
+    <string name="alley_edit_artist_add_potential_duplicate_via">%1$s via %2$s</string>
+    <string name="alley_edit_artist_add_action_merge_tooltip">Merge from candidate</string>
+    <string name="alley_edit_artist_add_error_loading_merge">Error loading merge source</string>
+    <string name="alley_edit_artist_add_action_confirm_merge">Confirm merge</string>
 </resources>

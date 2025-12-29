@@ -38,22 +38,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_booth
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_commissions
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_confirmed
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_booth
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_catalog_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_commissions
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_merch_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_merch_inferred
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_name
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_notes
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_series_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_series_inferred
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_store_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_label_summary
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
@@ -461,26 +461,26 @@ internal object ArtistFormMergeScreen {
     }
 
     private enum class ArtistField(val label: StringResource) {
-        BOOTH(Res.string.alley_edit_artist_history_label_booth),
-        NAME(Res.string.alley_edit_artist_history_label_name),
-        SUMMARY(Res.string.alley_edit_artist_history_label_summary),
-        LINKS_ADDED(Res.string.alley_edit_artist_history_label_links),
-        LINKS_REMOVED(Res.string.alley_edit_artist_history_label_links),
-        STORE_LINKS_ADDED(Res.string.alley_edit_artist_history_label_store_links),
-        STORE_LINKS_REMOVED(Res.string.alley_edit_artist_history_label_store_links),
-        CATALOG_LINKS_ADDED(Res.string.alley_edit_artist_history_label_catalog_links),
-        CATALOG_LINKS_REMOVED(Res.string.alley_edit_artist_history_label_catalog_links),
-        NOTES(Res.string.alley_edit_artist_history_label_notes),
-        COMMISSIONS_ADDED(Res.string.alley_edit_artist_history_label_commissions),
-        COMMISSIONS_REMOVED(Res.string.alley_edit_artist_history_label_commissions),
-        SERIES_INFERRED_ADDED(Res.string.alley_edit_artist_history_label_series_inferred),
-        SERIES_INFERRED_REMOVED(Res.string.alley_edit_artist_history_label_series_inferred),
-        SERIES_CONFIRMED_ADDED(Res.string.alley_edit_artist_history_label_series_confirmed),
-        SERIES_CONFIRMED_REMOVED(Res.string.alley_edit_artist_history_label_series_confirmed),
-        MERCH_INFERRED_ADDED(Res.string.alley_edit_artist_history_label_merch_inferred),
-        MERCH_INFERRED_REMOVED(Res.string.alley_edit_artist_history_label_merch_inferred),
-        MERCH_CONFIRMED_ADDED(Res.string.alley_edit_artist_history_label_merch_confirmed),
-        MERCH_CONFIRMED_REMOVED(Res.string.alley_edit_artist_history_label_merch_confirmed),
+        BOOTH(Res.string.alley_edit_artist_field_label_booth),
+        NAME(Res.string.alley_edit_artist_field_label_name),
+        SUMMARY(Res.string.alley_edit_artist_field_label_summary),
+        LINKS_ADDED(Res.string.alley_edit_artist_field_label_links),
+        LINKS_REMOVED(Res.string.alley_edit_artist_field_label_links),
+        STORE_LINKS_ADDED(Res.string.alley_edit_artist_field_label_store_links),
+        STORE_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_store_links),
+        CATALOG_LINKS_ADDED(Res.string.alley_edit_artist_field_label_catalog_links),
+        CATALOG_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_catalog_links),
+        NOTES(Res.string.alley_edit_artist_field_label_notes),
+        COMMISSIONS_ADDED(Res.string.alley_edit_artist_field_label_commissions),
+        COMMISSIONS_REMOVED(Res.string.alley_edit_artist_field_label_commissions),
+        SERIES_INFERRED_ADDED(Res.string.alley_edit_artist_field_label_series_inferred),
+        SERIES_INFERRED_REMOVED(Res.string.alley_edit_artist_field_label_series_inferred),
+        SERIES_CONFIRMED_ADDED(Res.string.alley_edit_artist_field_label_series_confirmed),
+        SERIES_CONFIRMED_REMOVED(Res.string.alley_edit_artist_field_label_series_confirmed),
+        MERCH_INFERRED_ADDED(Res.string.alley_edit_artist_field_label_merch_inferred),
+        MERCH_INFERRED_REMOVED(Res.string.alley_edit_artist_field_label_merch_inferred),
+        MERCH_CONFIRMED_ADDED(Res.string.alley_edit_artist_field_label_merch_confirmed),
+        MERCH_CONFIRMED_REMOVED(Res.string.alley_edit_artist_field_label_merch_confirmed),
         ;
 
         val isRemoved: Boolean

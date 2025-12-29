@@ -1,0 +1,17 @@
+getArtistInferenceDataAnimeExpo2023:
+SELECT id, name, links, catalogLinks FROM artistEntry2023;
+
+getArtistInferenceDataAnimeExpo2024:
+SELECT id, name, links, storeLinks, catalogLinks FROM artistEntry2024;
+
+getArtistInferenceDataAnimeExpo2025:
+SELECT id, name, links, storeLinks, catalogLinks FROM artistEntry2025;
+
+getArtistInferenceDataAnimeExpo2026:
+SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeExpo2026;
+
+getArtistInferenceDataAnimeNyc2024:
+SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeNyc2024;
+
+getArtistInferenceDataAnimeNyc2025:
+SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeNyc2025;

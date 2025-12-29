@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.LayoutScopeMarker
@@ -20,11 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -78,7 +74,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_pas
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
-import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -109,11 +104,12 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import artistalleydatabase.modules.alley.generated.resources.Res as AlleyRes
-import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
 @LayoutScopeMarker
 @Immutable
 interface ArtistFormScope : EntryFormScope {
+    val initialArtist: ArtistDatabaseEntry.Impl?
+
     @Composable
     fun MetadataSection(metadata: ArtistFormState.Metadata)
 
@@ -219,7 +215,7 @@ interface ArtistFormScope : EntryFormScope {
 @Immutable
 private class ArtistFormScopeImpl(
     entryFormScope: EntryFormScope,
-    private val initialArtist: ArtistDatabaseEntry.Impl?,
+    override val initialArtist: ArtistDatabaseEntry.Impl?,
 ) : ArtistFormScope, EntryFormScope by entryFormScope {
 
     @Composable
@@ -580,15 +576,15 @@ private class ArtistFormScopeImpl(
         )
     }
 
-    @Stable
     @Composable
-    private fun rememberOnChangedOutputTransformation(initialValue: String?): OutputTransformation? {
-        return if (initialArtist != null) {
-            remember(initialValue) { GreenOnChangedOutputTransformation(initialValue.orEmpty()) }
-        } else {
-            null
+    private fun rememberOnChangedOutputTransformation(initialValue: String?): OutputTransformation? =
+        remember(initialArtist, initialValue) {
+            if (initialArtist == null) {
+                null
+            } else {
+                GreenOnChangedOutputTransformation(initialValue.orEmpty())
+            }
         }
-    }
 
     @Immutable
     private class GreenOnChangedOutputTransformation(
@@ -782,7 +778,7 @@ object ArtistForm {
         }
     }
 
-    context(formScope: EntryFormScope)
+    context(formScope: ArtistFormScope)
     @Composable
     internal fun <T> MultiTextSection(
         state: EntryForm2.SingleTextState,
@@ -819,7 +815,7 @@ object ArtistForm {
                         onValueChange = {},
                         readOnly = true,
                         textStyle = LocalTextStyle.current.copy(
-                            color = if (existed != false) {
+                            color = if (formScope.initialArtist == null || existed != false) {
                                 LocalTextStyle.current.color
                             } else {
                                 Color.Green
@@ -856,7 +852,7 @@ object ArtistForm {
         )
     }
 
-    context(formScope: EntryFormScope)
+    context(formScope: ArtistFormScope)
     @Composable
     internal fun SeriesSection(
         state: EntryForm2.SingleTextState,
@@ -883,7 +879,7 @@ object ArtistForm {
             item = { _, value ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val existed = initialItems?.any { it.id == value.id }
-                    val textStyle = if (existed != false) {
+                    val textStyle = if (formScope.initialArtist == null || existed != false) {
                         MaterialTheme.typography.bodyMedium
                     } else {
                         MaterialTheme.typography.bodyMedium.copy(color = Color.Green)
@@ -949,24 +945,6 @@ object ArtistForm {
     }
 
     @Composable
-    private fun MenuIcon(visible: Boolean, onClick: () -> Unit) {
-        AnimatedVisibility(
-            visible = visible,
-            enter = fadeIn() + expandHorizontally(),
-            exit = fadeOut() + shrinkHorizontally(),
-        ) {
-            IconButton(onClick = onClick) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(
-                        UtilsComposeRes.string.more_actions_content_description
-                    ),
-                )
-            }
-        }
-    }
-
-    @Composable
     internal fun ShowInferredButton(
         hasConfirmed: Boolean,
         showingInferred: Boolean,
@@ -994,7 +972,7 @@ object ArtistForm {
         }
     }
 
-    context(scope: EntryFormScope)
+    context(formScope: ArtistFormScope)
     @Composable
     internal fun LinksSection(
         state: EntryForm2.SingleTextState,
@@ -1016,7 +994,7 @@ object ArtistForm {
                 LinkRow(
                     link = value,
                     isLast = index == items.lastIndex && !state.lockState.editable,
-                    color = if (initialLinks.contains(value)) Color.Unspecified else Color.Green,
+                    color = if (formScope.initialArtist == null || initialLinks.contains(value)) Color.Unspecified else Color.Green,
                     additionalActions = {
                         AnimatedVisibility(
                             visible = state.lockState.editable,

@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry2025Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeExpo2026Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2024Queries
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryAnimeNyc2025Queries
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryEditQueries
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistWithStampRalliesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
@@ -29,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
@@ -549,6 +551,7 @@ class ArtistEntryDao(
     private val daoAnimeExpo2026: suspend () -> ArtistEntryAnimeExpo2026Queries = { database().artistEntryAnimeExpo2026Queries },
     private val daoAnimeNyc2024: suspend () -> ArtistEntryAnimeNyc2024Queries = { database().artistEntryAnimeNyc2024Queries },
     private val daoAnimeNyc2025: suspend () -> ArtistEntryAnimeNyc2025Queries = { database().artistEntryAnimeNyc2025Queries },
+    private val daoEdit: suspend () -> ArtistEntryEditQueries = { database().artistEntryEditQueries },
 ) {
     suspend fun getEntry(year: DataYear, id: String) =
         when (year) {
@@ -1070,6 +1073,78 @@ class ArtistEntryDao(
                         merchInferred = it.merchInferred,
                         merchConfirmed = it.merchConfirmed,
                         images = it.images,
+                    )
+                }
+        }
+    }
+
+    suspend fun getArtistInferenceData(dataYear: DataYear): List<ArtistInferenceData> {
+        val dao = daoEdit()
+        return when (dataYear) {
+            DataYear.ANIME_EXPO_2023 -> dao.getArtistInferenceDataAnimeExpo2023()
+                .awaitAsList()
+                .map {
+                    ArtistInferenceData(
+                        artistId = Uuid.parse(it.id),
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = emptyList(),
+                        catalogLinks = it.catalogLinks,
+                    )
+                }
+            DataYear.ANIME_EXPO_2024 -> dao.getArtistInferenceDataAnimeExpo2024()
+                .awaitAsList()
+                .map {
+                    ArtistInferenceData(
+                        artistId = Uuid.parse(it.id),
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                    )
+                }
+            DataYear.ANIME_EXPO_2025 -> dao.getArtistInferenceDataAnimeExpo2025()
+                .awaitAsList()
+                .map {
+                    ArtistInferenceData(
+                        artistId = Uuid.parse(it.id),
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                    )
+                }
+            DataYear.ANIME_EXPO_2026 -> dao.getArtistInferenceDataAnimeExpo2026()
+                .awaitAsList()
+                .map {
+                    ArtistInferenceData(
+                        artistId = Uuid.parse(it.id),
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                    )
+                }
+            DataYear.ANIME_NYC_2024 -> dao.getArtistInferenceDataAnimeNyc2024()
+                .awaitAsList()
+                .map {
+                    ArtistInferenceData(
+                        artistId = Uuid.parse(it.id),
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
+                    )
+                }
+            DataYear.ANIME_NYC_2025 -> dao.getArtistInferenceDataAnimeNyc2025()
+                .awaitAsList()
+                .map {
+                    ArtistInferenceData(
+                        artistId = Uuid.parse(it.id),
+                        name = it.name,
+                        links = it.links,
+                        storeLinks = it.storeLinks,
+                        catalogLinks = it.catalogLinks,
                     )
                 }
         }
