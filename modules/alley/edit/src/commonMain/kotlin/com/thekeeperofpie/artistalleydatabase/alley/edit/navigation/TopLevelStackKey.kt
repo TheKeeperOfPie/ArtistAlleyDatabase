@@ -8,8 +8,8 @@ import androidx.compose.material.icons.filled.Tv
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artists
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_merch
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_queue
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_series
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import org.jetbrains.compose.resources.StringResource
@@ -34,9 +34,9 @@ internal enum class TopLevelStackKey(
         icon = Icons.Default.ShoppingBag,
         title = Res.string.alley_edit_top_level_nav_merch,
     ),
-    QUEUE(
+    FORMS(
         initialDestination = AlleyEditDestination.ArtistFormQueue,
         icon = Icons.AutoMirrored.Default.List,
-        title = Res.string.alley_edit_top_level_nav_queue,
+        title = Res.string.alley_edit_top_level_nav_forms,
     ),
 }

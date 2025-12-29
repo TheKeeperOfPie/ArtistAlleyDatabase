@@ -19,9 +19,13 @@ class ArtistFormQueueViewModel(
 ) : ViewModel() {
 
     private val refreshFlow = RefreshFlow()
-    val entries = refreshFlow.updates
+    val queue = refreshFlow.updates
         .mapLatest { database.loadArtistFormQueue() }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val history = refreshFlow.updates
+        .mapLatest { database.loadArtistFormQueueHistory() }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun refresh() = refreshFlow.refresh()
 

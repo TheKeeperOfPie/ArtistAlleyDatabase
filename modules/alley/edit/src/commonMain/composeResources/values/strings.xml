@@ -3,7 +3,7 @@
     <string name="alley_edit_top_level_nav_artists">Artists</string>
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
-    <string name="alley_edit_top_level_nav_queue">Queue</string>
+    <string name="alley_edit_top_level_nav_forms">Forms</string>
 
     <string name="alley_edit_artist_list_tab_all">All</string>
     <string name="alley_edit_artist_list_tab_missing_links">Missing links</string>
@@ -155,6 +155,9 @@
 
     <string name="alley_edit_artist_form_queue_title">Artist form queue</string>
     <string name="alley_edit_artist_form_queue_action_refresh">Refresh form queue</string>
+    <string name="alley_edit_artist_form_queue_tab_queue">Queue</string>
+    <string name="alley_edit_artist_form_queue_tab_history">History</string>
+
     <string name="alley_edit_artist_form_merge_title">Merging %1$s - %2$s</string>
     <string name="alley_edit_artist_form_merge_notes">Notes from submission</string>
     <string name="alley_edit_artist_form_merge_action_save">Apply form merge</string>

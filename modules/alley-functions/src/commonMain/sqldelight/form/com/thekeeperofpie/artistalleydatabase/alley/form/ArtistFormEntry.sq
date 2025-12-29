@@ -2,13 +2,22 @@ getFormEntry:
 SELECT * FROM artistFormEntry
 WHERE dataYear = :dataYear AND artistId = :artistId;
 
-getAllFormEntries:
+getFormQueue:
 SELECT artistId, beforeBooth, afterBooth, beforeName, afterName FROM artistFormEntry
+ORDER BY timestamp DESC;
+
+getFormHistory:
+SELECT artistId, beforeBooth, afterBooth, beforeName, afterName, timestamp FROM artistFormEntryHistory
 ORDER BY timestamp DESC;
 
 insertFormEntry:
 INSERT OR REPLACE INTO artistFormEntry
 VALUES ?;
+
+moveFormEntryToHistory:
+INSERT INTO artistFormEntryHistory
+SELECT * FROM artistFormEntry
+WHERE dataYear = :dataYear AND artistId = :artistId AND timestamp = :timestamp;
 
 consumeFormEntry:
 DELETE FROM artistFormEntry

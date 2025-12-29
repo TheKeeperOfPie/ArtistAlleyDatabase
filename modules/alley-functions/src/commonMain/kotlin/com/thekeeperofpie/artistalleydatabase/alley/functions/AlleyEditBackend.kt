@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
@@ -58,6 +59,7 @@ object AlleyEditBackend {
                             this
                         )
                     )
+                    is BackendRequest.ArtistFormHistory -> makeResponse(loadArtistFormHistory(context))
                     is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
                     is BackendRequest.ArtistWithFormEntry ->
                         makeResponse(loadArtistWithFormEntry(context, this))
@@ -125,7 +127,7 @@ object AlleyEditBackend {
     private suspend fun loadArtistFormQueue(context: EventContext): List<ArtistFormQueueEntry> =
         Databases.formDatabase(context)
             .artistFormEntryQueries
-            .getAllFormEntries()
+            .getFormQueue()
             .awaitAsList()
             .map {
                 ArtistFormQueueEntry(
@@ -134,6 +136,20 @@ object AlleyEditBackend {
                     beforeName = it.beforeName,
                     afterBooth = it.afterBooth,
                     afterName = it.afterName,
+                )
+            }
+
+    private suspend fun loadArtistFormHistory(context: EventContext): List<ArtistFormHistoryEntry> =
+        Databases.formDatabase(context)
+            .artistFormEntryQueries
+            .getFormHistory()
+            .awaitAsList()
+            .map {
+                ArtistFormHistoryEntry(
+                    artistId = it.artistId,
+                    booth = it.afterBooth ?: it.beforeBooth,
+                    name = it.afterName ?: it.beforeName,
+                    timestamp = it.timestamp,
                 )
             }
 
@@ -201,6 +217,7 @@ object AlleyEditBackend {
                     formEntry.beforeMerchConfirmed,
                     formEntry.afterMerchConfirmed
                 ),
+                formNotes = formEntry.formNotes.orEmpty(),
                 timestamp = formEntry.timestamp,
             )
         )
@@ -223,11 +240,21 @@ object AlleyEditBackend {
             ArtistSave.Response.Success -> Unit
         }
 
-        Databases.formDatabase(context).artistFormEntryQueries.consumeFormEntry(
-            dataYear = request.dataYear,
-            artistId = Uuid.parse(request.updated.id),
-            timestamp = request.formEntryTimestamp,
-        )
+        Databases.formDatabase(context).artistFormEntryQueries.run {
+            // D1 only supports transactions in a batched statement, which is hard to set up
+            // A single write and delete should be consistent enough that it shouldn't matter
+            val artistId = Uuid.parse(request.updated.id)
+            moveFormEntryToHistory(
+                dataYear = request.dataYear,
+                artistId = artistId,
+                timestamp = request.formEntryTimestamp,
+            )
+            consumeFormEntry(
+                dataYear = request.dataYear,
+                artistId = artistId,
+                timestamp = request.formEntryTimestamp,
+            )
+        }
         return BackendRequest.ArtistCommitForm.Response.Success
     }
 

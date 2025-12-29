@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
@@ -43,6 +44,7 @@ expect class AlleyEditRemoteDatabase {
     suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String?
 
     suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry>
+    suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry>
     suspend fun loadArtistWithFormEntry(
         dataYear: DataYear,
         artistId: Uuid,

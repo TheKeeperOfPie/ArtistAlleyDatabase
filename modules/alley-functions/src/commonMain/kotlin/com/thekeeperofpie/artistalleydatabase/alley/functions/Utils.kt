@@ -7,7 +7,8 @@ import org.w3c.fetch.ResponseInit
 
 internal object Utils {
 
-    val unauthorizedResponse = Response(null, ResponseInit(status = 403))
+    val unauthorizedResponse
+        get() = Response(null, ResponseInit(status = 403))
 
     inline fun <reified T> jsonResponse(value: T) = Response(
         body = Json.encodeToString(value),

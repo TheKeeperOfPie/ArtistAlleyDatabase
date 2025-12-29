@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography.generateOneTimeEncryptionKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
@@ -48,7 +49,6 @@ actual class AlleyEditRemoteDatabase(
         withContext(dispatchers.io) {
             sendRequest(BackendRequest.Artist(dataYear, artistId))
         }
-
 
     actual suspend fun loadArtistHistory(
         dataYear: DataYear,
@@ -187,6 +187,16 @@ actual class AlleyEditRemoteDatabase(
         withContext(dispatchers.io) {
             try {
                 sendRequest(BackendRequest.ArtistFormQueue) ?: emptyList()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
+    actual suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.ArtistFormHistory) ?: emptyList()
             } catch (t: Throwable) {
                 t.printStackTrace()
                 emptyList()

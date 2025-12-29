@@ -1,12 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app.serviceworker
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.await
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.coroutineScope
 import org.w3c.dom.url.URL
 import org.w3c.fetch.Request
 import org.w3c.fetch.Response
@@ -15,6 +12,10 @@ import org.w3c.workers.ExtendableEvent
 import org.w3c.workers.ExtendableMessageEvent
 import org.w3c.workers.FetchEvent
 import org.w3c.workers.ServiceWorkerGlobalScope
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.startCoroutine
 import kotlin.js.Promise
 
 external val self: ServiceWorkerGlobalScope
@@ -111,7 +112,7 @@ fun main() {
                                 status = response.status,
                                 statusText = response.statusText,
                             )
-                                ).apply {
+                        ).apply {
                             headers.set("Content-Type", contentType)
                         }
                     } else {
@@ -145,7 +146,7 @@ private suspend fun fetchCacheFirst(
     }
 }
 
-private suspend fun CoroutineScope.cleanUpCaches() {
+private suspend fun cleanUpCaches() = coroutineScope {
     self.caches.keys()
         .await()
         .filter { key -> CACHES.none { it.name == key } }
@@ -170,15 +171,12 @@ private suspend fun CoroutineScope.cleanUpCaches() {
     }
 }
 
-private fun <T> promise(block: suspend CoroutineScope.() -> T): Promise<T> {
-    return Promise { resolve, reject ->
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch {
-            try {
-                resolve(block())
-            } catch (t: Throwable) {
-                reject(t)
+private fun <T> promise(block: suspend () -> T) =
+    Promise { resolve, reject ->
+        block.startCoroutine(completion = object : Continuation<T> {
+            override val context: CoroutineContext = EmptyCoroutineContext
+            override fun resumeWith(result: Result<T>) {
+                result.fold(resolve, reject)
             }
-        }
+        })
     }
-}

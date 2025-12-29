@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -235,6 +236,7 @@ internal object ArtistListScreen {
                     }
                 },
                 modifier = Modifier.widthIn(max = 1200.dp)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 val dataYear by state.dataYear.collectAsStateWithLifecycle()
                 val sortBy by state.sortBy.collectAsStateWithLifecycle()

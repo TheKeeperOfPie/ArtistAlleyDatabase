@@ -6,11 +6,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.Cloudfl
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.D1Database
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.KeyValueStore
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2Bucket
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.w3c.fetch.Request
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.startCoroutine
 import kotlin.js.Promise
 
 external interface EventContext {
@@ -32,14 +32,12 @@ external interface Env {
     val ARTIST_ALLEY_FORM_KEYS_KV: KeyValueStore
 }
 
-internal fun <T> promise(block: suspend CoroutineScope.() -> T) =
+internal fun <T> promise(block: suspend () -> T) =
     Promise { resolve, reject ->
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch {
-            try {
-                resolve(block())
-            } catch (t: Throwable) {
-                reject(t)
+        block.startCoroutine(completion = object : Continuation<T> {
+            override val context: CoroutineContext = EmptyCoroutineContext
+            override fun resumeWith(result: Result<T>) {
+                result.fold(resolve, reject)
             }
-        }
+        })
     }

@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptographyKeys
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -48,6 +49,7 @@ actual class AlleyEditRemoteDatabase {
 
     internal val artistKeys = mutableMapOf<Uuid, AlleyCryptographyKeys>()
     internal val artistFormQueue = mutableMapOf<Uuid, FormSubmission>()
+    internal val artistFormHistory = mutableListOf<FormSubmission>()
 
     private var simulatedLatency: Duration? = null
 
@@ -250,6 +252,16 @@ actual class AlleyEditRemoteDatabase {
             )
         }
 
+    actual suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry> =
+        artistFormHistory.map {
+            ArtistFormHistoryEntry(
+                artistId = Uuid.parse(it.after.id),
+                booth = it.after.booth ?: it.before.booth.orEmpty(),
+                name = it.after.name,
+                timestamp = it.timestamp,
+            )
+        }
+
     actual suspend fun loadArtistWithFormEntry(
         dataYear: DataYear,
         artistId: Uuid,
@@ -292,7 +304,9 @@ actual class AlleyEditRemoteDatabase {
         saveArtist(dataYear = dataYear, initial = initial, updated = updated)
         val artistId = Uuid.parse(updated.id)
         if (artistFormQueue[artistId]?.timestamp == formEntryTimestamp) {
-            artistFormQueue.remove(artistId)
+            artistFormQueue.remove(artistId)?.let {
+                artistFormHistory += it
+            }
         }
         return BackendRequest.ArtistCommitForm.Response.Success
     }

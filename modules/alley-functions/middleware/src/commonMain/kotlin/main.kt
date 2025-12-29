@@ -4,13 +4,13 @@ import cloudflare.Env
 import cloudflare.EventContext
 import cloudflare.PluginArgs
 import com.thekeeperofpie.artistalleydatabase.alley.functions.middleware.secrets.BuildKonfig
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.w3c.dom.url.URL
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.startCoroutine
 import kotlin.js.Promise
 
 @JsExport
@@ -42,16 +42,14 @@ class Middleware {
             }
         }
 
-        private fun <T> promise(block: suspend CoroutineScope.() -> T) =
+        private fun <T> promise(block: suspend () -> T) =
             Promise { resolve, reject ->
-                @OptIn(DelicateCoroutinesApi::class)
-                GlobalScope.launch {
-                    try {
-                        resolve(block())
-                    } catch (t: Throwable) {
-                        reject(t)
+                block.startCoroutine(completion = object : Continuation<T> {
+                    override val context: CoroutineContext = EmptyCoroutineContext
+                    override fun resumeWith(result: Result<T>) {
+                        result.fold(resolve, reject)
                     }
-                }
+                })
             }
     }
 }
