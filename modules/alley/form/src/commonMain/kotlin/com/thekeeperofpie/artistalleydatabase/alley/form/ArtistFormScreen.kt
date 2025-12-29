@@ -65,9 +65,9 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_pre
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_select_all
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
@@ -205,13 +205,13 @@ object ArtistFormScreen {
                         }
                     State.Progress.LOADED -> {
                         val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
-                        val previousYearEntry by state.previousYearEntry.collectAsStateWithLifecycle()
+                        val previousYearEntry by state.previousYearData.collectAsStateWithLifecycle()
                         Form(
                             saveTaskState = saveTaskState,
                             formState = state.formState,
                             errorState = errorState,
                             initialArtist = { initialArtist },
-                            previousYearEntry = { previousYearEntry },
+                            previousYearData = { previousYearEntry },
                             seriesPredictions = seriesPredictions,
                             merchPredictions = merchPredictions,
                             seriesImage = seriesImage,
@@ -237,7 +237,7 @@ object ArtistFormScreen {
         formState: State.FormState,
         errorState: ErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
-        previousYearEntry: () -> ArtistEntry?,
+        previousYearData: () -> ArtistInference.PreviousYearData?,
         saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
@@ -281,7 +281,7 @@ object ArtistFormScreen {
                             .width(960.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        if (previousYearEntry() != null) {
+                        if (previousYearData() != null) {
                             PreviousYearPrompt(onClickMerge = { showMerge = true })
                         }
 
@@ -320,10 +320,10 @@ object ArtistFormScreen {
                         )
                     }
 
-                    val previousYearEntry = previousYearEntry()
-                    if (showMerge && previousYearEntry != null) {
+                    val previousYearData = previousYearData()
+                    if (showMerge && previousYearData != null) {
                         MergeList(
-                            previousYearEntry = previousYearEntry,
+                            previousYearData = previousYearData,
                             onConfirmMerge = {
                                 onConfirmMerge(it)
                                 showMerge = false
@@ -380,7 +380,7 @@ object ArtistFormScreen {
 
     @Composable
     private fun MergeList(
-        previousYearEntry: ArtistEntry,
+        previousYearData: ArtistInference.PreviousYearData,
         onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
     ) {
         // TODO: There are 3 instances of a similar UI (history, form merge, add artist merge),
@@ -417,18 +417,14 @@ object ArtistFormScreen {
 
             ArtistField.entries.forEach { field ->
                 val fieldText = when (field) {
-                    ArtistField.SUMMARY -> previousYearEntry.summary?.ifBlank { null }
-                    ArtistField.LINKS -> previousYearEntry.links.ifEmpty { null }
+                    ArtistField.SUMMARY -> previousYearData.summary?.ifBlank { null }
+                    ArtistField.LINKS -> previousYearData.links.ifEmpty { null }
                         ?.joinToString("\n")
-                    ArtistField.STORE_LINKS -> previousYearEntry.storeLinks.ifEmpty { null }
+                    ArtistField.STORE_LINKS -> previousYearData.storeLinks.ifEmpty { null }
                         ?.joinToString("\n")
-                    ArtistField.SERIES -> previousYearEntry.seriesConfirmed
-                        .ifEmpty { previousYearEntry.seriesInferred }
-                        .ifEmpty { null }
+                    ArtistField.SERIES -> previousYearData.seriesInferred.ifEmpty { null }
                         ?.joinToString()
-                    ArtistField.MERCH -> previousYearEntry.merchConfirmed
-                        .ifEmpty { previousYearEntry.merchInferred }
-                        .ifEmpty { null }
+                    ArtistField.MERCH -> previousYearData.merchInferred.ifEmpty { null }
                         ?.joinToString()
                 }
                 if (fieldText != null) {
@@ -510,7 +506,7 @@ object ArtistFormScreen {
     @Stable
     class State(
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
-        val previousYearEntry: StateFlow<ArtistEntry?>,
+        val previousYearData: StateFlow<ArtistInference.PreviousYearData?>,
         val progress: StateFlow<Progress>,
         val formState: FormState,
         val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,

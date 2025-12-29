@@ -63,7 +63,7 @@ class ArtistAddViewModel(
             } else {
                 flow {
                     emit(LoadingResult.loading())
-                    val artist = artistInference.getArtistForMerge(it)
+                    val artist = artistInference.getPreviousYearData(it)
                     emit(
                         if (artist == null) {
                             LoadingResult.error(Res.string.alley_edit_artist_add_error_loading_merge)
@@ -114,10 +114,12 @@ class ArtistAddViewModel(
     }
 
     internal fun onConfirmSameArtist() {
-        val artist = mergingArtist.value.result ?: return
-        artistFormState.editorState.id.value.setTextAndPlaceCursorAtEnd(artist.id)
-        artistFormState.info.name.value.setTextAndPlaceCursorAtEnd(artist.name)
-        artistFormState.info.name.lockState = EntryLockState.LOCKED
+        val previousYearData = mergingArtist.value.result ?: return
+        artistFormState.editorState.id.value.setTextAndPlaceCursorAtEnd(previousYearData.artistId)
+        previousYearData.name?.let {
+            artistFormState.info.name.value.setTextAndPlaceCursorAtEnd(it)
+            artistFormState.info.name.lockState = EntryLockState.LOCKED
+        }
         mergingArtistId.value = null
     }
 

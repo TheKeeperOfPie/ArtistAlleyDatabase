@@ -52,15 +52,11 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_same_artist_confirm_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
@@ -350,7 +346,7 @@ object ArtistAddScreen {
 
     @Composable
     private fun MergeList(
-        mergingArtist: LoadingResult<ArtistEntry>,
+        mergingArtist: LoadingResult<ArtistInference.PreviousYearData>,
         onDenySameArtist: () -> Unit,
         onConfirmSameArtist: () -> Unit,
     ) {
@@ -362,15 +358,9 @@ object ArtistAddScreen {
                     ArtistField.LINKS -> artist?.links?.ifEmpty { null }?.joinToString("\n")
                     ArtistField.STORE_LINKS -> artist?.storeLinks?.ifEmpty { null }
                         ?.joinToString("\n")
-                    ArtistField.CATALOG_LINKS -> artist?.catalogLinks?.ifEmpty { null }
-                        ?.joinToString("\n")
-                    ArtistField.SERIES_INFERRED -> artist?.seriesInferred?.ifEmpty { null }
+                    ArtistField.SERIES -> artist?.seriesInferred?.ifEmpty { null }
                         ?.joinToString()
-                    ArtistField.SERIES_CONFIRMED -> artist?.seriesConfirmed?.ifEmpty { null }
-                        ?.joinToString()
-                    ArtistField.MERCH_INFERRED -> artist?.merchInferred?.ifEmpty { null }
-                        ?.joinToString()
-                    ArtistField.MERCH_CONFIRMED -> artist?.merchConfirmed?.ifEmpty { null }
+                    ArtistField.MERCH -> artist?.merchInferred?.ifEmpty { null }
                         ?.joinToString()
                 }
                 if (fieldText != null) {
@@ -461,11 +451,8 @@ object ArtistAddScreen {
         NAME(Res.string.alley_edit_artist_field_label_name),
         LINKS(Res.string.alley_edit_artist_field_label_links),
         STORE_LINKS(Res.string.alley_edit_artist_field_label_store_links),
-        CATALOG_LINKS(Res.string.alley_edit_artist_field_label_catalog_links),
-        SERIES_INFERRED(Res.string.alley_edit_artist_field_label_series_inferred),
-        SERIES_CONFIRMED(Res.string.alley_edit_artist_field_label_series_confirmed),
-        MERCH_INFERRED(Res.string.alley_edit_artist_field_label_merch_inferred),
-        MERCH_CONFIRMED(Res.string.alley_edit_artist_field_label_merch_confirmed),
+        SERIES(Res.string.alley_edit_artist_field_label_series_inferred),
+        MERCH(Res.string.alley_edit_artist_field_label_merch_inferred),
     }
 
     @Stable
@@ -473,7 +460,7 @@ object ArtistAddScreen {
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val artistFormState: ArtistFormState,
         val inferredArtists: StateFlow<List<ArtistInference.MatchResult>>,
-        val mergingArtist: StateFlow<LoadingResult<ArtistEntry>>,
+        val mergingArtist: StateFlow<LoadingResult<ArtistInference.PreviousYearData>>,
         val saveTaskState: TaskState<ArtistSave.Response>,
     )
 }

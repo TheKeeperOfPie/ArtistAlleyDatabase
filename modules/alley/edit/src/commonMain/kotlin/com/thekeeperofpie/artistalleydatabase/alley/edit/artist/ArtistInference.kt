@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.shareIn
@@ -20,7 +21,7 @@ import kotlin.uuid.Uuid
 @SingleIn(AppScope::class)
 @Inject
 class ArtistInference(
-    private val applicationScope: ApplicationScope,
+    applicationScope: ApplicationScope,
     private val artistEntryDao: ArtistEntryDao,
 ) {
     private val artistInferenceData = flowFromSuspend {
@@ -77,18 +78,15 @@ class ArtistInference(
             .take(5)
     }
 
-    // TODO: Merge all years before returning?
-    suspend fun getArtistForMerge(artistId: Uuid): ArtistEntry? =
-        listOf(
-            // In order of data quality
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_NYC_2025,
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_NYC_2024,
-        ).firstNotNullOfOrNull {
-            artistEntryDao.getEntry(it, artistId.toString())?.artist
-        }
+    suspend fun getPreviousYearData(artistId: Uuid) =
+        PreviousYearProvider(artistEntryDao, artistId.toString()).getData()
+            .takeIf {
+                !it.summary.isNullOrBlank() ||
+                        it.links.isNotEmpty() ||
+                        it.storeLinks.isNotEmpty() ||
+                        it.seriesInferred.isNotEmpty() ||
+                        it.merchInferred.isNotEmpty()
+            }
 
     private fun matchingLink(
         artistLinks: Set<LinkModel>,
@@ -148,7 +146,7 @@ class ArtistInference(
         val catalogLinks: List<String>,
     ) {
         companion object {
-            fun captureState(state: ArtistFormState) = ArtistInference.Input(
+            fun captureState(state: ArtistFormState) = Input(
                 name = state.info.name.value.text.toString(),
                 links = state.links.links.toList() +
                         LinkModel.parse(state.links.stateLinks.value.text.toString()),
@@ -158,5 +156,91 @@ class ArtistInference(
                         state.links.stateCatalogLinks.value.text.toString(),
             )
         }
+    }
+
+    data class PreviousYearData(
+        val artistId: String,
+        val name: String?,
+        val summary: String?,
+        val links: List<String>,
+        val storeLinks: List<String>,
+        val seriesInferred: List<String>,
+        val merchInferred: List<String>,
+    )
+
+    private class PreviousYearProvider(
+        private val dao: ArtistEntryDao,
+        private val artistId: String,
+    ) {
+        private val animeExpo2023 = CompletableDeferred<ArtistEntry?>()
+        private val animeExpo2024 = CompletableDeferred<ArtistEntry?>()
+        private val animeExpo2025 = CompletableDeferred<ArtistEntry?>()
+        private val animeNyc2024 = CompletableDeferred<ArtistEntry?>()
+        private val animeNyc2025 = CompletableDeferred<ArtistEntry?>()
+
+        private suspend fun animeExpo2023(): ArtistEntry? {
+            if (!animeExpo2023.isCompleted) {
+                animeExpo2023.complete(dao.getEntry(DataYear.ANIME_EXPO_2023, artistId)?.artist)
+            }
+            return animeExpo2023.getCompleted()
+        }
+
+        private suspend fun animeExpo2024(): ArtistEntry? {
+            if (!animeExpo2024.isCompleted) {
+                animeExpo2024.complete(dao.getEntry(DataYear.ANIME_EXPO_2024, artistId)?.artist)
+            }
+            return animeExpo2024.getCompleted()
+        }
+
+        private suspend fun animeExpo2025(): ArtistEntry? {
+            if (!animeExpo2025.isCompleted) {
+                animeExpo2025.complete(dao.getEntry(DataYear.ANIME_EXPO_2025, artistId)?.artist)
+            }
+            return animeExpo2025.getCompleted()
+        }
+
+        private suspend fun animeNyc2024(): ArtistEntry? {
+            if (!animeNyc2024.isCompleted) {
+                animeNyc2024.complete(dao.getEntry(DataYear.ANIME_NYC_2024, artistId)?.artist)
+            }
+            return animeNyc2024.getCompleted()
+        }
+
+        private suspend fun animeNyc2025(): ArtistEntry? {
+            if (!animeNyc2025.isCompleted) {
+                animeNyc2025.complete(dao.getEntry(DataYear.ANIME_NYC_2025, artistId)?.artist)
+            }
+            return animeNyc2025.getCompleted()
+        }
+
+        private inline fun List<String>?.ifNullOrEmpty(defaultValue: () -> List<String>?) =
+            if (this.isNullOrEmpty()) defaultValue() else this
+
+        private suspend fun cascadeLists(value: ArtistEntry.() -> List<String>): List<String> =
+            // In order of data quality
+            animeExpo2025()?.value()
+                .ifNullOrEmpty { animeExpo2024()?.value() }
+                .ifNullOrEmpty { animeNyc2025()?.value() }
+                .ifNullOrEmpty { animeNyc2024()?.value() }
+                .ifNullOrEmpty { animeExpo2023()?.value() }
+                .orEmpty()
+
+        private suspend fun cascadeString(value: ArtistEntry.() -> String?): String? =
+            // In order of data quality
+            animeExpo2025()?.value()?.takeIf { it.isNotBlank() }
+                ?.ifEmpty { animeExpo2024()?.value()?.takeIf { it.isNotBlank() } }
+                ?.ifEmpty { animeNyc2025()?.value()?.takeIf { it.isNotBlank() } }
+                ?.ifEmpty { animeNyc2024()?.value()?.takeIf { it.isNotBlank() } }
+                ?.ifEmpty { animeExpo2023()?.value()?.takeIf { it.isNotBlank() } }
+
+        suspend fun getData() = PreviousYearData(
+            artistId = artistId,
+            name = cascadeString { name },
+            summary = cascadeString { summary },
+            links = cascadeLists { links },
+            storeLinks = cascadeLists { storeLinks },
+            seriesInferred = cascadeLists { seriesConfirmed.ifEmpty { seriesInferred } },
+            merchInferred = cascadeLists { merchConfirmed.ifEmpty { merchInferred } },
+        )
     }
 }

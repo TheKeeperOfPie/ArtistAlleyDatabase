@@ -54,18 +54,18 @@ class ArtistFormViewModel(
     ) { ArtistFormScreen.State.Progress.LOADING }
     private val artist =
         savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>(Json, "artist", null)
-    private val previousYearEntry =
+    private val previousYearData =
         artist.mapLatestNotNull { it?.id?.let(Uuid::parseOrNull) }
             .mapLatest {
                 // These are used when merging, wait for them to be available before offering merge
                 tagAutocomplete.seriesById.first()
                 tagAutocomplete.merchById.first()
-                artistInference.getArtistForMerge(it)
+                artistInference.getPreviousYearData(it)
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
     val state = ArtistFormScreen.State(
         initialArtist = artist,
-        previousYearEntry = previousYearEntry,
+        previousYearData = previousYearData,
         progress = progress,
         formState = savedStateHandle.saveable(
             key = "formState",
@@ -128,7 +128,7 @@ class ArtistFormViewModel(
 
     fun onConfirmMerge(fieldState: Map<ArtistFormScreen.ArtistField, Boolean>) {
         val artist = artist.value ?: return
-        val previousYearEntry = this@ArtistFormViewModel.previousYearEntry.value ?: return
+        val previousYearData = previousYearData.value ?: return
         val seriesById =
             tagAutocomplete.seriesById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
                 ?: return
@@ -139,21 +139,19 @@ class ArtistFormViewModel(
         val formEntry = state.captureDatabaseEntry(artist).second
         val entryToMerge = formEntry
             .copy(
-                summary = previousYearEntry.summary.takeIf {
+                summary = previousYearData.summary.takeIf {
                     fieldState[ArtistFormScreen.ArtistField.SUMMARY] ?: false
                 },
-                links = previousYearEntry.links.takeIf {
+                links = previousYearData.links.takeIf {
                     fieldState[ArtistFormScreen.ArtistField.LINKS] ?: false
                 }.orEmpty(),
-                storeLinks = previousYearEntry.storeLinks.takeIf {
+                storeLinks = previousYearData.storeLinks.takeIf {
                     fieldState[ArtistFormScreen.ArtistField.STORE_LINKS] ?: false
                 }.orEmpty(),
-                seriesInferred = previousYearEntry.seriesConfirmed
-                    .ifEmpty { previousYearEntry.seriesInferred }
+                seriesInferred = previousYearData.seriesInferred
                     .takeIf { fieldState[ArtistFormScreen.ArtistField.SERIES] ?: false }
                     .orEmpty(),
-                merchInferred = previousYearEntry.merchConfirmed
-                    .ifEmpty { previousYearEntry.merchInferred }
+                merchInferred = previousYearData.merchInferred
                     .takeIf { fieldState[ArtistFormScreen.ArtistField.MERCH] ?: false }
                     .orEmpty(),
             )

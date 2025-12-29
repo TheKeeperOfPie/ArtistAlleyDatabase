@@ -867,6 +867,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         }
     }
 
+    // Copied from ArtistInference since it isn't accessible here
     private class ArtistInferenceProvider(database: BuildLogicDatabase, artistId: String) {
         private val animeExpo2023 by lazy {
             database.artistEntry2023Queries.getEntry(artistId).executeAsOneOrNull()
