@@ -37,6 +37,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,7 +46,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
@@ -58,6 +61,12 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_act
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_submit_private_key
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_action
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_prompt
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_thanks_subtitle
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_thanks_title
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_update_action_edit
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_update_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_error_saving_bad_fields
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_notes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_action_confirm
@@ -74,6 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.ErrorState
+import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -122,6 +132,7 @@ object ArtistFormScreen {
             onClickDone = viewModel::onClickDone,
             onConfirmMerge = viewModel::onConfirmMerge,
             onSubmitPrivateKey = viewModel::onSubmitPrivateKey,
+            onClickEditAgain = viewModel::onClickEditAgain,
         )
     }
 
@@ -136,6 +147,7 @@ object ArtistFormScreen {
         onClickDone: () -> Unit,
         onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
         onSubmitPrivateKey: (String) -> Unit,
+        onClickEditAgain: () -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
@@ -229,6 +241,7 @@ object ArtistFormScreen {
                         )
                     }
                     State.Progress.BAD_AUTH -> PrivateKeyPrompt(onSubmitPrivateKey)
+                    State.Progress.DONE -> DonePrompt(dataYear, onClickEditAgain)
                 }
             }
         }
@@ -367,7 +380,7 @@ object ArtistFormScreen {
 
     @Stable
     @Composable
-    fun rememberErrorState(state: State.FormState): ErrorState {
+    private fun rememberErrorState(state: State.FormState): ErrorState {
         val boothErrorMessage by rememberBoothValidator(state.info.booth)
         val linksErrorMessage by rememberLinkValidator(state.links.stateLinks)
         val storeLinksErrorMessage by rememberLinkValidator(state.links.stateStoreLinks)
@@ -462,7 +475,7 @@ object ArtistFormScreen {
     }
 
     @Composable
-    fun PreviousYearPrompt(onClickMerge: () -> Unit) {
+    private fun PreviousYearPrompt(onClickMerge: () -> Unit) {
         OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -476,6 +489,70 @@ object ArtistFormScreen {
                 )
                 FilledTonalButton(onClick = onClickMerge) {
                     Text(stringResource(Res.string.alley_form_previous_year_action_confirm))
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun DonePrompt(dataYear: DataYear, onClickEditAgain: () -> Unit) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            OutlinedCard(modifier = Modifier.widthIn(max = 600.dp).padding(16.dp)) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.alley_form_done_thanks_title),
+                        style = MaterialTheme.typography.titleLargeEmphasized,
+                    )
+                    Text(
+                        text = stringResource(
+                            Res.string.alley_form_done_thanks_subtitle,
+                            stringResource(dataYear.shortName)
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        text = stringResource(Res.string.alley_form_done_add_to_calendar_prompt),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                    )
+
+                    val conventionName = stringResource(dataYear.fullName)
+                    val encryptedFormLink by produceState<String?>(null) {
+                        value = FormUtils.generateEncryptedFormLink()
+                    }
+                    val uriHandler = LocalUriHandler.current
+                    FilledTonalButton(
+                        enabled = encryptedFormLink != null,
+                        onClick = {
+                            val link = encryptedFormLink ?: return@FilledTonalButton
+                            uriHandler.openUri(
+                                FormUtils.generateAddToCalendarLink(
+                                    dataYear = dataYear,
+                                    conventionName = conventionName,
+                                    encryptedFormLink = link,
+                                )
+                            )
+                        },
+                    ) {
+                        Text(stringResource(Res.string.alley_form_done_add_to_calendar_action))
+                    }
+
+                    Text(
+                        text = stringResource(Res.string.alley_form_done_update_prompt),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                    FilledTonalButton(onClick = onClickEditAgain) {
+                        Text(stringResource(Res.string.alley_form_done_update_action_edit))
+                    }
                 }
             }
         }
@@ -578,7 +655,7 @@ object ArtistFormScreen {
 
         @Serializable
         enum class Progress {
-            LOADING, LOADED, BAD_AUTH,
+            LOADING, LOADED, BAD_AUTH, DONE,
         }
 
         @Stable

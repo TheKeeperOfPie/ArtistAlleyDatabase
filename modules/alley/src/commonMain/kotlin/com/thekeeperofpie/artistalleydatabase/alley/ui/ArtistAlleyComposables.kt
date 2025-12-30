@@ -9,13 +9,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BasicTooltipDefaults
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.MutatePriority
-import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -64,7 +60,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TooltipState
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
@@ -78,7 +73,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -127,6 +121,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayT
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.utils.start
+import com.thekeeperofpie.artistalleydatabase.alley.utils.timeZone
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -142,24 +138,14 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMayb
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeout
-import kotlinx.datetime.FixedOffsetTimeZone
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.atStartOfDayIn
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.milliseconds
 import artistalleydatabase.modules.entry.generated.resources.Res as EntryRes
 
 @Composable
@@ -531,12 +517,6 @@ class DataYearHeaderState(
 }
 
 private val UPCOMING_PROMPT_DURATION = 15.days
-
-private val DataYear.Dates.start
-    get() = LocalDate(year = year, month = month, day = startDay)
-
-private val DataYear.Dates.timeZone
-    get() = FixedOffsetTimeZone(UtcOffset(hours = timeZoneOffsetHours))
 
 @Composable
 fun DataYearHeader(

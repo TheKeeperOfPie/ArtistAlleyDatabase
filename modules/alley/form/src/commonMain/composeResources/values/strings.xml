@@ -17,4 +17,11 @@
     <string name="alley_form_previous_year_prompt">Data from a previous year is available, would you like to autofill that as a starting point?</string>
     <string name="alley_form_previous_year_action_confirm">Yes</string>
     <string name="alley_form_previous_year_select_all">Select all</string>
+
+    <string name="alley_form_done_thanks_title">Thanks!</string>
+    <string name="alley_form_done_thanks_subtitle">Your submission helps to make %1$s better for everyone</string>
+    <string name="alley_form_done_add_to_calendar_prompt">Return closer to con to upload your catalog or add stamp rallies. Here's a reminder 30 days before.</string>
+    <string name="alley_form_done_add_to_calendar_action">Add to Google calendar</string>
+    <string name="alley_form_done_update_prompt">To update your data at any time, open your access link again.</string>
+    <string name="alley_form_done_update_action_edit">Edit your response</string>
 </resources>

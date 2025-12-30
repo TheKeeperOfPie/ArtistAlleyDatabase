@@ -6,4 +6,5 @@ object AlleyUtils {
 
     const val primaryContactDiscordUsername = BuildKonfig.authorTwoUsername
     const val siteUrl = BuildKonfig.siteUrl
+    const val formUrl = BuildKonfig.formUrl
 }

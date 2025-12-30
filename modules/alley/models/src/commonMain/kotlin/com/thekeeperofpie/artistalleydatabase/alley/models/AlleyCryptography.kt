@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import dev.whyoleg.cryptography.CryptographyProvider
+import dev.whyoleg.cryptography.algorithms.AES
 import dev.whyoleg.cryptography.algorithms.EC
 import dev.whyoleg.cryptography.algorithms.ECDSA
 import dev.whyoleg.cryptography.algorithms.RSA
@@ -14,6 +15,8 @@ import kotlinx.serialization.json.Json
 object AlleyCryptography {
 
     const val ACCESS_KEY_PARAM = "accessKey"
+    const val ACCESS_KEY_ENCRYPTED_PARAM = "accessKeyEncrypted"
+    const val ENCRYPTION_KEY = "encryptionKey"
     const val SIGNATURE_HEADER_KEY = "X-CustomSignature"
 
     suspend fun generate(): AlleyCryptographyKeys {
@@ -96,5 +99,26 @@ object AlleyCryptography {
             .decryptor()
             // TODO: Figure out why this is quoted
             .decrypt(payload.removeSurrounding("\"").hexToByteString())
+            .decodeToString()
+
+    suspend fun generateSymmetricEncryptionKey(): String {
+        val aesGcm = CryptographyProvider.Default.get(AES.GCM)
+        return aesGcm.keyGenerator().generateKey().encodeToByteString(AES.Key.Format.RAW)
+            .toHexString()
+    }
+
+    suspend fun symmetricEncrypt(key: String, payload: String): String =
+        CryptographyProvider.Default.get(AES.GCM).keyDecoder()
+            .decodeFromByteString(AES.Key.Format.RAW, key.hexToByteString())
+            .cipher()
+            .encrypt(payload.encodeToByteString())
+            .toHexString()
+
+    suspend fun symmetricDecrypt(key: String, payload: String): String =
+        CryptographyProvider.Default.get(AES.GCM)
+            .keyDecoder()
+            .decodeFromByteString(AES.Key.Format.RAW, key.hexToByteString())
+            .cipher()
+            .decrypt(payload.hexToByteString())
             .decodeToString()
 }

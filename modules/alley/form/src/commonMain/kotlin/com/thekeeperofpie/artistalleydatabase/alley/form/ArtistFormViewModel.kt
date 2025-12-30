@@ -169,6 +169,11 @@ class ArtistFormViewModel(
         artistJob.launch()
     }
 
+    fun onClickEditAgain() {
+        progress.value = ArtistFormScreen.State.Progress.LOADING
+        artistJob.launch()
+    }
+
     private suspend fun save(data: CapturedState): BackendFormRequest.ArtistSave.Response =
         // TODO: Image support
         formDatabase.saveArtist(
@@ -176,7 +181,9 @@ class ArtistFormViewModel(
             before = artist.value!!,
             after = data.artist,
             formNotes = data.formNotes,
-        )
+        ).also {
+            progress.value = ArtistFormScreen.State.Progress.DONE
+        }
 
     data class CapturedState(
         val images: List<EditImage>,
