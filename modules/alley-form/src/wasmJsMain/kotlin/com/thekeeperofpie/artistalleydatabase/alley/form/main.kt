@@ -46,18 +46,10 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.WebResourcesConfiguration
-import org.w3c.dom.events.Event
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
-        DisposableEffect(Unit) {
-            val listener: (Event) -> Unit = { it.preventDefault() }
-            window.addEventListener("beforeunload", listener)
-            onDispose {
-                window.removeEventListener("beforeunload", listener)
-            }
-        }
         SideEffect {
             WebResourcesConfiguration.resourcePathMapping { "${window.location.origin}/$it" }
         }

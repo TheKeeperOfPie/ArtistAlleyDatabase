@@ -106,7 +106,7 @@ object ArtistEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
-        onClickDebugForm: () -> Unit,
+        onClickDebugForm: (formLink: String) -> Unit,
         viewModel: ArtistEditViewModel = viewModel {
             graph.artistEditViewModelFactory.create(
                 dataYear = dataYear,
@@ -161,7 +161,7 @@ object ArtistEditScreen {
         onClickHistory: () -> Unit,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
-        onClickDebugForm: () -> Unit,
+        onClickDebugForm: (formLink: String) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
@@ -350,7 +350,7 @@ object ArtistEditScreen {
         formLink: () -> String?,
         onDismiss: () -> Unit,
         onClickGenerate: () -> Unit,
-        onClickDebugForm: () -> Unit,
+        onClickDebugForm: (formLink: String) -> Unit,
     ) {
         NavigationBackHandler(
             state = rememberNavigationEventState(NavigationEventInfo.None),
@@ -381,14 +381,14 @@ object ArtistEditScreen {
                                     formLink.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
                                 FilledTonalButton(onClick = {
                                     ArtistFormAccessKey.setKey(key)
-                                    onClickDebugForm()
+                                    onClickDebugForm(formLink)
                                     onDismiss()
                                 }) {
                                     Text("Open form")
                                 }
                                 FilledTonalButton(onClick = {
                                     ArtistFormAccessKey.setKey(key.dropLast(10))
-                                    onClickDebugForm()
+                                    onClickDebugForm(formLink)
                                     onDismiss()
                                 }) {
                                     Text("Open broken form")

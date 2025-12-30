@@ -69,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
@@ -107,6 +108,7 @@ object ArtistFormScreen {
         onClickBack: (force: Boolean) -> Unit,
         viewModel: ArtistFormViewModel,
     ) {
+        PreventUnloadEffect()
         LaunchedEffect(viewModel) {
             viewModel.initialize()
         }

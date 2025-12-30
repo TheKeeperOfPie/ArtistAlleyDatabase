@@ -594,6 +594,7 @@ fun <T> MultiTextSection(
                 item = prediction,
                 fieldFocusRequester = state.focusRequester,
                 focusRequester = dropdownFocusRequester,
+                isFocused = { state.isFocused },
                 modifier = Modifier.onPreviewKeyEvent {
                     if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                     if (it.isTabKeyDownOrTyped) {
@@ -1088,6 +1089,7 @@ private fun <T> EntryAutocompleteDropdown(
     onPredictionChosen: (T) -> Unit,
     fieldFocusRequester: FocusRequester,
     focusRequester: FocusRequester,
+    isFocused: () -> Boolean,
     modifier: Modifier = Modifier,
     item: @Composable (index: Int, T) -> Unit,
     textField: @Composable ExposedDropdownMenuBoxScope.() -> Unit,
@@ -1102,8 +1104,11 @@ private fun <T> EntryAutocompleteDropdown(
         if (showPredictions()) {
             val predictions = predictions()
             if (predictions.isNotEmpty()) {
-                LaunchedEffect(text.text, predictions) {
-                    onExpandedChange(true)
+                val isFocused = isFocused()
+                LaunchedEffect(text.text, predictions, isFocused) {
+                    if (isFocused) {
+                        onExpandedChange(true)
+                    }
                 }
                 val focusRequesters = remember(focusRequester, predictions.size) {
                     listOf(focusRequester) + (0 until predictions.size - 1).map { FocusRequester() }

@@ -105,7 +105,11 @@ private fun Content(graph: ArtistAlleyEditGraph) {
             LocalWindowConfiguration provides windowConfiguration,
         ) {
             val navStack = rememberArtistAlleyEditTopLevelStacks()
-            ArtistAlleyEditApp(graph = graph, navStack = navStack)
+            ArtistAlleyEditApp(
+                graph = graph,
+                navStack = navStack,
+                onDebugOpenForm = { window.open(it, "_self") },
+            )
 
             val scope = rememberCoroutineScope()
             val browserInput = remember(scope, navStack) { BrowserInput(scope, navStack) }

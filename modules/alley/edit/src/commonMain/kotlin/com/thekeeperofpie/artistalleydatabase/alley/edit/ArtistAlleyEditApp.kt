@@ -49,7 +49,7 @@ import org.jetbrains.compose.resources.stringResource
 fun ArtistAlleyEditApp(
     graph: ArtistAlleyEditGraph,
     navStack: ArtistAlleyEditTopLevelStacks = rememberArtistAlleyEditTopLevelStacks(),
-    onOpenForm: () -> Unit = {},
+    onDebugOpenForm: (formLink: String) -> Unit = {},
 ) {
     CompositionLocalProvider(LocalNavigationController provides remember {
         object : NavigationController {
@@ -89,7 +89,7 @@ fun ArtistAlleyEditApp(
                     graph = graph,
                     navStack = navStack,
                     onClickBack = onClickBack,
-                    onOpenForm = onOpenForm,
+                    onDebugOpenForm = onDebugOpenForm,
                 )
 
                 val decoratedNavEntries = rememberDecoratedNavEntries(navStack, entryProvider)
@@ -136,7 +136,7 @@ private fun entryProvider(
     graph: ArtistAlleyEditGraph,
     navStack: ArtistAlleyEditTopLevelStacks,
     onClickBack: (force: Boolean) -> Unit,
-    onOpenForm: () -> Unit,
+    onDebugOpenForm: (formLink: String) -> Unit,
 ) = entryProvider<NavKey> {
     sharedElementEntry<AlleyEditDestination.Home> {
         ArtistListScreen(
@@ -194,7 +194,7 @@ private fun entryProvider(
                     )
                 )
             },
-            onClickDebugForm = onOpenForm,
+            onClickDebugForm = onDebugOpenForm,
         )
     }
     sharedElementEntry<AlleyEditDestination.ArtistFormMerge> { route ->

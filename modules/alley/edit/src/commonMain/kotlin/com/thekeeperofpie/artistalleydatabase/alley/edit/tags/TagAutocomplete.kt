@@ -8,7 +8,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -43,8 +42,8 @@ class TagAutocomplete(
                     { it.synonyms.any { it.contains(query, ignoreCase = true) } },
                 )
             }
-        }.flowOn(dispatchers.io)
-    }
+        }
+    }.flowOn(dispatchers.io)
 
     fun merchPredictions(query: String) =
         merchById

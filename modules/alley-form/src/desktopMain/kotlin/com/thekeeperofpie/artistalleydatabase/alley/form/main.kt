@@ -126,7 +126,7 @@ fun main() {
                         ArtistAlleyEditApp(
                             graph = graph,
                             navStack = navStack,
-                            onOpenForm = { showForm = true },
+                            onDebugOpenForm = { showForm = true },
                         )
 
                         // Simulates opening the form app in a different browser tab
