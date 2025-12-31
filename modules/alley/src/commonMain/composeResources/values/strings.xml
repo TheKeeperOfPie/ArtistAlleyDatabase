@@ -92,6 +92,16 @@
     <string name="alley_open_rallies">Open stamp rallies</string>
     <string name="alley_open_year">Open %1$d</string>
 
+    <string name="alley_artist_verification_action_is_this_you">Is this you?</string>
+    <string name="alley_artist_verification_action_close">Close</string>
+    <string name="alley_artist_verification_action_send_dm">Close</string>
+    <string name="alley_artist_verification_prompt_intro">Artists must verify their identity using a publicly associated social media profile. Please DM %1$s for an access link to update your data.</string>
+    <string name="alley_artist_verification_prompt_catalog">Closer to con, this will include the ability to upload and tag your catalog, so that attendees can see what you'll be selling.</string>
+    <string name="alley_artist_verification_prompt_dm_on_bluesky">DM on Bluesky</string>
+    <string name="alley_artist_verification_prompt_dm_on_instagram">DM on Instagram</string>
+    <string name="alley_artist_verification_prompt_dm_on_x">DM on X (Twitter)</string>
+    <string name="alley_artist_verification_prompt_copy_discord_username">Copy Discord username</string>
+
     <string name="alley_browse_tab_series">Series</string>
     <string name="alley_browse_tab_merch">Merch</string>
     <string name="alley_stamp_rally_total_cost">$%1$d</string>

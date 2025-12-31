@@ -137,6 +137,7 @@ CREATE TABLE
         editorNotes TEXT,
         lastEditor TEXT,
         lastEditTime TEXT AS Instant,
+        verifiedArtist INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
 

@@ -18,3 +18,8 @@ ORDER BY lastEditTime DESC;
 insertHistory:
 INSERT INTO artistEntryAnimeExpo2026History
 VALUES ?;
+
+markArtistHasSubmittedForm:
+UPDATE artistEntryAnimeExpo2026
+SET verifiedArtist = 1
+WHERE id = :artistId;

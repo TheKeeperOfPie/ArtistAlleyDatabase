@@ -29,6 +29,7 @@ interface ArtistDatabaseEntry {
     val editorNotes: String?
     val lastEditor: String?
     val lastEditTime: Instant?
+    val verifiedArtist: Boolean
 
     @Serializable
     data class Impl(
@@ -53,6 +54,7 @@ interface ArtistDatabaseEntry {
         override val editorNotes: String?,
         override val lastEditor: String?,
         override val lastEditTime: Instant?,
+        override val verifiedArtist: Boolean,
     ) : ArtistDatabaseEntry
 
     companion object {
@@ -102,6 +104,7 @@ interface ArtistDatabaseEntry {
             editorNotes = null,
             lastEditor = null,
             lastEditTime = null,
+            verifiedArtist = false,
         )
     }
 }

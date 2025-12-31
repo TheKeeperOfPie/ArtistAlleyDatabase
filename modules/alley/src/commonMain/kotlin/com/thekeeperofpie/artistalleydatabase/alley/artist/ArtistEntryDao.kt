@@ -358,6 +358,7 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             lastEditTime = lastEditTime,
+            verifiedArtist = verifiedArtist,
         )
     ),
     userEntry = ArtistUserEntry(

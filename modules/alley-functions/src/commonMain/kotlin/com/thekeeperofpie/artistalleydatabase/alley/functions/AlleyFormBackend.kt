@@ -181,6 +181,9 @@ internal object AlleyFormBackend {
                 timestamp = Clock.System.now(),
             )
         )
+        Databases.editDatabase(context)
+            .artistEntryAnimeExpo2026Queries
+            .markArtistHasSubmittedForm(artistId.toString())
         return BackendFormRequest.ArtistSave.Response.Success
     }
 

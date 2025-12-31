@@ -31,6 +31,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 editorNotes = null,
                 lastEditor = null,
                 lastEditTime = null,
+                verifiedArtist = false,
             )
         val artist = ArtistWithUserData(
             artist = ArtistEntry(databaseEntry),
