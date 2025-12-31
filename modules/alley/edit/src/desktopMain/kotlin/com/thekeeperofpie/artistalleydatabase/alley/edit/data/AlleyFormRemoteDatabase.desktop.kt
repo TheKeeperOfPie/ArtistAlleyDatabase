@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -15,11 +16,60 @@ import kotlin.uuid.Uuid
 actual class AlleyFormRemoteDatabase(
     private val editDatabase: AlleyEditRemoteDatabase,
 ) {
-    actual suspend fun loadArtist(dataYear: DataYear): ArtistDatabaseEntry.Impl? {
+    actual suspend fun loadArtist(dataYear: DataYear): BackendFormRequest.Artist.Response? {
         val request = BackendFormRequest.Artist(dataYear)
         val artistId = assertSignatureAndGetArtistId(request) ?: return null
-        return editDatabase.loadArtist(dataYear, artistId)
+        val artist = editDatabase.loadArtist(dataYear, artistId)
             ?.copy(editorNotes = null, lastEditor = null, lastEditTime = null)
+            ?: return null
+        val formDiff = editDatabase.artistFormQueue[artistId]
+            ?.let {
+                val before = it.before
+                val after = it.after
+                ArtistEntryDiff(
+                    booth = after.booth.orEmpty()
+                        .takeIf { it != before.booth.orEmpty() },
+                    name = after.name.orEmpty()
+                        .takeIf { it != before.name.orEmpty() },
+                    summary = after.summary.orEmpty()
+                        .takeIf { it != before.summary.orEmpty() },
+                    notes = after.notes.orEmpty()
+                        .takeIf { it != before.notes.orEmpty() },
+                    links = ArtistEntryDiff.diffList(before.links, after.links),
+                    storeLinks = ArtistEntryDiff.diffList(
+                        before.storeLinks,
+                        after.storeLinks
+                    ),
+                    catalogLinks = ArtistEntryDiff.diffList(
+                        before.catalogLinks,
+                        after.catalogLinks
+                    ),
+                    commissions = ArtistEntryDiff.diffList(
+                        before.commissions,
+                        after.commissions
+                    ),
+                    seriesInferred = ArtistEntryDiff.diffList(
+                        before.seriesInferred,
+                        after.seriesInferred
+                    ),
+                    seriesConfirmed = ArtistEntryDiff.diffList(
+                        before.seriesConfirmed,
+                        after.seriesConfirmed
+                    ),
+                    merchInferred = ArtistEntryDiff.diffList(
+                        before.merchInferred,
+                        after.merchInferred
+                    ),
+                    merchConfirmed = ArtistEntryDiff.diffList(
+                        before.merchConfirmed,
+                        after.merchConfirmed
+                    ),
+                    formNotes = it.formNotes.orEmpty(),
+                    timestamp = it.timestamp,
+                )
+            }
+
+        return BackendFormRequest.Artist.Response(artist, formDiff)
     }
 
     actual suspend fun saveArtist(

@@ -1,14 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
-import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.io.bytestring.hexToByteString
 import kotlinx.serialization.json.Json
@@ -119,25 +116,18 @@ internal object AlleyFormBackend {
         context: EventContext,
         request: BackendFormRequest.Artist,
         artistId: Uuid,
-    ): ArtistDatabaseEntry.Impl? =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
-                .artistEntryAnimeExpo2026Queries
-                .getArtist(artistId.toString())
-                .awaitAsOneOrNull()
-                ?.toArtistDatabaseEntry()
-                ?.copy(
-                    editorNotes = null,
-                    lastEditor = null,
-                    lastEditTime = null
-                ) // Strip identifying info
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> null // TODO: Return legacy years?
-        }
+    ): BackendFormRequest.Artist.Response? {
+        val artist = BackendUtils.loadArtist(context, request.dataYear, artistId)
+            ?.copy(
+                editorNotes = null,
+                lastEditor = null,
+                lastEditTime = null
+            ) // Strip identifying info
+            ?: return null
+
+        val formDiff = BackendUtils.loadFormDiff(context, request.dataYear, artistId)
+        return BackendFormRequest.Artist.Response(artist = artist, formDiff = formDiff)
+    }
 
     private suspend fun saveArtist(
         context: EventContext,

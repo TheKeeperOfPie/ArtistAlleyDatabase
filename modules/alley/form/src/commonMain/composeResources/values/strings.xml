@@ -17,6 +17,7 @@
     <string name="alley_form_previous_year_prompt">Data from a previous year is available, would you like to autofill that as a starting point?</string>
     <string name="alley_form_previous_year_action_confirm">Yes</string>
     <string name="alley_form_previous_year_select_all">Select all</string>
+    <string name="alley_form_last_response_restored">Last response restored from %1$s</string>
 
     <string name="alley_form_done_thanks_title">Thanks!</string>
     <string name="alley_form_done_thanks_subtitle">Your submission helps to make %1$s better for everyone</string>

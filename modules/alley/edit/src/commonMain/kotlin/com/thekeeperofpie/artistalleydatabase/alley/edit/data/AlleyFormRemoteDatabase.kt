@@ -6,7 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 expect class AlleyFormRemoteDatabase {
 
-    suspend fun loadArtist(dataYear: DataYear): ArtistDatabaseEntry.Impl?
+    suspend fun loadArtist(dataYear: DataYear): BackendFormRequest.Artist.Response?
 
     suspend fun saveArtist(
         dataYear: DataYear,

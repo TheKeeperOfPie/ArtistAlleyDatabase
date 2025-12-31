@@ -29,7 +29,7 @@ actual class AlleyFormRemoteDatabase(
 ) {
     actual suspend fun loadArtist(
         dataYear: DataYear,
-    ): ArtistDatabaseEntry.Impl? = withContext(dispatchers.io) {
+    ): BackendFormRequest.Artist.Response? = withContext(dispatchers.io) {
         val accessKey = ArtistFormAccessKey.key ?: return@withContext null
         sendRequest(BackendFormRequest.Artist(dataYear), accessKey)
     }

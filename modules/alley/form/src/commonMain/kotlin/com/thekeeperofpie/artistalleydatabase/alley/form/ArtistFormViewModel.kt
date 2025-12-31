@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKe
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -34,6 +36,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @AssistedInject
@@ -63,6 +66,7 @@ class ArtistFormViewModel(
                 artistInference.getPreviousYearData(it)
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
+    private val lastResponseTimestamp = savedStateHandle.getMutableStateFlow<Instant?>("lastResponseTimestamp",  null)
     val state = ArtistFormScreen.State(
         initialArtist = artist,
         previousYearData = previousYearData,
@@ -73,6 +77,7 @@ class ArtistFormViewModel(
         ) {
             ArtistFormScreen.State.FormState()
         },
+        lastResponseTimestamp = lastResponseTimestamp,
         saveTaskState = saveTask.state,
     )
 
@@ -88,18 +93,55 @@ class ArtistFormViewModel(
 
     private suspend fun loadArtistInfo() = try {
         withContext(PlatformDispatchers.IO) {
-            val artist = formDatabase.loadArtist(dataYear)
-            if (artist == null) {
+            val response = formDatabase.loadArtist(dataYear)
+            if (response == null) {
                 progress.value = ArtistFormScreen.State.Progress.BAD_AUTH
                 return@withContext
             }
-            this@ArtistFormViewModel.artist.value = artist
+            val baseArtist = response.artist
+            this@ArtistFormViewModel.artist.value = baseArtist
+
+            fun applyDiff(
+                base: List<String>,
+                diff: ArtistEntryDiff.Diff?,
+            ): List<String> {
+                val base = base.toMutableSet()
+                base.removeAll(diff?.removed.orEmpty().toSet())
+                base.addAll(diff?.added.orEmpty().toSet())
+                return base.toMutableList()
+            }
+
+            val formDiff = response.formDiff
+            val artist = if (formDiff == null) {
+                baseArtist
+            } else {
+                baseArtist.copy(
+                    booth = formDiff.booth ?: baseArtist.booth,
+                    name = formDiff.name ?: baseArtist.name,
+                    summary = formDiff.summary ?: baseArtist.summary,
+                    links = applyDiff(baseArtist.links, formDiff.links),
+                    storeLinks = applyDiff(baseArtist.storeLinks, formDiff.storeLinks),
+                    catalogLinks = applyDiff(baseArtist.catalogLinks, formDiff.catalogLinks),
+                    notes = formDiff.notes ?: baseArtist.notes,
+                    commissions = applyDiff(baseArtist.commissions, formDiff.commissions),
+                    seriesInferred = applyDiff(baseArtist.seriesInferred, formDiff.seriesInferred),
+                    seriesConfirmed =
+                        applyDiff(baseArtist.seriesConfirmed, formDiff.seriesConfirmed),
+                    merchInferred = applyDiff(baseArtist.merchInferred, formDiff.merchInferred),
+                    merchConfirmed = applyDiff(baseArtist.merchConfirmed, formDiff.merchConfirmed),
+                )
+            }
+
             state.applyDatabaseEntry(
                 artist = artist,
                 seriesById = tagAutocomplete.seriesById.first(),
                 merchById = tagAutocomplete.merchById.first(),
                 mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
             )
+            formDiff?.formNotes?.let {
+                state.formState.formNotes.value.setTextAndPlaceCursorAtEnd(it)
+            }
+            lastResponseTimestamp.value = formDiff?.timestamp
 
             // TODO: Support images?
             progress.value = ArtistFormScreen.State.Progress.LOADED

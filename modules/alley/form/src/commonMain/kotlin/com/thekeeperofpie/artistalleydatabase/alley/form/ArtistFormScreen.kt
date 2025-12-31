@@ -68,6 +68,7 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_don
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_update_action_edit
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_update_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_error_saving_bad_fields
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_last_response_restored
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_notes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_action_confirm
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_prompt
@@ -95,6 +96,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocu
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -108,6 +110,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 import artistalleydatabase.modules.alley.edit.generated.resources.Res as EditRes
 
 object ArtistFormScreen {
@@ -219,10 +222,12 @@ object ArtistFormScreen {
                     State.Progress.LOADED -> {
                         val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                         val previousYearEntry by state.previousYearData.collectAsStateWithLifecycle()
+                        val lastResponseTimestamp by state.lastResponseTimestamp.collectAsStateWithLifecycle()
                         Form(
                             saveTaskState = saveTaskState,
                             formState = state.formState,
                             errorState = errorState,
+                            lastResponseTimestamp = { lastResponseTimestamp },
                             initialArtist = { initialArtist },
                             previousYearData = { previousYearEntry },
                             seriesPredictions = seriesPredictions,
@@ -251,6 +256,7 @@ object ArtistFormScreen {
     private fun Form(
         formState: State.FormState,
         errorState: ErrorState,
+        lastResponseTimestamp: () -> Instant?,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         previousYearData: () -> ArtistInference.PreviousYearData?,
         saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
@@ -296,6 +302,8 @@ object ArtistFormScreen {
                             .width(960.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
+                        LastResponseHeader(lastResponseTimestamp())
+
                         if (previousYearData() != null) {
                             PreviousYearPrompt(onClickMerge = { showMerge = true })
                         }
@@ -347,6 +355,28 @@ object ArtistFormScreen {
                     }
                 }
                 // TODO: Support images?
+            }
+        }
+    }
+
+    @Composable
+    private fun LastResponseHeader(timestamp: Instant?) {
+        if (timestamp != null) {
+            val dateTimeFormatter = LocalDateTimeFormatter.current
+            val dateTimeText = remember(dateTimeFormatter, timestamp) {
+                dateTimeFormatter.formatDateTime(timestamp)
+            }
+
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = stringResource(
+                        Res.string.alley_form_last_response_restored,
+                        dateTimeText,
+                    ),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
             }
         }
     }
@@ -588,6 +618,7 @@ object ArtistFormScreen {
         val previousYearData: StateFlow<ArtistInference.PreviousYearData?>,
         val progress: StateFlow<Progress>,
         val formState: FormState,
+        val lastResponseTimestamp: StateFlow<Instant?>,
         val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
     ) {
         fun applyDatabaseEntry(

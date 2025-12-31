@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models.network
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -16,8 +17,13 @@ sealed interface BackendFormRequest {
     data class Nonce(val timestamp: Instant) : BackendFormRequest, WithResponse<Uuid>
 
     @Serializable
-    data class Artist(val dataYear: DataYear) : BackendFormRequest,
-        WithResponse<ArtistDatabaseEntry.Impl>
+    data class Artist(val dataYear: DataYear) : BackendFormRequest, WithResponse<Artist.Response> {
+        @Serializable
+        data class Response(
+            val artist: ArtistDatabaseEntry.Impl,
+            val formDiff: ArtistEntryDiff?,
+        )
+    }
 
     @Serializable
     data class ArtistSave(
