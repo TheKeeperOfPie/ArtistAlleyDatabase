@@ -154,6 +154,17 @@ actual class AlleyEditRemoteDatabase {
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
         artistsByDataYearAndId[dataYear]?.get(artistId.toString())
 
+    actual suspend fun loadArtistWithFormMetadata(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): BackendRequest.ArtistWithFormMetadata.Response? =
+        artistsByDataYearAndId[dataYear]?.get(artistId.toString())?.let {
+            BackendRequest.ArtistWithFormMetadata.Response(
+                artist = it,
+                hasPendingFormSubmission = artistFormQueue[artistId] != null,
+            )
+        }
+
     actual suspend fun loadArtistHistory(
         dataYear: DataYear,
         artistId: Uuid,
@@ -314,7 +325,12 @@ actual class AlleyEditRemoteDatabase {
     ): BackendRequest.ArtistCommitForm.Response {
         val artistId = Uuid.parse(updated.id)
         if (artistFormQueue[artistId]?.timestamp == formEntryTimestamp) {
-            saveArtist(dataYear = dataYear, initial = initial, updated = updated, formTimestamp = formEntryTimestamp)
+            saveArtist(
+                dataYear = dataYear,
+                initial = initial,
+                updated = updated,
+                formTimestamp = formEntryTimestamp
+            )
             artistFormQueue.remove(artistId)?.let {
                 artistFormHistory += it
             }

@@ -19,8 +19,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -42,6 +45,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,12 +63,15 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description_generated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning_action_open
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
@@ -106,6 +113,7 @@ object ArtistEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
+        onClickMerge: () -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
         viewModel: ArtistEditViewModel = viewModel {
             graph.artistEditViewModelFactory.create(
@@ -122,6 +130,9 @@ object ArtistEditScreen {
             }
         }
         NavigationResultEffect(ArtistHistoryScreen.RESULT_KEY) {
+            viewModel.initialize(force = true)
+        }
+        NavigationResultEffect(ArtistFormMergeScreen.RESULT_KEY) {
             viewModel.initialize(force = true)
         }
         LaunchedEffect(viewModel) {
@@ -146,6 +157,7 @@ object ArtistEditScreen {
                 )
             },
             onClickHistory = onClickHistory,
+            onClickMerge = onClickMerge,
             onClickSave = viewModel::onClickSave,
             onClickDone = viewModel::onClickDone,
             onClickDebugForm = onClickDebugForm,
@@ -165,6 +177,7 @@ object ArtistEditScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
+        onClickMerge: () -> Unit,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
@@ -237,18 +250,23 @@ object ArtistEditScreen {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
                 val form = remember {
                     movableContentOf { modifier: Modifier ->
-                        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
-                        ArtistForm(
-                            initialArtist = { initialArtist },
-                            state = state.artistFormState,
-                            errorState = errorState,
-                            seriesById = seriesById,
-                            seriesPredictions = seriesPredictions,
-                            merchById = merchById,
-                            merchPredictions = merchPredictions,
-                            seriesImage = seriesImage,
-                            modifier = modifier,
-                        )
+                        Column(modifier = modifier) {
+                            val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+                            val hasPendingFormSubmission by state.hasPendingFormSubmission.collectAsStateWithLifecycle()
+                            if (hasPendingFormSubmission) {
+                                PendingFormSubmissionPrompt(onClickMerge)
+                            }
+                            ArtistForm(
+                                initialArtist = { initialArtist },
+                                state = state.artistFormState,
+                                errorState = errorState,
+                                seriesById = seriesById,
+                                seriesPredictions = seriesPredictions,
+                                merchById = merchById,
+                                merchPredictions = merchPredictions,
+                                seriesImage = seriesImage,
+                            )
+                        }
                     }
                 }
                 if (isExpanded) {
@@ -354,6 +372,30 @@ object ArtistEditScreen {
     }
 
     @Composable
+    private fun PendingFormSubmissionPrompt(onClickMerge: () -> Unit) {
+        OutlinedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color.Yellow,
+                )
+                Text(
+                    text = stringResource(Res.string.alley_edit_artist_edit_pending_form_warning),
+                    modifier = Modifier.weight(1f)
+                )
+                FilledTonalButton(onClick = onClickMerge) {
+                    Text(stringResource(Res.string.alley_edit_artist_edit_pending_form_warning_action_open))
+                }
+            }
+        }
+    }
+
+    @Composable
     private fun FormLinkDialog(
         formLink: () -> String?,
         onDismiss: () -> Unit,
@@ -448,6 +490,7 @@ object ArtistEditScreen {
     class State(
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val artistFormState: ArtistFormState,
+        val hasPendingFormSubmission: StateFlow<Boolean>,
         val formLink: StateFlow<String?>,
         val saveTaskState: TaskState<ArtistSave.Response>,
     )

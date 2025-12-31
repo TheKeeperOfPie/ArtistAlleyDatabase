@@ -47,6 +47,8 @@ class ArtistEditViewModel(
     private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
     private val artist =
         savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>(Json, "artist", null)
+    private val hasPendingFormSubmission =
+        savedStateHandle.getMutableStateFlow("hasPendingFormSubmission", false)
     val state = ArtistEditScreen.State(
         initialArtist = artist,
         artistFormState = savedStateHandle.saveable(
@@ -54,6 +56,7 @@ class ArtistEditViewModel(
             saver = ArtistFormState.Saver,
             init = { ArtistFormState(artistId) },
         ),
+        hasPendingFormSubmission = hasPendingFormSubmission,
         formLink = formLink,
         saveTaskState = saveTask.state,
     )
@@ -71,11 +74,12 @@ class ArtistEditViewModel(
     }
 
     private suspend fun loadArtistInfo() = withContext(PlatformDispatchers.IO) {
-        val artist = database.loadArtist(dataYear, artistId)
-        if (artist == null) {
+        val response = database.loadArtistWithFormMetadata(dataYear, artistId)
+        if (response == null) {
             hasLoaded = true
             return@withContext
         }
+        val artist = response.artist
         this@ArtistEditViewModel.artist.value = artist
         state.artistFormState.applyDatabaseEntry(
             artist = artist,
@@ -83,6 +87,7 @@ class ArtistEditViewModel(
             merchById = tagAutocomplete.merchById.first(),
             mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
         )
+        hasPendingFormSubmission.value = response.hasPendingFormSubmission
 
         val images = database.loadArtistImages(dataYear, artist)
         if (images.isNotEmpty()) {

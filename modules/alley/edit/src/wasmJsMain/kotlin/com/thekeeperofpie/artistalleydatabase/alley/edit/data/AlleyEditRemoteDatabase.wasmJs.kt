@@ -50,6 +50,11 @@ actual class AlleyEditRemoteDatabase(
             sendRequest(BackendRequest.Artist(dataYear, artistId))
         }
 
+    actual suspend fun loadArtistWithFormMetadata(dataYear: DataYear, artistId: Uuid): BackendRequest.ArtistWithFormMetadata.Response? =
+        withContext(dispatchers.io) {
+            sendRequest(BackendRequest.ArtistWithFormMetadata(dataYear, artistId))
+        }
+
     actual suspend fun loadArtistHistory(
         dataYear: DataYear,
         artistId: Uuid,

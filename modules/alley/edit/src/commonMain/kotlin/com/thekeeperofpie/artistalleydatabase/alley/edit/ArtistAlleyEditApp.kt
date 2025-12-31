@@ -186,6 +186,14 @@ private fun entryProvider(
                     )
                 )
             },
+            onClickMerge = {
+                navStack.navigate(
+                    AlleyEditDestination.ArtistFormMerge(
+                        dataYear = route.dataYear,
+                        artistId = route.artistId,
+                    )
+                )
+            },
             onClickHistory = {
                 navStack.navigate(
                     AlleyEditDestination.ArtistHistory(

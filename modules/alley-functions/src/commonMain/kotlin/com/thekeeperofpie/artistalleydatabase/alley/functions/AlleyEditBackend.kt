@@ -53,16 +53,14 @@ object AlleyEditBackend {
                 when (this) {
                     is ArtistSave.Request -> makeResponse(saveArtist(context, this, null))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
+                    is BackendRequest.ArtistWithFormMetadata -> makeResponse(
+                        loadArtistWithFormMetadata(context, this)
+                    )
                     is BackendRequest.ArtistCommitForm -> makeResponse(
-                        commitArtistForm(
-                            context,
-                            this
-                        )
+                        commitArtistForm(context, this)
                     )
                     is BackendRequest.ArtistFormHistory -> makeResponse(
-                        loadArtistFormHistory(
-                            context
-                        )
+                        loadArtistFormHistory(context)
                     )
                     is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
                     is BackendRequest.ArtistWithFormEntry ->
@@ -120,6 +118,34 @@ object AlleyEditBackend {
                 .getArtist(request.artistId.toString())
                 .awaitAsOneOrNull()
                 ?.toArtistDatabaseEntry()
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> null // TODO: Return legacy years?
+        }
+
+    private suspend fun loadArtistWithFormMetadata(
+        context: EventContext,
+        request: BackendRequest.ArtistWithFormMetadata,
+    ): BackendRequest.ArtistWithFormMetadata.Response? =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
+                .artistEntryAnimeExpo2026Queries
+                .getArtist(request.artistId.toString())
+                .awaitAsOneOrNull()
+                ?.toArtistDatabaseEntry()
+                ?.let {
+                    val formEntry = Databases.formDatabase(context)
+                        .artistFormEntryQueries
+                        .getFormEntry(request.dataYear, request.artistId)
+                        .awaitAsOneOrNull()
+                    BackendRequest.ArtistWithFormMetadata.Response(
+                        artist = it,
+                        hasPendingFormSubmission = formEntry != null,
+                    )
+                }
             DataYear.ANIME_EXPO_2023,
             DataYear.ANIME_EXPO_2024,
             DataYear.ANIME_EXPO_2025,

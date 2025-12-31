@@ -19,6 +19,7 @@ import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
     suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl?
+    suspend fun loadArtistWithFormMetadata(dataYear: DataYear, artistId: Uuid): BackendRequest.ArtistWithFormMetadata.Response?
     suspend fun loadArtistHistory(dataYear: DataYear, artistId: Uuid): List<ArtistHistoryEntry>
     suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary>
     suspend fun saveArtist(

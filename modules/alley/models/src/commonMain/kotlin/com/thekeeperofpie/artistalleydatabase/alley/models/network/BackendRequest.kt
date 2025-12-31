@@ -20,8 +20,22 @@ sealed interface BackendRequest {
     interface WithResponse<Response>
 
     @Serializable
-    data class Artist(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,
-        WithResponse<ArtistDatabaseEntry.Impl>
+    data class Artist(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+    ) : BackendRequest, WithResponse<ArtistDatabaseEntry.Impl?>
+
+    @Serializable
+    data class ArtistWithFormMetadata(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+    ) : BackendRequest, WithResponse<ArtistWithFormMetadata.Response?> {
+        @Serializable
+        data class Response(
+            val artist: ArtistDatabaseEntry.Impl,
+            val hasPendingFormSubmission: Boolean,
+        )
+    }
 
     @Serializable
     data object ArtistFormHistory : BackendRequest, WithResponse<List<ArtistFormHistoryEntry>>
@@ -30,8 +44,10 @@ sealed interface BackendRequest {
     data object ArtistFormQueue : BackendRequest, WithResponse<List<ArtistFormQueueEntry>>
 
     @Serializable
-    data class ArtistWithFormEntry(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,
-        WithResponse<ArtistWithFormEntry.Response> {
+    data class ArtistWithFormEntry(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+    ) : BackendRequest, WithResponse<ArtistWithFormEntry.Response> {
         @Serializable
         data class Response(
             val artist: ArtistDatabaseEntry.Impl,
@@ -54,8 +70,10 @@ sealed interface BackendRequest {
         sealed interface Response {
             @Serializable
             data object Success : Response
+
             @Serializable
             data class Outdated(val current: ArtistDatabaseEntry.Impl) : Response
+
             @Serializable
             data class Failed(val errorMessage: String) : Response
         }

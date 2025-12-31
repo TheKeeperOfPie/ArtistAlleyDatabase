@@ -71,6 +71,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -80,6 +82,8 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
 internal object ArtistFormMergeScreen {
+
+    val RESULT_KEY = NavigationResults.Key<Unit>("ArtistFormMergeScreen")
 
     @Composable
     operator fun invoke(
@@ -125,7 +129,9 @@ internal object ArtistFormMergeScreen {
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)
-        LaunchedEffect(saveTaskState) {
+
+        val navigationResults = LocalNavigationResults.current
+        LaunchedEffect(navigationResults, saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .filterNotNull()
                 .collectLatest { (_, result) ->
@@ -140,6 +146,7 @@ internal object ArtistFormMergeScreen {
                         }
                         is BackendRequest.ArtistCommitForm.Response.Success -> {
                             saveTaskState.clearResult()
+                            navigationResults[ArtistFormMergeScreen.RESULT_KEY] = Unit
                             onClickBack(true)
                         }
                     }

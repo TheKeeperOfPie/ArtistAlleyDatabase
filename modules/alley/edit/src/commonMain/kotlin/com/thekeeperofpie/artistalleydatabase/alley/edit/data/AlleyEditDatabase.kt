@@ -50,6 +50,13 @@ class AlleyEditDatabase(
                 ?.artist
                 ?.databaseEntry
 
+    suspend fun loadArtistWithFormMetadata(dataYear: DataYear, artistId: Uuid) =
+        remoteDatabase.loadArtistWithFormMetadata(dataYear, artistId)
+            ?: artistEntryDao.getEntry(dataYear, artistId.toString())
+                ?.artist
+                ?.databaseEntry
+                ?.let { BackendRequest.ArtistWithFormMetadata.Response(it, false) }
+
     suspend fun loadArtistHistory(dataYear: DataYear, artistId: Uuid) =
         remoteDatabase.loadArtistHistory(dataYear, artistId)
 
