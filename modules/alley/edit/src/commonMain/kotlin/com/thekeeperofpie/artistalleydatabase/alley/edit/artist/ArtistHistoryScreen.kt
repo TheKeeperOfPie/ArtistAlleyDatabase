@@ -36,6 +36,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -57,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -88,6 +90,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_refresh_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_return_to_history_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_revert_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_form_timestamp
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_select_all
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_title
 import com.materialkolor.ktx.harmonize
 import com.materialkolor.utils.ColorUtils
@@ -269,6 +273,7 @@ object ArtistHistoryScreen {
                         )
 
                         RevertFieldsList(
+                            initialArtist = initialArtist,
                             fieldState = fieldState,
                             entryWithDiff = activeRevertPairValue.first,
                             rebuiltEntry = activeRevertPairValue.second,
@@ -329,7 +334,12 @@ object ArtistHistoryScreen {
                         .filterNotNull()
                         .mapLatest {
                             withContext(PlatformDispatchers.IO) {
-                                ArtistFormState().applyDatabaseEntry(it, seriesById, merchById)
+                                ArtistFormState().applyDatabaseEntry(
+                                    artist = it,
+                                    seriesById = seriesById,
+                                    merchById = merchById,
+                                    mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
+                                )
                             }
                         }
                         .collectLatest { value = it }
@@ -376,12 +386,14 @@ object ArtistHistoryScreen {
                     entryWithDiff = entry,
                     selected = selectedIndex() == index,
                     onClick = { onSelectedIndexChange(index) },
-                    additionalActions = {
-                        TooltipIconButton(
-                            icon = Icons.AutoMirrored.Default.Undo,
-                            tooltipText = stringResource(Res.string.alley_edit_artist_history_action_revert_tooltip),
-                            onClick = { onRevertSelected(index) },
-                        )
+                    additionalActions = if (index == 0) null else {
+                        {
+                            TooltipIconButton(
+                                icon = Icons.AutoMirrored.Default.Undo,
+                                tooltipText = stringResource(Res.string.alley_edit_artist_history_action_revert_tooltip),
+                                onClick = { onRevertSelected(index) },
+                            )
+                        }
                     },
                 )
             }
@@ -401,6 +413,7 @@ object ArtistHistoryScreen {
                 CardHeader(
                     editor = entry.lastEditor,
                     timestamp = entry.timestamp,
+                    formTimestamp = entry.formTimestamp,
                     additionalActions = additionalActions,
                 )
 
@@ -476,6 +489,7 @@ object ArtistHistoryScreen {
 
     @Composable
     private fun RevertFieldsList(
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         fieldState: FieldState,
         entryWithDiff: ArtistHistoryEntryWithDiff,
         rebuiltEntry: ArtistDatabaseEntry.Impl,
@@ -503,35 +517,82 @@ object ArtistHistoryScreen {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            ArtistField.entries.forEach { field ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                ) {
-                    Checkbox(
-                        checked = fieldState[field],
-                        onCheckedChange = { fieldState[field] = it },
-                    )
-                    Text(stringResource(field.label))
+            val groupState = when {
+                fieldState.map.values.all { it } -> ToggleableState.On
+                fieldState.map.values.any { it } -> ToggleableState.Indeterminate
+                else -> ToggleableState.Off
+            }
 
-                    val fieldText = when (field) {
-                        ArtistField.STATUS -> stringResource(rebuiltEntry.status.title)
-                        ArtistField.BOOTH -> rebuiltEntry.booth
-                        ArtistField.NAME -> rebuiltEntry.name
-                        ArtistField.SUMMARY -> rebuiltEntry.summary
-                        ArtistField.LINKS -> rebuiltEntry.links.joinToString()
-                        ArtistField.STORE_LINKS -> rebuiltEntry.storeLinks.joinToString()
-                        ArtistField.CATALOG_LINKS -> rebuiltEntry.catalogLinks.joinToString()
-                        ArtistField.NOTES -> rebuiltEntry.notes
-                        ArtistField.COMMISSIONS -> rebuiltEntry.commissions.joinToString()
-                        ArtistField.SERIES_INFERRED -> rebuiltEntry.seriesInferred.joinToString()
-                        ArtistField.SERIES_CONFIRMED -> rebuiltEntry.seriesConfirmed.joinToString()
-                        ArtistField.MERCH_INFERRED -> rebuiltEntry.merchInferred.joinToString()
-                        ArtistField.MERCH_CONFIRMED -> rebuiltEntry.merchConfirmed.joinToString()
-                        ArtistField.EDITOR_NOTES -> rebuiltEntry.editorNotes
-                    }.orEmpty()
-                    if (fieldText.isNotBlank()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                TriStateCheckbox(
+                    state = groupState,
+                    onClick = {
+                        val newValue = when (groupState) {
+                            ToggleableState.On -> false
+                            ToggleableState.Off,
+                            ToggleableState.Indeterminate,
+                                -> true
+                        }
+                        fieldState.map.keys.toSet().forEach {
+                            fieldState[it] = newValue
+                        }
+                    },
+                )
+                Text(stringResource(Res.string.alley_edit_artist_history_select_all))
+            }
+
+            val initialArtist = initialArtist()
+            ArtistField.entries.forEach { field ->
+                val fieldText = when (field) {
+                    ArtistField.STATUS -> rebuiltEntry.status
+                        .takeIf { it != initialArtist?.status }
+                        ?.let { stringResource(it.title) }
+                    ArtistField.BOOTH -> rebuiltEntry.booth.takeIf { it != initialArtist?.booth }
+                    ArtistField.NAME -> rebuiltEntry.name.takeIf { it != initialArtist?.name }
+                    ArtistField.SUMMARY -> rebuiltEntry.summary.takeIf { it != initialArtist?.summary }
+                    ArtistField.LINKS -> rebuiltEntry.links.takeIf { it != initialArtist?.links }
+                        ?.joinToString()
+                    ArtistField.STORE_LINKS -> rebuiltEntry.storeLinks
+                        .takeIf { it != initialArtist?.storeLinks }
+                        ?.joinToString()
+                    ArtistField.CATALOG_LINKS -> rebuiltEntry.catalogLinks
+                        .takeIf { it != initialArtist?.catalogLinks }
+                        ?.joinToString()
+                    ArtistField.NOTES -> rebuiltEntry.notes.takeIf { it != initialArtist?.notes }
+                    ArtistField.COMMISSIONS -> rebuiltEntry.commissions
+                        .takeIf { it != initialArtist?.commissions }
+                        ?.joinToString()
+                    ArtistField.SERIES_INFERRED -> rebuiltEntry.seriesInferred
+                        .takeIf { it != initialArtist?.seriesInferred }
+                        ?.joinToString()
+                    ArtistField.SERIES_CONFIRMED -> rebuiltEntry.seriesConfirmed
+                        .takeIf { it != initialArtist?.seriesConfirmed }
+                        ?.joinToString()
+                    ArtistField.MERCH_INFERRED -> rebuiltEntry.merchInferred
+                        .takeIf { it != initialArtist?.merchInferred }
+                        ?.joinToString()
+                    ArtistField.MERCH_CONFIRMED -> rebuiltEntry.merchConfirmed
+                        .takeIf { it != initialArtist?.merchConfirmed }
+                        ?.joinToString()
+                    ArtistField.EDITOR_NOTES -> rebuiltEntry.editorNotes
+                        .takeIf { it != initialArtist?.editorNotes }
+                }
+
+                if (fieldText != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    ) {
+                        Checkbox(
+                            checked = fieldState[field],
+                            onCheckedChange = { fieldState[field] = it },
+                        )
+                        Text(stringResource(field.label))
                         Text(fieldText)
                     }
                 }
@@ -551,6 +612,7 @@ object ArtistHistoryScreen {
     private fun CardHeader(
         editor: String?,
         timestamp: Instant,
+        formTimestamp: Instant?,
         additionalActions: (@Composable () -> Unit)? = null,
     ) {
         Row(
@@ -601,6 +663,16 @@ object ArtistHistoryScreen {
                     text = LocalDateTimeFormatter.current.formatDateTime(timestamp),
                     style = MaterialTheme.typography.labelSmall,
                 )
+
+                if (formTimestamp != null) {
+                    Text(
+                        text = stringResource(
+                            Res.string.alley_edit_artist_history_form_timestamp,
+                            LocalDateTimeFormatter.current.formatDateTime(formTimestamp),
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
             }
 
             additionalActions?.invoke()
@@ -676,7 +748,7 @@ object ArtistHistoryScreen {
     }
 
     @Stable
-    private class FieldState(private val map: SnapshotStateMap<ArtistField, Boolean>) {
+    private class FieldState(val map: SnapshotStateMap<ArtistField, Boolean>) {
         operator fun get(field: ArtistField) = map[field]!!
         operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
 
@@ -709,7 +781,8 @@ object ArtistHistoryScreen {
                 null
             },
             lastEditor = null,
-            timestamp = Clock.System.now()
+            timestamp = Clock.System.now(),
+            formTimestamp = null,
         )
     }
 

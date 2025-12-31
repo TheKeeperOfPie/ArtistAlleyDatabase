@@ -27,9 +27,14 @@ data class ArtistHistoryEntry(
     val editorNotes: String?,
     val lastEditor: String?,
     val timestamp: Instant,
+    val formTimestamp: Instant?,
 ) {
     companion object {
-        fun create(before: ArtistDatabaseEntry?, after: ArtistDatabaseEntry) = ArtistHistoryEntry(
+        fun create(
+            before: ArtistDatabaseEntry?,
+            after: ArtistDatabaseEntry,
+            formTimestamp: Instant?,
+        ) = ArtistHistoryEntry(
             status = after.status.takeIf { it != before?.status },
             booth = after.booth.takeIf { it != before?.booth },
             name = after.name.takeIf { it != before?.name },
@@ -47,6 +52,7 @@ data class ArtistHistoryEntry(
             editorNotes = after.editorNotes.takeIf { it != before?.editorNotes },
             lastEditor = after.lastEditor,
             timestamp = after.lastEditTime ?: Clock.System.now(),
+            formTimestamp = formTimestamp,
         )
 
         fun rebuild(

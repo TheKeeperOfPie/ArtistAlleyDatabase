@@ -151,10 +151,12 @@
     <string name="alley_edit_artist_field_label_list_deleted">- %1$s</string>
 
     <string name="alley_edit_artist_history_title">History for %1$s - %2$s</string>
+    <string name="alley_edit_artist_history_form_timestamp">From artist form submission at %1$s</string>
     <string name="alley_edit_artist_history_action_apply_changes">Apply changes</string>
     <string name="alley_edit_artist_history_action_revert_tooltip">Revert fields\nto this point</string>
     <string name="alley_edit_artist_history_action_return_to_history_tooltip">Return to history</string>
     <string name="alley_edit_artist_history_action_refresh_tooltip">Refresh</string>
+    <string name="alley_edit_artist_history_select_all">Select all</string>
     <string name="alley_edit_paste_link_label">Generic link input</string>
     <string name="alley_edit_paste_link_placeholder">Paste a social/store/etc. link here to automatically place it in the right section</string>
 

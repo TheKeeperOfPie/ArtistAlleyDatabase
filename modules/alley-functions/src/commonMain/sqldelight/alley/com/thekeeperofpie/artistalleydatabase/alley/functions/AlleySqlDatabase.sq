@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
     images TEXT AS List<CatalogImage>,
     editorNotes TEXT,
     lastEditor TEXT,
-    lastEditTime TEXT AS Instant NOT NULL
+    lastEditTime TEXT AS Instant NOT NULL,
+    formTimestamp TEXT AS Instant
 );
 
 CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEntryAnimeExpo2026History (id);

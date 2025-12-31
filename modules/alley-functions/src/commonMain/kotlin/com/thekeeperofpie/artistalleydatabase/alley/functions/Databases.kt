@@ -33,6 +33,7 @@ internal object Databases {
                 commissionsAdapter = ColumnAdapters.listStringAdapter,
                 imagesAdapter = ColumnAdapters.listCatalogImageAdapter,
                 lastEditTimeAdapter = ColumnAdapters.instantAdapter,
+                formTimestampAdapter = ColumnAdapters.instantAdapter,
             ),
             seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
         )

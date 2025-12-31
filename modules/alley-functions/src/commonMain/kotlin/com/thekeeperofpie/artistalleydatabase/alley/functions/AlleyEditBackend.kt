@@ -34,6 +34,7 @@ import org.w3c.fetch.Headers
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
 import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -50,7 +51,7 @@ object AlleyEditBackend {
                 uploadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
             else -> Json.decodeFromString<BackendRequest>(context.request.text().await()).run {
                 when (this) {
-                    is ArtistSave.Request -> makeResponse(saveArtist(context, this))
+                    is ArtistSave.Request -> makeResponse(saveArtist(context, this, null))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
                     is BackendRequest.ArtistCommitForm -> makeResponse(
                         commitArtistForm(
@@ -178,7 +179,7 @@ object AlleyEditBackend {
             initial = request.initial,
             updated = request.updated,
         )
-        when (val saveResponse = saveArtist(context, saveRequest)) {
+        when (val saveResponse = saveArtist(context, saveRequest, request.formEntryTimestamp)) {
             is ArtistSave.Response.Failed ->
                 return BackendRequest.ArtistCommitForm.Response.Failed(saveResponse.errorMessage)
             is ArtistSave.Response.Outdated ->
@@ -224,6 +225,7 @@ object AlleyEditBackend {
     private suspend fun saveArtist(
         context: EventContext,
         request: ArtistSave.Request,
+        formTimestamp: Instant?,
     ) = when (request.dataYear) {
         DataYear.ANIME_EXPO_2026 -> {
             val database = Databases.editDatabase(context, tryCreate = true)
@@ -237,8 +239,11 @@ object AlleyEditBackend {
                     lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
                     lastEditTime = Clock.System.now(),
                 )
-                val historyEntry = ArtistHistoryEntry.create(currentArtist, updatedArtist)
-                    .toDatabaseEntry(Uuid.parse(updatedArtist.id))
+                val historyEntry = ArtistHistoryEntry.create(
+                    before = currentArtist,
+                    after = updatedArtist,
+                    formTimestamp = formTimestamp
+                ).toDatabaseEntry(Uuid.parse(updatedArtist.id))
                 database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
                 database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
                 ArtistSave.Response.Success
@@ -422,6 +427,7 @@ object AlleyEditBackend {
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             lastEditTime = timestamp,
+            formTimestamp = formTimestamp,
         )
 
     private fun ArtistEntryAnimeExpo2026History.toHistoryEntry() =
@@ -443,5 +449,6 @@ object AlleyEditBackend {
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             timestamp = lastEditTime,
+            formTimestamp = formTimestamp,
         )
 }

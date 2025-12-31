@@ -56,7 +56,7 @@ class ArtistFormState(
                     }
                 }
                 MergeBehavior.IGNORE -> {
-                    if (list.isNotEmpty()) {
+                    if (list.isEmpty()) {
                         list.replaceAll(value)
                         if (value.isNotEmpty()) {
                             state.lockState = EntryLockState.LOCKED

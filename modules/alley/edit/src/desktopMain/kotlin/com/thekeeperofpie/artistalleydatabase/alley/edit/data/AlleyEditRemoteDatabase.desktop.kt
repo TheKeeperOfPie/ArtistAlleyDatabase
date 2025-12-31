@@ -168,10 +168,21 @@ actual class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
+    ): ArtistSave.Response = saveArtist(dataYear, initial, updated, null)
+
+    private suspend fun saveArtist(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+        formTimestamp: Instant?,
     ): ArtistSave.Response {
         simulateLatency()
         val oldArtist = loadArtist(dataYear, Uuid.parse(updated.id))
-        val historyEntry = ArtistHistoryEntry.create(oldArtist, updated)
+        if (oldArtist != null && oldArtist != initial) {
+            return ArtistSave.Response.Outdated(oldArtist)
+        }
+        val historyEntry = ArtistHistoryEntry.create(oldArtist, updated, formTimestamp)
+            .copy(lastEditor = "local")
         artistHistoryByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }
             .getOrPut(updated.id) { mutableListOf() }
             .add(historyEntry)
@@ -301,9 +312,9 @@ actual class AlleyEditRemoteDatabase {
         updated: ArtistDatabaseEntry.Impl,
         formEntryTimestamp: Instant,
     ): BackendRequest.ArtistCommitForm.Response {
-        saveArtist(dataYear = dataYear, initial = initial, updated = updated)
         val artistId = Uuid.parse(updated.id)
         if (artistFormQueue[artistId]?.timestamp == formEntryTimestamp) {
+            saveArtist(dataYear = dataYear, initial = initial, updated = updated, formTimestamp = formEntryTimestamp)
             artistFormQueue.remove(artistId)?.let {
                 artistFormHistory += it
             }
