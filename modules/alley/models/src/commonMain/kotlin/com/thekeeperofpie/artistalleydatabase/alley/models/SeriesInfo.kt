@@ -19,6 +19,7 @@ data class SeriesInfo(
     val titleNative: String,
     val synonyms: List<String>,
     val link: String?,
+    val faked: Boolean = false,
 ) {
     companion object {
         fun fake(id: String) = SeriesInfo(
@@ -35,6 +36,7 @@ data class SeriesInfo(
             titleNative = id,
             synonyms = emptyList(),
             link = null,
+            faked = true,
         )
     }
 }

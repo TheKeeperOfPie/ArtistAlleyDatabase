@@ -198,7 +198,6 @@ interface ArtistFormScope : EntryFormScope {
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         showConfirmed: Boolean = true,
-        allowCustomInput: Boolean = false,
     )
 
     @Composable
@@ -206,7 +205,6 @@ interface ArtistFormScope : EntryFormScope {
         state: ArtistFormState.MerchState,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         showConfirmed: Boolean = true,
-        allowCustomInput: Boolean = false,
     )
 
     @Composable
@@ -484,7 +482,6 @@ private class ArtistFormScopeImpl(
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         showConfirmed: Boolean,
-        allowCustomInput: Boolean,
     ) {
         val hasConfirmedSeries by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowSeriesInferred by rememberSaveable { mutableStateOf(false) }
@@ -506,7 +503,6 @@ private class ArtistFormScopeImpl(
             showItems = { showSeriesInferred },
             predictions = seriesPredictions,
             image = seriesImage,
-            allowCustomInput = allowCustomInput,
         )
 
         if (!forceLocked && showConfirmed) {
@@ -525,7 +521,6 @@ private class ArtistFormScopeImpl(
                 items = state.confirmed,
                 predictions = seriesPredictions,
                 image = seriesImage,
-                allowCustomInput = allowCustomInput,
             )
         }
     }
@@ -535,7 +530,6 @@ private class ArtistFormScopeImpl(
         state: ArtistFormState.MerchState,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         showConfirmed: Boolean,
-        allowCustomInput: Boolean,
     ) {
         val hasConfirmedMerch by derivedStateOf { state.confirmed.isNotEmpty() }
         var requestedShowMerchInferred by rememberSaveable { mutableStateOf(false) }
@@ -557,10 +551,17 @@ private class ArtistFormScopeImpl(
             items = state.inferred,
             showItems = { showMerchInferred },
             predictions = merchPredictions,
-            itemToCommitted = { MerchInfo.fake(it) },
+            itemToCommitted = MerchInfo::fake,
             itemToText = { it.name },
             itemToSubText = { it.notes },
             itemToSerializedValue = { it.name },
+            predictionToText = {
+                if (it.faked) {
+                    "\"${it.name}\""
+                } else {
+                    it.name
+                }
+            },
         )
 
         if (!forceLocked && showConfirmed) {
@@ -579,10 +580,17 @@ private class ArtistFormScopeImpl(
                 equalsComparison = { it.name },
                 items = state.confirmed,
                 predictions = merchPredictions,
-                itemToCommitted = { MerchInfo.fake(it) },
+                itemToCommitted = MerchInfo::fake,
                 itemToText = { it.name },
                 itemToSubText = { it.notes },
                 itemToSerializedValue = { it.name },
+                predictionToText = {
+                    if (it.faked) {
+                        "\"${it.name}\""
+                    } else {
+                        it.name
+                    }
+                },
             )
         }
     }
@@ -822,6 +830,7 @@ object ArtistForm {
         itemToSerializedValue: (T) -> String,
         itemToCommitted: ((String) -> T)? = null,
         leadingIcon: (T) -> ImageVector? = { null },
+        predictionToText: (T) -> String = itemToText,
         pendingErrorMessage: () -> String? = { null },
         preferPrediction: Boolean = true,
         equalsComparison: (T) -> Any? = { it },
@@ -892,7 +901,7 @@ object ArtistForm {
             },
             prediction = { _, value ->
                 Column {
-                    Text(text = itemToText(value))
+                    Text(text = predictionToText(value))
                     val subText = itemToSubText(value)
                     if (!subText.isNullOrBlank()) {
                         Text(
@@ -918,19 +927,24 @@ object ArtistForm {
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
         image: (SeriesInfo) -> String?,
-        allowCustomInput: Boolean,
     ) {
         MultiTextSection(
             state = state,
             title = title,
             items = items,
-            itemToCommitted = if (allowCustomInput) {
-                { SeriesInfo.fake(it) }
-            } else null,
+            itemToCommitted = SeriesInfo::fake,
             showItems = showItems,
             entryPredictions = predictions,
             removeLastItem = { items.removeLastOrNull()?.titlePreferred },
-            prediction = { _, value -> Text(value.titlePreferred) },
+            prediction = { _, value ->
+                Text(
+                    text = if (value.faked) {
+                        "\"${value.titlePreferred}\""
+                    } else {
+                        value.titlePreferred
+                    },
+                )
+            },
             sortValue = { it.titlePreferred },
             item = { _, value ->
                 Row(verticalAlignment = Alignment.CenterVertically) {

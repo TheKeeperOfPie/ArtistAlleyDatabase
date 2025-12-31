@@ -326,13 +326,11 @@ object ArtistFormScreen {
                             seriesPredictions = seriesPredictions,
                             seriesImage = seriesImage,
                             showConfirmed = false,
-                            allowCustomInput = true,
                         )
                         MerchSection(
                             state = formState.merch,
                             merchPredictions = merchPredictions,
                             showConfirmed = false,
-                            allowCustomInput = true,
                         )
                         NotesSection(formState.notes)
                         NotesSection(

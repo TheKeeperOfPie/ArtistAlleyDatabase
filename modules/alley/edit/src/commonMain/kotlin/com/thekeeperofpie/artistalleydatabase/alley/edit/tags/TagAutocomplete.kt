@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.tags
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.SearchUtils
+import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
@@ -15,6 +17,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
+import kotlin.collections.plus
 
 @SingleIn(AppScope::class)
 @Inject
@@ -30,7 +33,7 @@ class TagAutocomplete(
         .shareIn(applicationScope, SharingStarted.Eagerly, 1)
 
     fun seriesPredictions(query: String) = if (query.length < 3) {
-        flowOf(emptyList())
+        flowOf( listOf(SeriesInfo.fake(query)))
     } else {
         seriesById.flatMapLatest {
             flow {
@@ -40,6 +43,7 @@ class TagAutocomplete(
                     { it.titleRomaji.contains(query, ignoreCase = true) },
                     { it.titleEnglish.contains(query, ignoreCase = true) },
                     { it.synonyms.any { it.contains(query, ignoreCase = true) } },
+                    finalTransform = { it + SeriesInfo.fake(query) },
                 )
             }
         }
@@ -50,7 +54,7 @@ class TagAutocomplete(
             .mapLatest {
                 it.values
                     .filter { it.name.contains(query, ignoreCase = true) }
-                    .sortedBy { it.name }
+                    .sortedBy { it.name } + MerchInfo.fake(query)
             }
             .flowOn(dispatchers.io)
 }
