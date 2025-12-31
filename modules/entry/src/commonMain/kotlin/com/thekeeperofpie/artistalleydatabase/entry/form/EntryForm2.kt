@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.LayoutScopeMarker
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -301,6 +302,7 @@ fun EntryFormScope.SingleTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     forceLocked: Boolean = this.forceLocked,
+    additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
     outputTransformation: OutputTransformation? = null,
@@ -311,6 +313,7 @@ fun EntryFormScope.SingleTextSection(
             text = headerText,
             lockState = state.lockState.takeUnless { forceLocked },
             onClick = state::rotateLockState,
+            additionalActions = additionalHeaderActions,
         )
 
         val modifier = Modifier.fillMaxWidth()
@@ -518,6 +521,7 @@ fun <T> MultiTextSection(
     },
     pendingErrorMessage: () -> String? = { null },
     onItemCommitted: ((String) -> Unit)? = null,
+    additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
     SectionHeader(
         text = headerText,
@@ -528,7 +532,8 @@ fun <T> MultiTextSection(
                 onItemCommitted?.invoke(newValue.trim().toString())
             }
             state.rotateLockState()
-        }
+        },
+        additionalActions = additionalHeaderActions,
     )
 
     items?.forEachIndexed { index, value ->
@@ -709,6 +714,7 @@ private fun SectionHeader(
     modifier: Modifier = Modifier,
     lockState: EntryLockState?,
     onClick: () -> Unit = {},
+    additionalActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
     Row(modifier.clickable(lockState != null, onClick = onClick)) {
         Box(
@@ -721,6 +727,8 @@ private fun SectionHeader(
                 text()
             }
         }
+
+        additionalActions?.invoke(this)
 
         if (lockState != null) {
             Icon(
@@ -737,11 +745,13 @@ private fun EntryFormScope.SectionHeader(
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     state: EntryForm2.State,
+    additionalActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
     SectionHeader(
         text = text,
         lockState = state.lockState.takeUnless { forceLocked },
         onClick = { state.rotateLockState() },
+        additionalActions = additionalActions,
         modifier = modifier
     )
 }
@@ -1206,29 +1216,44 @@ fun EntryFormScope.LongTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
     outputTransformation: OutputTransformation? = null,
+    additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
-    SectionHeader(text = headerText, state = state)
+    SectionHeader(
+        text = headerText,
+        state = state,
+        additionalActions = additionalHeaderActions,
+    )
 
     val editable = state.lockState.editable
-    OutlinedTextField(
-        state = state.value,
-        readOnly = !editable,
-        outputTransformation = outputTransformation,
-        modifier = Modifier
-            .onFocusChanged { state.isFocused = it.isFocused }
-            .focusRequester(state.focusRequester)
-            .focusable(editable)
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp)
-            .interceptTab {
-                val focusRequester = if (it) {
-                    this@LongTextSection.focusState.next(state)
-                } else {
-                    this@LongTextSection.focusState.previous(state)
-                }
-                focusRequester?.requestFocus()
+    val modifier = Modifier
+        .onFocusChanged { state.isFocused = it.isFocused }
+        .focusRequester(state.focusRequester)
+        .focusable(editable)
+        .fillMaxWidth()
+        .padding(start = 16.dp, end = 16.dp)
+        .interceptTab {
+            val focusRequester = if (it) {
+                this@LongTextSection.focusState.next(state)
+            } else {
+                this@LongTextSection.focusState.previous(state)
             }
-    )
+            focusRequester?.requestFocus()
+        }
+    if (state.lockState == EntryLockState.UNLOCKED && !forceLocked) {
+        OutlinedTextField(
+            state = state.value,
+            readOnly = !editable,
+            outputTransformation = outputTransformation,
+            modifier = modifier,
+        )
+    } else {
+        TextField(
+            state = state.value,
+            readOnly = !editable,
+            outputTransformation = outputTransformation,
+            modifier = modifier,
+        )
+    }
 }
 
 @Composable

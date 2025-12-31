@@ -127,10 +127,14 @@ object ArtistEditScreen {
         LaunchedEffect(viewModel) {
             viewModel.initialize()
         }
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
         ArtistEditScreen(
             dataYear = dataYear,
             state = viewModel.state,
+            seriesById = { seriesById },
             seriesPredictions = viewModel::seriesPredictions,
+            merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
             seriesImage = viewModel::seriesImage,
             generateFormLink = viewModel::generateFormLink,
@@ -152,7 +156,9 @@ object ArtistEditScreen {
     operator fun invoke(
         dataYear: DataYear,
         state: State,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         generateFormLink: () -> Unit,
@@ -236,7 +242,9 @@ object ArtistEditScreen {
                             initialArtist = { initialArtist },
                             state = state.artistFormState,
                             errorState = errorState,
+                            seriesById = seriesById,
                             seriesPredictions = seriesPredictions,
+                            merchById = merchById,
                             merchPredictions = merchPredictions,
                             seriesImage = seriesImage,
                             modifier = modifier,

@@ -110,10 +110,14 @@ object ArtistAddScreen {
                 viewModel.state.artistFormState.images += images
             }
         }
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
         ArtistAddScreen(
             dataYear = dataYear,
             state = viewModel.state,
+            seriesById = { seriesById },
             seriesPredictions = viewModel::seriesPredictions,
+            merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
@@ -135,7 +139,9 @@ object ArtistAddScreen {
     internal operator fun invoke(
         dataYear: DataYear,
         state: State,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
@@ -212,7 +218,9 @@ object ArtistAddScreen {
                         Form(
                             state = state,
                             errorState = errorState,
+                            seriesById = seriesById,
                             seriesPredictions = seriesPredictions,
+                            merchById = merchById,
                             merchPredictions = merchPredictions,
                             seriesImage = seriesImage,
                             locked = !mergingArtist.isEmpty(),
@@ -321,7 +329,9 @@ object ArtistAddScreen {
     private fun Form(
         state: State,
         errorState: ArtistErrorState,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         locked: Boolean,
@@ -335,8 +345,10 @@ object ArtistAddScreen {
             ArtistForm(
                 initialArtist = { initialArtist },
                 state = state.artistFormState,
+                seriesById = seriesById,
                 errorState = errorState,
                 seriesPredictions = seriesPredictions,
+                merchById = merchById,
                 merchPredictions = merchPredictions,
                 seriesImage = seriesImage,
                 forceLocked = locked,

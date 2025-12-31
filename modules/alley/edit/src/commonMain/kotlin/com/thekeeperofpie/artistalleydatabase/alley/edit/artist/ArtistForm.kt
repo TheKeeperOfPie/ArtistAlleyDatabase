@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.LayoutScopeMarker
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
@@ -15,11 +16,14 @@ import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.TableRestaurant
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -28,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -67,6 +72,10 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_action_confirm
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_action_dismiss
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_status
@@ -100,6 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -187,14 +197,17 @@ interface ArtistFormScope : EntryFormScope {
     fun TagSections(
         series: ArtistFormState.SeriesState,
         merch: ArtistFormState.MerchState,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
     )
 
     @Composable
     fun SeriesSection(
         state: ArtistFormState.SeriesState,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         showConfirmed: Boolean = true,
@@ -203,6 +216,7 @@ interface ArtistFormScope : EntryFormScope {
     @Composable
     fun MerchSection(
         state: ArtistFormState.MerchState,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         showConfirmed: Boolean = true,
     )
@@ -210,9 +224,8 @@ interface ArtistFormScope : EntryFormScope {
     @Composable
     fun NotesSection(
         state: EntryForm2.SingleTextState,
-        headerText: @Composable () -> Unit = {
-            Text(stringResource(Res.string.alley_edit_artist_edit_notes))
-        },
+        initialValue: String?,
+        label: StringResource = Res.string.alley_edit_artist_edit_notes,
     )
 }
 
@@ -290,13 +303,17 @@ private class ArtistFormScopeImpl(
         forceLock: Boolean,
         errorText: (() -> String?)?,
     ) {
+        val revertDialogState = rememberRevertDialogState(initialArtist?.id)
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_id)) },
             forceLocked = forceLock || forceLocked,
-            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.id),
+            outputTransformation = revertDialogState.outputTransformation,
             errorText = errorText,
+            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
         )
+
+        FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_id)
     }
 
     @Composable
@@ -311,31 +328,43 @@ private class ArtistFormScopeImpl(
 
     @Composable
     override fun BoothSection(state: EntryForm2.SingleTextState, errorText: (() -> String?)?) {
+        val revertDialogState = rememberRevertDialogState(initialArtist?.booth)
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
             inputTransformation = InputTransformation.maxLength(3),
-            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.booth),
+            outputTransformation = revertDialogState.outputTransformation,
             errorText = errorText,
+            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
         )
+
+        FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_booth)
     }
 
     @Composable
     override fun NameSection(state: EntryForm2.SingleTextState) {
+        val revertDialogState = rememberRevertDialogState(initialArtist?.name)
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
-            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.name),
+            outputTransformation = revertDialogState.outputTransformation,
+            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
         )
+
+        FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_name)
     }
 
     @Composable
     override fun SummarySection(state: EntryForm2.SingleTextState) {
+        val revertDialogState = rememberRevertDialogState(initialArtist?.summary)
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
-            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.summary),
+            outputTransformation = revertDialogState.outputTransformation,
+            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
         )
+
+        FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_summary)
     }
 
     @Composable
@@ -372,7 +401,8 @@ private class ArtistFormScopeImpl(
         ArtistForm.LinksSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_links,
-            initialItems = initialArtist?.links,
+            listRevertDialogState =
+                rememberListRevertDialogState(initialArtist?.links?.map(LinkModel::parse)),
             items = links,
             pendingErrorMessage = pendingErrorMessage,
         )
@@ -387,7 +417,8 @@ private class ArtistFormScopeImpl(
         ArtistForm.LinksSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_store_links,
-            initialItems = initialArtist?.storeLinks,
+            listRevertDialogState =
+                rememberListRevertDialogState(initialArtist?.storeLinks?.map(LinkModel::parse)),
             items = storeLinks,
             pendingErrorMessage = pendingErrorMessage,
         )
@@ -399,6 +430,7 @@ private class ArtistFormScopeImpl(
         catalogLinks: SnapshotStateList<String>,
         pendingErrorMessage: () -> String?,
     ) {
+        val revertDialogState = rememberListRevertDialogState(initialArtist?.catalogLinks)
         ArtistForm.MultiTextSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_catalog_links,
@@ -409,6 +441,16 @@ private class ArtistFormScopeImpl(
             itemToSerializedValue = { it },
             itemToCommitted = { it },
             pendingErrorMessage = pendingErrorMessage,
+            additionalHeaderActions = {
+                ShowListRevertIconButton(revertDialogState, catalogLinks)
+            },
+        )
+
+        ListFieldRevertDialog(
+            dialogState = revertDialogState,
+            label = Res.string.alley_edit_artist_edit_catalog_links,
+            items = catalogLinks,
+            itemsToText = { it.joinToString() },
         )
     }
 
@@ -424,6 +466,14 @@ private class ArtistFormScopeImpl(
         val initialCommissions = remember(initialArtist?.commissions) {
             initialArtist?.commissions?.map(CommissionModel::parse).orEmpty()
         }
+        val revertDialogState = rememberListRevertDialogState(initialCommissions)
+        fun itemToText(model: CommissionModel): String =
+            when (model) {
+                is CommissionModel.Link -> model.host ?: model.link
+                CommissionModel.OnSite -> onSiteText
+                CommissionModel.Online -> onlineText
+                is CommissionModel.Unknown -> model.value
+            }
         ArtistForm.MultiTextSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_commissions,
@@ -437,14 +487,7 @@ private class ArtistFormScopeImpl(
                     is CommissionModel.Unknown -> null
                 }
             },
-            itemToText = {
-                when (it) {
-                    is CommissionModel.Link -> it.host ?: it.link
-                    CommissionModel.OnSite -> onSiteText
-                    CommissionModel.Online -> onlineText
-                    is CommissionModel.Unknown -> it.value
-                }
-            },
+            itemToText = ::itemToText,
             itemToSubText = {
                 when (it) {
                     is CommissionModel.Link -> if (it.host == null) null else it.link
@@ -457,6 +500,14 @@ private class ArtistFormScopeImpl(
             itemToCommitted = CommissionModel::parse,
             predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
             preferPrediction = false,
+            additionalHeaderActions = { ShowListRevertIconButton(revertDialogState, commissions) },
+        )
+
+        ListFieldRevertDialog(
+            dialogState = revertDialogState,
+            label = Res.string.alley_edit_artist_edit_commissions,
+            items = commissions,
+            itemsToText = { it.joinToString { itemToText(it) } },
         )
     }
 
@@ -464,21 +515,25 @@ private class ArtistFormScopeImpl(
     override fun TagSections(
         series: ArtistFormState.SeriesState,
         merch: ArtistFormState.MerchState,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
     ) {
         SeriesSection(
             state = series,
+            seriesById = seriesById,
             seriesPredictions = seriesPredictions,
             seriesImage = seriesImage,
         )
-        MerchSection(state = merch, merchPredictions = merchPredictions)
+        MerchSection(state = merch, merchById = merchById, merchPredictions = merchPredictions)
     }
 
     @Composable
     override fun SeriesSection(
         state: ArtistFormState.SeriesState,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         showConfirmed: Boolean,
@@ -488,17 +543,20 @@ private class ArtistFormScopeImpl(
         val showSeriesInferred =
             forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred || !showConfirmed
 
-        val initialInferred = remember(initialArtist?.seriesInferred) {
-            initialArtist?.seriesInferred?.map(SeriesInfo::fake).orEmpty()
+        val seriesById = seriesById()
+        val initialInferred = remember(seriesById, initialArtist?.seriesInferred) {
+            initialArtist?.seriesInferred?.map { seriesById[it] ?: SeriesInfo.fake(it) }.orEmpty()
         }
-        val initialConfirmed = remember(initialArtist?.seriesConfirmed) {
-            initialArtist?.seriesConfirmed?.map(SeriesInfo::fake).orEmpty()
+        val initialConfirmed = remember(seriesById, initialArtist?.seriesConfirmed) {
+            initialArtist?.seriesConfirmed?.map { seriesById[it] ?: SeriesInfo.fake(it) }.orEmpty()
         }
+
+        val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
 
         ArtistForm.SeriesSection(
             state = state.stateInferred,
             title = Res.string.alley_edit_artist_edit_series_inferred,
-            initialItems = initialInferred,
+            listRevertDialogState = revertDialogStateInferred,
             items = state.inferred,
             showItems = { showSeriesInferred },
             predictions = seriesPredictions,
@@ -514,10 +572,11 @@ private class ArtistFormScopeImpl(
         }
 
         if (showConfirmed) {
+            val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
             ArtistForm.SeriesSection(
                 state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_series_confirmed,
-                initialItems = initialConfirmed,
+                listRevertDialogState = revertDialogStateConfirmed,
                 items = state.confirmed,
                 predictions = seriesPredictions,
                 image = seriesImage,
@@ -528,6 +587,7 @@ private class ArtistFormScopeImpl(
     @Composable
     override fun MerchSection(
         state: ArtistFormState.MerchState,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         showConfirmed: Boolean,
     ) {
@@ -536,13 +596,15 @@ private class ArtistFormScopeImpl(
         val showMerchInferred =
             forceLocked || !hasConfirmedMerch || requestedShowMerchInferred || !showConfirmed
 
-        val initialInferred = remember(initialArtist?.merchInferred) {
-            initialArtist?.merchInferred?.map(MerchInfo::fake).orEmpty()
+        val merchById = merchById()
+        val initialInferred = remember(merchById, initialArtist?.merchInferred) {
+            initialArtist?.merchInferred?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
         }
-        val initialConfirmed = remember(initialArtist?.merchConfirmed) {
-            initialArtist?.merchConfirmed?.map(MerchInfo::fake).orEmpty()
+        val initialConfirmed = remember(merchById, initialArtist?.merchConfirmed) {
+            initialArtist?.merchConfirmed?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
         }
 
+        val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
         ArtistForm.MultiTextSection(
             state = state.stateInferred,
             title = Res.string.alley_edit_artist_edit_merch_inferred,
@@ -562,6 +624,16 @@ private class ArtistFormScopeImpl(
                     it.name
                 }
             },
+            additionalHeaderActions = {
+                ShowListRevertIconButton(revertDialogStateInferred, state.inferred)
+            },
+        )
+
+        ListFieldRevertDialog(
+            dialogState = revertDialogStateInferred,
+            label = Res.string.alley_edit_artist_edit_merch_inferred,
+            items = state.inferred,
+            itemsToText = { it.joinToString { it.name } },
         )
 
         if (!forceLocked && showConfirmed) {
@@ -573,6 +645,7 @@ private class ArtistFormScopeImpl(
         }
 
         if (showConfirmed) {
+            val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
             ArtistForm.MultiTextSection(
                 state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_merch_confirmed,
@@ -591,6 +664,16 @@ private class ArtistFormScopeImpl(
                         it.name
                     }
                 },
+                additionalHeaderActions = {
+                    ShowListRevertIconButton(revertDialogStateConfirmed, state.confirmed)
+                },
+            )
+
+            ListFieldRevertDialog(
+                dialogState = revertDialogStateConfirmed,
+                label = Res.string.alley_edit_artist_edit_merch_inferred,
+                items = state.confirmed,
+                itemsToText = { it.joinToString { it.name } },
             )
         }
     }
@@ -598,35 +681,159 @@ private class ArtistFormScopeImpl(
     @Composable
     override fun NotesSection(
         state: EntryForm2.SingleTextState,
-        headerText: @Composable () -> Unit,
+        initialValue: String?,
+        label: StringResource,
     ) {
+        val revertDialogState = rememberRevertDialogState(initialValue)
         LongTextSection(
             state = state,
-            headerText = headerText,
-            outputTransformation = rememberOnChangedOutputTransformation(initialArtist?.notes),
+            headerText = { Text(stringResource(label)) },
+            outputTransformation = revertDialogState.outputTransformation,
+            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
         )
+        FieldRevertDialog(revertDialogState, state, label)
     }
 
     @Composable
-    private fun rememberOnChangedOutputTransformation(initialValue: String?): OutputTransformation? =
+    private fun rememberRevertDialogState(initialValue: String?) =
         remember(initialArtist, initialValue) {
-            if (initialArtist == null) {
-                null
-            } else {
-                GreenOnChangedOutputTransformation(initialValue.orEmpty())
-            }
+            RevertDialogState(initialArtist, initialValue.orEmpty())
         }
 
-    @Immutable
-    private class GreenOnChangedOutputTransformation(
-        private val initialValue: String,
-    ) : OutputTransformation {
-        override fun TextFieldBuffer.transformOutput() {
-            if (originalText.toString() != initialValue) {
-                addStyle(SpanStyle(color = Color.Green), 0, length)
-            }
+    @Composable
+    private fun <T> rememberListRevertDialogState(initialItems: List<T>?) =
+        remember(initialItems) { ListRevertDialogState(initialItems.orEmpty()) }
+}
+
+@Stable
+internal class RevertDialogState(
+    initialArtist: ArtistDatabaseEntry.Impl?,
+    val initialValue: String,
+) {
+    var show by mutableStateOf(false)
+    val outputTransformation: OutputTransformation? = if (initialArtist == null) null else {
+        GreenOnChangedOutputTransformation(initialValue)
+    }
+}
+
+@Stable
+internal class ListRevertDialogState<T>(val initialItems: List<T>) {
+    var show by mutableStateOf(false)
+}
+
+@Immutable
+private class GreenOnChangedOutputTransformation(
+    private val initialValue: String,
+) : OutputTransformation {
+    override fun TextFieldBuffer.transformOutput() {
+        if (originalText.toString() != initialValue) {
+            addStyle(SpanStyle(color = Color.Green), 0, length)
         }
     }
+}
+
+@Composable
+private fun ShowRevertIconButton(
+    dialogState: RevertDialogState,
+    textState: EntryForm2.SingleTextState,
+) {
+    val show by remember {
+        derivedStateOf { textState.value.text.toString() != dialogState.initialValue }
+    }
+    if (show) {
+        TooltipIconButton(
+            icon = Icons.AutoMirrored.Default.Undo,
+            tooltipText = stringResource(Res.string.alley_edit_artist_edit_revert_tooltip),
+            onClick = { dialogState.show = true },
+        )
+    }
+}
+
+@Composable
+private fun <T> ShowListRevertIconButton(
+    dialogState: ListRevertDialogState<T>,
+    items: SnapshotStateList<T>,
+) {
+    val show by remember {
+        derivedStateOf { items.toList().toSet() != dialogState.initialItems.toSet() }
+    }
+    if (show) {
+        TooltipIconButton(
+            icon = Icons.AutoMirrored.Default.Undo,
+            tooltipText = stringResource(Res.string.alley_edit_artist_edit_revert_tooltip),
+            onClick = { dialogState.show = true },
+        )
+    }
+}
+
+@Composable
+private fun FieldRevertDialog(
+    dialogState: RevertDialogState,
+    textState: EntryForm2.SingleTextState,
+    label: StringResource,
+) {
+    if (dialogState.show) {
+        RevertDialog(
+            label = label,
+            text = dialogState.initialValue,
+            onDismiss = { dialogState.show = false },
+            onRevert = { textState.value.setTextAndPlaceCursorAtEnd(dialogState.initialValue) },
+        )
+    }
+}
+
+@Composable
+private fun <T> ListFieldRevertDialog(
+    dialogState: ListRevertDialogState<T>,
+    label: StringResource,
+    items: SnapshotStateList<T>,
+    itemsToText: (List<T>) -> String,
+) {
+    if (dialogState.show) {
+        RevertDialog(
+            label = label,
+            text = itemsToText(dialogState.initialItems),
+            onDismiss = { dialogState.show = false },
+            onRevert = { items.replaceAll(dialogState.initialItems.toList()) },
+        )
+    }
+}
+
+@Composable
+private fun RevertDialog(
+    label: StringResource,
+    text: String,
+    onDismiss: () -> Unit,
+    onRevert: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onRevert()
+                onDismiss()
+            }) {
+                Text(stringResource(Res.string.alley_edit_artist_edit_revert_action_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.alley_edit_artist_edit_revert_action_dismiss))
+            }
+        },
+        icon = { Icon(Icons.AutoMirrored.Default.Undo, null) },
+        title = {
+            Text(
+                stringResource(
+                    Res.string.alley_edit_artist_edit_revert_title,
+                    stringResource(label),
+                )
+            )
+        },
+        text = if (text.isNotBlank()) {
+            { Text(text) }
+        } else null,
+    )
 }
 
 object ArtistForm {
@@ -636,7 +843,9 @@ object ArtistForm {
         state: ArtistFormState,
         errorState: ArtistErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
@@ -669,7 +878,7 @@ object ArtistForm {
             initialArtist = initialArtist,
             forceLocked = forceLocked,
             modifier = modifier
-        ) {
+        ) ArtistFormScope@{
             MetadataSection(state.metadata)
             PasteLinkSection(state = state.links)
             if (showStatus) {
@@ -692,18 +901,19 @@ object ArtistForm {
             TagSections(
                 series = state.series,
                 merch = state.merch,
+                seriesById = seriesById,
                 seriesPredictions = seriesPredictions,
                 seriesImage = seriesImage,
+                merchById = merchById,
                 merchPredictions = merchPredictions
             )
 
-            NotesSection(state.info.notes)
+            NotesSection(state.info.notes, this@ArtistFormScope.initialArtist?.notes)
             if (showEditorNotes) {
                 NotesSection(
                     state = state.editorState.editorNotes,
-                    headerText = {
-                        Text(stringResource(Res.string.alley_edit_artist_edit_editor_notes))
-                    },
+                    initialValue = this@ArtistFormScope.initialArtist?.editorNotes,
+                    label = Res.string.alley_edit_artist_edit_editor_notes,
                 )
             }
         }
@@ -834,6 +1044,7 @@ object ArtistForm {
         pendingErrorMessage: () -> String? = { null },
         preferPrediction: Boolean = true,
         equalsComparison: (T) -> Any? = { it },
+        additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
     ) {
         MultiTextSection(
             state = state,
@@ -914,6 +1125,7 @@ object ArtistForm {
             },
             pendingErrorMessage = pendingErrorMessage,
             preferPrediction = preferPrediction,
+            additionalHeaderActions = additionalHeaderActions,
         )
     }
 
@@ -922,7 +1134,7 @@ object ArtistForm {
     internal fun SeriesSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
-        initialItems: List<SeriesInfo>?,
+        listRevertDialogState: ListRevertDialogState<SeriesInfo>,
         items: SnapshotStateList<SeriesInfo>,
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
@@ -948,8 +1160,8 @@ object ArtistForm {
             sortValue = { it.titlePreferred },
             item = { _, value ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val existed = initialItems?.any { it.id == value.id }
-                    val textStyle = if (formScope.initialArtist == null || existed != false) {
+                    val existed = listRevertDialogState.initialItems.any { it.id == value.id }
+                    val textStyle = if (formScope.initialArtist == null || existed) {
                         MaterialTheme.typography.bodyMedium
                     } else {
                         MaterialTheme.typography.bodyMedium.copy(color = Color.Green)
@@ -974,6 +1186,14 @@ object ArtistForm {
                     }
                 }
             },
+            additionalHeaderActions = { ShowListRevertIconButton(listRevertDialogState, items) },
+        )
+
+        ListFieldRevertDialog(
+            dialogState = listRevertDialogState,
+            label = title,
+            items = items,
+            itemsToText = { it.joinToString { it.titlePreferred } },
         )
     }
 
@@ -992,6 +1212,7 @@ object ArtistForm {
         sortValue: ((T) -> String)? = null,
         pendingErrorMessage: () -> String? = { null },
         preferPrediction: Boolean = true,
+        additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
     ) {
         val addUniqueErrorState =
             rememberAddUniqueErrorState(state = state, items = items, sortValue = sortValue)
@@ -1011,6 +1232,7 @@ object ArtistForm {
             preferPrediction = preferPrediction,
             onPredictionChosen = addUniqueErrorState::addAndEnforceUnique,
             pendingErrorMessage = { addUniqueErrorState.errorMessage ?: pendingErrorMessage() },
+            additionalHeaderActions = additionalHeaderActions,
         )
     }
 
@@ -1047,13 +1269,10 @@ object ArtistForm {
     internal fun LinksSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
-        initialItems: List<String>?,
+        listRevertDialogState: ListRevertDialogState<LinkModel>,
         items: SnapshotStateList<LinkModel>,
         pendingErrorMessage: () -> String?,
     ) {
-        val initialLinks = remember(initialItems) {
-            initialItems?.map(LinkModel::parse).orEmpty()
-        }
         MultiTextSection(
             state = state,
             title = title,
@@ -1064,7 +1283,13 @@ object ArtistForm {
                 LinkRow(
                     link = value,
                     isLast = index == items.lastIndex && !state.lockState.editable,
-                    color = if (formScope.initialArtist == null || initialLinks.contains(value)) Color.Unspecified else Color.Green,
+                    color = if (formScope.initialArtist == null ||
+                        listRevertDialogState.initialItems.contains(value)
+                    ) {
+                        Color.Unspecified
+                    } else {
+                        Color.Green
+                    },
                     additionalActions = {
                         AnimatedVisibility(
                             visible = state.lockState.editable,
@@ -1081,6 +1306,14 @@ object ArtistForm {
                 )
             },
             pendingErrorMessage = pendingErrorMessage,
+            additionalHeaderActions = { ShowListRevertIconButton(listRevertDialogState, items) },
+        )
+
+        ListFieldRevertDialog(
+            dialogState = listRevertDialogState,
+            label = title,
+            items = items,
+            itemsToText = { it.joinToString { it.link } },
         )
     }
 

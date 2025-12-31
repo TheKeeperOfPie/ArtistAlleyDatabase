@@ -148,15 +148,15 @@ internal object ArtistFormMergeScreen {
 
         val entry = entry()
         val fieldState = rememberFieldState(entry?.formDiff)
-        val seriesById = seriesById()
-        val merchById = merchById()
-        val artistFormState by remember(entry, fieldState, seriesById, merchById) {
+        val seriesByIdMap = seriesById()
+        val merchByIdMap = merchById()
+        val artistFormState by remember(entry, fieldState, seriesByIdMap, merchByIdMap) {
             derivedStateOf {
                 entry ?: return@derivedStateOf null
                 fieldState.applyChanges(
                     base = entry.artist,
-                    seriesById = seriesById,
-                    merchById = merchById,
+                    seriesById = seriesByIdMap,
+                    merchById = merchByIdMap,
                     diff = entry.formDiff,
                 )
             }
@@ -199,7 +199,9 @@ internal object ArtistFormMergeScreen {
                     ArtistPreview(
                         initialArtist = { entry()?.artist },
                         artistFormState = artistFormState,
+                        seriesById = seriesById,
                         seriesImage = seriesImage,
+                        merchById = merchById,
                         modifier = Modifier.weight(1f)
                     )
 
@@ -217,6 +219,8 @@ internal object ArtistFormMergeScreen {
     private fun ArtistPreview(
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         artistFormState: ArtistFormState?,
+        seriesById: () -> Map<String, SeriesInfo>,
+        merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
@@ -226,7 +230,9 @@ internal object ArtistFormMergeScreen {
                     initialArtist = initialArtist,
                     state = artistFormState,
                     errorState = rememberErrorState(artistFormState),
+                    seriesById = seriesById,
                     seriesPredictions = { emptyFlow() },
+                    merchById = merchById,
                     merchPredictions = { emptyFlow() },
                     seriesImage = seriesImage,
                     forceLocked = true,

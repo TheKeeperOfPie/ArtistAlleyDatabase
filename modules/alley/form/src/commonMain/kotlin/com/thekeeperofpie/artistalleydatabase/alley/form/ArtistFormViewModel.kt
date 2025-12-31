@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRe
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
+import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -46,7 +47,7 @@ class ArtistFormViewModel(
     editDatabase: AlleyEditDatabase,
     private val formDatabase: AlleyFormDatabase,
     seriesImagesStore: SeriesImagesStore,
-    private val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -56,7 +57,9 @@ class ArtistFormViewModel(
         key = "progress",
     ) { ArtistFormScreen.State.Progress.LOADING }
     private val artist =
-        savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>(Json, "artist", null)
+        savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>("artist", null)
+    private val initialFormDiff =
+        savedStateHandle.getMutableStateFlow<ArtistEntryDiff?>("initialFormDiff", null)
     private val previousYearData =
         artist.mapLatestNotNull { it?.id?.let(Uuid::parseOrNull) }
             .mapLatest {
@@ -66,7 +69,6 @@ class ArtistFormViewModel(
                 artistInference.getPreviousYearData(it)
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
-    private val lastResponseTimestamp = savedStateHandle.getMutableStateFlow<Instant?>("lastResponseTimestamp",  null)
     val state = ArtistFormScreen.State(
         initialArtist = artist,
         previousYearData = previousYearData,
@@ -77,7 +79,7 @@ class ArtistFormViewModel(
         ) {
             ArtistFormScreen.State.FormState()
         },
-        lastResponseTimestamp = lastResponseTimestamp,
+        initialFormDiff = initialFormDiff,
         saveTaskState = saveTask.state,
     )
 
@@ -140,8 +142,9 @@ class ArtistFormViewModel(
             )
             formDiff?.formNotes?.let {
                 state.formState.formNotes.value.setTextAndPlaceCursorAtEnd(it)
+                state.formState.formNotes.lockState = EntryLockState.LOCKED
             }
-            lastResponseTimestamp.value = formDiff?.timestamp
+            initialFormDiff.value = formDiff
 
             // TODO: Support images?
             progress.value = ArtistFormScreen.State.Progress.LOADED

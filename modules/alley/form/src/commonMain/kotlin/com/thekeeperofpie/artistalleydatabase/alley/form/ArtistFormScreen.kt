@@ -86,6 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.ErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
@@ -124,10 +125,14 @@ object ArtistFormScreen {
         LaunchedEffect(viewModel) {
             viewModel.initialize()
         }
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
         ArtistFormScreen(
             dataYear = dataYear,
             state = viewModel.state,
+            seriesById = { seriesById },
             seriesPredictions = viewModel::seriesPredictions,
+            merchById = { merchById },
             merchPredictions = viewModel::merchPredictions,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
@@ -142,7 +147,9 @@ object ArtistFormScreen {
     operator fun invoke(
         dataYear: DataYear,
         state: State,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
@@ -221,16 +228,18 @@ object ArtistFormScreen {
                         }
                     State.Progress.LOADED -> {
                         val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+                        val initialFormDiff by state.initialFormDiff.collectAsStateWithLifecycle()
                         val previousYearEntry by state.previousYearData.collectAsStateWithLifecycle()
-                        val lastResponseTimestamp by state.lastResponseTimestamp.collectAsStateWithLifecycle()
                         Form(
                             saveTaskState = saveTaskState,
                             formState = state.formState,
                             errorState = errorState,
-                            lastResponseTimestamp = { lastResponseTimestamp },
                             initialArtist = { initialArtist },
+                            initialFormDiff = { initialFormDiff },
                             previousYearData = { previousYearEntry },
+                            seriesById = seriesById,
                             seriesPredictions = seriesPredictions,
+                            merchById = merchById,
                             merchPredictions = merchPredictions,
                             seriesImage = seriesImage,
                             onConfirmMerge = onConfirmMerge,
@@ -256,11 +265,13 @@ object ArtistFormScreen {
     private fun Form(
         formState: State.FormState,
         errorState: ErrorState,
-        lastResponseTimestamp: () -> Instant?,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
+        initialFormDiff: () -> ArtistEntryDiff?,
         previousYearData: () -> ArtistInference.PreviousYearData?,
         saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
+        seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         onConfirmMerge: (Map<ArtistField, Boolean>) -> Unit,
@@ -302,7 +313,7 @@ object ArtistFormScreen {
                             .width(960.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        LastResponseHeader(lastResponseTimestamp())
+                        LastResponseHeader(initialFormDiff()?.timestamp)
 
                         if (previousYearData() != null) {
                             PreviousYearPrompt(onClickMerge = { showMerge = true })
@@ -323,21 +334,22 @@ object ArtistFormScreen {
                         // TODO: Confirmed tag support
                         SeriesSection(
                             state = formState.series,
+                            seriesById = seriesById,
                             seriesPredictions = seriesPredictions,
                             seriesImage = seriesImage,
                             showConfirmed = false,
                         )
                         MerchSection(
                             state = formState.merch,
+                            merchById = merchById,
                             merchPredictions = merchPredictions,
                             showConfirmed = false,
                         )
-                        NotesSection(formState.notes)
+                        NotesSection(formState.notes, this@ArtistForm.initialArtist?.notes)
                         NotesSection(
                             state = formState.formNotes,
-                            headerText = {
-                                Text(stringResource(Res.string.alley_form_notes))
-                            },
+                            initialValue = initialFormDiff()?.notes,
+                            label = Res.string.alley_form_notes,
                         )
                     }
 
@@ -613,10 +625,10 @@ object ArtistFormScreen {
     @Stable
     class State(
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
+        val initialFormDiff: StateFlow<ArtistEntryDiff?>,
         val previousYearData: StateFlow<ArtistInference.PreviousYearData?>,
         val progress: StateFlow<Progress>,
         val formState: FormState,
-        val lastResponseTimestamp: StateFlow<Instant?>,
         val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
     ) {
         fun applyDatabaseEntry(

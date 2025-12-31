@@ -37,7 +37,7 @@ class ArtistEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
-    private val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted private val artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
