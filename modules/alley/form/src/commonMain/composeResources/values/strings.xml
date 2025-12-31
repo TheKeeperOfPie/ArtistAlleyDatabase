@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="alley_form_private_key_prompt">Unable to read your access token,\npaste your access link below to try again</string>
+    <string name="alley_form_private_key_prompt_1">Unable to read your access token, paste your access link below to try again.\n\nIf you don't have an access link, you will need to ask a maintainer for one. See the prompt on your artist page on the </string>
+    <string name="alley_form_private_key_prompt_link">public site</string>
+    <string name="alley_form_private_key_prompt_2"> for more details.\n\nIf you don't have an artist page, we may not be aware of your presence at %1$s and you will need to contact %2$s on Discord to get added.</string>
     <string name="alley_form_saved_changes">Saved changes</string>
     <string name="alley_form_action_save_tooltip">Save changes</string>
 
@@ -21,8 +23,9 @@
 
     <string name="alley_form_done_thanks_title">Thanks!</string>
     <string name="alley_form_done_thanks_subtitle">Your submission helps to make %1$s better for everyone</string>
-    <string name="alley_form_done_add_to_calendar_prompt">Return closer to con to upload your catalog or add stamp rallies. Here's a reminder 30 days before.</string>
-    <string name="alley_form_done_add_to_calendar_action">Add to Google calendar</string>
+    <string name="alley_form_done_validation_text">All entries are subject to manual validation and may take several days to be reflected on the public site. For an urgent matter, please contact %1$s on Discord.</string>
+    <string name="alley_form_done_add_to_calendar_prompt">Please return closer to con to upload your catalog or add stamp rallies. Here's a reminder 30 days before.</string>
+    <string name="alley_form_done_add_to_calendar_action">Add to Google Calendar</string>
     <string name="alley_form_done_update_prompt">To update your data at any time, open your access link again.</string>
     <string name="alley_form_done_update_action_edit">Edit your response</string>
 </resources>

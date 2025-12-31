@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.form
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,7 +47,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
@@ -67,13 +69,16 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_don
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_thanks_title
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_update_action_edit
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_update_prompt
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_validation_text
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_error_saving_bad_fields
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_last_response_restored
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_notes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_action_confirm
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_select_all
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_1
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_2
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_link
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
@@ -92,6 +97,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
+import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
@@ -188,6 +194,7 @@ object ArtistFormScreen {
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
         val errorState = rememberErrorState(state.formState)
+        val progress = state.progress.collectAsStateWithLifecycle().value
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -202,13 +209,15 @@ object ArtistFormScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {
-                        val enabled = !errorState.hasAnyError
-                        TooltipIconButton(
-                            icon = Icons.Default.DoneAll,
-                            tooltipText = stringResource(Res.string.alley_form_action_save_tooltip),
-                            enabled = enabled,
-                            onClick = onClickDone,
-                        )
+                        if (progress == State.Progress.LOADED) {
+                            val enabled = !errorState.hasAnyError
+                            TooltipIconButton(
+                                icon = Icons.Default.DoneAll,
+                                tooltipText = stringResource(Res.string.alley_form_action_save_tooltip),
+                                enabled = enabled,
+                                onClick = onClickDone,
+                            )
+                        }
                     },
                     modifier = Modifier
                         .conditionally(!isExpanded, Modifier.widthIn(max = 960.dp))
@@ -218,7 +227,7 @@ object ArtistFormScreen {
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
             Box(Modifier.padding(scaffoldPadding)) {
-                when (state.progress.collectAsStateWithLifecycle().value) {
+                when (progress) {
                     State.Progress.LOADING ->
                         Box(
                             contentAlignment = Alignment.Center,
@@ -254,7 +263,7 @@ object ArtistFormScreen {
                         )
                         PreventUnloadEffect()
                     }
-                    State.Progress.BAD_AUTH -> PrivateKeyPrompt(onSubmitPrivateKey)
+                    State.Progress.BAD_AUTH -> PrivateKeyPrompt(dataYear, onSubmitPrivateKey)
                     State.Progress.DONE -> DonePrompt(dataYear, onClickEditAgain)
                 }
             }
@@ -392,17 +401,29 @@ object ArtistFormScreen {
     }
 
     @Composable
-    private fun PrivateKeyPrompt(onSubmitKey: (String) -> Unit) {
+    private fun PrivateKeyPrompt(dataYear: DataYear, onSubmitKey: (String) -> Unit) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .width(IntrinsicSize.Min)
-                    .widthIn(max = 960.dp)
+                    .widthIn(max = 600.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    text = stringResource(Res.string.alley_form_private_key_prompt),
+                    text = buildAnnotatedString {
+                        append(stringResource(Res.string.alley_form_private_key_prompt_1))
+                        withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
+                            append(stringResource(Res.string.alley_form_private_key_prompt_link))
+                        }
+                        append(
+                            stringResource(
+                                Res.string.alley_form_private_key_prompt_2,
+                                stringResource(dataYear.fullName),
+                                AlleyUtils.primaryContactDiscordUsername,
+                            )
+                        )
+                    },
                     style = MaterialTheme.typography.titleMedium,
                 )
 
@@ -544,6 +565,7 @@ object ArtistFormScreen {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     Text(
                         text = stringResource(Res.string.alley_form_done_thanks_title),
@@ -555,6 +577,13 @@ object ArtistFormScreen {
                             stringResource(dataYear.shortName)
                         ),
                         style = MaterialTheme.typography.labelMedium,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        text = stringResource(
+                            Res.string.alley_form_done_validation_text,
+                            AlleyUtils.primaryContactDiscordUsername,
+                        ),
                         textAlign = TextAlign.Center,
                     )
                     Text(
