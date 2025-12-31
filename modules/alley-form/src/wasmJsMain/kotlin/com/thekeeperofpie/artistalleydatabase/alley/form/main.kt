@@ -102,6 +102,8 @@ private fun Content(graph: ArtistAlleyFormGraph) {
             val uri = Uri.parseOrNull(window.location.href)
             uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
                 ?.let(ArtistFormAccessKey::setKey)
+            uri?.getQueryParameter(AlleyCryptography.ACCESS_KEY_ENCRYPTED_PARAM)
+                ?.let { ArtistFormAccessKey.setKeyEncrypted(it) }
             if (uri?.getQueryParameter("openForm").toBoolean()) {
                 navStack.navigate(AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026))
             }

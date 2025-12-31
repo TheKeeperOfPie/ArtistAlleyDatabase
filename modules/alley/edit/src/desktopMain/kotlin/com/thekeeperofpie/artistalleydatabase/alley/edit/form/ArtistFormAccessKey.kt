@@ -15,4 +15,8 @@ actual object ArtistFormAccessKey {
             ?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
             ?: key.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
     }
+
+    actual suspend fun setKeyEncrypted(key: String) {
+        _key = key
+    }
 }

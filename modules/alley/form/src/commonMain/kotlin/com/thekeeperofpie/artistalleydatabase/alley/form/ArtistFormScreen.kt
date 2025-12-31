@@ -118,7 +118,6 @@ object ArtistFormScreen {
         onClickBack: (force: Boolean) -> Unit,
         viewModel: ArtistFormViewModel,
     ) {
-        PreventUnloadEffect()
         LaunchedEffect(viewModel) {
             viewModel.initialize()
         }
@@ -239,6 +238,7 @@ object ArtistFormScreen {
                             onClickSave = onClickDone,
                             saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
                         )
+                        PreventUnloadEffect()
                     }
                     State.Progress.BAD_AUTH -> PrivateKeyPrompt(onSubmitPrivateKey)
                     State.Progress.DONE -> DonePrompt(dataYear, onClickEditAgain)

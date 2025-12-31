@@ -4,4 +4,5 @@ expect object ArtistFormAccessKey {
 
     val key: String?
     fun setKey(key: String)
+    suspend fun setKeyEncrypted(key: String)
 }

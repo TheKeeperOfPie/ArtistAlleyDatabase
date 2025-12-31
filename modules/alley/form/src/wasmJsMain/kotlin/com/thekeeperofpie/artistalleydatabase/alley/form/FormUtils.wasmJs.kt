@@ -17,7 +17,10 @@ actual object FormUtils {
         }
         val encryptionKey = existingEncryptionKey
             ?: AlleyCryptography.generateSymmetricEncryptionKey().also {
-                localStorage[AlleyCryptography.ENCRYPTION_KEY] = it
+                try {
+                    localStorage[AlleyCryptography.ENCRYPTION_KEY] = it
+                } catch (_: Throwable) {
+                }
             }
 
         val encryptedAccessKey =
