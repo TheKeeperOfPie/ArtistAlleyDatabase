@@ -3,6 +3,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
@@ -137,13 +138,18 @@ object AlleyEditBackend {
                 .awaitAsOneOrNull()
                 ?.toArtistDatabaseEntry()
                 ?.let {
-                    val formEntry = Databases.formDatabase(context)
-                        .artistFormEntryQueries
+                    val formDatabase = Databases.formDatabase(context)
+                    val formEntry = formDatabase.artistFormEntryQueries
                         .getFormEntry(request.dataYear, request.artistId)
                         .awaitAsOneOrNull()
                     BackendRequest.ArtistWithFormMetadata.Response(
                         artist = it,
                         hasPendingFormSubmission = formEntry != null,
+                        hasFormLink = coerceBooleanForJs(
+                            formDatabase.alleyFormPublicKeyQueries
+                                .hasPublicKey(request.artistId)
+                                .awaitAsOne()
+                        ),
                     )
                 }
             DataYear.ANIME_EXPO_2023,
@@ -153,6 +159,11 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2025,
                 -> null // TODO: Return legacy years?
         }
+
+    // TODO: js target boolean equality broken
+    // JS interop infers this as 0, whereas KotlinX Serialization requires true
+    @Suppress("EQUALITY_NOT_APPLICABLE_WARNING")
+    private fun coerceBooleanForJs(value: Boolean?) = value == true || value.toString() == "1"
 
     private suspend fun loadArtistFormQueue(context: EventContext): List<ArtistFormQueueEntry> =
         Databases.formDatabase(context)
@@ -286,9 +297,14 @@ object AlleyEditBackend {
     private suspend fun generateFormKey(
         context: EventContext,
         request: BackendRequest.GenerateFormKey,
-    ): String {
+    ): String? {
         val database = Databases.formDatabase(context)
         val keys = AlleyCryptography.generate()
+        if (!request.forceRegenerate && database.alleyFormPublicKeyQueries.hasPublicKey(request.artistId)
+                .awaitAsOne()
+        ) {
+            return null
+        }
         database.alleyFormPublicKeyQueries.insertPublicKey(
             ArtistFormPublicKey(artistId = request.artistId, publicKey = keys.publicKey)
         )

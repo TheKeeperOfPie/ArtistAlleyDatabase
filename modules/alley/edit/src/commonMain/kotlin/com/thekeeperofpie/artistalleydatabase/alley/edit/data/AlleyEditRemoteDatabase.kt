@@ -19,7 +19,11 @@ import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
     suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl?
-    suspend fun loadArtistWithFormMetadata(dataYear: DataYear, artistId: Uuid): BackendRequest.ArtistWithFormMetadata.Response?
+    suspend fun loadArtistWithFormMetadata(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): BackendRequest.ArtistWithFormMetadata.Response?
+
     suspend fun loadArtistHistory(dataYear: DataYear, artistId: Uuid): List<ArtistHistoryEntry>
     suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary>
     suspend fun saveArtist(
@@ -42,7 +46,11 @@ expect class AlleyEditRemoteDatabase {
     suspend fun loadMerch(): List<MerchInfo>
     suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result
 
-    suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String?
+    suspend fun generateFormLink(
+        dataYear: DataYear,
+        artistId: Uuid,
+        forceRegenerate: Boolean,
+    ): String?
 
     suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry>
     suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry>
@@ -50,6 +58,7 @@ expect class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response?
+
     suspend fun saveArtistAndClearFormEntry(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl,

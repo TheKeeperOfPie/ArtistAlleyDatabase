@@ -35,14 +35,17 @@
     <string name="alley_edit_artist_edit_last_modified_prefix">Last modified</string>
     <string name="alley_edit_artist_edit_last_modified_author_prefix">by</string>
 
+    <string name="alley_edit_artist_edit_outdated">Outdated initial artist, reload page to try re-merge</string>
     <string name="alley_edit_artist_edit_pending_form_warning">WARNING: Artist has pending form submission that needs to be merged</string>
     <string name="alley_edit_artist_edit_pending_form_warning_action_open">Open</string>
 
     <string name="alley_edit_artist_edit_form_link_title">Generate a new form link?</string>
     <string name="alley_edit_artist_edit_form_link_description">This will invalidate any previously generated link</string>
+    <string name="alley_edit_artist_edit_form_link_description_exists">PLEASE BE CAREFUL. THIS ARTIST ALREADY HAS A LINK AND THIS WILL INVALIDATE THEIR PREVIOUS LINK.</string>
     <string name="alley_edit_artist_edit_form_link_description_generated">This link will not be visible again after this dialog closes, make sure you send it to the artist exactly as displayed</string>
     <string name="alley_edit_artist_edit_form_link_action_generate">Generate</string>
     <string name="alley_edit_artist_edit_form_link_action_cancel">Cancel</string>
+    <string name="alley_edit_artist_edit_form_link_action_copy">Copy</string>
 
     <string name="alley_edit_artist_action_add_images">Add images</string>
     <string name="alley_edit_artist_action_edit_images">Edit images</string>

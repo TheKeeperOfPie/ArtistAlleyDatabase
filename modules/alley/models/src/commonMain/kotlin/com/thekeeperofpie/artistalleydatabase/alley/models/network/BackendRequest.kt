@@ -34,6 +34,7 @@ sealed interface BackendRequest {
         data class Response(
             val artist: ArtistDatabaseEntry.Impl,
             val hasPendingFormSubmission: Boolean,
+            val hasFormLink: Boolean,
         )
     }
 
@@ -84,8 +85,16 @@ sealed interface BackendRequest {
 
     // TODO: Allow querying presence?
     @Serializable
-    data class GenerateFormKey(val artistId: Uuid, val publicKeyForResponse: String) :
-        BackendRequest, WithResponse<String>
+    data class GenerateFormKey(
+        val artistId: Uuid,
+        val publicKeyForResponse: String,
+
+        /**
+         * Used to ensure the editor wants to regenerate a form link, and didn't just accidentally
+         * send the request twice somehow
+         */
+        val forceRegenerate: Boolean,
+    ) : BackendRequest, WithResponse<String>
 
     @Serializable
     data object Series : BackendRequest, WithResponse<List<SeriesInfo>>

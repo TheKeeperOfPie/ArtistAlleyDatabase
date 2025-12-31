@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
@@ -47,7 +48,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -59,10 +63,13 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_history_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_copy
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_generate
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description_exists
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description_generated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning_action_open
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
@@ -99,6 +106,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
@@ -160,6 +168,7 @@ object ArtistEditScreen {
             onClickMerge = onClickMerge,
             onClickSave = viewModel::onClickSave,
             onClickDone = viewModel::onClickDone,
+            onClearFormLink = viewModel::onClearFormLink,
             onClickDebugForm = onClickDebugForm,
         )
     }
@@ -173,13 +182,14 @@ object ArtistEditScreen {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
-        generateFormLink: () -> Unit,
+        generateFormLink: (forceRegenerate: Boolean) -> Unit,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
         onClickMerge: () -> Unit,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
+        onClearFormLink: () -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -195,7 +205,8 @@ object ArtistEditScreen {
                             saveTaskState.clearResult()
                         }
                         is ArtistSave.Response.Outdated -> {
-                            // TODO
+                            snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_artist_edit_outdated))
+                            saveTaskState.clearResult()
                         }
                         is ArtistSave.Response.Success -> {
                             saveTaskState.clearResult()
@@ -252,8 +263,8 @@ object ArtistEditScreen {
                     movableContentOf { modifier: Modifier ->
                         Column(modifier = modifier) {
                             val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
-                            val hasPendingFormSubmission by state.hasPendingFormSubmission.collectAsStateWithLifecycle()
-                            if (hasPendingFormSubmission) {
+                            val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
+                            if (formMetadata?.hasPendingFormSubmission == true) {
                                 PendingFormSubmissionPrompt(onClickMerge)
                             }
                             ArtistForm(
@@ -322,10 +333,15 @@ object ArtistEditScreen {
             }
 
             if (showFormLinkDialog) {
+                val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
                 val formLink by state.formLink.collectAsStateWithLifecycle()
                 FormLinkDialog(
+                    formMetadata = formMetadata,
                     formLink = { formLink },
-                    onDismiss = { showFormLinkDialog = false },
+                    onDismiss = {
+                        onClearFormLink()
+                        showFormLinkDialog = false
+                    },
                     onClickGenerate = generateFormLink,
                     onClickDebugForm = onClickDebugForm,
                 )
@@ -397,9 +413,10 @@ object ArtistEditScreen {
 
     @Composable
     private fun FormLinkDialog(
+        formMetadata: State.FormMetadata?,
         formLink: () -> String?,
         onDismiss: () -> Unit,
-        onClickGenerate: () -> Unit,
+        onClickGenerate: (forceRegenerate: Boolean) -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
     ) {
         NavigationBackHandler(
@@ -407,10 +424,17 @@ object ArtistEditScreen {
             onBackCompleted = onDismiss,
         )
 
+        var loading by remember(formLink()) { mutableStateOf(false) }
+
         @Suppress("SimplifyBooleanWithConstants")
         val isDebug = PlatformSpecificConfig.type == PlatformType.DESKTOP || BuildKonfig.isWasmDebug
         AlertDialog(
             onDismissRequest = onDismiss,
+            icon = if (formMetadata?.hasFormLink == true) {
+                {
+                    Icon(imageVector = Icons.Default.Warning, null)
+                }
+            } else null,
             title = { Text(stringResource(Res.string.alley_edit_artist_edit_form_link_title)) },
             text = {
                 Column(
@@ -420,13 +444,26 @@ object ArtistEditScreen {
                     // TODO: Surface errors
                     val formLink = formLink()
                     if (formLink == null) {
-                        Text(stringResource(Res.string.alley_edit_artist_edit_form_link_description))
+                        if (formMetadata?.hasFormLink == true) {
+                            Text(stringResource(Res.string.alley_edit_artist_edit_form_link_description_exists))
+                        } else {
+                            Text(stringResource(Res.string.alley_edit_artist_edit_form_link_description))
+                        }
                     } else {
                         Text(stringResource(Res.string.alley_edit_artist_edit_form_link_description_generated))
                         OutlinedTextField(value = formLink, onValueChange = {}, readOnly = true)
 
-                        if (isDebug) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            val clipboardManager = LocalClipboardManager.current
+                            FilledTonalButton(onClick = {
+                                try {
+                                    clipboardManager.setText(AnnotatedString(formLink))
+                                } catch (_: Throwable) {
+                                }
+                            }) {
+                                Text(stringResource(Res.string.alley_edit_artist_edit_form_link_action_copy))
+                            }
+                            if (isDebug) {
                                 val key =
                                     formLink.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
                                 FilledTonalButton(onClick = {
@@ -455,34 +492,52 @@ object ArtistEditScreen {
                         value = it
                     }
                 }
-                TextButton(
-                    onClick = {
-                        if (countdown <= 0 || isDebug) {
-                            onClickGenerate()
+                if (formLink() == null) {
+                    TextButton(
+                        onClick = {
+                            if (!loading && (countdown <= 0 || isDebug)) {
+                                val forceRegenerate = formMetadata?.hasFormLink == true
+                                loading = true
+                                onClickGenerate(forceRegenerate)
+                            }
+                        },
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            val textAlpha by animateFloatAsState(if (countdown <= 0) 1f else 0f)
+                            Text(
+                                text = stringResource(Res.string.alley_edit_artist_edit_form_link_action_generate),
+                                modifier = Modifier.graphicsLayer { alpha = textAlpha }
+                            )
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = countdown > 0,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                Text(countdown.toString())
+                            }
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = loading,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                CircularWavyProgressIndicator()
+                            }
                         }
-                    },
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        val textAlpha by animateFloatAsState(if (countdown <= 0) 1f else 0f)
-                        Text(
-                            text = stringResource(Res.string.alley_edit_artist_edit_form_link_action_generate),
-                            modifier = Modifier.graphicsLayer { alpha = textAlpha }
-                        )
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = countdown > 0,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                        ) {
-                            Text(countdown.toString())
-                        }
+                    }
+                } else {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(Res.string.alley_edit_artist_edit_form_link_action_cancel))
                     }
                 }
             },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(Res.string.alley_edit_artist_edit_form_link_action_cancel))
+            dismissButton = if (formLink() == null) {
+                {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(Res.string.alley_edit_artist_edit_form_link_action_cancel))
+                    }
                 }
-            }
+            } else null,
+            properties = DialogProperties(dismissOnClickOutside = false),
         )
     }
 
@@ -490,8 +545,13 @@ object ArtistEditScreen {
     class State(
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val artistFormState: ArtistFormState,
-        val hasPendingFormSubmission: StateFlow<Boolean>,
+        val formMetadata: StateFlow<FormMetadata?>,
         val formLink: StateFlow<String?>,
         val saveTaskState: TaskState<ArtistSave.Response>,
-    )
+    ) {
+        data class FormMetadata(
+            val hasPendingFormSubmission: Boolean,
+            val hasFormLink: Boolean,
+        )
+    }
 }

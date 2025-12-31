@@ -5,3 +5,6 @@ WHERE publicKey = :publicKey;
 insertPublicKey:
 INSERT OR REPLACE INTO artistFormPublicKey
 VALUES ?;
+
+hasPublicKey:
+SELECT EXISTS(SELECT 1 FROM artistFormPublicKey WHERE artistId = :artistId);

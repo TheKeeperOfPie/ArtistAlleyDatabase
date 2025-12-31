@@ -889,7 +889,7 @@ object ArtistForm {
                 forceLock = forceLockId,
                 errorText = errorState.idErrorMessage,
             )
-            InfoSections(state.info)
+            InfoSections(state.info, boothErrorMessage = errorState.boothErrorMessage)
 
             LinkSections(
                 state.links,

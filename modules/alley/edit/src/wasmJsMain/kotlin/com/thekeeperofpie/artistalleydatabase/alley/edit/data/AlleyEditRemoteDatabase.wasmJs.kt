@@ -50,7 +50,10 @@ actual class AlleyEditRemoteDatabase(
             sendRequest(BackendRequest.Artist(dataYear, artistId))
         }
 
-    actual suspend fun loadArtistWithFormMetadata(dataYear: DataYear, artistId: Uuid): BackendRequest.ArtistWithFormMetadata.Response? =
+    actual suspend fun loadArtistWithFormMetadata(
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): BackendRequest.ArtistWithFormMetadata.Response? =
         withContext(dispatchers.io) {
             sendRequest(BackendRequest.ArtistWithFormMetadata(dataYear, artistId))
         }
@@ -162,7 +165,11 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? =
+    actual suspend fun generateFormLink(
+        dataYear: DataYear,
+        artistId: Uuid,
+        forceRegenerate: Boolean,
+    ): String? =
         withContext(dispatchers.io) {
             val oneTimeKeys = generateOneTimeEncryptionKeys()
             try {
@@ -170,6 +177,7 @@ actual class AlleyEditRemoteDatabase(
                     BackendRequest.GenerateFormKey(
                         artistId = artistId,
                         publicKeyForResponse = oneTimeKeys.publicKey,
+                        forceRegenerate = forceRegenerate,
                     )
                 ) ?: return@withContext null
                 val accessKey = AlleyCryptography.oneTimeDecrypt(

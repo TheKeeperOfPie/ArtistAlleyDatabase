@@ -147,6 +147,12 @@ actual class AlleyEditRemoteDatabase {
             artistFormQueue[Uuid.parse(previous.id)] =
                 FormSubmission(previous, after, "Some test artist form notes")
 
+            generateFormLink(
+                dataYear = after.year,
+                artistId = Uuid.parse(after.id),
+                forceRegenerate = false,
+            )
+
             simulatedLatency = 5.seconds
         }
     }
@@ -162,6 +168,7 @@ actual class AlleyEditRemoteDatabase {
             BackendRequest.ArtistWithFormMetadata.Response(
                 artist = it,
                 hasPendingFormSubmission = artistFormQueue[artistId] != null,
+                hasFormLink = artistKeys[artistId] != null,
             )
         }
 
@@ -256,7 +263,13 @@ actual class AlleyEditRemoteDatabase {
         return MerchSave.Response.Result.Success
     }
 
-    actual suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? {
+    actual suspend fun generateFormLink(
+        dataYear: DataYear,
+        artistId: Uuid,
+        forceRegenerate: Boolean,
+    ): String? {
+        simulateLatency()
+        if (artistKeys[artistId] != null && !forceRegenerate) return null
         val keys = AlleyCryptography.generate()
         artistKeys[artistId] = keys
         return "localhost://form/artist/${dataYear.serializedName}/$artistId" +

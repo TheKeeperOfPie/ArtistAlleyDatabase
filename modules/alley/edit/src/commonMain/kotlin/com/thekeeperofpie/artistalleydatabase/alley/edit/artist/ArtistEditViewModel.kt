@@ -28,6 +28,7 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlin.uuid.Uuid
@@ -47,8 +48,11 @@ class ArtistEditViewModel(
     private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
     private val artist =
         savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>(Json, "artist", null)
-    private val hasPendingFormSubmission =
-        savedStateHandle.getMutableStateFlow("hasPendingFormSubmission", false)
+    private val formMetadata =
+        savedStateHandle.getMutableStateFlow<ArtistEditScreen.State.FormMetadata?>(
+            key = "formMetadata",
+            initialValue = null,
+        )
     val state = ArtistEditScreen.State(
         initialArtist = artist,
         artistFormState = savedStateHandle.saveable(
@@ -56,7 +60,7 @@ class ArtistEditViewModel(
             saver = ArtistFormState.Saver,
             init = { ArtistFormState(artistId) },
         ),
-        hasPendingFormSubmission = hasPendingFormSubmission,
+        formMetadata = formMetadata,
         formLink = formLink,
         saveTaskState = saveTask.state,
     )
@@ -87,7 +91,10 @@ class ArtistEditViewModel(
             merchById = tagAutocomplete.merchById.first(),
             mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
         )
-        hasPendingFormSubmission.value = response.hasPendingFormSubmission
+        formMetadata.value = ArtistEditScreen.State.FormMetadata(
+            hasPendingFormSubmission = response.hasPendingFormSubmission,
+            hasFormLink = response.hasFormLink,
+        )
 
         val images = database.loadArtistImages(dataYear, artist)
         if (images.isNotEmpty()) {
@@ -104,10 +111,19 @@ class ArtistEditViewModel(
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }
 
-    fun generateFormLink() = formLinkJob.launch()
+    fun generateFormLink(forceRegenerate: Boolean) = formLinkJob.launch { forceRegenerate }
+    fun onClearFormLink() {
+        formMetadata.update {
+            it?.copy(hasFormLink = true) ?: ArtistEditScreen.State.FormMetadata(
+                hasPendingFormSubmission = false,
+                hasFormLink = true,
+            )
+        }
+        formLink.value = null
+    }
 
-    private suspend fun loadFormLink() = withContext(dispatchers.io) {
-        formLink.value = database.generateFormLink(dataYear, artistId)
+    private suspend fun loadFormLink(forceRegenerate: Boolean) = withContext(dispatchers.io) {
+        formLink.value = database.generateFormLink(dataYear, artistId, forceRegenerate)
     }
 
     private fun captureDatabaseEntry(

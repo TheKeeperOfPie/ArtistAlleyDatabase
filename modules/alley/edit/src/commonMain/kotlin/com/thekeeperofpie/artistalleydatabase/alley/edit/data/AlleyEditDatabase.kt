@@ -55,7 +55,13 @@ class AlleyEditDatabase(
             ?: artistEntryDao.getEntry(dataYear, artistId.toString())
                 ?.artist
                 ?.databaseEntry
-                ?.let { BackendRequest.ArtistWithFormMetadata.Response(it, false) }
+                ?.let {
+                    BackendRequest.ArtistWithFormMetadata.Response(
+                        artist = it,
+                        hasPendingFormSubmission = false,
+                        hasFormLink = false,
+                    )
+                }
 
     suspend fun loadArtistHistory(dataYear: DataYear, artistId: Uuid) =
         remoteDatabase.loadArtistHistory(dataYear, artistId)
@@ -125,8 +131,11 @@ class AlleyEditDatabase(
     suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result =
         remoteDatabase.saveMerch(initial, updated)
 
-    suspend fun generateFormLink(dataYear: DataYear, artistId: Uuid): String? =
-        remoteDatabase.generateFormLink(dataYear, artistId)
+    suspend fun generateFormLink(
+        dataYear: DataYear,
+        artistId: Uuid,
+        forceRegenerate: Boolean,
+    ): String? = remoteDatabase.generateFormLink(dataYear, artistId, forceRegenerate)
 
     suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
         remoteDatabase.loadArtistFormQueue()
