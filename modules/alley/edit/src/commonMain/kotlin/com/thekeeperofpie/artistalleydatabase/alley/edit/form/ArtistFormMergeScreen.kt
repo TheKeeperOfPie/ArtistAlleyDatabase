@@ -282,7 +282,7 @@ internal object ArtistFormMergeScreen {
     ) {
         Column(modifier = modifier.fillMaxWidth()) {
             val formNotes = diff?.formNotes
-            if (formNotes != null) {
+            if (!formNotes.isNullOrBlank()) {
                 OutlinedCard(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(Res.string.alley_edit_artist_form_merge_notes),

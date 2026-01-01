@@ -36,6 +36,7 @@ class ExclusiveProgressJob<T, R>(
                 val result = run(captured)
                 JobProgress.Finished.Result(result)
             } catch (throwable: Throwable) {
+                throwable.printStackTrace()
                 JobProgress.Finished.UnhandledError(throwable)
             }
         }

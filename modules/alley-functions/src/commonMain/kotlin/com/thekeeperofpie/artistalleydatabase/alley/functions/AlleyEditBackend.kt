@@ -119,6 +119,7 @@ object AlleyEditBackend {
                 .getArtist(request.artistId.toString())
                 .awaitAsOneOrNull()
                 ?.toArtistDatabaseEntry()
+                ?.fixForJs()
             DataYear.ANIME_EXPO_2023,
             DataYear.ANIME_EXPO_2024,
             DataYear.ANIME_EXPO_2025,
@@ -137,6 +138,7 @@ object AlleyEditBackend {
                 .getArtist(request.artistId.toString())
                 .awaitAsOneOrNull()
                 ?.toArtistDatabaseEntry()
+                ?.fixForJs()
                 ?.let {
                     val formDatabase = Databases.formDatabase(context)
                     val formEntry = formDatabase.artistFormEntryQueries
@@ -159,11 +161,6 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2025,
                 -> null // TODO: Return legacy years?
         }
-
-    // TODO: js target boolean equality broken
-    // JS interop infers this as 0, whereas KotlinX Serialization requires true
-    @Suppress("EQUALITY_NOT_APPLICABLE_WARNING")
-    private fun coerceBooleanForJs(value: Boolean?) = value == true || value.toString() == "1"
 
     private suspend fun loadArtistFormQueue(context: EventContext): List<ArtistFormQueueEntry> =
         Databases.formDatabase(context)
@@ -267,8 +264,11 @@ object AlleyEditBackend {
         DataYear.ANIME_EXPO_2026 -> {
             val database = Databases.editDatabase(context, tryCreate = true)
             val currentArtist =
-                database.artistEntryAnimeExpo2026Queries.getArtist(request.updated.id)
-                    .awaitAsOneOrNull()?.toArtistDatabaseEntry()
+                database.artistEntryAnimeExpo2026Queries
+                    .getArtist(request.updated.id)
+                    .awaitAsOneOrNull()
+                    ?.toArtistDatabaseEntry()
+                    ?.fixForJs()
             if (currentArtist != null && currentArtist != request.initial) {
                 ArtistSave.Response.Outdated(currentArtist)
             } else {

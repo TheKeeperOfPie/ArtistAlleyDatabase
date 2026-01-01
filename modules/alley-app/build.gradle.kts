@@ -1,7 +1,7 @@
-
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import java.nio.file.Files
 import java.util.Properties
 import java.util.zip.CRC32
 
@@ -411,7 +411,10 @@ tasks.register("webRelease") {
         val wranglerToml = folder.resolve("wrangler.toml")
         val wranglerTomlEdited = wranglerToml.readText()
             .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
-            .replace("artistAlleyFormDatabaseId", properties.getProperty("artistAlleyFormDatabaseId"))
+            .replace(
+                "artistAlleyFormDatabaseId",
+                properties.getProperty("artistAlleyFormDatabaseId")
+            )
             .replace("artistAlleyCacheKVId", properties.getProperty("artistAlleyCacheKVId"))
             .replace("artistAlleyFormKeysKVId", properties.getProperty("artistAlleyFormKeysKVId"))
         wranglerToml.writeText(wranglerTomlEdited)
@@ -432,6 +435,18 @@ tasks.register("webRelease") {
         val formJsEdited = formJs.readText()
             .replace("webpackChunkalley_form", "webpackChunkalley_app")
         formJs.writeText(formJsEdited)
+
+        val publicPath = folder.resolve("public").apply { mkdir() }.toPath()
+        val filesToKeepInRoot = setOf(
+            ".gitignore",
+            ".wrangler",
+            "public",
+            "functions",
+            "wrangler",
+        )
+        folder.listFiles()!!
+            .filter { it.nameWithoutExtension !in filesToKeepInRoot && it.name !in filesToKeepInRoot }
+            .forEach { Files.move(it.toPath(), publicPath.resolve(it.name)) }
     }
 }
 
