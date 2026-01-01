@@ -40,6 +40,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.insert
+import androidx.compose.foundation.text.input.placeCursorAtEnd
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -89,6 +90,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -97,6 +99,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.entry.generated.resources.Res
@@ -1121,6 +1124,7 @@ private fun <T> EntryAutocompleteDropdown(
                 LaunchedEffect(text.text, predictions, isFocused) {
                     if (isFocused) {
                         onExpandedChange(true)
+                        focusRequester.requestFocus()
                     }
                 }
                 val focusRequesters = remember(focusRequester, predictions.size) {
@@ -1134,24 +1138,42 @@ private fun <T> EntryAutocompleteDropdown(
                         .onPreviewKeyEvent {
                             if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                             val char = it.utf16CodePoint.toChar()
-                            if (char.isLetterOrDigit() ||
-                                char.category == CharCategory.SPACE_SEPARATOR
-                            ) {
-                                onExpandedChange(false)
-                                text.edit { insert(length, it.toString()) }
-                                fieldFocusRequester.requestFocus()
-                                true
-                            } else if (it.key == Key.Backspace) {
-                                text.edit {
-                                    if (length > 0) {
-                                        delete(length - 1, length)
-                                    }
+                            // TODO: Re-focusing the text field after selecting a prediction breaks
+                            //  text input except for alpha characters, this manually handles some
+                            //  common events
+                            when {
+                                it.key == Key.DirectionLeft -> text.edit {
+                                    selection = TextRange((selection.start - 1).coerceAtLeast(0))
                                 }
-                                fieldFocusRequester.requestFocus()
-                                true
-                            } else {
-                                false
+                                it.key == Key.DirectionRight -> text.edit {
+                                    selection =
+                                        TextRange((selection.start + 1).coerceAtMost(length))
+                                }
+                                it.key == Key.A && it.isCtrlPressed ->
+                                    text.edit { selection = TextRange(0, length) }
+                                it.key == Key.MoveHome -> text.edit { placeCursorBeforeCharAt(0) }
+                                it.key == Key.MoveEnd -> text.edit { placeCursorAtEnd() }
+                                it.key == Key.Backspace -> {
+                                    text.edit {
+                                        if (length > 0) {
+                                            delete(length - 1, length)
+                                        }
+                                    }
+                                    fieldFocusRequester.requestFocus()
+                                    return@onPreviewKeyEvent true
+                                }
+                                char.isLetterOrDigit() ||
+                                        char.category == CharCategory.SPACE_SEPARATOR -> {
+                                    onExpandedChange(false)
+                                    text.edit {
+                                        this.insert(selection.start, char.toString())
+                                    }
+                                    fieldFocusRequester.requestFocus()
+                                    return@onPreviewKeyEvent true
+                                }
                             }
+
+                            false
                         }
                 ) {
                     val focusManager = LocalFocusManager.current
