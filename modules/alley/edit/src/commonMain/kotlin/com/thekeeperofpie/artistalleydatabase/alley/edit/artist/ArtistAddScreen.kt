@@ -238,7 +238,9 @@ object ArtistAddScreen {
                         )
                     }
                 }
-                if (isExpanded) {
+                if (isExpanded &&
+                    (state.artistFormState.images.isNotEmpty() || !mergingArtist.isEmpty())
+                ) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()

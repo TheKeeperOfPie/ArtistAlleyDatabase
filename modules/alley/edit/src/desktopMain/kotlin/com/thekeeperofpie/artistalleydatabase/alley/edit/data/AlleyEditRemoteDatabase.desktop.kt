@@ -154,24 +154,28 @@ actual class AlleyEditRemoteDatabase {
                 forceRegenerate = false,
             )
 
-            simulatedLatency = 5.seconds
+            simulatedLatency = 3.seconds
         }
     }
 
-    actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
-        artistsByDataYearAndId[dataYear]?.get(artistId.toString())
+    actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? {
+        simulateLatency()
+        return artistsByDataYearAndId[dataYear]?.get(artistId.toString())
+    }
 
     actual suspend fun loadArtistWithFormMetadata(
         dataYear: DataYear,
         artistId: Uuid,
-    ): BackendRequest.ArtistWithFormMetadata.Response? =
-        artistsByDataYearAndId[dataYear]?.get(artistId.toString())?.let {
+    ): BackendRequest.ArtistWithFormMetadata.Response? {
+        simulateLatency()
+        return artistsByDataYearAndId[dataYear]?.get(artistId.toString())?.let {
             BackendRequest.ArtistWithFormMetadata.Response(
                 artist = it,
                 hasPendingFormSubmission = artistFormQueue[artistId] != null,
                 hasFormLink = artistKeys[artistId] != null,
             )
         }
+    }
 
     actual suspend fun loadArtistHistory(
         dataYear: DataYear,

@@ -15,7 +15,8 @@
     <string name="alley_edit_artist_list_sort_booth">Booth</string>
     <string name="alley_edit_artist_list_sort_name">Name</string>
 
-    <string name="alley_edit_artist_edit_title_editing">Editing %1$s - %2$s</string>
+    <string name="alley_edit_artist_edit_title_editing_name">Editing %1$s - %2$s</string>
+    <string name="alley_edit_artist_edit_title_editing_booth_name">Editing %1$s - %2$s - %3$s</string>
     <string name="alley_edit_artist_edit_title_adding">Adding %1$s</string>
     <string name="alley_edit_artist_edit_id">ID</string>
     <string name="alley_edit_artist_edit_status">Status</string>

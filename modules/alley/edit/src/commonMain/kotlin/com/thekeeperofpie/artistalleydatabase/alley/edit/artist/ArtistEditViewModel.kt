@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.serialization.saved
@@ -78,29 +79,33 @@ class ArtistEditViewModel(
         }
     }
 
-    private suspend fun loadArtistInfo() = withContext(PlatformDispatchers.IO) {
+    private suspend fun loadArtistInfo() = withContext(dispatchers.io) {
         val response = database.loadArtistWithFormMetadata(dataYear, artistId)
         if (response == null) {
             hasLoaded = true
             return@withContext
         }
         val artist = response.artist
-        this@ArtistEditViewModel.artist.value = artist
-        state.artistFormState.applyDatabaseEntry(
-            artist = artist,
-            seriesById = tagAutocomplete.seriesById.first(),
-            merchById = tagAutocomplete.merchById.first(),
-            mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
-        )
-        formMetadata.value = ArtistEditScreen.State.FormMetadata(
-            hasPendingFormSubmission = response.hasPendingFormSubmission,
-            hasFormLink = response.hasFormLink,
-        )
-
         val images = database.loadArtistImages(dataYear, artist)
-        if (images.isNotEmpty()) {
-            state.artistFormState.images.replaceAll(images)
+        withContext(dispatchers.main) {
+        Snapshot.withMutableSnapshot {
+            this@ArtistEditViewModel.artist.value = artist
+            state.artistFormState.applyDatabaseEntry(
+                artist = artist,
+                seriesById = tagAutocomplete.seriesById.first(),
+                merchById = tagAutocomplete.merchById.first(),
+                mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
+            )
+            formMetadata.value = ArtistEditScreen.State.FormMetadata(
+                hasPendingFormSubmission = response.hasPendingFormSubmission,
+                hasFormLink = response.hasFormLink,
+            )
+
+            if (images.isNotEmpty()) {
+                state.artistFormState.images.replaceAll(images)
+            }
         }
+            }
         hasLoaded = true
     }
 

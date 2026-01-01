@@ -75,7 +75,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning_action_open
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing_booth_name
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_abandon_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_abandon_title
@@ -236,15 +237,27 @@ object ArtistEditScreen {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                            text = stringResource(
-                                Res.string.alley_edit_artist_edit_title_editing,
-                                stringResource(dataYear.shortName),
-                                state.artistFormState.info.name.value.text.ifBlank {
-                                    state.artistFormState.editorState.id.value.text.toString()
-                                },
-                            ),
-                        )
+                        val formState = state.artistFormState
+                        val name = formState.info.name.value.text.ifBlank {
+                            formState.editorState.id.value.text.toString()
+                        }
+                        val conventionName = stringResource(dataYear.shortName)
+                        val booth = formState.info.booth.value.text.toString()
+                        val text = if (booth.isNotEmpty()) {
+                            stringResource(
+                                Res.string.alley_edit_artist_edit_title_editing_booth_name,
+                                conventionName,
+                                booth,
+                                name,
+                            )
+                        } else {
+                            stringResource(
+                                Res.string.alley_edit_artist_edit_title_editing_name,
+                                conventionName,
+                                name,
+                            )
+                        }
+                        Text(text = text)
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(false) }) },
                     actions = {
@@ -270,28 +283,37 @@ object ArtistEditScreen {
                 modifier = Modifier.padding(scaffoldPadding)
             ) {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
+                val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                 val form = remember {
                     movableContentOf { modifier: Modifier ->
                         Column(modifier = modifier) {
-                            val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                             val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
                             if (formMetadata?.hasPendingFormSubmission == true) {
                                 PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
                             }
-                            ArtistForm(
-                                initialArtist = { initialArtist },
-                                state = state.artistFormState,
-                                errorState = errorState,
-                                seriesById = seriesById,
-                                seriesPredictions = seriesPredictions,
-                                merchById = merchById,
-                                merchPredictions = merchPredictions,
-                                seriesImage = seriesImage,
-                            )
+                            if (initialArtist == null) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize().padding(32.dp)
+                                ) {
+                                    CircularWavyProgressIndicator()
+                                }
+                            } else {
+                                ArtistForm(
+                                    initialArtist = { initialArtist },
+                                    state = state.artistFormState,
+                                    errorState = errorState,
+                                    seriesById = seriesById,
+                                    seriesPredictions = seriesPredictions,
+                                    merchById = merchById,
+                                    merchPredictions = merchPredictions,
+                                    seriesImage = seriesImage,
+                                )
+                            }
                         }
                     }
                 }
-                if (isExpanded) {
+                if (isExpanded && state.artistFormState.images.isNotEmpty()) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
@@ -323,11 +345,6 @@ object ArtistEditScreen {
                                 .widthIn(max = 960.dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            EditImagesButton(
-                                images = state.artistFormState.images,
-                                onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
                             ImagePager(
                                 images = state.artistFormState.images,
                                 pagerState = imagePagerState,
@@ -338,6 +355,14 @@ object ArtistEditScreen {
                             )
 
                             form(Modifier.fillMaxWidth())
+
+                            if (initialArtist != null) {
+                                EditImagesButton(
+                                    images = state.artistFormState.images,
+                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
                         }
                     }
                 }
