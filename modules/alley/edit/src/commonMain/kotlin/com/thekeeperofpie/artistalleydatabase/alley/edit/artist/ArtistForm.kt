@@ -98,7 +98,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -1162,13 +1165,47 @@ object ArtistForm {
             entryPredictions = predictions,
             removeLastItem = { items.removeLastOrNull()?.titlePreferred },
             prediction = { _, value ->
-                Text(
-                    text = if (value.faked) {
-                        "\"${value.titlePreferred}\""
-                    } else {
-                        value.titlePreferred
-                    },
-                )
+                Column {
+                    val languageOptionMedia = LocalLanguageOptionMedia.current
+                    val query = state.value.text.toString()
+                    val title = buildAnnotatedString {
+                        val name = value.name(languageOptionMedia)
+                        append(if (value.faked) "\"${name}\"" else name)
+                        if (!value.faked) {
+                            val startIndex = name.indexOf(query, ignoreCase = true)
+                            if (startIndex >= 0) {
+                                addStyle(
+                                    style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
+                                    start = startIndex,
+                                    end = startIndex + query.length,
+                                )
+                            }
+                        }
+                    }
+                    Text(text = title)
+
+                    if (!value.faked) {
+                        val otherTitles = value.otherTitles(languageOptionMedia)
+                        if (otherTitles.isNotEmpty()) {
+                            val text = buildAnnotatedString {
+                                val value = otherTitles.joinToString(" / ")
+                                append(value)
+                                val startIndex = value.indexOf(query, ignoreCase = true)
+                                if (startIndex >= 0) {
+                                    addStyle(
+                                        style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
+                                        start = startIndex,
+                                        end = startIndex + query.length,
+                                    )
+                                }
+                            }
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                }
             },
             sortValue = { it.titlePreferred },
             item = { _, value ->
@@ -1183,6 +1220,7 @@ object ArtistForm {
                         series = value,
                         image = { image(value) },
                         textStyle = textStyle,
+                        showAllTitles = true,
                         modifier = Modifier.weight(1f)
                     )
 

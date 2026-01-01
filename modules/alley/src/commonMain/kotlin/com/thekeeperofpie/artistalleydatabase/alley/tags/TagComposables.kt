@@ -27,12 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
@@ -48,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
@@ -110,37 +109,7 @@ fun SeriesRow(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         )
 
-        val languageOptionMedia = LocalLanguageOptionMedia.current
-        val title = if (showAllTitles && series != null) {
-            val colorScheme = MaterialTheme.colorScheme
-            remember(series, languageOptionMedia, colorScheme) {
-                val name = series.name(languageOptionMedia)
-                val otherTitles = listOf(
-                    series.titlePreferred,
-                    series.titleEnglish,
-                    series.titleRomaji,
-                    series.titleNative,
-                ).distinct() - name
-                buildAnnotatedString {
-                    withStyle(SpanStyle(color = colorScheme.secondary)) {
-                        append(name)
-                    }
-                    if (otherTitles.isNotEmpty()) {
-                        otherTitles.forEach {
-                            append(" / ")
-                            append(it)
-                        }
-                    }
-                }
-            }
-        } else {
-            buildAnnotatedString {
-                append(series?.name(languageOptionMedia))
-            }
-        }
-        Text(
-            text = title,
-            style = textStyle,
+        Column(
             modifier = Modifier
                 .minimumInteractiveComponentSize()
                 .weight(1f)
@@ -149,7 +118,26 @@ fun SeriesRow(
                     visible = series == null,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
-        )
+        ) {
+            val languageOptionMedia = LocalLanguageOptionMedia.current
+            val name = series?.name(languageOptionMedia).orEmpty()
+            Text(
+                text = name,
+                color = textStyle.color.takeOrElse { MaterialTheme.colorScheme.secondary },
+                style = textStyle,
+            )
+
+            if (showAllTitles) {
+                val otherTitles = series?.otherTitles(languageOptionMedia)
+                if (!otherTitles.isNullOrEmpty()) {
+                    Text(
+                        text = otherTitles.joinToString(separator = " / "),
+                        style = textStyle,
+                        modifier = Modifier.padding(start = 32.dp)
+                    )
+                }
+            }
+        }
 
         val uriHandler = LocalUriHandler.current
         if (series?.aniListId != null) {

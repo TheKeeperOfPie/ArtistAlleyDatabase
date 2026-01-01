@@ -16,3 +16,10 @@ fun SeriesInfo.name(languageOption: AniListLanguageOption) = when (languageOptio
     AniListLanguageOption.NATIVE -> titleNative
     AniListLanguageOption.ROMAJI -> titleRomaji
 }
+
+fun SeriesInfo.otherTitles(languageOption: AniListLanguageOption): List<String> = listOf(
+    titlePreferred,
+    titleEnglish,
+    titleRomaji,
+    titleNative,
+).distinct() - name(languageOption)
