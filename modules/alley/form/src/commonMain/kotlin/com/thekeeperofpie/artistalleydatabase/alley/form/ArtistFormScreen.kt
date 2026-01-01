@@ -62,6 +62,17 @@ import artistalleydatabase.modules.alley.form.generated.resources.Res
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_confirm_merge
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_submit_private_key
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_booth_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_catalog_links_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_commissions_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_form_notes_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_footer
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_header
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_links_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_name_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_notes_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_store_links_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_summary_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_action
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_prompt
@@ -328,16 +339,44 @@ object ArtistFormScreen {
                             PreviousYearPrompt(onClickMerge = { showMerge = true })
                         }
 
+                        InstructionsHeader()
+
                         PasteLinkSection(formState.links)
-                        InfoSections(
-                            state = formState.info,
-                            boothErrorMessage = errorState.boothErrorMessage
+                        BoothSection(
+                            state = formState.info.booth,
+                            label = { Text(stringResource(Res.string.alley_form_artist_booth_placeholder)) },
+                            errorText = errorState.boothErrorMessage,
                         )
-                        LinkSections(
-                            state = formState.links,
-                            linksErrorMessage = errorState.linksErrorMessage,
-                            storeLinksErrorMessage = errorState.storeLinksErrorMessage,
-                            catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
+                        NameSection(
+                            state = formState.info.name,
+                            label = { Text(stringResource(Res.string.alley_form_artist_name_placeholder)) },
+                        )
+                        SummarySection(
+                            state = formState.info.summary,
+                            label = { Text(stringResource(Res.string.alley_form_artist_summary_placeholder)) },
+                        )
+                        LinksSection(
+                            state = formState.links.stateLinks,
+                            links = formState.links.links,
+                            label = { Text(stringResource(Res.string.alley_form_artist_links_placeholder)) },
+                            pendingErrorMessage = errorState.linksErrorMessage,
+                        )
+                        StoreLinksSection(
+                            state = formState.links.stateStoreLinks,
+                            storeLinks = formState.links.storeLinks,
+                            label = { Text(stringResource(Res.string.alley_form_artist_store_links_placeholder)) },
+                            pendingErrorMessage = errorState.storeLinksErrorMessage,
+                        )
+                        CatalogLinksSection(
+                            state = formState.links.stateCatalogLinks,
+                            catalogLinks = formState.links.catalogLinks,
+                            label = { Text(stringResource(Res.string.alley_form_artist_catalog_links_placeholder)) },
+                            pendingErrorMessage = errorState.catalogLinksErrorMessage,
+                        )
+                        CommissionsSection(
+                            state = formState.links.stateCommissions,
+                            commissions = formState.links.commissions,
+                            label = { Text(stringResource(Res.string.alley_form_artist_commissions_placeholder)) },
                         )
 
                         // TODO: Confirmed tag support
@@ -354,12 +393,19 @@ object ArtistFormScreen {
                             merchPredictions = merchPredictions,
                             showConfirmed = false,
                         )
-                        NotesSection(formState.notes, this@ArtistForm.initialArtist?.notes)
+                        NotesSection(
+                            state = formState.notes,
+                            initialValue = this@ArtistForm.initialArtist?.notes,
+                            label = { Text(stringResource(Res.string.alley_form_artist_notes_placeholder)) },
+                        )
                         NotesSection(
                             state = formState.formNotes,
                             initialValue = initialFormDiff()?.notes,
-                            label = Res.string.alley_form_notes,
+                            header = Res.string.alley_form_notes,
+                            label = { Text(stringResource(Res.string.alley_form_artist_form_notes_placeholder)) },
                         )
+
+                        InstructionsFooter()
                     }
 
                     val previousYearData = previousYearData()
@@ -552,6 +598,36 @@ object ArtistFormScreen {
                     Text(stringResource(Res.string.alley_form_previous_year_action_confirm))
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun InstructionsHeader() {
+        OutlinedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.alley_form_artist_instructions_header),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+        }
+    }
+
+    @Composable
+    private fun InstructionsFooter() {
+        OutlinedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.alley_form_artist_instructions_footer),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
         }
     }
 

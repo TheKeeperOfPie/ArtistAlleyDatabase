@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldBuffer
+import androidx.compose.foundation.text.input.allCaps
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
@@ -154,13 +156,23 @@ interface ArtistFormScope : EntryFormScope {
     fun InfoSections(state: ArtistFormState.InfoState, boothErrorMessage: (() -> String?)? = null)
 
     @Composable
-    fun BoothSection(state: EntryForm2.SingleTextState, errorText: (() -> String?)? = null)
+    fun BoothSection(
+        state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)? = null,
+        errorText: (() -> String?)? = null,
+    )
 
     @Composable
-    fun NameSection(state: EntryForm2.SingleTextState)
+    fun NameSection(
+        state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)? = null,
+    )
 
     @Composable
-    fun SummarySection(state: EntryForm2.SingleTextState)
+    fun SummarySection(
+        state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)? = null,
+    )
 
     @Composable
     fun LinkSections(
@@ -174,6 +186,7 @@ interface ArtistFormScope : EntryFormScope {
     fun LinksSection(
         state: EntryForm2.SingleTextState,
         links: SnapshotStateList<LinkModel>,
+        label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
     )
 
@@ -181,6 +194,7 @@ interface ArtistFormScope : EntryFormScope {
     fun StoreLinksSection(
         state: EntryForm2.SingleTextState,
         storeLinks: SnapshotStateList<LinkModel>,
+        label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
     )
 
@@ -188,12 +202,14 @@ interface ArtistFormScope : EntryFormScope {
     fun CatalogLinksSection(
         state: EntryForm2.SingleTextState,
         catalogLinks: SnapshotStateList<String>,
+        label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
     )
 
     @Composable
     fun CommissionsSection(
         state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)? = null,
         commissions: SnapshotStateList<CommissionModel>,
     )
 
@@ -229,7 +245,8 @@ interface ArtistFormScope : EntryFormScope {
     fun NotesSection(
         state: EntryForm2.SingleTextState,
         initialValue: String?,
-        label: StringResource = Res.string.alley_edit_artist_edit_notes,
+        header: StringResource = Res.string.alley_edit_artist_edit_notes,
+        label: @Composable (() -> Unit)? = null,
     )
 }
 
@@ -336,13 +353,18 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun BoothSection(state: EntryForm2.SingleTextState, errorText: (() -> String?)?) {
+    override fun BoothSection(
+        state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)?,
+        errorText: (() -> String?)?,
+    ) {
         val revertDialogState = rememberRevertDialogState(initialArtist?.booth)
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
-            inputTransformation = InputTransformation.maxLength(3),
+            inputTransformation = InputTransformation.maxLength(3).allCaps(Locale.current),
             outputTransformation = revertDialogState.outputTransformation,
+            label = label,
             errorText = errorText,
             additionalHeaderActions = {
                 with(this@ArtistFormScopeImpl) {
@@ -355,12 +377,16 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun NameSection(state: EntryForm2.SingleTextState) {
+    override fun NameSection(
+        state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)?,
+    ) {
         val revertDialogState = rememberRevertDialogState(initialArtist?.name)
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
             outputTransformation = revertDialogState.outputTransformation,
+            label = label,
             additionalHeaderActions = {
                 with(this@ArtistFormScopeImpl) {
                     ShowRevertIconButton(revertDialogState, state)
@@ -372,12 +398,16 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun SummarySection(state: EntryForm2.SingleTextState) {
+    override fun SummarySection(
+        state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)?,
+    ) {
         val revertDialogState = rememberRevertDialogState(initialArtist?.summary)
         SingleTextSection(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
             outputTransformation = revertDialogState.outputTransformation,
+            label = label,
             additionalHeaderActions = {
                 with(this@ArtistFormScopeImpl) {
                     ShowRevertIconButton(revertDialogState, state)
@@ -410,13 +440,14 @@ private abstract class ArtistFormScopeImpl(
             catalogLinks = state.catalogLinks,
             pendingErrorMessage = catalogLinksErrorMessage,
         )
-        CommissionsSection(state.stateCommissions, state.commissions)
+        CommissionsSection(state = state.stateCommissions, commissions = state.commissions)
     }
 
     @Composable
     override fun LinksSection(
         state: EntryForm2.SingleTextState,
         links: SnapshotStateList<LinkModel>,
+        label: @Composable (() -> Unit)?,
         pendingErrorMessage: () -> String?,
     ) {
         ArtistForm.LinksSection(
@@ -425,6 +456,7 @@ private abstract class ArtistFormScopeImpl(
             listRevertDialogState =
                 rememberListRevertDialogState(initialArtist?.links?.map(LinkModel::parse)),
             items = links,
+            label = label,
             pendingErrorMessage = pendingErrorMessage,
         )
     }
@@ -433,6 +465,7 @@ private abstract class ArtistFormScopeImpl(
     override fun StoreLinksSection(
         state: EntryForm2.SingleTextState,
         storeLinks: SnapshotStateList<LinkModel>,
+        label: @Composable (() -> Unit)?,
         pendingErrorMessage: () -> String?,
     ) {
         ArtistForm.LinksSection(
@@ -441,6 +474,7 @@ private abstract class ArtistFormScopeImpl(
             listRevertDialogState =
                 rememberListRevertDialogState(initialArtist?.storeLinks?.map(LinkModel::parse)),
             items = storeLinks,
+            label = label,
             pendingErrorMessage = pendingErrorMessage,
         )
     }
@@ -449,6 +483,7 @@ private abstract class ArtistFormScopeImpl(
     override fun CatalogLinksSection(
         state: EntryForm2.SingleTextState,
         catalogLinks: SnapshotStateList<String>,
+        label: @Composable (() -> Unit)?,
         pendingErrorMessage: () -> String?,
     ) {
         val revertDialogState = rememberListRevertDialogState(initialArtist?.catalogLinks)
@@ -461,6 +496,7 @@ private abstract class ArtistFormScopeImpl(
             itemToSubText = { null },
             itemToSerializedValue = { it },
             itemToCommitted = { it },
+            label = label,
             pendingErrorMessage = pendingErrorMessage,
             additionalHeaderActions = {
                 with(this@ArtistFormScopeImpl) {
@@ -480,6 +516,7 @@ private abstract class ArtistFormScopeImpl(
     @Composable
     override fun CommissionsSection(
         state: EntryForm2.SingleTextState,
+        label: @Composable (() -> Unit)?,
         commissions: SnapshotStateList<CommissionModel>,
     ) {
         val onSiteText = stringResource(AlleyRes.string.alley_artist_commission_on_site)
@@ -521,6 +558,7 @@ private abstract class ArtistFormScopeImpl(
             },
             itemToSerializedValue = { it.serializedValue },
             itemToCommitted = CommissionModel::parse,
+            label = label,
             predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
             preferPrediction = false,
             additionalHeaderActions = {
@@ -715,12 +753,14 @@ private abstract class ArtistFormScopeImpl(
     override fun NotesSection(
         state: EntryForm2.SingleTextState,
         initialValue: String?,
-        label: StringResource,
+        header: StringResource,
+        label: @Composable (() -> Unit)?,
     ) {
         val revertDialogState = rememberRevertDialogState(initialValue)
         LongTextSection(
             state = state,
-            headerText = { Text(stringResource(label)) },
+            headerText = { Text(stringResource(header)) },
+            label = label,
             outputTransformation = revertDialogState.outputTransformation,
             additionalHeaderActions = {
                 with(this@ArtistFormScopeImpl) {
@@ -728,7 +768,7 @@ private abstract class ArtistFormScopeImpl(
                 }
             },
         )
-        FieldRevertDialog(revertDialogState, state, label)
+        FieldRevertDialog(revertDialogState, state, header)
     }
 
     @Composable
@@ -954,7 +994,7 @@ object ArtistForm {
                 NotesSection(
                     state = state.editorState.editorNotes,
                     initialValue = this@ArtistFormScope.initialArtist?.editorNotes,
-                    label = Res.string.alley_edit_artist_edit_editor_notes,
+                    header = Res.string.alley_edit_artist_edit_editor_notes,
                 )
             }
         }
@@ -1088,6 +1128,7 @@ object ArtistForm {
         itemToCommitted: ((String) -> T)? = null,
         leadingIcon: (T) -> ImageVector? = { null },
         predictionToText: (T) -> String = itemToText,
+        label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
         preferPrediction: Boolean = true,
         equalsComparison: (T) -> Any? = { it },
@@ -1170,6 +1211,7 @@ object ArtistForm {
                     }
                 }
             },
+            label = label,
             pendingErrorMessage = pendingErrorMessage,
             preferPrediction = preferPrediction,
             additionalHeaderActions = additionalHeaderActions,
@@ -1298,6 +1340,7 @@ object ArtistForm {
         entryPredictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
         prediction: @Composable (index: Int, T) -> Unit = item,
         sortValue: ((T) -> String)? = null,
+        label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
         preferPrediction: Boolean = true,
         additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
@@ -1319,6 +1362,7 @@ object ArtistForm {
             prediction = prediction,
             preferPrediction = preferPrediction,
             onPredictionChosen = addUniqueErrorState::addAndEnforceUnique,
+            label = label,
             pendingErrorMessage = { addUniqueErrorState.errorMessage ?: pendingErrorMessage() },
             additionalHeaderActions = additionalHeaderActions,
         )
@@ -1356,6 +1400,7 @@ object ArtistForm {
         title: StringResource,
         listRevertDialogState: ListRevertDialogState<LinkModel>,
         items: SnapshotStateList<LinkModel>,
+        label: @Composable (() -> Unit)?,
         pendingErrorMessage: () -> String?,
     ) {
         MultiTextSection(
@@ -1390,6 +1435,7 @@ object ArtistForm {
                     },
                 )
             },
+            label = label,
             pendingErrorMessage = pendingErrorMessage,
             additionalHeaderActions = {
                 with(formScope) {

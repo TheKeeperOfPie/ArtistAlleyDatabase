@@ -28,4 +28,16 @@
     <string name="alley_form_done_add_to_calendar_action">Add to Google Calendar</string>
     <string name="alley_form_done_update_prompt">To update your data at any time, open your access link again.</string>
     <string name="alley_form_done_update_action_edit">Edit your response</string>
+
+    <string name="alley_form_artist_instructions_header">All fields are optional. Non-empty fields are locked by default to avoid accidental edits; click the lock icon to unlock.</string>
+    <string name="alley_form_artist_booth_placeholder">Table number (i.e. A01), leave blank if not known yet</string>
+    <string name="alley_form_artist_name_placeholder">Display/brand/artist name</string>
+    <string name="alley_form_artist_summary_placeholder">Describe yourself and your art; can be different from convention submission</string>
+    <string name="alley_form_artist_links_placeholder">Links to active social media (Bluesky, Instagram, X, etc.)</string>
+    <string name="alley_form_artist_store_links_placeholder">Store pages (BigCartel, Etsy, Inprnt, etc.)</string>
+    <string name="alley_form_artist_catalog_links_placeholder">Portfolio link (ArtStation, Carrd, personal sites, etc.)</string>
+    <string name="alley_form_artist_commissions_placeholder">Commission availability (VGen links, Online/On-site, etc.)</string>
+    <string name="alley_form_artist_notes_placeholder">Anything not captured in another field, should be exceptional</string>
+    <string name="alley_form_artist_form_notes_placeholder">Any clarifications, misc. requests, or comments</string>
+    <string name="alley_form_artist_instructions_footer">Catalog upload and stamp rallies will be available closer to con.</string>
 </resources>

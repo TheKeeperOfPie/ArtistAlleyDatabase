@@ -44,7 +44,7 @@ import androidx.compose.foundation.text.input.placeCursorAtEnd
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.DropdownMenuItem
@@ -312,6 +312,7 @@ fun EntryFormScope.SingleTextSection(
     trailingIcon: @Composable (() -> Unit)? = null,
     inputTransformation: InputTransformation? = null,
     outputTransformation: OutputTransformation? = null,
+    label: @Composable (() -> Unit)? = null,
     errorText: (() -> String?)? = null,
 ) {
     Column {
@@ -338,6 +339,7 @@ fun EntryFormScope.SingleTextSection(
         if (state.lockState == EntryLockState.UNLOCKED && !forceLocked) {
             OutlinedTextField(
                 state = state.value,
+                label = label?.let { { it() } },
                 supportingText = errorText?.let { { Text(it) } },
                 trailingIcon = trailingIcon,
                 isError = errorText != null,
@@ -349,6 +351,7 @@ fun EntryFormScope.SingleTextSection(
             TextField(
                 state = state.value,
                 readOnly = true,
+                label = label?.let { { it() } },
                 supportingText = errorText?.let { { Text(it) } },
                 trailingIcon = trailingIcon,
                 isError = errorText != null,
@@ -525,6 +528,7 @@ fun <T> MultiTextSection(
             state.value.clearText()
         }
     },
+    label: @Composable (() -> Unit)? = null,
     pendingErrorMessage: () -> String? = { null },
     onItemCommitted: ((String) -> Unit)? = null,
     additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
@@ -667,6 +671,7 @@ fun <T> MultiTextSection(
                         }
                         focusManager.moveFocus(FocusDirection.Next)
                     },
+                    label = label,
                     supportingText = pendingErrorMessage?.let { { Text(pendingErrorMessage) } },
                     isError = pendingErrorMessage != null,
                     onDone = { manuallyClicked ->
@@ -770,6 +775,7 @@ private fun OpenSectionField(
     onDone: (manuallyClicked: Boolean) -> Unit,
     showSubmitButton: Boolean,
     modifier: Modifier = Modifier,
+    label: @Composable (() -> Unit)? = null,
     supportingText: (@Composable () -> Unit)? = null,
     isError: Boolean = false,
 ) {
@@ -786,6 +792,7 @@ private fun OpenSectionField(
             }
         },
         lineLimits = TextFieldLineLimits.SingleLine,
+        label = label?.let { { it() } },
         supportingText = supportingText,
         isError = isError,
         trailingIcon = if (showSubmitButton) {
@@ -796,7 +803,7 @@ private fun OpenSectionField(
                     exit = fadeOut(),
                 ) {
                     TooltipIconButton(
-                        icon = Icons.Default.CheckCircle,
+                        icon = Icons.AutoMirrored.Default.Send,
                         tooltipText = stringResource(Res.string.entry_multi_text_submit),
                         onClick = { onDone(true) },
                     )
@@ -1240,6 +1247,7 @@ private fun <T> EntryAutocompleteDropdown(
 fun EntryFormScope.LongTextSection(
     state: EntryForm2.SingleTextState,
     headerText: @Composable () -> Unit,
+    label: @Composable (() -> Unit)? = null,
     outputTransformation: OutputTransformation? = null,
     additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
@@ -1268,6 +1276,7 @@ fun EntryFormScope.LongTextSection(
         OutlinedTextField(
             state = state.value,
             readOnly = !editable,
+            label = label?.let { { it() } },
             outputTransformation = outputTransformation,
             modifier = modifier,
         )
@@ -1275,6 +1284,7 @@ fun EntryFormScope.LongTextSection(
         TextField(
             state = state.value,
             readOnly = !editable,
+            label = label?.let { { it() } },
             outputTransformation = outputTransformation,
             modifier = modifier,
         )
