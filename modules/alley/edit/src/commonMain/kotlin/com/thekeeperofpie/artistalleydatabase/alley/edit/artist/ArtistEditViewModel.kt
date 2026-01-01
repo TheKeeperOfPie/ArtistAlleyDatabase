@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -111,6 +112,13 @@ class ArtistEditViewModel(
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }
 
+    fun hasPendingChanges(): Boolean = artist.value.let {
+        it != null && ArtistDatabaseEntry.hasChanged(
+            before = it,
+            after = state.artistFormState.captureDatabaseEntry(dataYear, it.verifiedArtist).second
+        )
+    }
+
     fun generateFormLink(forceRegenerate: Boolean) = formLinkJob.launch { forceRegenerate }
     fun onClearFormLink() {
         formMetadata.update {
@@ -129,7 +137,10 @@ class ArtistEditViewModel(
     private fun captureDatabaseEntry(
         isManual: Boolean,
     ): Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean> {
-        val (images, databaseEntry) = state.artistFormState.captureDatabaseEntry(dataYear)
+        val (images, databaseEntry) = state.artistFormState.captureDatabaseEntry(
+            dataYear = dataYear,
+            verifiedArtist = artist.value?.verifiedArtist == true,
+        )
         return Triple(images, databaseEntry, isManual)
     }
 

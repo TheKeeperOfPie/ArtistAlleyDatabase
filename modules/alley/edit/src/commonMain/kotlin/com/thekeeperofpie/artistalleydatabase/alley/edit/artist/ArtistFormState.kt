@@ -165,7 +165,7 @@ class ArtistFormState(
         metadata.lastEditTime = artist.lastEditTime
     }
 
-    fun captureDatabaseEntry(dataYear: DataYear): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
+    fun captureDatabaseEntry(dataYear: DataYear, verifiedArtist: Boolean): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
         val (id, status, editorNotes) = editorState.captureValues()
         val (booth, name, summary, notes) = info.captureValues()
         val (links, storeLinks, catalogLinks, commissions) = links.captureValues()
@@ -196,6 +196,7 @@ class ArtistFormState(
             editorNotes = editorNotes,
             lastEditor = null, // This is filled on the backend
             lastEditTime = Clock.System.now(),
+            verifiedArtist = verifiedArtist,
         )
     }
 

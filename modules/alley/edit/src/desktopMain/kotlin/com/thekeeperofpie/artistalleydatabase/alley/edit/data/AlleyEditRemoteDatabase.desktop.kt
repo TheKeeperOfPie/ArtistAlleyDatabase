@@ -129,6 +129,7 @@ actual class AlleyEditRemoteDatabase {
                     editorNotes = null,
                     lastEditor = "fakeemail@example.com",
                     lastEditTime = Clock.System.now() - 1.hours,
+                    verifiedArtist = false,
                 )
             saveArtist(dataYear = DataYear.ANIME_EXPO_2026, initial = null, updated = previous)
             artistUpdates.forEach {
@@ -341,8 +342,8 @@ actual class AlleyEditRemoteDatabase {
             saveArtist(
                 dataYear = dataYear,
                 initial = initial,
-                updated = updated,
-                formTimestamp = formEntryTimestamp
+                updated = updated.copy(verifiedArtist = true),
+                formTimestamp = formEntryTimestamp,
             )
             artistFormQueue.remove(artistId)?.let {
                 artistFormHistory += it

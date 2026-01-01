@@ -187,7 +187,7 @@ internal object ArtistFormMergeScreen {
                             icon = Icons.Default.Save,
                             tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save),
                             onClick = {
-                                artistFormState?.captureDatabaseEntry(dataYear)?.let {
+                                artistFormState?.captureDatabaseEntry(dataYear, true)?.let {
                                     onClickSave(it.first, it.second)
                                 }
                             },

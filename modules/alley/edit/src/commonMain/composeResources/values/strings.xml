@@ -38,6 +38,10 @@
     <string name="alley_edit_artist_edit_outdated">Outdated initial artist, reload page to try re-merge</string>
     <string name="alley_edit_artist_edit_pending_form_warning">WARNING: Artist has pending form submission that needs to be merged</string>
     <string name="alley_edit_artist_edit_pending_form_warning_action_open">Open</string>
+    <string name="alley_edit_artist_edit_pending_form_abandon_title">Abandon pending changes?</string>
+    <string name="alley_edit_artist_edit_pending_form_abandon_description">Commiting a form merge will lose any pending edits to this artist</string>
+    <string name="alley_edit_artist_edit_pending_form_action_abandon">Abandon</string>
+    <string name="alley_edit_artist_edit_pending_form_action_cancel">Cancel</string>
 
     <string name="alley_edit_artist_edit_form_link_title">Generate a new form link?</string>
     <string name="alley_edit_artist_edit_form_link_description">This will invalidate any previously generated link</string>
@@ -62,8 +66,13 @@
     <string name="alley_edit_artist_action_save_tooltip">Save artist</string>
     <string name="alley_edit_artist_action_save_and_exit_tooltip">Save and exit</string>
     <string name="alley_edit_artist_action_generate_link_content_description">Generate form link</string>
-    <string name="alley_edit_artist_action_history_content_description">View history</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
+
+    <string name="alley_edit_artist_history_action_view_tooltip">View history</string>
+    <string name="alley_edit_artist_history_abandon_title">Abandon pending changes?</string>
+    <string name="alley_edit_artist_history_abandon_description">Commiting a history revert will lose any pending edits to this artist</string>
+    <string name="alley_edit_artist_history_action_abandon">Abandon</string>
+    <string name="alley_edit_artist_history_action_cancel">Cancel</string>
 
     <string name="alley_edit_artist_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
     <string name="alley_edit_artist_error_saving_bad_fields">Could not save because some fields have errors</string>

@@ -174,7 +174,10 @@ object EntryForm2 {
         content: @Composable EntryFormScope.() -> Unit,
     ) {
         Column(modifier = modifier) {
-            EntryFormScopeImpl(this, focusState, forceLocked).content()
+            val scope = remember(this, focusState, forceLocked) {
+                EntryFormScopeImpl(this, focusState, forceLocked)
+            }
+            scope.content()
             Spacer(Modifier.height(80.dp))
         }
     }

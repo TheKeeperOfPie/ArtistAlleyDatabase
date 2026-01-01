@@ -29,8 +29,8 @@ actual class AlleyFormRemoteDatabase(
                 ArtistEntryDiff(
                     booth = after.booth.orEmpty()
                         .takeIf { it != before.booth.orEmpty() },
-                    name = after.name.orEmpty()
-                        .takeIf { it != before.name.orEmpty() },
+                    name = after.name
+                        .takeIf { it != before.name },
                     summary = after.summary.orEmpty()
                         .takeIf { it != before.summary.orEmpty() },
                     notes = after.notes.orEmpty()
@@ -64,7 +64,7 @@ actual class AlleyFormRemoteDatabase(
                         before.merchConfirmed,
                         after.merchConfirmed
                     ),
-                    formNotes = it.formNotes.orEmpty(),
+                    formNotes = it.formNotes,
                     timestamp = it.timestamp,
                 )
             }

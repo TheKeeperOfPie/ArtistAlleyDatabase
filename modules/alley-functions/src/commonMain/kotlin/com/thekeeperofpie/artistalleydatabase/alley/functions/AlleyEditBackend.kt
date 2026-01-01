@@ -214,7 +214,7 @@ object AlleyEditBackend {
         val saveRequest = ArtistSave.Request(
             dataYear = request.dataYear,
             initial = request.initial,
-            updated = request.updated,
+            updated = request.updated.copy(verifiedArtist = true),
         )
         when (val saveResponse = saveArtist(context, saveRequest, request.formEntryTimestamp)) {
             is ArtistSave.Response.Failed ->

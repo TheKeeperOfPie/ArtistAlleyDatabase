@@ -126,7 +126,8 @@ class ArtistAddViewModel(
     private fun captureDatabaseEntry(
         isManual: Boolean,
     ): Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean> {
-        val (images, databaseEntry) = state.artistFormState.captureDatabaseEntry(dataYear)
+        val (images, databaseEntry) = state.artistFormState
+            .captureDatabaseEntry(dataYear = dataYear, verifiedArtist = false)
         return Triple(images, databaseEntry, isManual)
     }
 

@@ -231,10 +231,11 @@ interface ArtistFormScope : EntryFormScope {
 
 @LayoutScopeMarker
 @Immutable
-private class ArtistFormScopeImpl(
+private abstract class ArtistFormScopeImpl(
     entryFormScope: EntryFormScope,
-    override val initialArtist: ArtistDatabaseEntry.Impl?,
 ) : ArtistFormScope, EntryFormScope by entryFormScope {
+
+    abstract override val initialArtist: ArtistDatabaseEntry.Impl?
 
     @Composable
     override fun MetadataSection(metadata: ArtistFormState.Metadata) {
@@ -547,9 +548,6 @@ private class ArtistFormScopeImpl(
         val initialInferred = remember(seriesById, initialArtist?.seriesInferred) {
             initialArtist?.seriesInferred?.map { seriesById[it] ?: SeriesInfo.fake(it) }.orEmpty()
         }
-        val initialConfirmed = remember(seriesById, initialArtist?.seriesConfirmed) {
-            initialArtist?.seriesConfirmed?.map { seriesById[it] ?: SeriesInfo.fake(it) }.orEmpty()
-        }
 
         val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
 
@@ -572,6 +570,9 @@ private class ArtistFormScopeImpl(
         }
 
         if (showConfirmed) {
+            val initialConfirmed = remember(seriesById, initialArtist?.seriesConfirmed) {
+                initialArtist?.seriesConfirmed?.map { seriesById[it] ?: SeriesInfo.fake(it) }.orEmpty()
+            }
             val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
             ArtistForm.SeriesSection(
                 state = state.stateConfirmed,
@@ -600,10 +601,6 @@ private class ArtistFormScopeImpl(
         val initialInferred = remember(merchById, initialArtist?.merchInferred) {
             initialArtist?.merchInferred?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
         }
-        val initialConfirmed = remember(merchById, initialArtist?.merchConfirmed) {
-            initialArtist?.merchConfirmed?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
-        }
-
         val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
         ArtistForm.MultiTextSection(
             state = state.stateInferred,
@@ -645,6 +642,10 @@ private class ArtistFormScopeImpl(
         }
 
         if (showConfirmed) {
+            val initialConfirmed = remember(merchById, initialArtist?.merchConfirmed) {
+                initialArtist?.merchConfirmed?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
+            }
+
             val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
             ArtistForm.MultiTextSection(
                 state = state.stateConfirmed,
@@ -737,7 +738,7 @@ private fun ShowRevertIconButton(
     dialogState: RevertDialogState,
     textState: EntryForm2.SingleTextState,
 ) {
-    val show by remember {
+    val show by remember(dialogState, textState) {
         derivedStateOf { textState.value.text.toString() != dialogState.initialValue }
     }
     if (show) {
@@ -754,8 +755,10 @@ private fun <T> ShowListRevertIconButton(
     dialogState: ListRevertDialogState<T>,
     items: SnapshotStateList<T>,
 ) {
-    val show by remember {
-        derivedStateOf { items.toList().toSet() != dialogState.initialItems.toSet() }
+    val show by remember(items, dialogState) {
+        derivedStateOf {
+            items.toList().toSet() != dialogState.initialItems.toSet()
+        }
     }
     if (show) {
         TooltipIconButton(
@@ -928,7 +931,13 @@ object ArtistForm {
         content: @Composable ArtistFormScope.() -> Unit,
     ) {
         EntryForm2(forceLocked = forceLocked, focusState = focusState, modifier = modifier) {
-            ArtistFormScopeImpl(this, initialArtist()).content()
+            val scope = remember(this, initialArtist) {
+                object : ArtistFormScopeImpl(this) {
+                    override val initialArtist: ArtistDatabaseEntry.Impl?
+                        get() = initialArtist()
+                }
+            }
+            scope.content()
         }
     }
 

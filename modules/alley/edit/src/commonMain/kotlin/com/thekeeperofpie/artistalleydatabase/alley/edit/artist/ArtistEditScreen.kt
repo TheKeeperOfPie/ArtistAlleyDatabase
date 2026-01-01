@@ -60,7 +60,6 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_generate_link_content_description
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_history_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_copy
@@ -70,10 +69,19 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_description_generated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_outdated
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_abandon_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_abandon_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_action_abandon
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_pending_form_warning_action_open
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_abandon_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_abandon_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_abandon
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_view_tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -157,6 +165,7 @@ object ArtistEditScreen {
             merchPredictions = viewModel::merchPredictions,
             seriesImage = viewModel::seriesImage,
             generateFormLink = viewModel::generateFormLink,
+            hasPendingChanges = viewModel::hasPendingChanges,
             onClickBack = onClickBack,
             onClickEditImages = {
                 onClickEditImages(
@@ -183,6 +192,7 @@ object ArtistEditScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         generateFormLink: (forceRegenerate: Boolean) -> Unit,
+        hasPendingChanges: () -> Boolean,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
@@ -241,6 +251,7 @@ object ArtistEditScreen {
                         AppBarActions(
                             errorState = errorState,
                             saveTaskState = saveTaskState,
+                            hasPendingChanges = hasPendingChanges,
                             onClickGenerateFormLink = { showFormLinkDialog = true },
                             onClickHistory = onClickHistory,
                             onClickSave = onClickSave,
@@ -265,7 +276,7 @@ object ArtistEditScreen {
                             val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                             val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
                             if (formMetadata?.hasPendingFormSubmission == true) {
-                                PendingFormSubmissionPrompt(onClickMerge)
+                                PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
                             }
                             ArtistForm(
                                 initialArtist = { initialArtist },
@@ -361,6 +372,7 @@ object ArtistEditScreen {
     private fun AppBarActions(
         errorState: ArtistErrorState,
         saveTaskState: TaskState<ArtistSave.Response>,
+        hasPendingChanges: () -> Boolean,
         onClickGenerateFormLink: () -> Unit,
         onClickHistory: () -> Unit,
         onClickSave: () -> Unit,
@@ -371,11 +383,8 @@ object ArtistEditScreen {
             tooltipText = stringResource(Res.string.alley_edit_artist_action_generate_link_content_description),
             onClick = onClickGenerateFormLink,
         )
-        TooltipIconButton(
-            icon = Icons.Default.History,
-            tooltipText = stringResource(Res.string.alley_edit_artist_action_history_content_description),
-            onClick = onClickHistory,
-        )
+
+        HistoryButton(hasPendingChanges, onClickHistory)
 
         val enabled = !errorState.hasAnyError
         ArtistSaveButton(enabled, saveTaskState, onClickSave)
@@ -388,7 +397,47 @@ object ArtistEditScreen {
     }
 
     @Composable
-    private fun PendingFormSubmissionPrompt(onClickMerge: () -> Unit) {
+    private fun HistoryButton(hasPendingChanges: () -> Boolean, onClickHistory: () -> Unit) {
+        var showDialog by remember { mutableStateOf(false) }
+        TooltipIconButton(
+            icon = Icons.Default.History,
+            tooltipText = stringResource(Res.string.alley_edit_artist_history_action_view_tooltip),
+            onClick = {
+                if (hasPendingChanges()) {
+                    showDialog = true
+                } else {
+                    onClickHistory()
+                }
+            },
+        )
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(stringResource(Res.string.alley_edit_artist_history_abandon_title)) },
+                text = { Text(stringResource(Res.string.alley_edit_artist_history_abandon_description)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onClickHistory()
+                        showDialog = false
+                    }) {
+                        Text(stringResource(Res.string.alley_edit_artist_history_action_abandon))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text(stringResource(Res.string.alley_edit_artist_history_action_cancel))
+                    }
+                }
+            )
+        }
+    }
+
+    @Composable
+    private fun PendingFormSubmissionPrompt(
+        hasPendingChanges: () -> Boolean,
+        onClickMerge: () -> Unit,
+    ) {
         OutlinedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -404,8 +453,37 @@ object ArtistEditScreen {
                     text = stringResource(Res.string.alley_edit_artist_edit_pending_form_warning),
                     modifier = Modifier.weight(1f)
                 )
-                FilledTonalButton(onClick = onClickMerge) {
+
+                var showDialog by remember { mutableStateOf(false) }
+                FilledTonalButton(onClick = {
+                    if (hasPendingChanges()) {
+                        showDialog = true
+                    } else {
+                        onClickMerge()
+                    }
+                }) {
                     Text(stringResource(Res.string.alley_edit_artist_edit_pending_form_warning_action_open))
+                }
+
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text(stringResource(Res.string.alley_edit_artist_edit_pending_form_abandon_title)) },
+                        text = { Text(stringResource(Res.string.alley_edit_artist_edit_pending_form_abandon_description)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                onClickMerge()
+                                showDialog = false
+                            }) {
+                                Text(stringResource(Res.string.alley_edit_artist_edit_pending_form_action_abandon))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text(stringResource(Res.string.alley_edit_artist_edit_pending_form_action_cancel))
+                            }
+                        }
+                    )
                 }
             }
         }

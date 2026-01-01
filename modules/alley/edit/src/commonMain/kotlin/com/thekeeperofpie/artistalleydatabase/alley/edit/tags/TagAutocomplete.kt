@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
-import kotlin.collections.plus
 
 @SingleIn(AppScope::class)
 @Inject
@@ -32,10 +31,10 @@ class TagAutocomplete(
     val merchById = flowFromSuspend { database.loadMerch() }
         .shareIn(applicationScope, SharingStarted.Eagerly, 1)
 
-    fun seriesPredictions(query: String) = if (query.length < 3) {
-        flowOf( listOf(SeriesInfo.fake(query)))
-    } else {
-        seriesById.flatMapLatest {
+    fun seriesPredictions(query: String) = when {
+        query.isBlank() -> flowOf(emptyList())
+        query.length < 3 -> flowOf(listOf(SeriesInfo.fake(query)))
+        else -> seriesById.flatMapLatest {
             flow {
                 SearchUtils.incrementallyPartition(
                     values = it.values,
@@ -54,7 +53,9 @@ class TagAutocomplete(
             .mapLatest {
                 it.values
                     .filter { it.name.contains(query, ignoreCase = true) }
-                    .sortedBy { it.name } + MerchInfo.fake(query)
+                    .sortedBy { it.name } +
+                        listOfNotNull(query.takeIf { it.isNotBlank() }
+                            ?.let(MerchInfo::fake))
             }
             .flowOn(dispatchers.io)
 }
