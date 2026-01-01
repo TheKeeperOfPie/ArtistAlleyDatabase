@@ -181,7 +181,8 @@
     <string name="alley_edit_artist_form_queue_tab_queue">Queue</string>
     <string name="alley_edit_artist_form_queue_tab_history">History</string>
 
-    <string name="alley_edit_artist_form_merge_title">Merging %1$s - %2$s</string>
+    <string name="alley_edit_artist_form_merge_title_name">Merging %1$s - %2$s</string>
+    <string name="alley_edit_artist_form_merge_title_booth_name">Merging %1$s - %2$s - %3$s</string>
     <string name="alley_edit_artist_form_merge_notes">Notes from submission</string>
     <string name="alley_edit_artist_form_merge_action_save">Apply form merge</string>
     <string name="alley_edit_artist_form_merge_outdated">Outdated initial artist, reload page to try re-merge</string>

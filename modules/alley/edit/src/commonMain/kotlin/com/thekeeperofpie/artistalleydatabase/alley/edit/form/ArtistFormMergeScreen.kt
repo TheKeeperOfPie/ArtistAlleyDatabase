@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -53,7 +54,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_booth_name
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_name
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
@@ -172,14 +174,24 @@ internal object ArtistFormMergeScreen {
             topBar = {
                 TopAppBar(
                     title = {
-                        val entry = entry()
-                        Text(
+                        val conventionName = stringResource(dataYear.shortName)
+                        val name = entry?.artist?.name ?: entry?.artist?.id.orEmpty()
+                        val booth = entry?.artist?.booth.orEmpty()
+                        val text = if (booth.isEmpty()) {
                             stringResource(
-                                Res.string.alley_edit_artist_form_merge_title,
-                                stringResource(dataYear.shortName),
-                                entry?.artist?.name ?: entry?.artist?.name.orEmpty(),
+                                Res.string.alley_edit_artist_form_merge_title_name,
+                                conventionName,
+                                name,
                             )
-                        )
+                        } else {
+                            stringResource(
+                                Res.string.alley_edit_artist_form_merge_title_booth_name,
+                                conventionName,
+                                booth,
+                                name,
+                            )
+                        }
+                        Text(text = text)
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
                     actions = {
@@ -202,21 +214,32 @@ internal object ArtistFormMergeScreen {
                 saving = saveTaskState.showBlockingLoadingIndicator,
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                Row(modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)) {
-                    ArtistPreview(
-                        initialArtist = { entry()?.artist },
-                        artistFormState = artistFormState,
-                        seriesById = seriesById,
-                        seriesImage = seriesImage,
-                        merchById = merchById,
-                        modifier = Modifier.weight(1f)
-                    )
+                val initialArtist = entry()?.artist
+                val modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)
+                if (initialArtist == null || artistFormState == null) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = modifier.padding(32.dp)
+                    ) {
+                        CircularWavyProgressIndicator()
+                    }
+                } else {
+                    Row(modifier = modifier) {
+                        ArtistPreview(
+                            initialArtist = { entry()?.artist },
+                            artistFormState = artistFormState,
+                            seriesById = seriesById,
+                            seriesImage = seriesImage,
+                            merchById = merchById,
+                            modifier = Modifier.weight(1f)
+                        )
 
-                    FieldsList(
-                        fieldState = fieldState,
-                        diff = entry?.formDiff,
-                        modifier = Modifier.weight(1f)
-                    )
+                        FieldsList(
+                            fieldState = fieldState,
+                            diff = entry?.formDiff,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }

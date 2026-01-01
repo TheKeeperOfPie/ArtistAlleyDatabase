@@ -315,7 +315,11 @@ private abstract class ArtistFormScopeImpl(
             forceLocked = forceLock || forceLocked,
             outputTransformation = revertDialogState.outputTransformation,
             errorText = errorText,
-            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
+            additionalHeaderActions = {
+                with(this@ArtistFormScopeImpl) {
+                    ShowRevertIconButton(revertDialogState, state)
+                }
+            },
         )
 
         FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_id)
@@ -340,7 +344,11 @@ private abstract class ArtistFormScopeImpl(
             inputTransformation = InputTransformation.maxLength(3),
             outputTransformation = revertDialogState.outputTransformation,
             errorText = errorText,
-            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
+            additionalHeaderActions = {
+                with(this@ArtistFormScopeImpl) {
+                    ShowRevertIconButton(revertDialogState, state)
+                }
+            },
         )
 
         FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_booth)
@@ -353,7 +361,11 @@ private abstract class ArtistFormScopeImpl(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
             outputTransformation = revertDialogState.outputTransformation,
-            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
+            additionalHeaderActions = {
+                with(this@ArtistFormScopeImpl) {
+                    ShowRevertIconButton(revertDialogState, state)
+                }
+            },
         )
 
         FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_name)
@@ -366,7 +378,11 @@ private abstract class ArtistFormScopeImpl(
             state = state,
             headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
             outputTransformation = revertDialogState.outputTransformation,
-            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
+            additionalHeaderActions = {
+                with(this@ArtistFormScopeImpl) {
+                    ShowRevertIconButton(revertDialogState, state)
+                }
+            },
         )
 
         FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_artist_edit_summary)
@@ -447,7 +463,9 @@ private abstract class ArtistFormScopeImpl(
             itemToCommitted = { it },
             pendingErrorMessage = pendingErrorMessage,
             additionalHeaderActions = {
-                ShowListRevertIconButton(revertDialogState, catalogLinks)
+                with(this@ArtistFormScopeImpl) {
+                    ShowListRevertIconButton(revertDialogState, catalogLinks)
+                }
             },
         )
 
@@ -505,7 +523,11 @@ private abstract class ArtistFormScopeImpl(
             itemToCommitted = CommissionModel::parse,
             predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
             preferPrediction = false,
-            additionalHeaderActions = { ShowListRevertIconButton(revertDialogState, commissions) },
+            additionalHeaderActions = {
+                with(this@ArtistFormScopeImpl) {
+                    ShowListRevertIconButton(revertDialogState, commissions)
+                }
+            },
         )
 
         ListFieldRevertDialog(
@@ -629,7 +651,9 @@ private abstract class ArtistFormScopeImpl(
                 }
             },
             additionalHeaderActions = {
-                ShowListRevertIconButton(revertDialogStateInferred, state.inferred)
+                with(this@ArtistFormScopeImpl) {
+                    ShowListRevertIconButton(revertDialogStateInferred, state.inferred)
+                }
                 if (!this@ArtistFormScopeImpl.forceLocked && showConfirmed) {
                     ArtistForm.ShowInferredButton(
                         hasConfirmed = hasConfirmedMerch,
@@ -672,7 +696,9 @@ private abstract class ArtistFormScopeImpl(
                     }
                 },
                 additionalHeaderActions = {
-                    ShowListRevertIconButton(revertDialogStateConfirmed, state.confirmed)
+                    with(this@ArtistFormScopeImpl) {
+                        ShowListRevertIconButton(revertDialogStateConfirmed, state.confirmed)
+                    }
                 },
             )
 
@@ -696,7 +722,11 @@ private abstract class ArtistFormScopeImpl(
             state = state,
             headerText = { Text(stringResource(label)) },
             outputTransformation = revertDialogState.outputTransformation,
-            additionalHeaderActions = { ShowRevertIconButton(revertDialogState, state) },
+            additionalHeaderActions = {
+                with(this@ArtistFormScopeImpl) {
+                    ShowRevertIconButton(revertDialogState, state)
+                }
+            },
         )
         FieldRevertDialog(revertDialogState, state, label)
     }
@@ -739,6 +769,7 @@ private class GreenOnChangedOutputTransformation(
     }
 }
 
+context(scope: ArtistFormScope)
 @Composable
 private fun ShowRevertIconButton(
     dialogState: RevertDialogState,
@@ -747,7 +778,7 @@ private fun ShowRevertIconButton(
     val show by remember(dialogState, textState) {
         derivedStateOf { textState.value.text.toString() != dialogState.initialValue }
     }
-    if (show) {
+    if (show && !scope.forceLocked) {
         TooltipIconButton(
             icon = Icons.AutoMirrored.Default.Undo,
             tooltipText = stringResource(Res.string.alley_edit_artist_edit_revert_tooltip),
@@ -756,6 +787,7 @@ private fun ShowRevertIconButton(
     }
 }
 
+context(scope: ArtistFormScope)
 @Composable
 private fun <T> ShowListRevertIconButton(
     dialogState: ListRevertDialogState<T>,
@@ -766,7 +798,7 @@ private fun <T> ShowListRevertIconButton(
             items.toList().toSet() != dialogState.initialItems.toSet()
         }
     }
-    if (show) {
+    if (show && !scope.forceLocked) {
         TooltipIconButton(
             icon = Icons.AutoMirrored.Default.Undo,
             tooltipText = stringResource(Res.string.alley_edit_artist_edit_revert_tooltip),
@@ -1238,7 +1270,9 @@ object ArtistForm {
                 }
             },
             additionalHeaderActions = {
-                ShowListRevertIconButton(listRevertDialogState, items)
+                with(formScope) {
+                    ShowListRevertIconButton(listRevertDialogState, items)
+                }
                 additionalHeaderActions?.invoke(this)
             },
         )
@@ -1357,7 +1391,11 @@ object ArtistForm {
                 )
             },
             pendingErrorMessage = pendingErrorMessage,
-            additionalHeaderActions = { ShowListRevertIconButton(listRevertDialogState, items) },
+            additionalHeaderActions = {
+                with(formScope) {
+                    ShowListRevertIconButton(listRevertDialogState, items)
+                }
+            },
         )
 
         ListFieldRevertDialog(
