@@ -23,8 +23,9 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.TableRestaurant
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -559,19 +560,22 @@ private abstract class ArtistFormScopeImpl(
             showItems = { showSeriesInferred },
             predictions = seriesPredictions,
             image = seriesImage,
+            additionalHeaderActions = {
+                if (!this@ArtistFormScopeImpl.forceLocked && showConfirmed) {
+                    ArtistForm.ShowInferredButton(
+                        hasConfirmed = hasConfirmedSeries,
+                        showingInferred = showSeriesInferred,
+                        onClick = { requestedShowSeriesInferred = it },
+                    )
+                }
+            }
         )
-
-        if (!forceLocked && showConfirmed) {
-            ArtistForm.ShowInferredButton(
-                hasConfirmed = hasConfirmedSeries,
-                showingInferred = showSeriesInferred,
-                onClick = { requestedShowSeriesInferred = it },
-            )
-        }
 
         if (showConfirmed) {
             val initialConfirmed = remember(seriesById, initialArtist?.seriesConfirmed) {
-                initialArtist?.seriesConfirmed?.map { seriesById[it] ?: SeriesInfo.fake(it) }.orEmpty()
+                initialArtist?.seriesConfirmed
+                    ?.map { seriesById[it] ?: SeriesInfo.fake(it) }
+                    .orEmpty()
             }
             val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
             ArtistForm.SeriesSection(
@@ -623,6 +627,13 @@ private abstract class ArtistFormScopeImpl(
             },
             additionalHeaderActions = {
                 ShowListRevertIconButton(revertDialogStateInferred, state.inferred)
+                if (!this@ArtistFormScopeImpl.forceLocked && showConfirmed) {
+                    ArtistForm.ShowInferredButton(
+                        hasConfirmed = hasConfirmedMerch,
+                        showingInferred = showMerchInferred,
+                        onClick = { requestedShowMerchInferred = it },
+                    )
+                }
             },
         )
 
@@ -632,14 +643,6 @@ private abstract class ArtistFormScopeImpl(
             items = state.inferred,
             itemsToText = { it.joinToString { it.name } },
         )
-
-        if (!forceLocked && showConfirmed) {
-            ArtistForm.ShowInferredButton(
-                hasConfirmed = hasConfirmedMerch,
-                showingInferred = showMerchInferred,
-                onClick = { requestedShowMerchInferred = it },
-            )
-        }
 
         if (showConfirmed) {
             val initialConfirmed = remember(merchById, initialArtist?.merchConfirmed) {
@@ -1148,6 +1151,7 @@ object ArtistForm {
         showItems: () -> Boolean = { true },
         predictions: suspend (String) -> Flow<List<SeriesInfo>>,
         image: (SeriesInfo) -> String?,
+        additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
     ) {
         MultiTextSection(
             state = state,
@@ -1195,7 +1199,10 @@ object ArtistForm {
                     }
                 }
             },
-            additionalHeaderActions = { ShowListRevertIconButton(listRevertDialogState, items) },
+            additionalHeaderActions = {
+                ShowListRevertIconButton(listRevertDialogState, items)
+                additionalHeaderActions?.invoke(this)
+            },
         )
 
         ListFieldRevertDialog(
@@ -1252,24 +1259,21 @@ object ArtistForm {
         onClick: (requestShowInferred: Boolean) -> Unit,
     ) {
         if (hasConfirmed) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp)
-            ) {
-                FilledTonalButton(onClick = { onClick(!showingInferred) }) {
-                    Text(
-                        stringResource(
-                            if (showingInferred) {
-                                Res.string.alley_edit_artist_edit_action_hide_inferred
-                            } else {
-                                Res.string.alley_edit_artist_edit_action_show_inferred
-                            }
-                        )
-                    )
-                }
-            }
+            TooltipIconButton(
+                icon = if (showingInferred) {
+                    Icons.Default.Visibility
+                } else {
+                    Icons.Default.VisibilityOff
+                },
+                tooltipText = stringResource(
+                    if (showingInferred) {
+                        Res.string.alley_edit_artist_edit_action_hide_inferred
+                    } else {
+                        Res.string.alley_edit_artist_edit_action_show_inferred
+                    }
+                ),
+                onClick = { onClick(!showingInferred) },
+            )
         }
     }
 
