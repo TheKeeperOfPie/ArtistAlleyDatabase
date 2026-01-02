@@ -20,6 +20,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import com.thekeeperofpie.artistalleydatabase.alley.edit.admin.AdminScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
@@ -153,6 +154,9 @@ private fun entryProvider(
                 )
             },
         )
+    }
+    sharedElementEntry<AlleyEditDestination.Admin> {
+        AdminScreen(graph = graph)
     }
     sharedElementEntry<AlleyEditDestination.ArtistAdd> { route ->
         ArtistAddScreen(

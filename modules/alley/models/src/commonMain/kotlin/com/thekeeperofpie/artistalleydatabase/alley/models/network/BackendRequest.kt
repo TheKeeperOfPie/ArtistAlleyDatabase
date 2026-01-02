@@ -83,6 +83,9 @@ sealed interface BackendRequest {
     @Serializable
     data object Artists : BackendRequest, WithResponse<List<ArtistSummary>>
 
+    @Serializable
+    data object DatabaseCreate : BackendRequest, WithResponse<Unit>
+
     // TODO: Allow querying presence?
     @Serializable
     data class GenerateFormKey(

@@ -4,6 +4,7 @@
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
     <string name="alley_edit_top_level_nav_forms">Forms</string>
+    <string name="alley_edit_top_level_nav_admin">Admin</string>
 
     <string name="alley_edit_artist_list_tab_all">All</string>
     <string name="alley_edit_artist_list_tab_missing_links">Missing links</string>

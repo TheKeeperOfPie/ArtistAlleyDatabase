@@ -18,6 +18,9 @@ sealed interface AlleyEditDestination : NavKey {
     data object Home : AlleyEditDestination
 
     @Serializable
+    data object Admin : AlleyEditDestination
+
+    @Serializable
     data class ArtistAdd(val dataYear: DataYear, val artistId: Uuid = Uuid.random()) :
         AlleyEditDestination
 
@@ -63,6 +66,7 @@ sealed interface AlleyEditDestination : NavKey {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
                 route.isEmpty() || route.startsWith("home") -> Home
+                route == "admin" -> Admin
                 route == "series" -> Series
                 route == "merch" -> Merch
                 route == "queue" -> ArtistFormQueue
@@ -101,6 +105,7 @@ sealed interface AlleyEditDestination : NavKey {
         }
 
         fun toEncodedRoute(destination: AlleyEditDestination) = when (destination) {
+            is Admin -> "admin"
             is ArtistAdd -> "artist/add/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +

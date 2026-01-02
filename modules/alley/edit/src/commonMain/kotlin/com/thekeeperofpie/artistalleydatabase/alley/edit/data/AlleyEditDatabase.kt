@@ -35,6 +35,8 @@ class AlleyEditDatabase(
     private val seriesEntryDao: SeriesEntryDao,
     private val remoteDatabase: AlleyEditRemoteDatabase,
 ) {
+    suspend fun databaseCreate() = remoteDatabase.databaseCreate()
+
     // TODO: Failure result
     suspend fun loadArtists(dataYear: DataYear): List<ArtistSummary> {
         val remoteArtists = remoteDatabase.loadArtists(dataYear)

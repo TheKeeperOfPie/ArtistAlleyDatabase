@@ -44,6 +44,10 @@ actual class AlleyEditRemoteDatabase(
     private val dispatchers: CustomDispatchers,
     private val ktorClient: HttpClient,
 ) {
+    actual suspend fun databaseCreate() {
+        sendRequest(BackendRequest.DatabaseCreate)
+    }
+
     // TODO: Error handling
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? =
         withContext(dispatchers.io) {

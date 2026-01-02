@@ -2,11 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_admin
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artists
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_merch
@@ -38,5 +40,10 @@ internal enum class TopLevelStackKey(
         initialDestination = AlleyEditDestination.ArtistFormQueue,
         icon = Icons.AutoMirrored.Default.List,
         title = Res.string.alley_edit_top_level_nav_forms,
+    ),
+    ADMIN(
+        initialDestination = AlleyEditDestination.Admin,
+        icon = Icons.Default.AdminPanelSettings,
+        title = Res.string.alley_edit_top_level_nav_admin,
     ),
 }

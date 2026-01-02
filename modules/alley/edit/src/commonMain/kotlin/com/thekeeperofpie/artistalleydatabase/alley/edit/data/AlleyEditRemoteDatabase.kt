@@ -18,6 +18,8 @@ import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 expect class AlleyEditRemoteDatabase {
+    suspend fun databaseCreate()
+
     suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl?
     suspend fun loadArtistWithFormMetadata(
         dataYear: DataYear,

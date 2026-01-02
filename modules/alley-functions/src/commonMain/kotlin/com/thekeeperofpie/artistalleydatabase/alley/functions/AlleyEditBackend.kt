@@ -69,6 +69,7 @@ object AlleyEditBackend {
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
+                    is BackendRequest.DatabaseCreate -> makeResponse(databaseCreate(context))
                     is BackendRequest.GenerateFormKey ->
                         makeResponse(generateFormKey(context, this))
                     is BackendRequest.Merch -> makeResponse(loadMerch(context))
@@ -88,6 +89,8 @@ object AlleyEditBackend {
     } else {
         Utils.jsonResponse<Response>(response)
     }
+
+    private suspend fun databaseCreate(context: EventContext) = Databases.create(context)
 
     private suspend fun loadArtists(context: EventContext): List<ArtistSummary> =
         Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
@@ -263,7 +266,7 @@ object AlleyEditBackend {
         formTimestamp: Instant?,
     ) = when (request.dataYear) {
         DataYear.ANIME_EXPO_2026 -> {
-            val database = Databases.editDatabase(context, tryCreate = true)
+            val database = Databases.editDatabase(context)
             val currentArtist =
                 database.artistEntryAnimeExpo2026Queries
                     .getArtist(request.updated.id)
@@ -375,7 +378,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: SeriesSave.Request,
     ): SeriesSave.Response {
-        val database = Databases.editDatabase(context, tryCreate = true)
+        val database = Databases.editDatabase(context)
         val currentSeries =
             database.seriesEntryQueries.getSeriesById(request.updated.id)
                 .awaitAsOneOrNull()?.toSeriesInfo()
@@ -397,7 +400,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: MerchSave.Request,
     ): MerchSave.Response {
-        val database = Databases.editDatabase(context, tryCreate = true)
+        val database = Databases.editDatabase(context)
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.updated.name)
                 .awaitAsOneOrNull()?.toMerchInfo()

@@ -159,6 +159,8 @@ actual class AlleyEditRemoteDatabase {
         }
     }
 
+    actual suspend fun databaseCreate(): Unit = Unit
+
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? {
         simulateLatency()
         return artistsByDataYearAndId[dataYear]?.get(artistId.toString())

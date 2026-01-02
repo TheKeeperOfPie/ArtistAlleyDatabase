@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyComponent
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
+import com.thekeeperofpie.artistalleydatabase.alley.edit.admin.AdminViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryViewModel
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 interface ArtistAlleyEditGraph : ArtistAlleyComponent {
 
     val appFileSystem: AppFileSystem
+    val adminViewModelFactory: AdminViewModel.Factory
     val artistAddViewModelFactory: ArtistAddViewModel.Factory
     val artistEditViewModelFactory: ArtistEditViewModel.Factory
     val artistFormMergeViewModelFactory: ArtistFormMergeViewModel.Factory
