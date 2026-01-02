@@ -147,13 +147,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         }
 
                         val inference = ArtistInferenceProvider(database, it.id)
-                        val links = it.links.ifEmpty { inference.links }
+                        val socialLinks = it.socialLinks.ifEmpty { inference.socialLinks }
                         val storeLinks = it.storeLinks.ifEmpty { inference.storeLinks }
                         val seriesInferred = it.seriesInferred.ifEmpty { inference.seriesInferred }
                         val merchInferred = it.merchInferred.ifEmpty { inference.merchInferred }
 
                         val (linkFlags, linkFlags2) = Link.parseFlags(
-                            links = links,
+                            socialLinks = socialLinks,
                             storeLinks = storeLinks,
                             catalogLinks = it.catalogLinks,
                         )
@@ -161,7 +161,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                         database.mutationQueries.updateArtistEntryAnimeExpo2026(
                             it.copy(
-                                links = links,
+                                socialLinks = socialLinks,
                                 storeLinks = storeLinks,
                                 seriesInferred = seriesInferred,
                                 merchInferred = merchInferred,
@@ -431,7 +431,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             ),
             artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
                 statusAdapter = artistStatusAdapter,
-                linksAdapter = listStringAdapter,
+                socialLinksAdapter = listStringAdapter,
                 storeLinksAdapter = listStringAdapter,
                 catalogLinksAdapter = listStringAdapter,
                 seriesInferredAdapter = listStringAdapter,
@@ -901,7 +901,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             .ifNullOrEmpty { animeExpo2023?.valueAnimeExpo2023() }
             .orEmpty()
 
-        val links
+        val socialLinks
             get() = cascadeAll(
                 { links },
                 { links },

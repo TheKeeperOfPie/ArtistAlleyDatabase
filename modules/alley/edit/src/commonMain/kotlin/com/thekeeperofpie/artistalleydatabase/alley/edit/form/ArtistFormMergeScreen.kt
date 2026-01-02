@@ -42,13 +42,13 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_commissions
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
@@ -335,8 +335,8 @@ internal object ArtistFormMergeScreen {
                         ArtistField.BOOTH -> diff?.booth
                         ArtistField.NAME -> diff?.name
                         ArtistField.SUMMARY -> diff?.summary
-                        ArtistField.LINKS_ADDED -> diff?.links?.added?.joinToString()
-                        ArtistField.LINKS_REMOVED -> diff?.links?.removed?.joinToString()
+                        ArtistField.SOCIAL_LINKS_ADDED -> diff?.socialLinks?.added?.joinToString()
+                        ArtistField.SOCIAL_LINKS_REMOVED -> diff?.socialLinks?.removed?.joinToString()
                         ArtistField.STORE_LINKS_ADDED -> diff?.storeLinks?.added?.joinToString()
                         ArtistField.STORE_LINKS_REMOVED -> diff?.storeLinks?.removed?.joinToString()
                         ArtistField.CATALOG_LINKS_ADDED -> diff?.catalogLinks?.added?.joinToString()
@@ -401,11 +401,11 @@ internal object ArtistFormMergeScreen {
                 booth = applyDiff(base.booth, diff.booth, ArtistField.BOOTH),
                 name = applyDiff(base.name, diff.name, ArtistField.NAME),
                 summary = applyDiff(base.summary, diff.summary, ArtistField.SUMMARY),
-                links = applyDiff(
-                    base.links,
-                    diff.links,
-                    ArtistField.LINKS_ADDED,
-                    ArtistField.LINKS_REMOVED,
+                socialLinks = applyDiff(
+                    base.socialLinks,
+                    diff.socialLinks,
+                    ArtistField.SOCIAL_LINKS_ADDED,
+                    ArtistField.SOCIAL_LINKS_REMOVED,
                 ),
                 storeLinks = applyDiff(
                     base.storeLinks,
@@ -470,8 +470,8 @@ internal object ArtistFormMergeScreen {
                         ArtistField.BOOTH -> diff.booth != null
                         ArtistField.NAME -> diff.name != null
                         ArtistField.SUMMARY -> diff.summary != null
-                        ArtistField.LINKS_ADDED -> diff.links?.added != null
-                        ArtistField.LINKS_REMOVED -> diff.links?.removed != null
+                        ArtistField.SOCIAL_LINKS_ADDED -> diff.socialLinks?.added != null
+                        ArtistField.SOCIAL_LINKS_REMOVED -> diff.socialLinks?.removed != null
                         ArtistField.STORE_LINKS_ADDED -> diff.storeLinks?.added != null
                         ArtistField.STORE_LINKS_REMOVED -> diff.storeLinks?.removed != null
                         ArtistField.CATALOG_LINKS_ADDED -> diff.catalogLinks?.added != null
@@ -500,8 +500,8 @@ internal object ArtistFormMergeScreen {
         BOOTH(Res.string.alley_edit_artist_field_label_booth),
         NAME(Res.string.alley_edit_artist_field_label_name),
         SUMMARY(Res.string.alley_edit_artist_field_label_summary),
-        LINKS_ADDED(Res.string.alley_edit_artist_field_label_links),
-        LINKS_REMOVED(Res.string.alley_edit_artist_field_label_links),
+        SOCIAL_LINKS_ADDED(Res.string.alley_edit_artist_field_label_social_links),
+        SOCIAL_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_social_links),
         STORE_LINKS_ADDED(Res.string.alley_edit_artist_field_label_store_links),
         STORE_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_store_links),
         CATALOG_LINKS_ADDED(Res.string.alley_edit_artist_field_label_catalog_links),
@@ -524,7 +524,7 @@ internal object ArtistFormMergeScreen {
                 BOOTH,
                 NAME,
                 SUMMARY,
-                LINKS_ADDED,
+                SOCIAL_LINKS_ADDED,
                 STORE_LINKS_ADDED,
                 CATALOG_LINKS_ADDED,
                 NOTES,
@@ -534,7 +534,7 @@ internal object ArtistFormMergeScreen {
                 MERCH_INFERRED_ADDED,
                 MERCH_CONFIRMED_ADDED,
                     -> false
-                LINKS_REMOVED,
+                SOCIAL_LINKS_REMOVED,
                 STORE_LINKS_REMOVED,
                 CATALOG_LINKS_REMOVED,
                 COMMISSIONS_REMOVED,

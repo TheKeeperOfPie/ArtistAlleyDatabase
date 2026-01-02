@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @AssistedInject
@@ -121,7 +120,7 @@ class ArtistFormViewModel(
                     booth = formDiff.booth ?: baseArtist.booth,
                     name = formDiff.name ?: baseArtist.name,
                     summary = formDiff.summary ?: baseArtist.summary,
-                    links = applyDiff(baseArtist.links, formDiff.links),
+                    socialLinks = applyDiff(baseArtist.socialLinks, formDiff.socialLinks),
                     storeLinks = applyDiff(baseArtist.storeLinks, formDiff.storeLinks),
                     catalogLinks = applyDiff(baseArtist.catalogLinks, formDiff.catalogLinks),
                     notes = formDiff.notes ?: baseArtist.notes,
@@ -187,8 +186,8 @@ class ArtistFormViewModel(
                 summary = previousYearData.summary.takeIf {
                     fieldState[ArtistFormScreen.ArtistField.SUMMARY] ?: false
                 },
-                links = previousYearData.links.takeIf {
-                    fieldState[ArtistFormScreen.ArtistField.LINKS] ?: false
+                socialLinks = previousYearData.socialLinks.takeIf {
+                    fieldState[ArtistFormScreen.ArtistField.SOCIAL_LINKS] ?: false
                 }.orEmpty(),
                 storeLinks = previousYearData.storeLinks.takeIf {
                     fieldState[ArtistFormScreen.ArtistField.STORE_LINKS] ?: false

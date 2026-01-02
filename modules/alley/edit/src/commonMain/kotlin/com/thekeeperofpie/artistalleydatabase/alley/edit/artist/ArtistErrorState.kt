@@ -18,14 +18,14 @@ import org.jetbrains.compose.resources.stringResource
 class ArtistErrorState(
     val idErrorMessage: () -> String?,
     val boothErrorMessage: () -> String?,
-    val linksErrorMessage: () -> String?,
+    val socialLinksErrorMessage: () -> String?,
     val storeLinksErrorMessage: () -> String?,
     val catalogLinksErrorMessage: () -> String?,
 ) {
     val hasAnyError by derivedStateOf {
         idErrorMessage() != null ||
                 boothErrorMessage() != null ||
-                linksErrorMessage() != null ||
+                socialLinksErrorMessage() != null ||
                 storeLinksErrorMessage() != null ||
                 catalogLinksErrorMessage() != null
     }
@@ -36,13 +36,13 @@ class ArtistErrorState(
 fun rememberErrorState(state: ArtistFormState): ArtistErrorState {
     val idErrorMessage by rememberUuidValidator(state.editorState.id)
     val boothErrorMessage by rememberBoothValidator(state.info.booth)
-    val linksErrorMessage by rememberLinkValidator(state.links.stateLinks)
+    val socialLinksErrorMessage by rememberLinkValidator(state.links.stateSocialLinks)
     val storeLinksErrorMessage by rememberLinkValidator(state.links.stateStoreLinks)
     val catalogLinksErrorMessage by rememberLinkValidator(state.links.stateCatalogLinks)
     return ArtistErrorState(
         idErrorMessage = { idErrorMessage },
         boothErrorMessage = { boothErrorMessage },
-        linksErrorMessage = { linksErrorMessage },
+        socialLinksErrorMessage = { socialLinksErrorMessage },
         storeLinksErrorMessage = { storeLinksErrorMessage },
         catalogLinksErrorMessage = { catalogLinksErrorMessage },
     )

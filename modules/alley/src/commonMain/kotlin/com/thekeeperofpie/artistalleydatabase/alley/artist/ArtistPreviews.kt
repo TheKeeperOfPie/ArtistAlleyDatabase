@@ -16,7 +16,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 booth = "C39",
                 name = "Hatsune Miku",
                 summary = "Summary summary summary",
-                links = listOf("https://x.com/example", "https://instagram.com/example"),
+                socialLinks = listOf("https://x.com/example", "https://instagram.com/example"),
                 storeLinks = listOf("https://etsy.com/Example"),
                 catalogLinks = emptyList(),
                 driveLink = null,

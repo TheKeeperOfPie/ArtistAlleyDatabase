@@ -12,7 +12,7 @@ data class ArtistSummary(
     val id: Uuid,
     val booth: String?,
     val name: String?,
-    val links: List<String>,
+    val socialLinks: List<String>,
     val storeLinks: List<String>,
     val catalogLinks: List<String>,
     val seriesInferred: List<String>,

@@ -14,7 +14,7 @@ interface ArtistDatabaseEntry {
     val booth: String?
     val name: String
     val summary: String?
-    val links: List<String>
+    val socialLinks: List<String>
     val storeLinks: List<String>
     val catalogLinks: List<String>
     val driveLink: String?
@@ -39,7 +39,7 @@ interface ArtistDatabaseEntry {
         override val booth: String?,
         override val name: String,
         override val summary: String?,
-        override val links: List<String>,
+        override val socialLinks: List<String>,
         override val storeLinks: List<String>,
         override val catalogLinks: List<String>,
         override val driveLink: String?,
@@ -70,7 +70,7 @@ interface ArtistDatabaseEntry {
             booth: String?,
             name: String,
             summary: String?,
-            links: List<String>,
+            socialLinks: List<String>,
             storeLinks: List<String>,
             catalogLinks: List<String>,
             driveLink: String?,
@@ -88,7 +88,7 @@ interface ArtistDatabaseEntry {
             booth = booth,
             name = name,
             summary = summary,
-            links = links,
+            socialLinks = socialLinks,
             storeLinks = storeLinks,
             catalogLinks = catalogLinks,
             driveLink = driveLink,
@@ -113,7 +113,7 @@ fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(
     id = Uuid.parse(id),
     booth = booth,
     name = name,
-    links = links,
+    socialLinks = socialLinks,
     storeLinks = storeLinks,
     catalogLinks = catalogLinks,
     seriesInferred = seriesInferred,

@@ -311,7 +311,7 @@ private fun HomeScreenPreview() {
                 id = Uuid.random(),
                 booth = "",
                 name = "",
-                links = emptyList(),
+                socialLinks = emptyList(),
                 storeLinks = emptyList(),
                 catalogLinks = emptyList(),
                 seriesInferred = emptyList(),

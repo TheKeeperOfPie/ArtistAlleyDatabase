@@ -84,7 +84,7 @@ object ColumnAdapters {
     )
     val artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
         statusAdapter = ColumnAdapters.artistStatusAdapter,
-        linksAdapter = ColumnAdapters.listStringAdapter,
+        socialLinksAdapter = ColumnAdapters.listStringAdapter,
         storeLinksAdapter = ColumnAdapters.listStringAdapter,
         catalogLinksAdapter = ColumnAdapters.listStringAdapter,
         seriesInferredAdapter = ColumnAdapters.listStringAdapter,

@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 
 data class ArtistHistoryEntryWithDiff(
     val entry: ArtistHistoryEntry,
-    val linksDiff: Diff?,
+    val socialLinksDiff: Diff?,
     val storeLinksDiff: Diff?,
     val catalogLinksDiff: Diff?,
     val commissionsDiff: Diff?,
@@ -17,7 +17,7 @@ data class ArtistHistoryEntryWithDiff(
     companion object {
         fun calculateDiffs(entries: List<ArtistHistoryEntry>): List<ArtistHistoryEntryWithDiff> {
             val oldestEntry = entries.lastOrNull()
-            var lastLinks = oldestEntry?.links.orEmpty()
+            var lastSocialLinks = oldestEntry?.socialLinks.orEmpty()
             var lastStoreLinks = oldestEntry?.storeLinks.orEmpty()
             var lastCatalogLinks = oldestEntry?.catalogLinks.orEmpty()
             var lastCommissions = oldestEntry?.commissions.orEmpty()
@@ -27,7 +27,7 @@ data class ArtistHistoryEntryWithDiff(
             var lastMerchConfirmed = oldestEntry?.merchConfirmed.orEmpty()
             val results = mutableListOf<ArtistHistoryEntryWithDiff>()
             entries.fastForEachReversed {
-                val linksDiff = diffList(lastLinks, it.links)
+                val socialLinksDiff = diffList(lastSocialLinks, it.socialLinks)
                 val storeLinksDiff = diffList(lastStoreLinks, it.storeLinks)
                 val catalogLinksDiff = diffList(lastCatalogLinks, it.catalogLinks)
                 val commissionsDiff = diffList(lastCommissions, it.commissions)
@@ -37,7 +37,7 @@ data class ArtistHistoryEntryWithDiff(
                 val merchConfirmedDiff = diffList(lastMerchConfirmed, it.merchConfirmed)
                 results += ArtistHistoryEntryWithDiff(
                     entry = it,
-                    linksDiff = linksDiff,
+                    socialLinksDiff = socialLinksDiff,
                     storeLinksDiff = storeLinksDiff,
                     catalogLinksDiff = catalogLinksDiff,
                     commissionsDiff = commissionsDiff,
@@ -47,7 +47,7 @@ data class ArtistHistoryEntryWithDiff(
                     merchConfirmedDiff = merchConfirmedDiff,
                 )
 
-                lastLinks = it.links ?: lastLinks
+                lastSocialLinks = it.socialLinks ?: lastSocialLinks
                 lastStoreLinks = it.storeLinks ?: lastStoreLinks
                 lastCatalogLinks = it.catalogLinks ?: lastCatalogLinks
                 lastCommissions = it.commissions ?: lastCommissions

@@ -33,8 +33,8 @@
     <string name="alley_artist_details_description">Description</string>
     <string name="alley_artist_details_store">Store</string>
     <string name="alley_artist_details_catalog">Catalog / portfolio</string>
-    <string name="alley_artist_details_links">Links</string>
-    <string name="alley_artist_details_links_expand_content_description">Expand links</string>
+    <string name="alley_artist_details_social_links">Social links</string>
+    <string name="alley_artist_details_social_links_expand_content_description">Expand social links</string>
     <string name="alley_artist_details_series">Series</string>
     <string name="alley_artist_details_series_unconfirmed">Series - Unconfirmed</string>
     <string name="alley_artist_details_series_unconfirmed_icon_content_description">Unconfirmed series info</string>
@@ -133,8 +133,8 @@
     <string name="alley_artist_column_summary">Summary</string>
     <string name="alley_artist_column_series">Series</string>
     <string name="alley_artist_column_merch">Merch</string>
-    <string name="alley_artist_column_links">Links</string>
-    <string name="alley_artist_column_store">Store</string>
+    <string name="alley_artist_column_social_links">Social links</string>
+    <string name="alley_artist_column_store_links">Store links</string>
     <string name="alley_artist_column_commissions">Commissions</string>
 
     <string name="alley_expand_series">Expand series</string>

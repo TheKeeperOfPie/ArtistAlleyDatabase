@@ -70,7 +70,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_last_modified_author_prefix
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_last_modified_prefix
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_merch_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_name
@@ -81,6 +80,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_social_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_status
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
@@ -183,7 +183,7 @@ interface ArtistFormScope : EntryFormScope {
     )
 
     @Composable
-    fun LinksSection(
+    fun SocialLinksSection(
         state: EntryForm2.SingleTextState,
         links: SnapshotStateList<LinkModel>,
         label: @Composable (() -> Unit)? = null,
@@ -425,9 +425,9 @@ private abstract class ArtistFormScopeImpl(
         storeLinksErrorMessage: () -> String?,
         catalogLinksErrorMessage: () -> String?,
     ) {
-        LinksSection(
-            state = state.stateLinks,
-            links = state.links,
+        SocialLinksSection(
+            state = state.stateSocialLinks,
+            links = state.socialLinks,
             pendingErrorMessage = linksErrorMessage,
         )
         StoreLinksSection(
@@ -444,7 +444,7 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    override fun LinksSection(
+    override fun SocialLinksSection(
         state: EntryForm2.SingleTextState,
         links: SnapshotStateList<LinkModel>,
         label: @Composable (() -> Unit)?,
@@ -452,9 +452,9 @@ private abstract class ArtistFormScopeImpl(
     ) {
         ArtistForm.LinksSection(
             state = state,
-            title = Res.string.alley_edit_artist_edit_links,
+            title = Res.string.alley_edit_artist_edit_social_links,
             listRevertDialogState =
-                rememberListRevertDialogState(initialArtist?.links?.map(LinkModel::parse)),
+                rememberListRevertDialogState(initialArtist?.socialLinks?.map(LinkModel::parse)),
             items = links,
             label = label,
             pendingErrorMessage = pendingErrorMessage,
@@ -942,7 +942,7 @@ object ArtistForm {
                 state.info.booth,
                 state.info.name,
                 state.info.summary,
-                state.links.stateLinks,
+                state.links.stateSocialLinks,
                 state.links.stateStoreLinks,
                 state.links.stateCatalogLinks,
                 state.links.stateCommissions,
@@ -973,8 +973,8 @@ object ArtistForm {
             InfoSections(state.info, boothErrorMessage = errorState.boothErrorMessage)
 
             LinkSections(
-                state.links,
-                linksErrorMessage = errorState.linksErrorMessage,
+                state = state.links,
+                linksErrorMessage = errorState.socialLinksErrorMessage,
                 storeLinksErrorMessage = errorState.storeLinksErrorMessage,
                 catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
             )
@@ -1107,8 +1107,8 @@ object ArtistForm {
             Logo.YOU_TUBE,
             null,
                 -> {
-                state.links += linkModel
-                state.stateLinks.lockState = EntryLockState.UNLOCKED
+                state.socialLinks += linkModel
+                state.stateSocialLinks.lockState = EntryLockState.UNLOCKED
             }
         }
     }

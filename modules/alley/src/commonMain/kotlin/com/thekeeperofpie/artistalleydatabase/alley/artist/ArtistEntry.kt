@@ -7,8 +7,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 data class ArtistEntry(
     val databaseEntry: ArtistDatabaseEntry.Impl,
 ): ArtistDatabaseEntry by databaseEntry {
-    val linkModels by lazy {
-        links.map { LinkModel.parse(it) }.sortedBy { it.logo }
+    val socialLinkModels by lazy {
+        socialLinks.map { LinkModel.parse(it) }.sortedBy { it.logo }
     }
     val storeLinkModels by lazy {
         storeLinks.map { LinkModel.parse(it) }.sortedBy { it.logo }

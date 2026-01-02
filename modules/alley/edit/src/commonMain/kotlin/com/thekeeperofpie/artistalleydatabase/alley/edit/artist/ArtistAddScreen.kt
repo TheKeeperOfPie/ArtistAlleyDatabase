@@ -52,10 +52,10 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_same_artist_confirm_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -369,7 +369,7 @@ object ArtistAddScreen {
             ArtistField.entries.forEach { field ->
                 val fieldText = when (field) {
                     ArtistField.NAME -> artist?.name?.ifBlank { null }
-                    ArtistField.LINKS -> artist?.links?.ifEmpty { null }?.joinToString("\n")
+                    ArtistField.SOCIAL_LINKS -> artist?.socialLinks?.ifEmpty { null }?.joinToString("\n")
                     ArtistField.STORE_LINKS -> artist?.storeLinks?.ifEmpty { null }
                         ?.joinToString("\n")
                     ArtistField.SERIES -> artist?.seriesInferred?.ifEmpty { null }
@@ -463,7 +463,7 @@ object ArtistAddScreen {
 
     private enum class ArtistField(val label: StringResource) {
         NAME(Res.string.alley_edit_artist_field_label_name),
-        LINKS(Res.string.alley_edit_artist_field_label_links),
+        SOCIAL_LINKS(Res.string.alley_edit_artist_field_label_social_links),
         STORE_LINKS(Res.string.alley_edit_artist_field_label_store_links),
         SERIES(Res.string.alley_edit_artist_field_label_series_inferred),
         MERCH(Res.string.alley_edit_artist_field_label_merch_inferred),

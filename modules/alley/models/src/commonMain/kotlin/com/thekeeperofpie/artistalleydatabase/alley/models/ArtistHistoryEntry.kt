@@ -14,7 +14,7 @@ data class ArtistHistoryEntry(
     val booth: String?,
     val name: String?,
     val summary: String?,
-    val links: List<String>?,
+    val socialLinks: List<String>?,
     val storeLinks: List<String>?,
     val catalogLinks: List<String>?,
     val notes: String?,
@@ -39,7 +39,7 @@ data class ArtistHistoryEntry(
             booth = after.booth.takeIf { it != before?.booth },
             name = after.name.takeIf { it != before?.name },
             summary = after.summary.takeIf { it != before?.summary },
-            links = after.links.takeIf { it != before?.links },
+            socialLinks = after.socialLinks.takeIf { it != before?.socialLinks },
             storeLinks = after.storeLinks.takeIf { it != before?.storeLinks },
             catalogLinks = after.catalogLinks.takeIf { it != before?.catalogLinks },
             notes = after.notes.takeIf { it != before?.notes },
@@ -64,7 +64,7 @@ data class ArtistHistoryEntry(
             var booth: String? = null
             var name: String? = null
             var summary: String? = null
-            var links: List<String>? = null
+            var socialLinks: List<String>? = null
             var storeLinks: List<String>? = null
             var catalogLinks: List<String>? = null
             var notes: String? = null
@@ -82,7 +82,7 @@ data class ArtistHistoryEntry(
                 booth = booth ?: it.booth
                 name = name ?: it.name
                 summary = summary ?: it.summary
-                links = links ?: it.links
+                socialLinks = socialLinks ?: it.socialLinks
                 storeLinks = storeLinks ?: it.storeLinks
                 catalogLinks = catalogLinks ?: it.catalogLinks
                 notes = notes ?: it.notes
@@ -103,7 +103,7 @@ data class ArtistHistoryEntry(
                 booth = booth,
                 name = name.orEmpty(),
                 summary = summary,
-                links = links.orEmpty(),
+                socialLinks = socialLinks.orEmpty(),
                 storeLinks = storeLinks.orEmpty(),
                 catalogLinks = catalogLinks.orEmpty(),
                 driveLink = null,
@@ -128,7 +128,7 @@ data class ArtistHistoryEntry(
                 booth = entry.booth ?: initial.booth,
                 name = entry.name ?: initial.name,
                 summary = entry.summary ?: initial.summary,
-                links = entry.links ?: initial.links,
+                socialLinks = entry.socialLinks ?: initial.socialLinks,
                 storeLinks = entry.storeLinks ?: initial.storeLinks,
                 catalogLinks = entry.catalogLinks ?: initial.catalogLinks,
                 notes = entry.notes ?: initial.notes,

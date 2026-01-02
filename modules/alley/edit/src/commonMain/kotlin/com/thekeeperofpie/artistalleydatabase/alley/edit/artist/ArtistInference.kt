@@ -35,7 +35,7 @@ class ArtistInference(
                 ArtistData(
                     id = it.key,
                     names = it.value.map { it.name }.toSet(),
-                    links = it.value.flatMap { it.links }.map(LinkModel::parse).toSet(),
+                    socialLinks = it.value.flatMap { it.socialLinks }.map(LinkModel::parse).toSet(),
                     storeLinks = it.value.flatMap { it.storeLinks }.map(LinkModel::parse).toSet(),
                     catalogLinks = it.value.flatMap { it.catalogLinks }.toSet(),
                 )
@@ -45,7 +45,7 @@ class ArtistInference(
 
     suspend fun inferArtist(input: Input): List<MatchResult> {
         if (input.name.length <= 3 &&
-            input.links.isEmpty() &&
+            input.socialLinks.isEmpty() &&
             input.storeLinks.isEmpty() &&
             input.catalogLinks.isEmpty()
         ) {
@@ -56,7 +56,7 @@ class ArtistInference(
                 if (index % 20 == 0) {
                     yield()
                 }
-                val matchingLink = matchingLink(data.links, input.links)
+                val matchingLink = matchingLink(data.socialLinks, input.socialLinks)
                 if (matchingLink != null) {
                     return@mapIndexed MatchResult.Link(data, 1f, matchingLink.link)
                 }
@@ -82,7 +82,7 @@ class ArtistInference(
         PreviousYearProvider(artistEntryDao, artistId.toString()).getData()
             .takeIf {
                 !it.summary.isNullOrBlank() ||
-                        it.links.isNotEmpty() ||
+                        it.socialLinks.isNotEmpty() ||
                         it.storeLinks.isNotEmpty() ||
                         it.seriesInferred.isNotEmpty() ||
                         it.merchInferred.isNotEmpty()
@@ -118,7 +118,7 @@ class ArtistInference(
         val via
             get() = when (this) {
                 is Link -> link
-                is Name -> data.links.find { it.logo == Logo.X || it.logo == Logo.BLUESKY }?.link
+                is Name -> data.socialLinks.find { it.logo == Logo.X || it.logo == Logo.BLUESKY }?.link
                     ?: data.storeLinks.firstOrNull()?.link
                     ?: data.catalogLinks.firstOrNull()
             }
@@ -134,22 +134,22 @@ class ArtistInference(
     data class ArtistData(
         val id: Uuid,
         val names: Set<String>,
-        val links: Set<LinkModel>,
+        val socialLinks: Set<LinkModel>,
         val storeLinks: Set<LinkModel>,
         val catalogLinks: Set<String>,
     )
 
     data class Input(
         val name: String,
-        val links: List<LinkModel>,
+        val socialLinks: List<LinkModel>,
         val storeLinks: List<LinkModel>,
         val catalogLinks: List<String>,
     ) {
         companion object {
             fun captureState(state: ArtistFormState) = Input(
                 name = state.info.name.value.text.toString(),
-                links = state.links.links.toList() +
-                        LinkModel.parse(state.links.stateLinks.value.text.toString()),
+                socialLinks = state.links.socialLinks.toList() +
+                        LinkModel.parse(state.links.stateSocialLinks.value.text.toString()),
                 storeLinks = state.links.storeLinks.toList() +
                         LinkModel.parse(state.links.stateStoreLinks.value.text.toString()),
                 catalogLinks = state.links.catalogLinks.toList() +
@@ -162,7 +162,7 @@ class ArtistInference(
         val artistId: String,
         val name: String?,
         val summary: String?,
-        val links: List<String>,
+        val socialLinks: List<String>,
         val storeLinks: List<String>,
         val seriesInferred: List<String>,
         val merchInferred: List<String>,
@@ -237,7 +237,7 @@ class ArtistInference(
             artistId = artistId,
             name = cascadeString { name },
             summary = cascadeString { summary },
-            links = cascadeLists { links },
+            socialLinks = cascadeLists { socialLinks },
             storeLinks = cascadeLists { storeLinks },
             seriesInferred = cascadeLists { seriesConfirmed.ifEmpty { seriesInferred } },
             merchInferred = cascadeLists { merchConfirmed.ifEmpty { merchInferred } },

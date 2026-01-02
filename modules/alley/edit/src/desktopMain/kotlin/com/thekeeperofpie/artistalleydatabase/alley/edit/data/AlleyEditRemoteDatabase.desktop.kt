@@ -61,7 +61,7 @@ actual class AlleyEditRemoteDatabase {
                 { it.copy(summary = "Description", lastEditor = "fakeemail@example.com") },
                 {
                     it.copy(
-                        links = listOf(
+                        socialLinks = listOf(
                             "https://example.com/social",
                             "https://example.com/profile",
                         ),
@@ -114,7 +114,7 @@ actual class AlleyEditRemoteDatabase {
                     booth = "C38",
                     name = "",
                     summary = null,
-                    links = emptyList(),
+                    socialLinks = emptyList(),
                     storeLinks = emptyList(),
                     catalogLinks = emptyList(),
                     driveLink = null,
@@ -314,7 +314,7 @@ actual class AlleyEditRemoteDatabase {
                 name = after.name.orEmpty().takeIf { it != before.name.orEmpty() },
                 summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
                 notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
-                links = ArtistEntryDiff.diffList(before.links, after.links),
+                socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
                 storeLinks = ArtistEntryDiff.diffList(before.storeLinks, after.storeLinks),
                 catalogLinks = ArtistEntryDiff.diffList(before.catalogLinks, after.catalogLinks),
                 commissions = ArtistEntryDiff.diffList(before.commissions, after.commissions),

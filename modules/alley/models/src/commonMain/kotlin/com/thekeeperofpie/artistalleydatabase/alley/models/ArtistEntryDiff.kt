@@ -9,7 +9,7 @@ data class ArtistEntryDiff(
     val name: String?,
     val summary: String?,
     val notes: String?,
-    val links: Diff?,
+    val socialLinks: Diff?,
     val storeLinks: Diff?,
     val catalogLinks: Diff?,
     val commissions: Diff?,

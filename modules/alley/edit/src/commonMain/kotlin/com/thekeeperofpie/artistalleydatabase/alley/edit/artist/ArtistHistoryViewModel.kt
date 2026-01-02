@@ -61,7 +61,7 @@ class ArtistHistoryViewModel(
                 booth = entry.booth ?: initial.booth,
                 name = entry.name ?: initial.name,
                 summary = entry.summary ?: initial.summary,
-                links = entry.links ?: initial.links,
+                socialLinks = entry.socialLinks ?: initial.socialLinks,
                 storeLinks = entry.storeLinks ?: initial.storeLinks,
                 catalogLinks = entry.catalogLinks ?: initial.catalogLinks,
                 notes = entry.notes ?: initial.notes,

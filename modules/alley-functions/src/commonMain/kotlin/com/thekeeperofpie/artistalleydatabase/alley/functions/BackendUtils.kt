@@ -35,7 +35,11 @@ internal object BackendUtils {
                 -> null
         }
 
-    suspend fun loadFormDiff(context: EventContext, dataYear: DataYear, artistId: Uuid): ArtistEntryDiff? {
+    suspend fun loadFormDiff(
+        context: EventContext,
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): ArtistEntryDiff? {
         val formEntry = Databases.formDatabase(context)
             .artistFormEntryQueries
             .getFormEntry(dataYear, artistId)
@@ -50,7 +54,10 @@ internal object BackendUtils {
                 .takeIf { it != formEntry.beforeSummary.orEmpty() },
             notes = formEntry.afterNotes.orEmpty()
                 .takeIf { it != formEntry.beforeNotes.orEmpty() },
-            links = ArtistEntryDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+            socialLinks = ArtistEntryDiff.diffList(
+                formEntry.beforeSocialLinks,
+                formEntry.afterSocialLinks
+            ),
             storeLinks = ArtistEntryDiff.diffList(
                 formEntry.beforeStoreLinks,
                 formEntry.afterStoreLinks

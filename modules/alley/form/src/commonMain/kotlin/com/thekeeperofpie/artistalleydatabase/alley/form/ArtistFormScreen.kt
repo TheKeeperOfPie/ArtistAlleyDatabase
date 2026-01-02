@@ -53,9 +53,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
 import artistalleydatabase.modules.alley.form.generated.resources.Res
@@ -68,9 +68,9 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_art
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_form_notes_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_footer
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_header
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_name_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_notes_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_social_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_store_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_summary_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
@@ -311,7 +311,7 @@ object ArtistFormScreen {
                             formState.info.booth,
                             formState.info.name,
                             formState.info.summary,
-                            formState.links.stateLinks,
+                            formState.links.stateSocialLinks,
                             formState.links.stateStoreLinks,
                             formState.links.stateCatalogLinks,
                             formState.links.stateCommissions,
@@ -355,11 +355,11 @@ object ArtistFormScreen {
                             state = formState.info.summary,
                             label = { Text(stringResource(Res.string.alley_form_artist_summary_placeholder)) },
                         )
-                        LinksSection(
-                            state = formState.links.stateLinks,
-                            links = formState.links.links,
-                            label = { Text(stringResource(Res.string.alley_form_artist_links_placeholder)) },
-                            pendingErrorMessage = errorState.linksErrorMessage,
+                        SocialLinksSection(
+                            state = formState.links.stateSocialLinks,
+                            links = formState.links.socialLinks,
+                            label = { Text(stringResource(Res.string.alley_form_artist_social_links_placeholder)) },
+                            pendingErrorMessage = errorState.socialLinksErrorMessage,
                         )
                         StoreLinksSection(
                             state = formState.links.stateStoreLinks,
@@ -489,12 +489,12 @@ object ArtistFormScreen {
     @Composable
     private fun rememberErrorState(state: State.FormState): ErrorState {
         val boothErrorMessage by rememberBoothValidator(state.info.booth)
-        val linksErrorMessage by rememberLinkValidator(state.links.stateLinks)
+        val socialLinksErrorMessage by rememberLinkValidator(state.links.stateSocialLinks)
         val storeLinksErrorMessage by rememberLinkValidator(state.links.stateStoreLinks)
         val catalogLinksErrorMessage by rememberLinkValidator(state.links.stateCatalogLinks)
         return ErrorState(
             boothErrorMessage = { boothErrorMessage },
-            linksErrorMessage = { linksErrorMessage },
+            socialLinksErrorMessage = { socialLinksErrorMessage },
             storeLinksErrorMessage = { storeLinksErrorMessage },
             catalogLinksErrorMessage = { catalogLinksErrorMessage },
         )
@@ -540,7 +540,7 @@ object ArtistFormScreen {
             ArtistField.entries.forEach { field ->
                 val fieldText = when (field) {
                     ArtistField.SUMMARY -> previousYearData.summary?.ifBlank { null }
-                    ArtistField.LINKS -> previousYearData.links.ifEmpty { null }
+                    ArtistField.SOCIAL_LINKS -> previousYearData.socialLinks.ifEmpty { null }
                         ?.joinToString("\n")
                     ArtistField.STORE_LINKS -> previousYearData.storeLinks.ifEmpty { null }
                         ?.joinToString("\n")
@@ -721,7 +721,7 @@ object ArtistFormScreen {
 
     enum class ArtistField(val label: StringResource) {
         SUMMARY(EditRes.string.alley_edit_artist_field_label_summary),
-        LINKS(EditRes.string.alley_edit_artist_field_label_links),
+        SOCIAL_LINKS(EditRes.string.alley_edit_artist_field_label_social_links),
         STORE_LINKS(EditRes.string.alley_edit_artist_field_label_store_links),
         SERIES(EditRes.string.alley_edit_artist_field_label_series_inferred),
         MERCH(EditRes.string.alley_edit_artist_field_label_merch_inferred),
@@ -751,7 +751,7 @@ object ArtistFormScreen {
             )
 
             formState.links.applyRawValues(
-                links = artist.links,
+                socialLinks = artist.socialLinks,
                 storeLinks = artist.storeLinks,
                 catalogLinks = artist.catalogLinks,
                 commissions = artist.commissions,
@@ -776,7 +776,7 @@ object ArtistFormScreen {
             artist: ArtistDatabaseEntry.Impl,
         ): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
             val (booth, name, summary, notes) = formState.info.captureValues()
-            val (links, storeLinks, catalogLinks, commissions) = formState.links.captureValues()
+            val (socialLinks, storeLinks, catalogLinks, commissions) = formState.links.captureValues()
 
             val (seriesInferred, seriesConfirmed) = formState.series.captureValues()
             val (merchInferred, merchConfirmed) = formState.merch.captureValues()
@@ -787,7 +787,7 @@ object ArtistFormScreen {
                 booth = booth,
                 name = name,
                 summary = summary,
-                links = links,
+                socialLinks = socialLinks,
                 storeLinks = storeLinks,
                 catalogLinks = catalogLinks,
                 notes = notes,
@@ -838,13 +838,13 @@ object ArtistFormScreen {
         @Stable
         class ErrorState(
             val boothErrorMessage: () -> String?,
-            val linksErrorMessage: () -> String?,
+            val socialLinksErrorMessage: () -> String?,
             val storeLinksErrorMessage: () -> String?,
             val catalogLinksErrorMessage: () -> String?,
         ) {
             val hasAnyError by derivedStateOf {
                 boothErrorMessage() != null ||
-                        linksErrorMessage() != null ||
+                        socialLinksErrorMessage() != null ||
                         storeLinksErrorMessage() != null ||
                         catalogLinksErrorMessage() != null
             }

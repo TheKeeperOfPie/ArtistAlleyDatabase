@@ -74,7 +74,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_commissions
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_editor_notes
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_list_added
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_list_deleted
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_confirmed
@@ -83,6 +82,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_status
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
@@ -441,8 +441,8 @@ object ArtistHistoryScreen {
                 )
 
                 ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_links,
-                    entryWithDiff.linksDiff,
+                    label = Res.string.alley_edit_artist_field_label_social_links,
+                    entryWithDiff.socialLinksDiff,
                 )
                 ListChangeRow(
                     label = Res.string.alley_edit_artist_field_label_store_links,
@@ -554,7 +554,7 @@ object ArtistHistoryScreen {
                     ArtistField.BOOTH -> rebuiltEntry.booth.takeIf { it != initialArtist?.booth }
                     ArtistField.NAME -> rebuiltEntry.name.takeIf { it != initialArtist?.name }
                     ArtistField.SUMMARY -> rebuiltEntry.summary.takeIf { it != initialArtist?.summary }
-                    ArtistField.LINKS -> rebuiltEntry.links.takeIf { it != initialArtist?.links }
+                    ArtistField.SOCIAL_LINKS -> rebuiltEntry.socialLinks.takeIf { it != initialArtist?.socialLinks }
                         ?.joinToString()
                     ArtistField.STORE_LINKS -> rebuiltEntry.storeLinks
                         .takeIf { it != initialArtist?.storeLinks }
@@ -761,7 +761,7 @@ object ArtistHistoryScreen {
             } else {
                 null
             },
-            links = entry.links.takeIf { this[ArtistField.LINKS] },
+            socialLinks = entry.socialLinks.takeIf { this[ArtistField.SOCIAL_LINKS] },
             storeLinks = entry.storeLinks.takeIf { this[ArtistField.STORE_LINKS] },
             catalogLinks = entry.catalogLinks.takeIf { this[ArtistField.CATALOG_LINKS] },
             notes = if (this[ArtistField.NOTES]) {
@@ -797,7 +797,7 @@ object ArtistHistoryScreen {
                         ArtistField.BOOTH -> entry.booth != null
                         ArtistField.NAME -> entry.name != null
                         ArtistField.SUMMARY -> entry.summary != null
-                        ArtistField.LINKS -> entry.links != null
+                        ArtistField.SOCIAL_LINKS -> entry.socialLinks != null
                         ArtistField.STORE_LINKS -> entry.storeLinks != null
                         ArtistField.CATALOG_LINKS -> entry.catalogLinks != null
                         ArtistField.NOTES -> entry.notes != null
@@ -819,7 +819,7 @@ object ArtistHistoryScreen {
         BOOTH(Res.string.alley_edit_artist_field_label_booth),
         NAME(Res.string.alley_edit_artist_field_label_name),
         SUMMARY(Res.string.alley_edit_artist_field_label_summary),
-        LINKS(Res.string.alley_edit_artist_field_label_links),
+        SOCIAL_LINKS(Res.string.alley_edit_artist_field_label_social_links),
         STORE_LINKS(Res.string.alley_edit_artist_field_label_store_links),
         CATALOG_LINKS(Res.string.alley_edit_artist_field_label_catalog_links),
         NOTES(Res.string.alley_edit_artist_field_label_notes),

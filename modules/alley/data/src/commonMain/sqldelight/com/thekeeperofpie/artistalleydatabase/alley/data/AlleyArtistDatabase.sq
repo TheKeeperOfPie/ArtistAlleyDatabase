@@ -120,7 +120,7 @@ CREATE TABLE
         booth TEXT COLLATE NOCASE,
         name TEXT NOT NULL COLLATE NOCASE,
         summary TEXT,
-        links TEXT AS List<String> NOT NULL,
+        socialLinks TEXT AS List<String> NOT NULL,
         storeLinks TEXT AS List<String> NOT NULL,
         catalogLinks TEXT AS List<String> NOT NULL,
         linkFlags INTEGER NOT NULL DEFAULT 0,

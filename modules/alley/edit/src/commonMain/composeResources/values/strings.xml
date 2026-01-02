@@ -23,7 +23,7 @@
     <string name="alley_edit_artist_edit_booth">Booth</string>
     <string name="alley_edit_artist_edit_name">Name</string>
     <string name="alley_edit_artist_edit_summary">Summary</string>
-    <string name="alley_edit_artist_edit_links">Social links</string>
+    <string name="alley_edit_artist_edit_social_links">Social links</string>
     <string name="alley_edit_artist_edit_store_links">Store links</string>
     <string name="alley_edit_artist_edit_catalog_links">Catalog links</string>
     <string name="alley_edit_artist_edit_notes">Notes (PUBLIC FACING)</string>
@@ -153,7 +153,7 @@
     <string name="alley_edit_artist_field_label_booth">Booth:</string>
     <string name="alley_edit_artist_field_label_name">Name:</string>
     <string name="alley_edit_artist_field_label_summary">Description:</string>
-    <string name="alley_edit_artist_field_label_links">Links:</string>
+    <string name="alley_edit_artist_field_label_social_links">Social links:</string>
     <string name="alley_edit_artist_field_label_store_links">Store links:</string>
     <string name="alley_edit_artist_field_label_catalog_links">Catalog links:</string>
     <string name="alley_edit_artist_field_label_notes">Notes:</string>

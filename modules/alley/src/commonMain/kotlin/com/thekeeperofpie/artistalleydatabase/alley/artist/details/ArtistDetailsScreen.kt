@@ -56,8 +56,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_catalog
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_description
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_links
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_links_expand_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_social_links
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_social_links_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed_icon_content_description
@@ -190,17 +190,17 @@ object ArtistDetailsScreen {
                 }
             }
 
-            val linkModels = entry()?.artist?.linkModels
-            if (linkModels?.isNotEmpty() != false) {
+            val socialLinkModels = entry()?.artist?.socialLinkModels
+            if (socialLinkModels?.isNotEmpty() != false) {
                 item("artistLinks") {
                     Column(Modifier.animateItem()) {
                         ThemeAwareElevatedCard(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         ) {
                             expandableListInfoText(
-                                labelTextRes = Res.string.alley_artist_details_links,
-                                contentDescriptionTextRes = Res.string.alley_artist_details_links_expand_content_description,
-                                values = linkModels,
+                                labelTextRes = Res.string.alley_artist_details_social_links,
+                                contentDescriptionTextRes = Res.string.alley_artist_details_social_links_expand_content_description,
+                                values = socialLinkModels,
                                 allowExpand = false,
                                 showDividerAbove = false,
                                 item = { link, _, isLast -> LinkRow(link, isLast) },
@@ -701,9 +701,10 @@ object ArtistDetailsScreen {
                             .padding(16.dp)
                     ) {
                         val uriHandler = LocalUriHandler.current
-                        val hasBluesky = artist.linkModels.any { it.logo == Logo.BLUESKY }
-                        val hasInstagram = artist.linkModels.any { it.logo == Logo.INSTAGRAM }
-                        val hasX = artist.linkModels.any { it.logo == Logo.X }
+                        val socialLinkModels = artist.socialLinkModels
+                        val hasBluesky = socialLinkModels.any { it.logo == Logo.BLUESKY }
+                        val hasInstagram = socialLinkModels.any { it.logo == Logo.INSTAGRAM }
+                        val hasX = socialLinkModels.any { it.logo == Logo.X }
                         val hasAny = hasBluesky || hasInstagram || hasX
                         if (hasBluesky || !hasAny) {
                             FilledTonalButton(

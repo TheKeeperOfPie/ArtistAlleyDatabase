@@ -35,7 +35,7 @@ actual class AlleyFormRemoteDatabase(
                         .takeIf { it != before.summary.orEmpty() },
                     notes = after.notes.orEmpty()
                         .takeIf { it != before.notes.orEmpty() },
-                    links = ArtistEntryDiff.diffList(before.links, after.links),
+                    socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
                     storeLinks = ArtistEntryDiff.diffList(
                         before.storeLinks,
                         after.storeLinks

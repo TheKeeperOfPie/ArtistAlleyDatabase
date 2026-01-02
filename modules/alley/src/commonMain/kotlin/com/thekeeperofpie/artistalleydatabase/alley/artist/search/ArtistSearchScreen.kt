@@ -50,11 +50,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_booth
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_commissions
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_links
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_name
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_series
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_store
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_social_links
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_store_links
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_column_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
@@ -298,10 +298,10 @@ object ArtistSearchScreen {
                 onTagClick = onMerchClick,
                 onMoreClick = { if (row != null) onEntryClick(row, 1) },
             )
-            ArtistColumn.LINKS -> row?.artist?.linkModels?.let { linkModels ->
+            ArtistColumn.SOCIAL_LINKS -> row?.artist?.socialLinkModels?.let { socialLinkModels ->
                 val uriHandler = LocalUriHandler.current
-                Grid(linkModels.size) {
-                    val linkModel = linkModels[it]
+                Grid(socialLinkModels.size) {
+                    val linkModel = socialLinkModels[it]
                     TooltipIconButton(
                         icon = linkModel.logo?.icon ?: Icons.Default.Link,
                         tooltipText = linkModel.link,
@@ -310,7 +310,7 @@ object ArtistSearchScreen {
                     )
                 }
             }
-            ArtistColumn.STORE -> row?.artist?.storeLinkModels?.let { storeLinkModels ->
+            ArtistColumn.STORE_LINKS -> row?.artist?.storeLinkModels?.let { storeLinkModels ->
                 val uriHandler = LocalUriHandler.current
                 Grid(count = storeLinkModels.size, columnCount = 2) {
                     val linkModel = storeLinkModels[it]
@@ -428,8 +428,8 @@ object ArtistSearchScreen {
         SUMMARY(400.dp, Res.string.alley_artist_column_summary),
         SERIES(288.dp, Res.string.alley_artist_column_series),
         MERCH(144.dp, Res.string.alley_artist_column_merch),
-        LINKS(144.dp, Res.string.alley_artist_column_links),
-        STORE(96.dp, Res.string.alley_artist_column_store),
+        SOCIAL_LINKS(144.dp, Res.string.alley_artist_column_social_links),
+        STORE_LINKS(96.dp, Res.string.alley_artist_column_store_links),
         COMMISSIONS(144.dp, Res.string.alley_artist_column_commissions),
     }
 

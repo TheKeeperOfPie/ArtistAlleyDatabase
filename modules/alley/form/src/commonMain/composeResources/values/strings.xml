@@ -33,7 +33,7 @@
     <string name="alley_form_artist_booth_placeholder">Table number (i.e. A01), leave blank if not known yet</string>
     <string name="alley_form_artist_name_placeholder">Display/brand/artist name</string>
     <string name="alley_form_artist_summary_placeholder">Describe yourself and your art; can be different from convention submission</string>
-    <string name="alley_form_artist_links_placeholder">Links to active social media (Bluesky, Instagram, X, etc.)</string>
+    <string name="alley_form_artist_social_links_placeholder">Active social media (Bluesky, Instagram, X, etc.)</string>
     <string name="alley_form_artist_store_links_placeholder">Store pages (BigCartel, Etsy, Inprnt, etc.)</string>
     <string name="alley_form_artist_catalog_links_placeholder">Portfolio link (ArtStation, Carrd, personal sites, etc.)</string>
     <string name="alley_form_artist_commissions_placeholder">Commission availability (VGen links, Online/On-site, etc.)</string>

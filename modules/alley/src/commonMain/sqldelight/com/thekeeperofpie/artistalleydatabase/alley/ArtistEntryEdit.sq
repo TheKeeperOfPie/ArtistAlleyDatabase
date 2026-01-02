@@ -8,7 +8,7 @@ getArtistInferenceDataAnimeExpo2025:
 SELECT id, name, links, storeLinks, catalogLinks FROM artistEntry2025;
 
 getArtistInferenceDataAnimeExpo2026:
-SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeExpo2026;
+SELECT id, name, socialLinks, storeLinks, catalogLinks FROM artistEntryAnimeExpo2026;
 
 getArtistInferenceDataAnimeNyc2024:
 SELECT id, name, links, storeLinks, catalogLinks FROM artistEntryAnimeNyc2024;
