@@ -7,5 +7,6 @@ data class ArtistInferenceData(
     val name: String,
     val socialLinks: List<String>,
     val storeLinks: List<String>,
+    val portfolioLinks: List<String>,
     val catalogLinks: List<String>,
 )

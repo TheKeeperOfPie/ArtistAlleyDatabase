@@ -40,6 +40,10 @@ actual class AlleyFormRemoteDatabase(
                         before.storeLinks,
                         after.storeLinks
                     ),
+                    portfolioLinks = ArtistEntryDiff.diffList(
+                        before.portfolioLinks,
+                        after.portfolioLinks
+                    ),
                     catalogLinks = ArtistEntryDiff.diffList(
                         before.catalogLinks,
                         after.catalogLinks

@@ -80,6 +80,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_portfolio_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
@@ -449,6 +450,10 @@ object ArtistHistoryScreen {
                     entryWithDiff.storeLinksDiff,
                 )
                 ListChangeRow(
+                    label = Res.string.alley_edit_artist_field_label_portfolio_links,
+                    entryWithDiff.portfolioLinksDiff,
+                )
+                ListChangeRow(
                     label = Res.string.alley_edit_artist_field_label_catalog_links,
                     entryWithDiff.catalogLinksDiff,
                 )
@@ -558,6 +563,9 @@ object ArtistHistoryScreen {
                         ?.joinToString()
                     ArtistField.STORE_LINKS -> rebuiltEntry.storeLinks
                         .takeIf { it != initialArtist?.storeLinks }
+                        ?.joinToString()
+                    ArtistField.PORTFOLIO_LINKS -> rebuiltEntry.portfolioLinks
+                        .takeIf { it != initialArtist?.portfolioLinks }
                         ?.joinToString()
                     ArtistField.CATALOG_LINKS -> rebuiltEntry.catalogLinks
                         .takeIf { it != initialArtist?.catalogLinks }
@@ -763,6 +771,7 @@ object ArtistHistoryScreen {
             },
             socialLinks = entry.socialLinks.takeIf { this[ArtistField.SOCIAL_LINKS] },
             storeLinks = entry.storeLinks.takeIf { this[ArtistField.STORE_LINKS] },
+            portfolioLinks = entry.portfolioLinks.takeIf { this[ArtistField.PORTFOLIO_LINKS] },
             catalogLinks = entry.catalogLinks.takeIf { this[ArtistField.CATALOG_LINKS] },
             notes = if (this[ArtistField.NOTES]) {
                 entry.notes.orEmpty()
@@ -799,6 +808,7 @@ object ArtistHistoryScreen {
                         ArtistField.SUMMARY -> entry.summary != null
                         ArtistField.SOCIAL_LINKS -> entry.socialLinks != null
                         ArtistField.STORE_LINKS -> entry.storeLinks != null
+                        ArtistField.PORTFOLIO_LINKS -> entry.portfolioLinks != null
                         ArtistField.CATALOG_LINKS -> entry.catalogLinks != null
                         ArtistField.NOTES -> entry.notes != null
                         ArtistField.COMMISSIONS -> entry.commissions != null
@@ -821,6 +831,7 @@ object ArtistHistoryScreen {
         SUMMARY(Res.string.alley_edit_artist_field_label_summary),
         SOCIAL_LINKS(Res.string.alley_edit_artist_field_label_social_links),
         STORE_LINKS(Res.string.alley_edit_artist_field_label_store_links),
+        PORTFOLIO_LINKS(Res.string.alley_edit_artist_field_label_portfolio_links),
         CATALOG_LINKS(Res.string.alley_edit_artist_field_label_catalog_links),
         NOTES(Res.string.alley_edit_artist_field_label_notes),
         COMMISSIONS(Res.string.alley_edit_artist_field_label_commissions),

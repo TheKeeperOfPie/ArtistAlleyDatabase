@@ -122,6 +122,7 @@ class ArtistFormViewModel(
                     summary = formDiff.summary ?: baseArtist.summary,
                     socialLinks = applyDiff(baseArtist.socialLinks, formDiff.socialLinks),
                     storeLinks = applyDiff(baseArtist.storeLinks, formDiff.storeLinks),
+                    portfolioLinks = applyDiff(baseArtist.portfolioLinks, formDiff.portfolioLinks),
                     catalogLinks = applyDiff(baseArtist.catalogLinks, formDiff.catalogLinks),
                     notes = formDiff.notes ?: baseArtist.notes,
                     commissions = applyDiff(baseArtist.commissions, formDiff.commissions),

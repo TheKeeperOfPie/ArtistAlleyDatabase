@@ -37,6 +37,7 @@ class ArtistInference(
                     names = it.value.map { it.name }.toSet(),
                     socialLinks = it.value.flatMap { it.socialLinks }.map(LinkModel::parse).toSet(),
                     storeLinks = it.value.flatMap { it.storeLinks }.map(LinkModel::parse).toSet(),
+                    portfolioLinks = it.value.flatMap { it.portfolioLinks }.map(LinkModel::parse).toSet(),
                     catalogLinks = it.value.flatMap { it.catalogLinks }.toSet(),
                 )
             }
@@ -47,6 +48,7 @@ class ArtistInference(
         if (input.name.length <= 3 &&
             input.socialLinks.isEmpty() &&
             input.storeLinks.isEmpty() &&
+            input.portfolioLinks.isEmpty() &&
             input.catalogLinks.isEmpty()
         ) {
             return emptyList()
@@ -56,13 +58,17 @@ class ArtistInference(
                 if (index % 20 == 0) {
                     yield()
                 }
-                val matchingLink = matchingLink(data.socialLinks, input.socialLinks)
-                if (matchingLink != null) {
-                    return@mapIndexed MatchResult.Link(data, 1f, matchingLink.link)
+                val matchingSocialLink = matchingLink(data.socialLinks, input.socialLinks)
+                if (matchingSocialLink != null) {
+                    return@mapIndexed MatchResult.Link(data, 1f, matchingSocialLink.link)
                 }
                 val matchingStoreLink = matchingLink(data.storeLinks, input.storeLinks)
                 if (matchingStoreLink != null) {
                     return@mapIndexed MatchResult.Link(data, 1f, matchingStoreLink.link)
+                }
+                val matchingPortfolioLink = matchingLink(data.portfolioLinks, input.portfolioLinks)
+                if (matchingPortfolioLink != null) {
+                    return@mapIndexed MatchResult.Link(data, 1f, matchingPortfolioLink.link)
                 }
                 val matchingCatalogLink = matchingCatalogLink(data.catalogLinks, input.catalogLinks)
                 if (matchingCatalogLink != null) {
@@ -120,6 +126,7 @@ class ArtistInference(
                 is Link -> link
                 is Name -> data.socialLinks.find { it.logo == Logo.X || it.logo == Logo.BLUESKY }?.link
                     ?: data.storeLinks.firstOrNull()?.link
+                    ?: data.portfolioLinks.firstOrNull()?.link
                     ?: data.catalogLinks.firstOrNull()
             }
 
@@ -136,6 +143,7 @@ class ArtistInference(
         val names: Set<String>,
         val socialLinks: Set<LinkModel>,
         val storeLinks: Set<LinkModel>,
+        val portfolioLinks: Set<LinkModel>,
         val catalogLinks: Set<String>,
     )
 
@@ -143,6 +151,7 @@ class ArtistInference(
         val name: String,
         val socialLinks: List<LinkModel>,
         val storeLinks: List<LinkModel>,
+        val portfolioLinks: List<LinkModel>,
         val catalogLinks: List<String>,
     ) {
         companion object {
@@ -152,6 +161,8 @@ class ArtistInference(
                         LinkModel.parse(state.links.stateSocialLinks.value.text.toString()),
                 storeLinks = state.links.storeLinks.toList() +
                         LinkModel.parse(state.links.stateStoreLinks.value.text.toString()),
+                portfolioLinks = state.links.portfolioLinks.toList() +
+                        LinkModel.parse(state.links.statePortfolioLinks.value.text.toString()),
                 catalogLinks = state.links.catalogLinks.toList() +
                         state.links.stateCatalogLinks.value.text.toString(),
             )

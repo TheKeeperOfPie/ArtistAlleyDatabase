@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
     summary TEXT,
     socialLinks TEXT AS List<String>,
     storeLinks TEXT AS List<String>,
+    portfolioLinks TEXT AS List<String>,
     catalogLinks TEXT AS List<String>,
     notes TEXT,
     commissions TEXT AS List<String>,

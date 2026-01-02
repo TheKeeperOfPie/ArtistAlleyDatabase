@@ -11,6 +11,7 @@ data class ArtistEntryDiff(
     val notes: String?,
     val socialLinks: Diff?,
     val storeLinks: Diff?,
+    val portfolioLinks: Diff?,
     val catalogLinks: Diff?,
     val commissions: Diff?,
     val seriesInferred: Diff?,

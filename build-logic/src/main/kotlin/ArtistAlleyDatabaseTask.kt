@@ -155,6 +155,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         val (linkFlags, linkFlags2) = Link.parseFlags(
                             socialLinks = socialLinks,
                             storeLinks = storeLinks,
+                            portfolioLinks = it.portfolioLinks,
                             catalogLinks = it.catalogLinks,
                         )
                         val commissionFlags = CommissionType.parseFlags(it.commissions)
@@ -433,6 +434,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 statusAdapter = artistStatusAdapter,
                 socialLinksAdapter = listStringAdapter,
                 storeLinksAdapter = listStringAdapter,
+                portfolioLinksAdapter = listStringAdapter,
                 catalogLinksAdapter = listStringAdapter,
                 seriesInferredAdapter = listStringAdapter,
                 seriesConfirmedAdapter = listStringAdapter,

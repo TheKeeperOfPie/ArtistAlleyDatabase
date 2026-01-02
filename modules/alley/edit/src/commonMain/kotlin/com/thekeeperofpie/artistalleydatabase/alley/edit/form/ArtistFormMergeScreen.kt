@@ -46,6 +46,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_portfolio_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
@@ -339,6 +340,8 @@ internal object ArtistFormMergeScreen {
                         ArtistField.SOCIAL_LINKS_REMOVED -> diff?.socialLinks?.removed?.joinToString()
                         ArtistField.STORE_LINKS_ADDED -> diff?.storeLinks?.added?.joinToString()
                         ArtistField.STORE_LINKS_REMOVED -> diff?.storeLinks?.removed?.joinToString()
+                        ArtistField.PORTFOLIO_LINKS_ADDED -> diff?.portfolioLinks?.added?.joinToString()
+                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff?.portfolioLinks?.removed?.joinToString()
                         ArtistField.CATALOG_LINKS_ADDED -> diff?.catalogLinks?.added?.joinToString()
                         ArtistField.CATALOG_LINKS_REMOVED -> diff?.catalogLinks?.removed?.joinToString()
                         ArtistField.NOTES -> diff?.notes
@@ -413,6 +416,12 @@ internal object ArtistFormMergeScreen {
                     ArtistField.STORE_LINKS_ADDED,
                     ArtistField.STORE_LINKS_REMOVED,
                 ),
+                portfolioLinks = applyDiff(
+                    base.portfolioLinks,
+                    diff.portfolioLinks,
+                    ArtistField.PORTFOLIO_LINKS_ADDED,
+                    ArtistField.PORTFOLIO_LINKS_REMOVED,
+                ),
                 catalogLinks = applyDiff(
                     base.catalogLinks,
                     diff.catalogLinks,
@@ -474,6 +483,8 @@ internal object ArtistFormMergeScreen {
                         ArtistField.SOCIAL_LINKS_REMOVED -> diff.socialLinks?.removed != null
                         ArtistField.STORE_LINKS_ADDED -> diff.storeLinks?.added != null
                         ArtistField.STORE_LINKS_REMOVED -> diff.storeLinks?.removed != null
+                        ArtistField.PORTFOLIO_LINKS_ADDED -> diff.portfolioLinks?.added != null
+                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff.portfolioLinks?.removed != null
                         ArtistField.CATALOG_LINKS_ADDED -> diff.catalogLinks?.added != null
                         ArtistField.CATALOG_LINKS_REMOVED -> diff.catalogLinks?.removed != null
                         ArtistField.NOTES -> diff.notes != null
@@ -504,6 +515,8 @@ internal object ArtistFormMergeScreen {
         SOCIAL_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_social_links),
         STORE_LINKS_ADDED(Res.string.alley_edit_artist_field_label_store_links),
         STORE_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_store_links),
+        PORTFOLIO_LINKS_ADDED(Res.string.alley_edit_artist_field_label_portfolio_links),
+        PORTFOLIO_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_portfolio_links),
         CATALOG_LINKS_ADDED(Res.string.alley_edit_artist_field_label_catalog_links),
         CATALOG_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_catalog_links),
         NOTES(Res.string.alley_edit_artist_field_label_notes),
@@ -526,6 +539,7 @@ internal object ArtistFormMergeScreen {
                 SUMMARY,
                 SOCIAL_LINKS_ADDED,
                 STORE_LINKS_ADDED,
+                PORTFOLIO_LINKS_ADDED,
                 CATALOG_LINKS_ADDED,
                 NOTES,
                 COMMISSIONS_ADDED,
@@ -536,6 +550,7 @@ internal object ArtistFormMergeScreen {
                     -> false
                 SOCIAL_LINKS_REMOVED,
                 STORE_LINKS_REMOVED,
+                PORTFOLIO_LINKS_REMOVED,
                 CATALOG_LINKS_REMOVED,
                 COMMISSIONS_REMOVED,
                 SERIES_INFERRED_REMOVED,

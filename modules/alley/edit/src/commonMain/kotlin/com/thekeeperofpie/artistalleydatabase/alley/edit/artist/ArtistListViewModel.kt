@@ -39,7 +39,7 @@ class ArtistListViewModel(
         .debounce(500.milliseconds)
 
     private val missingLinks = artistEntries.mapLatest {
-        it.filter { it.socialLinks.isEmpty() && it.storeLinks.isEmpty() && it.catalogLinks.isEmpty() }
+        it.filter { it.socialLinks.isEmpty() && it.storeLinks.isEmpty() && it.portfolioLinks.isEmpty() && it.catalogLinks.isEmpty() }
     }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
 
     private val missingInferred = artistEntries.mapLatest {

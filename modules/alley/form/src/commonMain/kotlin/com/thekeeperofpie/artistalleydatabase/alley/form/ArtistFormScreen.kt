@@ -63,13 +63,13 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_act
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_submit_private_key
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_booth_placeholder
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_catalog_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_commissions_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_form_notes_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_footer
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_header
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_name_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_notes_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_portfolio_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_social_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_store_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_summary_placeholder
@@ -313,7 +313,7 @@ object ArtistFormScreen {
                             formState.info.summary,
                             formState.links.stateSocialLinks,
                             formState.links.stateStoreLinks,
-                            formState.links.stateCatalogLinks,
+                            formState.links.statePortfolioLinks,
                             formState.links.stateCommissions,
                             formState.series.stateInferred,
                             formState.series.stateConfirmed,
@@ -367,11 +367,11 @@ object ArtistFormScreen {
                             label = { Text(stringResource(Res.string.alley_form_artist_store_links_placeholder)) },
                             pendingErrorMessage = errorState.storeLinksErrorMessage,
                         )
-                        CatalogLinksSection(
-                            state = formState.links.stateCatalogLinks,
-                            catalogLinks = formState.links.catalogLinks,
-                            label = { Text(stringResource(Res.string.alley_form_artist_catalog_links_placeholder)) },
-                            pendingErrorMessage = errorState.catalogLinksErrorMessage,
+                        PortfolioLinksSection(
+                            state = formState.links.statePortfolioLinks,
+                            portfolioLinks = formState.links.portfolioLinks,
+                            label = { Text(stringResource(Res.string.alley_form_artist_portfolio_links_placeholder)) },
+                            pendingErrorMessage = errorState.portfolioLinksErrorMessage,
                         )
                         CommissionsSection(
                             state = formState.links.stateCommissions,
@@ -491,12 +491,12 @@ object ArtistFormScreen {
         val boothErrorMessage by rememberBoothValidator(state.info.booth)
         val socialLinksErrorMessage by rememberLinkValidator(state.links.stateSocialLinks)
         val storeLinksErrorMessage by rememberLinkValidator(state.links.stateStoreLinks)
-        val catalogLinksErrorMessage by rememberLinkValidator(state.links.stateCatalogLinks)
+        val portfolioLinksErrorMessage by rememberLinkValidator(state.links.statePortfolioLinks)
         return ErrorState(
             boothErrorMessage = { boothErrorMessage },
             socialLinksErrorMessage = { socialLinksErrorMessage },
             storeLinksErrorMessage = { storeLinksErrorMessage },
-            catalogLinksErrorMessage = { catalogLinksErrorMessage },
+            portfolioLinksErrorMessage = { portfolioLinksErrorMessage },
         )
     }
 
@@ -753,6 +753,7 @@ object ArtistFormScreen {
             formState.links.applyRawValues(
                 socialLinks = artist.socialLinks,
                 storeLinks = artist.storeLinks,
+                portfolioLinks = artist.portfolioLinks,
                 catalogLinks = artist.catalogLinks,
                 commissions = artist.commissions,
                 mergeBehavior = mergeBehavior,
@@ -776,7 +777,7 @@ object ArtistFormScreen {
             artist: ArtistDatabaseEntry.Impl,
         ): Pair<List<EditImage>, ArtistDatabaseEntry.Impl> {
             val (booth, name, summary, notes) = formState.info.captureValues()
-            val (socialLinks, storeLinks, catalogLinks, commissions) = formState.links.captureValues()
+            val (socialLinks, storeLinks, portfolioLinks, catalogLinks, commissions) = formState.links.captureValues()
 
             val (seriesInferred, seriesConfirmed) = formState.series.captureValues()
             val (merchInferred, merchConfirmed) = formState.merch.captureValues()
@@ -789,6 +790,7 @@ object ArtistFormScreen {
                 summary = summary,
                 socialLinks = socialLinks,
                 storeLinks = storeLinks,
+                portfolioLinks = portfolioLinks,
                 catalogLinks = catalogLinks,
                 notes = notes,
                 commissions = commissions,
@@ -840,13 +842,13 @@ object ArtistFormScreen {
             val boothErrorMessage: () -> String?,
             val socialLinksErrorMessage: () -> String?,
             val storeLinksErrorMessage: () -> String?,
-            val catalogLinksErrorMessage: () -> String?,
+            val portfolioLinksErrorMessage: () -> String?,
         ) {
             val hasAnyError by derivedStateOf {
                 boothErrorMessage() != null ||
                         socialLinksErrorMessage() != null ||
                         storeLinksErrorMessage() != null ||
-                        catalogLinksErrorMessage() != null
+                        portfolioLinksErrorMessage() != null
             }
         }
     }

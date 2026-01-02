@@ -313,6 +313,7 @@ private fun HomeScreenPreview() {
                 name = "",
                 socialLinks = emptyList(),
                 storeLinks = emptyList(),
+                portfolioLinks = emptyList(),
                 catalogLinks = emptyList(),
                 seriesInferred = emptyList(),
                 seriesConfirmed = emptyList(),

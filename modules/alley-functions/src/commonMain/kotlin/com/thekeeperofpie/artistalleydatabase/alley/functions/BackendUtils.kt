@@ -62,6 +62,10 @@ internal object BackendUtils {
                 formEntry.beforeStoreLinks,
                 formEntry.afterStoreLinks
             ),
+            portfolioLinks = ArtistEntryDiff.diffList(
+                formEntry.beforePortfolioLinks,
+                formEntry.afterPortfolioLinks
+            ),
             catalogLinks = ArtistEntryDiff.diffList(
                 formEntry.beforeCatalogLinks,
                 formEntry.afterCatalogLinks

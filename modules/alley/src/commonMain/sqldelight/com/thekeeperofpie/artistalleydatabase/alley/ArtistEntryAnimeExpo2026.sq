@@ -10,7 +10,7 @@ FROM artistEntryAnimeExpo2026
 WHERE booth = :booth;
 
 getAllEntries:
-SELECT id, booth, name, socialLinks, storeLinks, catalogLinks, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed, images
+SELECT id, booth, name, socialLinks, storeLinks, portfolioLinks, catalogLinks, seriesInferred, seriesConfirmed, merchInferred, merchConfirmed, images
 FROM artistEntryAnimeExpo2026;
 
 getStampRallyEntries:

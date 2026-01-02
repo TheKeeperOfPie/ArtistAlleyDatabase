@@ -345,7 +345,8 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
             summary = summary,
             socialLinks = socialLinks,
             storeLinks = storeLinks,
-            catalogLinks = catalogLinks,
+            portfolioLinks = catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
+            catalogLinks = catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
             driveLink = null,
             notes = notes,
             commissions = commissions,
@@ -982,29 +983,33 @@ class ArtistEntryDao(
         when (year) {
             DataYear.ANIME_EXPO_2023 -> dao2023().getAllEntries().awaitAsList()
                 .map {
+                    val images = it.images
                     ArtistSummary(
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = emptyList(),
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
+                        catalogLinks = it.catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
                         seriesInferred = emptyList(),
                         seriesConfirmed = emptyList(),
                         merchInferred = emptyList(),
                         merchConfirmed = emptyList(),
-                        images = it.images,
+                        images = images,
                     )
                 }
             DataYear.ANIME_EXPO_2024 -> dao2024().getAllEntries().awaitAsList()
                 .map {
+                    val images = it.images
                     ArtistSummary(
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
+                        catalogLinks = it.catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
                         seriesInferred = it.seriesInferred,
                         seriesConfirmed = it.seriesConfirmed,
                         merchInferred = it.merchInferred,
@@ -1014,13 +1019,15 @@ class ArtistEntryDao(
                 }
             DataYear.ANIME_EXPO_2025 -> dao2025().getAllEntries().awaitAsList()
                 .map {
+                    val images = it.images
                     ArtistSummary(
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
+                        catalogLinks = it.catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
                         seriesInferred = it.seriesInferred,
                         seriesConfirmed = it.seriesConfirmed,
                         merchInferred = it.merchInferred,
@@ -1036,6 +1043,7 @@ class ArtistEntryDao(
                         name = it.name,
                         socialLinks = it.socialLinks,
                         storeLinks = it.storeLinks,
+                        portfolioLinks = it.portfolioLinks,
                         catalogLinks = it.catalogLinks,
                         seriesInferred = it.seriesInferred,
                         seriesConfirmed = it.seriesConfirmed,
@@ -1046,13 +1054,15 @@ class ArtistEntryDao(
                 }
             DataYear.ANIME_NYC_2024 -> daoAnimeNyc2024().getAllEntries().awaitAsList()
                 .map {
+                    val images = it.images
                     ArtistSummary(
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
+                        catalogLinks = it.catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
                         seriesInferred = it.seriesInferred,
                         seriesConfirmed = it.seriesConfirmed,
                         merchInferred = it.merchInferred,
@@ -1062,13 +1072,15 @@ class ArtistEntryDao(
                 }
             DataYear.ANIME_NYC_2025 -> daoAnimeNyc2025().getAllEntries().awaitAsList()
                 .map {
+                    val images = it.images
                     ArtistSummary(
                         id = Uuid.parse(it.id),
                         booth = it.booth,
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
+                        catalogLinks = it.catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
                         seriesInferred = it.seriesInferred,
                         seriesConfirmed = it.seriesConfirmed,
                         merchInferred = it.merchInferred,
@@ -1090,7 +1102,8 @@ class ArtistEntryDao(
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = emptyList(),
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks,
+                        catalogLinks = emptyList(),
                     )
                 }
             DataYear.ANIME_EXPO_2024 -> dao.getArtistInferenceDataAnimeExpo2024()
@@ -1101,7 +1114,8 @@ class ArtistEntryDao(
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks,
+                        catalogLinks = emptyList(),
                     )
                 }
             DataYear.ANIME_EXPO_2025 -> dao.getArtistInferenceDataAnimeExpo2025()
@@ -1112,7 +1126,8 @@ class ArtistEntryDao(
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks,
+                        catalogLinks = emptyList(),
                     )
                 }
             DataYear.ANIME_EXPO_2026 -> dao.getArtistInferenceDataAnimeExpo2026()
@@ -1123,6 +1138,7 @@ class ArtistEntryDao(
                         name = it.name,
                         socialLinks = it.socialLinks,
                         storeLinks = it.storeLinks,
+                        portfolioLinks = it.portfolioLinks,
                         catalogLinks = it.catalogLinks,
                     )
                 }
@@ -1134,7 +1150,8 @@ class ArtistEntryDao(
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks,
+                        catalogLinks = emptyList(),
                     )
                 }
             DataYear.ANIME_NYC_2025 -> dao.getArtistInferenceDataAnimeNyc2025()
@@ -1145,7 +1162,8 @@ class ArtistEntryDao(
                         name = it.name,
                         socialLinks = it.links,
                         storeLinks = it.storeLinks,
-                        catalogLinks = it.catalogLinks,
+                        portfolioLinks = it.catalogLinks,
+                        catalogLinks = emptyList(),
                     )
                 }
         }

@@ -16,6 +16,7 @@ interface ArtistDatabaseEntry {
     val summary: String?
     val socialLinks: List<String>
     val storeLinks: List<String>
+    val portfolioLinks: List<String>
     val catalogLinks: List<String>
     val driveLink: String?
     val notes: String?
@@ -41,6 +42,7 @@ interface ArtistDatabaseEntry {
         override val summary: String?,
         override val socialLinks: List<String>,
         override val storeLinks: List<String>,
+        override val portfolioLinks: List<String>,
         override val catalogLinks: List<String>,
         override val driveLink: String?,
         override val notes: String?,
@@ -90,7 +92,8 @@ interface ArtistDatabaseEntry {
             summary = summary,
             socialLinks = socialLinks,
             storeLinks = storeLinks,
-            catalogLinks = catalogLinks,
+            portfolioLinks = catalogLinks.takeIf { images.isEmpty() }.orEmpty(),
+            catalogLinks = catalogLinks.takeIf { images.isNotEmpty() }.orEmpty(),
             driveLink = driveLink,
             notes = notes,
             commissions = commissions,
@@ -115,6 +118,7 @@ fun ArtistDatabaseEntry.toArtistSummary() = ArtistSummary(
     name = name,
     socialLinks = socialLinks,
     storeLinks = storeLinks,
+    portfolioLinks = portfolioLinks,
     catalogLinks = catalogLinks,
     seriesInferred = seriesInferred,
     seriesConfirmed = seriesConfirmed,

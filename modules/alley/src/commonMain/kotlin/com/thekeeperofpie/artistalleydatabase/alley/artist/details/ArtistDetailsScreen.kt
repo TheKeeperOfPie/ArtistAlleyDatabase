@@ -56,15 +56,16 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_catalog
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_commissions
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_description
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_social_links
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_social_links_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_merch_unconfirmed_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_other_artists
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_portfolio
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series_unconfirmed
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_series_unconfirmed_icon_content_description
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_social_links
+import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_social_links_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
@@ -225,6 +226,28 @@ object ArtistDetailsScreen {
                                 allowExpand = false,
                                 showDividerAbove = false,
                                 item = { link, _, isLast -> LinkRow(link, isLast) },
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
+            }
+
+            val portfolioLinks = entry()?.artist?.portfolioLinks
+            if (portfolioLinks?.isNotEmpty() != false) {
+                item("artistPortfolioLinks") {
+                    Column(Modifier.animateItem()) {
+                        ThemeAwareElevatedCard(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            expandableListInfoText(
+                                labelTextRes = Res.string.alley_artist_details_portfolio,
+                                contentDescriptionTextRes = null,
+                                values = portfolioLinks,
+                                valueToText = { it },
+                                onClick = onClickOpenUri,
+                                allowExpand = false,
+                                showDividerAbove = false,
                             )
                         }
                         Spacer(Modifier.height(16.dp))

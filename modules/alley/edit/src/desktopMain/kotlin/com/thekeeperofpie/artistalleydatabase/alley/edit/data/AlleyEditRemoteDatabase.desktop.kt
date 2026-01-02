@@ -72,7 +72,7 @@ actual class AlleyEditRemoteDatabase {
                 {
                     it.copy(
                         storeLinks = listOf("https://example.org/store"),
-                        catalogLinks = listOf("https://example.net/portfolio"),
+                        portfolioLinks = listOf("https://example.net/portfolio"),
                         notes = "",
                     )
                 },
@@ -116,6 +116,7 @@ actual class AlleyEditRemoteDatabase {
                     summary = null,
                     socialLinks = emptyList(),
                     storeLinks = emptyList(),
+                    portfolioLinks = emptyList(),
                     catalogLinks = emptyList(),
                     driveLink = null,
                     notes = null,
@@ -316,6 +317,7 @@ actual class AlleyEditRemoteDatabase {
                 notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
                 socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
                 storeLinks = ArtistEntryDiff.diffList(before.storeLinks, after.storeLinks),
+                portfolioLinks = ArtistEntryDiff.diffList(before.portfolioLinks, after.portfolioLinks),
                 catalogLinks = ArtistEntryDiff.diffList(before.catalogLinks, after.catalogLinks),
                 commissions = ArtistEntryDiff.diffList(before.commissions, after.commissions),
                 seriesInferred = ArtistEntryDiff.diffList(

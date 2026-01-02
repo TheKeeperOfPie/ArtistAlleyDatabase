@@ -74,6 +74,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_portfolio_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_action_confirm
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_action_dismiss
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_revert_title
@@ -179,6 +180,7 @@ interface ArtistFormScope : EntryFormScope {
         state: ArtistFormState.LinksState,
         linksErrorMessage: () -> String? = { null },
         storeLinksErrorMessage: () -> String? = { null },
+        portfolioLinksErrorMessage: () -> String? = { null },
         catalogLinksErrorMessage: () -> String? = { null },
     )
 
@@ -194,6 +196,14 @@ interface ArtistFormScope : EntryFormScope {
     fun StoreLinksSection(
         state: EntryForm2.SingleTextState,
         storeLinks: SnapshotStateList<LinkModel>,
+        label: @Composable (() -> Unit)? = null,
+        pendingErrorMessage: () -> String? = { null },
+    )
+
+    @Composable
+    fun PortfolioLinksSection(
+        state: EntryForm2.SingleTextState,
+        portfolioLinks: SnapshotStateList<LinkModel>,
         label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
     )
@@ -423,7 +433,8 @@ private abstract class ArtistFormScopeImpl(
         state: ArtistFormState.LinksState,
         linksErrorMessage: () -> String?,
         storeLinksErrorMessage: () -> String?,
-        catalogLinksErrorMessage: () -> String?,
+        portfolioLinksErrorMessage: () -> String?,
+        catalogLinksErrorMessage: () -> String?
     ) {
         SocialLinksSection(
             state = state.stateSocialLinks,
@@ -434,6 +445,11 @@ private abstract class ArtistFormScopeImpl(
             state = state.stateStoreLinks,
             storeLinks = state.storeLinks,
             pendingErrorMessage = storeLinksErrorMessage,
+        )
+        PortfolioLinksSection(
+            state = state.statePortfolioLinks,
+            portfolioLinks = state.portfolioLinks,
+            pendingErrorMessage = portfolioLinksErrorMessage,
         )
         CatalogLinksSection(
             state = state.stateCatalogLinks,
@@ -474,6 +490,24 @@ private abstract class ArtistFormScopeImpl(
             listRevertDialogState =
                 rememberListRevertDialogState(initialArtist?.storeLinks?.map(LinkModel::parse)),
             items = storeLinks,
+            label = label,
+            pendingErrorMessage = pendingErrorMessage,
+        )
+    }
+
+    @Composable
+    override fun PortfolioLinksSection(
+        state: EntryForm2.SingleTextState,
+        portfolioLinks: SnapshotStateList<LinkModel>,
+        label: @Composable (() -> Unit)?,
+        pendingErrorMessage: () -> String?,
+    ) {
+        ArtistForm.LinksSection(
+            state = state,
+            title = Res.string.alley_edit_artist_edit_portfolio_links,
+            listRevertDialogState =
+                rememberListRevertDialogState(initialArtist?.portfolioLinks?.map(LinkModel::parse)),
+            items = portfolioLinks,
             label = label,
             pendingErrorMessage = pendingErrorMessage,
         )
@@ -944,6 +978,7 @@ object ArtistForm {
                 state.info.summary,
                 state.links.stateSocialLinks,
                 state.links.stateStoreLinks,
+                state.links.statePortfolioLinks,
                 state.links.stateCatalogLinks,
                 state.links.stateCommissions,
                 state.series.stateInferred,
@@ -976,6 +1011,7 @@ object ArtistForm {
                 state = state.links,
                 linksErrorMessage = errorState.socialLinksErrorMessage,
                 storeLinksErrorMessage = errorState.storeLinksErrorMessage,
+                portfolioLinksErrorMessage = errorState.portfolioLinksErrorMessage,
                 catalogLinksErrorMessage = errorState.catalogLinksErrorMessage,
             )
 

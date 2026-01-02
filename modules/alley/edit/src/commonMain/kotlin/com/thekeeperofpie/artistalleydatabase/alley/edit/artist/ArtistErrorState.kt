@@ -20,6 +20,7 @@ class ArtistErrorState(
     val boothErrorMessage: () -> String?,
     val socialLinksErrorMessage: () -> String?,
     val storeLinksErrorMessage: () -> String?,
+    val portfolioLinksErrorMessage: () -> String?,
     val catalogLinksErrorMessage: () -> String?,
 ) {
     val hasAnyError by derivedStateOf {
@@ -27,6 +28,7 @@ class ArtistErrorState(
                 boothErrorMessage() != null ||
                 socialLinksErrorMessage() != null ||
                 storeLinksErrorMessage() != null ||
+                portfolioLinksErrorMessage() != null ||
                 catalogLinksErrorMessage() != null
     }
 }
@@ -38,12 +40,14 @@ fun rememberErrorState(state: ArtistFormState): ArtistErrorState {
     val boothErrorMessage by rememberBoothValidator(state.info.booth)
     val socialLinksErrorMessage by rememberLinkValidator(state.links.stateSocialLinks)
     val storeLinksErrorMessage by rememberLinkValidator(state.links.stateStoreLinks)
+    val portfolioLinksErrorMessage by rememberLinkValidator(state.links.statePortfolioLinks)
     val catalogLinksErrorMessage by rememberLinkValidator(state.links.stateCatalogLinks)
     return ArtistErrorState(
         idErrorMessage = { idErrorMessage },
         boothErrorMessage = { boothErrorMessage },
         socialLinksErrorMessage = { socialLinksErrorMessage },
         storeLinksErrorMessage = { storeLinksErrorMessage },
+        portfolioLinksErrorMessage = { portfolioLinksErrorMessage },
         catalogLinksErrorMessage = { catalogLinksErrorMessage },
     )
 }

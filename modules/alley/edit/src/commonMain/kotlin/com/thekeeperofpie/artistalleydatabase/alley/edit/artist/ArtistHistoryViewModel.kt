@@ -63,6 +63,7 @@ class ArtistHistoryViewModel(
                 summary = entry.summary ?: initial.summary,
                 socialLinks = entry.socialLinks ?: initial.socialLinks,
                 storeLinks = entry.storeLinks ?: initial.storeLinks,
+                portfolioLinks = entry.portfolioLinks ?: initial.portfolioLinks,
                 catalogLinks = entry.catalogLinks ?: initial.catalogLinks,
                 notes = entry.notes ?: initial.notes,
                 commissions = entry.commissions ?: initial.commissions,

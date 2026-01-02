@@ -18,6 +18,7 @@ object ArtistWithUserDataProvider : PreviewParameterProvider<ArtistWithUserData>
                 summary = "Summary summary summary",
                 socialLinks = listOf("https://x.com/example", "https://instagram.com/example"),
                 storeLinks = listOf("https://etsy.com/Example"),
+                portfolioLinks = listOf("https://example.carrd.co"),
                 catalogLinks = emptyList(),
                 driveLink = null,
                 notes = null,

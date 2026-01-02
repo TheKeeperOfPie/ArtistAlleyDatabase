@@ -7,6 +7,7 @@ data class ArtistHistoryEntryWithDiff(
     val entry: ArtistHistoryEntry,
     val socialLinksDiff: Diff?,
     val storeLinksDiff: Diff?,
+    val portfolioLinksDiff: Diff?,
     val catalogLinksDiff: Diff?,
     val commissionsDiff: Diff?,
     val seriesInferredDiff: Diff?,
@@ -19,6 +20,7 @@ data class ArtistHistoryEntryWithDiff(
             val oldestEntry = entries.lastOrNull()
             var lastSocialLinks = oldestEntry?.socialLinks.orEmpty()
             var lastStoreLinks = oldestEntry?.storeLinks.orEmpty()
+            var lastPortfolioLinks = oldestEntry?.portfolioLinks.orEmpty()
             var lastCatalogLinks = oldestEntry?.catalogLinks.orEmpty()
             var lastCommissions = oldestEntry?.commissions.orEmpty()
             var lastSeriesInferred = oldestEntry?.seriesInferred.orEmpty()
@@ -29,6 +31,7 @@ data class ArtistHistoryEntryWithDiff(
             entries.fastForEachReversed {
                 val socialLinksDiff = diffList(lastSocialLinks, it.socialLinks)
                 val storeLinksDiff = diffList(lastStoreLinks, it.storeLinks)
+                val portfolioLinksDiff = diffList(lastPortfolioLinks, it.portfolioLinks)
                 val catalogLinksDiff = diffList(lastCatalogLinks, it.catalogLinks)
                 val commissionsDiff = diffList(lastCommissions, it.commissions)
                 val seriesInferredDiff = diffList(lastSeriesInferred, it.seriesInferred)
@@ -39,6 +42,7 @@ data class ArtistHistoryEntryWithDiff(
                     entry = it,
                     socialLinksDiff = socialLinksDiff,
                     storeLinksDiff = storeLinksDiff,
+                    portfolioLinksDiff = portfolioLinksDiff,
                     catalogLinksDiff = catalogLinksDiff,
                     commissionsDiff = commissionsDiff,
                     seriesInferredDiff = seriesInferredDiff,
@@ -49,6 +53,7 @@ data class ArtistHistoryEntryWithDiff(
 
                 lastSocialLinks = it.socialLinks ?: lastSocialLinks
                 lastStoreLinks = it.storeLinks ?: lastStoreLinks
+                lastPortfolioLinks = it.portfolioLinks ?: lastPortfolioLinks
                 lastCatalogLinks = it.catalogLinks ?: lastCatalogLinks
                 lastCommissions = it.commissions ?: lastCommissions
                 lastSeriesInferred = it.seriesInferred ?: lastSeriesInferred
