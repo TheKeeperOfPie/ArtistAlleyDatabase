@@ -11,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -21,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
@@ -55,7 +53,10 @@ class ArtistEditViewModel(
             key = "formMetadata",
             initialValue = null,
         )
+    private val artistJob: ExclusiveProgressJob<Unit, Unit> =
+        ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
     val state = ArtistEditScreen.State(
+        artistProgress = artistJob.state,
         initialArtist = artist,
         artistFormState = savedStateHandle.saveable(
             key = "artistFormState",
@@ -70,7 +71,6 @@ class ArtistEditViewModel(
     private var hasLoaded by savedStateHandle.saved { false }
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
-    private val artistJob = ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
     private val formLinkJob = ExclusiveProgressJob(viewModelScope, ::loadFormLink)
 
     fun initialize(force: Boolean = false) {
@@ -88,24 +88,24 @@ class ArtistEditViewModel(
         val artist = response.artist
         val images = database.loadArtistImages(dataYear, artist)
         withContext(dispatchers.main) {
-        Snapshot.withMutableSnapshot {
-            this@ArtistEditViewModel.artist.value = artist
-            state.artistFormState.applyDatabaseEntry(
-                artist = artist,
-                seriesById = tagAutocomplete.seriesById.first(),
-                merchById = tagAutocomplete.merchById.first(),
-                mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
-            )
-            formMetadata.value = ArtistEditScreen.State.FormMetadata(
-                hasPendingFormSubmission = response.hasPendingFormSubmission,
-                hasFormLink = response.hasFormLink,
-            )
+            Snapshot.withMutableSnapshot {
+                this@ArtistEditViewModel.artist.value = artist
+                state.artistFormState.applyDatabaseEntry(
+                    artist = artist,
+                    seriesById = tagAutocomplete.seriesById.first(),
+                    merchById = tagAutocomplete.merchById.first(),
+                    mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
+                )
+                formMetadata.value = ArtistEditScreen.State.FormMetadata(
+                    hasPendingFormSubmission = response.hasPendingFormSubmission,
+                    hasFormLink = response.hasFormLink,
+                )
 
-            if (images.isNotEmpty()) {
-                state.artistFormState.images.replaceAll(images)
+                if (images.isNotEmpty()) {
+                    state.artistFormState.images.replaceAll(images)
+                }
             }
         }
-            }
         hasLoaded = true
     }
 

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -83,6 +84,11 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_abandon
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_view_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_abandon_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_abandon_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_action_abandon
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_action_view_tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -104,6 +110,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
@@ -174,6 +181,7 @@ object ArtistEditScreen {
                     it
                 )
             },
+            onClickRefresh = { viewModel.initialize(force = true) },
             onClickHistory = onClickHistory,
             onClickMerge = onClickMerge,
             onClickSave = viewModel::onClickSave,
@@ -196,6 +204,7 @@ object ArtistEditScreen {
         hasPendingChanges: () -> Boolean,
         onClickBack: (force: Boolean) -> Unit,
         onClickEditImages: (List<EditImage>) -> Unit,
+        onClickRefresh: () -> Unit,
         onClickHistory: () -> Unit,
         onClickMerge: () -> Unit,
         onClickSave: () -> Unit,
@@ -265,6 +274,7 @@ object ArtistEditScreen {
                             errorState = errorState,
                             saveTaskState = saveTaskState,
                             hasPendingChanges = hasPendingChanges,
+                            onClickRefresh = onClickRefresh,
                             onClickGenerateFormLink = { showFormLinkDialog = true },
                             onClickHistory = onClickHistory,
                             onClickSave = onClickSave,
@@ -284,6 +294,7 @@ object ArtistEditScreen {
             ) {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
                 val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+                val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
                 val form = remember {
                     movableContentOf { modifier: Modifier ->
                         Column(modifier = modifier) {
@@ -291,7 +302,7 @@ object ArtistEditScreen {
                             if (formMetadata?.hasPendingFormSubmission == true) {
                                 PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
                             }
-                            if (initialArtist == null) {
+                            if (initialArtist == null || artistProgress is JobProgress.Loading) {
                                 Box(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier.fillMaxSize().padding(32.dp)
@@ -356,7 +367,7 @@ object ArtistEditScreen {
 
                             form(Modifier.fillMaxWidth())
 
-                            if (initialArtist != null) {
+                            if (initialArtist != null && artistProgress !is JobProgress.Loading) {
                                 EditImagesButton(
                                     images = state.artistFormState.images,
                                     onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
@@ -398,11 +409,14 @@ object ArtistEditScreen {
         errorState: ArtistErrorState,
         saveTaskState: TaskState<ArtistSave.Response>,
         hasPendingChanges: () -> Boolean,
+        onClickRefresh: () -> Unit,
         onClickGenerateFormLink: () -> Unit,
         onClickHistory: () -> Unit,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
     ) {
+        RefreshButton(hasPendingChanges, onClickRefresh)
+
         TooltipIconButton(
             icon = Icons.Default.AddLink,
             tooltipText = stringResource(Res.string.alley_edit_artist_action_generate_link_content_description),
@@ -419,6 +433,43 @@ object ArtistEditScreen {
             enabled = enabled,
             onClick = onClickDone,
         )
+    }
+
+    @Composable
+    private fun RefreshButton(hasPendingChanges: () -> Boolean, onClickRefresh: () -> Unit) {
+        var showDialog by remember { mutableStateOf(false) }
+        TooltipIconButton(
+            icon = Icons.Default.Refresh,
+            tooltipText = stringResource(Res.string.alley_edit_artist_refresh_action_view_tooltip),
+            onClick = {
+                if (hasPendingChanges()) {
+                    showDialog = true
+                } else {
+                    onClickRefresh()
+                }
+            },
+        )
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(stringResource(Res.string.alley_edit_artist_refresh_abandon_title)) },
+                text = { Text(stringResource(Res.string.alley_edit_artist_refresh_abandon_description)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onClickRefresh()
+                        showDialog = false
+                    }) {
+                        Text(stringResource(Res.string.alley_edit_artist_refresh_action_abandon))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text(stringResource(Res.string.alley_edit_artist_refresh_action_cancel))
+                    }
+                }
+            )
+        }
     }
 
     @Composable
@@ -646,6 +697,7 @@ object ArtistEditScreen {
 
     @Stable
     class State(
+        val artistProgress: StateFlow<JobProgress<Unit>>,
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val artistFormState: ArtistFormState,
         val formMetadata: StateFlow<FormMetadata?>,

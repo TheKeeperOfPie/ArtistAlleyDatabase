@@ -66,6 +66,12 @@
     <string name="alley_edit_artist_edit_revert_action_confirm">Revert</string>
     <string name="alley_edit_artist_edit_revert_action_dismiss">Cancel</string>
 
+    <string name="alley_edit_artist_refresh_action_view_tooltip">Refresh artist</string>
+    <string name="alley_edit_artist_refresh_abandon_title">Abandon pending changes?</string>
+    <string name="alley_edit_artist_refresh_abandon_description">Refreshing this artist will reset any pending edits</string>
+    <string name="alley_edit_artist_refresh_action_abandon">Abandon</string>
+    <string name="alley_edit_artist_refresh_action_cancel">Cancel</string>
+
     <string name="alley_edit_artist_action_save_tooltip">Save artist</string>
     <string name="alley_edit_artist_action_save_and_exit_tooltip">Save and exit</string>
     <string name="alley_edit_artist_action_generate_link_content_description">Generate form link</string>
