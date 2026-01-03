@@ -635,47 +635,49 @@ object ArtistDetailsScreen {
         val bottomPadding = if (isLast) 12.dp else 8.dp
         val link = (model as? CommissionModel.Link)?.link
 
-        val content = movableContentOf {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = bottomPadding,
-                    )
-                    .fillMaxWidth()
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.height(20.dp)
-                        .widthIn(min = 20.dp)
+        val content = remember {
+            movableContentOf {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = bottomPadding,
+                        )
+                        .fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = model?.icon ?: Icons.Default.Link,
-                        contentDescription = null,
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.height(20.dp)
+                            .widthIn(min = 20.dp)
+                    ) {
+                        Icon(
+                            imageVector = model?.icon ?: Icons.Default.Link,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .placeholder(
+                                    visible = model == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
+                        )
+                    }
+
+                    val text = model?.text()
+                    Text(
+                        text = text.orEmpty(),
+                        style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier
-                            .size(16.dp)
+                            .weight(1f)
                             .placeholder(
                                 visible = model == null,
                                 highlight = PlaceholderHighlight.shimmer(),
                             )
                     )
                 }
-
-                val text = model?.text()
-                Text(
-                    text = text.orEmpty(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .weight(1f)
-                        .placeholder(
-                            visible = model == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                )
             }
         }
         if (link == null) {

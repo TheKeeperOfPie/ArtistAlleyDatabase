@@ -408,76 +408,78 @@ object ArtistHistoryScreen {
         onClick: (() -> Unit)? = null,
         additionalActions: (@Composable () -> Unit)? = null,
     ) {
-        val cardContent = movableContentOf {
-            Column(modifier = Modifier.padding(16.dp)) {
-                val entry = entryWithDiff.entry
-                CardHeader(
-                    editor = entry.lastEditor,
-                    timestamp = entry.timestamp,
-                    formTimestamp = entry.formTimestamp,
-                    additionalActions = additionalActions,
-                )
+        val cardContent = remember {
+            movableContentOf {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    val entry = entryWithDiff.entry
+                    CardHeader(
+                        editor = entry.lastEditor,
+                        timestamp = entry.timestamp,
+                        formTimestamp = entry.formTimestamp,
+                        additionalActions = additionalActions,
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                SingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_status,
-                    entry.status?.title?.let { stringResource(it) })
-                SingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_booth,
-                    entry.booth
-                )
-                SingleChangeRow(label = Res.string.alley_edit_artist_field_label_name, entry.name)
-                SingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_summary,
-                    entry.summary
-                )
-                SingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_notes,
-                    entry.notes
-                )
-                SingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_editor_notes,
-                    entry.editorNotes
-                )
+                    SingleChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_status,
+                        entry.status?.title?.let { stringResource(it) })
+                    SingleChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_booth,
+                        entry.booth
+                    )
+                    SingleChangeRow(label = Res.string.alley_edit_artist_field_label_name, entry.name)
+                    SingleChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_summary,
+                        entry.summary
+                    )
+                    SingleChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_notes,
+                        entry.notes
+                    )
+                    SingleChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_editor_notes,
+                        entry.editorNotes
+                    )
 
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_social_links,
-                    entryWithDiff.socialLinksDiff,
-                )
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_store_links,
-                    entryWithDiff.storeLinksDiff,
-                )
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_portfolio_links,
-                    entryWithDiff.portfolioLinksDiff,
-                )
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_catalog_links,
-                    entryWithDiff.catalogLinksDiff,
-                )
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_commissions,
-                    entryWithDiff.commissionsDiff,
-                )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_social_links,
+                        entryWithDiff.socialLinksDiff,
+                    )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_store_links,
+                        entryWithDiff.storeLinksDiff,
+                    )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_portfolio_links,
+                        entryWithDiff.portfolioLinksDiff,
+                    )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_catalog_links,
+                        entryWithDiff.catalogLinksDiff,
+                    )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_commissions,
+                        entryWithDiff.commissionsDiff,
+                    )
 
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_series_inferred,
-                    entryWithDiff.seriesInferredDiff,
-                )
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_series_confirmed,
-                    entryWithDiff.seriesConfirmedDiff,
-                )
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_merch_inferred,
-                    entryWithDiff.merchInferredDiff,
-                )
-                ListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_merch_confirmed,
-                    entryWithDiff.merchConfirmedDiff,
-                )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_series_inferred,
+                        entryWithDiff.seriesInferredDiff,
+                    )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_series_confirmed,
+                        entryWithDiff.seriesConfirmedDiff,
+                    )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_merch_inferred,
+                        entryWithDiff.merchInferredDiff,
+                    )
+                    ListChangeRow(
+                        label = Res.string.alley_edit_artist_field_label_merch_confirmed,
+                        entryWithDiff.merchConfirmedDiff,
+                    )
+                }
             }
         }
         val modifier = Modifier.fillMaxWidth()

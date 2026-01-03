@@ -171,6 +171,7 @@ val outputDir = if (isWasmDebug) {
 }
 
 val buildBothWebVariants by tasks.registering(Sync::class) {
+    outputs.upToDateWhen { false }
     val alleyAppTask = if (isWasmDebug) {
         "wasmJsBrowserDevelopmentExecutableDistribution"
     } else {
@@ -190,6 +191,7 @@ val buildBothWebVariants by tasks.registering(Sync::class) {
 }
 
 val copyServiceWorkerOutput by tasks.registering(Copy::class) {
+    outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
     from(serviceWorkerOutput)
     into(layout.buildDirectory.dir(outputDir))
@@ -197,6 +199,7 @@ val copyServiceWorkerOutput by tasks.registering(Copy::class) {
 }
 
 val copyAlleyEdit by tasks.registering(Copy::class) {
+    outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
 
     val sourceFiles = alleyEditOutput.files
@@ -233,6 +236,7 @@ val copyAlleyEdit by tasks.registering(Copy::class) {
 }
 
 val copyAlleyForm by tasks.registering(Copy::class) {
+    outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
 
     val sourceFiles = alleyFormOutput.files
@@ -269,6 +273,7 @@ val copyAlleyForm by tasks.registering(Copy::class) {
 }
 
 val copyAlleyFunctions by tasks.registering(Copy::class) {
+    outputs.upToDateWhen { false }
     mustRunAfter(buildBothWebVariants)
     from(alleyFunctionsOutput)
     include("*.mjs")
@@ -298,6 +303,7 @@ val copyAlleyFunctions by tasks.registering(Copy::class) {
 }
 
 val copyAlleyFunctionsMiddleware by tasks.registering(Copy::class) {
+    outputs.upToDateWhen { false }
     mustRunAfter(copyAlleyFunctions)
 
     // TODO: Does this need to manually dedupe with copyAlleyFunctions similar to copyAlleyEdit?
