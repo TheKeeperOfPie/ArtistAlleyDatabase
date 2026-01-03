@@ -35,6 +35,7 @@ import kotlin.uuid.Uuid
 
 @AssistedInject
 class ArtistEditViewModel(
+    private val artistInference: ArtistInference,
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
@@ -55,17 +56,29 @@ class ArtistEditViewModel(
         )
     private val artistJob: ExclusiveProgressJob<Unit, Unit> =
         ExclusiveProgressJob(viewModelScope, ::loadArtistInfo)
+
+    private val artistFormState = savedStateHandle.saveable(
+        key = "artistFormState",
+        saver = ArtistFormState.Saver,
+        init = { ArtistFormState(artistId) },
+    )
+
+    val sameArtistPrompter = SameArtistPrompter(
+        scope = viewModelScope,
+        artistInference = artistInference,
+        artistFormState = artistFormState,
+        dispatchers = dispatchers,
+        savedStateHandle = savedStateHandle,
+    )
+
     val state = ArtistEditScreen.State(
         artistProgress = artistJob.state,
         initialArtist = artist,
-        artistFormState = savedStateHandle.saveable(
-            key = "artistFormState",
-            saver = ArtistFormState.Saver,
-            init = { ArtistFormState(artistId) },
-        ),
+        artistFormState = artistFormState,
         formMetadata = formMetadata,
         formLink = formLink,
         saveTaskState = saveTask.state,
+        sameArtistState = sameArtistPrompter.state,
     )
 
     private var hasLoaded by savedStateHandle.saved { false }

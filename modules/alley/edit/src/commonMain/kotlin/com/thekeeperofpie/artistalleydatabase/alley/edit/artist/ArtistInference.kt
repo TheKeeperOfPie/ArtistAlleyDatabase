@@ -4,7 +4,6 @@ import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
-import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.StringUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -37,12 +36,17 @@ class ArtistInference(
                     names = it.value.map { it.name }.toSet(),
                     socialLinks = it.value.flatMap { it.socialLinks }.map(LinkModel::parse).toSet(),
                     storeLinks = it.value.flatMap { it.storeLinks }.map(LinkModel::parse).toSet(),
-                    portfolioLinks = it.value.flatMap { it.portfolioLinks }.map(LinkModel::parse).toSet(),
+                    portfolioLinks = it.value.flatMap { it.portfolioLinks }.map(LinkModel::parse)
+                        .toSet(),
                     catalogLinks = it.value.flatMap { it.catalogLinks }.toSet(),
                 )
             }
             .values
     }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
+
+    suspend fun hasPreviousYear(artistId: String): Boolean = DataYear.entries.any {
+        artistEntryDao.getEntry(it, artistId) != null
+    }
 
     suspend fun inferArtist(input: Input): List<MatchResult> {
         if (input.name.length <= 3 &&
@@ -54,32 +58,20 @@ class ArtistInference(
             return emptyList()
         }
         return artistInferenceData.first()
-            .mapIndexed { index, data ->
+            .flatMapIndexed { index, data ->
                 if (index % 20 == 0) {
                     yield()
                 }
-                val matchingSocialLink = matchingLink(data.socialLinks, input.socialLinks)
-                if (matchingSocialLink != null) {
-                    return@mapIndexed MatchResult.Link(data, 1f, matchingSocialLink.link)
-                }
-                val matchingStoreLink = matchingLink(data.storeLinks, input.storeLinks)
-                if (matchingStoreLink != null) {
-                    return@mapIndexed MatchResult.Link(data, 1f, matchingStoreLink.link)
-                }
-                val matchingPortfolioLink = matchingLink(data.portfolioLinks, input.portfolioLinks)
-                if (matchingPortfolioLink != null) {
-                    return@mapIndexed MatchResult.Link(data, 1f, matchingPortfolioLink.link)
-                }
-                val matchingCatalogLink = matchingCatalogLink(data.catalogLinks, input.catalogLinks)
-                if (matchingCatalogLink != null) {
-                    return@mapIndexed MatchResult.Link(data, 1f, matchingCatalogLink)
-                }
 
-                val matchingNameScore =
-                    data.names.maxOf { StringUtils.compareSimilarity(it, input.name) }
-                MatchResult.Name(data, matchingNameScore)
+                matchingLinks(data, data.socialLinks, input.socialLinks) +
+                        matchingLinks(data, data.storeLinks, input.storeLinks) +
+                        matchingLinks(data, data.portfolioLinks, input.portfolioLinks) +
+                        matchingCatalogLinks(data, data.catalogLinks, input.catalogLinks) +
+                        data.names.map {
+                            MatchResult.Name(data, StringUtils.compareSimilarity(it, input.name))
+                        }
             }
-            .filter { it.score > 0.5f }
+            .filter { it.score > 0.6f }
             .sortedByDescending { it.score }
             .take(5)
     }
@@ -94,26 +86,49 @@ class ArtistInference(
                         it.merchInferred.isNotEmpty()
             }
 
-    private fun matchingLink(
+    private fun matchingLinks(
+        data: ArtistData,
         artistLinks: Set<LinkModel>,
         inputLinks: List<LinkModel>,
-    ): LinkModel? = artistLinks.firstOrNull { artistLink ->
-        inputLinks.any { inputLink ->
-            artistLink.logo == inputLink.logo &&
-                    StringUtils.compareSimilarity(
-                        artistLink.identifier,
-                        inputLink.identifier
-                    ) > 0.8f
+    ): List<MatchResult.Link> {
+        val results = mutableListOf<MatchResult.Link>()
+        artistLinks.forEach { artistLink ->
+            inputLinks.forEach { inputLink ->
+                if (artistLink.logo != inputLink.logo) return@forEach
+                val score = StringUtils.compareSimilarity(
+                    artistLink.identifier.removePrefix("https"),
+                    inputLink.identifier.removePrefix("https"),
+                )
+                val result = MatchResult.Link(data, score, artistLink.link, inputLink.link)
+
+                // If any high score, just exit and return
+                if (score >= 0.8f) return listOf(result)
+                results += result
+            }
         }
+        return results
     }
 
-    private fun matchingCatalogLink(
+    private fun matchingCatalogLinks(
+        data: ArtistData,
         artistLinks: Set<String>,
         inputLinks: List<String>,
-    ): String? = artistLinks.firstOrNull { artistLink ->
-        inputLinks.any { inputLink ->
-            StringUtils.compareSimilarity(artistLink, inputLink) > 0.8f
+    ): List<MatchResult.Link> {
+        val results = mutableListOf<MatchResult.Link>()
+        artistLinks.forEach { artistLink ->
+            inputLinks.forEach { inputLink ->
+                val score = StringUtils.compareSimilarity(
+                    artistLink.removePrefix("https"),
+                    inputLink.removePrefix("https"),
+                )
+                val result = MatchResult.Link(data, score, artistLink, inputLink)
+
+                // If any high score, just exit and return
+                if (score >= 0.8f) return listOf(result)
+                results += result
+            }
         }
+        return results
     }
 
     sealed interface MatchResult {
@@ -123,18 +138,16 @@ class ArtistInference(
         val name get() = data.names.first()
         val via
             get() = when (this) {
-                is Link -> link
-                is Name -> data.socialLinks.find { it.logo == Logo.X || it.logo == Logo.BLUESKY }?.link
-                    ?: data.storeLinks.firstOrNull()?.link
-                    ?: data.portfolioLinks.firstOrNull()?.link
-                    ?: data.catalogLinks.firstOrNull()
-            }
+                is Link -> "$artistLink -> $matchingInputLink"
+                is Name -> name
+            } + score.toString()
 
         data class Name(override val data: ArtistData, override val score: Float) : MatchResult
         data class Link(
             override val data: ArtistData,
             override val score: Float,
-            val link: String,
+            val artistLink: String,
+            val matchingInputLink: String,
         ) : MatchResult
     }
 

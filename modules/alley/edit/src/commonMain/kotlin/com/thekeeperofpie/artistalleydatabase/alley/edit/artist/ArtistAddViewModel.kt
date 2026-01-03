@@ -1,13 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_error_loading_merge
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
@@ -18,24 +14,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
-import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
-import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlin.uuid.Uuid
 
@@ -54,45 +41,25 @@ class ArtistAddViewModel(
         ExclusiveTask(viewModelScope, ::save)
     private val artist =
         savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>("artist", null)
-    private val mergingArtistId =
-        savedStateHandle.getMutableStateFlow<Uuid?>("mergingArtistId", null)
-    private val mergingArtist = mergingArtistId
-        .flatMapLatest {
-            if (it == null) {
-                flowOf(LoadingResult.empty())
-            } else {
-                flow {
-                    emit(LoadingResult.loading())
-                    val artist = artistInference.getPreviousYearData(it)
-                    emit(
-                        if (artist == null) {
-                            LoadingResult.error(Res.string.alley_edit_artist_add_error_loading_merge)
-                        } else {
-                            LoadingResult.success(artist)
-                        }
-                    )
-                }
-            }
-        }
-        .stateIn(viewModelScope, SharingStarted.Lazily, LoadingResult.empty())
     private val artistFormState = savedStateHandle.saveable(
         key = "artistFormState",
         saver = ArtistFormState.Saver,
         init = { ArtistFormState(artistId) },
     )
 
-    private val inferredArtists =
-        snapshotFlow { ArtistInference.Input.captureState(artistFormState) }
-            .mapLatest { artistInference.inferArtist(it) }
-            .flowOn(dispatchers.io)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    val sameArtistPrompter = SameArtistPrompter(
+        scope = viewModelScope,
+        artistInference = artistInference,
+        artistFormState = artistFormState,
+        dispatchers = dispatchers,
+        savedStateHandle = savedStateHandle,
+    )
 
     val state = ArtistAddScreen.State(
         initialArtist = artist,
         artistFormState = artistFormState,
-        inferredArtists = inferredArtists,
-        mergingArtist = mergingArtist,
         saveTaskState = saveTask.state,
+        sameArtistState = sameArtistPrompter.state,
     )
 
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
@@ -104,24 +71,6 @@ class ArtistAddViewModel(
 
     fun onClickSave() = saveTask.triggerAuto { captureDatabaseEntry(false) }
     fun onClickDone() = saveTask.triggerManual { captureDatabaseEntry(true) }
-
-    fun onClickMerge(artistId: Uuid) {
-        mergingArtistId.value = artistId
-    }
-
-    internal fun onDenySameArtist() {
-        mergingArtistId.value = null
-    }
-
-    internal fun onConfirmSameArtist() {
-        val previousYearData = mergingArtist.value.result ?: return
-        artistFormState.editorState.id.value.setTextAndPlaceCursorAtEnd(previousYearData.artistId)
-        previousYearData.name?.let {
-            artistFormState.info.name.value.setTextAndPlaceCursorAtEnd(it)
-            artistFormState.info.name.lockState = EntryLockState.LOCKED
-        }
-        mergingArtistId.value = null
-    }
 
     private fun captureDatabaseEntry(
         isManual: Boolean,

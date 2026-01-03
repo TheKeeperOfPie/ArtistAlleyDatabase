@@ -188,6 +188,9 @@ object ArtistEditScreen {
             onClickDone = viewModel::onClickDone,
             onClearFormLink = viewModel::onClearFormLink,
             onClickDebugForm = onClickDebugForm,
+            onClickSameArtist = viewModel.sameArtistPrompter::onClickSameArtist,
+            onDenySameArtist = viewModel.sameArtistPrompter::onDenySameArtist,
+            onConfirmSameArtist = viewModel.sameArtistPrompter::onConfirmSameArtist,
         )
     }
 
@@ -211,6 +214,9 @@ object ArtistEditScreen {
         onClickDone: () -> Unit,
         onClearFormLink: () -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
+        onClickSameArtist: (artistId: Uuid) -> Unit,
+        onDenySameArtist: () -> Unit,
+        onConfirmSameArtist: () -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
@@ -295,6 +301,7 @@ object ArtistEditScreen {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
                 val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                 val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
+                val sameArtist by state.sameArtistState.sameArtist.collectAsStateWithLifecycle()
                 val form = remember {
                     movableContentOf { modifier: Modifier ->
                         Column(modifier = modifier) {
@@ -310,6 +317,10 @@ object ArtistEditScreen {
                                     CircularWavyProgressIndicator()
                                 }
                             } else {
+                                PotentialSameArtists(
+                                    inferredArtists = state.sameArtistState.inferredArtists,
+                                    onClickSameArtist = onClickSameArtist,
+                                )
                                 ArtistForm(
                                     initialArtist = { initialArtist },
                                     state = state.artistFormState,
@@ -319,12 +330,26 @@ object ArtistEditScreen {
                                     merchById = merchById,
                                     merchPredictions = merchPredictions,
                                     seriesImage = seriesImage,
+                                    forceLocked = !sameArtist.isEmpty(),
                                 )
                             }
                         }
                     }
                 }
-                if (isExpanded && state.artistFormState.images.isNotEmpty()) {
+
+                val sameArtistPrompt = remember {
+                    movableContentOf {
+                        SameArtistPrompt(
+                            sameArtist = sameArtist,
+                            onDenySameArtist = onDenySameArtist,
+                            onConfirmSameArtist = onConfirmSameArtist,
+                        )
+                    }
+                }
+
+                if (isExpanded &&
+                    (state.artistFormState.images.isNotEmpty() || !sameArtist.isEmpty())
+                ) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
@@ -334,17 +359,21 @@ object ArtistEditScreen {
                                 .width(800.dp)
                                 .verticalScroll(rememberScrollState())
                         )
-                        Column {
-                            EditImagesButton(
-                                images = state.artistFormState.images,
-                                onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
-                            ImageGrid(
-                                images = state.artistFormState.images,
-                                onClickImage = {},
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                        if (sameArtist.isEmpty()) {
+                            Column {
+                                EditImagesButton(
+                                    images = state.artistFormState.images,
+                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                                ImageGrid(
+                                    images = state.artistFormState.images,
+                                    onClickImage = {},
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        } else {
+                            sameArtistPrompt()
                         }
                     }
                 } else {
@@ -356,24 +385,28 @@ object ArtistEditScreen {
                                 .widthIn(max = 960.dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            ImagePager(
-                                images = state.artistFormState.images,
-                                pagerState = imagePagerState,
-                                sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
-                                onClickPage = {
-                                    // TODO: Open images screen
-                                },
-                            )
+                            if (sameArtist.isEmpty()) {
+                                if (initialArtist != null && artistProgress !is JobProgress.Loading) {
+                                    EditImagesButton(
+                                        images = state.artistFormState.images,
+                                        onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                }
+
+                                ImagePager(
+                                    images = state.artistFormState.images,
+                                    pagerState = imagePagerState,
+                                    sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
+                                    onClickPage = {
+                                        // TODO: Open images screen
+                                    },
+                                )
+                            } else {
+                                sameArtistPrompt()
+                            }
 
                             form(Modifier.fillMaxWidth())
-
-                            if (initialArtist != null && artistProgress !is JobProgress.Loading) {
-                                EditImagesButton(
-                                    images = state.artistFormState.images,
-                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
-                            }
                         }
                     }
                 }
@@ -703,6 +736,7 @@ object ArtistEditScreen {
         val formMetadata: StateFlow<FormMetadata?>,
         val formLink: StateFlow<String?>,
         val saveTaskState: TaskState<ArtistSave.Response>,
+        val sameArtistState: SameArtistPrompter.State,
     ) {
         data class FormMetadata(
             val hasPendingFormSubmission: Boolean,

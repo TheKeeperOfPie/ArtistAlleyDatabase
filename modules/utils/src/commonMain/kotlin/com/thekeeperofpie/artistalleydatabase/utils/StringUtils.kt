@@ -8,10 +8,12 @@ object StringUtils {
         if (first == second) return 1f
         if (first.length < 3 || second.length < 3) return 0f
 
-        val longestSubstring = findLongestCommonSubstring(first, second)
-        val editDistance = calculateLevenshteinDistance(first, second)
+        val firstNormalized = first.replace(Regex("\\s+"), "")
+        val secondNormalized = second.replace(Regex("\\s+"), "")
+        val longestSubstring = findLongestCommonSubstring(firstNormalized, secondNormalized)
+        val editDistance = calculateLevenshteinDistance(firstNormalized, secondNormalized)
 
-        val longerLength = max(first.length, second.length).toFloat()
+        val longerLength = max(firstNormalized.length, secondNormalized.length).toFloat()
         val levenshteinScore = 1f - (editDistance / longerLength)
         val substringScore = longestSubstring.length / longerLength
         return max(levenshteinScore, substringScore)
@@ -28,7 +30,7 @@ object StringUtils {
 
         for (row in 1..firstLength) {
             for (column in 1..secondLength) {
-                if (first[row - 1] == second[column - 1]) {
+                if (first[row - 1].equals(second[column - 1], ignoreCase = true)) {
                     val currentSequenceLength = matrix[row - 1][column - 1] + 1
                     matrix[row][column] = currentSequenceLength
 
@@ -59,7 +61,12 @@ object StringUtils {
         (1..firstLength).forEach { firstIndex ->
             currentRow[0] = firstIndex
             (1..secondLength).forEach { secondIndex ->
-                val cost = if (first[firstIndex - 1] == second[secondIndex - 1]) 0 else 1
+                val equals = first[firstIndex - 1].equals(
+                    other = second[secondIndex - 1],
+                    ignoreCase = true,
+                )
+
+                val cost = if (equals) 0 else 1
 
                 currentRow[secondIndex] = minOf(
                     currentRow[secondIndex - 1] + 1,
