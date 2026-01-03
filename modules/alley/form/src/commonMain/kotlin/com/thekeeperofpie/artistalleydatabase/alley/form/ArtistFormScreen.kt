@@ -1,5 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -91,6 +96,10 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_pri
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_2
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_link
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
+import com.composables.core.ScrollArea
+import com.composables.core.Thumb
+import com.composables.core.VerticalScrollbar
+import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistInference
@@ -326,86 +335,109 @@ object ArtistFormScreen {
 
                     var showMerge by rememberSaveable { mutableStateOf(false) }
 
-                    ArtistForm(
-                        initialArtist = initialArtist,
-                        focusState = focusState,
-                        modifier = Modifier.fillMaxHeight()
-                            .width(960.dp)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        LastResponseHeader(initialFormDiff()?.timestamp)
+                    val scrollState = rememberScrollState()
+                    val scrollAreaState = rememberScrollAreaState(scrollState)
+                    ScrollArea(state = scrollAreaState) {
+                        ArtistForm(
+                            initialArtist = initialArtist,
+                            focusState = focusState,
+                            modifier = Modifier.fillMaxHeight()
+                                .width(960.dp)
+                                .verticalScroll(scrollState)
+                        ) {
+                            LastResponseHeader(initialFormDiff()?.timestamp)
 
-                        if (previousYearData() != null) {
-                            PreviousYearPrompt(onClickMerge = { showMerge = true })
+                            if (previousYearData() != null) {
+                                PreviousYearPrompt(onClickMerge = { showMerge = true })
+                            }
+
+                            InstructionsHeader()
+
+                            PasteLinkSection(formState.links)
+                            BoothSection(
+                                state = formState.info.booth,
+                                label = { Text(stringResource(Res.string.alley_form_artist_booth_placeholder)) },
+                                errorText = errorState.boothErrorMessage,
+                            )
+                            NameSection(
+                                state = formState.info.name,
+                                label = { Text(stringResource(Res.string.alley_form_artist_name_placeholder)) },
+                            )
+                            SummarySection(
+                                state = formState.info.summary,
+                                label = { Text(stringResource(Res.string.alley_form_artist_summary_placeholder)) },
+                            )
+                            SocialLinksSection(
+                                state = formState.links.stateSocialLinks,
+                                links = formState.links.socialLinks,
+                                label = { Text(stringResource(Res.string.alley_form_artist_social_links_placeholder)) },
+                                pendingErrorMessage = errorState.socialLinksErrorMessage,
+                            )
+                            StoreLinksSection(
+                                state = formState.links.stateStoreLinks,
+                                storeLinks = formState.links.storeLinks,
+                                label = { Text(stringResource(Res.string.alley_form_artist_store_links_placeholder)) },
+                                pendingErrorMessage = errorState.storeLinksErrorMessage,
+                            )
+                            PortfolioLinksSection(
+                                state = formState.links.statePortfolioLinks,
+                                portfolioLinks = formState.links.portfolioLinks,
+                                label = { Text(stringResource(Res.string.alley_form_artist_portfolio_links_placeholder)) },
+                                pendingErrorMessage = errorState.portfolioLinksErrorMessage,
+                            )
+                            CommissionsSection(
+                                state = formState.links.stateCommissions,
+                                commissions = formState.links.commissions,
+                                label = { Text(stringResource(Res.string.alley_form_artist_commissions_placeholder)) },
+                            )
+
+                            // TODO: Confirmed tag support
+                            SeriesSection(
+                                state = formState.series,
+                                seriesById = seriesById,
+                                seriesPredictions = seriesPredictions,
+                                seriesImage = seriesImage,
+                                showConfirmed = false,
+                            )
+                            MerchSection(
+                                state = formState.merch,
+                                merchById = merchById,
+                                merchPredictions = merchPredictions,
+                                showConfirmed = false,
+                            )
+                            NotesSection(
+                                state = formState.notes,
+                                initialValue = this@ArtistForm.initialArtist?.notes,
+                                label = { Text(stringResource(Res.string.alley_form_artist_notes_placeholder)) },
+                            )
+                            NotesSection(
+                                state = formState.formNotes,
+                                initialValue = initialFormDiff()?.notes,
+                                header = Res.string.alley_form_notes,
+                                label = { Text(stringResource(Res.string.alley_form_artist_form_notes_placeholder)) },
+                            )
+
+                            InstructionsFooter()
                         }
 
-                        InstructionsHeader()
-
-                        PasteLinkSection(formState.links)
-                        BoothSection(
-                            state = formState.info.booth,
-                            label = { Text(stringResource(Res.string.alley_form_artist_booth_placeholder)) },
-                            errorText = errorState.boothErrorMessage,
-                        )
-                        NameSection(
-                            state = formState.info.name,
-                            label = { Text(stringResource(Res.string.alley_form_artist_name_placeholder)) },
-                        )
-                        SummarySection(
-                            state = formState.info.summary,
-                            label = { Text(stringResource(Res.string.alley_form_artist_summary_placeholder)) },
-                        )
-                        SocialLinksSection(
-                            state = formState.links.stateSocialLinks,
-                            links = formState.links.socialLinks,
-                            label = { Text(stringResource(Res.string.alley_form_artist_social_links_placeholder)) },
-                            pendingErrorMessage = errorState.socialLinksErrorMessage,
-                        )
-                        StoreLinksSection(
-                            state = formState.links.stateStoreLinks,
-                            storeLinks = formState.links.storeLinks,
-                            label = { Text(stringResource(Res.string.alley_form_artist_store_links_placeholder)) },
-                            pendingErrorMessage = errorState.storeLinksErrorMessage,
-                        )
-                        PortfolioLinksSection(
-                            state = formState.links.statePortfolioLinks,
-                            portfolioLinks = formState.links.portfolioLinks,
-                            label = { Text(stringResource(Res.string.alley_form_artist_portfolio_links_placeholder)) },
-                            pendingErrorMessage = errorState.portfolioLinksErrorMessage,
-                        )
-                        CommissionsSection(
-                            state = formState.links.stateCommissions,
-                            commissions = formState.links.commissions,
-                            label = { Text(stringResource(Res.string.alley_form_artist_commissions_placeholder)) },
-                        )
-
-                        // TODO: Confirmed tag support
-                        SeriesSection(
-                            state = formState.series,
-                            seriesById = seriesById,
-                            seriesPredictions = seriesPredictions,
-                            seriesImage = seriesImage,
-                            showConfirmed = false,
-                        )
-                        MerchSection(
-                            state = formState.merch,
-                            merchById = merchById,
-                            merchPredictions = merchPredictions,
-                            showConfirmed = false,
-                        )
-                        NotesSection(
-                            state = formState.notes,
-                            initialValue = this@ArtistForm.initialArtist?.notes,
-                            label = { Text(stringResource(Res.string.alley_form_artist_notes_placeholder)) },
-                        )
-                        NotesSection(
-                            state = formState.formNotes,
-                            initialValue = initialFormDiff()?.notes,
-                            header = Res.string.alley_form_notes,
-                            label = { Text(stringResource(Res.string.alley_form_artist_form_notes_placeholder)) },
-                        )
-
-                        InstructionsFooter()
+                        val interactionSource = remember { MutableInteractionSource() }
+                        VerticalScrollbar(
+                            interactionSource = interactionSource,
+                            modifier = Modifier.fillMaxHeight().align(Alignment.TopEnd)
+                        ) {
+                            val isHovered by interactionSource.collectIsHoveredAsState()
+                            val isDragging by interactionSource.collectIsDraggedAsState()
+                            Thumb(
+                                modifier = Modifier.background(
+                                    color = if (isHovered or isDragging) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                    },
+                                    shape = RoundedCornerShape(100),
+                                ),
+                            )
+                        }
                     }
 
                     val previousYearData = previousYearData()

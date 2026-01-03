@@ -386,14 +386,6 @@ object ArtistEditScreen {
                                 .verticalScroll(rememberScrollState())
                         ) {
                             if (sameArtist.isEmpty()) {
-                                if (initialArtist != null && artistProgress !is JobProgress.Loading) {
-                                    EditImagesButton(
-                                        images = state.artistFormState.images,
-                                        onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                }
-
                                 ImagePager(
                                     images = state.artistFormState.images,
                                     pagerState = imagePagerState,
@@ -407,6 +399,14 @@ object ArtistEditScreen {
                             }
 
                             form(Modifier.fillMaxWidth())
+
+                            if (initialArtist != null && artistProgress !is JobProgress.Loading) {
+                                EditImagesButton(
+                                    images = state.artistFormState.images,
+                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
                         }
                     }
                 }

@@ -15,6 +15,7 @@ kotlin {
             api(libs.jetBrainsAndroidX.navigation3.ui)
 
             implementation(libs.jetBrainsCompose.material3.windowSizeClass)
+            implementation(libs.composeunstyled.primitives)
 
             implementation(projects.modules.alley)
             implementation(projects.modules.alley.edit)

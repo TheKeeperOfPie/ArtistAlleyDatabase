@@ -434,7 +434,7 @@ private abstract class ArtistFormScopeImpl(
         linksErrorMessage: () -> String?,
         storeLinksErrorMessage: () -> String?,
         portfolioLinksErrorMessage: () -> String?,
-        catalogLinksErrorMessage: () -> String?
+        catalogLinksErrorMessage: () -> String?,
     ) {
         SocialLinksSection(
             state = state.stateSocialLinks,
@@ -1110,13 +1110,18 @@ object ArtistForm {
             Logo.STORENVY,
             Logo.THREADLESS,
                 -> {
-                state.storeLinks += linkModel
-                state.stateStoreLinks.lockState = EntryLockState.UNLOCKED
+                if (!state.storeLinks.contains(linkModel)) {
+                    state.storeLinks += linkModel
+                    state.stateStoreLinks.lockState = EntryLockState.UNLOCKED
+                }
             }
 
             Logo.VGEN -> {
-                state.commissions += CommissionModel.parse(fixedLink)
-                state.stateCommissions.lockState = EntryLockState.UNLOCKED
+                val commissionModel = CommissionModel.parse(fixedLink)
+                if (!state.commissions.contains(commissionModel)) {
+                    state.commissions += commissionModel
+                    state.stateCommissions.lockState = EntryLockState.UNLOCKED
+                }
             }
 
             Logo.ART_STATION,
@@ -1143,8 +1148,10 @@ object ArtistForm {
             Logo.YOU_TUBE,
             null,
                 -> {
-                state.socialLinks += linkModel
-                state.stateSocialLinks.lockState = EntryLockState.UNLOCKED
+                if (!state.socialLinks.contains(linkModel)) {
+                    state.socialLinks += linkModel
+                    state.stateSocialLinks.lockState = EntryLockState.UNLOCKED
+                }
             }
         }
     }

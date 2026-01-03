@@ -41,6 +41,7 @@ object Versions {
     const val burst = "2.11.0-beta1"
     const val coil = "3.3.0"
     const val colormath = "3.6.1"
+    const val composeUnstyled = "1.49.3"
     const val cronetEmbedded = "141.7340.3"
     const val diffUtils = "0.7.0"
     const val fileKit = "0.12.0"
@@ -373,6 +374,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 library("co.touchlab:kermit:${Versions.kermit}")
                 library("co.touchlab:stately-concurrent-collections:${Versions.statelyConcurrentCollections}")
                 library("com.android.tools.build:gradle:${Versions.android.gradle}")
+                library("com.composables:composeunstyled-primitives:${Versions.composeUnstyled}")
                 library("com.eygraber:compose-placeholder-material3:${Versions.placeholder}")
                 library("com.eygraber:sqldelight-androidx-driver:${Versions.sqldelightAndroidXDriver}")
                 library("com.eygraber:uri-kmp:${Versions.uriKmp}")
