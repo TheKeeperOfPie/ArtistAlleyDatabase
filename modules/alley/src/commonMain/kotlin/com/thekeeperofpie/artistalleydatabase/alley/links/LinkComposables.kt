@@ -51,6 +51,7 @@ fun LinkRow(
     color: Color = Color.Unspecified,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
+    val uriHandler = LocalUriHandler.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -60,6 +61,7 @@ fun LinkRow(
                 visible = link == null,
                 highlight = PlaceholderHighlight.shimmer(),
             )
+            .clickable { link?.link?.let { uriHandler.openUri(it) } }
     ) {
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
             TooltipBox(
@@ -68,7 +70,6 @@ fun LinkRow(
                     spacingBetweenTooltipAndAnchor = 0.dp,
                 ),
                 tooltip = {
-                    val uriHandler = LocalUriHandler.current
                     PlainTooltip(Modifier.clickable { link?.link?.let { uriHandler.openUri(it) } }) {
                         Text(link?.link.orEmpty())
                     }

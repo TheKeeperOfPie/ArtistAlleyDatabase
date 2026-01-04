@@ -47,16 +47,6 @@ import kotlin.time.Instant
 @CacheableTask
 abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
-    companion object {
-        private const val ARTISTS_CSV_NAME = "artists.csv"
-        private const val STAMP_RALLIES_CSV_NAME = "rallies.csv"
-        private const val SERIES_CSV_NAME = "series.csv"
-        private const val MERCH_CSV_NAME = "merch.csv"
-        private const val DATABASE_CHUNK_SIZE = 50
-
-        private val commaRegex = Regex(",\\s?")
-    }
-
     @get:Inject
     abstract val layout: ProjectLayout
 

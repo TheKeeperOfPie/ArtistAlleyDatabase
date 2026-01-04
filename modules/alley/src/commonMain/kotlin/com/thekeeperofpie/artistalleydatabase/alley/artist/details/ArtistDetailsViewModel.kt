@@ -130,7 +130,7 @@ class ArtistDetailsViewModel(
     }.flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val otherArtists = entry.mapNotNull { it?.artist?.booth }
+    val otherArtists = entry.mapNotNull { it?.artist?.booth?.ifBlank { null } }
         .mapLatest { artistEntryDao.getEntriesByBooth(year, it).filter { it.id != id } }
         .flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())

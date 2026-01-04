@@ -661,10 +661,13 @@ fun <T> MultiTextSection(
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                             when (event.key) {
-                                Key.Escape -> {
-                                    dropdownExpanded = false
-                                    true
-                                }
+                                Key.Escape ->
+                                    if (dropdownExpanded) {
+                                        dropdownExpanded = false
+                                        true
+                                    } else {
+                                        false
+                                    }
                                 Key.DirectionDown -> {
                                     if (predictions.isNotEmpty()) {
                                         dropdownFocusIndex =

@@ -11,9 +11,6 @@ kv_namespaces = [
     { binding = "ARTIST_ALLEY_FORM_KEYS_KV", id = "artistAlleyFormKeysKVId" }
 ]
 
-[build]
-command = "npm install @cloudflare/pages-plugin-cloudflare-access @noble/curves"
-
 [placement]
 mode = "off"
 
