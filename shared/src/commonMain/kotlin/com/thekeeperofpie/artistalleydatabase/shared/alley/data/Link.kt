@@ -9,7 +9,8 @@ data class Link(
 ) {
     companion object {
         fun parse(link: String): Link? {
-            val uri = Uri.parseOrNull(link) ?: return null
+            val url = if (link.startsWith("http")) link else "https://$link"
+            val uri = Uri.parseOrNull(url) ?: return null
             val path = uri.path?.removePrefix("/")?.removeSuffix("/")?.lowercase() ?: return null
             val host = uri.host?.removePrefix("www.")?.lowercase() ?: return null
 

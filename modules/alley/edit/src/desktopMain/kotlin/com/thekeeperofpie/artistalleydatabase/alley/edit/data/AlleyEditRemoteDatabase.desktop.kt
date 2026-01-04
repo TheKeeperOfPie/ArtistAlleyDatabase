@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
@@ -36,7 +38,9 @@ import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
 @Inject
-actual class AlleyEditRemoteDatabase {
+actual class AlleyEditRemoteDatabase(
+    private val artistEntryDao: ArtistEntryDao,
+) {
 
     private val artistsByDataYearAndId =
         mutableMapOf<DataYear, MutableMap<String, ArtistDatabaseEntry.Impl>>()
@@ -166,6 +170,9 @@ actual class AlleyEditRemoteDatabase {
     actual suspend fun loadArtist(dataYear: DataYear, artistId: Uuid): ArtistDatabaseEntry.Impl? {
         simulateLatency()
         return artistsByDataYearAndId[dataYear]?.get(artistId.toString())
+            ?: artistEntryDao.getEntry(dataYear, artistId.toString())
+                ?.artist
+                ?.databaseEntry
     }
 
     actual suspend fun loadArtistWithFormMetadata(
@@ -291,7 +298,7 @@ actual class AlleyEditRemoteDatabase {
     }
 
     actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
-        artistFormQueue.values.map { (before, after, formNotes, _) ->
+        artistFormQueue.values.map { (before, after, _, _) ->
             ArtistFormQueueEntry(
                 artistId = Uuid.parse(before.id),
                 beforeBooth = before.booth,
@@ -325,7 +332,10 @@ actual class AlleyEditRemoteDatabase {
                 notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
                 socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
                 storeLinks = ArtistEntryDiff.diffList(before.storeLinks, after.storeLinks),
-                portfolioLinks = ArtistEntryDiff.diffList(before.portfolioLinks, after.portfolioLinks),
+                portfolioLinks = ArtistEntryDiff.diffList(
+                    before.portfolioLinks,
+                    after.portfolioLinks
+                ),
                 catalogLinks = ArtistEntryDiff.diffList(before.catalogLinks, after.catalogLinks),
                 commissions = ArtistEntryDiff.diffList(before.commissions, after.commissions),
                 seriesInferred = ArtistEntryDiff.diffList(

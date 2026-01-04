@@ -43,7 +43,6 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.DropdownMenuItem
@@ -58,6 +57,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -99,13 +99,12 @@ import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.different
 import artistalleydatabase.modules.entry.generated.resources.different_indicator_content_description
-import artistalleydatabase.modules.entry.generated.resources.entry_multi_text_submit
+import artistalleydatabase.modules.entry.generated.resources.entry_multi_text_add
 import artistalleydatabase.modules.entry.generated.resources.entry_open_more_content_description
 import artistalleydatabase.modules.utils_compose.generated.resources.more_actions_content_description
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
@@ -522,6 +521,7 @@ fun <T> MultiTextSection(
     label: @Composable (() -> Unit)? = null,
     pendingErrorMessage: () -> String? = { null },
     onItemCommitted: ((String) -> Unit)? = null,
+    inputTransformation: InputTransformation? = null,
     additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
 ) {
     SectionHeader(
@@ -618,6 +618,7 @@ fun <T> MultiTextSection(
                         focusManager.moveFocus(FocusDirection.Next)
                     },
                     label = label,
+                    inputTransformation = inputTransformation,
                     supportingText = pendingErrorMessage?.let { { Text(pendingErrorMessage) } },
                     isError = pendingErrorMessage != null,
                     onDone = { manuallyClicked ->
@@ -769,6 +770,7 @@ private fun OpenSectionField(
     showSubmitButton: Boolean,
     modifier: Modifier = Modifier,
     label: @Composable (() -> Unit)? = null,
+    inputTransformation: InputTransformation? = null,
     supportingText: (@Composable () -> Unit)? = null,
     isError: Boolean = false,
 ) {
@@ -786,6 +788,7 @@ private fun OpenSectionField(
         },
         lineLimits = TextFieldLineLimits.SingleLine,
         label = label?.let { { it() } },
+        inputTransformation = inputTransformation,
         supportingText = supportingText,
         isError = isError,
         trailingIcon = if (showSubmitButton) {
@@ -795,11 +798,9 @@ private fun OpenSectionField(
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
-                    TooltipIconButton(
-                        icon = Icons.AutoMirrored.Default.Send,
-                        tooltipText = stringResource(Res.string.entry_multi_text_submit),
-                        onClick = { onDone(true) },
-                    )
+                    TextButton(onClick = { onDone(true) }, modifier = Modifier.padding(end = 4.dp)) {
+                        Text(stringResource(Res.string.entry_multi_text_add))
+                    }
                 }
             }
         } else null,

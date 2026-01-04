@@ -106,6 +106,7 @@
 
     <string name="alley_edit_drag_handle_content_description">Drag handle</string>
 
+    <string name="alley_edit_row_edit_tooltip">Edit row</string>
     <string name="alley_edit_row_delete_tooltip">Delete row</string>
 
     <string name="alley_edit_series_header_image">Image</string>

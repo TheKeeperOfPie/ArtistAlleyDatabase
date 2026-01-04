@@ -7,7 +7,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import artistalleydatabase.modules.entry.generated.resources.Res
 import artistalleydatabase.modules.entry.generated.resources.entry_error_invalid_link
-import artistalleydatabase.modules.entry.generated.resources.entry_error_invalid_link_scheme
 import artistalleydatabase.modules.entry.generated.resources.entry_error_invalid_number
 import artistalleydatabase.modules.entry.generated.resources.entry_error_invalid_uuid
 import com.eygraber.uri.Uri
@@ -50,16 +49,18 @@ fun rememberLongValidator(state: EntryForm2.SingleTextState): State<String?> {
 @Composable
 fun rememberLinkValidator(state: EntryForm2.SingleTextState): State<String?> {
     val genericErrorMessage = stringResource(resource = Res.string.entry_error_invalid_link)
-    val schemeErrorMessage = stringResource(Res.string.entry_error_invalid_link_scheme)
     return remember(state) {
         derivedStateOf {
             val text = state.value.text
             if (text.isBlank()) return@derivedStateOf null
-            val uri = Uri.parseOrNull(text.toString())
-                ?: return@derivedStateOf genericErrorMessage
-            if (uri.scheme != "https") {
-                schemeErrorMessage
-            } else if (uri.host?.contains(".") != true){
+            val url = if (text.startsWith("http")) {
+                text.toString()
+            } else {
+                "https://$text"
+            }
+            val uri = Uri.parseOrNull(url) ?: return@derivedStateOf genericErrorMessage
+
+            if (uri.host?.contains(".") != true) {
                 genericErrorMessage
             } else {
                 null

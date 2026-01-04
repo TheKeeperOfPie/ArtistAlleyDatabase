@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.Visibility
@@ -89,6 +90,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_label
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_placeholder
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_edit_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
@@ -1227,17 +1229,12 @@ object ArtistForm {
                             }
                         }
 
-                        AnimatedVisibility(
-                            visible = state.lockState.editable,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                        ) {
-                            TooltipIconButton(
-                                icon = Icons.Default.Delete,
-                                tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
-                                onClick = { items.remove(item) },
-                            )
-                        }
+                        EditActions(
+                            state = state,
+                            items = items,
+                            item = item,
+                            itemToText = itemToSerializedValue,
+                        )
                     }
                 }
             },
@@ -1384,6 +1381,7 @@ object ArtistForm {
         prediction: @Composable (index: Int, T) -> Unit = item,
         sortValue: ((T) -> String)? = null,
         label: @Composable (() -> Unit)? = null,
+        inputTransformation: InputTransformation? = null,
         pendingErrorMessage: () -> String? = { null },
         preferPrediction: Boolean = true,
         additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
@@ -1406,6 +1404,7 @@ object ArtistForm {
             preferPrediction = preferPrediction,
             onPredictionChosen = addUniqueErrorState::addAndEnforceUnique,
             label = label,
+            inputTransformation = inputTransformation,
             pendingErrorMessage = { addUniqueErrorState.errorMessage ?: pendingErrorMessage() },
             additionalHeaderActions = additionalHeaderActions,
         )
@@ -1464,21 +1463,21 @@ object ArtistForm {
                         Color.Green
                     },
                     additionalActions = {
-                        AnimatedVisibility(
-                            visible = state.lockState.editable,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                        ) {
-                            TooltipIconButton(
-                                icon = Icons.Default.Delete,
-                                tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
-                                onClick = { items.remove(value) },
-                            )
-                        }
+                        EditActions(
+                            state = state,
+                            items = items,
+                            item = value,
+                            itemToText = LinkModel::link,
+                        )
                     },
                 )
             },
             label = label,
+            inputTransformation = InputTransformation {
+                if (asCharSequence().any { it.isWhitespace() || it == ',' }) {
+                    revertAllChanges()
+                }
+            },
             pendingErrorMessage = pendingErrorMessage,
             additionalHeaderActions = {
                 with(formScope) {
@@ -1493,6 +1492,42 @@ object ArtistForm {
             items = items,
             itemsToText = { it.joinToString { it.link } },
         )
+    }
+
+    @Composable
+    private fun <T> RowScope.EditActions(
+        state: EntryForm2.SingleTextState,
+        items: SnapshotStateList<T>,
+        item: T,
+        itemToText: (T) -> String,
+    ) {
+        AnimatedVisibility(
+            visible = state.lockState.editable,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            TooltipIconButton(
+                icon = Icons.Default.Edit,
+                tooltipText = stringResource(Res.string.alley_edit_row_edit_tooltip),
+                onClick = {
+                    items.remove(item)
+                    state.value.setTextAndPlaceCursorAtEnd(itemToText(item))
+                    state.focusRequester.requestFocus()
+                },
+            )
+        }
+
+        AnimatedVisibility(
+            visible = state.lockState.editable,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            TooltipIconButton(
+                icon = Icons.Default.Delete,
+                tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
+                onClick = { items.remove(item) },
+            )
+        }
     }
 
     @Stable
