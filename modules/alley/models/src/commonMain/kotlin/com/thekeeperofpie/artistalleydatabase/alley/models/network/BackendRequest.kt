@@ -100,6 +100,13 @@ sealed interface BackendRequest {
     ) : BackendRequest, WithResponse<String>
 
     @Serializable
+    data class FakeArtistData(val publicKeyForResponse: String) : BackendRequest,
+        WithResponse<String?>
+
+    @Serializable
+    data object DeleteFakeArtistData : BackendRequest, WithResponse<Unit>
+
+    @Serializable
     data object Series : BackendRequest, WithResponse<List<SeriesInfo>>
 
     @Serializable

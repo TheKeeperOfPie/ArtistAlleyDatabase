@@ -1,0 +1,11 @@
+deleteFakeArtistFormEntry:
+DELETE FROM artistFormEntry
+WHERE artistId = '11111111-1111-1111-1111-111111111111';
+
+deleteFakeArtistFormEntryHistory:
+DELETE FROM artistFormEntryHistory
+WHERE artistId = '11111111-1111-1111-1111-111111111111';
+
+deleteFakeArtistPublicKey:
+DELETE FROM artistFormPublicKey
+WHERE artistId = '11111111-1111-1111-1111-111111111111';

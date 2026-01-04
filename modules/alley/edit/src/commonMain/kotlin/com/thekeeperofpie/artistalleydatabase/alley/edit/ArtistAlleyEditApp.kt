@@ -156,7 +156,7 @@ private fun entryProvider(
         )
     }
     sharedElementEntry<AlleyEditDestination.Admin> {
-        AdminScreen(graph = graph)
+        AdminScreen(graph = graph, onDebugOpenForm = onDebugOpenForm)
     }
     sharedElementEntry<AlleyEditDestination.ArtistAdd> { route ->
         ArtistAddScreen(

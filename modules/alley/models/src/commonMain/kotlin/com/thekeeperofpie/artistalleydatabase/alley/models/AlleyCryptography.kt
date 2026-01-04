@@ -11,6 +11,7 @@ import kotlinx.io.bytestring.encodeToByteString
 import kotlinx.io.bytestring.hexToByteString
 import kotlinx.io.bytestring.toHexString
 import kotlinx.serialization.json.Json
+import kotlin.uuid.Uuid
 
 object AlleyCryptography {
 
@@ -18,6 +19,8 @@ object AlleyCryptography {
     const val ACCESS_KEY_ENCRYPTED_PARAM = "accessKeyEncrypted"
     const val ENCRYPTION_KEY = "encryptionKey"
     const val SIGNATURE_HEADER_KEY = "X-CustomSignature"
+
+    val FAKE_ARTIST_ID = Uuid.parse("11111111-1111-1111-1111-111111111111")
 
     suspend fun generate(): AlleyCryptographyKeys {
         val ecdsa = CryptographyProvider.Default.get(ECDSA)

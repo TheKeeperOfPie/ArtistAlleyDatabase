@@ -44,6 +44,7 @@ val databaseFile = dataDir.resolve("inputs/artists")
 databaseFile.writer().use { writer ->
     exportFile.useLines {
         it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
+            .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
             .forEach(writer::appendLine)
     }
 }

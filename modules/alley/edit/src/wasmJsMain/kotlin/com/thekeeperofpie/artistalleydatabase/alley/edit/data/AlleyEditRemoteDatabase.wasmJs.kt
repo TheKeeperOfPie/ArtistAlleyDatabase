@@ -188,12 +188,8 @@ actual class AlleyEditRemoteDatabase(
                     privateKey = oneTimeKeys.privateKey,
                     payload = response,
                 )
-                Uri.parse(window.location.origin)
-                    .buildUpon()
-                    .path("/form/artist")
-                    .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)
-                    .build()
-                    .toString()
+
+                formLink(accessKey)
             } catch (t: Throwable) {
                 t.printStackTrace()
                 null
@@ -255,12 +251,46 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun fakeArtistFormLink(): String? =
+        withContext(dispatchers.io) {
+            val oneTimeKeys = generateOneTimeEncryptionKeys()
+            try {
+                val response = sendRequest(
+                    BackendRequest.FakeArtistData(
+                        publicKeyForResponse = oneTimeKeys.publicKey,
+                    )
+                ) ?: return@withContext null
+                val accessKey = AlleyCryptography.oneTimeDecrypt(
+                    privateKey = oneTimeKeys.privateKey,
+                    payload = response,
+                )
+                formLink(accessKey)
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
+        }
+
+    actual suspend fun deleteFakeArtistData() {
+        withContext(dispatchers.io) {
+            sendRequest(BackendRequest.DeleteFakeArtistData)
+        }
+    }
+
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(
             BuildKonfig.imagesUrl.ifBlank { "${window.origin}/edit/api/image" } + "/$key"
         ),
         id = id,
     )
+
+    private fun formLink(accessKey: String): String =
+        Uri.parse(window.location.origin)
+            .buildUpon()
+            .path("/form/artist")
+            .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)
+            .build()
+            .toString()
 
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,

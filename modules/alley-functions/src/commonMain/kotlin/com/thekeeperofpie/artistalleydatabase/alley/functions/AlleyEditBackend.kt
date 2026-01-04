@@ -72,6 +72,8 @@ object AlleyEditBackend {
                     is BackendRequest.DatabaseCreate -> makeResponse(databaseCreate(context))
                     is BackendRequest.GenerateFormKey ->
                         makeResponse(generateFormKey(context, this))
+                    is BackendRequest.FakeArtistData -> makeResponse(fakeArtistData(context, this))
+                    is BackendRequest.DeleteFakeArtistData -> makeResponse(deleteFakeArtistData(context))
                     is BackendRequest.Merch -> makeResponse(loadMerch(context))
                     is BackendRequest.Series -> loadSeries(context)
                     is ListImages.Request -> makeResponse(listImages(context, this))
@@ -312,11 +314,33 @@ object AlleyEditBackend {
         database.alleyFormPublicKeyQueries.insertPublicKey(
             ArtistFormPublicKey(artistId = request.artistId, publicKey = keys.publicKey)
         )
+        if (request.artistId == AlleyCryptography.FAKE_ARTIST_ID) {
+            KeyValueCacher(context).putFakeArtistData(keys.privateKey)
+        }
 
         return AlleyCryptography.oneTimeEncrypt(
             publicKey = request.publicKeyForResponse,
             payload = keys.privateKey,
         )
+    }
+
+    private suspend fun fakeArtistData(
+        context: EventContext,
+        request: BackendRequest.FakeArtistData,
+    ): String? {
+        val fakeArtistData = KeyValueCacher(context).getFakeArtistData() ?: return null
+        return AlleyCryptography.oneTimeEncrypt(
+            publicKey = request.publicKeyForResponse,
+            payload = fakeArtistData.privateKey,
+        )
+    }
+
+    private suspend fun deleteFakeArtistData(context: EventContext) {
+        Databases.formDatabase(context).fakeArtistDataQueries.run {
+            deleteFakeArtistFormEntry()
+            deleteFakeArtistFormEntryHistory()
+            deleteFakeArtistPublicKey()
+        }
     }
 
     /**
@@ -356,7 +380,7 @@ object AlleyEditBackend {
     }
 
     private suspend fun loadSeries(context: EventContext): Response {
-        val cachedSeriesJson = context.env.ARTIST_ALLEY_CACHE_KV.get("series").await()
+        val cachedSeriesJson = KeyValueCacher(context).getSeriesJson()
         if (cachedSeriesJson != null) {
             return literalJsonResponse(cachedSeriesJson)
         }
@@ -371,8 +395,7 @@ object AlleyEditBackend {
             .getSeries()
             .awaitAsList()
             .map { it.toSeriesInfo() }
-            .let(Json::encodeToString)
-            .also { context.env.ARTIST_ALLEY_CACHE_KV.put("series", it).await() }
+            .let { KeyValueCacher(context).putSeries(it) }
 
     private suspend fun saveSeries(
         context: EventContext,

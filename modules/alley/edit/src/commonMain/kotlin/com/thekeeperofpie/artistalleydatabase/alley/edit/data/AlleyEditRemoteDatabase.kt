@@ -67,4 +67,7 @@ expect class AlleyEditRemoteDatabase {
         updated: ArtistDatabaseEntry.Impl,
         formEntryTimestamp: Instant,
     ): BackendRequest.ArtistCommitForm.Response
+
+    suspend fun fakeArtistFormLink(): String?
+    suspend fun deleteFakeArtistData()
 }

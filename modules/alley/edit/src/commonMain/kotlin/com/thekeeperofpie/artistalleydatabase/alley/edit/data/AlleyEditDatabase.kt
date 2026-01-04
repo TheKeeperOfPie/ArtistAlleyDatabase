@@ -162,4 +162,7 @@ class AlleyEditDatabase(
         updated = updated,
         formEntryTimestamp = formEntryTimestamp,
     )
+
+    suspend fun fakeArtistFormLink(): String? = remoteDatabase.fakeArtistFormLink()
+    suspend fun deleteFakeArtistData() = remoteDatabase.deleteFakeArtistData()
 }

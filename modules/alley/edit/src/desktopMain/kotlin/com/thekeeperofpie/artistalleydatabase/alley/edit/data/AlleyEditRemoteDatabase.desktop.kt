@@ -51,6 +51,8 @@ actual class AlleyEditRemoteDatabase {
     internal val artistFormQueue = mutableMapOf<Uuid, FormSubmission>()
     internal val artistFormHistory = mutableListOf<FormSubmission>()
 
+    private var fakeArtistPrivateKey: String? = null
+
     private var simulatedLatency: Duration? = null
 
     init {
@@ -109,7 +111,7 @@ actual class AlleyEditRemoteDatabase {
             var previous =
                 ArtistDatabaseEntry.Impl(
                     year = DataYear.ANIME_EXPO_2026,
-                    id = Uuid.random().toString(),
+                    id = AlleyCryptography.FAKE_ARTIST_ID.toString(),
                     status = ArtistStatus.UNKNOWN,
                     booth = "C38",
                     name = "",
@@ -280,8 +282,12 @@ actual class AlleyEditRemoteDatabase {
         if (artistKeys[artistId] != null && !forceRegenerate) return null
         val keys = AlleyCryptography.generate()
         artistKeys[artistId] = keys
-        return "localhost://form/artist/${dataYear.serializedName}/$artistId" +
-                "?${AlleyCryptography.ACCESS_KEY_PARAM}=${keys.privateKey}"
+
+        if (artistId == AlleyCryptography.FAKE_ARTIST_ID) {
+            fakeArtistPrivateKey = keys.privateKey
+        }
+
+        return "localhost://form?${AlleyCryptography.ACCESS_KEY_PARAM}=${keys.privateKey}"
     }
 
     actual suspend fun loadArtistFormQueue(): List<ArtistFormQueueEntry> =
@@ -358,6 +364,16 @@ actual class AlleyEditRemoteDatabase {
             }
         }
         return BackendRequest.ArtistCommitForm.Response.Success
+    }
+
+    actual suspend fun fakeArtistFormLink() =
+        fakeArtistPrivateKey?.let { "localhost://form/artist?${AlleyCryptography.ACCESS_KEY_PARAM}=$it" }
+
+    actual suspend fun deleteFakeArtistData() {
+        fakeArtistPrivateKey = null
+        artistKeys.remove(AlleyCryptography.FAKE_ARTIST_ID)
+        artistFormHistory.removeIf { it.before.id == AlleyCryptography.FAKE_ARTIST_ID.toString() }
+        artistFormQueue.remove(AlleyCryptography.FAKE_ARTIST_ID)
     }
 
     private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
