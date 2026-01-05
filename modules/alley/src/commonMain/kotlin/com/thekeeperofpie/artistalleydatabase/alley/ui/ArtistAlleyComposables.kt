@@ -117,8 +117,8 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import coil3.compose.AsyncImage
 import com.composables.core.ScrollAreaScope
+import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
-import com.composeunstyled.Thumb
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
