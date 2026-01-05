@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.yield
-import kotlin.collections.plus
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)

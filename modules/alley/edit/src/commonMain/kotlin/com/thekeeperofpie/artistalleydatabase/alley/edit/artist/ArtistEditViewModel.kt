@@ -166,6 +166,7 @@ class ArtistEditViewModel(
     }
 
     fun onConfirmMerge(fieldState: Map<ArtistInferenceField, Boolean>) {
+        if (fieldState.isEmpty()) return
         val previousYearData = previousYearData.value ?: return
         val seriesById =
             tagAutocomplete.seriesById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }

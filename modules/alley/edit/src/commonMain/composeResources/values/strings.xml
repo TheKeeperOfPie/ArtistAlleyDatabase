@@ -61,6 +61,7 @@
     <string name="alley_edit_artist_edit_action_hide_inferred">Hide inferred</string>
     <string name="alley_edit_artist_edit_action_show_inferred">Show inferred</string>
     <string name="alley_edit_artist_edit_action_confirm_merge">Confirm merge</string>
+    <string name="alley_edit_artist_edit_action_dismiss_merge">Cancel</string>
 
     <string name="alley_edit_artist_edit_revert_tooltip">Revert field</string>
     <string name="alley_edit_artist_edit_revert_title">Revert %1$s to initial state?</string>
@@ -177,6 +178,7 @@
     <string name="alley_edit_artist_field_label_editor_notes">Editor notes:</string>
     <string name="alley_edit_artist_field_label_list_added">+ %1$s</string>
     <string name="alley_edit_artist_field_label_list_deleted">- %1$s</string>
+    <string name="alley_edit_artist_field_label_select_all">Select all</string>
 
     <string name="alley_edit_artist_history_title">History for %1$s - %2$s</string>
     <string name="alley_edit_artist_history_form_timestamp">From artist form submission at %1$s</string>

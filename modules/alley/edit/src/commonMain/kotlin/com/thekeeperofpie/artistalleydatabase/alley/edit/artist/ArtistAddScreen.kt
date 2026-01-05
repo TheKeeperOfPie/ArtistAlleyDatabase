@@ -1,17 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.Scaffold
@@ -45,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -194,8 +188,19 @@ object ArtistAddScreen {
             ) {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
                 val sameArtist by state.sameArtistState.sameArtist.collectAsStateWithLifecycle()
-                val form = remember {
-                    movableContentOf { modifier: Modifier ->
+                val sameArtistPrompt = remember {
+                    movableContentOf {
+                        SameArtistPrompt(
+                            sameArtist = sameArtist,
+                            onDenySameArtist = onDenySameArtist,
+                            onConfirmSameArtist = onConfirmSameArtist,
+                        )
+                    }
+                }
+
+                ScrollableSideBySide(
+                    showSecondary = { !sameArtist.isEmpty() },
+                    primary = {
                         Form(
                             state = state,
                             errorState = errorState,
@@ -206,31 +211,28 @@ object ArtistAddScreen {
                             seriesImage = seriesImage,
                             locked = !sameArtist.isEmpty(),
                             onClickSameArtist = onClickSameArtist,
-                            modifier = modifier,
                         )
-                    }
-                }
-                val sameArtistPrompt = remember {
-                    movableContentOf {
-                        SameArtistPrompt(
-                            sameArtist = sameArtist,
-                            onDenySameArtist = onDenySameArtist,
-                            onConfirmSameArtist = onConfirmSameArtist,
-                        )
-                    }
-                }
-                if (isExpanded &&
-                    (state.artistFormState.images.isNotEmpty() || !sameArtist.isEmpty())
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        form(
-                            Modifier.fillMaxHeight()
-                                .width(800.dp)
-                                .verticalScroll(rememberScrollState())
-                        )
+                    },
+                    secondary = {
+                        if (sameArtist.isEmpty()) {
+                            EditImagesButton(
+                                images = state.artistFormState.images,
+                                onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                            ImagePager(
+                                images = state.artistFormState.images,
+                                pagerState = imagePagerState,
+                                sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
+                                onClickPage = {
+                                    // TODO: Open images screen
+                                },
+                            )
+                        } else {
+                            sameArtistPrompt()
+                        }
+                    },
+                    secondaryExpanded = {
                         if (sameArtist.isEmpty()) {
                             Column {
                                 EditImagesButton(
@@ -247,38 +249,9 @@ object ArtistAddScreen {
                         } else {
                             sameArtistPrompt()
                         }
-                    }
-                } else {
-                    Box(
-                        contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .widthIn(max = 960.dp)
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            if (sameArtist.isEmpty()) {
-                                EditImagesButton(
-                                    images = state.artistFormState.images,
-                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
-                                ImagePager(
-                                    images = state.artistFormState.images,
-                                    pagerState = imagePagerState,
-                                    sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
-                                    onClickPage = {
-                                        // TODO: Open images screen
-                                    },
-                                )
-                            } else {
-                                sameArtistPrompt()
-                            }
-
-                            form(Modifier.fillMaxWidth())
-                        }
-                    }
-                }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             val errorMessage =
@@ -319,10 +292,9 @@ object ArtistAddScreen {
         seriesImage: (SeriesInfo) -> String?,
         locked: Boolean,
         onClickSameArtist: (artistId: Uuid) -> Unit,
-        modifier: Modifier,
     ) {
         val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
-        Column(modifier = modifier) {
+        Column {
             PotentialSameArtists(state.sameArtistState.inferredArtists, onClickSameArtist)
 
             ArtistForm(

@@ -7,14 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.DoneAll
@@ -108,6 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -319,40 +316,6 @@ object ArtistEditScreen {
                 val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                 val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
                 val sameArtist by state.sameArtistState.sameArtist.collectAsStateWithLifecycle()
-                val form = remember {
-                    movableContentOf { modifier: Modifier ->
-                        Column(modifier = modifier) {
-                            val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
-                            if (formMetadata?.hasPendingFormSubmission == true) {
-                                PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
-                            }
-                            if (initialArtist == null || artistProgress is JobProgress.Loading) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize().padding(32.dp)
-                                ) {
-                                    CircularWavyProgressIndicator()
-                                }
-                            } else {
-                                PotentialSameArtists(
-                                    inferredArtists = state.sameArtistState.inferredArtists,
-                                    onClickSameArtist = onClickSameArtist,
-                                )
-                                ArtistForm(
-                                    initialArtist = { initialArtist },
-                                    state = state.artistFormState,
-                                    errorState = errorState,
-                                    seriesById = seriesById,
-                                    seriesPredictions = seriesPredictions,
-                                    merchById = merchById,
-                                    merchPredictions = merchPredictions,
-                                    seriesImage = seriesImage,
-                                    forceLocked = !sameArtist.isEmpty(),
-                                )
-                            }
-                        }
-                    }
-                }
 
                 val sameArtistPrompt = remember {
                     movableContentOf {
@@ -379,19 +342,48 @@ object ArtistEditScreen {
                     }
                 }
 
-                val forceExpandedIfPossible = !sameArtist.isEmpty() || showMergingArtist
-                if (isExpanded &&
-                    (state.artistFormState.images.isNotEmpty() || forceExpandedIfPossible)
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        form(
-                            Modifier.fillMaxHeight()
-                                .width(800.dp)
-                                .verticalScroll(rememberScrollState())
+                ScrollableSideBySide(
+                    showSecondary = { !sameArtist.isEmpty() || showMergingArtist },
+                    primary = {
+                        Form(
+                            state = state,
+                            errorState = errorState,
+                            seriesById = seriesById,
+                            seriesPredictions = seriesPredictions,
+                            merchById = merchById,
+                            merchPredictions = merchPredictions,
+                            seriesImage = seriesImage,
+                            hasPendingChanges = hasPendingChanges,
+                            onClickMerge = onClickMerge,
+                            onClickSameArtist = onClickSameArtist,
+                            forceLocked = { !sameArtist.isEmpty() || showMergingArtist },
                         )
+                    },
+                    secondary = {
+                        if (!sameArtist.isEmpty()) {
+                            sameArtistPrompt()
+                        } else if (showMergingArtist) {
+                            mergeList()
+                        } else {
+                            ImagePager(
+                                images = state.artistFormState.images,
+                                pagerState = imagePagerState,
+                                sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
+                                onClickPage = {
+                                    // TODO: Open images screen
+                                },
+                            )
+
+                            if (initialArtist != null && artistProgress !is JobProgress.Loading) {
+                                EditImagesButton(
+                                    images = state.artistFormState.images,
+                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
+                        }
+                    },
+                    secondaryExpanded = {
                         if (!sameArtist.isEmpty()) {
                             sameArtistPrompt()
                         } else if (showMergingArtist) {
@@ -410,43 +402,9 @@ object ArtistEditScreen {
                                 )
                             }
                         }
-                    }
-                } else {
-                    Box(
-                        contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .widthIn(max = 960.dp)
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            if (!sameArtist.isEmpty()) {
-                                sameArtistPrompt()
-                            } else if (showMergingArtist) {
-                                mergeList()
-                            } else {
-                                ImagePager(
-                                    images = state.artistFormState.images,
-                                    pagerState = imagePagerState,
-                                    sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
-                                    onClickPage = {
-                                        // TODO: Open images screen
-                                    },
-                                )
-                            }
-
-                            form(Modifier.fillMaxWidth())
-
-                            if (initialArtist != null && artistProgress !is JobProgress.Loading) {
-                                EditImagesButton(
-                                    images = state.artistFormState.images,
-                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
-                            }
-                        }
-                    }
-                }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             if (showFormLinkDialog) {
@@ -587,6 +545,53 @@ object ArtistEditScreen {
                         Text(stringResource(Res.string.alley_edit_artist_history_action_cancel))
                     }
                 }
+            )
+        }
+    }
+
+    @Composable
+    private fun Form(
+        state: State,
+        errorState: ArtistErrorState,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+        hasPendingChanges: () -> Boolean,
+        onClickMerge: () -> Unit,
+        onClickSameArtist: (artistId: Uuid) -> Unit,
+        forceLocked: () -> Boolean,
+    ) {
+
+        val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
+        if (formMetadata?.hasPendingFormSubmission == true) {
+            PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
+        }
+        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+        val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
+        if (initialArtist == null || artistProgress is JobProgress.Loading) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize().padding(32.dp)
+            ) {
+                CircularWavyProgressIndicator()
+            }
+        } else {
+            PotentialSameArtists(
+                inferredArtists = state.sameArtistState.inferredArtists,
+                onClickSameArtist = onClickSameArtist,
+            )
+            ArtistForm(
+                initialArtist = { initialArtist },
+                state = state.artistFormState,
+                errorState = errorState,
+                seriesById = seriesById,
+                seriesPredictions = seriesPredictions,
+                merchById = merchById,
+                merchPredictions = merchPredictions,
+                seriesImage = seriesImage,
+                forceLocked = forceLocked(),
             )
         }
     }

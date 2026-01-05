@@ -174,6 +174,7 @@ class ArtistFormViewModel(
     }
 
     fun onConfirmMerge(fieldState: Map<ArtistInferenceField, Boolean>) {
+        if (fieldState.isEmpty()) return
         val artist = artist.value ?: return
         val previousYearData = previousYearData.value ?: return
         val seriesById =

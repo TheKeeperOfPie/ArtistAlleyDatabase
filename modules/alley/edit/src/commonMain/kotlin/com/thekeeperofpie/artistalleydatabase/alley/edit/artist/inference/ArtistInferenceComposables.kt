@@ -1,17 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.OutlinedCard
@@ -27,9 +20,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_action_same_artist_deny
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_same_artist_confirm_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_confirm_merge
-import com.composables.core.ScrollArea
-import com.composables.core.rememberScrollAreaState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_dismiss_merge
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_select_all
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import org.jetbrains.compose.resources.stringResource
 
@@ -46,22 +38,28 @@ private fun ArtistInferenceMergeList(
                 fieldState.map.values.any { it } -> ToggleableState.Indeterminate
                 else -> ToggleableState.Off
             }
-
-            TriStateCheckbox(
-                state = groupState,
-                onClick = {
-                    val newValue = when (groupState) {
-                        ToggleableState.On -> false
-                        ToggleableState.Off,
-                        ToggleableState.Indeterminate,
-                            -> true
-                    }
-                    fieldState.map.keys.toSet().forEach {
-                        fieldState[it] = newValue
-                    }
-                },
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            )
+            ) {
+
+                TriStateCheckbox(
+                    state = groupState,
+                    onClick = {
+                        val newValue = when (groupState) {
+                            ToggleableState.On -> false
+                            ToggleableState.Off,
+                            ToggleableState.Indeterminate,
+                                -> true
+                        }
+                        fieldState.map.keys.toSet().forEach {
+                            fieldState[it] = newValue
+                        }
+                    },
+                )
+                Text(stringResource(Res.string.alley_edit_artist_field_label_select_all))
+            }
         }
 
         ArtistInferenceField.entries.forEach { field ->
@@ -109,43 +107,29 @@ internal fun SameArtistPrompt(
     onConfirmSameArtist: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val fieldState = rememberArtistInferenceFieldState()
-    val scrollState = rememberScrollState()
-    val scrollAreaState = rememberScrollAreaState(scrollState)
-    ScrollArea(state = scrollAreaState, modifier = modifier) {
-        Box(
-            contentAlignment = Alignment.TopCenter,
-            modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)
-        ) {
-            Column(modifier = Modifier.fillMaxHeight().width(960.dp)) {
-                val previousYearData = sameArtist.result
-                if (previousYearData != null) {
-                    ArtistInferenceMergeList(previousYearData)
-                }
-
-                OutlinedCard(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)) {
-                    Text(
-                        text = stringResource(Res.string.alley_edit_artist_add_same_artist_confirm_prompt),
-                        modifier = Modifier.padding(16.dp)
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
-                    ) {
-                        FilledTonalButton(onClick = { onDenySameArtist() }) {
-                            Text(stringResource(Res.string.alley_edit_artist_add_action_same_artist_deny))
-                        }
-                        FilledTonalButton(onClick = { onConfirmSameArtist() }) {
-                            Text(stringResource(Res.string.alley_edit_artist_add_action_same_artist_confirm))
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(80.dp))
-            }
+    Column(modifier = modifier) {
+        val previousYearData = sameArtist.result
+        if (previousYearData != null) {
+            ArtistInferenceMergeList(previousYearData)
         }
 
-        PrimaryVerticalScrollbar()
+        OutlinedCard(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)) {
+            Text(
+                text = stringResource(Res.string.alley_edit_artist_add_same_artist_confirm_prompt),
+                modifier = Modifier.padding(16.dp)
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+            ) {
+                FilledTonalButton(onClick = { onDenySameArtist() }) {
+                    Text(stringResource(Res.string.alley_edit_artist_add_action_same_artist_deny))
+                }
+                FilledTonalButton(onClick = { onConfirmSameArtist() }) {
+                    Text(stringResource(Res.string.alley_edit_artist_add_action_same_artist_confirm))
+                }
+            }
+        }
     }
 }
 
@@ -155,29 +139,21 @@ fun MergeArtistPrompt(
     onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val fieldState = rememberArtistInferenceFieldState()
-    val scrollState = rememberScrollState()
-    val scrollAreaState = rememberScrollAreaState(scrollState)
-    ScrollArea(state = scrollAreaState, modifier = modifier) {
-        Box(
-            contentAlignment = Alignment.TopStart,
-            modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)
+    Column(modifier = modifier) {
+        val fieldState = rememberArtistInferenceFieldState()
+        ArtistInferenceMergeList(previousYearData, fieldState)
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
         ) {
-            Column(modifier = Modifier.fillMaxHeight().width(960.dp)) {
-                ArtistInferenceMergeList(previousYearData, fieldState)
-
-                FilledTonalButton(
-                    onClick = { onConfirmMerge(fieldState.map.toMap()) },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                        .padding(16.dp)
-                ) {
-                    Text(stringResource(Res.string.alley_edit_artist_edit_action_confirm_merge))
-                }
-
-                Spacer(Modifier.height(80.dp))
+            FilledTonalButton(onClick = { onConfirmMerge(emptyMap()) }) {
+                Text(stringResource(Res.string.alley_edit_artist_edit_action_dismiss_merge))
+            }
+            FilledTonalButton(onClick = { onConfirmMerge(fieldState.map.toMap()) }) {
+                Text(stringResource(Res.string.alley_edit_artist_edit_action_confirm_merge))
             }
         }
-
-        PrimaryVerticalScrollbar()
     }
 }

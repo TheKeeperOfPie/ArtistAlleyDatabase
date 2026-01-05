@@ -51,12 +51,12 @@ class SameArtistPrompter(
         .stateIn(scope, SharingStarted.Lazily, LoadingResult.empty())
 
     private val hasPreviousYear =
-        snapshotFlow { Uuid.parseOrNull(artistFormState.editorState.id.value.toString()) }
+        snapshotFlow { artistFormState.editorState.id.value.text.toString() }
             .mapLatest {
-                if (it == null) {
+                if (Uuid.parseOrNull(it) == null) {
                     false
                 } else {
-                    artistInference.hasPreviousYear(it.toString())
+                    artistInference.hasPreviousYear(it)
                 }
             }
 
