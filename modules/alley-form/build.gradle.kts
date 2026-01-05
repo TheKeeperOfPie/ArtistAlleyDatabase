@@ -25,8 +25,19 @@ compose.desktop {
 kotlin {
     jvm("desktop")
 
+    js {
+        outputModuleName.set("ArtistAlleyFormJs")
+        browser {
+            commonWebpackConfig {
+                sourceMaps = false
+            }
+        }
+        binaries.executable()
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
+        outputModuleName.set("ArtistAlleyFormWasm")
         browser {
             commonWebpackConfig {
                 sourceMaps = false
@@ -41,7 +52,7 @@ kotlin {
     compilerOptions {
         jvmToolchain(18)
         freeCompilerArgs.add("-Xcontext-receivers")
-        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
+//        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
     sourceSets {
@@ -94,7 +105,7 @@ artifacts {
             if (project.hasProperty("wasmDebug")) {
                 "wasmJsBrowserDevelopmentExecutableDistribution"
             } else {
-                "wasmJsBrowserDistribution"
+                "composeCompatibilityBrowserDistribution"
             }
         )
     )

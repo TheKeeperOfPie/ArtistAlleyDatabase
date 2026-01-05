@@ -5,7 +5,7 @@ plugins {
     id("library-desktop")
     id("library-inject")
     id("library-kotlin")
-    id("library-wasmJs")
+    id("library-web")
     alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
