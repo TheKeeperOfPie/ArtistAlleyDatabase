@@ -1,8 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference
 
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.StringUtils
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.yield
+import kotlin.collections.plus
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -34,15 +36,18 @@ class ArtistInference(
                 ArtistData(
                     id = it.key,
                     names = it.value.map { it.name }.toSet(),
-                    socialLinks = it.value.flatMap { it.socialLinks }.map(LinkModel::parse).toSet(),
-                    storeLinks = it.value.flatMap { it.storeLinks }.map(LinkModel::parse).toSet(),
-                    portfolioLinks = it.value.flatMap { it.portfolioLinks }.map(LinkModel::parse)
+                    socialLinks = it.value.flatMap { it.socialLinks }
+                        .map(LinkModel.Companion::parse).toSet(),
+                    storeLinks = it.value.flatMap { it.storeLinks }.map(LinkModel.Companion::parse)
+                        .toSet(),
+                    portfolioLinks = it.value.flatMap { it.portfolioLinks }
+                        .map(LinkModel.Companion::parse)
                         .toSet(),
                     catalogLinks = it.value.flatMap { it.catalogLinks }.toSet(),
                 )
             }
             .values
-    }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
+    }.shareIn(applicationScope, SharingStarted.Companion.Lazily, replay = 1)
 
     suspend fun hasPreviousYear(artistId: String): Boolean = DataYear.entries.any {
         artistEntryDao.getEntry(it, artistId) != null
@@ -73,6 +78,7 @@ class ArtistInference(
             }
             .filter { it.score > 0.6f }
             .sortedByDescending { it.score }
+            .distinctBy { it.data.id }
             .take(5)
     }
 
@@ -140,7 +146,7 @@ class ArtistInference(
             get() = when (this) {
                 is Link -> "$artistLink -> $matchingInputLink"
                 is Name -> name
-            } + score.toString()
+            }
 
         data class Name(override val data: ArtistData, override val score: Float) : MatchResult
         data class Link(
@@ -171,26 +177,16 @@ class ArtistInference(
             fun captureState(state: ArtistFormState) = Input(
                 name = state.info.name.value.text.toString(),
                 socialLinks = state.links.socialLinks.toList() +
-                        LinkModel.parse(state.links.stateSocialLinks.value.text.toString()),
+                        LinkModel.Companion.parse(state.links.stateSocialLinks.value.text.toString()),
                 storeLinks = state.links.storeLinks.toList() +
-                        LinkModel.parse(state.links.stateStoreLinks.value.text.toString()),
+                        LinkModel.Companion.parse(state.links.stateStoreLinks.value.text.toString()),
                 portfolioLinks = state.links.portfolioLinks.toList() +
-                        LinkModel.parse(state.links.statePortfolioLinks.value.text.toString()),
+                        LinkModel.Companion.parse(state.links.statePortfolioLinks.value.text.toString()),
                 catalogLinks = state.links.catalogLinks.toList() +
                         state.links.stateCatalogLinks.value.text.toString(),
             )
         }
     }
-
-    data class PreviousYearData(
-        val artistId: String,
-        val name: String?,
-        val summary: String?,
-        val socialLinks: List<String>,
-        val storeLinks: List<String>,
-        val seriesInferred: List<String>,
-        val merchInferred: List<String>,
-    )
 
     private class PreviousYearProvider(
         private val dao: ArtistEntryDao,
@@ -257,7 +253,7 @@ class ArtistInference(
                 ?.ifEmpty { animeNyc2024()?.value()?.takeIf { it.isNotBlank() } }
                 ?.ifEmpty { animeExpo2023()?.value()?.takeIf { it.isNotBlank() } }
 
-        suspend fun getData() = PreviousYearData(
+        suspend fun getData() = ArtistPreviousYearData(
             artistId = artistId,
             name = cascadeString { name },
             summary = cascadeString { summary },

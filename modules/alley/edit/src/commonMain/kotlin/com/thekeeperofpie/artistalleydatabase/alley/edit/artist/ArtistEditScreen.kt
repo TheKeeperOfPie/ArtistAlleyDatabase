@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -37,11 +38,13 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
@@ -60,7 +63,8 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_generate_link_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_generate_link_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_request_merge_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_copy
@@ -92,6 +96,11 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistPreviousYearData
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeArtistPrompt
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompt
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompter
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -191,6 +200,7 @@ object ArtistEditScreen {
             onClickSameArtist = viewModel.sameArtistPrompter::onClickSameArtist,
             onDenySameArtist = viewModel.sameArtistPrompter::onDenySameArtist,
             onConfirmSameArtist = viewModel.sameArtistPrompter::onConfirmSameArtist,
+            onConfirmMerge = viewModel::onConfirmMerge,
         )
     }
 
@@ -217,6 +227,7 @@ object ArtistEditScreen {
         onClickSameArtist: (artistId: Uuid) -> Unit,
         onDenySameArtist: () -> Unit,
         onConfirmSameArtist: () -> Unit,
+        onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
@@ -248,6 +259,8 @@ object ArtistEditScreen {
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
         val errorState = rememberErrorState(state.artistFormState)
         var showFormLinkDialog by mutableStateOf(false)
+        var requestedMergingArtist by rememberSaveable { mutableStateOf(false) }
+        val previousYearData by state.previousYearData.collectAsStateWithLifecycle()
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -280,11 +293,15 @@ object ArtistEditScreen {
                             errorState = errorState,
                             saveTaskState = saveTaskState,
                             hasPendingChanges = hasPendingChanges,
+                            hasPreviousYearData = { previousYearData != null },
                             onClickRefresh = onClickRefresh,
                             onClickGenerateFormLink = { showFormLinkDialog = true },
                             onClickHistory = onClickHistory,
                             onClickSave = onClickSave,
                             onClickDone = onClickDone,
+                            onClickRequestMerge = {
+                                requestedMergingArtist = !requestedMergingArtist
+                            },
                         )
                     },
                     modifier = Modifier
@@ -347,8 +364,24 @@ object ArtistEditScreen {
                     }
                 }
 
+                val showMergingArtist by remember { derivedStateOf { requestedMergingArtist && previousYearData != null } }
+                val mergeList = remember {
+                    movableContentOf {
+                        previousYearData?.let {
+                            MergeArtistPrompt(
+                                previousYearData = it,
+                                onConfirmMerge = {
+                                    onConfirmMerge(it)
+                                    requestedMergingArtist = false
+                                },
+                            )
+                        }
+                    }
+                }
+
+                val forceExpandedIfPossible = !sameArtist.isEmpty() || showMergingArtist
                 if (isExpanded &&
-                    (state.artistFormState.images.isNotEmpty() || !sameArtist.isEmpty())
+                    (state.artistFormState.images.isNotEmpty() || forceExpandedIfPossible)
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
@@ -359,7 +392,11 @@ object ArtistEditScreen {
                                 .width(800.dp)
                                 .verticalScroll(rememberScrollState())
                         )
-                        if (sameArtist.isEmpty()) {
+                        if (!sameArtist.isEmpty()) {
+                            sameArtistPrompt()
+                        } else if (showMergingArtist) {
+                            mergeList()
+                        } else {
                             Column {
                                 EditImagesButton(
                                     images = state.artistFormState.images,
@@ -372,8 +409,6 @@ object ArtistEditScreen {
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
-                        } else {
-                            sameArtistPrompt()
                         }
                     }
                 } else {
@@ -385,7 +420,11 @@ object ArtistEditScreen {
                                 .widthIn(max = 960.dp)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            if (sameArtist.isEmpty()) {
+                            if (!sameArtist.isEmpty()) {
+                                sameArtistPrompt()
+                            } else if (showMergingArtist) {
+                                mergeList()
+                            } else {
                                 ImagePager(
                                     images = state.artistFormState.images,
                                     pagerState = imagePagerState,
@@ -394,8 +433,6 @@ object ArtistEditScreen {
                                         // TODO: Open images screen
                                     },
                                 )
-                            } else {
-                                sameArtistPrompt()
                             }
 
                             form(Modifier.fillMaxWidth())
@@ -419,7 +456,9 @@ object ArtistEditScreen {
                     formMetadata = formMetadata,
                     formLink = { formLink },
                     onDismiss = {
-                        onClearFormLink()
+                        if (formLink != null) {
+                            onClearFormLink()
+                        }
                         showFormLinkDialog = false
                     },
                     onClickGenerate = generateFormLink,
@@ -442,17 +481,27 @@ object ArtistEditScreen {
         errorState: ArtistErrorState,
         saveTaskState: TaskState<ArtistSave.Response>,
         hasPendingChanges: () -> Boolean,
+        hasPreviousYearData: () -> Boolean,
         onClickRefresh: () -> Unit,
         onClickGenerateFormLink: () -> Unit,
         onClickHistory: () -> Unit,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
+        onClickRequestMerge: () -> Unit,
     ) {
+        if (hasPreviousYearData()) {
+            TooltipIconButton(
+                icon = Icons.Default.Merge,
+                tooltipText = stringResource(Res.string.alley_edit_artist_action_request_merge_tooltip),
+                onClick = onClickRequestMerge,
+            )
+        }
+
         RefreshButton(hasPendingChanges, onClickRefresh)
 
         TooltipIconButton(
             icon = Icons.Default.AddLink,
-            tooltipText = stringResource(Res.string.alley_edit_artist_action_generate_link_content_description),
+            tooltipText = stringResource(Res.string.alley_edit_artist_action_generate_link_tooltip),
             onClick = onClickGenerateFormLink,
         )
 
@@ -732,6 +781,7 @@ object ArtistEditScreen {
     class State(
         val artistProgress: StateFlow<JobProgress<Unit>>,
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
+        val previousYearData: StateFlow<ArtistPreviousYearData?>,
         val artistFormState: ArtistFormState,
         val formMetadata: StateFlow<FormMetadata?>,
         val formLink: StateFlow<String?>,

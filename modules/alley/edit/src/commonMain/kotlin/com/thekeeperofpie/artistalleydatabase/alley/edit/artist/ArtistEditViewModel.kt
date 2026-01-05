@@ -1,11 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.serialization.saved
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompter
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
@@ -27,7 +32,11 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -71,9 +80,17 @@ class ArtistEditViewModel(
         savedStateHandle = savedStateHandle,
     )
 
+    private val previousYearData =
+        snapshotFlow { artistFormState.editorState.id.value.text.toString() }
+            .mapLatest(Uuid::parseOrNull)
+            .mapLatest { it?.let { artistInference.getPreviousYearData(it) } }
+            .flowOn(dispatchers.io)
+            .stateIn(viewModelScope, SharingStarted.Lazily, null)
+
     val state = ArtistEditScreen.State(
         artistProgress = artistJob.state,
         initialArtist = artist,
+        previousYearData = previousYearData,
         artistFormState = artistFormState,
         formMetadata = formMetadata,
         formLink = formLink,
@@ -146,6 +163,33 @@ class ArtistEditViewModel(
             )
         }
         formLink.value = null
+    }
+
+    fun onConfirmMerge(fieldState: Map<ArtistInferenceField, Boolean>) {
+        val previousYearData = previousYearData.value ?: return
+        val seriesById =
+            tagAutocomplete.seriesById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
+                ?: return
+        val merchById =
+            tagAutocomplete.merchById.replayCache.firstOrNull()?.takeIf { it.isNotEmpty() }
+                ?: return
+
+        val formEntry = artistFormState.captureDatabaseEntry(
+            dataYear = dataYear,
+            verifiedArtist = false, // Shouldn't be used
+        ).second
+
+        val mergeEntry = ArtistInferenceUtils.mergeEntry(
+            formEntry = formEntry,
+            previousYearData = previousYearData,
+            fieldState = fieldState,
+        )
+        artistFormState.applyDatabaseEntry(
+            artist = mergeEntry,
+            seriesById = seriesById,
+            merchById = merchById,
+            mergeBehavior = ArtistFormState.MergeBehavior.APPEND,
+        )
     }
 
     private suspend fun loadFormLink(forceRegenerate: Boolean) = withContext(dispatchers.io) {

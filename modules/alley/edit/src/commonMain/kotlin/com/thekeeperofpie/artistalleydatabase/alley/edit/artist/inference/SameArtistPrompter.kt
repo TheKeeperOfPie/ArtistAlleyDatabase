@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
@@ -6,6 +6,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_add_error_loading_merge
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
@@ -80,7 +81,7 @@ class SameArtistPrompter(
         }
     }
         .flowOn(dispatchers.io)
-        .stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
+        .stateIn(scope, SharingStarted.Companion.WhileSubscribed(), emptyList())
 
     val state = State(inferredArtists = inferredArtists, sameArtist = sameArtist)
 
@@ -105,6 +106,6 @@ class SameArtistPrompter(
     @Stable
     class State(
         val inferredArtists: StateFlow<List<ArtistInference.MatchResult>>,
-        val sameArtist: StateFlow<LoadingResult<ArtistInference.PreviousYearData>>,
+        val sameArtist: StateFlow<LoadingResult<ArtistPreviousYearData>>,
     )
 }

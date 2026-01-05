@@ -16,6 +16,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +27,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -112,6 +116,9 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import coil3.compose.AsyncImage
+import com.composables.core.ScrollAreaScope
+import com.composables.core.VerticalScrollbar
+import com.composeunstyled.Thumb
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
@@ -940,5 +947,27 @@ fun QuestionAnswer(
         }
 
         extraContent()
+    }
+}
+
+@Composable
+fun ScrollAreaScope.PrimaryVerticalScrollbar() {
+    val interactionSource = remember { MutableInteractionSource() }
+    VerticalScrollbar(
+        interactionSource = interactionSource,
+        modifier = Modifier.fillMaxHeight().align(Alignment.TopEnd)
+    ) {
+        val isHovered by interactionSource.collectIsHoveredAsState()
+        val isDragging by interactionSource.collectIsDraggedAsState()
+        Thumb(
+            modifier = Modifier.background(
+                color = if (isHovered or isDragging) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                },
+                shape = RoundedCornerShape(100),
+            ),
+        )
     }
 }

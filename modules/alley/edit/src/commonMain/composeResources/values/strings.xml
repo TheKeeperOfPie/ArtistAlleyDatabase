@@ -60,6 +60,7 @@
     <string name="alley_edit_artist_action_refresh_content_description">Refresh artists</string>
     <string name="alley_edit_artist_edit_action_hide_inferred">Hide inferred</string>
     <string name="alley_edit_artist_edit_action_show_inferred">Show inferred</string>
+    <string name="alley_edit_artist_edit_action_confirm_merge">Confirm merge</string>
 
     <string name="alley_edit_artist_edit_revert_tooltip">Revert field</string>
     <string name="alley_edit_artist_edit_revert_title">Revert %1$s to initial state?</string>
@@ -74,7 +75,8 @@
 
     <string name="alley_edit_artist_action_save_tooltip">Save artist</string>
     <string name="alley_edit_artist_action_save_and_exit_tooltip">Save and exit</string>
-    <string name="alley_edit_artist_action_generate_link_content_description">Generate form link</string>
+    <string name="alley_edit_artist_action_generate_link_tooltip">Generate form link</string>
+    <string name="alley_edit_artist_action_request_merge_tooltip">Merge previous year data</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
 
     <string name="alley_edit_artist_history_action_view_tooltip">View history</string>

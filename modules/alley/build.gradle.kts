@@ -39,6 +39,7 @@ kotlin {
             implementation(compose.material3AdaptiveNavigationSuite)
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
+            implementation(libs.composeunstyled.primitives)
             implementation(libs.filekit.dialogs.compose)
             implementation(libs.human.readable)
             implementation(libs.jetBrainsAndroidX.navigation.compose)

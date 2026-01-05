@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistInference
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
@@ -171,7 +173,7 @@ class ArtistFormViewModel(
         }
     }
 
-    fun onConfirmMerge(fieldState: Map<ArtistFormScreen.ArtistField, Boolean>) {
+    fun onConfirmMerge(fieldState: Map<ArtistInferenceField, Boolean>) {
         val artist = artist.value ?: return
         val previousYearData = previousYearData.value ?: return
         val seriesById =
@@ -182,26 +184,13 @@ class ArtistFormViewModel(
                 ?: return
 
         val formEntry = state.captureDatabaseEntry(artist).second
-        val entryToMerge = formEntry
-            .copy(
-                summary = previousYearData.summary.takeIf {
-                    fieldState[ArtistFormScreen.ArtistField.SUMMARY] ?: false
-                },
-                socialLinks = previousYearData.socialLinks.takeIf {
-                    fieldState[ArtistFormScreen.ArtistField.SOCIAL_LINKS] ?: false
-                }.orEmpty(),
-                storeLinks = previousYearData.storeLinks.takeIf {
-                    fieldState[ArtistFormScreen.ArtistField.STORE_LINKS] ?: false
-                }.orEmpty(),
-                seriesInferred = previousYearData.seriesInferred
-                    .takeIf { fieldState[ArtistFormScreen.ArtistField.SERIES] ?: false }
-                    .orEmpty(),
-                merchInferred = previousYearData.merchInferred
-                    .takeIf { fieldState[ArtistFormScreen.ArtistField.MERCH] ?: false }
-                    .orEmpty(),
-            )
+        val mergeEntry = ArtistInferenceUtils.mergeEntry(
+            formEntry = formEntry,
+            previousYearData = previousYearData,
+            fieldState = fieldState,
+        )
         state.applyDatabaseEntry(
-            artist = entryToMerge,
+            artist = mergeEntry,
             seriesById = seriesById,
             merchById = merchById,
             mergeBehavior = ArtistFormState.MergeBehavior.APPEND,
