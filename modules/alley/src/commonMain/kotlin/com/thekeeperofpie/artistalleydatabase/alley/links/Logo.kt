@@ -14,6 +14,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_art_station
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_big_cartel
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_bluesky
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_cara
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_carrd
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_deviant_art
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_discord
@@ -68,7 +69,7 @@ enum class Logo(
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.NonZero
                 ) {
                     moveTo(51.4f, 123.3f)
                     lineToRelative(8.9f, 15.4f)
@@ -83,7 +84,7 @@ enum class Logo(
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.NonZero
                 ) {
                     moveTo(157.2f, 123.4f)
                     curveToRelative(00f, -2.10f, -0.60f, -4.10f, -1.70f, -5.80f)
@@ -98,7 +99,7 @@ enum class Logo(
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.NonZero
                 ) {
                     moveTo(60.2f, 108.1f)
                     lineTo(108.1f, 108.1f)
@@ -126,7 +127,7 @@ enum class Logo(
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.NonZero
                 ) {
                     moveTo(109.897f, 100.133f)
                     curveToRelative(-3.2750f, -2.1110f, -6.4750f, -4.2650f, -7.1120f, -4.7870f)
@@ -169,7 +170,7 @@ enum class Logo(
             materialPath(
                 fillAlpha = 1.0f,
                 strokeAlpha = 1.0f,
-                pathFillType = PathFillType.Companion.NonZero
+                pathFillType = PathFillType.NonZero
             ) {
                 moveTo(23.931f, 5.298f)
                 curveToRelative(-3.210f, 2.4180f, -6.6630f, 7.320f, -7.9310f, 9.9510f)
@@ -186,6 +187,45 @@ enum class Logo(
                 curveToRelative(3.240f, 0.5530f, 6.8820f, -0.3610f, 7.8810f, -3.9440f)
                 curveToRelative(0.2880f, -1.0310f, 0.7780f, -7.380f, 0.7780f, -8.2370f)
                 curveToRelative(00f, -4.2950f, -3.7530f, -2.9450f, -6.0690f, -1.2010f)
+                close()
+            }
+        }.build()
+    ),
+
+    // https://blog.cara.app/cara-logos
+    CARA(
+        label = Res.string.alley_link_label_cara,
+        ImageVector.Builder(
+            name = "Cara",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 216f,
+            viewportHeight = 216f
+        ).apply {
+            path(
+                stroke = SolidColor(Color.Black),
+                strokeLineWidth = 8f
+            ) {
+                moveTo(212f, 108f)
+                arcTo(104f, 104f, 0f, false, true, 108f, 212f)
+                arcTo(104f, 104f, 0f, false, true, 4f, 108f)
+                arcTo(104f, 104f, 0f, false, true, 212f, 108f)
+                close()
+            }
+            materialPath(
+                fillAlpha = 1.0f,
+                strokeAlpha = 1.0f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(139.544f, 88.537f)
+                lineTo(156.435f, 65.8124f)
+                curveTo(129.61f, 44.5268f, 88.6368f, 45.8605f, 65.0496f, 72.4297f)
+                curveTo(57.2323f, 81.2353f, 52.2065f, 92.7229f, 51.6263f, 106.658f)
+                curveTo(50.8191f, 126.046f, 59.5276f, 144f, 73.1033f, 153.638f)
+                curveTo(98.7823f, 171.867f, 133.354f, 167.468f, 157.997f, 150.187f)
+                lineTo(142.9f, 126.121f)
+                curveTo(124.779f, 140.215f, 91.5073f, 138.872f, 89.208f, 110.685f)
+                curveTo(86.9088f, 82.4968f, 118.067f, 74.4431f, 139.544f, 88.537f)
                 close()
             }
         }.build()
@@ -208,7 +248,7 @@ enum class Logo(
                 materialPath(
                     fillAlpha = 1.0f,
                     strokeAlpha = 1.0f,
-                    pathFillType = PathFillType.Companion.NonZero
+                    pathFillType = PathFillType.NonZero
                 ) {
                     moveTo(57.388827f, 113.55036f)
                     curveToRelative(-0.210f, -0.10660f, -0.46330f, -0.33220f, -0.59270f, -0.52760f)

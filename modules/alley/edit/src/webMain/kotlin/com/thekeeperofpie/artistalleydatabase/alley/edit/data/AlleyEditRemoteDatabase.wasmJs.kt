@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
+import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
@@ -285,7 +286,7 @@ actual class AlleyEditRemoteDatabase(
     )
 
     private fun formLink(accessKey: String): String =
-        Uri.parse(window.location.origin)
+        Uri.parse(if (BuildKonfig.isWasmDebug) window.location.origin else AlleyUtils.formUrl)
             .buildUpon()
             .path("/form/artist")
             .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)

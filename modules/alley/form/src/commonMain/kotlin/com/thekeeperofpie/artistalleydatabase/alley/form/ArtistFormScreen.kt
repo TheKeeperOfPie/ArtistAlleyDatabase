@@ -486,7 +486,10 @@ object ArtistFormScreen {
 
     @Composable
     private fun PrivateKeyPrompt(dataYear: DataYear, onSubmitKey: (String) -> Unit) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize().padding(16.dp)
+        ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -594,8 +597,11 @@ object ArtistFormScreen {
 
     @Composable
     private fun DonePrompt(dataYear: DataYear, onClickEditAgain: () -> Unit) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            OutlinedCard(modifier = Modifier.widthIn(max = 600.dp).padding(16.dp)) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize().padding(16.dp)
+        ) {
+            OutlinedCard(modifier = Modifier.widthIn(max = 600.dp)) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),

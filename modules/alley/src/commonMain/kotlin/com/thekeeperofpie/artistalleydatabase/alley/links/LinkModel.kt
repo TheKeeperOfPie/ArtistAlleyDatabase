@@ -4,6 +4,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_art_station
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_big_cartel
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_bluesky
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_cara
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_carrd
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_deviant_art
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_discord
@@ -32,6 +33,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_th
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tik_tok
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tumblr
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_twitch
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_vgen
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_weebly
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_x
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_you_tube
@@ -44,6 +46,7 @@ val Link.Type.textRes: StringResource
         Link.Type.ART_STATION -> Res.string.alley_link_label_art_station
         Link.Type.BIG_CARTEL -> Res.string.alley_link_label_big_cartel
         Link.Type.BLUESKY -> Res.string.alley_link_label_bluesky
+        Link.Type.CARA -> Res.string.alley_link_label_cara
         Link.Type.CARRD -> Res.string.alley_link_label_carrd
         Link.Type.DEVIANT_ART -> Res.string.alley_link_label_deviant_art
         Link.Type.DISCORD -> Res.string.alley_link_label_discord
@@ -70,6 +73,7 @@ val Link.Type.textRes: StringResource
         Link.Type.TIK_TOK -> Res.string.alley_link_label_tik_tok
         Link.Type.TUMBLR -> Res.string.alley_link_label_tumblr
         Link.Type.TWITCH -> Res.string.alley_link_label_twitch
+        Link.Type.VGEN -> Res.string.alley_link_label_vgen
         Link.Type.WEEBLY -> Res.string.alley_link_label_weebly
         Link.Type.X -> Res.string.alley_link_label_x
         Link.Type.YOU_TUBE -> Res.string.alley_link_label_you_tube
@@ -80,6 +84,7 @@ val Link.Type.textRes: StringResource
 @Serializable
 data class LinkModel(
     val link: String,
+    val type: Link.Type?,
     val logo: Logo?,
     val identifier: String,
 ) {
@@ -87,6 +92,7 @@ data class LinkModel(
         fun parse(uri: String): LinkModel {
             val link = Link.parse(uri) ?: return LinkModel(
                 link = uri,
+                type = null,
                 logo = null,
                 identifier = uri.removePrefix("https://")
                     .removePrefix("www.")
@@ -96,6 +102,7 @@ data class LinkModel(
                 Link.Type.ART_STATION -> Logo.ART_STATION
                 Link.Type.BIG_CARTEL -> Logo.BIG_CARTEL
                 Link.Type.BLUESKY -> Logo.BLUESKY
+                Link.Type.CARA -> Logo.CARA
                 Link.Type.CARRD -> Logo.CARRD
                 Link.Type.DEVIANT_ART -> Logo.DEVIANT_ART
                 Link.Type.DISCORD -> Logo.DISCORD
@@ -123,12 +130,19 @@ data class LinkModel(
                 Link.Type.TUMBLR -> Logo.TUMBLR
                 Link.Type.TWITCH -> Logo.TWITCH
                 Link.Type.WEEBLY -> Logo.WEEBLY
+                Link.Type.VGEN -> Logo.VGEN
                 Link.Type.X -> Logo.X
                 Link.Type.YOU_TUBE -> Logo.YOU_TUBE
                 Link.Type.OTHER_NON_STORE,
-                Link.Type.OTHER_STORE -> null
+                Link.Type.OTHER_STORE,
+                    -> null
             }
-            return LinkModel(link = uri, logo = logo, identifier = link.identifier)
+            return LinkModel(
+                link = uri,
+                type = link.type,
+                logo = logo,
+                identifier = link.identifier,
+            )
         }
     }
 }

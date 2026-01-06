@@ -75,6 +75,7 @@ data class Link(
             parseHost = { it.substringBefore(".bsky.social") },
         ),
         CARRD("carrd.co", parseHost = { it.substringBefore(".carrd.co") }),
+        CARA("cara.app"),
         DEVIANT_ART("deviantart.com"),
         DISCORD("discord.com", "discord.gg", parsePath = { it.substringAfter("invite/") }),
         ETSY(
@@ -111,6 +112,7 @@ data class Link(
             parseHost = { it.substringBefore(".tumblr.com") },
         ),
         TWITCH("twitch.tv"),
+        VGEN("vgen.co"),
         WEEBLY("weebly.com", parseHost = { it.substringBefore(".weebly.com") }),
         X("x.com", "twitter.com"),
         YOU_TUBE("youtube.com", parsePath = {

@@ -31,7 +31,9 @@ internal object ArtistFormHomeScreen {
         Scaffold {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize().padding(it)
+                modifier = Modifier.fillMaxSize()
+                    .padding(it)
+                    .padding(16.dp)
             ) {
                 OutlinedCard(modifier = Modifier.widthIn(max = 960.dp)) {
                     Column(

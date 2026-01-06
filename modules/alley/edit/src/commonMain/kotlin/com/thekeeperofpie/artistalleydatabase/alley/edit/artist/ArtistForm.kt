@@ -97,9 +97,10 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_commis
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
-import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
+import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -116,6 +117,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
@@ -595,7 +597,15 @@ private abstract class ArtistFormScopeImpl(
             itemToSerializedValue = { it.serializedValue },
             itemToCommitted = CommissionModel::parse,
             label = label,
-            predictions = { flowOf(listOf(CommissionModel.Online, CommissionModel.OnSite)) },
+            predictions = {
+                flowOf(
+                    if (it.isBlank()) {
+                        listOf(CommissionModel.Online, CommissionModel.OnSite)
+                    } else {
+                        emptyList()
+                    }
+                )
+            },
             preferPrediction = false,
             additionalHeaderActions = {
                 with(this@ArtistFormScopeImpl) {
@@ -1099,60 +1109,35 @@ object ArtistForm {
             ?.toString()
             ?: link
         val linkModel = LinkModel.parse(fixedLink)
-        when (linkModel.logo) {
-            Logo.BIG_CARTEL,
-            Logo.ETSY,
-            Logo.FAIRE,
-            Logo.GALLERY_NUCLEUS,
-            Logo.GUMROAD,
-            Logo.INPRNT,
-            Logo.ITCH_IO,
-            Logo.REDBUBBLE,
-            Logo.SHOPIFY,
-            Logo.STORENVY,
-            Logo.THREADLESS,
+
+        when (linkModel.type.category) {
+            LinkCategory.PORTFOLIOS -> {
+                if (!state.portfolioLinks.contains(linkModel)) {
+                    state.portfolioLinks += linkModel
+                    state.statePortfolioLinks.lockState = EntryLockState.UNLOCKED
+                }
+            }
+            LinkCategory.SOCIALS,
+            LinkCategory.SUPPORT,
                 -> {
+                if (!state.socialLinks.contains(linkModel)) {
+                    state.socialLinks += linkModel
+                    state.stateSocialLinks.lockState = EntryLockState.UNLOCKED
+                }
+            }
+            LinkCategory.STORES -> {
                 if (!state.storeLinks.contains(linkModel)) {
                     state.storeLinks += linkModel
                     state.stateStoreLinks.lockState = EntryLockState.UNLOCKED
                 }
             }
-
-            Logo.VGEN -> {
-                val commissionModel = CommissionModel.parse(fixedLink)
-                if (!state.commissions.contains(commissionModel)) {
-                    state.commissions += commissionModel
-                    state.stateCommissions.lockState = EntryLockState.UNLOCKED
-                }
-            }
-
-            Logo.ART_STATION,
-            Logo.BLUESKY,
-            Logo.CARRD,
-            Logo.DEVIANT_ART,
-            Logo.DISCORD,
-            Logo.FACEBOOK,
-            Logo.GAME_JOLT,
-            Logo.GITHUB,
-            Logo.INSTAGRAM,
-            Logo.KICKSTARTER,
-            Logo.KO_FI,
-            Logo.LINKTREE,
-            Logo.PATREON,
-            Logo.PIXIV,
-            Logo.SUBSTACK,
-            Logo.THREADS,
-            Logo.TIK_TOK,
-            Logo.TUMBLR,
-            Logo.TWITCH,
-            Logo.WEEBLY,
-            Logo.X,
-            Logo.YOU_TUBE,
-            null,
-                -> {
-                if (!state.socialLinks.contains(linkModel)) {
-                    state.socialLinks += linkModel
-                    state.stateSocialLinks.lockState = EntryLockState.UNLOCKED
+            LinkCategory.OTHER -> {
+                if (linkModel.type == Link.Type.VGEN) {
+                    val commissionModel = CommissionModel.parse(fixedLink)
+                    if (!state.commissions.contains(commissionModel)) {
+                        state.commissions += commissionModel
+                        state.stateCommissions.lockState = EntryLockState.UNLOCKED
+                    }
                 }
             }
         }
