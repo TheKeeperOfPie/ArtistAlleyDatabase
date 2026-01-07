@@ -284,7 +284,7 @@ internal object ArtistListScreen {
                     .sharedElement("name", artist.id)
                     .weight(1f)
                     .padding(
-                        start = if (artist.booth == null) 16.dp else 0.dp,
+                        start = if (artist.booth.isNullOrBlank()) 16.dp else 0.dp,
                         top = 12.dp,
                         bottom = 12.dp,
                     )

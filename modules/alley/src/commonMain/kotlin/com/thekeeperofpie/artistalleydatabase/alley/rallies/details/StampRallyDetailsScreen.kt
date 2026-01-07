@@ -241,7 +241,7 @@ object StampRallyDetailsScreen {
                         values = artists,
                         valueToText = {
                             val booth = it.booth
-                            if (booth == null) {
+                            if (booth.isNullOrBlank()) {
                                 it.name
                             } else {
                                 stringResource(

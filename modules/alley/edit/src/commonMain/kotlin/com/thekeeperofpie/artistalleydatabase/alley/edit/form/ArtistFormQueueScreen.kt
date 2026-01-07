@@ -188,7 +188,7 @@ internal object ArtistFormQueueScreen {
                 modifier = Modifier
                     .weight(1f)
                     .padding(
-                        start = if (booth == null) 16.dp else 0.dp,
+                        start = if (booth.isNullOrBlank()) 16.dp else 0.dp,
                         top = 12.dp,
                         bottom = 12.dp,
                     )

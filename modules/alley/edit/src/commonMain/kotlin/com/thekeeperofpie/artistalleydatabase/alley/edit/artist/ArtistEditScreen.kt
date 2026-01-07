@@ -727,10 +727,13 @@ object ArtistEditScreen {
                 }
             },
             confirmButton = {
-                val countdown by produceState(5) {
-                    (4 downTo 0).forEach {
-                        delay(1.seconds)
-                        value = it
+                val hasFormLink = formMetadata?.hasFormLink == true
+                val countdown by produceState(if (hasFormLink) 5 else 0, hasFormLink) {
+                    if (hasFormLink) {
+                        (4 downTo 0).forEach {
+                            delay(1.seconds)
+                            value = it
+                        }
                     }
                 }
                 if (formLink() == null) {
