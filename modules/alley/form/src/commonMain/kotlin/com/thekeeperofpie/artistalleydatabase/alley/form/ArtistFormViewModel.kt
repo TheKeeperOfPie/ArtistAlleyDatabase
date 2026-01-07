@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.FormTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -48,7 +48,7 @@ class ArtistFormViewModel(
     editDatabase: AlleyEditDatabase,
     private val formDatabase: AlleyFormDatabase,
     seriesImagesStore: SeriesImagesStore,
-    val tagAutocomplete: TagAutocomplete,
+    val tagAutocomplete: FormTagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {

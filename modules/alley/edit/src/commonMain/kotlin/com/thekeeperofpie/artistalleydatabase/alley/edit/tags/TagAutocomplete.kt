@@ -19,16 +19,28 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 
 @SingleIn(AppScope::class)
-@Inject
-class TagAutocomplete(
+open class TagAutocomplete(
     applicationScope: ApplicationScope,
-    database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
+    loadSeries: suspend () -> Map<String, SeriesInfo>,
+    loadMerch: suspend () -> Map<String, MerchInfo>,
 ) {
-    val seriesById = flowFromSuspend { database.loadSeries() }
+    @Inject
+    constructor(
+        applicationScope: ApplicationScope,
+        dispatchers: CustomDispatchers,
+        database: AlleyEditDatabase,
+    ) : this(
+        applicationScope = applicationScope,
+        dispatchers = dispatchers,
+        loadSeries = database::loadSeries,
+        loadMerch = database::loadMerch,
+    )
+
+    val seriesById = flowFromSuspend { loadSeries() }
         .shareIn(applicationScope, SharingStarted.Eagerly, 1)
 
-    val merchById = flowFromSuspend { database.loadMerch() }
+    val merchById = flowFromSuspend { loadMerch() }
         .shareIn(applicationScope, SharingStarted.Eagerly, 1)
 
     fun seriesPredictions(query: String) = when {

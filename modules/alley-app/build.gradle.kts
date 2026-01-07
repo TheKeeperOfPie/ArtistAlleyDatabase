@@ -437,12 +437,15 @@ tasks.register("webRelease") {
         val editJsEdited = editJs.readText()
             .replace("webpackChunkalley_edit", "webpackChunkalley_app")
         editJs.writeText(editJsEdited)
-        listOf("originJsAlley-form.js", "originWasmAlley-form.js").forEach {
-            val formJs = folder.resolve(it)
-            val formJsEdited = formJs.readText()
-                .replace("webpackChunkalley_form", "webpackChunkalley_app")
-            formJs.writeText(formJsEdited)
-        }
+
+        listOf("alley-form.js", "originJsAlley-form.js", "originWasmAlley-form.js")
+            .map(folder::resolve)
+            .filter(File::exists)
+            .forEach {
+                val edited = it.readText()
+                    .replace("webpackChunkalley_form", "webpackChunkalley_app")
+                it.writeText(edited)
+            }
 
         val publicPath = folder.resolve("public").apply { mkdir() }.toPath()
         val filesToKeepInRoot = setOf(
