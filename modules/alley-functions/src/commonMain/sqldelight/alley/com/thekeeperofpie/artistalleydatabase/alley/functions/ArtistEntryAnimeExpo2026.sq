@@ -23,3 +23,7 @@ markArtistHasSubmittedForm:
 UPDATE artistEntryAnimeExpo2026
 SET verifiedArtist = 1
 WHERE id = :artistId;
+
+deleteArtist:
+DELETE FROM artistEntryAnimeExpo2026
+WHERE id = :artistId;

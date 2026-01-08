@@ -252,6 +252,19 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun deleteArtist(
+        dataYear: DataYear,
+        expected: ArtistDatabaseEntry.Impl,
+    ): BackendRequest.ArtistDelete.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.ArtistDelete(dataYear, expected))!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.ArtistDelete.Response.Failed(t.message.orEmpty())
+            }
+        }
+
     actual suspend fun fakeArtistFormLink(): String? =
         withContext(dispatchers.io) {
             val oneTimeKeys = generateOneTimeEncryptionKeys()

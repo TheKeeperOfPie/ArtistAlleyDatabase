@@ -32,7 +32,7 @@ class ArtistListViewModel(
     private val tab = savedStateHandle.getMutableStateFlow("tab", ArtistListTab.ALL)
     private val refreshFlow = RefreshFlow()
     private val artistEntries = combine(dataYear, refreshFlow.updates, ::Pair)
-        .mapLatest { (dataYear) -> database.loadArtists(dataYear) }
+        .mapLatest { (dataYear) -> database.loadArtists(dataYear).reversed() }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val debouncedQuery = snapshotFlow { query.text.toString() }

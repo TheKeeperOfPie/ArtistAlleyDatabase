@@ -86,6 +86,7 @@ class ArtistEditViewModel(
             .mapLatest { it?.let { artistInference.getPreviousYearData(it) } }
             .flowOn(dispatchers.io)
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
+    private val deleteJob = ExclusiveProgressJob(viewModelScope, ::delete)
 
     val state = ArtistEditScreen.State(
         artistProgress = artistJob.state,
@@ -96,6 +97,7 @@ class ArtistEditViewModel(
         formLink = formLink,
         saveTaskState = saveTask.state,
         sameArtistState = sameArtistPrompter.state,
+        deleteProgress = deleteJob.state,
     )
 
     private var hasLoaded by savedStateHandle.saved { false }
@@ -193,8 +195,17 @@ class ArtistEditViewModel(
         )
     }
 
+    fun onConfirmDelete() {
+        val artist = artist.value ?: return
+        deleteJob.launch { artist }
+    }
+
     private suspend fun loadFormLink(forceRegenerate: Boolean) = withContext(dispatchers.io) {
         formLink.value = database.generateFormLink(dataYear, artistId, forceRegenerate)
+    }
+
+    private suspend fun delete(artist: ArtistDatabaseEntry.Impl) = withContext(dispatchers.io) {
+        database.deleteArtist(dataYear, artist)
     }
 
     private fun captureDatabaseEntry(

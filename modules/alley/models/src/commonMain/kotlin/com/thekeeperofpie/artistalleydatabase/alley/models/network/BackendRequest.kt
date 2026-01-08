@@ -81,6 +81,24 @@ sealed interface BackendRequest {
     }
 
     @Serializable
+    data class ArtistDelete(
+        val dataYear: DataYear,
+        val expected: ArtistDatabaseEntry.Impl,
+    ) : BackendRequest, WithResponse<ArtistDelete.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: ArtistDatabaseEntry.Impl?) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
+
+    @Serializable
     data object Artists : BackendRequest, WithResponse<List<ArtistSummary>>
 
     @Serializable

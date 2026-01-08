@@ -62,6 +62,13 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_generate_link_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_request_merge_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_confirm
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_delete
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_failed
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_failed_outdated
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_text
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_copy
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_generate
@@ -113,6 +120,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -198,6 +206,7 @@ object ArtistEditScreen {
             onDenySameArtist = viewModel.sameArtistPrompter::onDenySameArtist,
             onConfirmSameArtist = viewModel.sameArtistPrompter::onConfirmSameArtist,
             onConfirmMerge = viewModel::onConfirmMerge,
+            onConfirmDelete = viewModel::onConfirmDelete,
         )
     }
 
@@ -225,6 +234,7 @@ object ArtistEditScreen {
         onDenySameArtist: () -> Unit,
         onConfirmSameArtist: () -> Unit,
         onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
+        onConfirmDelete: () -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
@@ -251,6 +261,8 @@ object ArtistEditScreen {
                     }
                 }
         }
+
+        DeleteProgressEffect(state.deleteProgress, snackbarHostState, onClickBack)
 
         val windowSizeClass = currentWindowSizeClass()
         val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
@@ -356,6 +368,7 @@ object ArtistEditScreen {
                             hasPendingChanges = hasPendingChanges,
                             onClickMerge = onClickMerge,
                             onClickSameArtist = onClickSameArtist,
+                            onConfirmDelete = onConfirmDelete,
                             forceLocked = { !sameArtist.isEmpty() || showMergingArtist },
                         )
                     },
@@ -430,6 +443,35 @@ object ArtistEditScreen {
                     onClickSave = onClickDone,
                     saveErrorMessage = { errorMessage.takeIf { errorState.hasAnyError } },
                 )
+            }
+        }
+    }
+
+    @Composable
+    fun DeleteProgressEffect(
+        deleteProgress: StateFlow<JobProgress<BackendRequest.ArtistDelete.Response>>,
+        snackbarHostState: SnackbarHostState,
+        onClickBack: (force: Boolean) -> Unit,
+    ) {
+        LaunchedEffect(deleteProgress) {
+            deleteProgress.collectLatest {
+                when (it) {
+                    is JobProgress.Finished.Result<BackendRequest.ArtistDelete.Response> ->
+                        when (it.value) {
+                            is BackendRequest.ArtistDelete.Response.Failed -> snackbarHostState.showSnackbar(
+                                message = getString(Res.string.alley_edit_artist_edit_delete_failed)
+                            )
+                            is BackendRequest.ArtistDelete.Response.Outdated -> snackbarHostState.showSnackbar(
+                                message = getString(Res.string.alley_edit_artist_edit_delete_failed_outdated)
+                            )
+                            BackendRequest.ArtistDelete.Response.Success -> onClickBack(true)
+                        }
+                    is JobProgress.Finished.UnhandledError<*> ->
+                        snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_artist_edit_delete_failed))
+                    is JobProgress.Idle<*>,
+                    is JobProgress.Loading<*>,
+                        -> Unit
+                }
             }
         }
     }
@@ -561,38 +603,49 @@ object ArtistEditScreen {
         hasPendingChanges: () -> Boolean,
         onClickMerge: () -> Unit,
         onClickSameArtist: (artistId: Uuid) -> Unit,
+        onConfirmDelete: () -> Unit,
         forceLocked: () -> Boolean,
     ) {
-
-        val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
-        if (formMetadata?.hasPendingFormSubmission == true) {
-            PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
-        }
-        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
-        val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
-        if (initialArtist == null || artistProgress is JobProgress.Loading) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize().padding(32.dp)
-            ) {
-                CircularWavyProgressIndicator()
+        Column {
+            val formMetadata by state.formMetadata.collectAsStateWithLifecycle()
+            if (formMetadata?.hasPendingFormSubmission == true) {
+                PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
             }
-        } else {
-            PotentialSameArtists(
-                inferredArtists = state.sameArtistState.inferredArtists,
-                onClickSameArtist = onClickSameArtist,
-            )
-            ArtistForm(
-                initialArtist = { initialArtist },
-                state = state.artistFormState,
-                errorState = errorState,
-                seriesById = seriesById,
-                seriesPredictions = seriesPredictions,
-                merchById = merchById,
-                merchPredictions = merchPredictions,
-                seriesImage = seriesImage,
-                forceLocked = forceLocked(),
-            )
+            val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+            val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
+            if (initialArtist == null || artistProgress is JobProgress.Loading) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize().padding(32.dp)
+                ) {
+                    CircularWavyProgressIndicator()
+                }
+            } else {
+                PotentialSameArtists(
+                    inferredArtists = state.sameArtistState.inferredArtists,
+                    onClickSameArtist = onClickSameArtist,
+                )
+                ArtistForm(
+                    initialArtist = { initialArtist },
+                    state = state.artistFormState,
+                    errorState = errorState,
+                    seriesById = seriesById,
+                    seriesPredictions = seriesPredictions,
+                    merchById = merchById,
+                    merchPredictions = merchPredictions,
+                    seriesImage = seriesImage,
+                    forceLocked = forceLocked(),
+                )
+
+                if (formMetadata?.hasPendingFormSubmission != true) {
+                    DeleteButton(
+                        onConfirmDelete = onConfirmDelete,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                }
+            }
         }
     }
 
@@ -785,6 +838,67 @@ object ArtistEditScreen {
         )
     }
 
+    @Composable
+    private fun DeleteButton(onConfirmDelete: () -> Unit, modifier: Modifier = Modifier) {
+        var showDialog by remember { mutableStateOf(false) }
+
+        FilledTonalButton(onClick = { showDialog = true }, modifier = modifier) {
+            Text(stringResource(Res.string.alley_edit_artist_edit_delete_action_delete))
+        }
+
+        var loading by remember { mutableStateOf(false) }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(stringResource(Res.string.alley_edit_artist_edit_delete_title)) },
+                text = { Text(stringResource(Res.string.alley_edit_artist_edit_delete_text)) },
+                confirmButton = {
+                    val countdown by produceState(5) {
+                        (4 downTo 0).forEach {
+                            delay(1.seconds)
+                            value = it
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            if (countdown <= 0) {
+                                loading = true
+                                onConfirmDelete()
+                            }
+                        },
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            val textAlpha by animateFloatAsState(if (countdown <= 0) 1f else 0f)
+                            Text(
+                                text = stringResource(Res.string.alley_edit_artist_edit_delete_action_confirm),
+                                modifier = Modifier.graphicsLayer { alpha = textAlpha }
+                            )
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = countdown > 0,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                Text(countdown.toString())
+                            }
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = loading,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                CircularWavyProgressIndicator()
+                            }
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text(stringResource(Res.string.alley_edit_artist_edit_delete_action_cancel))
+                    }
+                },
+            )
+        }
+    }
+
     @Stable
     class State(
         val artistProgress: StateFlow<JobProgress<Unit>>,
@@ -795,6 +909,7 @@ object ArtistEditScreen {
         val formLink: StateFlow<String?>,
         val saveTaskState: TaskState<ArtistSave.Response>,
         val sameArtistState: SameArtistPrompter.State,
+        val deleteProgress: StateFlow<JobProgress<BackendRequest.ArtistDelete.Response>>,
     ) {
         data class FormMetadata(
             val hasPendingFormSubmission: Boolean,

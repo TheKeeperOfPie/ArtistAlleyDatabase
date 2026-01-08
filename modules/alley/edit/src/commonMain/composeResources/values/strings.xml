@@ -54,6 +54,14 @@
     <string name="alley_edit_artist_edit_form_link_action_cancel">Cancel</string>
     <string name="alley_edit_artist_edit_form_link_action_copy">Copy</string>
 
+    <string name="alley_edit_artist_edit_delete_title">Delete this artist?</string>
+    <string name="alley_edit_artist_edit_delete_text">This cannot be reversed without manually rebuilding the entry from history and directly writing to the database</string>
+    <string name="alley_edit_artist_edit_delete_action_delete">Delete artist</string>
+    <string name="alley_edit_artist_edit_delete_action_cancel">Cancel</string>
+    <string name="alley_edit_artist_edit_delete_action_confirm">Delete</string>
+    <string name="alley_edit_artist_edit_delete_failed">Failed to delete</string>
+    <string name="alley_edit_artist_edit_delete_failed_outdated">Failed to delete, artist was outdated</string>
+
     <string name="alley_edit_artist_action_add_images">Add images</string>
     <string name="alley_edit_artist_action_edit_images">Edit images</string>
     <string name="alley_edit_artist_save_changes_title">Save changes?</string>

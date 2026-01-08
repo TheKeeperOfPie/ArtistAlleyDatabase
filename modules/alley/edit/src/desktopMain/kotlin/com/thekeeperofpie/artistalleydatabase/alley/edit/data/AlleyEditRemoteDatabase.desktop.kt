@@ -376,6 +376,20 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.ArtistCommitForm.Response.Success
     }
 
+    actual suspend fun deleteArtist(
+        dataYear: DataYear,
+        expected: ArtistDatabaseEntry.Impl,
+    ): BackendRequest.ArtistDelete.Response {
+        val artistId = Uuid.parse(expected.id)
+        val currentArtist = loadArtist(dataYear, artistId)
+        if (expected != currentArtist) {
+            return BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
+        }
+
+        artistsByDataYearAndId[dataYear]?.remove(expected.id)
+        return BackendRequest.ArtistDelete.Response.Success
+    }
+
     actual suspend fun fakeArtistFormLink() =
         fakeArtistPrivateKey?.let { "localhost://form/artist?${AlleyCryptography.ACCESS_KEY_PARAM}=$it" }
 

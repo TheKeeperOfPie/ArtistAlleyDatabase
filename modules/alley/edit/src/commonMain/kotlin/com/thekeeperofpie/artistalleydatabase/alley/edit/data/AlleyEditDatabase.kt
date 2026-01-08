@@ -163,6 +163,11 @@ class AlleyEditDatabase(
         formEntryTimestamp = formEntryTimestamp,
     )
 
+    suspend fun deleteArtist(
+        dataYear: DataYear,
+        expected: ArtistDatabaseEntry.Impl,
+    ) = remoteDatabase.deleteArtist(dataYear, expected)
+
     suspend fun fakeArtistFormLink(): String? = remoteDatabase.fakeArtistFormLink()
     suspend fun deleteFakeArtistData() = remoteDatabase.deleteFakeArtistData()
 }

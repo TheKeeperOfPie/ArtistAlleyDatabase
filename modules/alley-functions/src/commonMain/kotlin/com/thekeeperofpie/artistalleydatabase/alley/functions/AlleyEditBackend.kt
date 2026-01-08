@@ -54,15 +54,13 @@ object AlleyEditBackend {
                 when (this) {
                     is ArtistSave.Request -> makeResponse(saveArtist(context, this, null))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
-                    is BackendRequest.ArtistWithFormMetadata -> makeResponse(
-                        loadArtistWithFormMetadata(context, this)
-                    )
-                    is BackendRequest.ArtistCommitForm -> makeResponse(
-                        commitArtistForm(context, this)
-                    )
-                    is BackendRequest.ArtistFormHistory -> makeResponse(
-                        loadArtistFormHistory(context)
-                    )
+                    is BackendRequest.ArtistWithFormMetadata ->
+                        makeResponse(loadArtistWithFormMetadata(context, this))
+                    is BackendRequest.ArtistCommitForm ->
+                        makeResponse(commitArtistForm(context, this))
+                    is BackendRequest.ArtistDelete -> makeResponse(deleteArtist(context, this))
+                    is BackendRequest.ArtistFormHistory ->
+                        makeResponse(loadArtistFormHistory(context))
                     is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
                     is BackendRequest.ArtistWithFormEntry ->
                         makeResponse(loadArtistWithFormEntry(context, this))
@@ -73,7 +71,8 @@ object AlleyEditBackend {
                     is BackendRequest.GenerateFormKey ->
                         makeResponse(generateFormKey(context, this))
                     is BackendRequest.FakeArtistData -> makeResponse(fakeArtistData(context, this))
-                    is BackendRequest.DeleteFakeArtistData -> makeResponse(deleteFakeArtistData(context))
+                    is BackendRequest.DeleteFakeArtistData ->
+                        makeResponse(deleteFakeArtistData(context))
                     is BackendRequest.Merch -> makeResponse(loadMerch(context))
                     is BackendRequest.Series -> loadSeries(context)
                     is ListImages.Request -> makeResponse(listImages(context, this))
@@ -244,6 +243,35 @@ object AlleyEditBackend {
         }
         return BackendRequest.ArtistCommitForm.Response.Success
     }
+
+    private suspend fun deleteArtist(
+        context: EventContext,
+        request: BackendRequest.ArtistDelete,
+    ): BackendRequest.ArtistDelete.Response =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                val database = Databases.editDatabase(context)
+                val currentArtist =
+                    database.artistEntryAnimeExpo2026Queries
+                        .getArtist(request.expected.id)
+                        .awaitAsOneOrNull()
+                        ?.toArtistDatabaseEntry()
+                        ?.fixForJs()
+                if (currentArtist == null || currentArtist != request.expected) {
+                    BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
+                } else {
+                    Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
+                        .deleteArtist(request.expected.id)
+                    BackendRequest.ArtistDelete.Response.Success
+                }
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> BackendRequest.ArtistDelete.Response.Failed("Cannot delete legacy years")
+        }
 
     private suspend fun loadArtistHistory(
         context: EventContext,
