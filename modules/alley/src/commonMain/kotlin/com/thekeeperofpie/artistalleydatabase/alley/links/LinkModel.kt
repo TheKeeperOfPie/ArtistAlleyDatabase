@@ -31,6 +31,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_su
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_threadless
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_threads
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tik_tok
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_toyhouse
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tumblr
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_twitch
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_vgen
@@ -71,6 +72,7 @@ val Link.Type.textRes: StringResource
         Link.Type.THREADLESS -> Res.string.alley_link_label_threadless
         Link.Type.THREADS -> Res.string.alley_link_label_threads
         Link.Type.TIK_TOK -> Res.string.alley_link_label_tik_tok
+        Link.Type.TOYHOUSE -> Res.string.alley_link_label_toyhouse
         Link.Type.TUMBLR -> Res.string.alley_link_label_tumblr
         Link.Type.TWITCH -> Res.string.alley_link_label_twitch
         Link.Type.VGEN -> Res.string.alley_link_label_vgen
@@ -127,6 +129,7 @@ data class LinkModel(
                 Link.Type.THREADLESS -> Logo.THREADLESS
                 Link.Type.THREADS -> Logo.THREADS
                 Link.Type.TIK_TOK -> Logo.TIK_TOK
+                Link.Type.TOYHOUSE -> Logo.TOYHOUSE
                 Link.Type.TUMBLR -> Logo.TUMBLR
                 Link.Type.TWITCH -> Logo.TWITCH
                 Link.Type.WEEBLY -> Logo.WEEBLY

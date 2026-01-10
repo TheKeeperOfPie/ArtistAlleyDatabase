@@ -1,3 +1,5 @@
+@file:Suppress("FloatingPointLiteralPrecision")
+
 package com.thekeeperofpie.artistalleydatabase.alley.links
 
 import androidx.compose.material.icons.materialPath
@@ -40,6 +42,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_link_label_su
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_threadless
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_threads
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tik_tok
+import artistalleydatabase.modules.alley.generated.resources.alley_link_label_toyhouse
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_tumblr
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_twitch
 import artistalleydatabase.modules.alley.generated.resources.alley_link_label_vgen
@@ -1616,7 +1619,14 @@ enum class Logo(
                     moveTo(101.98299f, 156.15525f)
                     curveToRelative(-0.88770f, -0.36560f, -1.71240f, -0.91170f, -2.47840f, -1.6410f)
                     curveToRelative(-0.78450f, -0.74690f, -1.2730f, -1.41470f, -1.72420f, -2.35730f)
-                    curveToRelative(-1.05870f, -2.21150f, -1.06010f, -4.74650f, -0.00380f, -6.95330f)
+                    curveToRelative(
+                        -1.05870f,
+                        -2.21150f,
+                        -1.06010f,
+                        -4.74650f,
+                        -0.00380f,
+                        -6.95330f
+                    )
                     curveToRelative(0.42150f, -0.88060f, 0.80110f, -1.42620f, 1.47810f, -2.12470f)
                     curveToRelative(1.56410f, -1.61360f, 3.27830f, -2.37870f, 5.50880f, -2.45890f)
                     curveToRelative(1.66050f, -0.05970f, 2.99650f, 0.2540f, 4.30040f, 1.00990f)
@@ -1624,7 +1634,14 @@ enum class Logo(
                     curveToRelative(0.20220f, 1.86410f, -0.31860f, 3.85820f, -1.4260f, 5.46020f)
                     curveToRelative(-0.87560f, 1.26660f, -2.5050f, 2.51580f, -3.86070f, 2.95990f)
                     curveToRelative(-0.34050f, 0.11150f, -0.38760f, 0.11250f, -0.54190f, 0.01140f)
-                    curveToRelative(-0.16880f, -0.11060f, -0.16910f, -0.11330f, -0.19150f, -1.68220f)
+                    curveToRelative(
+                        -0.16880f,
+                        -0.11060f,
+                        -0.16910f,
+                        -0.11330f,
+                        -0.19150f,
+                        -1.68220f
+                    )
                     lineToRelative(-0.0225f, -1.57142f)
                     lineToRelative(-0.22991f, -0.40569f)
                     lineToRelative(-0.22991f, -0.4057f)
@@ -1633,7 +1650,14 @@ enum class Logo(
                     curveToRelative(0.52930f, -0.25040f, 1.09820f, -0.78620f, 1.3620f, -1.28270f)
                     curveToRelative(0.33890f, -0.63780f, 0.4640f, -1.21180f, 0.46610f, -2.1380f)
                     curveToRelative(0.0020f, -0.91330f, -0.11490f, -1.32740f, -0.55560f, -1.96810f)
-                    curveToRelative(-0.21240f, -0.30870f, -0.23160f, -0.37410f, -0.17180f, -0.58280f)
+                    curveToRelative(
+                        -0.21240f,
+                        -0.30870f,
+                        -0.23160f,
+                        -0.37410f,
+                        -0.17180f,
+                        -0.58280f
+                    )
                     curveToRelative(0.10160f, -0.35420f, 0.08110f, -1.1170f, -0.04120f, -1.52850f)
                     curveToRelative(-0.10640f, -0.35820f, -0.1140f, -0.36560f, -0.380f, -0.36560f)
                     curveToRelative(-0.38520f, 00f, -0.9240f, 0.18980f, -1.50360f, 0.52950f)
@@ -1653,7 +1677,14 @@ enum class Logo(
                     curveToRelative(-0.0910f, 0.11410f, -0.20350f, 0.35570f, -0.24990f, 0.53690f)
                     curveToRelative(-0.07490f, 0.29230f, -0.11380f, 0.33820f, -0.34580f, 0.40770f)
                     curveToRelative(-0.41250f, 0.12360f, -1.02550f, 0.09690f, -1.32870f, -0.05770f)
-                    curveToRelative(-0.14670f, -0.07480f, -0.37560f, -0.26530f, -0.50870f, -0.42340f)
+                    curveToRelative(
+                        -0.14670f,
+                        -0.07480f,
+                        -0.37560f,
+                        -0.26530f,
+                        -0.50870f,
+                        -0.42340f
+                    )
                     curveToRelative(-0.13310f, -0.1580f, -0.35320f, -0.41930f, -0.4890f, -0.58060f)
                     curveToRelative(-0.39390f, -0.46770f, -1.00120f, -0.67860f, -1.3080f, -0.45430f)
                     curveToRelative(-0.13020f, 0.09520f, -0.12620f, 0.1070f, 0.10220f, 0.29990f)
@@ -3787,6 +3818,84 @@ enum class Logo(
                 verticalLineToRelative(2f)
                 arcToRelative(3f, 3f, 0f, isMoreThanHalf = true, isPositiveArc = false, 3f, 3f)
                 close()
+            }
+        }.build()
+    ),
+
+    // https://logos.fandom.com/wiki/Toyhouse
+    TOYHOUSE(
+        label = Res.string.alley_link_label_toyhouse,
+        icon = ImageVector.Builder(
+            name = "Toyhouse",
+            defaultWidth = 24.dp,
+            defaultHeight = (190.30197 / 197.72693 * 24).dp,
+            viewportWidth = 197.72693f,
+            viewportHeight = 190.30197f
+        ).apply {
+            group(translationX = 6.2923729f, translationY = -54.858845f) {
+                materialPath {
+                    moveToRelative(25.235316f, 199.37525f)
+                    verticalLineToRelative(-45.62577f)
+                    lineToRelative(-15.5442705f, 0.14709f)
+                    lineToRelative(-15.544271f, 0.14709f)
+                    lineToRelative(4.782748f, -4.8583f)
+                    curveTo(2.7529195f, 145.30157f, 61.819528f, 85.740296f, 86.86394f, 60.514516f)
+                    lineToRelative(5.456372f, -5.49588f)
+                    lineToRelative(14.743958f, 14.58057f)
+                    lineToRelative(14.74396f, 14.58057f)
+                    verticalLineToRelative(-7.56333f)
+                    verticalLineToRelative(-7.56334f)
+                    horizontalLineToRelative(15.47813f)
+                    horizontalLineToRelative(15.47813f)
+                    verticalLineToRelative(23.21651f)
+                    verticalLineToRelative(23.216514f)
+                    lineToRelative(19.11546f, 19.11682f)
+                    lineToRelative(19.11546f, 19.11683f)
+                    horizontalLineToRelative(-16.07275f)
+                    horizontalLineToRelative(-16.07275f)
+                    verticalLineToRelative(45.64062f)
+                    verticalLineToRelative(45.64063f)
+                    horizontalLineTo(92.042609f)
+                    horizontalLineTo(25.235316f)
+                    close()
+                    moveToRelative(83.608334f, 19.16744f)
+                    verticalLineToRelative(-14.55208f)
+                    horizontalLineToRelative(12.83229f)
+                    horizontalLineToRelative(12.83229f)
+                    verticalLineToRelative(14.2875f)
+                    verticalLineToRelative(14.2875f)
+                    horizontalLineToRelative(4.7625f)
+                    horizontalLineToRelative(4.7625f)
+                    verticalLineToRelative(-30.9625f)
+                    verticalLineToRelative(-30.96249f)
+                    lineToRelative(-4.56406f, 0.0724f)
+                    lineToRelative(-4.56406f, 0.0724f)
+                    lineToRelative(-0.0687f, 12.76615f)
+                    lineToRelative(-0.0687f, 12.76614f)
+                    horizontalLineToRelative(-12.96202f)
+                    horizontalLineToRelative(-12.96204f)
+                    verticalLineToRelative(-12.9646f)
+                    verticalLineToRelative(-12.96458f)
+                    horizontalLineTo(81.591567f)
+                    horizontalLineTo(54.339483f)
+                    verticalLineToRelative(4.36562f)
+                    verticalLineToRelative(4.36563f)
+                    horizontalLineToRelative(8.202084f)
+                    horizontalLineToRelative(8.202083f)
+                    verticalLineToRelative(26.85521f)
+                    verticalLineToRelative(26.8552f)
+                    horizontalLineToRelative(5.55625f)
+                    horizontalLineToRelative(5.55625f)
+                    verticalLineToRelative(-26.9875f)
+                    verticalLineToRelative(-26.9875f)
+                    horizontalLineToRelative(8.863542f)
+                    horizontalLineToRelative(8.863542f)
+                    verticalLineToRelative(27.1198f)
+                    verticalLineToRelative(27.11979f)
+                    horizontalLineToRelative(4.630206f)
+                    horizontalLineToRelative(4.63021f)
+                    close()
+                }
             }
         }.build()
     ),

@@ -17,6 +17,7 @@ val Link.Type?.category: LinkCategory
         Link.Type.DEVIANT_ART,
         Link.Type.LINKTREE,
         Link.Type.PIXIV,
+        Link.Type.TOYHOUSE,
         Link.Type.WEEBLY,
             -> LinkCategory.PORTFOLIOS
 

@@ -104,8 +104,9 @@ data class Link(
         STORENVY("storenvy.com", parseHost = { it.substringBefore(".storenvy.com") }),
         SUBSTACK("substack.com", parseHost = { it.substringBefore(".substack.com") }),
         THREADLESS("threadless.com", parseHost = { it.substringBefore(".threadless.com") }),
-        THREADS("threads.net"),
+        THREADS("threads.com", "threads.net"),
         TIK_TOK("tiktok.com"),
+        TOYHOUSE("toyhou.se"),
         TUMBLR(
             "tumblr.com",
             parsePath = { it.removePrefix("blog/") },
