@@ -260,7 +260,7 @@ object AlleyEditBackend {
                 if (currentArtist == null || currentArtist != request.expected) {
                     BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
                 } else {
-                    Databases.editDatabase(context).artistEntryAnimeExpo2026Queries
+                    database.artistEntryAnimeExpo2026Queries
                         .deleteArtist(request.expected.id)
                     BackendRequest.ArtistDelete.Response.Success
                 }

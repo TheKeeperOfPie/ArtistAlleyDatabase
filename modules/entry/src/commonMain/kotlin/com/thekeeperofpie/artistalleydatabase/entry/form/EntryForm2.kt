@@ -774,18 +774,11 @@ private fun OpenSectionField(
     supportingText: (@Composable () -> Unit)? = null,
     isError: Boolean = false,
 ) {
+    // TODO: Keyboard action removed, breaks text paste on web
     val isBlank by remember { derivedStateOf { state.text.isBlank() } }
     OutlinedTextField(
         state = state,
         readOnly = lockState()?.editable == false,
-        keyboardOptions = KeyboardOptions(imeAction = if (isBlank) ImeAction.Next else ImeAction.Done),
-        onKeyboardAction = {
-            if (isBlank) {
-                onNext()
-            } else {
-                onDone(false)
-            }
-        },
         lineLimits = TextFieldLineLimits.SingleLine,
         label = label?.let { { it() } },
         inputTransformation = inputTransformation,
