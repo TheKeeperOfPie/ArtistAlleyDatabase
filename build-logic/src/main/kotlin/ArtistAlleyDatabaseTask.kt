@@ -129,29 +129,29 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
                 database.mutationQueries.getAllArtistEntryAnimeExpo2026()
                     .executeAsList()
-                    .forEach {
+                    .forEachIndexed { index, artist ->
                         val images =
-                            findArtistImages(imageCacheDir, DataYear.ANIME_EXPO_2026, it.id)
-                        val updatedImages = it.images.map { original ->
+                            findArtistImages(imageCacheDir, DataYear.ANIME_EXPO_2026, artist.id)
+                        val updatedImages = artist.images.map { original ->
                             images.first { it.name.contains(original.name) }
                         }
 
-                        val inference = ArtistInferenceProvider(database, it.id)
-                        val socialLinks = it.socialLinks.ifEmpty { inference.socialLinks }
-                        val storeLinks = it.storeLinks.ifEmpty { inference.storeLinks }
-                        val seriesInferred = it.seriesInferred.ifEmpty { inference.seriesInferred }
-                        val merchInferred = it.merchInferred.ifEmpty { inference.merchInferred }
+                        val inference = ArtistInferenceProvider(database, artist.id)
+                        val socialLinks = artist.socialLinks.ifEmpty { inference.socialLinks }
+                        val storeLinks = artist.storeLinks.ifEmpty { inference.storeLinks }
+                        val seriesInferred = artist.seriesInferred.ifEmpty { inference.seriesInferred }
+                        val merchInferred = artist.merchInferred.ifEmpty { inference.merchInferred }
 
                         val (linkFlags, linkFlags2) = Link.parseFlags(
                             socialLinks = socialLinks,
                             storeLinks = storeLinks,
-                            portfolioLinks = it.portfolioLinks,
-                            catalogLinks = it.catalogLinks,
+                            portfolioLinks = artist.portfolioLinks,
+                            catalogLinks = artist.catalogLinks,
                         )
-                        val commissionFlags = CommissionType.parseFlags(it.commissions)
+                        val commissionFlags = CommissionType.parseFlags(artist.commissions)
 
                         database.mutationQueries.updateArtistEntryAnimeExpo2026(
-                            it.copy(
+                            artist.copy(
                                 socialLinks = socialLinks,
                                 storeLinks = storeLinks,
                                 seriesInferred = seriesInferred,
@@ -160,6 +160,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 linkFlags2 = linkFlags2,
                                 commissionFlags = commissionFlags,
                                 images = updatedImages,
+                                counter = index.toLong() + 1000L,
                             )
                         ).await()
                     }
