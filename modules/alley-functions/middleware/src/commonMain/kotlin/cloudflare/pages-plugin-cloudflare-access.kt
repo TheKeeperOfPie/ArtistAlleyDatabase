@@ -21,6 +21,4 @@ external interface EventContext<Env> {
     fun next(request: Request): Promise<Response>
 }
 
-external interface Env {
-    val IS_PRODUCTION: Boolean
-}
+external interface Env

@@ -12,15 +12,6 @@ kv_namespaces = [
 ]
 
 [placement]
-mode = "off"
-
-[vars]
-IS_PRODUCTION = false
-
-[env.production.vars]
-IS_PRODUCTION = true
-
-[env.production.placement]
 mode = "smart"
 
 [[d1_databases]]
