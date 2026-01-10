@@ -727,7 +727,7 @@ private fun SectionHeader(
                 .padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
         ) {
             CompositionLocalProvider(
-                LocalTextStyle provides MaterialTheme.typography.labelLarge
+                LocalTextStyle provides MaterialTheme.typography.titleMediumEmphasized
             ) {
                 text()
             }

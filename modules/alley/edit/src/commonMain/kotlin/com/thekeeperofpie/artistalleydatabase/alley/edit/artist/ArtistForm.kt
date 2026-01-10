@@ -20,10 +20,15 @@ import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Diversity3
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -118,6 +123,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
+import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
@@ -375,7 +381,9 @@ private abstract class ArtistFormScopeImpl(
         val revertDialogState = rememberRevertDialogState(initialArtist?.booth)
         SingleTextSection(
             state = state,
-            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_booth)) },
+            headerText = {
+                HeaderIconAndTitle(Icons.Default.TableRestaurant, Res.string.alley_edit_artist_edit_booth)
+            },
             inputTransformation = InputTransformation.maxLength(3).allCaps(Locale.current),
             outputTransformation = revertDialogState.outputTransformation,
             label = label,
@@ -398,7 +406,9 @@ private abstract class ArtistFormScopeImpl(
         val revertDialogState = rememberRevertDialogState(initialArtist?.name)
         SingleTextSection(
             state = state,
-            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_name)) },
+            headerText = {
+                HeaderIconAndTitle(Icons.Default.Badge, Res.string.alley_edit_artist_edit_name)
+            },
             outputTransformation = revertDialogState.outputTransformation,
             label = label,
             additionalHeaderActions = {
@@ -419,7 +429,9 @@ private abstract class ArtistFormScopeImpl(
         val revertDialogState = rememberRevertDialogState(initialArtist?.summary)
         SingleTextSection(
             state = state,
-            headerText = { Text(stringResource(Res.string.alley_edit_artist_edit_summary)) },
+            headerText = {
+                HeaderIconAndTitle(CustomIcons.TextAd, Res.string.alley_edit_artist_edit_summary)
+            },
             outputTransformation = revertDialogState.outputTransformation,
             label = label,
             additionalHeaderActions = {
@@ -473,6 +485,12 @@ private abstract class ArtistFormScopeImpl(
         ArtistForm.LinksSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_social_links,
+            header = {
+                HeaderIconAndTitle(
+                    Icons.Default.Diversity3,
+                    Res.string.alley_edit_artist_edit_social_links
+                )
+            },
             listRevertDialogState =
                 rememberListRevertDialogState(initialArtist?.socialLinks?.map(LinkModel::parse)),
             items = links,
@@ -491,6 +509,12 @@ private abstract class ArtistFormScopeImpl(
         ArtistForm.LinksSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_store_links,
+            header = {
+                HeaderIconAndTitle(
+                    Icons.Default.Store,
+                    Res.string.alley_edit_artist_edit_store_links
+                )
+            },
             listRevertDialogState =
                 rememberListRevertDialogState(initialArtist?.storeLinks?.map(LinkModel::parse)),
             items = storeLinks,
@@ -509,6 +533,12 @@ private abstract class ArtistFormScopeImpl(
         ArtistForm.LinksSection(
             state = state,
             title = Res.string.alley_edit_artist_edit_portfolio_links,
+            header = {
+                HeaderIconAndTitle(
+                    CustomIcons.GalleryThumbnail,
+                    Res.string.alley_edit_artist_edit_portfolio_links
+                )
+            },
             listRevertDialogState =
                 rememberListRevertDialogState(initialArtist?.portfolioLinks?.map(LinkModel::parse)),
             items = portfolioLinks,
@@ -527,7 +557,12 @@ private abstract class ArtistFormScopeImpl(
         val revertDialogState = rememberListRevertDialogState(initialArtist?.catalogLinks)
         ArtistForm.MultiTextSection(
             state = state,
-            title = Res.string.alley_edit_artist_edit_catalog_links,
+            header = {
+                HeaderIconAndTitle(
+                    CustomIcons.Browse,
+                    Res.string.alley_edit_artist_edit_catalog_links
+                )
+            },
             initialItems = initialArtist?.catalogLinks,
             items = catalogLinks,
             itemToText = { it },
@@ -574,7 +609,12 @@ private abstract class ArtistFormScopeImpl(
             }
         ArtistForm.MultiTextSection(
             state = state,
-            title = Res.string.alley_edit_artist_edit_commissions,
+            header = {
+                HeaderIconAndTitle(
+                    Icons.Default.Brush,
+                    Res.string.alley_edit_artist_edit_commissions
+                )
+            },
             items = commissions,
             initialItems = initialCommissions,
             leadingIcon = {
@@ -664,6 +704,12 @@ private abstract class ArtistFormScopeImpl(
         ArtistForm.SeriesSection(
             state = state.stateInferred,
             title = Res.string.alley_edit_artist_edit_series_inferred,
+            header = {
+                HeaderIconAndTitle(
+                    CustomIcons.TvGen,
+                    Res.string.alley_edit_artist_edit_series_inferred
+                )
+            },
             listRevertDialogState = revertDialogStateInferred,
             items = state.inferred,
             showItems = { showSeriesInferred },
@@ -690,6 +736,12 @@ private abstract class ArtistFormScopeImpl(
             ArtistForm.SeriesSection(
                 state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_series_confirmed,
+                header = {
+                    HeaderIconAndTitle(
+                        CustomIcons.TvGen,
+                        Res.string.alley_edit_artist_edit_series_confirmed
+                    )
+                },
                 listRevertDialogState = revertDialogStateConfirmed,
                 items = state.confirmed,
                 predictions = seriesPredictions,
@@ -717,7 +769,12 @@ private abstract class ArtistFormScopeImpl(
         val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
         ArtistForm.MultiTextSection(
             state = state.stateInferred,
-            title = Res.string.alley_edit_artist_edit_merch_inferred,
+            header = {
+                HeaderIconAndTitle(
+                    CustomIcons.Package2,
+                    Res.string.alley_edit_artist_edit_merch_inferred
+                )
+            },
             initialItems = initialInferred,
             equalsComparison = { it.name },
             items = state.inferred,
@@ -763,7 +820,12 @@ private abstract class ArtistFormScopeImpl(
             val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
             ArtistForm.MultiTextSection(
                 state = state.stateConfirmed,
-                title = Res.string.alley_edit_artist_edit_merch_confirmed,
+                header = {
+                    HeaderIconAndTitle(
+                        CustomIcons.Package2,
+                        Res.string.alley_edit_artist_edit_merch_confirmed
+                    )
+                },
                 initialItems = initialConfirmed,
                 equalsComparison = { it.name },
                 items = state.confirmed,
@@ -788,7 +850,7 @@ private abstract class ArtistFormScopeImpl(
 
             ListFieldRevertDialog(
                 dialogState = revertDialogStateConfirmed,
-                label = Res.string.alley_edit_artist_edit_merch_inferred,
+                label = Res.string.alley_edit_artist_edit_merch_confirmed,
                 items = state.confirmed,
                 itemsToText = { it.joinToString { it.name } },
             )
@@ -805,7 +867,7 @@ private abstract class ArtistFormScopeImpl(
         val revertDialogState = rememberRevertDialogState(initialValue)
         LongTextSection(
             state = state,
-            headerText = { Text(stringResource(header)) },
+            headerText = { HeaderIconAndTitle(Icons.AutoMirrored.Default.Notes, header) },
             label = label,
             outputTransformation = revertDialogState.outputTransformation,
             additionalHeaderActions = {
@@ -815,6 +877,17 @@ private abstract class ArtistFormScopeImpl(
             },
         )
         FieldRevertDialog(revertDialogState, state, header)
+    }
+
+    @Composable
+    private fun HeaderIconAndTitle(icon: ImageVector, title: StringResource) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(imageVector = icon, contentDescription = null)
+            Text(stringResource(title))
+        }
     }
 
     @Composable
@@ -1147,7 +1220,7 @@ object ArtistForm {
     @Composable
     internal fun <T> MultiTextSection(
         state: EntryForm2.SingleTextState,
-        title: StringResource,
+        header: @Composable () -> Unit,
         initialItems: List<T>?,
         items: SnapshotStateList<T>,
         showItems: () -> Boolean = { true },
@@ -1166,7 +1239,7 @@ object ArtistForm {
     ) {
         MultiTextSection(
             state = state,
-            title = title,
+            header = header,
             items = items,
             showItems = showItems,
             entryPredictions = predictions,
@@ -1248,6 +1321,7 @@ object ArtistForm {
     internal fun SeriesSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
+        header: @Composable () -> Unit,
         listRevertDialogState: ListRevertDialogState<SeriesInfo>,
         items: SnapshotStateList<SeriesInfo>,
         showItems: () -> Boolean = { true },
@@ -1257,7 +1331,7 @@ object ArtistForm {
     ) {
         MultiTextSection(
             state = state,
-            title = title,
+            header = header,
             items = items,
             itemToCommitted = SeriesInfo::fake,
             showItems = showItems,
@@ -1356,7 +1430,7 @@ object ArtistForm {
     @Composable
     internal fun <T> MultiTextSection(
         state: EntryForm2.SingleTextState,
-        title: StringResource,
+        header: @Composable () -> Unit,
         items: SnapshotStateList<T>,
         showItems: () -> Boolean = { true },
         itemToCommitted: ((String) -> T)? = null,
@@ -1375,7 +1449,7 @@ object ArtistForm {
             rememberAddUniqueErrorState(state = state, items = items, sortValue = sortValue)
         MultiTextSection(
             state = state,
-            headerText = { Text(stringResource(title)) },
+            headerText = header,
             items = items.takeIf { showItems() },
             onItemCommitted = if (itemToCommitted != null) {
                 {
@@ -1425,6 +1499,7 @@ object ArtistForm {
     internal fun LinksSection(
         state: EntryForm2.SingleTextState,
         title: StringResource,
+        header: @Composable () -> Unit,
         listRevertDialogState: ListRevertDialogState<LinkModel>,
         items: SnapshotStateList<LinkModel>,
         label: @Composable (() -> Unit)?,
@@ -1432,7 +1507,7 @@ object ArtistForm {
     ) {
         MultiTextSection(
             state = state,
-            title = title,
+            header = header,
             items = items,
             itemToCommitted = LinkModel::parse,
             removeLastItem = { items.removeLastOrNull()?.link },
