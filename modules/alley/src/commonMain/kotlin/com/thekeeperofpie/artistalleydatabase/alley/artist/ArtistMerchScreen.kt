@@ -45,8 +45,10 @@ object ArtistMerchScreen {
         }
         val navigationController = LocalNavigationController.current
         val merchEntry by artistMerchViewModel.merchEntry.collectAsStateWithLifecycle()
+        val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
+            series = { series },
             sortFilterState = sortFilterController.state,
             eventSink = { artistSearchViewModel.onEvent(navigationController, it) },
             onClickBack = onClickBack,

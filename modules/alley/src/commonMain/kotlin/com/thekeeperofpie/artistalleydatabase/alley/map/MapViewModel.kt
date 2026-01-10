@@ -363,18 +363,10 @@ class MapViewModel(
 
     suspend fun tableEntry(year: DataYear, artistId: String) =
         artistEntryDao.getEntry(year, artistId)?.let {
-            val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
-                randomSeed = randomSeed,
-                showOnlyConfirmedTags = false,
-                entry = it,
-                seriesEntryCache = seriesEntryCache,
-            )
             ArtistEntryGridModel.buildFromEntry(
                 randomSeed = randomSeed,
                 showOnlyConfirmedTags = false, // This shouldn't matter here
                 entry = it,
-                series = series,
-                hasMoreSeries = hasMoreSeries,
                 showOutdatedCatalogs = false,
                 fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
             )

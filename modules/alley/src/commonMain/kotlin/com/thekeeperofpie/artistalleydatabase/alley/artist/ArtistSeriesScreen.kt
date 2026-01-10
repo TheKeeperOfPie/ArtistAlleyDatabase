@@ -51,8 +51,10 @@ object ArtistSeriesScreen {
         val navigationController = LocalNavigationController.current
         val seriesEntry by artistSeriesViewModel.seriesEntry.collectAsStateWithLifecycle()
         val seriesImage by artistSeriesViewModel.seriesImage.collectAsStateWithLifecycle()
+        val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
+            series = { series },
             sortFilterState = sortFilterController.state,
             eventSink = { artistSearchViewModel.onEvent(navigationController, it) },
             onClickBack = onClickBack,

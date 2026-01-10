@@ -38,8 +38,8 @@ import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
@@ -107,6 +107,7 @@ fun ArtistTitle(
 @Composable
 fun ArtistListRow(
     entry: ArtistEntryGridModel,
+    series: () -> Map<String, GetSeriesTitles>,
     onFavoriteToggle: (Boolean) -> Unit,
     onSeriesClick: (String) -> Unit,
     onMoreClick: () -> Unit,
@@ -194,8 +195,9 @@ fun ArtistListRow(
         }
 
         if (entry.series.isNotEmpty()) {
+            val series = series()
             SeriesRow(
-                series = entry.series,
+                series = entry.series.mapNotNull { series[it] },
                 hasMoreSeries = entry.hasMoreSeries,
                 onSeriesClick = onSeriesClick,
                 onMoreClick = onMoreClick,
@@ -208,7 +210,7 @@ private val chipHeightModifier = Modifier.height(24.dp)
 
 @Composable
 private fun SeriesRow(
-    series: List<SeriesInfo>,
+    series: List<GetSeriesTitles>,
     onSeriesClick: (String) -> Unit,
     hasMoreSeries: Boolean,
     onMoreClick: () -> Unit,

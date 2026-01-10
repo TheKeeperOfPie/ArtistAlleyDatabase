@@ -57,7 +57,7 @@ class ArtistSearchViewModel(
     private val artistEntryDao: ArtistEntryDao,
     dispatchers: CustomDispatchers,
     private val merchEntryDao: MerchEntryDao,
-    private val seriesEntryCache: SeriesEntryCache,
+    val seriesEntryCache: SeriesEntryCache,
     private val seriesEntryDao: SeriesEntryDao,
     private val seriesImagesStore: SeriesImagesStore,
     private val userEntryDao: UserEntryDao,
@@ -195,18 +195,10 @@ class ArtistSearchViewModel(
                 }
                 .map {
                     it.mapOnIO {
-                        val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
-                            randomSeed = randomSeed,
-                            showOnlyConfirmedTags = searchQuery.filterParams.showOnlyConfirmedTags,
-                            entry = it,
-                            seriesEntryCache = seriesEntryCache,
-                        )
                         ArtistEntryGridModel.buildFromEntry(
                             randomSeed = randomSeed,
                             showOnlyConfirmedTags = searchQuery.filterParams.showOnlyConfirmedTags,
                             entry = it,
-                            series = series,
-                            hasMoreSeries = hasMoreSeries,
                             showOutdatedCatalogs = searchQuery.filterParams.showOutdatedCatalogs,
                             fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                         )

@@ -6,9 +6,7 @@ import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryCache
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -17,7 +15,7 @@ import kotlin.random.Random
 class ArtistEntryGridModel(
     val artist: ArtistEntry,
     val userEntry: ArtistUserEntry,
-    val series: List<SeriesInfo>,
+    val series: List<String>,
     val hasMoreSeries: Boolean,
     val merch: List<String>,
     val hasMoreMerch: Boolean,
@@ -41,26 +39,10 @@ class ArtistEntryGridModel(
     companion object {
         const val TAGS_TO_SHOW = 5
 
-        internal suspend fun getSeriesAndHasMore(
-            randomSeed: Int,
-            showOnlyConfirmedTags: Boolean,
-            entry: ArtistWithUserData,
-            seriesEntryCache: SeriesEntryCache,
-        ): Pair<List<SeriesInfo>, Boolean> {
-            val seriesIds = entry.artist.seriesConfirmed.toMutableList()
-            if (!showOnlyConfirmedTags && seriesIds.size < TAGS_TO_SHOW) {
-                seriesIds += entry.artist.seriesInferred
-            }
-            val idsToQuery = seriesIds.shuffled(Random(randomSeed)).take(TAGS_TO_SHOW)
-            return seriesEntryCache.getSeries(idsToQuery) to (seriesIds.size > TAGS_TO_SHOW)
-        }
-
         fun buildFromEntry(
             randomSeed: Int,
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
-            series: List<SeriesInfo>,
-            hasMoreSeries: Boolean,
             showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
             fallbackCatalog: Pair<DataYear, List<CatalogImage>>?,
         ): ArtistEntryGridModel {
@@ -69,6 +51,12 @@ class ArtistEntryGridModel(
             if (!showOnlyConfirmedTags && merch.size < TAGS_TO_SHOW) {
                 merch = merch + entry.artist.merchInferred.shuffled(random)
             }
+
+            var series = entry.artist.seriesConfirmed.shuffled(random)
+            if (!showOnlyConfirmedTags && series.size < TAGS_TO_SHOW) {
+                series = series + entry.artist.seriesInferred.shuffled(random)
+            }
+
             val images = AlleyImageUtils.getArtistImages(
                 year = entry.artist.year,
                 images = entry.artist.images,
@@ -77,9 +65,9 @@ class ArtistEntryGridModel(
             return ArtistEntryGridModel(
                 artist = entry.artist,
                 userEntry = entry.userEntry,
-                series = series,
-                hasMoreSeries = hasMoreSeries,
-                merch = merch,
+                series = series.take(TAGS_TO_SHOW),
+                hasMoreSeries = series.size > TAGS_TO_SHOW,
+                merch = merch.take(TAGS_TO_SHOW),
                 hasMoreMerch = merch.size > TAGS_TO_SHOW,
                 images = images,
                 fallbackImages = fallbackCatalog?.second?.takeIf { showOutdatedCatalogs }.orEmpty(),

@@ -59,6 +59,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_search_title_results_suffix
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
@@ -71,7 +72,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterData
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
-import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -107,9 +107,11 @@ object ArtistSearchScreen {
         }
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         val navigationController = LocalNavigationController.current
+        val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
             sortFilterState = sortFilterController.state,
+            series = { series },
             eventSink = { viewModel.onEvent(navigationController, it) },
             onClickBack,
             header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
@@ -122,6 +124,7 @@ object ArtistSearchScreen {
     operator fun invoke(
         state: State,
         sortFilterState: SortFilterState<*>,
+        series: () -> Map<String, GetSeriesTitles>,
         eventSink: (Event) -> Unit,
         onClickBack: (() -> Unit)?,
         header: @Composable () -> Unit,
@@ -172,6 +175,7 @@ object ArtistSearchScreen {
                 itemRow = { entry, onFavoriteToggle, modifier ->
                     ArtistListRow(
                         entry = entry,
+                        series = series,
                         onFavoriteToggle = onFavoriteToggle,
                         onSeriesClick = { eventSink(Event.OpenSeries(it)) },
                         onMoreClick = {
@@ -189,6 +193,7 @@ object ArtistSearchScreen {
                     TableCell(
                         row = row,
                         column = column,
+                        series = series,
                         onEntryClick = { entry, imageIndex ->
                             eventSink(
                                 Event.SearchEvent(SearchScreen.Event.OpenEntry(entry, imageIndex))
@@ -254,7 +259,9 @@ object ArtistSearchScreen {
 
     @Composable
     fun TableCell(
-        row: ArtistEntryGridModel?, column: ArtistColumn,
+        row: ArtistEntryGridModel?,
+        column: ArtistColumn,
+        series: () -> Map<String, GetSeriesTitles>,
         onEntryClick: (ArtistEntryGridModel, imageIndex: Int) -> Unit,
         onSeriesClick: (String) -> Unit,
         onMerchClick: (String) -> Unit,
@@ -278,8 +285,9 @@ object ArtistSearchScreen {
             ArtistColumn.SERIES -> {
                 val shuffledSeries = row?.series
                 val languageOption = LocalLanguageOptionMedia.current
-                val seriesNames = remember(row?.series, languageOption) {
-                    shuffledSeries?.map { it.name(languageOption) }
+                val series = series()
+                val seriesNames = remember(row?.series, series, languageOption) {
+                    shuffledSeries?.map { series[it]?.name(languageOption) ?: it }
                 }
                 TagsCell(
                     column = column,
@@ -335,19 +343,20 @@ object ArtistSearchScreen {
                             )
                             CommissionModel.Online,
                             CommissionModel.OnSite,
-                            is CommissionModel.Unknown-> TooltipBox(
-                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                                        positioning = TooltipAnchorPosition.Below,
-                                        spacingBetweenTooltipAndAnchor = 0.dp,
-                                    ),
-                                    tooltip = { PlainTooltip { Text(it.tooltip()) } },
-                                    state = rememberTooltipState(),
-                                ) {
-                                    CommissionChip(
-                                        model = it,
-                                        label = { Text(it.text()) },
-                                    )
-                                }
+                            is CommissionModel.Unknown,
+                                -> TooltipBox(
+                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                    positioning = TooltipAnchorPosition.Below,
+                                    spacingBetweenTooltipAndAnchor = 0.dp,
+                                ),
+                                tooltip = { PlainTooltip { Text(it.tooltip()) } },
+                                state = rememberTooltipState(),
+                            ) {
+                                CommissionChip(
+                                    model = it,
+                                    label = { Text(it.text()) },
+                                )
+                            }
                         }
                     }
                 }
@@ -483,9 +492,6 @@ object ArtistSearchScreen {
                     randomSeed = 1,
                     showOnlyConfirmedTags = false,
                     entry = it,
-                    series = it.artist.seriesInferred.take(ArtistEntryGridModel.TAGS_TO_SHOW)
-                        .map { previewSeriesWithUserData(it).series },
-                    hasMoreSeries = true,
                     showOutdatedCatalogs = true,
                     fallbackCatalog = null,
                 )
@@ -520,6 +526,7 @@ object ArtistSearchScreen {
                 MutableStateFlow(Unit),
                 MutableStateFlow(false)
             ),
+            series = { emptyMap() },
             eventSink = {},
             onClickBack = {},
             header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },

@@ -61,6 +61,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_mer
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
+import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -121,6 +122,7 @@ object FavoritesScreen {
         onNavigateToMerch: () -> Unit,
     ) {
         val navigationController = LocalNavigationController.current
+        val series by favoritesViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         FavoritesScreen(
             state = remember(favoritesViewModel) {
                 State(
@@ -143,6 +145,7 @@ object FavoritesScreen {
                     merchEntries = favoritesViewModel.merchEntries,
                 )
             },
+            series = { series },
             artistSortFilterState = artistSortFilterController.state,
             stampRallySortFilterState = stampRallySortFilterController.state,
             artistsScrollStateSaver = artistsScrollStateSaver,
@@ -166,6 +169,7 @@ object FavoritesScreen {
     @Composable
     operator fun invoke(
         state: State,
+        series: () -> Map<String, GetSeriesTitles>,
         artistSortFilterState: SortFilterState<*>,
         stampRallySortFilterState: SortFilterState<*>,
         artistsScrollStateSaver: ScrollStateSaver,
@@ -243,6 +247,7 @@ object FavoritesScreen {
                             searchState = state.artistsSearchState,
                             horizontalScrollState = horizontalScrollState,
                             entries = artistsEntries,
+                            series = series,
                             eventSink = eventSink,
                             scaffoldPadding = PaddingValues(top = it.calculateTopPadding()),
                             onHorizontalScrollBarWidth = { horizontalScrollBarWidth = it },
@@ -342,6 +347,7 @@ object FavoritesScreen {
         searchState: SearchScreen.State<ArtistSearchScreen.ArtistColumn>,
         horizontalScrollState: ScrollState,
         entries: LazyPagingItems<ArtistEntryGridModel>,
+        series: () -> Map<String, GetSeriesTitles>,
         eventSink: (Event) -> Unit,
         scaffoldPadding: PaddingValues,
         onHorizontalScrollBarWidth: (Int) -> Unit,
@@ -365,6 +371,7 @@ object FavoritesScreen {
             itemRow = { entry, onFavoriteToggle, modifier ->
                 ArtistListRow(
                     entry = entry,
+                    series = series,
                     onFavoriteToggle = {
                         if (it) {
                             onFavoriteToggle(it)
@@ -394,6 +401,7 @@ object FavoritesScreen {
                 ArtistSearchScreen.TableCell(
                     row = row,
                     column = column,
+                    series = series,
                     onEntryClick = { entry, imageIndex ->
                         eventSink(
                             Event.SearchEvent(

@@ -24,6 +24,9 @@ LEFT OUTER JOIN seriesUserEntry
 ON seriesEntry.uuid = seriesUserEntry.seriesId
 WHERE id IN :ids;
 
+getSeriesTitles:
+SELECT id, titlePreferred, titleEnglish, titleRomaji, titleNative FROM seriesEntry;
+
 getBoothsBySeriesId2024:
 SELECT artistEntry2024.booth FROM artistSeriesConnection
 INNER JOIN artistEntry2024 ON (artistSeriesConnection.artistId = artistEntry2024.id)

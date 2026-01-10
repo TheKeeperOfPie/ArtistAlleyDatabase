@@ -1,30 +1,21 @@
 package com.thekeeperofpie.artistalleydatabase.alley.series
 
-import androidx.collection.LruCache
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 
+@SingleIn(AppScope::class)
 @Inject
 class SeriesEntryCache(
+    scope: ApplicationScope,
     private val seriesEntryDao: SeriesEntryDao,
 ) {
-    val cache = LruCache<String, SeriesInfo>(500)
-
-    suspend fun getSeries(ids: List<String>): List<SeriesInfo> {
-        val missing = mutableListOf<String>()
-        val cachedSeries = mutableListOf<SeriesInfo>()
-        ids.forEach {
-            val cached = cache[it]
-            if (cached != null) {
-                cachedSeries += cached
-            } else {
-                missing += it
-            }
-        }
-        val queried = seriesEntryDao.getSeriesByIds(missing)
-            .onEach { cache.put(it.id, it) }
-        return ids.mapNotNull { id ->
-            cachedSeries.find { it.id == id } ?: queried.find { it.id == id }
-        }
-    }
+    val series = flowFromSuspend {
+        seriesEntryDao.getSeriesTitles().associateBy { it.id }
+    }.stateIn(scope, SharingStarted.Eagerly, emptyMap())
 }

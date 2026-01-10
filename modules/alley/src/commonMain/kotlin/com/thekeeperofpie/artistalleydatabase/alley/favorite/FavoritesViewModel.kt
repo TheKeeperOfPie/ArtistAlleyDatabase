@@ -73,7 +73,7 @@ class FavoritesViewModel(
     artistEntryDao: ArtistEntryDao,
     stampRallyEntryDao: StampRallyEntryDao,
     merchEntryDao: MerchEntryDao,
-    seriesEntryCache: SeriesEntryCache,
+    val seriesEntryCache: SeriesEntryCache,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     userEntryDao: UserEntryDao,
@@ -176,18 +176,10 @@ class FavoritesViewModel(
             .map { it.filterOnIO { !it.userEntry.ignored || !filterParams.hideIgnored } }
             .map {
                 it.mapOnIO {
-                    val (series, hasMoreSeries) = ArtistEntryGridModel.getSeriesAndHasMore(
-                        randomSeed = randomSeed,
-                        showOnlyConfirmedTags = showOnlyConfirmedTags,
-                        entry = it,
-                        seriesEntryCache = seriesEntryCache,
-                    )
                     ArtistEntryGridModel.buildFromEntry(
                         randomSeed = randomSeed,
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
-                        series = series,
-                        hasMoreSeries = hasMoreSeries,
                         showOutdatedCatalogs = filterParams.showOutdatedCatalogs,
                         fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                     )

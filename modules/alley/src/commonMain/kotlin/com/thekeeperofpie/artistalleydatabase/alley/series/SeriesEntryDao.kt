@@ -329,6 +329,8 @@ class SeriesEntryDao(
 
     suspend fun getSeries() = seriesDao().getSeries().awaitAsList()
 
+    suspend fun getSeriesTitles() = seriesDao().getSeriesTitles().awaitAsList()
+
     private fun getFilteredSourcesStatement(
         seriesFilterParams: SeriesSortFilterController.FilterParams,
         sourceKey: String = "source",
