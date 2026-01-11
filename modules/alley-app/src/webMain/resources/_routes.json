@@ -1,5 +1,5 @@
 {
   "version": 1,
   "include": ["/edit/api/*", "/form/api/*"],
-  "exclude": []
+  "exclude": ["/form/api/login"]
 }

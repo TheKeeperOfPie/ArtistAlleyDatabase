@@ -113,7 +113,7 @@ private fun Content(graph: ArtistAlleyFormGraph) {
             LocalWindowConfiguration provides windowConfiguration,
         ) {
             ArtistAlleyFormApp(graph = graph, navStack = navStack, onOpenForm = {
-                window.open(window.location.origin + "/form/login?openForm=true", "_self")
+                window.open(window.location.origin + "/form/api/login?openForm=true", "_self")
             })
 
             val scope = rememberCoroutineScope()
