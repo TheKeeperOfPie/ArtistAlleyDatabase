@@ -8,6 +8,7 @@ import java.io.File
 import java.lang.ProcessBuilder
 import java.util.Properties
 import java.util.concurrent.TimeUnit
+import kotlin.IllegalStateException
 import kotlin.time.Clock
 
 val RELEASE_FLAG = true
@@ -61,12 +62,21 @@ if (WRITE_BACKUP) {
     )
 }
 
-fun runCommand(vararg params: String) =
-    ProcessBuilder(params.toList())
+fun runCommand(vararg params: String) {
+    val process = ProcessBuilder(params.toList())
         .inheritIO()
         .redirectErrorStream(true)
         .start()
-        .waitFor(30, TimeUnit.SECONDS)
+    val exited = process.waitFor(30, TimeUnit.SECONDS)
+    if (!exited) {
+        throw IllegalStateException("Command failed to exit")
+    }
+
+    val exitValue = process.exitValue()
+    if (exitValue != 0) {
+        throw IllegalStateException("Failed to run command: $exitValue")
+    }
+}
 
 fun runWranglerCommand(vararg params: String) =
     runCommand(
