@@ -65,6 +65,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -80,6 +81,7 @@ import coil3.decode.BlackholeDecoder
 import coil3.request.CachePolicy
 import coil3.request.Disposable
 import coil3.request.ImageRequest
+import coil3.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.WrappedViewConfiguration
@@ -134,6 +136,7 @@ fun ImagePager(
     forceMinHeight: Boolean = true,
     imageContentScale: ContentScale = ContentScale.FillWidth,
     multiZoomableState: MultiZoomableState = rememberMultiZoomableState(images.size),
+    downsample: Boolean = false,
 ) {
     val scope = rememberCoroutineScope()
     Box(modifier = modifier) {
@@ -156,6 +159,7 @@ fun ImagePager(
 
         var anySuccess by remember { mutableStateOf(false) }
 
+        val targetSizeWidth = Dimension(LocalWindowInfo.current.containerSize.width / 2)
         CompositionLocalProvider(LocalViewConfiguration provides newViewConfiguration) {
             var minHeight by remember { mutableIntStateOf(0) }
             val density = LocalDensity.current
@@ -202,9 +206,17 @@ fun ImagePager(
                             val width = image.width
                             val height = image.height
                             val isFillWidth = imageContentScale == ContentScale.FillWidth
+
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalPlatformContext.current)
-                                    .data(image.coilImageModel)
+                                    .data(image)
+                                    .run {
+                                        if (downsample) {
+                                            size(targetSizeWidth, Dimension.Undefined)
+                                        } else {
+                                            this
+                                        }
+                                    }
                                     .memoryCacheKey(image.coilImageModel.toString())
                                     .build(),
                                 contentScale = imageContentScale,
@@ -262,7 +274,7 @@ fun ImagePager(
                 images.forEach {
                     disposables += imageLoader.enqueue(
                         ImageRequest.Builder(context)
-                            .data(it.coilImageModel)
+                            .data(it)
                             .memoryCachePolicy(CachePolicy.DISABLED)
                             .decoderFactory(blackholeFactory)
                             .build()
@@ -423,7 +435,7 @@ fun ImageGrid(
                     val size = cachedDimensions[image]
                     AsyncImage(
                         model = ImageRequest.Builder(LocalPlatformContext.current)
-                            .data(image.coilImageModel)
+                            .data(image)
                             .placeholderMemoryCacheKey(image.coilImageModel.toString())
                             .build(),
                         contentScale = ContentScale.FillWidth,

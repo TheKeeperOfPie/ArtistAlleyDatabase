@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalWasmJsInterop::class, ExperimentalCoilApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import androidx.compose.material3.SnackbarDuration
@@ -19,19 +21,24 @@ import artistalleydatabase.modules.alley_app.generated.resources.service_worker_
 import artistalleydatabase.modules.alley_app.generated.resources.service_worker_waiting_for_reload
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
+import coil3.size.Precision
 import coil3.toUri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsDecoder
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsFetcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
+import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.time.Duration.Companion.seconds
 
 private lateinit var artistImageCache: ArtistImageCache
@@ -43,17 +50,19 @@ fun App(component: ArtistAlleyWebComponent) {
     SingletonImageLoader.setSafe { context ->
         ImageLoader.Builder(context)
             .crossfade(false)
+            .precision(Precision.INEXACT)
             .components {
                 add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                     data.toString().toUri()
                 })
+                add(ImageWithDimensionsFetcher.factory)
+                add(ImageWithDimensionsDecoder::create)
             }
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizeBytes(1000 * 1024 * 1024)
                     .build()
             }
-            .crossfade(true)
             .build()
     }
 

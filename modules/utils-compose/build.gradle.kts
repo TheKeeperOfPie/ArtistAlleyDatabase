@@ -71,6 +71,11 @@ kotlin {
                 implementation(libs.human.readable)
             }
         }
+        webMain {
+            dependencies {
+                implementation(libs.coil3.coil.network.ktor3)
+            }
+        }
     }
 }
 

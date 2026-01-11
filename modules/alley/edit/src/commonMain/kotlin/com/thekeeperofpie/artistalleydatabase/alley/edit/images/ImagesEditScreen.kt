@@ -194,7 +194,7 @@ object ImagesEditScreen {
                                     val width = image.width
                                     val height = image.height
                                     AsyncImage(
-                                        model = image.coilImageModel,
+                                        model = image,
                                         contentDescription = null,
                                         modifier = Modifier
                                             .width(240.dp)

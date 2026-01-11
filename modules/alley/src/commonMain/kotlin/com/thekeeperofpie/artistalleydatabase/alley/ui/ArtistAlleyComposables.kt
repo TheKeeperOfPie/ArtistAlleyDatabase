@@ -192,6 +192,7 @@ fun <EntryModel : SearchEntryModel> ItemCard(
                 pagerState = pagerState,
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
+                downsample = true,
             )
             if (showingFallback) {
                 ImageFallbackBanner(
@@ -256,6 +257,7 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
                 clipCorners = false,
+                downsample = true,
             )
 
             if (showingFallback) {
@@ -445,7 +447,7 @@ internal fun <Image : ImageWithDimensions> SmallImageGrid(
     ) {
         itemsIndexed(images) { index, image ->
             AsyncImage(
-                model = image.coilImageModel,
+                model = image,
                 contentScale = ContentScale.FillWidth,
                 contentDescription = stringResource(Res.string.alley_artist_catalog_image),
                 modifier = Modifier

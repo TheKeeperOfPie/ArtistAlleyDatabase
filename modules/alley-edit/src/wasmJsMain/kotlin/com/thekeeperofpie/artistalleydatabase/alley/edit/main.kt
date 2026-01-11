@@ -26,9 +26,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsDecoder
+import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsFetcher
 import dev.zacsweers.metro.createGraphFactory
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
@@ -69,10 +72,15 @@ fun main() {
                     add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                         data.toString().toUri()
                     })
+                    add(Mapper<ImageWithDimensions, PlatformImageKey> { data, _ ->
+                        data.coilImageModel as? PlatformImageKey
+                    })
                     add(Mapper<PlatformImageKey, PlatformFile> { data, _ ->
                         PlatformImageCache[data]
                     })
                     addPlatformFileSupport()
+                    add(ImageWithDimensionsFetcher.factory)
+                    add(ImageWithDimensionsDecoder::create)
                 }
                 .memoryCache {
                     MemoryCache.Builder()
