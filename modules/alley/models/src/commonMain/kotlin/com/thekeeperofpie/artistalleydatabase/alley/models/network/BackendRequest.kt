@@ -57,6 +57,20 @@ sealed interface BackendRequest {
     }
 
     @Serializable
+    data class ArtistWithHistoricalFormEntry(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val formTimestamp: Instant,
+    ) : BackendRequest, WithResponse<ArtistWithHistoricalFormEntry.Response> {
+
+        @Serializable
+        data class Response(
+            val artist: ArtistDatabaseEntry.Impl,
+            val formDiff: ArtistEntryDiff,
+        )
+    }
+
+    @Serializable
     data class ArtistHistory(val dataYear: DataYear, val artistId: Uuid) : BackendRequest,
         WithResponse<List<ArtistHistoryEntry>>
 

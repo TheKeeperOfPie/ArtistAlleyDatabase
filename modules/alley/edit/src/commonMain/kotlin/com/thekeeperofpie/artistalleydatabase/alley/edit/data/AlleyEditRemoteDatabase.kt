@@ -60,6 +60,11 @@ expect class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response?
+    suspend fun loadArtistWithHistoricalFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        formTimestamp: Instant,
+    ): BackendRequest.ArtistWithHistoricalFormEntry.Response?
 
     suspend fun saveArtistAndClearFormEntry(
         dataYear: DataYear,

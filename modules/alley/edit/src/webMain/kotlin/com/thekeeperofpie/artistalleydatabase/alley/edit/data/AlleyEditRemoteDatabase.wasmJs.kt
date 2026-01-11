@@ -230,6 +230,26 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun loadArtistWithHistoricalFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        formTimestamp: Instant,
+    ): BackendRequest.ArtistWithHistoricalFormEntry.Response? =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.ArtistWithHistoricalFormEntry(
+                        dataYear = dataYear,
+                        artistId = artistId,
+                        formTimestamp = formTimestamp,
+                    )
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
+        }
+
     actual suspend fun saveArtistAndClearFormEntry(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl,

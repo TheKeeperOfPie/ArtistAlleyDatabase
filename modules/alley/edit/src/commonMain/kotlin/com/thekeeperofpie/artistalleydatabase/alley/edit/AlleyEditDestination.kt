@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @Serializable
@@ -26,6 +27,13 @@ sealed interface AlleyEditDestination : NavKey {
 
     @Serializable
     data class ArtistEdit(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
+
+    @Serializable
+    data class ArtistFormHistory(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val formTimestamp: Instant,
+    ) : AlleyEditDestination
 
     @Serializable
     data class ArtistFormMerge(val dataYear: DataYear, val artistId: Uuid) : AlleyEditDestination
@@ -111,6 +119,8 @@ sealed interface AlleyEditDestination : NavKey {
             is ArtistEdit -> "artist/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ArtistFormMerge -> "artist/merge/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.artistId.toString())
+            is ArtistFormHistory -> "artist/form/history${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
             is ArtistFormQueue -> "queue"
             is ArtistHistory -> "artist/history/${Uri.encode(destination.dataYear.serializedName)}/" +

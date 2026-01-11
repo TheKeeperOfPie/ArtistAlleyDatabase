@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
@@ -209,6 +210,15 @@ private fun entryProvider(
             onClickDebugForm = onDebugOpenForm,
         )
     }
+    sharedElementEntry<AlleyEditDestination.ArtistFormHistory> { route ->
+        ArtistFormHistoryScreen(
+            dataYear = route.dataYear,
+            artistId = route.artistId,
+            formTimestamp = route.formTimestamp,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
+    }
     sharedElementEntry<AlleyEditDestination.ArtistFormMerge> { route ->
         ArtistFormMergeScreen(
             dataYear = route.dataYear,
@@ -226,6 +236,16 @@ private fun entryProvider(
                     AlleyEditDestination.ArtistFormMerge(
                         dataYear = DataYear.ANIME_EXPO_2026,
                         artistId = it,
+                    )
+                )
+            },
+            onSelectHistoryEntry = { artistId, formTimestamp ->
+                // TODO: Support other conventions?
+                navStack.navigate(
+                    AlleyEditDestination.ArtistFormHistory(
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                        artistId = artistId,
+                        formTimestamp = formTimestamp,
                     )
                 )
             },

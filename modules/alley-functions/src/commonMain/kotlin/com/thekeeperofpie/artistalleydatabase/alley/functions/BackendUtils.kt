@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 internal fun ArtistDatabaseEntry.Impl.fixForJs() =
@@ -43,6 +44,67 @@ internal object BackendUtils {
         val formEntry = Databases.formDatabase(context)
             .artistFormEntryQueries
             .getFormEntry(dataYear, artistId)
+            .awaitAsOneOrNull()
+            ?: return null
+        return ArtistEntryDiff(
+            booth = formEntry.afterBooth.orEmpty()
+                .takeIf { it != formEntry.beforeBooth.orEmpty() },
+            name = formEntry.afterName.orEmpty()
+                .takeIf { it != formEntry.beforeName.orEmpty() },
+            summary = formEntry.afterSummary.orEmpty()
+                .takeIf { it != formEntry.beforeSummary.orEmpty() },
+            notes = formEntry.afterNotes.orEmpty()
+                .takeIf { it != formEntry.beforeNotes.orEmpty() },
+            socialLinks = ArtistEntryDiff.diffList(
+                formEntry.beforeSocialLinks,
+                formEntry.afterSocialLinks
+            ),
+            storeLinks = ArtistEntryDiff.diffList(
+                formEntry.beforeStoreLinks,
+                formEntry.afterStoreLinks
+            ),
+            portfolioLinks = ArtistEntryDiff.diffList(
+                formEntry.beforePortfolioLinks,
+                formEntry.afterPortfolioLinks
+            ),
+            catalogLinks = ArtistEntryDiff.diffList(
+                formEntry.beforeCatalogLinks,
+                formEntry.afterCatalogLinks
+            ),
+            commissions = ArtistEntryDiff.diffList(
+                formEntry.beforeCommissions,
+                formEntry.afterCommissions
+            ),
+            seriesInferred = ArtistEntryDiff.diffList(
+                formEntry.beforeSeriesInferred,
+                formEntry.afterSeriesInferred
+            ),
+            seriesConfirmed = ArtistEntryDiff.diffList(
+                formEntry.beforeSeriesConfirmed,
+                formEntry.afterSeriesConfirmed
+            ),
+            merchInferred = ArtistEntryDiff.diffList(
+                formEntry.beforeMerchInferred,
+                formEntry.afterMerchInferred
+            ),
+            merchConfirmed = ArtistEntryDiff.diffList(
+                formEntry.beforeMerchConfirmed,
+                formEntry.afterMerchConfirmed
+            ),
+            formNotes = formEntry.formNotes.orEmpty(),
+            timestamp = formEntry.timestamp,
+        )
+    }
+
+    suspend fun loadFormHistoryDiff(
+        context: EventContext,
+        dataYear: DataYear,
+        artistId: Uuid,
+        timestamp: Instant,
+    ): ArtistEntryDiff? {
+        val formEntry = Databases.formDatabase(context)
+            .artistFormEntryQueries
+            .getFormHistoryEntry(dataYear, artistId, timestamp)
             .awaitAsOneOrNull()
             ?: return null
         return ArtistEntryDiff(

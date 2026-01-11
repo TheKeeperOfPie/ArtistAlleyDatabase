@@ -50,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 internal object ArtistFormQueueScreen {
@@ -58,6 +59,7 @@ internal object ArtistFormQueueScreen {
     operator fun invoke(
         graph: ArtistAlleyEditGraph,
         onSelectEntry: (artistId: Uuid) -> Unit,
+        onSelectHistoryEntry: (artistId: Uuid, formTimestamp: Instant) -> Unit,
         viewModel: ArtistFormQueueViewModel = viewModel {
             graph.artistFormQueueViewModelFactory.create(createSavedStateHandle())
         },
@@ -69,6 +71,7 @@ internal object ArtistFormQueueScreen {
             history = { history },
             onRefresh = viewModel::refresh,
             onSelectEntry = onSelectEntry,
+            onSelectHistoryEntry = onSelectHistoryEntry,
         )
     }
 
@@ -78,6 +81,7 @@ internal object ArtistFormQueueScreen {
         history: () -> List<ArtistFormHistoryEntry>,
         onRefresh: () -> Unit,
         onSelectEntry: (artistId: Uuid) -> Unit,
+        onSelectHistoryEntry: (artistId: Uuid, formTimestamp: Instant) -> Unit,
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -152,6 +156,7 @@ internal object ArtistFormQueueScreen {
                                     ArtistRow(
                                         booth = it.booth,
                                         name = it.name ?: it.artistId.toString(),
+                                        modifier = Modifier.clickable { onSelectHistoryEntry(it.artistId, it.timestamp) }
                                     )
                                     HorizontalDivider()
                                 }

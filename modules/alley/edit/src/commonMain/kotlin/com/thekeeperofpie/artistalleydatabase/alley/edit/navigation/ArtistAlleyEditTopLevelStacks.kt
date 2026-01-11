@@ -33,6 +33,7 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyEditDestination.Admin.serializer())
             subclass(serializer = AlleyEditDestination.ArtistAdd.serializer())
             subclass(serializer = AlleyEditDestination.ArtistEdit.serializer())
+            subclass(serializer = AlleyEditDestination.ArtistFormHistory.serializer())
             subclass(serializer = AlleyEditDestination.ArtistFormMerge.serializer())
             subclass(serializer = AlleyEditDestination.ArtistFormQueue.serializer())
             subclass(serializer = AlleyEditDestination.ArtistHistory.serializer())

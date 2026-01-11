@@ -64,6 +64,8 @@ object AlleyEditBackend {
                     is BackendRequest.ArtistFormQueue -> makeResponse(loadArtistFormQueue(context))
                     is BackendRequest.ArtistWithFormEntry ->
                         makeResponse(loadArtistWithFormEntry(context, this))
+                    is BackendRequest.ArtistWithHistoricalFormEntry ->
+                        makeResponse(loadArtistWithHistoricalFormEntry(context, this))
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
@@ -207,6 +209,19 @@ object AlleyEditBackend {
             ?: return null
 
         return BackendRequest.ArtistWithFormEntry.Response(artist = artist, formDiff = formDiff)
+    }
+
+    private suspend fun loadArtistWithHistoricalFormEntry(
+        context: EventContext,
+        request: BackendRequest.ArtistWithHistoricalFormEntry,
+    ): BackendRequest.ArtistWithHistoricalFormEntry.Response? {
+        val artist = BackendUtils.loadArtist(context, request.dataYear, request.artistId)
+            ?: return null
+
+        val formDiff = BackendUtils.loadFormHistoryDiff(context, request.dataYear, request.artistId, request.formTimestamp)
+            ?: return null
+
+        return BackendRequest.ArtistWithHistoricalFormEntry.Response(artist = artist, formDiff = formDiff)
     }
 
     private suspend fun commitArtistForm(

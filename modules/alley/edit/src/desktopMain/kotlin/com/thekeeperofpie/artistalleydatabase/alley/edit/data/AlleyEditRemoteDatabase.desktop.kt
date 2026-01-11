@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
@@ -322,36 +321,22 @@ actual class AlleyEditRemoteDatabase(
         dataYear: DataYear,
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response? {
-        val (before, after, formNotes, timestamp) = artistFormQueue[artistId] ?: return null
+        val formSubmission = artistFormQueue[artistId] ?: return null
         return BackendRequest.ArtistWithFormEntry.Response(
             artist = loadArtist(dataYear, artistId) ?: return null,
-            formDiff = ArtistEntryDiff(
-                booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
-                name = after.name.orEmpty().takeIf { it != before.name.orEmpty() },
-                summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
-                notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
-                socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
-                storeLinks = ArtistEntryDiff.diffList(before.storeLinks, after.storeLinks),
-                portfolioLinks = ArtistEntryDiff.diffList(
-                    before.portfolioLinks,
-                    after.portfolioLinks
-                ),
-                catalogLinks = ArtistEntryDiff.diffList(before.catalogLinks, after.catalogLinks),
-                commissions = ArtistEntryDiff.diffList(before.commissions, after.commissions),
-                seriesInferred = ArtistEntryDiff.diffList(
-                    before.seriesInferred,
-                    after.seriesInferred
-                ),
-                seriesConfirmed =
-                    ArtistEntryDiff.diffList(before.seriesConfirmed, after.seriesConfirmed),
-                merchInferred = ArtistEntryDiff.diffList(before.merchInferred, after.merchInferred),
-                merchConfirmed = ArtistEntryDiff.diffList(
-                    before.merchConfirmed,
-                    after.merchConfirmed
-                ),
-                formNotes = formNotes,
-                timestamp = timestamp,
-            )
+            formDiff = formSubmission.toArtistEntryDiff(),
+        )
+    }
+
+    actual suspend fun loadArtistWithHistoricalFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        formTimestamp: Instant,
+    ): BackendRequest.ArtistWithHistoricalFormEntry.Response? {
+        val formSubmission = findFormHistoryEntry(dataYear, artistId, formTimestamp) ?: return null
+        return BackendRequest.ArtistWithHistoricalFormEntry.Response(
+            artist = loadArtist(dataYear, artistId) ?: return null,
+            formDiff = formSubmission.toArtistEntryDiff(),
         )
     }
 
@@ -362,7 +347,9 @@ actual class AlleyEditRemoteDatabase(
         formEntryTimestamp: Instant,
     ): BackendRequest.ArtistCommitForm.Response {
         val artistId = Uuid.parse(updated.id)
-        if (artistFormQueue[artistId]?.timestamp == formEntryTimestamp) {
+        if (artistFormQueue[artistId]?.timestamp == formEntryTimestamp ||
+            findFormHistoryEntry(dataYear, artistId, formEntryTimestamp) != null
+        ) {
             saveArtist(
                 dataYear = dataYear,
                 initial = initial,
@@ -401,6 +388,42 @@ actual class AlleyEditRemoteDatabase(
     }
 
     private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
+
+    private fun findFormHistoryEntry(dataYear: DataYear, artistId: Uuid, formTimestamp: Instant) =
+        artistFormHistory.find {
+            it.after.year == dataYear &&
+                    it.after.id == artistId.toString() &&
+                    it.timestamp == formTimestamp
+        }
+
+    private fun FormSubmission.toArtistEntryDiff() =
+        ArtistEntryDiff(
+            booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
+            name = after.name.orEmpty().takeIf { it != before.name.orEmpty() },
+            summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
+            notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
+            socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
+            storeLinks = ArtistEntryDiff.diffList(before.storeLinks, after.storeLinks),
+            portfolioLinks = ArtistEntryDiff.diffList(
+                before.portfolioLinks,
+                after.portfolioLinks
+            ),
+            catalogLinks = ArtistEntryDiff.diffList(before.catalogLinks, after.catalogLinks),
+            commissions = ArtistEntryDiff.diffList(before.commissions, after.commissions),
+            seriesInferred = ArtistEntryDiff.diffList(
+                before.seriesInferred,
+                after.seriesInferred
+            ),
+            seriesConfirmed =
+                ArtistEntryDiff.diffList(before.seriesConfirmed, after.seriesConfirmed),
+            merchInferred = ArtistEntryDiff.diffList(before.merchInferred, after.merchInferred),
+            merchConfirmed = ArtistEntryDiff.diffList(
+                before.merchConfirmed,
+                after.merchConfirmed
+            ),
+            formNotes = formNotes,
+            timestamp = timestamp,
+        )
 
     internal data class FormSubmission(
         val before: ArtistDatabaseEntry.Impl,

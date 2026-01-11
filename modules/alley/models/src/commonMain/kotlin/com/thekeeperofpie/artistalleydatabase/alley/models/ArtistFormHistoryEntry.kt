@@ -9,5 +9,5 @@ data class ArtistFormHistoryEntry(
     val artistId: Uuid,
     val booth: String?,
     val name: String?,
-    val timestamp: Instant?,
+    val timestamp: Instant,
 )

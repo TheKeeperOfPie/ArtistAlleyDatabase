@@ -72,7 +72,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
-import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
@@ -105,32 +104,21 @@ internal object ArtistFormMergeScreen {
         val artistWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()
         val seriesById by viewModel.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.merchById.collectAsStateWithLifecycle()
+        val snackbarHostState = remember { SnackbarHostState() }
+        val saveTaskState = viewModel.saveTaskState
         ArtistFormMergeScreen(
             dataYear = dataYear,
             artistId = artistId,
-            entry = { artistWithFormEntry },
+            snackbarHostState = snackbarHostState,
+            entry = { artistWithFormEntry?.run { artist to formDiff } },
+            saving = { saveTaskState.showBlockingLoadingIndicator },
             seriesById = { seriesById },
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
-            saveTaskState = viewModel.saveTaskState,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
         )
-    }
 
-    @Composable
-    operator fun invoke(
-        dataYear: DataYear,
-        artistId: Uuid,
-        entry: () -> BackendRequest.ArtistWithFormEntry.Response?,
-        seriesById: () -> Map<String, SeriesInfo>,
-        merchById: () -> Map<String, MerchInfo>,
-        seriesImage: (SeriesInfo) -> String?,
-        saveTaskState: TaskState<BackendRequest.ArtistCommitForm.Response>,
-        onClickBack: (force: Boolean) -> Unit,
-        onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
-    ) {
-        val snackbarHostState = remember { SnackbarHostState() }
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)
 
         val navigationResults = LocalNavigationResults.current
@@ -149,25 +137,43 @@ internal object ArtistFormMergeScreen {
                         }
                         is BackendRequest.ArtistCommitForm.Response.Success -> {
                             saveTaskState.clearResult()
-                            navigationResults[ArtistFormMergeScreen.RESULT_KEY] = Unit
+                            navigationResults[RESULT_KEY] = Unit
                             onClickBack(true)
                         }
                     }
                 }
         }
+    }
+
+    @Composable
+    operator fun invoke(
+        dataYear: DataYear,
+        artistId: Uuid,
+        snackbarHostState: SnackbarHostState,
+        entry: () -> Pair<ArtistDatabaseEntry.Impl, ArtistEntryDiff>?,
+        saving: () -> Boolean,
+        seriesById: () -> Map<String, SeriesInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+        seriesImage: (SeriesInfo) -> String?,
+        onClickBack: (force: Boolean) -> Unit,
+        onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
+    ) {
 
         val entry = entry()
-        val fieldState = rememberFieldState(entry?.formDiff)
+        val initialArtist = entry()?.first
+        val formDiff = entry()?.second
+        val fieldState = rememberFieldState(formDiff)
         val seriesByIdMap = seriesById()
         val merchByIdMap = merchById()
         val artistFormState by remember(entry, fieldState, seriesByIdMap, merchByIdMap) {
             derivedStateOf {
-                entry ?: return@derivedStateOf null
+                initialArtist ?: return@derivedStateOf null
+                formDiff ?: return@derivedStateOf null
                 fieldState.applyChanges(
-                    base = entry.artist,
+                    base = initialArtist,
                     seriesById = seriesByIdMap,
                     merchById = merchByIdMap,
-                    diff = entry.formDiff,
+                    diff = formDiff,
                 )
             }
         }
@@ -176,8 +182,8 @@ internal object ArtistFormMergeScreen {
                 TopAppBar(
                     title = {
                         val conventionName = stringResource(dataYear.shortName)
-                        val name = entry?.artist?.name ?: entry?.artist?.id.orEmpty()
-                        val booth = entry?.artist?.booth.orEmpty()
+                        val name = initialArtist?.name ?: initialArtist?.id.orEmpty()
+                        val booth = initialArtist?.booth.orEmpty()
                         val text = if (booth.isEmpty()) {
                             stringResource(
                                 Res.string.alley_edit_artist_form_merge_title_name,
@@ -212,10 +218,9 @@ internal object ArtistFormMergeScreen {
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
             ContentSavingBox(
-                saving = saveTaskState.showBlockingLoadingIndicator,
+                saving = saving(),
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                val initialArtist = entry()?.artist
                 val modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)
                 if (initialArtist == null || artistFormState == null) {
                     Column(
@@ -227,7 +232,7 @@ internal object ArtistFormMergeScreen {
                 } else {
                     Row(modifier = modifier) {
                         ArtistPreview(
-                            initialArtist = { entry()?.artist },
+                            initialArtist = { initialArtist },
                             artistFormState = artistFormState,
                             seriesById = seriesById,
                             seriesImage = seriesImage,
@@ -237,7 +242,7 @@ internal object ArtistFormMergeScreen {
 
                         FieldsList(
                             fieldState = fieldState,
-                            diff = entry?.formDiff,
+                            diff = formDiff,
                             modifier = Modifier.weight(1f)
                         )
                     }

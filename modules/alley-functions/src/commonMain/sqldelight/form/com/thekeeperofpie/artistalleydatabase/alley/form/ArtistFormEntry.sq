@@ -22,3 +22,7 @@ WHERE dataYear = :dataYear AND artistId = :artistId AND timestamp = :timestamp;
 consumeFormEntry:
 DELETE FROM artistFormEntry
 WHERE dataYear = :dataYear AND artistId = :artistId AND timestamp = :timestamp;
+
+getFormHistoryEntry:
+SELECT * FROM artistFormEntryHistory
+WHERE dataYear = :dataYear AND artistId = :artistId AND timestamp = :timestamp;
