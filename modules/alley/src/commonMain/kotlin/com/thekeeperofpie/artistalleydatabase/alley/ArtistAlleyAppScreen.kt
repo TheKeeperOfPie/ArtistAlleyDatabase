@@ -29,7 +29,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.toRoute
 import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Images.Type.StampRally
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyMap
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
@@ -104,7 +103,9 @@ object ArtistAlleyAppScreen {
                             ) {
                                 val route = it.toRoute<Destinations.ArtistDetails>()
                                 val viewModel = viewModel {
-                                    component.artistDetailsViewModelFactory.create(createSavedStateHandle())
+                                    component.artistDetailsViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
                                 }
                                 val catalog by viewModel.catalog.collectAsStateWithLifecycle()
                                 val images = catalog.result?.images.orEmpty()
@@ -192,9 +193,11 @@ object ArtistAlleyAppScreen {
                                                     is DetailsScreen.Event.OpenImage -> {
                                                         val artist = viewModel.entry.value?.artist
                                                         val booth = artist?.booth
-                                                        if (booth != null) {
+                                                        if (artist != null) {
+                                                            val showingOutdatedCatalogs =
+                                                                catalog.result?.showOutdatedCatalogs == true
                                                             val year = catalog.result?.fallbackYear
-                                                                ?.takeIf { catalog.result?.showOutdatedCatalogs == true }
+                                                                ?.takeIf { showingOutdatedCatalogs }
                                                                 ?: route.year
                                                             navigationController.navigate(
                                                                 Destinations.Images(
@@ -202,10 +205,12 @@ object ArtistAlleyAppScreen {
                                                                     id = route.id,
                                                                     type = Destinations.Images.Type.Artist(
                                                                         id = artist.id,
-                                                                        booth = booth,
+                                                                        booth = booth
+                                                                            .takeUnless { showingOutdatedCatalogs }
+                                                                            .orEmpty(),
                                                                         name = artist.name,
                                                                     ),
-                                                                    images = artist.images,
+                                                                    images = images,
                                                                     initialImageIndex = event.imageIndex,
                                                                 )
                                                             )
@@ -268,7 +273,7 @@ object ArtistAlleyAppScreen {
                                 }
                                 val route = it.toRoute<Destinations.Images>()
                                 val imagePagerState = rememberImagePagerState(
-                                    images = viewModel.images,
+                                    images = route.images,
                                     initialImageIndex = route.initialImageIndex ?: 0,
                                 )
                                 val previousDestinationSavedStateHandle =
@@ -280,7 +285,6 @@ object ArtistAlleyAppScreen {
                                 }
                                 ImagesScreen(
                                     route = route,
-                                    images = viewModel::images,
                                     imagePagerState = imagePagerState,
                                 )
                             }
@@ -370,7 +374,7 @@ object ArtistAlleyAppScreen {
                                                                         hostTable = it.hostTable,
                                                                         fandom = it.fandom,
                                                                     ),
-                                                                    images = it.images,
+                                                                    images = viewModel.images,
                                                                     initialImageIndex = event.imageIndex,
                                                                 )
                                                             )
@@ -378,7 +382,7 @@ object ArtistAlleyAppScreen {
                                                     }
                                                     DetailsScreen.Event.OpenMap ->
                                                         navigationController.navigate(
-                                                            StampRallyMap(
+                                                            Destinations.StampRallyMap(
                                                                 year = route.year,
                                                                 id = route.id,
                                                             )

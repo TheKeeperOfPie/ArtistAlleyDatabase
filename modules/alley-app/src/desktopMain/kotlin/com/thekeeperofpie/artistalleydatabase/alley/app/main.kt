@@ -18,12 +18,14 @@ import coil3.decode.ImageSource
 import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
+import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.request.Options
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -67,6 +69,7 @@ fun main() {
                             }
                         }
                     })
+                    add(Mapper<ImageWithDimensions, Any> { data, _ -> data.coilImageModel })
                 }
                 .memoryCache {
                     MemoryCache.Builder()

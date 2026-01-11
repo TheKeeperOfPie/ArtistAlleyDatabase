@@ -17,11 +17,6 @@ class ImagesViewModel(
 
     val route = savedStateHandle.toDestination<Destinations.Images>(navigationTypeMap)
 
-    val images = when (val type = route.type) {
-        is Destinations.Images.Type.Artist -> AlleyImageUtils.getArtistImages(route.year, route.images)
-        is Destinations.Images.Type.StampRally -> AlleyImageUtils.getRallyImages(route.year, route.images)
-    }
-
     @AssistedFactory
     interface Factory {
         fun create(savedStateHandle: SavedStateHandle): ImagesViewModel

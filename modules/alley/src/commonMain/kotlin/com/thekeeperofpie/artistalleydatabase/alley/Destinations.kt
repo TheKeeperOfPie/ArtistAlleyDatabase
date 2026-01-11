@@ -26,6 +26,12 @@ sealed interface Destinations : NavDestination {
             typeOf<List<CatalogImage>?>() to CustomNavTypes.SerializableType<List<CatalogImage>>(
                 serializer = { ListSerializer(CatalogImage.serializer()) },
             ),
+            typeOf<List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>() to CustomNavTypes.SerializableType<List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>(
+                serializer = { ListSerializer(com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage.serializer()) },
+            ),
+            typeOf<List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>?>() to CustomNavTypes.SerializableType<List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>(
+                serializer = { ListSerializer(com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage.serializer()) },
+            ),
         )
     }
 
@@ -65,7 +71,7 @@ sealed interface Destinations : NavDestination {
         val year: DataYear,
         val id: String,
         val type: Type,
-        val images: List<CatalogImage>,
+        val images: List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>,
         val initialImageIndex: Int?,
     ) : Destinations {
 

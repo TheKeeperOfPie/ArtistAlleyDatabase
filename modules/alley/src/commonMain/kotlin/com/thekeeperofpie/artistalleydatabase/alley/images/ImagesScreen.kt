@@ -36,7 +36,6 @@ object ImagesScreen {
     @Composable
     operator fun invoke(
         route: Destinations.Images,
-        images: () -> List<CatalogImage>,
         imagePagerState: PagerState,
     ) {
         Scaffold(
@@ -77,7 +76,7 @@ object ImagesScreen {
             }
         ) {
             Column(Modifier.padding(it)) {
-                val images = images()
+                val images = route.images
                 val multiZoomableState = rememberMultiZoomableState(images.size)
                 ImagePager(
                     images = images,
