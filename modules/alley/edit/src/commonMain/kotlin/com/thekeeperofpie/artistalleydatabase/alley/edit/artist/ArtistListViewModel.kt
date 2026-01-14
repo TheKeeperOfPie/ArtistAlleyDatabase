@@ -61,7 +61,9 @@ class ArtistListViewModel(
                     ArtistListTab.MISSING_LINKS -> missingLinks
                     ArtistListTab.MISSING_INFERRED -> missingInferred
                     ArtistListTab.MISSING_CONFIRMED -> missingConfirmed
-                }, debouncedQuery, ::Pair
+                },
+                debouncedQuery,
+                ::Pair
             )
         }
         .mapLatest { (entries, query) ->
@@ -70,9 +72,9 @@ class ArtistListViewModel(
             }
 
             entries.filter {
-                it.id.toString().contains(query) ||
-                        it.name?.contains(query) == true ||
-                        it.booth?.contains(query) == true
+                it.id.toString().contains(query, ignoreCase = true) ||
+                        it.name?.contains(query, ignoreCase = true) == true ||
+                        it.booth?.contains(query, ignoreCase = true) == true
             }
         }
         .flatMapLatest { artists ->

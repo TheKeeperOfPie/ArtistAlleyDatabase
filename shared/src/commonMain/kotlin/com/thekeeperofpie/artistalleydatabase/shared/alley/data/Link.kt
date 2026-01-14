@@ -11,10 +11,11 @@ data class Link(
         fun parse(link: String): Link? {
             val url = if (link.startsWith("http")) link else "https://$link"
             val uri = Uri.parseOrNull(url) ?: return null
-            val path = uri.path?.removePrefix("/")?.removeSuffix("/")?.lowercase() ?: return null
-            val host = uri.host?.removePrefix("www.")?.lowercase() ?: return null
+            val path = uri.path?.removePrefix("/")?.removeSuffix("/") ?: return null
+            val host = uri.host?.removePrefix("www.") ?: return null
 
-            val exactMatch = Type.entries.find { it.domains.any(host::equals) }
+            val exactMatch =
+                Type.entries.find { it.domains.any { host.equals(it, ignoreCase = true) } }
             if (exactMatch != null) {
                 val identifier = exactMatch.parsePath(path)
                 if (identifier != null) {
@@ -22,7 +23,8 @@ data class Link(
                 }
             }
 
-            val containsMatch = Type.entries.find { it.domains.any(host::contains) }
+            val containsMatch =
+                Type.entries.find { it.domains.any { host.contains(it, ignoreCase = true) } }
             if (containsMatch != null) {
                 val identifier = containsMatch.parseHost(host)
                 if (identifier != null) {

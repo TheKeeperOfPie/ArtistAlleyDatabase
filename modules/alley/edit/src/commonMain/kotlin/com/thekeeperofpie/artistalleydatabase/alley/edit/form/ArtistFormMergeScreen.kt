@@ -69,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
@@ -363,7 +364,11 @@ internal object ArtistFormMergeScreen {
                     }.orEmpty()
                     Text(
                         text = fieldText,
-                        color = if (field.isRemoved) Color.Red else Color.Unspecified,
+                        color = if (field.isRemoved) {
+                            AlleyTheme.colorScheme.negative
+                        } else {
+                            Color.Unspecified
+                        },
                     )
                 }
             }

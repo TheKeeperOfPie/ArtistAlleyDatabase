@@ -21,12 +21,12 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Diversity3
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.TableRestaurant
@@ -112,6 +112,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
@@ -891,10 +892,12 @@ private abstract class ArtistFormScopeImpl(
     }
 
     @Composable
-    private fun rememberRevertDialogState(initialValue: String?) =
-        remember(initialArtist, initialValue) {
-            RevertDialogState(initialArtist, initialValue.orEmpty())
+    private fun rememberRevertDialogState(initialValue: String?): RevertDialogState {
+        val positiveColor = AlleyTheme.colorScheme.positive
+        return remember(initialArtist, initialValue) {
+            RevertDialogState(positiveColor, initialArtist, initialValue.orEmpty())
         }
+    }
 
     @Composable
     private fun <T> rememberListRevertDialogState(initialItems: List<T>?) =
@@ -903,12 +906,13 @@ private abstract class ArtistFormScopeImpl(
 
 @Stable
 internal class RevertDialogState(
+    positiveColor: Color,
     initialArtist: ArtistDatabaseEntry.Impl?,
     val initialValue: String,
 ) {
     var show by mutableStateOf(false)
     val outputTransformation: OutputTransformation? = if (initialArtist == null) null else {
-        GreenOnChangedOutputTransformation(initialValue)
+        GreenOnChangedOutputTransformation(positiveColor, initialValue)
     }
 }
 
@@ -919,11 +923,12 @@ internal class ListRevertDialogState<T>(val initialItems: List<T>) {
 
 @Immutable
 private class GreenOnChangedOutputTransformation(
+    private val color: Color,
     private val initialValue: String,
 ) : OutputTransformation {
     override fun TextFieldBuffer.transformOutput() {
         if (originalText.toString() != initialValue) {
-            addStyle(SpanStyle(color = Color.Green), 0, length)
+            addStyle(SpanStyle(color = color), 0, length)
         }
     }
 }
@@ -939,7 +944,7 @@ private fun ShowRevertIconButton(
     }
     if (show && !scope.forceLocked) {
         TooltipIconButton(
-            icon = Icons.AutoMirrored.Default.Undo,
+            icon = Icons.Default.History,
             tooltipText = stringResource(Res.string.alley_edit_artist_edit_revert_tooltip),
             onClick = { dialogState.show = true },
         )
@@ -959,7 +964,7 @@ private fun <T> ShowListRevertIconButton(
     }
     if (show && !scope.forceLocked) {
         TooltipIconButton(
-            icon = Icons.AutoMirrored.Default.Undo,
+            icon = Icons.Default.History,
             tooltipText = stringResource(Res.string.alley_edit_artist_edit_revert_tooltip),
             onClick = { dialogState.show = true },
         )
@@ -1021,7 +1026,7 @@ private fun RevertDialog(
                 Text(stringResource(Res.string.alley_edit_artist_edit_revert_action_dismiss))
             }
         },
-        icon = { Icon(Icons.AutoMirrored.Default.Undo, null) },
+        icon = { Icon(Icons.Default.History, null) },
         title = {
             Text(
                 stringResource(
@@ -1273,7 +1278,7 @@ object ArtistForm {
                                     color = if (formScope.initialArtist == null || existed != false) {
                                         LocalTextStyle.current.color
                                     } else {
-                                        Color.Green
+                                        AlleyTheme.colorScheme.positive
                                     }
                                 ),
                             )
@@ -1387,7 +1392,7 @@ object ArtistForm {
                     val textStyle = if (formScope.initialArtist == null || existed) {
                         MaterialTheme.typography.bodyMedium
                     } else {
-                        MaterialTheme.typography.bodyMedium.copy(color = Color.Green)
+                        MaterialTheme.typography.bodyMedium.copy(color = AlleyTheme.colorScheme.positive)
                     }
                     SeriesRow(
                         series = value,
@@ -1520,7 +1525,7 @@ object ArtistForm {
                     ) {
                         Color.Unspecified
                     } else {
-                        Color.Green
+                        AlleyTheme.colorScheme.positive
                     },
                     additionalActions = {
                         EditActions(

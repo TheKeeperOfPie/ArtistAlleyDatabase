@@ -104,6 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -731,7 +732,7 @@ object ArtistHistoryScreen {
                                     it
                                 ),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Red,
+                                color = AlleyTheme.colorScheme.negative,
                             )
                         }
                     }

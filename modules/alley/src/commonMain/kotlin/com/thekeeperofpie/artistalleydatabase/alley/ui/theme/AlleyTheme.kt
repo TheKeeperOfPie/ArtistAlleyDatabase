@@ -6,6 +6,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
@@ -86,6 +89,30 @@ private val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+@Immutable
+class AlleyColorScheme(
+    val positive: Color,
+    val negative: Color,
+)
+
+private val alleyLightScheme = AlleyColorScheme(
+    Color(0xFF1F800D),
+    Color(0xFFD32525),
+)
+private val alleyDarkScheme = AlleyColorScheme(
+    Color(0xFF4AE826),
+    Color(0xFFFA5858),
+)
+
+internal val LocalAlleyColorScheme =
+    staticCompositionLocalOf { alleyLightScheme }
+
+object AlleyTheme {
+    val colorScheme: AlleyColorScheme
+        @Composable @ReadOnlyComposable get() = LocalAlleyColorScheme.current
+}
+
+
 @Composable
 fun AlleyTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit) {
     val systemInDarkTheme = isSystemInDarkTheme()
@@ -107,7 +134,18 @@ fun AlleyTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit)
             surfaceDim = Color.Black,
         )
     }
-    CompositionLocalProvider(LocalAppTheme provides appTheme) {
+
+    val alleyColorScheme = when (appTheme) {
+        AppThemeSetting.AUTO -> if (systemInDarkTheme) alleyDarkScheme else alleyLightScheme
+        AppThemeSetting.LIGHT -> alleyLightScheme
+        AppThemeSetting.DARK,
+        AppThemeSetting.BLACK -> alleyDarkScheme
+    }
+
+    CompositionLocalProvider(
+        LocalAppTheme provides appTheme,
+        LocalAlleyColorScheme provides alleyColorScheme,
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             content = content

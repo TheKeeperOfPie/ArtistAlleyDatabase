@@ -116,9 +116,17 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             var (driver, database) = createDatabase(databaseFile)
             driver.close()
 
-            listOf("artists", "stampRallies", "tags")
+            listOf("artists", "stampRallies")
                 .flatMap { inputsDirectory.dir(it).get().asFile.listFiles().toList() }
                 .forEach { readSqlFile(databaseFile, it) }
+
+            // tags.sql must come last in order to overwrite legacy data
+            listOf("merchLegacy.sql", "seriesLegacy.sql", "tags.sql").forEach {
+                val tagFile = inputsDirectory.dir("tags/$it").get().asFile
+                if (tagFile.exists()) {
+                    readSqlFile(databaseFile, tagFile)
+                }
+            }
 
             val pair = createDatabase(databaseFile)
             driver = pair.first

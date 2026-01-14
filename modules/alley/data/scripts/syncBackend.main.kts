@@ -39,16 +39,29 @@ if (PULL_REMOTE) {
 }
 
 val dataDir = if (PROD) scriptDir.parentFile else buildDir
-val databaseFile = dataDir.resolve("inputs/artists")
+dataDir.resolve("inputs/artists")
     .apply { mkdirs() }
     .resolve("animeExpo2026.sql")
-databaseFile.writer().use { writer ->
-    exportFile.useLines {
-        it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
-            .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
-            .forEach(writer::appendLine)
+    .writer()
+    .use { writer ->
+        exportFile.useLines {
+            it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
+                .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
+                .forEach(writer::appendLine)
+        }
     }
-}
+
+dataDir.resolve("inputs/tags")
+    .apply { mkdirs() }
+    .resolve("tags.sql")
+    .writer()
+    .use { writer ->
+        exportFile.useLines {
+            it.filter { it.contains("\"seriesEntry\"") || it.contains("\"merchEntry\"") }
+                .map { it.replace("INSERT INTO", "INSERT OR REPLACE INTO") }
+                .forEach(writer::appendLine)
+        }
+    }
 
 if (WRITE_BACKUP) {
     val snapshotTime = Clock.System.now().toString()
