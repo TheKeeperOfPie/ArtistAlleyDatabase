@@ -953,11 +953,11 @@ fun QuestionAnswer(
 }
 
 @Composable
-fun ScrollAreaScope.PrimaryVerticalScrollbar() {
+fun ScrollAreaScope.PrimaryVerticalScrollbar(modifier: Modifier = Modifier) {
     val interactionSource = remember { MutableInteractionSource() }
     VerticalScrollbar(
         interactionSource = interactionSource,
-        modifier = Modifier.fillMaxHeight().align(Alignment.TopEnd)
+        modifier = modifier.fillMaxHeight().align(Alignment.TopEnd)
     ) {
         val isHovered by interactionSource.collectIsHoveredAsState()
         val isDragging by interactionSource.collectIsDraggedAsState()

@@ -3,9 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.alley.form
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -22,6 +26,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.composables.core.ScrollArea
+import com.composables.core.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 
 internal object ArtistFormHomeScreen {
@@ -38,11 +45,32 @@ internal object ArtistFormHomeScreen {
                 OutlinedCard(modifier = Modifier.widthIn(max = 960.dp)) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(24.dp)
                     ) {
-                        IntroText()
+                        val scrollState = rememberScrollState()
+                        val scrollAreaState = rememberScrollAreaState(scrollState)
+                        ScrollArea(
+                            state = scrollAreaState,
+                            modifier = Modifier.weight(1f, fill = false)
+                        ) {
+                            Box {
+                                Column(
+                                    modifier = Modifier.verticalScroll(scrollState)
+                                ) {
+                                    IntroText(modifier = Modifier.fillMaxWidth().padding(24.dp))
+                                }
+                                Box(modifier = Modifier.matchParentSize()) {
+                                    PrimaryVerticalScrollbar(
+                                        modifier = Modifier.align(Alignment.TopEnd)
+                                    )
+                                }
+                            }
+                        }
 
-                        FilledTonalButton(onClick = onOpenForm) {
+                        HorizontalDivider()
+                        FilledTonalButton(
+                            onClick = onOpenForm,
+                            modifier = Modifier.padding(16.dp)
+                        ) {
                             Text(text = "Open form")
                         }
                     }
@@ -52,53 +80,56 @@ internal object ArtistFormHomeScreen {
     }
 
     @Composable
-    private fun IntroText() {
-        Text(buildAnnotatedString {
-            pushStyle(ParagraphStyle(textAlign = TextAlign.Center))
-            withStyle(MaterialTheme.typography.titleLarge.toSpanStyle()) {
-                appendLine("Welcome to the Artist Alley Directory!")
-            }
-            pop()
-
-            appendLine()
-            appendLine(
-                "You were linked here because you're an artist tabling at one of the " +
-                        "conventions we tag, Anime Expo or Anime NYC."
-            )
-            appendLine()
-            append("You can see the public site ")
-            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
-                    appendLine("here.")
+    private fun IntroText(modifier: Modifier = Modifier) {
+        Text(
+            text = buildAnnotatedString {
+                pushStyle(ParagraphStyle(textAlign = TextAlign.Center))
+                withStyle(MaterialTheme.typography.titleLarge.toSpanStyle()) {
+                    appendLine("Welcome to the Artist Alley Directory!")
                 }
-            }
-            appendLine()
-            append(
-                "On the next page, you will be required to log in with a Google account. This is " +
-                        "for spam protection. Cloudflare will see your email address and will " +
-                        "retain access logs per their "
-            )
+                pop()
 
-            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                withLink(LinkAnnotation.Url("https://developers.cloudflare.com/cloudflare-one/insights/logs/#log-retention")) {
-                    append("retention policy")
+                appendLine()
+                appendLine(
+                    "You were linked here because you're an artist tabling at one of the " +
+                            "conventions we tag, Anime Expo or Anime NYC."
+                )
+                appendLine()
+                append("You can see the public site ")
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
+                        appendLine("here.")
+                    }
                 }
-            }
-            append(", but we do")
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(" NOT ")
-            }
-            appendLine(
-                "use this information for anything else. The access key in the link " +
-                        "you were provided is used to identify you and should not be shared with " +
-                        "anyone."
-            )
-            appendLine()
-            appendLine(
-                "If you have questions/concerns, or want to submit your info in an " +
-                        "alternative manner, please contact " +
-                        "${AlleyUtils.primaryContactDiscordUsername} on Discord."
-            )
-        })
+                appendLine()
+                append(
+                    "On the next page, you will be required to log in with a Google account. This is " +
+                            "for spam protection. Cloudflare will see your email address and will " +
+                            "retain access logs per their "
+                )
+
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    withLink(LinkAnnotation.Url("https://developers.cloudflare.com/cloudflare-one/insights/logs/#log-retention")) {
+                        append("retention policy")
+                    }
+                }
+                append(", but we do")
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(" NOT ")
+                }
+                appendLine(
+                    "use this information for anything else. The access key in the link " +
+                            "you were provided is used to identify you and should not be shared with " +
+                            "anyone."
+                )
+                appendLine()
+                appendLine(
+                    "If you have questions/concerns, or want to submit your info in an " +
+                            "alternative manner, please contact " +
+                            "${AlleyUtils.primaryContactDiscordUsername} on Discord."
+                )
+            },
+            modifier = modifier
+        )
     }
 }

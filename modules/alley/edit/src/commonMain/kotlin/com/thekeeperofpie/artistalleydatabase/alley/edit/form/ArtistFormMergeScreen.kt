@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Checkbox
@@ -25,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -63,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -231,22 +231,28 @@ internal object ArtistFormMergeScreen {
                         CircularWavyProgressIndicator()
                     }
                 } else {
-                    Row(modifier = modifier) {
-                        ArtistPreview(
-                            initialArtist = { initialArtist },
-                            artistFormState = artistFormState,
-                            seriesById = seriesById,
-                            seriesImage = seriesImage,
-                            merchById = merchById,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        FieldsList(
-                            fieldState = fieldState,
-                            diff = formDiff,
-                            modifier = Modifier.weight(1f)
-                        )
+                    val fieldsList = remember {
+                        movableContentOf {
+                            FieldsList(
+                                fieldState = fieldState,
+                                diff = formDiff,
+                            )
+                        }
                     }
+                    ScrollableSideBySide(
+                        showSecondary = { true },
+                        primary = {
+                            ArtistPreview(
+                                initialArtist = { initialArtist },
+                                artistFormState = artistFormState,
+                                seriesById = seriesById,
+                                seriesImage = seriesImage,
+                                merchById = merchById,
+                            )
+                        },
+                        secondary = { fieldsList() },
+                        secondaryExpanded = { fieldsList() },
+                    )
                 }
             }
         }
@@ -262,22 +268,20 @@ internal object ArtistFormMergeScreen {
         modifier: Modifier = Modifier,
     ) {
         if (artistFormState != null) {
-            Column(modifier.verticalScroll(rememberScrollState())) {
-                ArtistForm(
-                    initialArtist = initialArtist,
-                    state = artistFormState,
-                    errorState = rememberErrorState(artistFormState),
-                    seriesById = seriesById,
-                    seriesPredictions = { emptyFlow() },
-                    merchById = merchById,
-                    merchPredictions = { emptyFlow() },
-                    seriesImage = seriesImage,
-                    forceLocked = true,
-                    showStatus = false,
-                    showEditorNotes = false,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+            ArtistForm(
+                initialArtist = initialArtist,
+                state = artistFormState,
+                errorState = rememberErrorState(artistFormState),
+                seriesById = seriesById,
+                seriesPredictions = { emptyFlow() },
+                merchById = merchById,
+                merchPredictions = { emptyFlow() },
+                seriesImage = seriesImage,
+                forceLocked = true,
+                showStatus = false,
+                showEditorNotes = false,
+                modifier = modifier.fillMaxWidth(),
+            )
         }
     }
 
