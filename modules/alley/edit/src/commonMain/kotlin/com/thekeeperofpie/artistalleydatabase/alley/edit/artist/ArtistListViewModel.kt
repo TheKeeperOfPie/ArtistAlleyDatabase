@@ -6,9 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -23,16 +21,14 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @AssistedInject
 class ArtistListViewModel(
-    database: AlleyEditDatabase,
+    private val artistCache: ArtistCache,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val query by savedStateHandle.saveable(saver = TextFieldState.Saver) { TextFieldState() }
     private val dataYear = savedStateHandle.getMutableStateFlow("dataYear", DataYear.LATEST)
     private val sortBy = savedStateHandle.getMutableStateFlow("sortBy", ArtistListSortBy.BOOTH)
     private val tab = savedStateHandle.getMutableStateFlow("tab", ArtistListTab.ALL)
-    private val refreshFlow = RefreshFlow()
-    private val artistEntries = combine(dataYear, refreshFlow.updates, ::Pair)
-        .mapLatest { (dataYear) -> database.loadArtists(dataYear).reversed() }
+    private val artistEntries = dataYear.flatMapLatest(artistCache::artists)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val debouncedQuery = snapshotFlow { query.text.toString() }
@@ -97,7 +93,7 @@ class ArtistListViewModel(
         entries = entries,
     )
 
-    fun refresh() = refreshFlow.refresh()
+    fun refresh() = artistCache.refresh()
 
     @AssistedFactory
     interface Factory {

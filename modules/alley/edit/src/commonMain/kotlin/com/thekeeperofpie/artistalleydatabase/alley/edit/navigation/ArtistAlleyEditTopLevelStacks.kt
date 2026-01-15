@@ -44,6 +44,9 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyEditDestination.Merch.serializer())
             subclass(serializer = AlleyEditDestination.MerchAdd.serializer())
             subclass(serializer = AlleyEditDestination.MerchEdit.serializer())
+            subclass(serializer = AlleyEditDestination.TagResolution.serializer())
+            subclass(serializer = AlleyEditDestination.SeriesResolution.serializer())
+            subclass(serializer = AlleyEditDestination.MerchResolution.serializer())
         }
     }
 }

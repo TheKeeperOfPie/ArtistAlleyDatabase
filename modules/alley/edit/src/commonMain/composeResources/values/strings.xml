@@ -4,6 +4,7 @@
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
     <string name="alley_edit_top_level_nav_forms">Forms</string>
+    <string name="alley_edit_top_level_nav_tag_resolution">Resolution</string>
     <string name="alley_edit_top_level_nav_admin">Admin</string>
 
     <string name="alley_edit_artist_list_tab_all">All</string>
@@ -214,4 +215,15 @@
     <string name="alley_edit_artist_add_action_same_artist_confirm">Yes</string>
     <string name="alley_edit_artist_add_action_same_artist_deny">No</string>
     <string name="alley_edit_artist_add_same_artist_confirm_prompt">Is this the same artist?</string>
+
+    <string name="alley_edit_tag_resolution_title">Tag resolution</string>
+    <string name="alley_edit_tag_resolution_tab_series">Series</string>
+    <string name="alley_edit_tag_resolution_tab_merch">Merch</string>
+    <string name="alley_edit_tag_resolution_action_refresh">Refresh</string>
+    <string name="alley_edit_tag_resolution_artists_affected_header">Artists affected</string>
+    <string name="alley_edit_tag_resolution_action_confirm">Confirm tag</string>
+    <string name="alley_edit_tag_resolution_error_generic">Failed to commit tag</string>
+    <string name="alley_edit_tag_resolution_error_message">Failed to commit tag, %1$s</string>
+    <string name="alley_edit_series_resolution_title">Series resolution</string>
+    <string name="alley_edit_merch_resolution_title">Merch resolution</string>
 </resources>

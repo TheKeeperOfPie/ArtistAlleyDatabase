@@ -13,8 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueVie
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchResolutionViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesSearchSortOption
@@ -47,6 +50,9 @@ interface ArtistAlleyEditGraph : ArtistAlleyComponent {
     val merchListViewModelFactory: MerchListViewModel.Factory
     val seriesEditViewModelFactory: SeriesEditViewModel.Factory
     val seriesListViewModelFactory: SeriesListViewModel.Factory
+    val tagResolutionViewModelFactory: TagResolutionViewModel.Factory
+    val seriesResolutionViewModelFactory: SeriesResolutionViewModel.Factory
+    val merchResolutionViewModelFactory: MerchResolutionViewModel.Factory
 
     @Provides
     fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient

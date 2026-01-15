@@ -31,12 +31,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueScr
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchResolutionScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.TopLevelStackKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberDecoratedNavEntries
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagResolutionQueueScreen
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -314,6 +317,31 @@ private fun entryProvider(
             initialInfo = it.merch,
             graph = graph,
             onClickBack = onClickBack,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.TagResolution> {
+        TagResolutionQueueScreen(
+            graph = graph,
+            onClickSeries = {
+                navStack.navigate(AlleyEditDestination.SeriesResolution(it))
+            },
+            onClickMerch = {
+                navStack.navigate(AlleyEditDestination.MerchResolution(it))
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.SeriesResolution> {
+        SeriesResolutionScreen(
+            seriesId = it.seriesId,
+            graph = graph,
+            onClickBack = { onClickBack(true) },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.MerchResolution> {
+        MerchResolutionScreen(
+            merchId = it.merchId,
+            graph = graph,
+            onClickBack = { onClickBack(true) },
         )
     }
 }

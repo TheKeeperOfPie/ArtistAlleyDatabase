@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,8 +42,10 @@ import com.eygraber.compose.placeholder.material3.shimmer
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.IconWithTooltip
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
@@ -255,3 +259,48 @@ private fun SeriesRow(
         }
     }
 }
+
+@Composable
+fun SeriesPrediction(query: String, series: SeriesInfo) {
+    Column {
+        val languageOptionMedia = LocalLanguageOptionMedia.current
+        val title = buildAnnotatedString {
+            val name = series.name(languageOptionMedia)
+            append(if (series.faked) "\"${name}\"" else name)
+            if (!series.faked) {
+                val startIndex = name.indexOf(query, ignoreCase = true)
+                if (startIndex >= 0) {
+                    addStyle(
+                        style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
+                        start = startIndex,
+                        end = startIndex + query.length,
+                    )
+                }
+            }
+        }
+        Text(text = title)
+
+        if (!series.faked) {
+            val otherTitles = series.otherTitles(languageOptionMedia)
+            if (otherTitles.isNotEmpty()) {
+                val text = buildAnnotatedString {
+                    val value = otherTitles.joinToString(" / ")
+                    append(value)
+                    val startIndex = value.indexOf(query, ignoreCase = true)
+                    if (startIndex >= 0) {
+                        addStyle(
+                            style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
+                            start = startIndex,
+                            end = startIndex + query.length,
+                        )
+                    }
+                }
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
+    }
+}
+

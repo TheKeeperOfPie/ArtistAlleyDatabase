@@ -101,6 +101,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_commis
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -109,11 +110,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.series.name
-import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
-import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -1343,47 +1341,7 @@ object ArtistForm {
             entryPredictions = predictions,
             removeLastItem = { items.removeLastOrNull()?.titlePreferred },
             prediction = { _, value ->
-                Column {
-                    val languageOptionMedia = LocalLanguageOptionMedia.current
-                    val query = state.value.text.toString()
-                    val title = buildAnnotatedString {
-                        val name = value.name(languageOptionMedia)
-                        append(if (value.faked) "\"${name}\"" else name)
-                        if (!value.faked) {
-                            val startIndex = name.indexOf(query, ignoreCase = true)
-                            if (startIndex >= 0) {
-                                addStyle(
-                                    style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
-                                    start = startIndex,
-                                    end = startIndex + query.length,
-                                )
-                            }
-                        }
-                    }
-                    Text(text = title)
-
-                    if (!value.faked) {
-                        val otherTitles = value.otherTitles(languageOptionMedia)
-                        if (otherTitles.isNotEmpty()) {
-                            val text = buildAnnotatedString {
-                                val value = otherTitles.joinToString(" / ")
-                                append(value)
-                                val startIndex = value.indexOf(query, ignoreCase = true)
-                                if (startIndex >= 0) {
-                                    addStyle(
-                                        style = SpanStyle(color = MaterialTheme.colorScheme.secondary),
-                                        start = startIndex,
-                                        end = startIndex + query.length,
-                                    )
-                                }
-                            }
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        }
-                    }
-                }
+                SeriesPrediction(query = state.value.text.toString(), series = value)
             },
             sortValue = { it.titlePreferred },
             item = { _, value ->

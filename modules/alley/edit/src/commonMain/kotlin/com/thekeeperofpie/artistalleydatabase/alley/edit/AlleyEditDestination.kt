@@ -70,6 +70,15 @@ sealed interface AlleyEditDestination : NavKey {
     @Serializable
     data class MerchEdit(val merch: MerchInfo) : AlleyEditDestination
 
+    @Serializable
+    data object TagResolution : AlleyEditDestination
+
+    @Serializable
+    data class SeriesResolution(val seriesId: String) : AlleyEditDestination
+
+    @Serializable
+    data class MerchResolution(val merchId: String) : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
@@ -78,6 +87,16 @@ sealed interface AlleyEditDestination : NavKey {
                 route == "series" -> Series
                 route == "merch" -> Merch
                 route == "queue" -> ArtistFormQueue
+                route.startsWith("resolution") -> {
+                    val segments = route.split("/").filter { it.isNotEmpty() }
+                    when {
+                        segments.getOrNull(0) == "series" ->
+                            segments.getOrNull(1)?.let(::SeriesResolution)
+                        segments.getOrNull(0) == "merch" ->
+                            segments.getOrNull(1)?.let(::MerchResolution)
+                        else -> null
+                    } ?: TagResolution
+                }
                 route.startsWith("artist/history") -> {
                     val (dataYear, artistId) = parseDataYearThenArtistId(
                         route.removePrefix("artist/history/")
@@ -129,6 +148,9 @@ sealed interface AlleyEditDestination : NavKey {
             is SeriesAdd -> "series/add/${Uri.encode(destination.seriesId.toString())}"
             Merch -> "merch"
             is MerchAdd -> "merch/add/${Uri.encode(destination.merchId.toString())}"
+            TagResolution -> "resolution"
+            is SeriesResolution -> "resolution/series/${destination.seriesId}"
+            is MerchResolution -> "resolution/merch/${destination.merchId}"
             Home -> ""
             is ImagesEdit,
             is MerchEdit,
