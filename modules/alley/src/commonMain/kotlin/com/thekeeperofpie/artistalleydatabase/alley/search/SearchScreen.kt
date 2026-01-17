@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -70,11 +69,14 @@ import artistalleydatabase.modules.alley.generated.resources.alley_display_type_
 import artistalleydatabase.modules.alley.generated.resources.alley_search_clear_filters
 import artistalleydatabase.modules.alley.generated.resources.alley_search_no_results
 import artistalleydatabase.modules.alley.generated.resources.alley_search_results_filtered_out
+import com.composables.core.ScrollArea
+import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
@@ -88,7 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollAreaState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -324,35 +326,34 @@ object SearchScreen {
         noResultsItem: (@Composable () -> Unit)? = null,
         moreResultsItem: (@Composable () -> Unit)? = null,
     ) where EntryModel : SearchEntryModel, ColumnType : Enum<ColumnType>, ColumnType : TwoWayGrid.Column {
-        Box(
-            contentAlignment = Alignment.TopCenter,
+        val listState = rememberLazyListState()
+        val scrollAreaState = rememberScrollAreaState(listState)
+        ScrollArea(
+            state = scrollAreaState,
             modifier = Modifier.fillMaxWidth()
                 .padding(scaffoldPadding)
         ) {
-            val listState = rememberLazyListState()
-            TwoWayGrid(
-                header = header,
-                rows = entries,
-                unfilteredCount = unfilteredCount,
-                columns = columns,
-                listState = listState,
-                horizontalScrollState = horizontalScrollState,
-                contentPadding = PaddingValues(bottom = 80.dp),
-                columnHeader = columnHeader,
-                tableCell = tableCell,
-                noResultsHeader = noResultsItem,
-                moreResultsFooter = moreResultsItem,
-                modifier = Modifier.onSizeChanged { onWidthChanged(it.width) }
-            )
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TwoWayGrid(
+                    header = header,
+                    rows = entries,
+                    unfilteredCount = unfilteredCount,
+                    columns = columns,
+                    listState = listState,
+                    horizontalScrollState = horizontalScrollState,
+                    contentPadding = PaddingValues(bottom = 80.dp),
+                    columnHeader = columnHeader,
+                    tableCell = tableCell,
+                    noResultsHeader = noResultsItem,
+                    moreResultsFooter = moreResultsItem,
+                    modifier = Modifier.onSizeChanged { onWidthChanged(it.width) }
+                )
+            }
 
-            VerticalScrollbar(
-                state = listState,
-                alwaysVisible = PlatformSpecificConfig.scrollbarsAlwaysVisible,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .padding(top = 8.dp, bottom = 72.dp)
-            )
+            PrimaryVerticalScrollbar(listState)
         }
     }
 
@@ -390,195 +391,192 @@ object SearchScreen {
                 0.dp
             }
             var maxLane by remember { mutableIntStateOf(0) }
-            LazyVerticalStaggeredGrid(
-                columns = if (forceOneDisplayColumn) {
-                    StaggeredGridCells.Fixed(1)
-                } else {
-                    when (displayType) {
+            val scrollAreaState = rememberScrollAreaState(gridState)
+            ScrollArea(state = scrollAreaState) {
+                LazyVerticalStaggeredGrid(
+                    columns = if (forceOneDisplayColumn) {
+                        StaggeredGridCells.Fixed(1)
+                    } else {
+                        when (displayType) {
+                            DisplayType.LIST,
+                            DisplayType.CARD,
+                                -> StaggeredGridCells.Adaptive(350.dp)
+                            DisplayType.IMAGE,
+                                -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
+                            DisplayType.TABLE -> throw IllegalArgumentException()
+                        }
+                    },
+                    state = gridState,
+                    contentPadding = when (displayType) {
                         DisplayType.LIST,
-                        DisplayType.CARD,
-                            -> StaggeredGridCells.Adaptive(350.dp)
                         DisplayType.IMAGE,
-                            -> StaggeredGridCellsAdaptiveWithMin(300.dp, 2)
+                            -> PaddingValues(
+                            top = 8.dp,
+                            start = horizontalContentPadding,
+                            end = horizontalContentPadding,
+                            bottom = 156.dp,
+                        )
+                        DisplayType.CARD,
+                            -> PaddingValues(
+                            start = 16.dp + horizontalContentPadding,
+                            end = 16.dp + horizontalContentPadding,
+                            top = 8.dp,
+                            bottom = 156.dp,
+                        )
                         DisplayType.TABLE -> throw IllegalArgumentException()
-                    }
-                },
-                state = gridState,
-                contentPadding = when (displayType) {
-                    DisplayType.LIST,
-                    DisplayType.IMAGE,
-                        -> PaddingValues(
-                        top = 8.dp,
-                        start = horizontalContentPadding,
-                        end = horizontalContentPadding,
-                        bottom = 156.dp,
-                    )
-                    DisplayType.CARD,
-                        -> PaddingValues(
-                        start = 16.dp + horizontalContentPadding,
-                        end = 16.dp + horizontalContentPadding,
-                        top = 8.dp,
-                        bottom = 156.dp,
-                    )
-                    DisplayType.TABLE -> throw IllegalArgumentException()
-                },
-                verticalItemSpacing = when (displayType) {
-                    DisplayType.LIST,
-                    DisplayType.IMAGE,
-                        -> 0.dp
-                    DisplayType.CARD,
-                        -> 8.dp
-                    DisplayType.TABLE -> throw IllegalArgumentException()
-                },
-                horizontalArrangement = when (displayType) {
-                    DisplayType.CARD,
-                        -> 8.dp
-                    DisplayType.LIST,
-                    DisplayType.IMAGE,
-                        -> 0.dp
-                    DisplayType.TABLE -> throw IllegalArgumentException()
-                }.let(Arrangement::spacedBy),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                header()
+                    },
+                    verticalItemSpacing = when (displayType) {
+                        DisplayType.LIST,
+                        DisplayType.IMAGE,
+                            -> 0.dp
+                        DisplayType.CARD,
+                            -> 8.dp
+                        DisplayType.TABLE -> throw IllegalArgumentException()
+                    },
+                    horizontalArrangement = when (displayType) {
+                        DisplayType.CARD,
+                            -> 8.dp
+                        DisplayType.LIST,
+                        DisplayType.IMAGE,
+                            -> 0.dp
+                        DisplayType.TABLE -> throw IllegalArgumentException()
+                    }.let(Arrangement::spacedBy),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    header()
 
-                if (entries.itemCount == 0) {
-                    if (entries.loadState.refresh is LoadState.Loading) {
-                        item("searchLoadingIndicator", span = StaggeredGridItemSpan.FullLine) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                CircularProgressIndicator()
+                    if (entries.itemCount == 0) {
+                        if (entries.loadState.refresh is LoadState.Loading) {
+                            item("searchLoadingIndicator", span = StaggeredGridItemSpan.FullLine) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        } else {
+                            if (moreResultsItem != null && unfilteredCount() > 0) {
+                                item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
+                                    moreResultsItem()
+                                }
+                            } else {
+                                item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
+                                    if (noResultsItem == null) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(
+                                                text = stringResource(Res.string.alley_search_no_results),
+                                                modifier = Modifier.padding(16.dp)
+                                            )
+                                        }
+                                    } else {
+                                        noResultsItem()
+                                    }
+                                }
                             }
                         }
                     } else {
-                        if (moreResultsItem != null && unfilteredCount() > 0) {
+                        items(
+                            count = entries.itemCount,
+                            key = entries.itemKey { it.id.scopedId },
+                            contentType = entries.itemContentType { "search_entry" },
+                        ) { index ->
+                            val entry = entries[index] ?: return@items
+
+                            @Suppress("NAME_SHADOWING")
+                            val onFavoriteToggle: (Boolean) -> Unit = {
+                                entry.favorite = it
+                                eventSink(Event.FavoriteToggle(entry, it))
+                            }
+
+                            @Suppress("NAME_SHADOWING")
+                            val onIgnoredToggle: (Boolean) -> Unit = {
+                                entry.ignored = it
+                                eventSink(Event.IgnoreToggle(entry, it))
+                            }
+
+                            val sharedElementId = itemToSharedElementId(entry)
+                            when (displayType) {
+                                DisplayType.LIST -> {
+                                    val ignored = entry.ignored
+                                    val lane by remember(index) {
+                                        derivedStateOf {
+                                            gridState.layoutInfo.visibleItemsInfo
+                                                .find { it.index - 1 == index }
+                                                ?.lane
+                                        }
+                                    }
+                                    val finalLane = lane
+                                    if (finalLane != null && maxLane < finalLane) {
+                                        maxLane = finalLane
+                                    }
+                                    itemRow(
+                                        entry,
+                                        onFavoriteToggle,
+                                        Modifier
+                                            .sharedBounds("itemContainer", sharedElementId)
+                                            .combinedClickable(
+                                                onClick = { eventSink(Event.OpenEntry(entry, 1)) },
+                                                onLongClick = { onIgnoredToggle(!ignored) }
+                                            )
+                                            .alpha(if (entry.ignored) 0.38f else 1f)
+                                            .border(
+                                                width = 1.dp,
+                                                color = DividerDefaults.color,
+                                                start = lane != 0,
+                                                bottom = true,
+                                            )
+                                    )
+                                }
+                                DisplayType.CARD -> ItemCard(
+                                    entry = entry,
+                                    sharedElementId = itemToSharedElementId(entry),
+                                    showGridByDefault = showGridByDefault,
+                                    showRandomCatalogImage = showRandomCatalogImage,
+                                    onFavoriteToggle = onFavoriteToggle,
+                                    onIgnoredToggle = onIgnoredToggle,
+                                    onClick = { entry, imageIndex ->
+                                        eventSink(Event.OpenEntry(entry, imageIndex))
+                                    },
+                                    itemRow = itemRow,
+                                    modifier = Modifier.sharedBounds(
+                                        "itemContainer",
+                                        sharedElementId
+                                    ),
+                                )
+                                DisplayType.IMAGE -> ItemImage(
+                                    entry = entry,
+                                    sharedElementId = itemToSharedElementId(entry),
+                                    showGridByDefault = showGridByDefault,
+                                    showRandomCatalogImage = showRandomCatalogImage,
+                                    onFavoriteToggle = onFavoriteToggle,
+                                    onIgnoredToggle = onIgnoredToggle,
+                                    onClick = { entry, imageIndex ->
+                                        eventSink(Event.OpenEntry(entry, imageIndex))
+                                    },
+                                    itemRow = itemRow,
+                                    modifier = Modifier.sharedBounds(
+                                        "itemContainer",
+                                        sharedElementId
+                                    ),
+                                )
+                                DisplayType.TABLE -> throw IllegalArgumentException()
+                            }
+                        }
+
+                        if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
                             item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
                                 moreResultsItem()
                             }
-                        } else {
-                            item("searchNoResults", span = StaggeredGridItemSpan.FullLine) {
-                                if (noResultsItem == null) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(
-                                            text = stringResource(Res.string.alley_search_no_results),
-                                            modifier = Modifier.padding(16.dp)
-                                        )
-                                    }
-                                } else {
-                                    noResultsItem()
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    items(
-                        count = entries.itemCount,
-                        key = entries.itemKey { it.id.scopedId },
-                        contentType = entries.itemContentType { "search_entry" },
-                    ) { index ->
-                        val entry = entries[index] ?: return@items
-
-                        @Suppress("NAME_SHADOWING")
-                        val onFavoriteToggle: (Boolean) -> Unit = {
-                            entry.favorite = it
-                            eventSink(Event.FavoriteToggle(entry, it))
-                        }
-
-                        @Suppress("NAME_SHADOWING")
-                        val onIgnoredToggle: (Boolean) -> Unit = {
-                            entry.ignored = it
-                            eventSink(Event.IgnoreToggle(entry, it))
-                        }
-
-                        val sharedElementId = itemToSharedElementId(entry)
-                        when (displayType) {
-                            DisplayType.LIST -> {
-                                val ignored = entry.ignored
-                                val lane by remember(index) {
-                                    derivedStateOf {
-                                        gridState.layoutInfo.visibleItemsInfo
-                                            .find { it.index - 1 == index }
-                                            ?.lane
-                                    }
-                                }
-                                val finalLane = lane
-                                if (finalLane != null && maxLane < finalLane) {
-                                    maxLane = finalLane
-                                }
-                                itemRow(
-                                    entry,
-                                    onFavoriteToggle,
-                                    Modifier
-                                        .sharedBounds("itemContainer", sharedElementId)
-                                        .combinedClickable(
-                                            onClick = { eventSink(Event.OpenEntry(entry, 1)) },
-                                            onLongClick = { onIgnoredToggle(!ignored) }
-                                        )
-                                        .alpha(if (entry.ignored) 0.38f else 1f)
-                                        .border(
-                                            width = 1.dp,
-                                            color = DividerDefaults.color,
-                                            start = lane != 0,
-                                            bottom = true,
-                                        )
-                                )
-                            }
-                            DisplayType.CARD -> ItemCard(
-                                entry = entry,
-                                sharedElementId = itemToSharedElementId(entry),
-                                showGridByDefault = showGridByDefault,
-                                showRandomCatalogImage = showRandomCatalogImage,
-                                onFavoriteToggle = onFavoriteToggle,
-                                onIgnoredToggle = onIgnoredToggle,
-                                onClick = { entry, imageIndex ->
-                                    eventSink(Event.OpenEntry(entry, imageIndex))
-                                },
-                                itemRow = itemRow,
-                                modifier = Modifier.sharedBounds(
-                                    "itemContainer",
-                                    sharedElementId
-                                ),
-                            )
-                            DisplayType.IMAGE -> ItemImage(
-                                entry = entry,
-                                sharedElementId = itemToSharedElementId(entry),
-                                showGridByDefault = showGridByDefault,
-                                showRandomCatalogImage = showRandomCatalogImage,
-                                onFavoriteToggle = onFavoriteToggle,
-                                onIgnoredToggle = onIgnoredToggle,
-                                onClick = { entry, imageIndex ->
-                                    eventSink(Event.OpenEntry(entry, imageIndex))
-                                },
-                                itemRow = itemRow,
-                                modifier = Modifier.sharedBounds(
-                                    "itemContainer",
-                                    sharedElementId
-                                ),
-                            )
-                            DisplayType.TABLE -> throw IllegalArgumentException()
-                        }
-                    }
-
-                    if (moreResultsItem != null && unfilteredCount() > entries.itemCount) {
-                        item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
-                            moreResultsItem()
                         }
                     }
                 }
-            }
 
-            VerticalScrollbar(
-                state = gridState,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .padding(top = 8.dp, bottom = 72.dp)
-            )
+                PrimaryVerticalScrollbar(gridState)
+            }
         }
     }
 

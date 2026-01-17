@@ -34,6 +34,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -149,6 +151,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMayb
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.atStartOfDayIn
@@ -958,23 +961,62 @@ fun QuestionAnswer(
 
 @Composable
 fun ScrollAreaScope.PrimaryVerticalScrollbar(modifier: Modifier = Modifier) {
-    val interactionSource = remember { MutableInteractionSource() }
-    VerticalScrollbar(
-        interactionSource = interactionSource,
-        modifier = modifier.fillMaxHeight().align(Alignment.TopEnd)
-    ) {
-        val isHovered by interactionSource.collectIsHoveredAsState()
-        val isDragging by interactionSource.collectIsDraggedAsState()
-        Thumb(
-            modifier = Modifier.background(
-                color = if (isHovered or isDragging) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                },
-                shape = RoundedCornerShape(100),
-            ),
+    PrimaryVerticalScrollbar(modifier = modifier, compactScrollbar = null)
+}
+
+@Composable
+fun ScrollAreaScope.PrimaryVerticalScrollbar(state: LazyStaggeredGridState, modifier: Modifier = Modifier) {
+    PrimaryVerticalScrollbar(modifier) {
+        VerticalScrollbar(state,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .padding(bottom = 72.dp)
         )
+    }
+}
+
+@Composable
+fun ScrollAreaScope.PrimaryVerticalScrollbar(state: LazyListState, modifier: Modifier = Modifier) {
+    PrimaryVerticalScrollbar(modifier) {
+        VerticalScrollbar(state,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .padding(bottom = 72.dp)
+        )
+    }
+}
+
+@Composable
+private fun ScrollAreaScope.PrimaryVerticalScrollbar(
+    modifier: Modifier = Modifier,
+    compactScrollbar: @Composable (ScrollAreaScope.() -> Unit)? = null,
+) {
+    val windowSizeClass = currentWindowSizeClass()
+    val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+    if (isExpanded || compactScrollbar == null) {
+        val interactionSource = remember { MutableInteractionSource() }
+        VerticalScrollbar(
+            interactionSource = interactionSource,
+            modifier = modifier.fillMaxHeight().align(Alignment.TopEnd)
+        ) {
+            val isHovered by interactionSource.collectIsHoveredAsState()
+            val isDragging by interactionSource.collectIsDraggedAsState()
+            Thumb(
+                modifier = Modifier
+                    .background(
+                        color = if (isHovered or isDragging) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        },
+                        shape = RoundedCornerShape(100),
+                    ),
+            )
+        }
+    } else {
+        compactScrollbar()
     }
 }
 

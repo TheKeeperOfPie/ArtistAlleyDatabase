@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -82,7 +81,9 @@ import coil3.request.CachePolicy
 import coil3.request.Disposable
 import coil3.request.ImageRequest
 import coil3.size.Dimension
+import com.composables.core.ScrollArea
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.SmallImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.WrappedViewConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
@@ -94,7 +95,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalShare
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.rememberScrollAreaState
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
@@ -419,15 +420,16 @@ fun ImageGrid(
     val placeholderColor = MaterialTheme.colorScheme.surfaceVariant
     val placeholder = remember { ColorPainter(placeholderColor) }
 
-    Row(modifier = modifier) {
-        val gridState = rememberLazyStaggeredGridState()
+    val gridState = rememberLazyStaggeredGridState()
+    val scrollAreaState = rememberScrollAreaState(gridState)
+    ScrollArea(state = scrollAreaState, modifier = modifier) {
         LazyVerticalStaggeredGrid(
             state = gridState,
             columns = StaggeredGridCells.Adaptive(500.dp),
             contentPadding = PaddingValues(8.dp),
             verticalItemSpacing = 8.dp,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.fillMaxWidth(1f)
         ) {
             itemsIndexed(images) { index, image ->
                 Box {
@@ -482,12 +484,6 @@ fun ImageGrid(
             }
         }
 
-        VerticalScrollbar(
-            state = gridState,
-            alwaysVisible = true,
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(top = 8.dp, bottom = 72.dp)
-        )
+        PrimaryVerticalScrollbar(gridState)
     }
 }

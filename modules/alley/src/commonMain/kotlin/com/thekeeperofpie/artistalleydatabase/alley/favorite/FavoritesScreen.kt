@@ -61,6 +61,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_mer
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_search
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
+import com.composables.core.ScrollArea
+import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
@@ -84,6 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -561,7 +564,8 @@ object FavoritesScreen {
         header: @Composable () -> Unit,
         eventSink: (Event) -> Unit,
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        val scrollAreaState = rememberScrollAreaState(listState)
+        ScrollArea(state = scrollAreaState ,modifier = Modifier.fillMaxSize()) {
             val width = LocalWindowConfiguration.current.screenWidthDp
             val horizontalContentPadding = if (width > 800.dp) {
                 (width - 800.dp) / 2
@@ -630,13 +634,7 @@ object FavoritesScreen {
                 }
             }
 
-            VerticalScrollbar(
-                state = listState,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .padding(bottom = 72.dp)
-            )
+            PrimaryVerticalScrollbar(listState)
         }
     }
 

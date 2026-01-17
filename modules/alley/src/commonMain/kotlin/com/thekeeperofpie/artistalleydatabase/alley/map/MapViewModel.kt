@@ -87,7 +87,7 @@ class MapViewModel(
         return letterToBooths.mapIndexed { letterIndex, pair ->
             pair.second.groupBy { it.booth }
                 .mapNotNull { (booth, artists) ->
-                    booth ?: return@mapNotNull null
+                    booth?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     val tableNumber = booth.filter { it.isDigit() }.toInt()
                     val artist = artists.singleOrNull()
                     if (artist != null) {

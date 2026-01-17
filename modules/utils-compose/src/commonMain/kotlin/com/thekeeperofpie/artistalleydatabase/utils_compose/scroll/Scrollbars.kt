@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -44,9 +45,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.utils_compose.generated.resources.Res
 import artistalleydatabase.modules.utils_compose.generated.resources.scrollbar_handle_content_description
+import com.composables.core.ScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.utils.AnimationUtils
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
@@ -252,6 +255,49 @@ fun HorizontalScrollbar(
                 contentDescription = stringResource(Res.string.scrollbar_handle_content_description),
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.rotate(90f)
+            )
+        }
+    }
+}
+
+@Composable
+fun rememberScrollAreaState(lazyStaggeredGridState: LazyStaggeredGridState): ScrollAreaState =
+    remember(lazyStaggeredGridState) {
+        LazyStaggeredGridScrollAreaScrollAreaState(lazyStaggeredGridState)
+    }
+
+private class LazyStaggeredGridScrollAreaScrollAreaState(
+    private val gridState: LazyStaggeredGridState,
+) : ScrollAreaState {
+    override val scrollOffset: Double
+        get() = ((gridState.firstVisibleItemIndex * itemSize) +
+                gridState.firstVisibleItemScrollOffset)
+    override val contentSize: Double
+        get() = (gridState.layoutInfo.totalItemsCount * itemSize) +
+                gridState.layoutInfo.beforeContentPadding +
+                gridState.layoutInfo.afterContentPadding
+    override val viewportSize: Double
+        get() = gridState.layoutInfo.viewportSize.height.toDouble()
+    override val interactionSource: InteractionSource
+        get() = gridState.interactionSource
+
+    private val visibleItems
+        get() = gridState.layoutInfo.let {
+            (it.visibleItemsInfo.lastOrNull()?.index ?: 0) -
+                    (it.visibleItemsInfo.firstOrNull()?.index ?: 0)
+        }
+    private val itemSize
+        get() = (gridState.layoutInfo.viewportSize.height / visibleItems)
+            .toDouble()
+            .coerceAtLeast(0.0)
+
+    override suspend fun scrollTo(scrollOffset: Double) {
+        val distance = scrollOffset - this.scrollOffset
+        if (abs(distance) <= viewportSize) {
+            gridState.scrollBy(distance.toFloat())
+        } else {
+            gridState.scrollToItem(
+                (scrollOffset / contentSize * gridState.layoutInfo.totalItemsCount).roundToInt()
             )
         }
     }
