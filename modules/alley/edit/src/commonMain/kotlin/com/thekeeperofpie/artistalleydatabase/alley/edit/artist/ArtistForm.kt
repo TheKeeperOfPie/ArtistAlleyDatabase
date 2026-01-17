@@ -111,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.UnrecognizedTagIcon
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
@@ -381,7 +382,10 @@ private abstract class ArtistFormScopeImpl(
         SingleTextSection(
             state = state,
             headerText = {
-                HeaderIconAndTitle(Icons.Default.TableRestaurant, Res.string.alley_edit_artist_edit_booth)
+                HeaderIconAndTitle(
+                    Icons.Default.TableRestaurant,
+                    Res.string.alley_edit_artist_edit_booth
+                )
             },
             inputTransformation = InputTransformation.maxLength(3).allCaps(Locale.current),
             outputTransformation = revertDialogState.outputTransformation,
@@ -622,6 +626,11 @@ private abstract class ArtistFormScopeImpl(
                     CommissionModel.OnSite -> Icons.Default.TableRestaurant
                     CommissionModel.Online -> Icons.AutoMirrored.Default.Assignment
                     is CommissionModel.Unknown -> null
+                }?.let {
+                    Icon(
+                        imageVector = it,
+                        contentDescription = null,
+                    )
                 }
             },
             itemToText = ::itemToText,
@@ -783,6 +792,11 @@ private abstract class ArtistFormScopeImpl(
             itemToText = { it.name },
             itemToSubText = { it.notes },
             itemToSerializedValue = { it.name },
+            leadingIcon = {
+                if (it.faked) {
+                    UnrecognizedTagIcon()
+                }
+            },
             predictionToText = {
                 if (it.faked) {
                     "\"${it.name}\""
@@ -833,6 +847,11 @@ private abstract class ArtistFormScopeImpl(
                 itemToText = { it.name },
                 itemToSubText = { it.notes },
                 itemToSerializedValue = { it.name },
+                leadingIcon = {
+                    if (it.faked) {
+                        UnrecognizedTagIcon()
+                    }
+                },
                 predictionToText = {
                     if (it.faked) {
                         "\"${it.name}\""
@@ -1232,7 +1251,7 @@ object ArtistForm {
         itemToSubText: (T) -> String?,
         itemToSerializedValue: (T) -> String,
         itemToCommitted: ((String) -> T)? = null,
-        leadingIcon: (T) -> ImageVector? = { null },
+        leadingIcon: @Composable ((T) -> Unit)? = null,
         predictionToText: (T) -> String = itemToText,
         label: @Composable (() -> Unit)? = null,
         pendingErrorMessage: () -> String? = { null },
@@ -1251,7 +1270,6 @@ object ArtistForm {
             sortValue = itemToText,
             item = { _, item ->
                 Box {
-                    val leadingIcon = leadingIcon(item)
                     val existed = initialItems?.any {
                         equalsComparison(it) == equalsComparison(item)
                     }
@@ -1260,12 +1278,7 @@ object ArtistForm {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
-                        if (leadingIcon != null) {
-                            Icon(
-                                imageVector = leadingIcon,
-                                contentDescription = null,
-                            )
-                        }
+                        leadingIcon?.invoke(item)
                         Column(
                             modifier = Modifier.weight(1f)
                                 .padding(top = 16.dp, bottom = 16.dp, end = 16.dp)

@@ -44,6 +44,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
@@ -93,6 +94,7 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -112,6 +114,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon
 import artistalleydatabase.modules.alley.generated.resources.alley_settings
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_convention
 import artistalleydatabase.modules.alley.generated.resources.alley_switch_data_year_year
+import artistalleydatabase.modules.alley.generated.resources.alley_unrecognized_tag
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
@@ -128,6 +131,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayT
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.SearchEntryModel
 import com.thekeeperofpie.artistalleydatabase.alley.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.start
 import com.thekeeperofpie.artistalleydatabase.alley.utils.timeZone
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -970,6 +974,31 @@ fun ScrollAreaScope.PrimaryVerticalScrollbar(modifier: Modifier = Modifier) {
                 },
                 shape = RoundedCornerShape(100),
             ),
+        )
+    }
+}
+
+@Composable
+fun UnrecognizedTagIcon() {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            positioning = TooltipAnchorPosition.Above,
+            spacingBetweenTooltipAndAnchor = 0.dp,
+        ),
+        tooltip = {
+            PlainTooltip {
+                Text(
+                    text = stringResource(Res.string.alley_unrecognized_tag),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        },
+        state = rememberTooltipState(),
+    ) {
+        Icon(
+            imageVector = Icons.Default.Error,
+            contentDescription = null,
+            tint = AlleyTheme.colorScheme.negative,
         )
     }
 }

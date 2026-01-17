@@ -20,8 +20,6 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 
 @AssistedInject
@@ -43,7 +41,8 @@ class SeriesResolutionViewModel(
 
     val progress get() = commitJob.state
 
-    fun seriesPredictions(query: String) = tagAutocomplete.seriesPredictions(query)
+    fun seriesPredictions(query: String) =
+        tagAutocomplete.seriesPredictions(query, allowCustom = false)
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 

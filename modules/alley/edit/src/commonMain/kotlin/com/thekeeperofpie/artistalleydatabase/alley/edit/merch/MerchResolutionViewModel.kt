@@ -17,8 +17,6 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 
 @AssistedInject
@@ -38,7 +36,8 @@ class MerchResolutionViewModel(
 
     val progress get() = commitJob.state
 
-    fun merchPredictions(query: String) = tagAutocomplete.merchPredictions(query)
+    fun merchPredictions(query: String) =
+        tagAutocomplete.merchPredictions(query, allowCustom = false)
 
     fun onClickDone(merch: MerchInfo) = commitJob.launch { merch }
 

@@ -374,4 +374,6 @@
     <string name="alley_generic_filter_content_description">Open filters</string>
 
     <string name="alley_copy_link_icon_content_description">Copy link</string>
+
+    <string name="alley_unrecognized_tag">Unrecognized tag, please visit Resolution</string>
 </resources>

@@ -47,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.series.otherTitles
+import com.thekeeperofpie.artistalleydatabase.alley.ui.UnrecognizedTagIcon
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListDataUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
@@ -108,6 +109,11 @@ fun SeriesRow(
                 .height(80.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         )
+
+        // For highlighting tag that needs resolution in edit app
+        if (series?.faked == true) {
+            UnrecognizedTagIcon()
+        }
 
         Column(
             modifier = Modifier

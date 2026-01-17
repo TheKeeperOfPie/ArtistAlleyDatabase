@@ -43,9 +43,9 @@ open class TagAutocomplete(
     val merchById = flowFromSuspend { loadMerch() }
         .shareIn(applicationScope, SharingStarted.Eagerly, 1)
 
-    fun seriesPredictions(query: String) = when {
+    fun seriesPredictions(query: String, allowCustom: Boolean = true) = when {
         query.isBlank() -> flowOf(emptyList())
-        query.length < 3 -> flowOf(listOf(SeriesInfo.fake(query)))
+        query.length < 3  -> flowOf(listOfNotNull(SeriesInfo.fake(query).takeIf { allowCustom }))
         else -> seriesById.flatMapLatest {
             flow {
                 SearchUtils.incrementallyPartition(
@@ -54,19 +54,22 @@ open class TagAutocomplete(
                     { it.titleRomaji.contains(query, ignoreCase = true) },
                     { it.titleEnglish.contains(query, ignoreCase = true) },
                     { it.synonyms.any { it.contains(query, ignoreCase = true) } },
-                    finalTransform = { it + SeriesInfo.fake(query) },
+                    finalTransform = {
+                        it + listOfNotNull(SeriesInfo.fake(query).takeIf { allowCustom })
+                    },
                 )
             }
         }
     }.flowOn(dispatchers.io)
 
-    fun merchPredictions(query: String) =
+    fun merchPredictions(query: String, allowCustom: Boolean = true) =
         merchById
             .mapLatest {
                 it.values
                     .filter { it.name.contains(query, ignoreCase = true) }
                     .sortedBy { it.name } +
                         listOfNotNull(query.takeIf { it.isNotBlank() }
+                            .takeIf { allowCustom }
                             ?.let(MerchInfo::fake))
             }
             .flowOn(dispatchers.io)
