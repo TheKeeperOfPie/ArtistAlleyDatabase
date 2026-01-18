@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -33,6 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -54,6 +58,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_timestamp_prefix
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_booth_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_name
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -73,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
@@ -82,6 +88,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 internal object ArtistFormMergeScreen {
@@ -245,6 +252,7 @@ internal object ArtistFormMergeScreen {
                             ArtistPreview(
                                 initialArtist = { initialArtist },
                                 artistFormState = artistFormState,
+                                formTimestamp = formDiff?.timestamp,
                                 seriesById = seriesById,
                                 seriesImage = seriesImage,
                                 merchById = merchById,
@@ -262,26 +270,51 @@ internal object ArtistFormMergeScreen {
     private fun ArtistPreview(
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         artistFormState: ArtistFormState?,
+        formTimestamp: Instant?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
         if (artistFormState != null) {
-            ArtistForm(
-                initialArtist = initialArtist,
-                state = artistFormState,
-                errorState = rememberErrorState(artistFormState),
-                seriesById = seriesById,
-                seriesPredictions = { emptyFlow() },
-                merchById = merchById,
-                merchPredictions = { emptyFlow() },
-                seriesImage = seriesImage,
-                forceLocked = true,
-                showStatus = false,
-                showEditorNotes = false,
-                modifier = modifier.fillMaxWidth(),
-            )
+            Column {
+                if (formTimestamp != null) {
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(color = LocalContentColor.current.copy(alpha = 0.6f))) {
+                                    append(stringResource(Res.string.alley_edit_artist_form_merge_timestamp_prefix))
+                                }
+                                append(' ')
+                                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                                    append(
+                                        LocalDateTimeFormatter.current
+                                            .formatDateTime(formTimestamp)
+                                    )
+                                }
+                            },
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+                ArtistForm(
+                    initialArtist = initialArtist,
+                    state = artistFormState,
+                    errorState = rememberErrorState(artistFormState),
+                    seriesById = seriesById,
+                    seriesPredictions = { emptyFlow() },
+                    merchById = merchById,
+                    merchPredictions = { emptyFlow() },
+                    seriesImage = seriesImage,
+                    forceLocked = true,
+                    showStatus = false,
+                    showEditorNotes = false,
+                    modifier = modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 
