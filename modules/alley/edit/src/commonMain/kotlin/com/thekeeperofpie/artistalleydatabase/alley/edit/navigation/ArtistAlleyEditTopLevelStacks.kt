@@ -21,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberDecoratedNavEntries
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberTwoWayStack
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -87,6 +88,15 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
         private set
     private val topLevelKeysStack = listOf(topLevelStackIndex.value).toMutableStateList()
 
+    val routeHistory =
+        MutableStateFlow(
+            RouteHistory(
+                current = Route(""),
+                back = emptyList(),
+                forward = emptyList(),
+            )
+        )
+
     fun calculateBackStack(navEntries: List<List<NavEntry<NavKey>>>) =
         navEntries[topLevelStackIndex].take(twoWayStacks[topLevelStackIndex].navBackStack.size)
 
@@ -112,29 +122,21 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
         updateInfo()
     }
 
-    fun navigateOnBrowserBack(destination: NavKey) {
+    fun navigateOnBrowserPop(destination: NavKey) {
         val resetIndex = twoWayStacks.indexOfFirst {
             it.navBackStack.find { it == destination } != null
         }
         if (resetIndex > 0) {
-            twoWayStacks[resetIndex].navigate(destination)
+            twoWayStacks[resetIndex].navigateOnBrowserPop(destination)
             topLevelStackIndex = resetIndex
         } else {
-            twoWayStacks[topLevelStackIndex].navigate(destination)
+            twoWayStacks[topLevelStackIndex].navigateOnBrowserPop(destination)
         }
         updateInfo()
     }
 
     private fun updateInfo() {
         val backInfo = mutableListOf<Route>()
-        twoWayStacks.dropLast(1).forEach {
-            (it.navBackStack + it.navForwardStack).forEach {
-                backInfo += Route(
-                    AlleyEditDestination.toEncodedRoute(it as AlleyEditDestination)
-                        ?: backInfo.lastOrNull()?.route.orEmpty()
-                )
-            }
-        }
         val twoWayStack = twoWayStacks[topLevelStackIndex]
         val navBackStack = twoWayStack.navBackStack
         val navForwardStack = twoWayStack.navForwardStack
@@ -159,6 +161,7 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
                         ?: currentInfo
         }
 
+        routeHistory.value = RouteHistory(currentInfo, backInfo, forwardInfo)
         setInfo(currentInfo = currentInfo, backInfo = backInfo, forwardInfo = forwardInfo)
     }
 
@@ -182,4 +185,9 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
     }
 
     data class Route(val route: String) : NavigationEventInfo()
+
+    data class RouteHistory(val current: Route, val back: List<Route>, val forward: List<Route>) {
+        override fun toString() =
+            "RouteHistory(\n\tcurrent = $current,\n\tback = ${back.joinToString("\n")},\n\tforward = ${forward.joinToString("\n")}\n)"
+    }
 }

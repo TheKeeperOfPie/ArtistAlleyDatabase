@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -11,7 +12,6 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
-import androidx.navigationevent.NavigationEventInfo
 import androidx.savedstate.serialization.SavedStateConfiguration
 
 @Composable
@@ -61,6 +61,26 @@ class TwoWayStack internal constructor(
         }
     }
 
+    fun navigateOnBrowserPop(destination: NavKey) {
+        if (destination == navForwardStack.lastOrNull()) {
+            onForward()
+        } else {
+            Snapshot.withMutableSnapshot {
+                val lastIndex = navBackStack.lastIndexOf(destination)
+                if (lastIndex >= 0) {
+                    if (lastIndex + 1 <= navBackStack.lastIndex) {
+                        navForwardStack.clear()
+                    }
+                    while (lastIndex + 1 <= navBackStack.lastIndex) {
+                        navForwardStack += navBackStack.removeAt(lastIndex + 1)
+                    }
+                } else {
+                    navigate(destination)
+                }
+            }
+        }
+    }
+
     fun onBack(): Boolean {
         if (navBackStack.size > 1) {
             navForwardStack += navBackStack.removeLast()
@@ -76,6 +96,4 @@ class TwoWayStack internal constructor(
         }
         return false
     }
-
-    private data class Route(val route: String) : NavigationEventInfo()
 }
