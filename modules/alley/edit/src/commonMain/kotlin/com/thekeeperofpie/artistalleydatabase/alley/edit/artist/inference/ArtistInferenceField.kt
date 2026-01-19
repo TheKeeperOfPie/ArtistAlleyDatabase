@@ -23,13 +23,13 @@ enum class ArtistInferenceField(val label: StringResource) {
 }
 
 @Stable
-internal class ArtistInferenceFieldState(val map: SnapshotStateMap<ArtistInferenceField, Boolean>) {
+class ArtistInferenceFieldState(val map: SnapshotStateMap<ArtistInferenceField, Boolean>) {
     operator fun get(field: ArtistInferenceField) = map[field] ?: false
     operator fun set(field: ArtistInferenceField, checked: Boolean) = map.set(field, checked)
 }
 
 @Composable
-internal fun rememberArtistInferenceFieldState(): ArtistInferenceFieldState {
+fun rememberArtistInferenceFieldState(): ArtistInferenceFieldState {
     val map = rememberSaveable {
         mutableStateMapOf<ArtistInferenceField, Boolean>().apply {
             ArtistInferenceField.entries.forEach {

@@ -610,7 +610,7 @@ fun <T> MultiTextSection(
                 val focusManager = LocalFocusManager.current
                 OpenSectionField(
                     state = state.value,
-                    lockState = { state.lockState },
+                    readOnly = !state.lockState.editable || formScope.forceLocked,
                     onNext = {
                         if (items.isNotEmpty()) {
                             state.lockState = EntryLockState.LOCKED
@@ -764,7 +764,7 @@ private fun EntryFormScope.SectionHeader(
 @Composable
 private fun OpenSectionField(
     state: TextFieldState,
-    lockState: () -> EntryLockState?,
+    readOnly: Boolean,
     onNext: () -> Unit,
     onDone: (manuallyClicked: Boolean) -> Unit,
     showSubmitButton: Boolean,
@@ -778,7 +778,7 @@ private fun OpenSectionField(
     val isBlank by remember { derivedStateOf { state.text.isBlank() } }
     OutlinedTextField(
         state = state,
-        readOnly = lockState()?.editable == false,
+        readOnly = readOnly,
         lineLimits = TextFieldLineLimits.SingleLine,
         label = label?.let { { it() } },
         inputTransformation = inputTransformation,

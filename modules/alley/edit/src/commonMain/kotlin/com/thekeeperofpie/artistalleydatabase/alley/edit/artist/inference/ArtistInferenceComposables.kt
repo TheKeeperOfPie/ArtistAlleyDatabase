@@ -135,12 +135,12 @@ internal fun SameArtistPrompt(
 
 @Composable
 fun MergeArtistPrompt(
+    fieldState: ArtistInferenceFieldState = rememberArtistInferenceFieldState(),
     previousYearData: ArtistPreviousYearData,
     onConfirmMerge: (Map<ArtistInferenceField, Boolean>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        val fieldState = rememberArtistInferenceFieldState()
         ArtistInferenceMergeList(previousYearData, fieldState)
 
         FlowRow(

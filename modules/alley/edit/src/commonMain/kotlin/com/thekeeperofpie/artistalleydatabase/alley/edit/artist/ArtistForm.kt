@@ -1305,6 +1305,7 @@ object ArtistForm {
 
                         EditActions(
                             state = state,
+                            forceLocked = formScope.forceLocked,
                             items = items,
                             item = item,
                             itemToText = itemToSerializedValue,
@@ -1374,7 +1375,7 @@ object ArtistForm {
                     )
 
                     AnimatedVisibility(
-                        visible = state.lockState.editable,
+                        visible = state.lockState.editable && !formScope.forceLocked,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -1501,6 +1502,7 @@ object ArtistForm {
                     additionalActions = {
                         EditActions(
                             state = state,
+                            forceLocked = formScope.forceLocked,
                             items = items,
                             item = value,
                             itemToText = LinkModel::link,
@@ -1533,12 +1535,13 @@ object ArtistForm {
     @Composable
     private fun <T> RowScope.EditActions(
         state: EntryForm2.SingleTextState,
+        forceLocked: Boolean,
         items: SnapshotStateList<T>,
         item: T,
         itemToText: (T) -> String,
     ) {
         AnimatedVisibility(
-            visible = state.lockState.editable,
+            visible = state.lockState.editable && !forceLocked,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
@@ -1554,7 +1557,7 @@ object ArtistForm {
         }
 
         AnimatedVisibility(
-            visible = state.lockState.editable,
+            visible = state.lockState.editable && !forceLocked,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {

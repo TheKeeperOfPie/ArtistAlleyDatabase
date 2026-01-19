@@ -40,6 +40,8 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -100,10 +102,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceFieldState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistPreviousYearData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeArtistPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompter
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.rememberArtistInferenceFieldState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
@@ -338,11 +343,13 @@ object ArtistEditScreen {
                     }
                 }
 
+                val fieldState = rememberArtistInferenceFieldState()
                 val showMergingArtist by remember { derivedStateOf { requestedMergingArtist && previousYearData != null } }
                 val mergeList = remember {
                     movableContentOf {
                         previousYearData?.let {
                             MergeArtistPrompt(
+                                fieldState = fieldState,
                                 previousYearData = it,
                                 onConfirmMerge = {
                                     onConfirmMerge(it)
@@ -353,11 +360,33 @@ object ArtistEditScreen {
                     }
                 }
 
+                val mergingFormState = rememberMergingFormState(
+                    year = { initialArtist?.year },
+                    artistFormState = state.artistFormState,
+                    previousYearData = { previousYearData },
+                    fieldState = fieldState,
+                    seriesById = seriesById,
+                    merchById = merchById,
+                )
+
                 ScrollableSideBySide(
                     showSecondary = { !sameArtist.isEmpty() || showMergingArtist },
                     primary = {
+                        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                         Form(
                             state = state,
+                            artistFormState = if (showMergingArtist) {
+                                mergingFormState.second
+                            } else {
+                                state.artistFormState
+                            },
+                            initialArtist = {
+                                if (showMergingArtist) {
+                                    mergingFormState.first
+                                } else {
+                                    initialArtist
+                                }
+                            },
                             errorState = errorState,
                             seriesById = seriesById,
                             seriesPredictions = seriesPredictions,
@@ -447,7 +476,67 @@ object ArtistEditScreen {
     }
 
     @Composable
-    fun DeleteProgressEffect(
+    private fun rememberMergingFormState(
+        year: () -> DataYear?,
+        artistFormState: ArtistFormState,
+        previousYearData: () -> ArtistPreviousYearData?,
+        fieldState: ArtistInferenceFieldState,
+        seriesById: () -> Map<String, SeriesInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+    ): Pair<ArtistDatabaseEntry.Impl?, ArtistFormState> {
+        val saveableStateRegistry = LocalSaveableStateRegistry.current
+        val saverScope = remember(saveableStateRegistry) {
+            SaverScope { value ->
+                saveableStateRegistry == null ||
+                        saveableStateRegistry.canBeSaved(value)
+            }
+        }
+
+        return remember(
+            saveableStateRegistry,
+            artistFormState,
+            previousYearData,
+            fieldState,
+            seriesById,
+            merchById,
+        ) {
+            derivedStateOf {
+                val year = year()
+                val previousYearData = previousYearData()
+                if (year == null || previousYearData == null) {
+                    return@derivedStateOf null to ArtistFormState()
+                }
+                val formEntry = artistFormState.captureDatabaseEntry(
+                    dataYear = year,
+                    verifiedArtist = false, // Shouldn't be used
+                ).second
+
+                val mergeEntry = ArtistInferenceUtils.mergeEntry(
+                    formEntry = formEntry,
+                    previousYearData = previousYearData,
+                    fieldState = fieldState.map,
+                )
+
+                // Save and restore to copy instance
+                val saved = with(saverScope) {
+                    with(ArtistFormState.Saver) {
+                        save(artistFormState)
+                    }
+                }
+                val restored = ArtistFormState.Saver.restore(saved)
+                restored.applyDatabaseEntry(
+                    artist = mergeEntry,
+                    seriesById = seriesById(),
+                    merchById = merchById(),
+                    mergeBehavior = ArtistFormState.MergeBehavior.APPEND,
+                )
+                formEntry to restored
+            }
+        }.value
+    }
+
+    @Composable
+    private fun DeleteProgressEffect(
         deleteProgress: StateFlow<JobProgress<BackendRequest.ArtistDelete.Response>>,
         snackbarHostState: SnackbarHostState,
         onClickBack: (force: Boolean) -> Unit,
@@ -593,6 +682,8 @@ object ArtistEditScreen {
     @Composable
     private fun Form(
         state: State,
+        artistFormState: ArtistFormState,
+        initialArtist: () -> ArtistDatabaseEntry.Impl?,
         errorState: ArtistErrorState,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
@@ -610,7 +701,7 @@ object ArtistEditScreen {
             if (formMetadata?.hasPendingFormSubmission == true) {
                 PendingFormSubmissionPrompt(hasPendingChanges, onClickMerge)
             }
-            val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+            val initialArtist = initialArtist()
             val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
             if (initialArtist == null || artistProgress is JobProgress.Loading) {
                 Box(
@@ -626,7 +717,7 @@ object ArtistEditScreen {
                 )
                 ArtistForm(
                     initialArtist = { initialArtist },
-                    state = state.artistFormState,
+                    state = artistFormState,
                     errorState = errorState,
                     seriesById = seriesById,
                     seriesPredictions = seriesPredictions,
