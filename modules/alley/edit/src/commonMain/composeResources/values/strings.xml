@@ -142,6 +142,14 @@
 
     <string name="alley_edit_series_error_aniList_type">AniList Type requires AniList ID</string>
 
+    <string name="alley_edit_series_edit_delete_title">Delete this series?</string>
+    <string name="alley_edit_series_edit_delete_text">This cannot be reversed</string>
+    <string name="alley_edit_series_edit_delete_action_delete">Delete series</string>
+    <string name="alley_edit_series_edit_delete_action_cancel">Cancel</string>
+    <string name="alley_edit_series_edit_delete_action_confirm">Delete</string>
+    <string name="alley_edit_series_edit_delete_failed">Failed to delete</string>
+    <string name="alley_edit_series_edit_delete_failed_outdated">Failed to delete, series was outdated</string>
+
     <string name="alley_edit_merch_header_canonical">Merch</string>
     <string name="alley_edit_merch_header_notes">Notes</string>
     <string name="alley_edit_merch_header_uuid">UUID</string>
@@ -149,6 +157,14 @@
     <string name="alley_edit_merch_action_add">Add merch</string>
     <string name="alley_edit_merch_action_save_content_description">Save merch</string>
     <string name="alley_edit_merch_action_refresh_content_description">Refresh merch</string>
+
+    <string name="alley_edit_merch_edit_delete_title">Delete this merch?</string>
+    <string name="alley_edit_merch_edit_delete_text">This cannot be reversed</string>
+    <string name="alley_edit_merch_edit_delete_action_delete">Delete merch</string>
+    <string name="alley_edit_merch_edit_delete_action_cancel">Cancel</string>
+    <string name="alley_edit_merch_edit_delete_action_confirm">Delete</string>
+    <string name="alley_edit_merch_edit_delete_failed">Failed to delete</string>
+    <string name="alley_edit_merch_edit_delete_failed_outdated">Failed to delete, merch was outdated</string>
 
     <string name="alley_edit_saving">Saving...</string>
 

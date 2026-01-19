@@ -5,6 +5,10 @@ insertSeries:
 INSERT OR REPLACE INTO seriesEntry
 VALUES ?;
 
+deleteSeries:
+DELETE FROM seriesEntry
+WHERE :id = seriesEntry.id;
+
 getSeriesById:
 SELECT * FROM seriesEntry
 WHERE :id = seriesEntry.id;

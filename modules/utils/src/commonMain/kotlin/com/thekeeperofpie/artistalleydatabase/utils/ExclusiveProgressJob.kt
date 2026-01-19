@@ -14,10 +14,10 @@ class ExclusiveProgressJob<T, R>(
     companion object {
         // TODO: Should this just enforce that input/output is always used?
         /** Creates a job for externally controlled input/output */
-        operator fun invoke(
+        operator fun <T> invoke(
             scope: CoroutineScope,
-            run: suspend () -> Unit,
-        ) = ExclusiveProgressJob<Unit, Unit>(scope) { run() }
+            run: suspend () -> T,
+        ) = ExclusiveProgressJob<Unit, T>(scope) { run() }
     }
 
     val state = MutableStateFlow<JobProgress<R>>(JobProgress.Idle())
@@ -43,4 +43,4 @@ class ExclusiveProgressJob<T, R>(
     }
 }
 
-fun <R> ExclusiveProgressJob<Unit, R>.launch() = launch {}
+fun ExclusiveProgressJob<Unit, *>.launch() = launch {}

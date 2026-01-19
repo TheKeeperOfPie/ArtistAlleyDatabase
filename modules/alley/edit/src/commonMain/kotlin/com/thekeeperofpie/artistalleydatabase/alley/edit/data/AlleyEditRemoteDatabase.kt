@@ -30,6 +30,10 @@ expect class AlleyEditRemoteDatabase {
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
     ): BackendRequest.ArtistSave.Response
+    suspend fun deleteArtist(
+        dataYear: DataYear,
+        expected: ArtistDatabaseEntry.Impl,
+    ): BackendRequest.ArtistDelete.Response
 
     suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage>
     suspend fun uploadImage(
@@ -44,12 +48,14 @@ expect class AlleyEditRemoteDatabase {
         initial: SeriesInfo?,
         updated: SeriesInfo,
     ): BackendRequest.SeriesSave.Response
+    suspend fun deleteSeries(expected: SeriesInfo): BackendRequest.SeriesDelete.Response
 
     suspend fun loadMerch(): List<MerchInfo>
     suspend fun saveMerch(
         initial: MerchInfo?,
         updated: MerchInfo,
     ): BackendRequest.MerchSave.Response
+    suspend fun deleteMerch(expected: MerchInfo): BackendRequest.MerchDelete.Response
 
     suspend fun generateFormLink(
         dataYear: DataYear,
@@ -76,11 +82,6 @@ expect class AlleyEditRemoteDatabase {
         updated: ArtistDatabaseEntry.Impl,
         formEntryTimestamp: Instant,
     ): BackendRequest.ArtistCommitForm.Response
-
-    suspend fun deleteArtist(
-        dataYear: DataYear,
-        expected: ArtistDatabaseEntry.Impl,
-    ): BackendRequest.ArtistDelete.Response
 
     suspend fun fakeArtistFormLink(): String?
     suspend fun deleteFakeArtistData()

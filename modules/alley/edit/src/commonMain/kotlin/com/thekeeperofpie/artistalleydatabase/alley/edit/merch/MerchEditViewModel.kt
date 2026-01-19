@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.launch
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -20,10 +22,11 @@ class MerchEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     @Assisted merchId: Uuid,
-    @Assisted private val initialMerch: MerchInfo?,
+    @Assisted val initialMerch: MerchInfo?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
+    private val deleteJob = ExclusiveProgressJob(viewModelScope, ::delete)
     val state = MerchEditScreen.State(
         id = savedStateHandle.saveable(
             key = "id",
@@ -41,10 +44,12 @@ class MerchEditViewModel(
             init = { EntryForm2.SingleTextState.fromValue(initialMerch?.notes.orEmpty()) },
         ),
         savingState = saveJob.state,
+        deleteProgress = deleteJob.state,
     )
 
     // TODO: Refresh list screen after save
     fun onClickSave() = saveJob.launch(::captureMerchInfo)
+    fun onConfirmDelete() = deleteJob.launch()
 
     private fun captureMerchInfo(): MerchInfo {
         val id = state.id.value.text.toString()
@@ -59,6 +64,10 @@ class MerchEditViewModel(
 
     private suspend fun save(merchInfo: MerchInfo) = withContext(dispatchers.io) {
         database.saveMerch(initial = initialMerch, updated = merchInfo)
+    }
+
+    private suspend fun delete() = withContext(dispatchers.io) {
+        database.deleteMerch(initialMerch!!)
     }
 
     @AssistedFactory

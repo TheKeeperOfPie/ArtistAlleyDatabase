@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -109,6 +110,11 @@ class AlleyEditDatabase(
         updated: ArtistDatabaseEntry.Impl,
     ) = remoteDatabase.saveArtist(dataYear, initial, updated)
 
+    suspend fun deleteArtist(
+        dataYear: DataYear,
+        expected: ArtistDatabaseEntry.Impl,
+    ) = remoteDatabase.deleteArtist(dataYear, expected)
+
     suspend fun uploadImage(
         dataYear: DataYear,
         artistId: Uuid,
@@ -131,11 +137,15 @@ class AlleyEditDatabase(
     ): BackendRequest.SeriesSave.Response =
         remoteDatabase.saveSeries(initial, updated)
 
+    suspend fun deleteSeries(expected: SeriesInfo) = remoteDatabase.deleteSeries(expected)
+
     suspend fun saveMerch(
         initial: MerchInfo?,
         updated: MerchInfo,
     ): BackendRequest.MerchSave.Response =
         remoteDatabase.saveMerch(initial, updated)
+
+    suspend fun deleteMerch(expected: MerchInfo) = remoteDatabase.deleteMerch(expected)
 
     suspend fun generateFormLink(
         dataYear: DataYear,
@@ -173,11 +183,6 @@ class AlleyEditDatabase(
         updated = updated,
         formEntryTimestamp = formEntryTimestamp,
     )
-
-    suspend fun deleteArtist(
-        dataYear: DataYear,
-        expected: ArtistDatabaseEntry.Impl,
-    ) = remoteDatabase.deleteArtist(dataYear, expected)
 
     suspend fun fakeArtistFormLink(): String? = remoteDatabase.fakeArtistFormLink()
     suspend fun deleteFakeArtistData() = remoteDatabase.deleteFakeArtistData()

@@ -24,6 +24,7 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.extension
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlin.math.exp
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
@@ -221,6 +222,20 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.ArtistSave.Response.Success
     }
 
+    actual suspend fun deleteArtist(
+        dataYear: DataYear,
+        expected: ArtistDatabaseEntry.Impl,
+    ): BackendRequest.ArtistDelete.Response {
+        val artistId = Uuid.parse(expected.id)
+        val currentArtist = loadArtist(dataYear, artistId)
+        if (expected != currentArtist) {
+            return BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
+        }
+
+        artistsByDataYearAndId[dataYear]?.remove(expected.id)
+        return BackendRequest.ArtistDelete.Response.Success
+    }
+
     actual suspend fun listImages(
         dataYear: DataYear,
         artistId: Uuid,
@@ -261,6 +276,16 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.SeriesSave.Response.Success
     }
 
+    actual suspend fun deleteSeries(expected: SeriesInfo): BackendRequest.SeriesDelete.Response {
+        val currentSeries = series[expected.uuid]
+        if (expected != currentSeries) {
+            return BackendRequest.SeriesDelete.Response.Outdated(currentSeries)
+        }
+
+        series.remove(expected.uuid)
+        return BackendRequest.SeriesDelete.Response.Success
+    }
+
     actual suspend fun loadMerch(): List<MerchInfo> = merch.values.toList()
 
     actual suspend fun saveMerch(
@@ -274,6 +299,16 @@ actual class AlleyEditRemoteDatabase(
         }
         merch[updated.uuid] = updated
         return BackendRequest.MerchSave.Response.Success
+    }
+
+    actual suspend fun deleteMerch(expected: MerchInfo): BackendRequest.MerchDelete.Response {
+        val currentMerch = merch[expected.uuid]
+        if (expected != currentMerch) {
+            return BackendRequest.MerchDelete.Response.Outdated(currentMerch)
+        }
+
+        merch.remove(expected.uuid)
+        return BackendRequest.MerchDelete.Response.Success
     }
 
     actual suspend fun generateFormLink(
@@ -358,20 +393,6 @@ actual class AlleyEditRemoteDatabase(
             }
         }
         return BackendRequest.ArtistCommitForm.Response.Success
-    }
-
-    actual suspend fun deleteArtist(
-        dataYear: DataYear,
-        expected: ArtistDatabaseEntry.Impl,
-    ): BackendRequest.ArtistDelete.Response {
-        val artistId = Uuid.parse(expected.id)
-        val currentArtist = loadArtist(dataYear, artistId)
-        if (expected != currentArtist) {
-            return BackendRequest.ArtistDelete.Response.Outdated(currentArtist)
-        }
-
-        artistsByDataYearAndId[dataYear]?.remove(expected.id)
-        return BackendRequest.ArtistDelete.Response.Success
     }
 
     actual suspend fun fakeArtistFormLink() =

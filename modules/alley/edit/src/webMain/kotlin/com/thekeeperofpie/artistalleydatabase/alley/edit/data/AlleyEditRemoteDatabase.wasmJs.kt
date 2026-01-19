@@ -92,6 +92,19 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun deleteArtist(
+        dataYear: DataYear,
+        expected: ArtistDatabaseEntry.Impl,
+    ): BackendRequest.ArtistDelete.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.ArtistDelete(dataYear, expected))!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.ArtistDelete.Response.Failed(t.message.orEmpty())
+            }
+        }
+
     actual suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage> =
         withContext(dispatchers.io) {
             try {
@@ -148,6 +161,16 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun deleteSeries(expected: SeriesInfo): BackendRequest.SeriesDelete.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.SeriesDelete(expected))!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.SeriesDelete.Response.Failed(t.message.orEmpty())
+            }
+        }
+
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
     actual suspend fun loadMerch(): List<MerchInfo> =
         withContext(dispatchers.io) {
@@ -164,6 +187,16 @@ actual class AlleyEditRemoteDatabase(
             } catch (t: Throwable) {
                 t.printStackTrace()
                 BackendRequest.MerchSave.Response.Failed(t.message.orEmpty())
+            }
+        }
+
+    actual suspend fun deleteMerch(expected: MerchInfo): BackendRequest.MerchDelete.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.MerchDelete(expected))!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.MerchDelete.Response.Failed(t.message.orEmpty())
             }
         }
 
@@ -266,19 +299,6 @@ actual class AlleyEditRemoteDatabase(
             } catch (t: Throwable) {
                 t.printStackTrace()
                 BackendRequest.ArtistCommitForm.Response.Failed(t.message.orEmpty())
-            }
-        }
-
-    actual suspend fun deleteArtist(
-        dataYear: DataYear,
-        expected: ArtistDatabaseEntry.Impl,
-    ): BackendRequest.ArtistDelete.Response =
-        withContext(dispatchers.io) {
-            try {
-                sendRequest(BackendRequest.ArtistDelete(dataYear, expected))!!
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                BackendRequest.ArtistDelete.Response.Failed(t.message.orEmpty())
             }
         }
 

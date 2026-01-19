@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -32,7 +33,8 @@ class SeriesEditViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val saveJob = ExclusiveProgressJob(viewModelScope, ::save)
-    private val initialSeries = editInfo?.series
+    private val deleteJob = ExclusiveProgressJob(viewModelScope, ::delete)
+    val initialSeries = editInfo?.series
     val state = SeriesEditScreen.State(
         id = savedStateHandle.saveable(
             key = "id",
@@ -130,10 +132,12 @@ class SeriesEditViewModel(
             saver = EntryForm2.SingleTextState.Saver,
         ) { initialValue(initialSeries?.notes.orEmpty(), SeriesColumn.NOTES) },
         savingState = saveJob.state,
+        deleteProgress = deleteJob.state,
     )
 
     // TODO: Refresh list screen after save
     fun onClickSave() = saveJob.launch(::captureSeriesInfo)
+    fun onConfirmDelete() = deleteJob.launch()
 
     private fun initialValue(
         value: String?,
@@ -187,6 +191,10 @@ class SeriesEditViewModel(
 
     private suspend fun save(seriesInfo: SeriesInfo) = withContext(dispatchers.io) {
         database.saveSeries(initial = initialSeries, updated = seriesInfo)
+    }
+
+    private suspend fun delete() = withContext(dispatchers.io) {
+        database.deleteSeries(initialSeries!!)
     }
 
     @AssistedFactory

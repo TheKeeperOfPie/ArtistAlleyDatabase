@@ -161,6 +161,22 @@ sealed interface BackendRequest {
     data object Series : BackendRequest, WithResponse<List<SeriesInfo>>
 
     @Serializable
+    data class SeriesDelete(val expected: SeriesInfo) : BackendRequest,
+        WithResponse<SeriesDelete.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: SeriesInfo?) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
+
+    @Serializable
     data class SeriesSave(
         val initial: SeriesInfo?,
         val updated: SeriesInfo,
@@ -180,6 +196,22 @@ sealed interface BackendRequest {
 
     @Serializable
     data object Merch : BackendRequest, WithResponse<List<MerchInfo>>
+
+    @Serializable
+    data class MerchDelete(val expected: MerchInfo) : BackendRequest,
+        WithResponse<MerchDelete.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: MerchInfo?) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
 
     @Serializable
     data class MerchSave(

@@ -1,6 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.series
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,23 +13,31 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,6 +46,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_open_link_content_description
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_action_save_content_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_edit_delete_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_edit_delete_action_confirm
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_edit_delete_action_delete
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_edit_delete_failed
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_edit_delete_failed_outdated
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_edit_delete_text
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_edit_delete_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_error_aniList_type
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_aniList_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_series_header_aniList_type
@@ -67,9 +85,13 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.OneTimeEffect
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 
 object SeriesEditScreen {
@@ -119,6 +141,7 @@ object SeriesEditScreen {
         SeriesEditScreen(
             state = viewModel.state,
             onClickBack = onClickBack,
+            onConfirmDelete = viewModel::onConfirmDelete.takeIf { viewModel.initialSeries != null },
             onClickSave = viewModel::onClickSave,
         )
     }
@@ -127,6 +150,7 @@ object SeriesEditScreen {
     operator fun invoke(
         state: State,
         onClickBack: (force: Boolean) -> Unit,
+        onConfirmDelete: (() -> Unit)? = null,
         onClickSave: () -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
@@ -148,12 +172,17 @@ object SeriesEditScreen {
             }
         }
 
+        DeleteProgressEffect(state.deleteProgress, snackbarHostState, onClickBack)
+
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = { Text(state.id.value.text.toString()) },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
                     actions = {
+                        if (onConfirmDelete != null) {
+                            DeleteButton(onConfirmDelete = onConfirmDelete)
+                        }
                         IconButton(onClick = onClickSave) {
                             Icon(
                                 imageVector = Icons.Default.Save,
@@ -330,6 +359,99 @@ object SeriesEditScreen {
         }
     }
 
+    @Composable
+    private fun DeleteButton(onConfirmDelete: () -> Unit, modifier: Modifier = Modifier) {
+        var showDialog by remember { mutableStateOf(false) }
+
+        IconButton(onClick = { showDialog = true }, modifier = modifier) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = stringResource(Res.string.alley_edit_series_edit_delete_action_delete),
+            )
+        }
+
+        var loading by remember { mutableStateOf(false) }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(stringResource(Res.string.alley_edit_series_edit_delete_title)) },
+                text = { Text(stringResource(Res.string.alley_edit_series_edit_delete_text)) },
+                confirmButton = {
+                    val countdown by produceState(5) {
+                        (4 downTo 0).forEach {
+                            delay(1.seconds)
+                            value = it
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            if (countdown <= 0) {
+                                loading = true
+                                onConfirmDelete()
+                            }
+                        },
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            val textAlpha by animateFloatAsState(if (countdown <= 0) 1f else 0f)
+                            Text(
+                                text = stringResource(Res.string.alley_edit_series_edit_delete_action_confirm),
+                                modifier = Modifier.graphicsLayer { alpha = textAlpha }
+                            )
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = countdown > 0,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                Text(countdown.toString())
+                            }
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = loading,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                CircularWavyProgressIndicator()
+                            }
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text(stringResource(Res.string.alley_edit_series_edit_delete_action_cancel))
+                    }
+                },
+            )
+        }
+    }
+
+    @Composable
+    fun DeleteProgressEffect(
+        deleteProgress: StateFlow<JobProgress<BackendRequest.SeriesDelete.Response>>,
+        snackbarHostState: SnackbarHostState,
+        onClickBack: (force: Boolean) -> Unit,
+    ) {
+        LaunchedEffect(deleteProgress) {
+            deleteProgress.collectLatest {
+                when (it) {
+                    is JobProgress.Finished.Result<BackendRequest.SeriesDelete.Response> ->
+                        when (it.value) {
+                            is BackendRequest.SeriesDelete.Response.Failed -> snackbarHostState.showSnackbar(
+                                message = getString(Res.string.alley_edit_series_edit_delete_failed)
+                            )
+                            is BackendRequest.SeriesDelete.Response.Outdated -> snackbarHostState.showSnackbar(
+                                message = getString(Res.string.alley_edit_series_edit_delete_failed_outdated)
+                            )
+                            BackendRequest.SeriesDelete.Response.Success -> onClickBack(true)
+                        }
+                    is JobProgress.Finished.UnhandledError<*> ->
+                        snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_series_edit_delete_failed))
+                    is JobProgress.Idle<*>,
+                    is JobProgress.Loading<*>,
+                        -> Unit
+                }
+            }
+        }
+    }
+
     @Stable
     class State(
         val id: EntryForm2.SingleTextState,
@@ -347,5 +469,6 @@ object SeriesEditScreen {
         val link: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
         val savingState: MutableStateFlow<JobProgress<BackendRequest.SeriesSave.Response>>,
+        val deleteProgress: StateFlow<JobProgress<BackendRequest.SeriesDelete.Response>>,
     )
 }

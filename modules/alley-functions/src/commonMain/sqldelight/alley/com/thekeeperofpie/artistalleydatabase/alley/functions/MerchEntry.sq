@@ -5,6 +5,10 @@ insertMerch:
 INSERT OR REPLACE INTO merchEntry
 VALUES ?;
 
+deleteMerch:
+DELETE FROM merchEntry
+WHERE :name = merchEntry.name;
+
 getMerchById:
 SELECT * FROM merchEntry
 WHERE :name = merchEntry.name;

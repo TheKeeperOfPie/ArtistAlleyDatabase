@@ -73,8 +73,10 @@ object AlleyEditBackend {
                     is BackendRequest.DeleteFakeArtistData ->
                         makeResponse(deleteFakeArtistData(context))
                     is BackendRequest.Merch -> makeResponse(loadMerch(context))
+                    is BackendRequest.MerchDelete -> makeResponse(deleteMerch(context, this))
                     is BackendRequest.MerchSave -> makeResponse(saveMerch(context, this))
                     is BackendRequest.Series -> loadSeries(context)
+                    is BackendRequest.SeriesDelete -> makeResponse(deleteSeries(context, this))
                     is BackendRequest.SeriesSave -> makeResponse(saveSeries(context, this))
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
@@ -453,6 +455,22 @@ object AlleyEditBackend {
         return BackendRequest.SeriesSave.Response.Success
     }
 
+    private suspend fun deleteSeries(
+        context: EventContext,
+        request: BackendRequest.SeriesDelete,
+    ): BackendRequest.SeriesDelete.Response {
+        val database = Databases.editDatabase(context)
+        val currentSeries =
+            database.seriesEntryQueries.getSeriesById(request.expected.id)
+                .awaitAsOneOrNull()?.toSeriesInfo()
+        if (currentSeries != null && currentSeries != request.expected) {
+            return BackendRequest.SeriesDelete.Response.Outdated(currentSeries)
+        }
+        database.seriesEntryQueries.deleteSeries(request.expected.id)
+        loadSeriesIntoCache(context)
+        return BackendRequest.SeriesDelete.Response.Success
+    }
+
     private suspend fun loadMerch(context: EventContext): List<MerchInfo> =
         Databases.editDatabase(context).merchEntryQueries
             .getMerch()
@@ -472,6 +490,21 @@ object AlleyEditBackend {
         }
         database.merchEntryQueries.insertMerch(request.updated.toMerchEntry())
         return BackendRequest.MerchSave.Response.Success
+    }
+
+    private suspend fun deleteMerch(
+        context: EventContext,
+        request: BackendRequest.MerchDelete,
+    ): BackendRequest.MerchDelete.Response {
+        val database = Databases.editDatabase(context)
+        val currentMerch =
+            database.merchEntryQueries.getMerchById(request.expected.name)
+                .awaitAsOneOrNull()?.toMerchInfo()
+        if (currentMerch != null && currentMerch != request.expected) {
+            return BackendRequest.MerchDelete.Response.Outdated(currentMerch)
+        }
+        database.merchEntryQueries.deleteMerch(request.expected.name)
+        return BackendRequest.MerchDelete.Response.Success
     }
 
     private fun literalJsonResponse(value: String) = Response(
