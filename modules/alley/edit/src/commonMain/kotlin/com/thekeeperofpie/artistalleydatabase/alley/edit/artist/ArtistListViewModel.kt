@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -24,7 +25,7 @@ class ArtistListViewModel(
     private val artistCache: ArtistCache,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val query by savedStateHandle.saveable(saver = TextFieldState.Saver) { TextFieldState() }
+    private val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
     private val dataYear = savedStateHandle.getMutableStateFlow("dataYear", DataYear.LATEST)
     private val sortBy = savedStateHandle.getMutableStateFlow("sortBy", ArtistListSortBy.BOOTH)
     private val tab = savedStateHandle.getMutableStateFlow("tab", ArtistListTab.ALL)

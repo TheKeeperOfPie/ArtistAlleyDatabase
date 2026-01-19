@@ -10,6 +10,7 @@ import androidx.paging.PagingData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.RefreshFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -27,7 +28,7 @@ class MerchListViewModel(
     dispatchers: CustomDispatchers,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val query by savedStateHandle.saveable(saver = TextFieldState.Saver) { TextFieldState() }
+    val query by savedStateHandle.saveable(saver = TextFieldState.Saver.Fixed) { TextFieldState() }
     private val refresh = RefreshFlow()
 
     private val allMerch = refresh.updates

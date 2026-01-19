@@ -39,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.ForceEnabledTextField
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -178,7 +179,7 @@ object SourceDropdown {
             override fun SaverScope.save(value: State) = listOf(
                 with(EntryForm2.DropdownState.Saver) { save(value.dropdownState) },
                 with(ConventionState.Saver) { save(value.conventionState) },
-                with(TextFieldState.Saver) { save(value.customTextState) },
+                with(TextFieldState.Saver.Fixed) { save(value.customTextState) },
             )
 
             override fun restore(value: Any): State {
@@ -186,7 +187,7 @@ object SourceDropdown {
                 return State(
                     dropdownState = with(EntryForm2.DropdownState.Saver) { restore(dropdown!!) }!!,
                     conventionState = with(ConventionState.Saver) { restore(conventionState!!) },
-                    customTextState = with(TextFieldState.Saver) { restore(customTextState!!) }!!,
+                    customTextState = with(TextFieldState.Saver.Fixed) { restore(customTextState!!) }!!,
                 )
             }
         }
@@ -213,19 +214,19 @@ object SourceDropdown {
 
         object Saver : ComposeSaver<ConventionState, Any> {
             override fun SaverScope.save(value: ConventionState) = listOf(
-                with(TextFieldState.Saver) { save(value.name) },
-                with(TextFieldState.Saver) { save(value.year) },
-                with(TextFieldState.Saver) { save(value.hall) },
-                with(TextFieldState.Saver) { save(value.booth) },
+                with(TextFieldState.Saver.Fixed) { save(value.name) },
+                with(TextFieldState.Saver.Fixed) { save(value.year) },
+                with(TextFieldState.Saver.Fixed) { save(value.hall) },
+                with(TextFieldState.Saver.Fixed) { save(value.booth) },
             )
 
             override fun restore(value: Any): ConventionState {
                 val (name, year, hall, booth) = value as List<*>
                 return ConventionState(
-                    name = with(TextFieldState.Saver) { restore(name!!) }!!,
-                    year = with(TextFieldState.Saver) { restore(year!!) }!!,
-                    hall = with(TextFieldState.Saver) { restore(hall!!) }!!,
-                    booth = with(TextFieldState.Saver) { restore(booth!!) }!!,
+                    name = with(TextFieldState.Saver.Fixed) { restore(name!!) }!!,
+                    year = with(TextFieldState.Saver.Fixed) { restore(year!!) }!!,
+                    hall = with(TextFieldState.Saver.Fixed) { restore(hall!!) }!!,
+                    booth = with(TextFieldState.Saver.Fixed) { restore(booth!!) }!!,
                 )
             }
         }

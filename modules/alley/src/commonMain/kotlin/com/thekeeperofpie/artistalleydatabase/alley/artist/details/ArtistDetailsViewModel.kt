@@ -34,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -163,7 +164,7 @@ class ArtistDetailsViewModel(
             .flowOn(dispatchers.io)
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
-    val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver) {
+    val userNotes by savedStateHandle.saveable(stateSaver = TextFieldState.Saver.Fixed) {
         mutableStateOf(TextFieldState())
     }
 

@@ -109,6 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.isTabKeyDownOrTyped
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -208,7 +209,7 @@ object EntryForm2 {
 
         object Saver : ComposeSaver<SingleTextState, Any> {
             override fun SaverScope.save(value: SingleTextState) = listOf(
-                with(TextFieldState.Saver) { save(value.value) },
+                with(TextFieldState.Saver.Fixed) { save(value.value) },
                 value.lockState,
                 value.wasEverDifferent,
             )
@@ -216,7 +217,7 @@ object EntryForm2 {
             override fun restore(value: Any): SingleTextState {
                 val (value, lockState, wasEverDifferent) = value as List<*>
                 return SingleTextState(
-                    value = with(TextFieldState.Saver) { restore(value!!) }!!,
+                    value = with(TextFieldState.Saver.Fixed) { restore(value!!) }!!,
                     initialLockState = lockState as EntryLockState,
                     wasEverDifferent = wasEverDifferent as Boolean,
                 )
