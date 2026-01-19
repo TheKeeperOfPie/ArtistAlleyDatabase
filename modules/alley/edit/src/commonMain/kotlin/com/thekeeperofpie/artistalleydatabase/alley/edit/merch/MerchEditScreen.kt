@@ -35,7 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
@@ -78,14 +78,14 @@ object MerchEditScreen {
         val snackbarHostState = remember { SnackbarHostState() }
         LaunchedEffect(Unit) {
             state.savingState.collectLatest {
-                if (it is JobProgress.Finished.Result<MerchSave.Response.Result>) {
+                if (it is JobProgress.Finished.Result<BackendRequest.MerchSave.Response>) {
                     when (val result = it.value) {
-                        is MerchSave.Response.Result.Failed ->
+                        is BackendRequest.MerchSave.Response.Failed ->
                             snackbarHostState.showSnackbar(message = result.errorMessage)
-                        is MerchSave.Response.Result.Outdated -> {
+                        is BackendRequest.MerchSave.Response.Outdated -> {
                             // TODO
                         }
-                        MerchSave.Response.Result.Success -> {
+                        BackendRequest.MerchSave.Response.Success -> {
                             state.savingState.value = JobProgress.Idle()
                             onClickBack(true)
                         }
@@ -155,6 +155,6 @@ object MerchEditScreen {
         val id: EntryForm2.SingleTextState,
         val uuid: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
-        val savingState: MutableStateFlow<JobProgress<MerchSave.Response.Result>>,
+        val savingState: MutableStateFlow<JobProgress<BackendRequest.MerchSave.Response>>,
     )
 }

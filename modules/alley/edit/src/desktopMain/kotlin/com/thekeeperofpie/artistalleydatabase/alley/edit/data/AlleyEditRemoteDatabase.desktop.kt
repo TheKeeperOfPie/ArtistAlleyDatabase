@@ -13,10 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -202,18 +199,18 @@ actual class AlleyEditRemoteDatabase(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
-    ): ArtistSave.Response = saveArtist(dataYear, initial, updated, null)
+    ): BackendRequest.ArtistSave.Response = saveArtist(dataYear, initial, updated, null)
 
     private suspend fun saveArtist(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
         formTimestamp: Instant?,
-    ): ArtistSave.Response {
+    ): BackendRequest.ArtistSave.Response {
         simulateLatency()
         val oldArtist = loadArtist(dataYear, Uuid.parse(updated.id))
         if (oldArtist != null && oldArtist != initial) {
-            return ArtistSave.Response.Outdated(oldArtist)
+            return BackendRequest.ArtistSave.Response.Outdated(oldArtist)
         }
         val historyEntry = ArtistHistoryEntry.create(oldArtist, updated, formTimestamp)
             .copy(lastEditor = "local")
@@ -221,7 +218,7 @@ actual class AlleyEditRemoteDatabase(
             .getOrPut(updated.id) { mutableListOf() }
             .add(historyEntry)
         artistsByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }[updated.id] = updated
-        return ArtistSave.Response.Success
+        return BackendRequest.ArtistSave.Response.Success
     }
 
     actual suspend fun listImages(
@@ -254,14 +251,14 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun saveSeries(
         initial: SeriesInfo?,
         updated: SeriesInfo,
-    ): SeriesSave.Response.Result {
+    ): BackendRequest.SeriesSave.Response {
         simulateLatency()
         val existing = initial?.uuid?.let { series[it] }
         if (existing != null && existing != initial) {
-            return SeriesSave.Response.Result.Outdated(existing)
+            return BackendRequest.SeriesSave.Response.Outdated(existing)
         }
         series[updated.uuid] = updated
-        return SeriesSave.Response.Result.Success
+        return BackendRequest.SeriesSave.Response.Success
     }
 
     actual suspend fun loadMerch(): List<MerchInfo> = merch.values.toList()
@@ -269,14 +266,14 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun saveMerch(
         initial: MerchInfo?,
         updated: MerchInfo,
-    ): MerchSave.Response.Result {
+    ): BackendRequest.MerchSave.Response {
         simulateLatency()
         val existing = initial?.uuid?.let { merch[it] }
         if (existing != null && existing != initial) {
-            return MerchSave.Response.Result.Outdated(existing)
+            return BackendRequest.MerchSave.Response.Outdated(existing)
         }
         merch[updated.uuid] = updated
-        return MerchSave.Response.Result.Success
+        return BackendRequest.MerchSave.Response.Success
     }
 
     actual suspend fun generateFormLink(

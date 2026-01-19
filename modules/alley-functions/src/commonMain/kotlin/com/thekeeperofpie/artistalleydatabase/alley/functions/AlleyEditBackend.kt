@@ -23,11 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
@@ -52,7 +49,6 @@ object AlleyEditBackend {
                 uploadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
             else -> Json.decodeFromString<BackendRequest>(context.request.text().await()).run {
                 when (this) {
-                    is ArtistSave.Request -> makeResponse(saveArtist(context, this, null))
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
                     is BackendRequest.ArtistWithFormMetadata ->
                         makeResponse(loadArtistWithFormMetadata(context, this))
@@ -69,6 +65,7 @@ object AlleyEditBackend {
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
+                    is BackendRequest.ArtistSave -> makeResponse(saveArtist(context, this, null))
                     is BackendRequest.DatabaseCreate -> makeResponse(databaseCreate(context))
                     is BackendRequest.GenerateFormKey ->
                         makeResponse(generateFormKey(context, this))
@@ -76,10 +73,10 @@ object AlleyEditBackend {
                     is BackendRequest.DeleteFakeArtistData ->
                         makeResponse(deleteFakeArtistData(context))
                     is BackendRequest.Merch -> makeResponse(loadMerch(context))
+                    is BackendRequest.MerchSave -> makeResponse(saveMerch(context, this))
                     is BackendRequest.Series -> loadSeries(context)
+                    is BackendRequest.SeriesSave -> makeResponse(saveSeries(context, this))
                     is ListImages.Request -> makeResponse(listImages(context, this))
-                    is MerchSave.Request -> makeResponse(saveMerch(context, this))
-                    is SeriesSave.Request -> makeResponse(saveSeries(context, this))
                 }
             }
         }
@@ -228,17 +225,17 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.ArtistCommitForm,
     ): BackendRequest.ArtistCommitForm.Response {
-        val saveRequest = ArtistSave.Request(
+        val saveRequest = BackendRequest.ArtistSave(
             dataYear = request.dataYear,
             initial = request.initial,
             updated = request.updated.copy(verifiedArtist = true),
         )
         when (val saveResponse = saveArtist(context, saveRequest, request.formEntryTimestamp)) {
-            is ArtistSave.Response.Failed ->
+            is BackendRequest.ArtistSave.Response.Failed ->
                 return BackendRequest.ArtistCommitForm.Response.Failed(saveResponse.errorMessage)
-            is ArtistSave.Response.Outdated ->
+            is BackendRequest.ArtistSave.Response.Outdated ->
                 return BackendRequest.ArtistCommitForm.Response.Outdated(saveResponse.current)
-            ArtistSave.Response.Success -> Unit
+            BackendRequest.ArtistSave.Response.Success -> Unit
         }
 
         Databases.formDatabase(context).artistFormEntryQueries.run {
@@ -307,7 +304,7 @@ object AlleyEditBackend {
 
     private suspend fun saveArtist(
         context: EventContext,
-        request: ArtistSave.Request,
+        request: BackendRequest.ArtistSave,
         formTimestamp: Instant?,
     ) = when (request.dataYear) {
         DataYear.ANIME_EXPO_2026 -> {
@@ -319,7 +316,7 @@ object AlleyEditBackend {
                     ?.toArtistDatabaseEntry()
                     ?.fixForJs()
             if (currentArtist != null && currentArtist != request.initial) {
-                ArtistSave.Response.Outdated(currentArtist)
+                BackendRequest.ArtistSave.Response.Outdated(currentArtist)
             } else {
                 val updatedArtist = request.updated.copy(
                     lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
@@ -332,7 +329,7 @@ object AlleyEditBackend {
                 ).toDatabaseEntry(Uuid.parse(updatedArtist.id))
                 database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
                 database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
-                ArtistSave.Response.Success
+                BackendRequest.ArtistSave.Response.Success
             }
         }
         DataYear.ANIME_EXPO_2023,
@@ -340,7 +337,7 @@ object AlleyEditBackend {
         DataYear.ANIME_EXPO_2025,
         DataYear.ANIME_NYC_2024,
         DataYear.ANIME_NYC_2025,
-            -> ArtistSave.Response.Failed("Editing legacy years not supported")
+            -> BackendRequest.ArtistSave.Response.Failed("Editing legacy years not supported")
     }
 
     private suspend fun generateFormKey(
@@ -442,18 +439,18 @@ object AlleyEditBackend {
 
     private suspend fun saveSeries(
         context: EventContext,
-        request: SeriesSave.Request,
-    ): SeriesSave.Response {
+        request: BackendRequest.SeriesSave,
+    ): BackendRequest.SeriesSave.Response {
         val database = Databases.editDatabase(context)
         val currentSeries =
             database.seriesEntryQueries.getSeriesById(request.updated.id)
                 .awaitAsOneOrNull()?.toSeriesInfo()
         if (currentSeries != null && currentSeries != request.initial) {
-            return SeriesSave.Response(SeriesSave.Response.Result.Outdated(currentSeries))
+            return BackendRequest.SeriesSave.Response.Outdated(currentSeries)
         }
         database.seriesEntryQueries.insertSeries(request.updated.toSeriesEntry())
         loadSeriesIntoCache(context)
-        return SeriesSave.Response(SeriesSave.Response.Result.Success)
+        return BackendRequest.SeriesSave.Response.Success
     }
 
     private suspend fun loadMerch(context: EventContext): List<MerchInfo> =
@@ -464,17 +461,17 @@ object AlleyEditBackend {
 
     private suspend fun saveMerch(
         context: EventContext,
-        request: MerchSave.Request,
-    ): MerchSave.Response {
+        request: BackendRequest.MerchSave,
+    ): BackendRequest.MerchSave.Response {
         val database = Databases.editDatabase(context)
         val currentMerch =
             database.merchEntryQueries.getMerchById(request.updated.name)
                 .awaitAsOneOrNull()?.toMerchInfo()
         if (currentMerch != null && currentMerch != request.initial) {
-            return MerchSave.Response(MerchSave.Response.Result.Outdated(currentMerch))
+            return BackendRequest.MerchSave.Response.Outdated(currentMerch)
         }
         database.merchEntryQueries.insertMerch(request.updated.toMerchEntry())
-        return MerchSave.Response(MerchSave.Response.Result.Success)
+        return BackendRequest.MerchSave.Response.Success
     }
 
     private fun literalJsonResponse(value: String) = Response(

@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -46,7 +46,7 @@ class MerchResolutionViewModel(
                 it.merchConfirmed.contains(merchId)
     }
 
-    private suspend fun commit(merch: MerchInfo): ArtistSave.Response {
+    private suspend fun commit(merch: MerchInfo): BackendRequest.ArtistSave.Response {
         loadArtists().forEach {
             val artist = editDatabase.loadArtist(DataYear.ANIME_EXPO_2026, it.id) ?: return@forEach
             val response = editDatabase.saveArtist(
@@ -57,12 +57,12 @@ class MerchResolutionViewModel(
                     merchConfirmed = artist.merchConfirmed.map { if (it == merchId) merch.name else it },
                 )
             )
-            if (response != ArtistSave.Response.Success) {
+            if (response != BackendRequest.ArtistSave.Response.Success) {
                 return@commit response
             }
         }
 
-        return ArtistSave.Response.Success
+        return BackendRequest.ArtistSave.Response.Success
     }
 
     @AssistedFactory

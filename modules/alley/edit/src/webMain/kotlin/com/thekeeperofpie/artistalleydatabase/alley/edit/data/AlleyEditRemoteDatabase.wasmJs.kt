@@ -12,11 +12,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -79,11 +76,11 @@ actual class AlleyEditRemoteDatabase(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
-    ): ArtistSave.Response =
+    ): BackendRequest.ArtistSave.Response =
         withContext(dispatchers.io) {
             try {
                 sendRequest(
-                    ArtistSave.Request(
+                    BackendRequest.ArtistSave(
                         dataYear = dataYear,
                         initial = initial,
                         updated = updated,
@@ -91,7 +88,7 @@ actual class AlleyEditRemoteDatabase(
                 )!!
             } catch (t: Throwable) {
                 t.printStackTrace()
-                ArtistSave.Response.Failed(t.message.orEmpty())
+                BackendRequest.ArtistSave.Response.Failed(t.message.orEmpty())
             }
         }
 
@@ -141,13 +138,13 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun saveSeries(
         initial: SeriesInfo?,
         updated: SeriesInfo,
-    ): SeriesSave.Response.Result =
+    ): BackendRequest.SeriesSave.Response =
         withContext(dispatchers.io) {
             try {
-                sendRequest(SeriesSave.Request(initial = initial, updated = updated))!!.result
+                sendRequest(BackendRequest.SeriesSave(initial = initial, updated = updated))!!
             } catch (t: Throwable) {
                 t.printStackTrace()
-                SeriesSave.Response.Result.Failed(t.message.orEmpty())
+                BackendRequest.SeriesSave.Response.Failed(t.message.orEmpty())
             }
         }
 
@@ -160,13 +157,13 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun saveMerch(
         initial: MerchInfo?,
         updated: MerchInfo,
-    ): MerchSave.Response.Result =
+    ): BackendRequest.MerchSave.Response =
         withContext(dispatchers.io) {
             try {
-                sendRequest(MerchSave.Request(initial = initial, updated = updated))!!.result
+                sendRequest(BackendRequest.MerchSave(initial = initial, updated = updated))!!
             } catch (t: Throwable) {
                 t.printStackTrace()
-                MerchSave.Response.Result.Failed(t.message.orEmpty())
+                BackendRequest.MerchSave.Response.Failed(t.message.orEmpty())
             }
         }
 

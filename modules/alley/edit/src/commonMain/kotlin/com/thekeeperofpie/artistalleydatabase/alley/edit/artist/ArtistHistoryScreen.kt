@@ -102,7 +102,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -168,7 +168,7 @@ object ArtistHistoryScreen {
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        saveProgress: MutableStateFlow<JobProgress<ArtistSave.Response>>,
+        saveProgress: MutableStateFlow<JobProgress<BackendRequest.ArtistSave.Response>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickRefresh: () -> Unit,
@@ -178,14 +178,14 @@ object ArtistHistoryScreen {
         val navigationResults = LocalNavigationResults.current
         LaunchedEffect(navigationResults) {
             saveProgress.collectLatest {
-                if (it is JobProgress.Finished.Result<ArtistSave.Response>) {
+                if (it is JobProgress.Finished.Result<BackendRequest.ArtistSave.Response>) {
                     when (val result = it.value) {
-                        is ArtistSave.Response.Failed ->
+                        is BackendRequest.ArtistSave.Response.Failed ->
                             snackbarHostState.showSnackbar(message = result.errorMessage)
-                        is ArtistSave.Response.Outdated -> {
+                        is BackendRequest.ArtistSave.Response.Outdated -> {
                             // TODO
                         }
-                        is ArtistSave.Response.Success -> {
+                        is BackendRequest.ArtistSave.Response.Success -> {
                             saveProgress.value = JobProgress.Idle()
                             navigationResults[RESULT_KEY] = Unit
                             onClickBack(true)

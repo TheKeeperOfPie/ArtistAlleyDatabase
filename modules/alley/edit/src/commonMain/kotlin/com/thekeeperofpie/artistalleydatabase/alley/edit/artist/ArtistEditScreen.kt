@@ -119,7 +119,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
@@ -244,15 +243,15 @@ object ArtistEditScreen {
                 .filterNotNull()
                 .collectLatest { (isManual, result) ->
                     when (result) {
-                        is ArtistSave.Response.Failed -> {
+                        is BackendRequest.ArtistSave.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
                             saveTaskState.clearResult()
                         }
-                        is ArtistSave.Response.Outdated -> {
+                        is BackendRequest.ArtistSave.Response.Outdated -> {
                             snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_artist_edit_outdated))
                             saveTaskState.clearResult()
                         }
-                        is ArtistSave.Response.Success -> {
+                        is BackendRequest.ArtistSave.Response.Success -> {
                             saveTaskState.clearResult()
                             if (isManual) {
                                 onClickBack(true)
@@ -479,7 +478,7 @@ object ArtistEditScreen {
     @Composable
     private fun AppBarActions(
         errorState: ArtistErrorState,
-        saveTaskState: TaskState<ArtistSave.Response>,
+        saveTaskState: TaskState<BackendRequest.ArtistSave.Response>,
         hasPendingChanges: () -> Boolean,
         hasPreviousYearData: () -> Boolean,
         onClickRefresh: () -> Unit,
@@ -907,7 +906,7 @@ object ArtistEditScreen {
         val artistFormState: ArtistFormState,
         val formMetadata: StateFlow<FormMetadata?>,
         val formLink: StateFlow<String?>,
-        val saveTaskState: TaskState<ArtistSave.Response>,
+        val saveTaskState: TaskState<BackendRequest.ArtistSave.Response>,
         val sameArtistState: SameArtistPrompter.State,
         val deleteProgress: StateFlow<JobProgress<BackendRequest.ArtistDelete.Response>>,
     ) {

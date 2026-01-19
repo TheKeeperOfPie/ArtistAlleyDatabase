@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCac
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -53,7 +53,7 @@ class ArtistEditViewModel(
     @Assisted private val artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, ArtistSave.Response> =
+    private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, BackendRequest.ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
     private val formLink = savedStateHandle.getMutableStateFlow<String?>("formLink", null)
     private val artist =
@@ -225,7 +225,7 @@ class ArtistEditViewModel(
             val hasChanged = ArtistDatabaseEntry.hasChanged(artist.value, databaseEntry)
             if (!isManual && !hasChanged && images.none { it is EditImage.LocalImage }) {
                 // Don't save if no data has changed
-                return@withContext ArtistSave.Response.Success
+                return@withContext BackendRequest.ArtistSave.Response.Success
             }
             val finalImages = images.mapNotNull {
                 when (it) {
@@ -253,7 +253,7 @@ class ArtistEditViewModel(
                 initial = artist.value,
                 updated = updatedArtist,
             ).also {
-                if (it is ArtistSave.Response.Success) {
+                if (it is BackendRequest.ArtistSave.Response.Success) {
                     hasLoaded = false
                     artist.value = updatedArtist
                     if (!isManual) {

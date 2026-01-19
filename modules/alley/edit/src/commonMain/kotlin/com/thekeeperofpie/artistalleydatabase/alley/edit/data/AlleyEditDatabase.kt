@@ -8,15 +8,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -128,10 +125,16 @@ class AlleyEditDatabase(
             .fillSize(width, height)
     }
 
-    suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo): SeriesSave.Response.Result =
+    suspend fun saveSeries(
+        initial: SeriesInfo?,
+        updated: SeriesInfo,
+    ): BackendRequest.SeriesSave.Response =
         remoteDatabase.saveSeries(initial, updated)
 
-    suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result =
+    suspend fun saveMerch(
+        initial: MerchInfo?,
+        updated: MerchInfo,
+    ): BackendRequest.MerchSave.Response =
         remoteDatabase.saveMerch(initial, updated)
 
     suspend fun generateFormLink(

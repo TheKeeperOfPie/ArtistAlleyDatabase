@@ -45,7 +45,7 @@ import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
@@ -69,7 +69,7 @@ fun <T> TagResolutionScreen(
     onChosenValueChange: (T) -> Unit,
     predictions: suspend (String) -> Flow<List<T>>,
     prediction: @Composable (query: String, T) -> Unit,
-    progress: MutableStateFlow<JobProgress<ArtistSave.Response>>,
+    progress: MutableStateFlow<JobProgress<BackendRequest.ArtistSave.Response>>,
     onClickBack: () -> Unit,
     onClickDone: () -> Unit,
     content: @Composable () -> Unit,
@@ -78,18 +78,18 @@ fun <T> TagResolutionScreen(
     LaunchedEffect(progress) {
         progress.collectLatest {
             when (it) {
-                is JobProgress.Finished.Result<ArtistSave.Response> -> {
+                is JobProgress.Finished.Result<BackendRequest.ArtistSave.Response> -> {
                     when (val response = it.value) {
-                        is ArtistSave.Response.Failed ->
+                        is BackendRequest.ArtistSave.Response.Failed ->
                             snackbarHostState.showSnackbar(
                                 message = getString(
                                     Res.string.alley_edit_tag_resolution_error_generic,
                                     response.errorMessage
                                 )
                             )
-                        is ArtistSave.Response.Outdated ->
+                        is BackendRequest.ArtistSave.Response.Outdated ->
                             snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_tag_resolution_error_generic))
-                        ArtistSave.Response.Success -> {
+                        BackendRequest.ArtistSave.Response.Success -> {
                             progress.value = JobProgress.Idle()
                             onClickBack()
                         }
@@ -124,7 +124,7 @@ fun <T> TagResolutionScreen(
             modifier = Modifier.widthIn(max = 600.dp)
         ) {
             val progress by progress.collectAsStateWithLifecycle()
-            ContentSavingBox(saving = progress is JobProgress.Loading<ArtistSave.Response>) {
+            ContentSavingBox(saving = progress is JobProgress.Loading<BackendRequest.ArtistSave.Response>) {
                 val scrollState = rememberScrollState()
                 val scrollAreaState = rememberScrollAreaState(scrollState)
                 ScrollArea(scrollAreaState) {

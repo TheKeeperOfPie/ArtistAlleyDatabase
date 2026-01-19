@@ -34,7 +34,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import io.github.vinceglb.filekit.dialogs.FileKitMode
@@ -74,7 +74,7 @@ internal fun EditImagesButton(
 @Composable
 internal fun ArtistSaveButton(
     enabled: Boolean,
-    saveTaskState: TaskState<ArtistSave.Response>,
+    saveTaskState: TaskState<BackendRequest.ArtistSave.Response>,
     onClickSave: () -> Unit,
 ) {
     Box(contentAlignment = Alignment.Center) {

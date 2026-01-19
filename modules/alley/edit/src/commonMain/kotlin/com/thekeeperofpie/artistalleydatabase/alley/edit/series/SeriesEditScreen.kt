@@ -54,7 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.textRes
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -132,14 +132,14 @@ object SeriesEditScreen {
         val snackbarHostState = remember { SnackbarHostState() }
         LaunchedEffect(Unit) {
             state.savingState.collectLatest {
-                if (it is JobProgress.Finished.Result<SeriesSave.Response.Result>) {
+                if (it is JobProgress.Finished.Result<BackendRequest.SeriesSave.Response>) {
                     when (val result = it.value) {
-                        is SeriesSave.Response.Result.Failed ->
+                        is BackendRequest.SeriesSave.Response.Failed ->
                             snackbarHostState.showSnackbar(message = result.errorMessage)
-                        is SeriesSave.Response.Result.Outdated -> {
+                        is BackendRequest.SeriesSave.Response.Outdated -> {
                             // TODO
                         }
-                        SeriesSave.Response.Result.Success -> {
+                        BackendRequest.SeriesSave.Response.Success -> {
                             state.savingState.value = JobProgress.Idle()
                             onClickBack(true)
                         }
@@ -346,6 +346,6 @@ object SeriesEditScreen {
         val synonymsValue: EntryForm2.SingleTextState,
         val link: EntryForm2.SingleTextState,
         val notes: EntryForm2.SingleTextState,
-        val savingState: MutableStateFlow<JobProgress<SeriesSave.Response.Result>>,
+        val savingState: MutableStateFlow<JobProgress<BackendRequest.SeriesSave.Response>>,
     )
 }

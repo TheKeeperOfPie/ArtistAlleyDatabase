@@ -8,10 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.MerchSave
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.SeriesSave
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import io.github.vinceglb.filekit.PlatformFile
 import kotlin.time.Instant
@@ -32,7 +29,7 @@ expect class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
-    ): ArtistSave.Response
+    ): BackendRequest.ArtistSave.Response
 
     suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage>
     suspend fun uploadImage(
@@ -43,10 +40,16 @@ expect class AlleyEditRemoteDatabase {
     ): EditImage
 
     suspend fun loadSeries(): List<SeriesInfo>
-    suspend fun saveSeries(initial: SeriesInfo?, updated: SeriesInfo): SeriesSave.Response.Result
+    suspend fun saveSeries(
+        initial: SeriesInfo?,
+        updated: SeriesInfo,
+    ): BackendRequest.SeriesSave.Response
 
     suspend fun loadMerch(): List<MerchInfo>
-    suspend fun saveMerch(initial: MerchInfo?, updated: MerchInfo): MerchSave.Response.Result
+    suspend fun saveMerch(
+        initial: MerchInfo?,
+        updated: MerchInfo,
+    ): BackendRequest.MerchSave.Response
 
     suspend fun generateFormLink(
         dataYear: DataYear,
@@ -60,6 +63,7 @@ expect class AlleyEditRemoteDatabase {
         dataYear: DataYear,
         artistId: Uuid,
     ): BackendRequest.ArtistWithFormEntry.Response?
+
     suspend fun loadArtistWithHistoricalFormEntry(
         dataYear: DataYear,
         artistId: Uuid,

@@ -116,6 +116,25 @@ sealed interface BackendRequest {
     data object Artists : BackendRequest, WithResponse<List<ArtistSummary>>
 
     @Serializable
+    data class ArtistSave(
+        val dataYear: DataYear,
+        val initial: ArtistDatabaseEntry.Impl?,
+        val updated: ArtistDatabaseEntry.Impl,
+    ) : BackendRequest, WithResponse<ArtistSave.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: ArtistDatabaseEntry.Impl) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
+
+    @Serializable
     data object DatabaseCreate : BackendRequest, WithResponse<Unit>
 
     // TODO: Allow querying presence?
@@ -142,5 +161,42 @@ sealed interface BackendRequest {
     data object Series : BackendRequest, WithResponse<List<SeriesInfo>>
 
     @Serializable
+    data class SeriesSave(
+        val initial: SeriesInfo?,
+        val updated: SeriesInfo,
+    ) : BackendRequest, WithResponse<SeriesSave.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: SeriesInfo) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
+
+    @Serializable
     data object Merch : BackendRequest, WithResponse<List<MerchInfo>>
+
+    @Serializable
+    data class MerchSave(
+        val initial: MerchInfo?,
+        val updated: MerchInfo,
+    ) : BackendRequest, WithResponse<MerchSave.Response> {
+
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: MerchInfo) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
 }

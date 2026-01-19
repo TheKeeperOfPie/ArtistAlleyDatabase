@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -53,7 +53,7 @@ class SeriesResolutionViewModel(
                 it.seriesConfirmed.contains(seriesId)
     }
 
-    private suspend fun commit(series: SeriesInfo): ArtistSave.Response {
+    private suspend fun commit(series: SeriesInfo): BackendRequest.ArtistSave.Response {
         loadArtists().forEach {
             val artist = editDatabase.loadArtist(DataYear.ANIME_EXPO_2026, it.id) ?: return@forEach
             val response = editDatabase.saveArtist(
@@ -64,12 +64,12 @@ class SeriesResolutionViewModel(
                     seriesConfirmed = artist.seriesConfirmed.map { if (it == seriesId) series.id else it },
                 )
             )
-            if (response != ArtistSave.Response.Success) {
+            if (response != BackendRequest.ArtistSave.Response.Success) {
                 return@commit response
             }
         }
 
-        return ArtistSave.Response.Success
+        return BackendRequest.ArtistSave.Response.Success
     }
 
     @AssistedFactory

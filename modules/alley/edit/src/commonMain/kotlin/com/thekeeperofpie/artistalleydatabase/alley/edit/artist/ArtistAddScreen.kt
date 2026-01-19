@@ -45,7 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerSta
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ArtistSave
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -135,14 +135,14 @@ object ArtistAddScreen {
                 .filterNotNull()
                 .collectLatest { (isManual, result) ->
                     when (result) {
-                        is ArtistSave.Response.Failed -> {
+                        is BackendRequest.ArtistSave.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
                             saveTaskState.clearResult()
                         }
-                        is ArtistSave.Response.Outdated -> {
+                        is BackendRequest.ArtistSave.Response.Outdated -> {
                             // TODO
                         }
-                        is ArtistSave.Response.Success -> {
+                        is BackendRequest.ArtistSave.Response.Success -> {
                             saveTaskState.clearResult()
                             if (isManual) {
                                 onClickBack(true)
@@ -267,7 +267,7 @@ object ArtistAddScreen {
     @Composable
     private fun AppBarActions(
         errorState: ArtistErrorState,
-        saveTaskState: TaskState<ArtistSave.Response>,
+        saveTaskState: TaskState<BackendRequest.ArtistSave.Response>,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
     ) {
@@ -315,7 +315,7 @@ object ArtistAddScreen {
     class State(
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val artistFormState: ArtistFormState,
-        val saveTaskState: TaskState<ArtistSave.Response>,
+        val saveTaskState: TaskState<BackendRequest.ArtistSave.Response>,
         val sameArtistState: SameArtistPrompter.State,
     )
 }
