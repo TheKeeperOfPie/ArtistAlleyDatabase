@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -72,6 +74,9 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_don
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_validation_text
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_error_saving_bad_fields
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_last_response_restored
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_log_out_prompt
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_log_out_prompt_action_log_in
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_log_out_prompt_action_log_out
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_notes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_action_confirm
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_prompt
@@ -79,6 +84,8 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_pri
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_2
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_link
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
+import com.composables.core.ScrollArea
+import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
@@ -98,6 +105,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
@@ -490,37 +498,67 @@ object ArtistFormScreen {
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize().padding(16.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .widthIn(max = 600.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Text(
-                    text = buildAnnotatedString {
-                        append(stringResource(Res.string.alley_form_private_key_prompt_1))
-                        withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
-                            append(stringResource(Res.string.alley_form_private_key_prompt_link))
-                        }
-                        append(
-                            stringResource(
-                                Res.string.alley_form_private_key_prompt_2,
-                                stringResource(dataYear.fullName),
-                                AlleyUtils.primaryContactDiscordUsername,
+            val scrollState = rememberScrollState()
+            val scrollAreaState = rememberScrollAreaState(scrollState)
+            OutlinedCard(modifier = Modifier.widthIn(max = 600.dp)) {
+                ScrollArea(state = scrollAreaState) {
+                    Box {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.verticalScroll(scrollState)
+                                .padding(start = 24.dp, end = 48.dp, top = 24.dp, bottom = 24.dp)
+                        ) {
+                            Text(
+                                text = buildAnnotatedString {
+                                    append(stringResource(Res.string.alley_form_private_key_prompt_1))
+                                    withLink(LinkAnnotation.Url(AlleyUtils.siteUrl)) {
+                                        append(stringResource(Res.string.alley_form_private_key_prompt_link))
+                                    }
+                                    append(
+                                        stringResource(
+                                            Res.string.alley_form_private_key_prompt_2,
+                                            stringResource(dataYear.fullName),
+                                            AlleyUtils.primaryContactDiscordUsername,
+                                        )
+                                    )
+                                },
+                                style = MaterialTheme.typography.titleMedium,
                             )
-                        )
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                )
 
-                // Do not use rememberTextFieldState to avoid key being persisted
-                val state = remember { TextFieldState("") }
-                OutlinedTextField(state = state, modifier = Modifier.fillMaxWidth())
+                            // Do not use rememberTextFieldState to avoid key being persisted
+                            val state = remember { TextFieldState("") }
+                            OutlinedTextField(state = state, modifier = Modifier.fillMaxWidth())
 
-                // TODO: Show a new error message if the key is incorrect
-                FilledTonalButton(onClick = { onSubmitKey(state.text.toString()) }) {
-                    Text(stringResource(Res.string.alley_form_action_submit_private_key))
+                            // TODO: Show a new error message if the key is incorrect
+                            FilledTonalButton(onClick = { onSubmitKey(state.text.toString()) }) {
+                                Text(stringResource(Res.string.alley_form_action_submit_private_key))
+                            }
+
+                            Spacer(Modifier.height(24.dp))
+
+                            Text(
+                                text = stringResource(Res.string.alley_form_log_out_prompt),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+
+                            val uriHandler = LocalUriHandler.current
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                FilledTonalButton(onClick = { uriHandler.openUri(AlleyUtils.logOutUrl) }) {
+                                    Text(stringResource(Res.string.alley_form_log_out_prompt_action_log_out))
+                                }
+
+                                FilledTonalButton(onClick = { uriHandler.openUri(AlleyUtils.formLogInUrl) }) {
+                                    Text(stringResource(Res.string.alley_form_log_out_prompt_action_log_in))
+                                }
+                            }
+                        }
+                        Box(modifier = Modifier.matchParentSize()) {
+                            PrimaryVerticalScrollbar(
+                                modifier = Modifier.align(Alignment.TopEnd)
+                            )
+                        }
+                    }
                 }
             }
         }

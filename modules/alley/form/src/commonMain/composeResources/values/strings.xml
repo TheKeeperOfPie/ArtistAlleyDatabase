@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="alley_form_private_key_prompt_1">Unable to read your access token, paste your access link below to try again.\n\nIf you don't have an access link, you will need to ask a maintainer for one. See the prompt on your artist page on the </string>
+    <string name="alley_form_private_key_prompt_1">Unable to read your access key, paste your access link below to try again.\n\nIf you don't have an access link, see the prompt on your artist page on the </string>
     <string name="alley_form_private_key_prompt_link">public site</string>
-    <string name="alley_form_private_key_prompt_2"> for more details.\n\nIf you don't have an artist page, we may not be aware of your presence at %1$s and you will need to contact %2$s on Discord to get added.</string>
+    <string name="alley_form_private_key_prompt_2"> for more details.\n\nIf you don't have an artist page, we may not be aware of your presence at %1$s. Contact %2$s on Discord to get added.</string>
     <string name="alley_form_saved_changes">Saved changes</string>
     <string name="alley_form_action_save_tooltip">Save changes</string>
     <string name="alley_form_action_done">Submit response</string>
+    <string name="alley_form_log_out_prompt">It's also possible that Cloudflare invalidated your session. You can try logging out and logging back in to re-select your Google account.</string>
+    <string name="alley_form_log_out_prompt_action_log_out">Log out</string>
+    <string name="alley_form_log_out_prompt_action_log_in">Log in</string>
 
     <string name="alley_form_artist_title">Form for %1$s - %2$s</string>
     <string name="alley_form_action_submit_private_key">Submit</string>

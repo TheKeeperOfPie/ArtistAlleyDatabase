@@ -27,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
-import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -336,7 +335,6 @@ class BrowserInput2(private val navStack: ArtistAlleyEditTopLevelStacks) :
     }
 
     private fun onPopState(popStateEvent: PopStateEvent) {
-        ConsoleLogger.log("onPopState: ${popStateEvent.state}")
         if (!processPopState) {
             return
         }
@@ -348,7 +346,6 @@ class BrowserInput2(private val navStack: ArtistAlleyEditTopLevelStacks) :
             return
         }
 
-        ConsoleLogger.log("onPopState navigate to: $stateRoute")
         navStack.navigateOnBrowserPop(stateRoute)
     }
 }
