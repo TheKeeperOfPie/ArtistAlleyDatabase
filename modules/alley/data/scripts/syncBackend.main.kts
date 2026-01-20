@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.IllegalStateException
 import kotlin.time.Clock
 
-val RELEASE_FLAG = true
+val RELEASE_FLAG = false
 val PROD = false || RELEASE_FLAG
 val PULL_REMOTE = false || RELEASE_FLAG
 val WRITE_BACKUP = false || RELEASE_FLAG
@@ -24,27 +24,55 @@ val buildDir = scriptDir.resolve("build")
 val secretsFile = scriptDir.resolve("../../../alley-app/secrets.properties")
 val secrets = Properties().apply { secretsFile.inputStream().use(::load) }
 val wranglerToml = initializeWranglerFile(secrets)
-val exportFile = buildDir.resolve("export.sql")
+val editExportFile = buildDir.resolve("editExport.sql")
+val formExportFile = buildDir.resolve("formExport.sql")
+
+val snapshotTime = Clock.System.now().toString().replace(":", ";")
+val dataDir = if (PROD) scriptDir.parentFile else buildDir
 
 if (PULL_REMOTE) {
-    exportFile.delete()
+    editExportFile.delete()
     runWranglerCommand(
         "d1",
         "export",
         "ARTIST_ALLEY_DB",
         "--no-schema",
         "--output",
-        "\"${exportFile.absolutePath}\"",
+        "\"${editExportFile.absolutePath}\"",
+    )
+    editExportFile.copyTo(
+        buildDir.resolve("snapshots/edit")
+            .apply { mkdirs() }
+            .resolve("$snapshotTime.sql")
+    )
+    editExportFile.copyTo(
+        dataDir.resolve("inputs/snapshots/animeExpo2026")
+            .apply { mkdirs() }
+            .resolve("$snapshotTime.sql")
+    )
+
+    formExportFile.delete()
+    runWranglerCommand(
+        "d1",
+        "export",
+        "ARTIST_ALLEY_FORM_DB",
+        "--no-schema",
+        "--output",
+        "\"${formExportFile.absolutePath}\"",
+    )
+    formExportFile.copyTo(
+        buildDir.resolve("snapshots/form")
+            .apply { mkdirs() }
+            .resolve("$snapshotTime.sql")
     )
 }
 
-val dataDir = if (PROD) scriptDir.parentFile else buildDir
 dataDir.resolve("inputs/artists")
     .apply { mkdirs() }
     .resolve("animeExpo2026.sql")
     .writer()
     .use { writer ->
-        exportFile.useLines {
+        editExportFile.useLines {
             it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
                 .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
                 .forEach(writer::appendLine)
@@ -56,7 +84,7 @@ dataDir.resolve("inputs/tags")
     .resolve("tags.sql")
     .writer()
     .use { writer ->
-        exportFile.useLines {
+        editExportFile.useLines {
             it.filter { it.contains("\"seriesEntry\"") || it.contains("\"merchEntry\"") }
                 .map { it.replace("INSERT INTO", "INSERT OR REPLACE INTO") }
                 .forEach(writer::appendLine)
@@ -64,14 +92,21 @@ dataDir.resolve("inputs/tags")
     }
 
 if (WRITE_BACKUP) {
-    val snapshotTime = Clock.System.now().toString()
     runWranglerCommand(
         "r2",
         "object",
         "put",
         "--file",
-        exportFile.absolutePath,
-        "artist-alley-snapshots/$snapshotTime.sql"
+        editExportFile.absolutePath,
+        "artist-alley-snapshots/edit/$snapshotTime.sql"
+    )
+    runWranglerCommand(
+        "r2",
+        "object",
+        "put",
+        "--file",
+        formExportFile.absolutePath,
+        "artist-alley-snapshots/form/$snapshotTime.sql"
     )
 }
 
@@ -80,7 +115,7 @@ fun runCommand(vararg params: String) {
         .inheritIO()
         .redirectErrorStream(true)
         .start()
-    val exited = process.waitFor(30, TimeUnit.SECONDS)
+    val exited = process.waitFor(150, TimeUnit.SECONDS)
     if (!exited) {
         throw IllegalStateException("Command failed to exit")
     }
@@ -103,17 +138,24 @@ fun runWranglerCommand(vararg params: String) =
 
 fun initializeWranglerFile(secrets: Properties): File {
     val file = buildDir.resolve("wrangler.toml")
-    val databaseId = secrets.getProperty("artistAlleyDatabaseId")
+    val artistAlleyDatabaseId = secrets.getProperty("artistAlleyDatabaseId")
+    val artistAlleyFormDatabaseId = secrets.getProperty("artistAlleyFormDatabaseId")
     file.writeText(
         """
             name = "artistalley"
             compatibility_date = "2025-01-05"
 
             [[d1_databases]]
-            database_id = "$databaseId"
+            database_id = "$artistAlleyDatabaseId"
             binding = "ARTIST_ALLEY_DB"
             database_name = "ARTIST_ALLEY_DB"
             preview_database_id = "ARTIST_ALLEY_DB"
+
+            [[d1_databases]]
+            database_id = "$artistAlleyFormDatabaseId"
+            binding = "ARTIST_ALLEY_FORM_DB"
+            database_name = "ARTIST_ALLEY_FORM_DB"
+            preview_database_id = "ARTIST_ALLEY_FORM_DB"
 
             [[r2_buckets]]
             binding = "ARTIST_ALLEY_SNAPSHOTS_BUCKET"
