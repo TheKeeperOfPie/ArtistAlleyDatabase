@@ -5,6 +5,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -21,12 +22,14 @@ import coil3.map.Mapper
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
 import coil3.toUri
+import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -118,6 +121,15 @@ private fun Content(graph: ArtistAlleyEditGraph) {
             LocalWindowConfiguration provides windowConfiguration,
         ) {
             val navStack = rememberArtistAlleyEditTopLevelStacks()
+            LaunchedEffect(Unit) {
+                ConsoleLogger.log("path = ${window.location.href}")
+                val path = Uri.parseOrNull(window.location.href)
+                    ?.path
+                    ?.removePrefix("/edit/")
+                    ?: return@LaunchedEffect
+                val route = AlleyEditDestination.parseRoute(path) ?: return@LaunchedEffect
+                navStack.navigate(route)
+            }
             ArtistAlleyEditApp(
                 graph = graph,
                 navStack = navStack,
@@ -126,7 +138,7 @@ private fun Content(graph: ArtistAlleyEditGraph) {
 
             val scope = rememberCoroutineScope()
             val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
-            val browserInput = remember(scope, navStack) { BrowserInput2(navStack) }
+            val browserInput = remember(scope, navStack) { BrowserInput(navStack) }
             DisposableEffect(navigationEventDispatcherOwner, browserInput) {
                 val dispatcher = navigationEventDispatcherOwner?.navigationEventDispatcher
                     ?: return@DisposableEffect onDispose {}
@@ -137,7 +149,7 @@ private fun Content(graph: ArtistAlleyEditGraph) {
     }
 }
 
-class BrowserInput2(private val navStack: ArtistAlleyEditTopLevelStacks) :
+class BrowserInput(private val navStack: ArtistAlleyEditTopLevelStacks) :
     NavigationEventInput() {
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private val browserWindow = window as BrowserWindow
