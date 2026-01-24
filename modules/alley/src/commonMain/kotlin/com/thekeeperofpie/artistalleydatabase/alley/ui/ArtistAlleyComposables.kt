@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChangeHistory
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
@@ -109,6 +110,7 @@ import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_answer_expand_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image_showing_fallback
+import artistalleydatabase.modules.alley.generated.resources.alley_changelog
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_show_qr
 import artistalleydatabase.modules.alley.generated.resources.alley_con_upcoming_suffix
 import artistalleydatabase.modules.alley.generated.resources.alley_display_type_icon_content_description
@@ -671,6 +673,13 @@ fun DataYearHeader(
                 }
 
                 val navigationController = LocalNavigationController.current
+                IconButton(onClick = { navigationController.navigate(Destinations.Changelog) }) {
+                    Icon(
+                        imageVector = Icons.Default.ChangeHistory,
+                        contentDescription = stringResource(Res.string.alley_changelog),
+                    )
+                }
+
                 IconButton(onClick = { navigationController.navigate(Destinations.Settings) }) {
                     Icon(
                         imageVector = Icons.Default.Settings,

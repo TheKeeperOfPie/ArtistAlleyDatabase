@@ -376,4 +376,9 @@
     <string name="alley_copy_link_icon_content_description">Copy link</string>
 
     <string name="alley_unrecognized_tag">Unrecognized tag, please visit Resolution</string>
+
+    <string name="alley_changelog">Changelog</string>
+    <string name="alley_changelog_title">What's new</string>
+    <string name="alley_changelog_title_added">ADDED</string>
+    <string name="alley_changelog_title_updated">UPDATED</string>
 </resources>

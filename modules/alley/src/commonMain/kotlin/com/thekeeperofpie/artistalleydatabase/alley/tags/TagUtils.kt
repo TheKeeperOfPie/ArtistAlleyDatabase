@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import org.jetbrains.compose.resources.StringResource
+import kotlin.random.Random
 import kotlin.uuid.Uuid
 
 val AniListLanguageOption.textWithExplanation: StringResource
@@ -48,4 +49,22 @@ fun previewSeriesWithUserData(id: String): SeriesWithUserData {
             favorite = false,
         ),
     )
+}
+
+
+internal object TagUtils {
+    const val TAGS_TO_SHOW = 5
+    fun combineForDisplay(
+        inferred: List<String>,
+        confirmed: List<String>,
+        randomSeed: Int,
+        showOnlyConfirmedTags: Boolean = false,
+    ): List<String> {
+        val random = Random(randomSeed)
+        var tags = confirmed.shuffled(random)
+        if (!showOnlyConfirmedTags && tags.size < TAGS_TO_SHOW) {
+            tags = tags + inferred.shuffled(random)
+        }
+        return tags
+    }
 }

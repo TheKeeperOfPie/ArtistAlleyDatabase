@@ -2,6 +2,7 @@ import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
 import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource;
@@ -147,6 +148,20 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeExpo2026_fts USING FTS5 (
     content=artistEntryAnimeExpo2026,
     tokenize="unicode61 remove_diacritics 2"
 );
+
+CREATE TABLE
+    IF NOT EXISTS artistEntryAnimeExpo2026Changelog (
+        artistId TEXT AS Uuid NOT NULL,
+        date TEXT NOT NULL,
+        booth TEXT,
+        name TEXT NOT NULL,
+        seriesInferred TEXT AS List<String>,
+        seriesConfirmed TEXT AS List<String>,
+        merchInferred TEXT AS List<String>,
+        merchConfirmed TEXT AS List<String>,
+        isBrandNew INTEGER AS Boolean NOT NULL DEFAULT 0,
+        PRIMARY KEY (artistId, date)
+    );
 
 CREATE TABLE
     IF NOT EXISTS artistEntryAnimeNyc2025 (

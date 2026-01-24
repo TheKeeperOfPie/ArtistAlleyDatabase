@@ -14,6 +14,10 @@ insertStampRallySeriesConnection:
 INSERT OR REPLACE INTO stampRallySeriesConnection
 VALUES ?;
 
+insertArtistEntryAnimeExpo2026Changelog:
+INSERT OR REPLACE INTO artistEntryAnimeExpo2026Changelog
+VALUES ?;
+
 updateArtistEntryAnimeExpo2023Images:
 UPDATE artistEntry2023 SET images = :images WHERE id = :id;
 

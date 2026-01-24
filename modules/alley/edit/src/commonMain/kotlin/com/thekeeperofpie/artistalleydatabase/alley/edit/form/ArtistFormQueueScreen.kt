@@ -149,7 +149,7 @@ internal object ArtistFormQueueScreen {
                         ) {
                             items(
                                 items = history(),
-                                key = { it.artistId to it.timestamp },
+                                key = { listOf(it.artistId.toString(), it.timestamp.toString()) },
                                 contentType = { "artistRow" }) {
                                 Column {
                                     // TODO: Open details

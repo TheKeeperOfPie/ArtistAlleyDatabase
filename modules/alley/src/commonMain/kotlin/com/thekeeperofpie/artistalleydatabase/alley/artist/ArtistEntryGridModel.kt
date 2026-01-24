@@ -7,10 +7,10 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import kotlin.random.Random
 
 class ArtistEntryGridModel(
     val artist: ArtistEntry,
@@ -37,7 +37,6 @@ class ArtistEntryGridModel(
     override val booth get() = artist.booth
 
     companion object {
-        const val TAGS_TO_SHOW = 5
 
         fun buildFromEntry(
             randomSeed: Int,
@@ -46,16 +45,19 @@ class ArtistEntryGridModel(
             showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
             fallbackCatalog: Pair<DataYear, List<CatalogImage>>?,
         ): ArtistEntryGridModel {
-            val random = Random(randomSeed)
-            var merch = entry.artist.merchConfirmed.shuffled(random)
-            if (!showOnlyConfirmedTags && merch.size < TAGS_TO_SHOW) {
-                merch = merch + entry.artist.merchInferred.shuffled(random)
-            }
+            val merch = TagUtils.combineForDisplay(
+                inferred = entry.artist.merchInferred,
+                confirmed = entry.artist.merchConfirmed,
+                randomSeed = randomSeed,
+                showOnlyConfirmedTags = showOnlyConfirmedTags,
+            )
 
-            var series = entry.artist.seriesConfirmed.shuffled(random)
-            if (!showOnlyConfirmedTags && series.size < TAGS_TO_SHOW) {
-                series = series + entry.artist.seriesInferred.shuffled(random)
-            }
+            val series = TagUtils.combineForDisplay(
+                inferred = entry.artist.seriesInferred,
+                confirmed = entry.artist.seriesConfirmed,
+                randomSeed = randomSeed,
+                showOnlyConfirmedTags = showOnlyConfirmedTags,
+            )
 
             val images = AlleyImageUtils.getArtistImages(
                 year = entry.artist.year,
@@ -65,10 +67,10 @@ class ArtistEntryGridModel(
             return ArtistEntryGridModel(
                 artist = entry.artist,
                 userEntry = entry.userEntry,
-                series = series.take(TAGS_TO_SHOW),
-                hasMoreSeries = series.size > TAGS_TO_SHOW,
-                merch = merch.take(TAGS_TO_SHOW),
-                hasMoreMerch = merch.size > TAGS_TO_SHOW,
+                series = series.take(TagUtils.TAGS_TO_SHOW),
+                hasMoreSeries = series.size > TagUtils.TAGS_TO_SHOW,
+                merch = merch.take(TagUtils.TAGS_TO_SHOW),
+                hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
                 images = images,
                 fallbackImages = fallbackCatalog?.second?.takeIf { showOutdatedCatalogs }.orEmpty(),
                 fallbackYear = fallbackCatalog?.first?.takeIf { showOutdatedCatalogs },

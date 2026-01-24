@@ -11,6 +11,7 @@ plugins {
     kotlin("jvm") version "2.3.0"
     `kotlin-dsl`
     alias(libs.plugins.app.cash.sqldelight).version("2.1.0")
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
 // Enable Enum.entries support
@@ -50,6 +51,7 @@ dependencies {
     implementation(libs.dev.zacsweers.metro.gradle.plugin)
     implementation(libs.gradle)
     implementation(libs.jetBrainsCompose.compose.gradle.plugin)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.io.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
@@ -63,7 +65,11 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-        optIn.add("kotlin.time.ExperimentalTime")
+        freeCompilerArgs.add("-Xcontext-parameters")
+        optIn.addAll(
+            "kotlin.time.ExperimentalTime",
+            "kotlin.uuid.ExperimentalUuidApi",
+            "kotlinx.serialization.ExperimentalSerializationApi",
+        )
     }
 }

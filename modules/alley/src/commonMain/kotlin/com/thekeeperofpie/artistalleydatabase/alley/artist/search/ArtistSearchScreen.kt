@@ -72,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterData
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
+import com.thekeeperofpie.artistalleydatabase.alley.tags.TagUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
@@ -375,7 +376,7 @@ object ArtistSearchScreen {
     ) {
         if (tags.isNullOrEmpty()) return
         Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-            tags.take(ArtistEntryGridModel.TAGS_TO_SHOW)
+            tags.take(TagUtils.TAGS_TO_SHOW)
                 .forEach {
                     SuggestionChip(
                         onClick = { onTagClick(it) },

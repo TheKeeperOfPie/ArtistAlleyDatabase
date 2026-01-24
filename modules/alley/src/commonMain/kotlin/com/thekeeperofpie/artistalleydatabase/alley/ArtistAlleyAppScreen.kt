@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
@@ -46,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySea
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.BuildVariant
 import com.thekeeperofpie.artistalleydatabase.utils.isDebug
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
@@ -260,6 +262,44 @@ object ArtistAlleyAppScreen {
                                     mapViewModel = mapViewModel,
                                     onClickBack = navigationController::popBackStack,
                                     onArtistClick = onArtistClick,
+                                )
+                            }
+
+                            sharedElementComposable<Destinations.Changelog>(navigationTypeMap) {
+                                val viewModel = viewModel {
+                                    component.changelogViewModelFactory.create(
+                                        createSavedStateHandle()
+                                    )
+                                }
+                                ChangelogScreen(
+                                    viewModel = viewModel,
+                                    onClickBack = navigationController::navigateUp,
+                                    onClickSeries = {
+                                        navigationController.navigate(
+                                            Destinations.Series(
+                                                DataYear.ANIME_EXPO_2026,
+                                                it,
+                                            )
+                                        )
+                                    },
+                                    onClickMerch = {
+                                        navigationController.navigate(
+                                            Destinations.Merch(
+                                                DataYear.ANIME_EXPO_2026,
+                                                it,
+                                            )
+                                        )
+                                    },
+                                    onClickArtist = {
+                                        navigationController.navigate(
+                                            Destinations.ArtistDetails(
+                                                year = DataYear.ANIME_EXPO_2026,
+                                                id = it.artistId.toString(),
+                                                booth = it.booth,
+                                                name = it.name,
+                                            )
+                                        )
+                                    },
                                 )
                             }
 

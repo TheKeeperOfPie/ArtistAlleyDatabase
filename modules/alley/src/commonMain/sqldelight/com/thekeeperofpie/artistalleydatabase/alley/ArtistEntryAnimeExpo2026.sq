@@ -21,3 +21,6 @@ WHERE stampRallyArtistConnection.artistId = :artistId;
 getImagesById:
 SELECT artistEntryAnimeExpo2026.images FROM artistEntryAnimeExpo2026
 WHERE artistEntryAnimeExpo2026.id = :artistId;
+
+getChangelog:
+SELECT * FROM artistEntryAnimeExpo2026Changelog;

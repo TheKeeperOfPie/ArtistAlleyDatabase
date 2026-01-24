@@ -23,6 +23,7 @@ object DaoUtils {
         artistEntry2024Adapter = ColumnAdapters.artistEntry2024Adapter,
         artistEntry2025Adapter = ColumnAdapters.artistEntry2025Adapter,
         artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
+        artistEntryAnimeExpo2026ChangelogAdapter = ColumnAdapters.artistEntryAnimeExpo2026ChangelogAdapter,
         artistEntryAnimeNyc2024Adapter = ColumnAdapters.artistEntryAnimeNyc2024Adapter,
         artistEntryAnimeNyc2025Adapter = ColumnAdapters.artistEntryAnimeNyc2025Adapter,
         stampRallyEntry2023Adapter = ColumnAdapters.stampRallyEntry2023Adapter,

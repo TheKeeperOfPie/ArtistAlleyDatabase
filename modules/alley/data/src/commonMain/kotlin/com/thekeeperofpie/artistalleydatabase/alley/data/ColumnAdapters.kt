@@ -96,6 +96,13 @@ object ColumnAdapters {
         imagesAdapter = listCatalogImageAdapter,
         lastEditTimeAdapter = instantAdapter,
     )
+    val artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(
+        artistIdAdapter = uuidAdapter,
+        seriesInferredAdapter = listStringAdapter,
+        seriesConfirmedAdapter = listStringAdapter,
+        merchInferredAdapter = listStringAdapter,
+        merchConfirmedAdapter = listStringAdapter,
+    )
     val artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
         linksAdapter = listStringAdapter,
         storeLinksAdapter = listStringAdapter,

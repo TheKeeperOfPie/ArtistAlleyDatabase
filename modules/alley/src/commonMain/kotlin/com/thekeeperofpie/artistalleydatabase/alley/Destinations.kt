@@ -64,6 +64,9 @@ sealed interface Destinations : NavDestination {
     data class ArtistsList(val year: DataYear, val serializedBooths: String) : Destinations
 
     @Serializable
+    data object Changelog : Destinations
+
+    @Serializable
     data object Export : Destinations
 
     @Serializable

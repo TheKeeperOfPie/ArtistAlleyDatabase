@@ -36,7 +36,6 @@ if (PULL_REMOTE) {
         "d1",
         "export",
         "ARTIST_ALLEY_DB",
-        "--no-schema",
         "--output",
         "\"${editExportFile.absolutePath}\"",
     )
@@ -56,7 +55,6 @@ if (PULL_REMOTE) {
         "d1",
         "export",
         "ARTIST_ALLEY_FORM_DB",
-        "--no-schema",
         "--output",
         "\"${formExportFile.absolutePath}\"",
     )

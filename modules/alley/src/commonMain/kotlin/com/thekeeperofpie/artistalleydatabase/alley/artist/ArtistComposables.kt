@@ -213,7 +213,7 @@ fun ArtistListRow(
 private val chipHeightModifier = Modifier.height(24.dp)
 
 @Composable
-private fun SeriesRow(
+internal fun SeriesRow(
     series: List<GetSeriesTitles>,
     onSeriesClick: (String) -> Unit,
     hasMoreSeries: Boolean,

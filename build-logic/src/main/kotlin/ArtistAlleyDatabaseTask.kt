@@ -1,48 +1,34 @@
 
-import app.cash.sqldelight.ColumnAdapter
+import Utils.createDatabase
 import app.cash.sqldelight.Query
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistMerchConnection
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistSeriesConnection
-import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyArtistConnection
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
-import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallySeriesConnection
-import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistNotes
-import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.build_logic.BuildLogicDatabase
 import com.thekeeperofpie.artistalleydatabase.buildlogic.MutationQueries
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.time.Instant
 
 @CacheableTask
 abstract class ArtistAlleyDatabaseTask : DefaultTask() {
@@ -58,46 +44,12 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputImages: DirectoryProperty
 
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputChangelog: RegularFileProperty
+
     @get:OutputDirectory
     abstract val outputResources: DirectoryProperty
-
-    private val listStringAdapter = object : ColumnAdapter<List<String>, String> {
-        override fun decode(databaseValue: String) =
-            Json.decodeFromString<List<String>>(databaseValue)
-
-        override fun encode(value: List<String>) = Json.encodeToString(value)
-    }
-
-    private val dataYearAdapter = object : ColumnAdapter<DataYear, String> {
-        override fun decode(databaseValue: String) =
-            DataYear.entries.first { it.serializedName == databaseValue }
-
-        override fun encode(value: DataYear) = value.serializedName
-    }
-
-    private val listCatalogImageAdapter = object : ColumnAdapter<List<CatalogImage>, String> {
-        override fun decode(databaseValue: String) =
-            Json.decodeFromString<List<CatalogImage>>(databaseValue)
-
-        override fun encode(value: List<CatalogImage>) = Json.encodeToString(value)
-    }
-
-    private val artistStatusAdapter = object : ColumnAdapter<ArtistStatus, String> {
-        override fun decode(databaseValue: String) =
-            ArtistStatus.entries.find { it.name == databaseValue } ?: ArtistStatus.UNKNOWN
-
-        override fun encode(value: ArtistStatus) = value.name
-    }
-
-    private val instantAdapter = object : ColumnAdapter<Instant, String> {
-        override fun decode(databaseValue: String) = try {
-            Instant.parse(databaseValue)
-        } catch (_: IllegalArgumentException) {
-            Instant.DISTANT_PAST
-        }
-
-        override fun encode(value: Instant) = value.toString()
-    }
 
     init {
         inputsDirectory.convention(layout.projectDirectory.dir("inputs"))
@@ -118,13 +70,13 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
             listOf("artists", "stampRallies")
                 .flatMap { inputsDirectory.dir(it).get().asFile.listFiles().toList() }
-                .forEach { readSqlFile(databaseFile, it) }
+                .forEach { Utils.readSqlFile(databaseFile, it) }
 
             // tags.sql must come last in order to overwrite legacy data
             listOf("merchLegacy.sql", "seriesLegacy.sql", "tags.sql").forEach {
                 val tagFile = inputsDirectory.dir("tags/$it").get().asFile
                 if (tagFile.exists()) {
-                    readSqlFile(databaseFile, tagFile)
+                    Utils.readSqlFile(databaseFile, tagFile)
                 }
             }
 
@@ -133,6 +85,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             database = pair.second
 
             runBlocking {
+                addArtistChangelog(database)
                 fixLegacyArtistImages(database, imageCacheDir)
 
                 database.mutationQueries.getAllArtistEntryAnimeExpo2026()
@@ -147,7 +100,8 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         val inference = ArtistInferenceProvider(database, artist.id)
                         val socialLinks = artist.socialLinks.ifEmpty { inference.socialLinks }
                         val storeLinks = artist.storeLinks.ifEmpty { inference.storeLinks }
-                        val seriesInferred = artist.seriesInferred.ifEmpty { inference.seriesInferred }
+                        val seriesInferred =
+                            artist.seriesInferred.ifEmpty { inference.seriesInferred }
                         val merchInferred = artist.merchInferred.ifEmpty { inference.merchInferred }
 
                         val (linkFlags, linkFlags2) = Link.parseFlags(
@@ -312,6 +266,29 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             }
     }
 
+    private fun addArtistChangelog(database: BuildLogicDatabase) {
+        val diffs = inputChangelog.get().asFile.inputStream().use {
+            Json.decodeFromStream<List<ArtistDiff>>(it)
+        }
+        database.transaction {
+            diffs.forEach {
+                database.mutationQueries.insertArtistEntryAnimeExpo2026Changelog(
+                    ArtistEntryAnimeExpo2026Changelog(
+                        artistId = it.artistId,
+                        date = it.date.toString(),
+                        booth = it.booth,
+                        name = it.name,
+                        seriesInferred = it.seriesInferred?.toList(),
+                        seriesConfirmed = it.seriesConfirmed?.toList(),
+                        merchInferred = it.merchInferred?.toList(),
+                        merchConfirmed = it.merchConfirmed?.toList(),
+                        isBrandNew = it.isBrandNew,
+                    )
+                )
+            }
+        }
+    }
+
     private fun fixLegacyArtistImages(database: BuildLogicDatabase, imageCacheDir: File) {
         fixLegacyArtistImages(
             database = database,
@@ -392,121 +369,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
         )
     }
 
-    private fun createDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicDatabase> {
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
-        try {
-            BuildLogicDatabase.Schema.create(driver)
-        } catch (_: Throwable) {
-            Thread.sleep(5000)
-            BuildLogicDatabase.Schema.create(driver)
-        }
-        val database = BuildLogicDatabase(
-            driver = driver,
-            artistEntry2023Adapter = ArtistEntry2023.Adapter(
-                artistNamesAdapter = listStringAdapter,
-                linksAdapter = listStringAdapter,
-                catalogLinksAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            artistEntry2024Adapter = ArtistEntry2024.Adapter(
-                linksAdapter = listStringAdapter,
-                storeLinksAdapter = listStringAdapter,
-                catalogLinksAdapter = listStringAdapter,
-                seriesInferredAdapter = listStringAdapter,
-                seriesConfirmedAdapter = listStringAdapter,
-                merchInferredAdapter = listStringAdapter,
-                merchConfirmedAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            artistEntry2025Adapter = ArtistEntry2025.Adapter(
-                linksAdapter = listStringAdapter,
-                storeLinksAdapter = listStringAdapter,
-                catalogLinksAdapter = listStringAdapter,
-                seriesInferredAdapter = listStringAdapter,
-                seriesConfirmedAdapter = listStringAdapter,
-                merchInferredAdapter = listStringAdapter,
-                merchConfirmedAdapter = listStringAdapter,
-                commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
-                statusAdapter = artistStatusAdapter,
-                socialLinksAdapter = listStringAdapter,
-                storeLinksAdapter = listStringAdapter,
-                portfolioLinksAdapter = listStringAdapter,
-                catalogLinksAdapter = listStringAdapter,
-                seriesInferredAdapter = listStringAdapter,
-                seriesConfirmedAdapter = listStringAdapter,
-                merchInferredAdapter = listStringAdapter,
-                merchConfirmedAdapter = listStringAdapter,
-                commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-                lastEditTimeAdapter = instantAdapter,
-            ),
-            artistEntryAnimeNyc2024Adapter = ArtistEntryAnimeNyc2024.Adapter(
-                linksAdapter = listStringAdapter,
-                storeLinksAdapter = listStringAdapter,
-                catalogLinksAdapter = listStringAdapter,
-                seriesInferredAdapter = listStringAdapter,
-                seriesConfirmedAdapter = listStringAdapter,
-                merchInferredAdapter = listStringAdapter,
-                merchConfirmedAdapter = listStringAdapter,
-                commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
-                linksAdapter = listStringAdapter,
-                storeLinksAdapter = listStringAdapter,
-                catalogLinksAdapter = listStringAdapter,
-                seriesInferredAdapter = listStringAdapter,
-                seriesConfirmedAdapter = listStringAdapter,
-                merchInferredAdapter = listStringAdapter,
-                merchConfirmedAdapter = listStringAdapter,
-                commissionsAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
-                tablesAdapter = listStringAdapter,
-                linksAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            stampRallyEntry2024Adapter = StampRallyEntry2024.Adapter(
-                tablesAdapter = listStringAdapter,
-                linksAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
-                tablesAdapter = listStringAdapter,
-                linksAdapter = listStringAdapter,
-                seriesAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
-                tablesAdapter = listStringAdapter,
-                linksAdapter = listStringAdapter,
-                seriesAdapter = listStringAdapter,
-                imagesAdapter = listCatalogImageAdapter,
-            ),
-            artistNotesAdapter = ArtistNotes.Adapter(
-                dataYearAdapter = dataYearAdapter,
-            ),
-            artistUserEntryAdapter = ArtistUserEntry.Adapter(
-                dataYearAdapter = dataYearAdapter,
-            ),
-            seriesEntryAdapter = SeriesEntry.Adapter(
-                sourceAdapter = object : ColumnAdapter<SeriesSource, String> {
-                    override fun decode(databaseValue: String) =
-                        SeriesSource.entries.find { it.name == databaseValue }
-                            ?: SeriesSource.NONE
-
-                    override fun encode(value: SeriesSource) = value.name
-                },
-                synonymsAdapter = listStringAdapter,
-            )
-        )
-        return driver to database
-    }
-
     private fun findArtistImages(
         imageCacheDir: File,
         year: DataYear,
@@ -574,28 +436,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 )
                 CatalogImage("${folder.name}/${it.name}", width, height)
             }
-    }
-
-    private fun readSqlFile(databaseFile: File, sqlFile: File) {
-        if (!sqlFile.exists()) return
-
-        val process = ProcessBuilder(
-            "sqlite3",
-            databaseFile.absolutePath,
-            "\".read \'${sqlFile.absolutePath}\'\""
-        )
-            .inheritIO()
-            .redirectErrorStream(true).start()
-        val success = process.waitFor(30, TimeUnit.SECONDS)
-        if (!success) {
-            val errorText = process.inputStream.use {
-                it.reader().use {
-                    it.readText()
-                }
-            }
-            logger.error("Failed to apply ${sqlFile.absolutePath}")
-            errorText.lines().forEach(logger::error)
-        }
     }
 
     private data class ArtistTagConnections(

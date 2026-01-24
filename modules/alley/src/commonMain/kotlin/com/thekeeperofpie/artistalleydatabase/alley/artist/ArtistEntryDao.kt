@@ -1168,4 +1168,6 @@ class ArtistEntryDao(
                 }
         }
     }
+
+    suspend fun getChangelog() = daoAnimeExpo2026().getChangelog().awaitAsList()
 }

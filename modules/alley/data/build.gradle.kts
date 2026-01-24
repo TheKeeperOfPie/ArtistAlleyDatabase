@@ -42,9 +42,11 @@ sqldelight {
 }
 
 val inputsTask = tasks.register<ArtistAlleyProcessInputsTask>("processArtistAlleyInputs")
+val changelogTask = tasks.register<ArtistAlleyChangelogTask>("generateArtistAlleyChangelog")
 val databaseTask = tasks.register<ArtistAlleyDatabaseTask>("generateArtistAlleyDatabase") {
     inputImages.set(inputsTask.flatMap { it.outputResources })
-    mustRunAfter(inputsTask)
+    inputChangelog.set(changelogTask.flatMap { it.outputFile })
+    mustRunAfter(changelogTask, inputsTask)
 }
 
 compose.resources {

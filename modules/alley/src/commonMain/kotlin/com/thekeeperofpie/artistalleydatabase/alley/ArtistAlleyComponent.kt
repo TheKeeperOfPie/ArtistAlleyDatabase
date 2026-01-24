@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -41,6 +42,7 @@ interface ArtistAlleyComponent {
     val artistMerchViewModelFactory: ArtistMerchViewModel.Factory
     val artistSearchViewModelFactory: ArtistSearchViewModel.Factory
     val artistSeriesViewModelFactory: ArtistSeriesViewModel.Factory
+    val changelogViewModelFactory: ChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory
     val favoritesSortFilterViewModelFactory: FavoritesSortFilterViewModel.Factory
     val imagesViewModelFactory: ImagesViewModel.Factory
