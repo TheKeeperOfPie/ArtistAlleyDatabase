@@ -18,6 +18,8 @@ import androidx.navigationevent.NavigationEventHandler
 import androidx.navigationevent.NavigationEventInfo
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRoute
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRouteHistory
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWayStack
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberDecoratedNavEntries
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberTwoWayStack
@@ -90,8 +92,8 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
 
     val routeHistory =
         MutableStateFlow(
-            RouteHistory(
-                current = Route(""),
+            NavigationRouteHistory(
+                current = NavigationRoute(""),
                 back = emptyList(),
                 forward = emptyList(),
             )
@@ -136,12 +138,12 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
     }
 
     private fun updateInfo() {
-        val backInfo = mutableListOf<Route>()
+        val backInfo = mutableListOf<NavigationRoute>()
         val twoWayStack = twoWayStacks[topLevelStackIndex]
         val navBackStack = twoWayStack.navBackStack
         val navForwardStack = twoWayStack.navForwardStack
         navBackStack.dropLast(1).forEach {
-            backInfo += Route(
+            backInfo += NavigationRoute(
                 AlleyEditDestination.toEncodedRoute(it as AlleyEditDestination)
                     ?: backInfo.lastOrNull()?.route.orEmpty()
             )
@@ -149,19 +151,19 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
 
         val currentInfo =
             AlleyEditDestination.toEncodedRoute(navBackStack.last() as AlleyEditDestination)
-                ?.let(::Route)
+                ?.let(::NavigationRoute)
                 ?: backInfo.lastOrNull()
-                ?: Route("")
+                ?: NavigationRoute("")
 
-        val forwardInfo = mutableListOf<Route>()
+        val forwardInfo = mutableListOf<NavigationRoute>()
         navForwardStack.fastForEachReversed {
             forwardInfo += AlleyEditDestination.toEncodedRoute(it as AlleyEditDestination)
-                ?.let(::Route)
+                ?.let(::NavigationRoute)
                 ?: forwardInfo.lastOrNull()
                         ?: currentInfo
         }
 
-        routeHistory.value = RouteHistory(currentInfo, backInfo, forwardInfo)
+        routeHistory.value = NavigationRouteHistory(currentInfo, backInfo, forwardInfo)
         setInfo(currentInfo = currentInfo, backInfo = backInfo, forwardInfo = forwardInfo)
     }
 
@@ -182,12 +184,5 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
         if (twoWayStacks[topLevelStackIndex].onForward()) {
             updateInfo()
         }
-    }
-
-    data class Route(val route: String) : NavigationEventInfo()
-
-    data class RouteHistory(val current: Route, val back: List<Route>, val forward: List<Route>) {
-        override fun toString() =
-            "RouteHistory(\n\tcurrent = $current,\n\tback = ${back.joinToString("\n")},\n\tforward = ${forward.joinToString("\n")}\n)"
     }
 }
