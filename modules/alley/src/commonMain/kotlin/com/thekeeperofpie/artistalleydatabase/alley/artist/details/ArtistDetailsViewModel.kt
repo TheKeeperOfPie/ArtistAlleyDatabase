@@ -78,8 +78,8 @@ class ArtistDetailsViewModel(
 
     private val imagesOrFallback = flow {
         if (route.images.isNullOrEmpty()) {
-            artistEntryDao.getFallbackImages(year, route.id, emptyList())
-                ?.let { emit(LoadingResult.success(it)) }
+            val fallbackImages = artistEntryDao.getFallbackImages(year, route.id, emptyList())
+            emit( LoadingResult.success(fallbackImages ?: (year to emptyList())))
         }
     }.stateInForCompose(
         if (route.images == null) {
