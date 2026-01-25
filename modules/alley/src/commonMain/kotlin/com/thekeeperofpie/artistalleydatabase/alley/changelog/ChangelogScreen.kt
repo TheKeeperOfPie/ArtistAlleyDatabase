@@ -31,12 +31,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_added
 import artistalleydatabase.modules.alley.generated.resources.alley_changelog_title_updated
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesRow
@@ -52,11 +55,14 @@ internal object ChangelogScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ChangelogViewModel,
+        graph: ArtistAlleyGraph,
         onClickBack: () -> Unit,
         onClickArtist: (ArtistEntryAnimeExpo2026Changelog) -> Unit,
         onClickSeries: (String) -> Unit,
         onClickMerch: (String) -> Unit,
+        viewModel: ChangelogViewModel = viewModel {
+            graph.changelogViewModelFactory.create(createSavedStateHandle())
+        },
     ) {
         val changes by viewModel.changes.collectAsStateWithLifecycle()
         val seriesTitles by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()

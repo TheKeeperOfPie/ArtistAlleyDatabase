@@ -13,7 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -32,8 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
@@ -67,11 +65,9 @@ class ArtistDetailsViewModel(
     private val seriesEntryDao: SeriesEntryDao,
     private val settings: ArtistAlleySettings,
     private val userEntryDao: UserEntryDao,
-    navigationTypeMap: NavigationTypeMap,
+    @Assisted route: AlleyDestination.ArtistDetails,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val route =
-        savedStateHandle.toDestination<Destinations.ArtistDetails>(navigationTypeMap)
     val year = route.year
     val id = route.id
     val initialImageIndex = route.imageIndex ?: 0
@@ -225,6 +221,9 @@ class ArtistDetailsViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ArtistDetailsViewModel
+        fun create(
+            route: AlleyDestination.ArtistDetails,
+            savedStateHandle: SavedStateHandle,
+        ): ArtistDetailsViewModel
     }
 }

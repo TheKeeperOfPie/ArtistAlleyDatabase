@@ -44,8 +44,8 @@ import kotlin.time.Duration.Companion.seconds
 private lateinit var artistImageCache: ArtistImageCache
 
 @Composable
-fun App(component: ArtistAlleyWebComponent) {
-    artistImageCache = component.artistImageCache
+fun App(graph: ArtistAlleyWebGraph) {
+    artistImageCache = graph.artistImageCache
 
     SingletonImageLoader.setSafe { context ->
         ImageLoader.Builder(context)
@@ -67,14 +67,14 @@ fun App(component: ArtistAlleyWebComponent) {
     }
 
     VariableFontEffect()
-    Content(component)
+    Content(graph)
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalBrowserHistoryApi::class)
 @Composable
-private fun Content(component: ArtistAlleyWebComponent) {
-    val deepLinker = component.deepLinker
-    val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
+private fun Content(graph: ArtistAlleyWebGraph) {
+    val deepLinker = graph.deepLinker
+    val appTheme by graph.settings.appTheme.collectAsStateWithLifecycle()
     AlleyTheme(appTheme = { appTheme }) {
         val windowSize = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current
@@ -118,7 +118,7 @@ private fun Content(component: ArtistAlleyWebComponent) {
             }
 
             ArtistAlleyAppScreen(
-                component = component,
+                graph = graph,
                 navHostController = navHostController,
                 rootSnackbarHostState = rootSnackbarHostState,
             )

@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.artist.map
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -35,10 +34,9 @@ class ArtistMapViewModel(
     userEntryDao: UserEntryDao,
     navigationTypeMap: NavigationTypeMap,
     settings: ArtistAlleySettings,
+    @Assisted route: AlleyDestination.ArtistMap,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-
-    private val route = savedStateHandle.toDestination<Destinations.ArtistMap>(navigationTypeMap)
     val id = route.id
 
     val artist = combine(settings.showOnlyConfirmedTags, settings.showOutdatedCatalogs, ::Pair)
@@ -77,6 +75,9 @@ class ArtistMapViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ArtistMapViewModel
+        fun create(
+            route: AlleyDestination.ArtistMap,
+            savedStateHandle: SavedStateHandle,
+        ): ArtistMapViewModel
     }
 }

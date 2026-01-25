@@ -7,7 +7,7 @@ import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.savedstate.read
 import androidx.savedstate.savedState
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import kotlinx.browser.window
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -24,7 +24,7 @@ suspend fun bindToNavigationFixed(
 ) {
     val route = window.location.hash.substringAfter('#', "")
     if (route.startsWith("import")) {
-        navHostController.navigate(Destinations.Import(route.removePrefix("import=")))
+        navHostController.navigate(AlleyDestination.Import(route.removePrefix("import=")))
     }
     window.bindToNavigationFixed(navHostController, deepLinker, null)
 }

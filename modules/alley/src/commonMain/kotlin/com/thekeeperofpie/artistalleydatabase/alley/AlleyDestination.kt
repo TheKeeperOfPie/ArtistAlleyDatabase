@@ -12,7 +12,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
-sealed interface Destinations : NavDestination {
+sealed interface AlleyDestination : NavDestination {
 
     companion object {
         val typeMap: Map<KType, NavType<*>> = mapOf(
@@ -36,7 +36,7 @@ sealed interface Destinations : NavDestination {
     }
 
     @Serializable
-    data object Home : Destinations
+    data object Home : AlleyDestination
 
     @Serializable
     data class ArtistDetails(
@@ -46,7 +46,7 @@ sealed interface Destinations : NavDestination {
         val name: String?,
         val images: List<CatalogImage>? = null,
         val imageIndex: Int? = null,
-    ) : Destinations {
+    ) : AlleyDestination {
         constructor(entry: ArtistEntry, imageIndex: Int? = null) : this(
             year = entry.year,
             id = entry.id,
@@ -58,16 +58,16 @@ sealed interface Destinations : NavDestination {
     }
 
     @Serializable
-    data class ArtistMap(val id: String) : Destinations
+    data class ArtistMap(val id: String) : AlleyDestination
 
     @Serializable
-    data class ArtistsList(val year: DataYear, val serializedBooths: String) : Destinations
+    data class ArtistsList(val year: DataYear, val serializedBooths: String) : AlleyDestination
 
     @Serializable
-    data object Changelog : Destinations
+    data object Changelog : AlleyDestination
 
     @Serializable
-    data object Export : Destinations
+    data object Export : AlleyDestination
 
     @Serializable
     data class Images(
@@ -76,7 +76,7 @@ sealed interface Destinations : NavDestination {
         val type: Type,
         val images: List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>,
         val initialImageIndex: Int?,
-    ) : Destinations {
+    ) : AlleyDestination {
 
         @Serializable
         sealed interface Type {
@@ -97,25 +97,25 @@ sealed interface Destinations : NavDestination {
     }
 
     @Serializable
-    data class Import(val data: String) : Destinations
+    data class Import(val data: String) : AlleyDestination
 
     @Serializable
-    data class Series(val year: DataYear? = null, val series: String) : Destinations
+    data class Series(val year: DataYear? = null, val series: String) : AlleyDestination
 
     @Serializable
-    data class SeriesMap(val year: DataYear? = null, val series: String) : Destinations
+    data class SeriesMap(val year: DataYear? = null, val series: String) : AlleyDestination
 
     @Serializable
-    data class Merch(val year: DataYear? = null, val merch: String) : Destinations
+    data class Merch(val year: DataYear? = null, val merch: String) : AlleyDestination
 
     @Serializable
-    data class MerchMap(val year: DataYear? = null, val merch: String) : Destinations
+    data class MerchMap(val year: DataYear? = null, val merch: String) : AlleyDestination
 
     @Serializable
-    data object Settings : Destinations
+    data object Settings : AlleyDestination
 
     @Serializable
-    data class StampRallies(val year: DataYear?, val series: String) : Destinations
+    data class StampRallies(val year: DataYear?, val series: String) : AlleyDestination
 
     @Serializable
     data class StampRallyDetails(
@@ -125,7 +125,7 @@ sealed interface Destinations : NavDestination {
         val fandom: String?,
         val images: List<CatalogImage>,
         val initialImageIndex: String? = null,
-    ) : Destinations {
+    ) : AlleyDestination {
         constructor(entry: StampRallyEntry, initialImageIndex: String? = null) : this(
             year = entry.year,
             id = entry.id,
@@ -137,5 +137,5 @@ sealed interface Destinations : NavDestination {
     }
 
     @Serializable
-    data class StampRallyMap(val year: DataYear, val id: String) : Destinations
+    data class StampRallyMap(val year: DataYear, val id: String) : AlleyDestination
 }

@@ -14,7 +14,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
@@ -35,7 +34,7 @@ import dev.zacsweers.metro.Provider
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 
-interface ArtistAlleyComponent {
+interface ArtistAlleyGraph {
 
     val artistDetailsViewModelFactory: ArtistDetailsViewModel.Factory
     val artistMapViewModelFactory: ArtistMapViewModel.Factory
@@ -45,7 +44,6 @@ interface ArtistAlleyComponent {
     val changelogViewModelFactory: ChangelogViewModel.Factory
     val favoritesViewModelFactory: FavoritesViewModel.Factory
     val favoritesSortFilterViewModelFactory: FavoritesSortFilterViewModel.Factory
-    val imagesViewModelFactory: ImagesViewModel.Factory
     val importViewModelFactory: ImportViewModel.Factory
     val mapViewModelFactory: MapViewModel.Factory
     val stampRallyDetailsViewModelFactory: StampRallyDetailsViewModel.Factory
@@ -91,5 +89,5 @@ interface ArtistAlleyComponent {
 
     @SingleIn(AppScope::class)
     @Provides
-    fun provideNavigationTypeMap(): NavigationTypeMap = NavigationTypeMap(Destinations.typeMap)
+    fun provideNavigationTypeMap(): NavigationTypeMap = NavigationTypeMap(AlleyDestination.typeMap)
 }

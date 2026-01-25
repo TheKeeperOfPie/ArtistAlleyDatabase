@@ -6,7 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.hoc081098.flowext.defer
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
@@ -20,10 +20,10 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
@@ -32,6 +32,7 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -40,7 +41,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -48,33 +48,26 @@ import kotlin.random.Random
 @AssistedInject
 class StampRallySearchViewModel(
     dispatchers: CustomDispatchers,
-    navigationTypeMap: NavigationTypeMap,
     seriesEntryDao: SeriesEntryDao,
     seriesImagesStore: SeriesImagesStore,
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userEntryDao: UserEntryDao,
     private val settings: ArtistAlleySettings,
+    @Assisted lockedYear: DataYear?,
+    @Assisted lockedSeries: String?,
     @Assisted private val savedStateHandle: SavedStateHandle,
 ) : EntrySearchViewModel<StampRallySearchQuery, StampRallyEntryGridModel>() {
-
-    @Serializable
-    data class InternalRoute(
-        val year: DataYear? = null,
-        val series: String? = null,
-    )
-
-    private val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
-
     override val sections = emptyList<EntrySection>()
 
     val displayType = settings.displayType
     val randomSeed = Random.nextInt().absoluteValue
     private val mutationUpdates = MutableSharedFlow<StampRallyUserEntry>(5, 5)
 
-    val dataYear = settings.dataYear
-
-    val lockedYear = route.year
-    val lockedSeries = route.series
+    val dataYear = if (lockedYear != null) {
+        MutableStateFlow(lockedYear)
+    } else {
+        savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
+    }
 
     val searchState = SearchScreen.State(
         columns = StampRallySearchScreen.StampRallyColumn.entries,
@@ -144,7 +137,7 @@ class StampRallySearchViewModel(
     override fun mapQuery(
         query: String,
         options: StampRallySearchQuery,
-    ) = settings.dataYear
+    ) = dataYear
         .flatMapLatest {
             Pager(PagingConfig(pageSize = PlatformSpecificConfig.defaultPageSize)) {
                 stampRallyEntryDao.searchPagingSource(
@@ -185,6 +178,10 @@ class StampRallySearchViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): StampRallySearchViewModel
+        fun create(
+            lockedYear: DataYear?,
+            lockedSeries: String?,
+            savedStateHandle: SavedStateHandle,
+        ): StampRallySearchViewModel
     }
 }

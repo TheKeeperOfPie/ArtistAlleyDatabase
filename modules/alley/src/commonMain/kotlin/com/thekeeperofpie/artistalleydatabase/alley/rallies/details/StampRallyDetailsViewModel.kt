@@ -13,7 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
@@ -27,8 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.user.SeriesUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -57,10 +55,9 @@ class StampRallyDetailsViewModel(
     private val stampRallyEntryDao: StampRallyEntryDao,
     private val userNotesDao: UserNotesDao,
     private val userEntryDao: UserEntryDao,
-    navigationTypeMap: NavigationTypeMap,
+    @Assisted route: AlleyDestination.StampRallyDetails,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val route = savedStateHandle.toDestination<Destinations.StampRallyDetails>(navigationTypeMap)
     val year = route.year
     val id = route.id
     val initialImageIndex = route.initialImageIndex?.toIntOrNull() ?: 0
@@ -72,7 +69,8 @@ class StampRallyDetailsViewModel(
     )
 
     val entry = flowFromSuspend {
-        val entryWithArtists = stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@flowFromSuspend null
+        val entryWithArtists =
+            stampRallyEntryDao.getEntryWithArtists(year, id) ?: return@flowFromSuspend null
         val stampRallyWithUserData = entryWithArtists.stampRally
         val stampRally = stampRallyWithUserData.stampRally
         val artists = entryWithArtists.artists.sortedBy { it.booth }
@@ -160,6 +158,9 @@ class StampRallyDetailsViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): StampRallyDetailsViewModel
+        fun create(
+            route: AlleyDestination.StampRallyDetails,
+            savedStateHandle: SavedStateHandle,
+        ): StampRallyDetailsViewModel
     }
 }

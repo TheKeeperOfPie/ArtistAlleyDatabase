@@ -11,6 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
@@ -23,10 +26,17 @@ object FavoritesMapScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: FavoritesSortFilterViewModel,
-        mapViewModel: MapViewModel,
+        graph: ArtistAlleyGraph,
         mapTransformState: MapScreen.TransformState,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
+        viewModel: FavoritesSortFilterViewModel = viewModel {
+            graph.favoritesSortFilterViewModelFactory.create(
+                createSavedStateHandle()
+            )
+        },
+        mapViewModel: MapViewModel = viewModel {
+            graph.mapViewModelFactory.create(createSavedStateHandle())
+        },
     ) {
         BottomSheetScaffold(
             sheetPeekHeight = 120.dp,

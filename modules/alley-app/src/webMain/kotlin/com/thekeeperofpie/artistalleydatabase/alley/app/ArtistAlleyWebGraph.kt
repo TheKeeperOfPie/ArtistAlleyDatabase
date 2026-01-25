@@ -8,7 +8,7 @@ import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 
 @DependencyGraph
-interface ArtistAlleyWebComponent : ArtistAlleyAppComponent {
+interface ArtistAlleyWebGraph : ArtistAlleyAppGraph {
     val appFileSystem: AppFileSystem
     val artistImageCache: ArtistImageCache
     val deepLinker: DeepLinker
@@ -18,6 +18,6 @@ interface ArtistAlleyWebComponent : ArtistAlleyAppComponent {
 
     @DependencyGraph.Factory
     interface Factory {
-        fun create(@Provides scope: ApplicationScope): ArtistAlleyWebComponent
+        fun create(@Provides scope: ApplicationScope): ArtistAlleyWebGraph
     }
 }

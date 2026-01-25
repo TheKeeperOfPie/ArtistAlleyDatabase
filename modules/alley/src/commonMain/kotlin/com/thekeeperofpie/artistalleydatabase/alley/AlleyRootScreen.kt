@@ -23,8 +23,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_artists
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_browse
@@ -38,7 +36,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
-import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -48,8 +45,7 @@ object AlleyRootScreen {
 
     @Composable
     operator fun invoke(
-        // TODO: Remove components/ViewModels from UI layer
-        component: ArtistAlleyComponent,
+        graph: ArtistAlleyGraph,
         snackbarHostState: SnackbarHostState,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
         onSeriesClick: (String) -> Unit,
@@ -81,45 +77,29 @@ object AlleyRootScreen {
             ) {
                 Box(Modifier.fillMaxSize().padding(it)) {
                     when (currentDestination) {
-                        Destination.ARTISTS -> {
-                            val viewModel = viewModel {
-                                component.artistSearchViewModelFactory.create(
-                                    createSavedStateHandle().apply { this["isRoot"] = true },
-                                )
-                            }
+                        Destination.ARTISTS ->
                             ArtistSearchScreen(
-                                viewModel = viewModel,
-                                sortFilterController = viewModel.sortFilterController,
+                                graph = graph,
+                                lockedYear = null,
+                                lockedSeries = null,
+                                lockedMerch = null,
+                                isRoot = true,
+                                lockedSerializedBooths = null,
                                 onClickBack = null,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.ARTISTS.name,
                                     scrollPositions,
                                 ),
                             )
-                        }
-                        Destination.BROWSE -> {
-                            val viewModel = viewModel {
-                                component.tagsViewModelFactory.create(createSavedStateHandle())
-                            }
-                            val dataYearHeaderState =
-                                rememberDataYearHeaderState(viewModel.dataYear, null)
+                        Destination.BROWSE ->
                             BrowseScreen(
-                                dataYearHeaderState = dataYearHeaderState,
-                                tagsViewModel = viewModel,
-                                onSeriesFavoriteToggle = viewModel::onSeriesFavoriteToggle,
+                                graph = graph,
                                 onSeriesClick = { onSeriesClick(it.id) },
-                                onMerchFavoriteToggle = viewModel::onMerchFavoriteToggle,
                                 onMerchClick = { onMerchClick(it.name) },
                             )
-                        }
-                        Destination.FAVORITES -> {
-                            val favoritesViewModel = viewModel {
-                                component.favoritesViewModelFactory.create(createSavedStateHandle())
-                            }
+                        Destination.FAVORITES ->
                             FavoritesScreen(
-                                favoritesViewModel = favoritesViewModel,
-                                artistSortFilterController = favoritesViewModel.artistSortFilterController,
-                                stampRallySortFilterController = favoritesViewModel.stampRallySortFilterController,
+                                graph = graph,
                                 artistsScrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.FAVORITES.name + "artists",
                                     scrollPositions,
@@ -149,38 +129,22 @@ object AlleyRootScreen {
                                     currentDestination = Destination.BROWSE
                                 },
                             )
-                        }
-                        Destination.MAP -> {
-                            val viewModel = viewModel {
-                                component.favoritesSortFilterViewModelFactory.create(
-                                    createSavedStateHandle()
-                                )
-                            }
-                            val mapViewModel = viewModel {
-                                component.mapViewModelFactory.create(createSavedStateHandle())
-                            }
+                        Destination.MAP ->
                             FavoritesMapScreen(
-                                viewModel = viewModel,
-                                mapViewModel = mapViewModel,
+                                graph = graph,
                                 mapTransformState = mapTransformState,
                                 onArtistClick = onArtistClick,
                             )
-                        }
-                        Destination.STAMP_RALLIES -> {
-                            val viewModel = viewModel {
-                                component.stampRallySearchViewModelFactory.create(
-                                    createSavedStateHandle()
-                                )
-                            }
+                        Destination.STAMP_RALLIES ->
                             StampRallySearchScreen(
-                                viewModel = viewModel,
-                                sortFilterState = viewModel.sortFilterController.state,
+                                graph = graph,
+                                lockedYear = null,
+                                lockedSeries = null,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.STAMP_RALLIES.name,
                                     scrollPositions,
                                 ),
                             )
-                        }
                     }
                 }
             }

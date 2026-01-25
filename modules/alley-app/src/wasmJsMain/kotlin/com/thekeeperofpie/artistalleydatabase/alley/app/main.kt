@@ -11,8 +11,8 @@ import kotlinx.browser.document
 fun main() {
     ComposeViewport(document.body!!) {
         val scope = rememberCoroutineScope()
-        val component = createGraphFactory<ArtistAlleyWebComponent.Factory>().create(scope)
+        val graph = createGraphFactory<ArtistAlleyWebGraph.Factory>().create(scope)
         KeyboardEventEffect()
-        App(component = component)
+        App(graph = graph)
     }
 }

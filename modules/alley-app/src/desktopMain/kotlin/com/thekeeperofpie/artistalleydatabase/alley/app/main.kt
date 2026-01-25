@@ -40,7 +40,7 @@ import okio.source
 fun main() {
     application {
         val scope = rememberCoroutineScope { Dispatchers.Main }
-        val component = createGraphFactory<ArtistAlleyDesktopComponent.Factory>().create(scope)
+        val graph = createGraphFactory<ArtistAlleyDesktopGraph.Factory>().create(scope)
 
         SingletonImageLoader.setSafe { context ->
             ImageLoader.Builder(context)
@@ -55,7 +55,7 @@ fun main() {
                             return object : Fetcher {
                                 override suspend fun fetch(): FetchResult? {
                                     val source =
-                                        component.appFileSystem.openUriSource(Uri.parse(data.toString()))
+                                        graph.appFileSystem.openUriSource(Uri.parse(data.toString()))
                                             ?.asInputStream()?.source()?.buffer() ?: return null
                                     return SourceFetchResult(
                                         source = ImageSource(
@@ -86,7 +86,7 @@ fun main() {
             title = "Artist Alley",
             state = windowState,
         ) {
-            val appTheme by component.settings.appTheme.collectAsStateWithLifecycle()
+            val appTheme by graph.settings.appTheme.collectAsStateWithLifecycle()
             AlleyTheme(appTheme = { appTheme }) {
                 val windowSize = windowState.size
                 val windowConfiguration = remember(windowSize) {
@@ -102,7 +102,7 @@ fun main() {
                     LocalWindowConfiguration provides windowConfiguration,
                     LocalNavigationController provides navigationController,
                 ) {
-                    ArtistAlleyAppScreen(component, navHostController)
+                    ArtistAlleyAppScreen(graph, navHostController)
                 }
             }
         }

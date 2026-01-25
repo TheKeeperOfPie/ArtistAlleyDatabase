@@ -6,12 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.database.AlleyExporter
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -23,11 +21,10 @@ import kotlinx.io.writeString
 class ImportViewModel(
     private val dispatchers: CustomDispatchers,
     private val exporter: AlleyExporter,
-    navigationTypeMap: NavigationTypeMap,
+    @Assisted private val route: AlleyDestination.Import,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    val route = savedStateHandle.toDestination<Destinations.Import>(navigationTypeMap)
     var state by mutableStateOf<LoadingResult<*>>(LoadingResult.empty<Unit>())
 
     fun confirm() {
@@ -43,6 +40,9 @@ class ImportViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ImportViewModel
+        fun create(
+            route: AlleyDestination.Import,
+            savedStateHandle: SavedStateHandle,
+        ): ImportViewModel
     }
 }

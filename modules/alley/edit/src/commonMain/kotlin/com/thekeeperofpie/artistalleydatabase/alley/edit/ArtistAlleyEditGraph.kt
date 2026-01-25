@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit
 
-import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyComponent
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.edit.admin.AdminViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddViewModel
@@ -34,7 +34,7 @@ import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @SingleIn(AppScope::class)
-interface ArtistAlleyEditGraph : ArtistAlleyComponent {
+interface ArtistAlleyEditGraph : ArtistAlleyGraph {
 
     val appFileSystem: AppFileSystem
     val adminViewModelFactory: AdminViewModel.Factory

@@ -6,12 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -21,11 +19,9 @@ import kotlinx.coroutines.withContext
 @AssistedInject
 class StampRallyMapViewModel(
     stampRallyEntryDao: StampRallyEntryDao,
-    navigationTypeMap: NavigationTypeMap,
+    @Assisted route: AlleyDestination.StampRallyMap,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-
-    private val route = savedStateHandle.toDestination<Destinations.StampRallyMap>(navigationTypeMap)
 
     var stampRally by mutableStateOf<StampRallyEntry?>(null)
         private set
@@ -47,6 +43,9 @@ class StampRallyMapViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): StampRallyMapViewModel
+        fun create(
+            route: AlleyDestination.StampRallyMap,
+            savedStateHandle: SavedStateHandle,
+        ): StampRallyMapViewModel
     }
 }

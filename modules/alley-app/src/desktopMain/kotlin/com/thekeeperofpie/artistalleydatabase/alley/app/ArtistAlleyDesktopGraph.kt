@@ -12,7 +12,7 @@ import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 
 @DependencyGraph
-interface ArtistAlleyDesktopComponent : ArtistAlleyAppComponent {
+interface ArtistAlleyDesktopGraph : ArtistAlleyAppGraph {
     val appFileSystem: AppFileSystem
 
     @Binds
@@ -24,6 +24,6 @@ interface ArtistAlleyDesktopComponent : ArtistAlleyAppComponent {
 
     @DependencyGraph.Factory
     interface Factory {
-        fun create(@Provides scope: ApplicationScope): ArtistAlleyDesktopComponent
+        fun create(@Provides scope: ApplicationScope): ArtistAlleyDesktopGraph
     }
 }

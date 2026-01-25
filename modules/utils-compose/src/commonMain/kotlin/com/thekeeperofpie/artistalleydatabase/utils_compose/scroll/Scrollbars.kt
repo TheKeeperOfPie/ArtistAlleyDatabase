@@ -287,9 +287,13 @@ private class LazyStaggeredGridScrollAreaScrollAreaState(
                     (it.visibleItemsInfo.firstOrNull()?.index ?: 0)
         }
     private val itemSize
-        get() = (gridState.layoutInfo.viewportSize.height / visibleItems)
-            .toDouble()
-            .coerceAtLeast(0.0)
+        get() = if (visibleItems == 0) {
+            0.0
+        } else {
+            (gridState.layoutInfo.viewportSize.height / visibleItems)
+                .toDouble()
+                .coerceAtLeast(0.0)
+        }
 
     override suspend fun scrollTo(scrollOffset: Double) {
         val distance = scrollOffset - this.scrollOffset

@@ -10,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -24,25 +23,14 @@ import kotlinx.serialization.Serializable
 @AssistedInject
 class ArtistMerchViewModel(
     dispatchers: CustomDispatchers,
-    navigationTypeMap: NavigationTypeMap,
     merchEntryDao: MerchEntryDao,
     userEntryDao: UserEntryDao,
+    @Assisted val merch: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    @Serializable
-    data class InternalRoute(
-        val merch: String? = null,
-    )
-
-    val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
-
-    val merchEntry = if (route.merch == null) {
-        ReadOnlyStateFlow(null)
-    } else {
-        merchEntryDao.getMerchById(route.merch)
-            .stateIn(viewModelScope, SharingStarted.Lazily, null)
-    }
+    val merchEntry = merchEntryDao.getMerchById(merch)
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     private val mutationUpdates = MutableSharedFlow<MerchUserEntry>(5, 5)
 
@@ -60,6 +48,6 @@ class ArtistMerchViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ArtistMerchViewModel
+        fun create(merch: String, savedStateHandle: SavedStateHandle): ArtistMerchViewModel
     }
 }

@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_close_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_export_download_content_description
@@ -46,6 +47,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_cod
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_or_open_explanation
 import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_code_url_label
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ImportExportUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
@@ -60,6 +62,17 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 internal object QrCodeScreen {
 
     private val DataYearSaver = StateUtils.jsonSaver<DataYear>()
+
+    @Composable
+    operator fun invoke(
+        graph: ArtistAlleyGraph,
+        viewModel: QrCodeViewModel = viewModel { graph.qrCodeViewModel() },
+    ) {
+        QrCodeScreen(
+            exportPartialForYear = viewModel::exportPartialForYear,
+            onClickDownload = viewModel::download,
+        )
+    }
 
     @Composable
     operator fun invoke(

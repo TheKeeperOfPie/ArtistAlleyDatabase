@@ -44,6 +44,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -59,6 +61,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_column
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_merch
 import artistalleydatabase.modules.alley.generated.resources.alley_expand_series
 import artistalleydatabase.modules.alley.generated.resources.alley_search_title_results_suffix
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -97,12 +100,27 @@ object ArtistSearchScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: ArtistSearchViewModel,
-        sortFilterController: ArtistSortFilterController,
+        graph: ArtistAlleyGraph,
         onClickBack: (() -> Unit)?,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
+        lockedYear: DataYear?,
+        lockedSeries: String?,
+        lockedMerch: String?,
+        isRoot: Boolean,
+        lockedSerializedBooths: String?,
+        viewModel: ArtistSearchViewModel = viewModel {
+            graph.artistSearchViewModelFactory.create(
+                lockedYear = lockedYear,
+                lockedSeries = lockedSeries,
+                lockedMerch = lockedMerch,
+                isRoot = isRoot,
+                lockedSerializedBooths = lockedSerializedBooths,
+                savedStateHandle = createSavedStateHandle(),
+            )
+        },
     ) {
+        val sortFilterController = viewModel.sortFilterController
         val state = remember(viewModel, sortFilterController) {
             State(viewModel, sortFilterController)
         }

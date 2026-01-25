@@ -126,7 +126,7 @@ import coil3.compose.AsyncImage
 import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
@@ -582,7 +582,7 @@ fun DataYearHeader(
                         modifier = Modifier.weight(1f)
                     )
                     val navigationController = LocalNavigationController.current
-                    Button(onClick = { navigationController.navigate(Destinations.Export) }) {
+                    Button(onClick = { navigationController.navigate(AlleyDestination.Export) }) {
                         Text(stringResource(Res.string.alley_con_upcoming_show_qr))
                     }
                 }
@@ -673,14 +673,14 @@ fun DataYearHeader(
                 }
 
                 val navigationController = LocalNavigationController.current
-                IconButton(onClick = { navigationController.navigate(Destinations.Changelog) }) {
+                IconButton(onClick = { navigationController.navigate(AlleyDestination.Changelog) }) {
                     Icon(
                         imageVector = Icons.Default.ChangeHistory,
                         contentDescription = stringResource(Res.string.alley_changelog),
                     )
                 }
 
-                IconButton(onClick = { navigationController.navigate(Destinations.Settings) }) {
+                IconButton(onClick = { navigationController.navigate(AlleyDestination.Settings) }) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = stringResource(Res.string.alley_settings),

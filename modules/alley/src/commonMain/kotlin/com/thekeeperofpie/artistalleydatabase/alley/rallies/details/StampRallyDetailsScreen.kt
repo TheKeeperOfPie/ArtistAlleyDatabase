@@ -19,11 +19,17 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_booth_and_table_name
 import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
@@ -43,7 +49,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_series
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Images.Type.StampRally
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
@@ -66,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -74,7 +83,104 @@ object StampRallyDetailsScreen {
 
     @Composable
     operator fun invoke(
-        route: Destinations.StampRallyDetails,
+        graph: ArtistAlleyGraph,
+        route: AlleyDestination.StampRallyDetails,
+        entrySavedStateHandle: SavedStateHandle,
+    ) {
+        val viewModel = viewModel {
+            graph.stampRallyDetailsViewModelFactory.create(
+                route = route,
+                savedStateHandle = createSavedStateHandle(),
+            )
+        }
+        val images = viewModel.images
+        val pageCount = when {
+            images.isEmpty() -> 0
+            images.size == 1 -> 1
+            else -> images.size + 1
+        }
+        val imageIndex = entrySavedStateHandle
+            .remove<Int>("imageIndex")
+            ?.coerceAtMost(pageCount - 1)
+            ?.takeIf { it >= 0 }
+        val imagePagerState = rememberImagePagerState(
+            images,
+            imageIndex ?: viewModel.initialImageIndex
+        )
+        LifecycleStartEffect(imagePagerState, imageIndex) {
+            if (imageIndex != null) {
+                imagePagerState.requestScrollToPage(imageIndex)
+            }
+            onStopOrDispose {}
+        }
+        val entry by viewModel.entry.collectAsStateWithLifecycle()
+        val series by viewModel.series.collectAsStateWithLifecycle()
+        val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
+        val navigationController = LocalNavigationController.current
+        StampRallyDetailsScreen(
+            route = route,
+            entry = { entry },
+            series = { series },
+            userNotesTextState = viewModel.userNotes,
+            images = viewModel::images,
+            imagePagerState = imagePagerState,
+            seriesImages = { seriesImages },
+            eventSink = {
+                when (it) {
+                    is Event.DetailsEvent ->
+                        when (val event = it.event) {
+                            is DetailsScreen.Event.FavoriteToggle ->
+                                viewModel.onFavoriteToggle(event.favorite)
+                            DetailsScreen.Event.NavigateUp ->
+                                navigationController.navigateUp()
+                            is DetailsScreen.Event.OpenImage -> {
+                                viewModel.entry.value?.stampRally?.let {
+                                    navigationController.navigate(
+                                        AlleyDestination.Images(
+                                            year = route.year,
+                                            id = route.id,
+                                            type = StampRally(
+                                                id = it.id,
+                                                hostTable = it.hostTable,
+                                                fandom = it.fandom,
+                                            ),
+                                            images = viewModel.images,
+                                            initialImageIndex = event.imageIndex,
+                                        )
+                                    )
+                                }
+                            }
+                            DetailsScreen.Event.OpenMap ->
+                                navigationController.navigate(
+                                    AlleyDestination.StampRallyMap(
+                                        year = route.year,
+                                        id = route.id,
+                                    )
+                                )
+                            DetailsScreen.Event.ShowFallback -> Unit
+                            DetailsScreen.Event.AlwaysShowFallback -> Unit
+                        }
+                    is Event.OpenArtist ->
+                        navigationController.navigate(
+                            AlleyDestination.ArtistDetails(it.artist)
+                        )
+                    is Event.OpenSeries ->
+                        navigationController.navigate(
+                            AlleyDestination.Series(route.year, it.series)
+                        )
+                    is Event.SeriesFavoriteToggle ->
+                        viewModel.onSeriesFavoriteToggle(
+                            data = it.series,
+                            favorite = it.favorite,
+                        )
+                }
+            },
+        )
+    }
+
+    @Composable
+    operator fun invoke(
+        route: AlleyDestination.StampRallyDetails,
         entry: () -> StampRallyDetailsViewModel.Entry?,
         series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
@@ -396,7 +502,7 @@ private fun PhoneLayout() {
     val images = CatalogImagePreviewProvider.values.take(4).toList()
     PreviewDark {
         StampRallyDetailsScreen(
-            route = Destinations.StampRallyDetails(stampRally.stampRally),
+            route = AlleyDestination.StampRallyDetails(stampRally.stampRally),
             entry = {
                 StampRallyDetailsViewModel.Entry(
                     stampRally = stampRally.stampRally,

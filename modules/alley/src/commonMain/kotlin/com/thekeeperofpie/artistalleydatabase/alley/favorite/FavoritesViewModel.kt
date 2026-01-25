@@ -7,10 +7,10 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.StampRallyDetails
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel

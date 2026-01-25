@@ -10,11 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Named
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -22,44 +21,36 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @AssistedInject
 class TagMapViewModel(
     private val tagEntryDao: TagEntryDao,
-    navigationTypeMap: NavigationTypeMap,
     settings: ArtistAlleySettings,
+    @Assisted year: DataYear?,
+    @Assisted @Named("series") series: String?,
+    @Assisted @Named("merch") merch: String?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-
-    @Serializable
-    data class InternalRoute(
-        val year: DataYear? = null,
-        val series: String? = null,
-        val merch: String? = null,
-    )
-
-    val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
 
     var booths by mutableStateOf(emptySet<String>())
         private set
 
-    private val year = if (route.year == null) {
+    private val dataYear = if (year == null) {
         settings.dataYear
     } else {
-        flowOf(route.year)
+        flowOf(year)
     }
 
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            combine(settings.showOnlyConfirmedTags, year, ::Pair)
+            combine(settings.showOnlyConfirmedTags, dataYear, ::Pair)
                 .mapLatest { (showOnlyConfirmedTags, year) ->
                     tagEntryDao.getBooths(
                         year = year,
                         TagMapQuery(
-                            series = route.series,
-                            merch = route.merch,
+                            series = series,
+                            merch = merch,
                             showOnlyConfirmedTags = showOnlyConfirmedTags,
                         )
                     )
@@ -71,6 +62,11 @@ class TagMapViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): TagMapViewModel
+        fun create(
+            year: DataYear?,
+            @Named("series") series: String?,
+            @Named("merch") merch: String?,
+            savedStateHandle: SavedStateHandle,
+        ): TagMapViewModel
     }
 }

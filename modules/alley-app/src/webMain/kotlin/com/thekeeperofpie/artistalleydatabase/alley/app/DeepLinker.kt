@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
 import androidx.navigation.NavController
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -21,7 +21,7 @@ class DeepLinker(private val artistEntryDao: ArtistEntryDao) {
                 ?: return false
             val serializedBooths = pieces[2]
             navController.navigate(
-                Destinations.ArtistsList(year, serializedBooths)
+                AlleyDestination.ArtistsList(year, serializedBooths)
             )
             return true
         } else if (route.startsWith("artist")) {
@@ -36,7 +36,7 @@ class DeepLinker(private val artistEntryDao: ArtistEntryDao) {
             ).firstOrNull()?.id ?: return false
             val entry = artistEntryDao.getEntry(year, artistId)?.artist ?: return false
             navController.navigate(
-                Destinations.ArtistDetails(entry, null)
+                AlleyDestination.ArtistDetails(entry, null)
             )
             return true
         }

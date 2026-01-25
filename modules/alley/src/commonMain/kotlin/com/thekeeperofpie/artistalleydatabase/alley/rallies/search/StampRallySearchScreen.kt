@@ -13,10 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_booth
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_fandom
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
@@ -26,8 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.TwoWayGrid
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
@@ -38,16 +41,24 @@ object StampRallySearchScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: StampRallySearchViewModel,
-        sortFilterState: SortFilterState<StampRallySortFilterController.FilterParams>,
+        graph: ArtistAlleyGraph,
+        lockedYear: DataYear?,
+        lockedSeries: String?,
         scrollStateSaver: ScrollStateSaver,
         onClickBack: (() -> Unit)? = null,
+        viewModel: StampRallySearchViewModel = viewModel {
+            graph.stampRallySearchViewModelFactory.create(
+                lockedYear = lockedYear,
+                lockedSeries = lockedSeries,
+                savedStateHandle = createSavedStateHandle(),
+            )
+        }
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
-        sortFilterState.ImmediateScrollResetEffect(gridState)
+        viewModel.sortFilterController.state.ImmediateScrollResetEffect(gridState)
 
         CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
-            val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, viewModel.lockedYear)
+            val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, lockedYear)
             val entries = viewModel.results.collectAsLazyPagingItems()
             val navigationController = LocalNavigationController.current
             val lockedSeriesEntry by viewModel.lockedSeriesEntry.collectAsStateWithLifecycle()
@@ -63,7 +74,7 @@ object StampRallySearchScreen {
                 entries = entries,
                 unfilteredCount = { unfilteredCount },
                 scaffoldState = scaffoldState,
-                sortFilterState = sortFilterState,
+                sortFilterState = viewModel.sortFilterController.state,
                 gridState = gridState,
                 header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
                 title = { lockedSeriesEntry?.name(languageOptionMedia) },

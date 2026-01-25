@@ -16,9 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_rallies
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
@@ -26,12 +30,54 @@ import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterData
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ArtistSeriesScreen {
+
+    @Composable
+    operator fun invoke(
+        graph: ArtistAlleyGraph,
+        route: AlleyDestination.Series,
+        onClickBack: (() -> Unit)?,
+        scrollStateSaver: ScrollStateSaver,
+        onClickRallies: (DataYear) -> Unit,
+        onClickMap: (DataYear?) -> Unit,
+        scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
+        artistSearchViewModel: ArtistSearchViewModel = viewModel {
+            graph.artistSearchViewModelFactory.create(
+                lockedYear = route.year,
+                lockedSeries = route.series,
+                lockedMerch = null,
+                isRoot = false,
+                lockedSerializedBooths = null,
+                savedStateHandle = createSavedStateHandle(),
+            )
+        },
+        artistSeriesViewModel: ArtistSeriesViewModel = viewModel {
+            graph.artistSeriesViewModelFactory.create(
+                series = route.series,
+                savedStateHandle = createSavedStateHandle(),
+            )
+        },
+    ) {
+        val hasRallies by artistSearchViewModel.hasRallies.collectAsStateWithLifecycle()
+        ArtistSeriesScreen(
+            artistSearchViewModel = artistSearchViewModel,
+            artistSeriesViewModel = artistSeriesViewModel,
+            sortFilterController = artistSearchViewModel.sortFilterController,
+            onClickBack = onClickBack,
+            scrollStateSaver = scrollStateSaver,
+            showRalliesButton = { hasRallies },
+            onClickRallies = { onClickRallies(artistSearchViewModel.year.value) },
+            onClickMap = { onClickMap(artistSearchViewModel.lockedYear) },
+            scaffoldState = scaffoldState,
+        )
+
+    }
 
     @Composable
     operator fun invoke(
@@ -63,7 +109,6 @@ object ArtistSeriesScreen {
                     state = state,
                     sortFilterController = sortFilterController,
                     scaffoldState = scaffoldState,
-                    showSeries = artistSeriesViewModel.route.series != null,
                     seriesEntry = { seriesEntry },
                     seriesImage = { seriesImage },
                     onFavoriteToggle = artistSeriesViewModel::onFavoriteToggle,
@@ -95,31 +140,28 @@ object ArtistSeriesScreen {
         state: ArtistSearchScreen.State,
         sortFilterController: ArtistSortFilterController,
         scaffoldState: BottomSheetScaffoldState,
-        showSeries: Boolean,
         seriesEntry: () -> SeriesWithUserData?,
         seriesImage: () -> String?,
         onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
     ) {
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         Column {
-            if (showSeries) {
-                Card {
-                    val data = seriesEntry()
-                    SeriesRow(
-                        data = data,
-                        image = seriesImage,
-                        textStyle = LocalTextStyle.current,
-                        showAllTitles = true,
-                        onFavoriteToggle = {
-                            if (data != null) {
-                                onFavoriteToggle(data, it)
-                            }
-                        },
-                    )
-                    HorizontalDivider()
-                    sortFilterController.showOnlyConfirmedTagsSection
-                        .Content(sortFilterController.state.expanded, false)
-                }
+            Card {
+                val data = seriesEntry()
+                SeriesRow(
+                    data = data,
+                    image = seriesImage,
+                    textStyle = LocalTextStyle.current,
+                    showAllTitles = true,
+                    onFavoriteToggle = {
+                        if (data != null) {
+                            onFavoriteToggle(data, it)
+                        }
+                    },
+                )
+                HorizontalDivider()
+                sortFilterController.showOnlyConfirmedTagsSection
+                    .Content(sortFilterController.state.expanded, false)
             }
             BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
         }

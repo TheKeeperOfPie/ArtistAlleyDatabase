@@ -4,7 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -13,15 +12,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
@@ -35,15 +36,24 @@ object ImagesScreen {
 
     @Composable
     operator fun invoke(
-        route: Destinations.Images,
-        imagePagerState: PagerState,
+        route: AlleyDestination.Images,
+        previousDestinationSavedStateHandle: SavedStateHandle?,
     ) {
+        val imagePagerState = rememberImagePagerState(
+            images = route.images,
+            initialImageIndex = route.initialImageIndex ?: 0,
+        )
+        val targetPage = imagePagerState.targetPage
+        LaunchedEffect(targetPage) {
+            previousDestinationSavedStateHandle
+                ?.set("imageIndex", targetPage)
+        }
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = {
                         when (val type = route.type) {
-                            is Destinations.Images.Type.Artist ->
+                            is AlleyDestination.Images.Type.Artist ->
                                 ArtistTitle(
                                     year = route.year,
                                     id = route.id,
@@ -51,7 +61,7 @@ object ImagesScreen {
                                     name = type.name,
                                     useSharedElement = false,
                                 )
-                            is Destinations.Images.Type.StampRally ->
+                            is AlleyDestination.Images.Type.StampRally ->
                                 StampRallyTitle(
                                     year = route.year,
                                     id = route.id,

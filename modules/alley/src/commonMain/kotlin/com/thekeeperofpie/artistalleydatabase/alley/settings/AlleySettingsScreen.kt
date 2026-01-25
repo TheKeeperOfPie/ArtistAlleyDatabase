@@ -44,6 +44,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_author_link
 import artistalleydatabase.modules.alley.generated.resources.alley_server_link
@@ -60,7 +61,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
@@ -99,14 +101,12 @@ object AlleySettingsScreen {
 }
 
 @Composable
-internal fun AlleySettingsScreen(
-    state: AlleySettingsScreen.State,
-    eventSink: (AlleySettingsScreen.Event) -> Unit,
-) {
+internal fun AlleySettingsScreen(graph: ArtistAlleyGraph) {
+    val viewModel = viewModel { graph.alleySettingsViewModel() }
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
         val navigationController = LocalNavigationController.current
         SettingsScreen(
-            sections = state.sections,
+            sections = viewModel.state.sections,
             upIconOption = UpIconOption.Back(navigationController),
             automaticallyInsertDividers = false,
             modifier = Modifier.widthIn(max = 1200.dp),
@@ -115,13 +115,13 @@ internal fun AlleySettingsScreen(
                 "header" -> Header()
                 "export" -> ExportSection()
                 "import" -> ImportSection(
-                    state = { state.importState },
-                    onResetState = { state.importState = LoadingResult.empty<Unit>() },
-                    onClickImport = { eventSink(AlleySettingsScreen.Event.Import(it)) },
-                    onImportFile = { eventSink(AlleySettingsScreen.Event.ImportFile(it)) },
+                    state = { viewModel.state.importState },
+                    onResetState = { viewModel.state.importState = LoadingResult.empty<Unit>() },
+                    onClickImport = { viewModel.onEvent(AlleySettingsScreen.Event.Import(it)) },
+                    onImportFile = { viewModel.onEvent(AlleySettingsScreen.Event.ImportFile(it)) },
                 )
                 "clear" -> ClearSection(
-                    onClear = { eventSink(AlleySettingsScreen.Event.ClearUserData) },
+                    onClear = { viewModel.onEvent(AlleySettingsScreen.Event.ClearUserData) },
                 )
                 "faq" -> FaqSection(onInstallClick = { PlatformSpecificConfig.requestInstall() })
                 else -> throw IllegalArgumentException()
@@ -227,7 +227,7 @@ private fun ExportSection() {
             }
 
             val navigationController = LocalNavigationController.current
-            Button(onClick = { navigationController.navigate(Destinations.Export) }) {
+            Button(onClick = { navigationController.navigate(AlleyDestination.Export) }) {
                 Text(text = stringResource(Res.string.alley_settings_export))
             }
         }
@@ -463,9 +463,9 @@ private fun FaqSection(onInstallClick: () -> Unit) {
                         }
                     }
                     appendParagraph(
-                        ", allowing you to browse during a convention without an " +
-                                "internet connection. This may not work on Apple devices, but" +
-                                "should work on Android."
+                        ", allowing you to browse during a convention without an" +
+                                " internet connection. This may not work on Apple devices, but" +
+                                " should work on Android."
                     )
                     withStyle(
                         SpanStyle(
@@ -477,7 +477,7 @@ private fun FaqSection(onInstallClick: () -> Unit) {
                             LinkAnnotation.Clickable(
                                 tag = "export",
                                 linkInteractionListener = {
-                                    navigationController.navigate(Destinations.Export)
+                                    navigationController.navigate(AlleyDestination.Export)
                                 },
                             )
                         ) {

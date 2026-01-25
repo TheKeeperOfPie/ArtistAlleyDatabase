@@ -7,9 +7,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.ArtistDetails
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Merch
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations.Series
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -27,13 +27,13 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.toDestination
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.Named
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,25 +62,15 @@ class ArtistSearchViewModel(
     private val seriesImagesStore: SeriesImagesStore,
     private val userEntryDao: UserEntryDao,
     val settings: ArtistAlleySettings,
-    navigationTypeMap: NavigationTypeMap,
+    @Assisted val lockedYear: DataYear?,
+    @Assisted @Named("lockedSeries") lockedSeries: String?,
+    @Assisted @Named("lockedMerch") val lockedMerch: String?,
+    @Assisted isRoot: Boolean,
+    @Assisted @Named("lockedSerializedBooths") lockedSerializedBooths: String?,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    @Serializable
-    data class InternalRoute(
-        val year: DataYear? = null,
-        val series: String? = null,
-        val merch: String? = null,
-        val isRoot: Boolean = false,
-        val serializedBooths: String? = null,
-    )
-
-    private val route = savedStateHandle.toDestination<InternalRoute>(navigationTypeMap)
-
-    val lockedYear = route.year
-    val lockedSeries = route.series
-    val lockedMerch = route.merch
-    val lockedBooths = route.serializedBooths?.let { serializedBooths ->
+    val lockedBooths = lockedSerializedBooths?.let { serializedBooths ->
         val booths = mutableSetOf<String>()
         var currentLetter = serializedBooths.first()
         var firstNumber: Char? = null
@@ -99,7 +89,7 @@ class ArtistSearchViewModel(
 
     val year = if (lockedYear != null) {
         MutableStateFlow(lockedYear)
-    } else if (route.isRoot) {
+    } else if (isRoot) {
         settings.dataYear
     } else {
         savedStateHandle.getMutableStateFlow("dataYear", settings.dataYear.value)
@@ -262,6 +252,13 @@ class ArtistSearchViewModel(
 
     @AssistedFactory
     interface Factory {
-        fun create(savedStateHandle: SavedStateHandle): ArtistSearchViewModel
+        fun create(
+            lockedYear: DataYear?,
+            @Named("lockedSeries") lockedSeries: String?,
+            @Named("lockedMerch") lockedMerch: String?,
+            isRoot: Boolean,
+            @Named("lockedSerializedBooths") lockedSerializedBooths: String?,
+            savedStateHandle: SavedStateHandle,
+        ): ArtistSearchViewModel
     }
 }

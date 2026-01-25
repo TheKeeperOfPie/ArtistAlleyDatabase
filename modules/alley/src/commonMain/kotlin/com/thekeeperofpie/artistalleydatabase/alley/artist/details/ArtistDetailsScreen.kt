@@ -51,6 +51,11 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_artist_name
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_catalog
@@ -83,7 +88,8 @@ import artistalleydatabase.modules.alley.generated.resources.alley_open_year
 import com.eygraber.compose.placeholder.PlaceholderHighlight
 import com.eygraber.compose.placeholder.material3.placeholder
 import com.eygraber.compose.placeholder.material3.shimmer
-import com.thekeeperofpie.artistalleydatabase.alley.Destinations
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
@@ -114,6 +120,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -123,7 +130,143 @@ object ArtistDetailsScreen {
 
     @Composable
     operator fun invoke(
-        route: Destinations.ArtistDetails,
+        graph: ArtistAlleyGraph,
+        entrySavedStateHandle: SavedStateHandle,
+        route: AlleyDestination.ArtistDetails,
+        viewModel: ArtistDetailsViewModel = viewModel {
+            graph.artistDetailsViewModelFactory.create(
+                route = route,
+                savedStateHandle = createSavedStateHandle(),
+            )
+        }
+    ) {
+        val catalog by viewModel.catalog.collectAsStateWithLifecycle()
+        val images = catalog.result?.images.orEmpty()
+        val pageCount = when {
+            images.isEmpty() -> 0
+            images.size == 1 -> 1
+            else -> images.size + 1
+        }
+        val imageIndex = entrySavedStateHandle
+            .remove<Int>("imageIndex")
+            ?.coerceAtMost(pageCount - 1)
+            ?.takeIf { it >= 0 }
+        val imagePagerState = rememberImagePagerState(
+            images,
+            imageIndex ?: viewModel.initialImageIndex
+        )
+        LifecycleStartEffect(imagePagerState, imageIndex) {
+            if (imageIndex != null) {
+                imagePagerState.requestScrollToPage(imageIndex)
+            }
+            onStopOrDispose {}
+        }
+        val entry by viewModel.entry.collectAsStateWithLifecycle()
+        val otherArtists by viewModel.otherArtists.collectAsStateWithLifecycle()
+        val seriesInferred by viewModel.seriesInferred.collectAsStateWithLifecycle()
+        val seriesConfirmed by viewModel.seriesConfirmed.collectAsStateWithLifecycle()
+        val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
+        val navigationController = LocalNavigationController.current
+        ArtistDetailsScreen(
+            route = route,
+            entry = { entry },
+            otherArtists = { otherArtists },
+            seriesInferred = { seriesInferred },
+            seriesConfirmed = { seriesConfirmed },
+            userNotesTextState = viewModel.userNotes,
+            imagePagerState = imagePagerState,
+            catalog = { catalog },
+            seriesImages = { seriesImages },
+            otherYears = viewModel::otherYears,
+            eventSink = {
+                when (it) {
+                    is Event.OpenArtist ->
+                        navigationController.navigate(
+                            AlleyDestination.ArtistDetails(
+                                year = route.year,
+                                id = it.artistId,
+                                booth = null,
+                                name = null,
+                                images = null,
+                                imageIndex = null,
+                            )
+                        )
+                    is Event.OpenMerch ->
+                        navigationController.navigate(
+                            AlleyDestination.Merch(route.year, it.merch)
+                        )
+                    is Event.OpenSeries ->
+                        navigationController.navigate(
+                            AlleyDestination.Series(route.year, it.series)
+                        )
+                    is Event.OpenStampRally ->
+                        navigationController.navigate(
+                            AlleyDestination.StampRallyDetails(it.entry)
+                        )
+                    is Event.OpenOtherYear ->
+                        navigationController
+                            .navigate(
+                                route.copy(
+                                    year = it.year,
+                                    booth = null,
+                                    name = null,
+                                    images = null,
+                                )
+                            )
+                    is Event.SeriesFavoriteToggle ->
+                        viewModel.onSeriesFavoriteToggle(
+                            data = it.series,
+                            favorite = it.favorite,
+                        )
+                    is Event.DetailsEvent ->
+                        when (val event = it.event) {
+                            is DetailsScreen.Event.FavoriteToggle ->
+                                viewModel.onFavoriteToggle(event.favorite)
+                            DetailsScreen.Event.NavigateUp ->
+                                navigationController.navigateUp()
+                            is DetailsScreen.Event.OpenImage -> {
+                                val artist = viewModel.entry.value?.artist
+                                val booth = artist?.booth
+                                if (artist != null) {
+                                    val showingOutdatedCatalogs =
+                                        catalog.result?.showOutdatedCatalogs == true
+                                    val year = catalog.result?.fallbackYear
+                                        ?.takeIf { showingOutdatedCatalogs }
+                                        ?: route.year
+                                    navigationController.navigate(
+                                        AlleyDestination.Images(
+                                            year = year,
+                                            id = route.id,
+                                            type = AlleyDestination.Images.Type.Artist(
+                                                id = artist.id,
+                                                booth = booth
+                                                    .takeUnless { showingOutdatedCatalogs }
+                                                    .orEmpty(),
+                                                name = artist.name,
+                                            ),
+                                            images = images,
+                                            initialImageIndex = event.imageIndex,
+                                        )
+                                    )
+                                }
+                            }
+                            DetailsScreen.Event.OpenMap ->
+                                navigationController.navigate(
+                                    AlleyDestination.ArtistMap(route.id)
+                                )
+                            DetailsScreen.Event.ShowFallback ->
+                                viewModel.onShowFallback()
+                            DetailsScreen.Event.AlwaysShowFallback ->
+                                viewModel.onAlwaysShowFallback()
+                        }
+                }
+            },
+        )
+    }
+
+    @Composable
+    operator fun invoke(
+        route: AlleyDestination.ArtistDetails,
         entry: () -> ArtistDetailsViewModel.Entry?,
         otherArtists: () -> List<ArtistEntry>,
         seriesInferred: () -> List<SeriesWithUserData>?,
@@ -801,7 +944,7 @@ private fun PhoneLayout() = PreviewDark {
         .map { previewSeriesWithUserData(it) }
     val seriesConfirmed = artist.artist.seriesConfirmed.map { previewSeriesWithUserData(it) }
     ArtistDetailsScreen(
-        route = Destinations.ArtistDetails(artist.artist),
+        route = AlleyDestination.ArtistDetails(artist.artist),
         entry = { entry },
         otherArtists = { emptyList() },
         seriesInferred = { seriesInferred },

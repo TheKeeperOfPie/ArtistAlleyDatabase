@@ -6,6 +6,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.IntOffset
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.HighlightedTableCell
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
@@ -17,10 +21,19 @@ object StampRallyMapScreen {
 
     @Composable
     operator fun invoke(
-        viewModel: StampRallyMapViewModel,
-        mapViewModel: MapViewModel,
+        graph: ArtistAlleyGraph,
+        route: AlleyDestination.StampRallyMap,
         onClickBack: () -> Unit,
         onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
+        viewModel: StampRallyMapViewModel = viewModel {
+            graph.stampRallyMapViewModelFactory.create(
+                route = route,
+                savedStateHandle = createSavedStateHandle(),
+            )
+        },
+        mapViewModel: MapViewModel = viewModel {
+            graph.mapViewModelFactory.create(createSavedStateHandle())
+        },
     ) {
         Scaffold(
             topBar = {

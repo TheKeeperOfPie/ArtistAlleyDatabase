@@ -49,6 +49,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -63,17 +65,17 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
+import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -97,13 +99,15 @@ object BrowseScreen {
 
     @Composable
     operator fun invoke(
-        tagsViewModel: TagsViewModel,
-        dataYearHeaderState: DataYearHeaderState,
-        onSeriesFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
+        graph: ArtistAlleyGraph,
         onSeriesClick: (SeriesInfo) -> Unit,
-        onMerchFavoriteToggle: (MerchWithUserData, Boolean) -> Unit,
         onMerchClick: (MerchEntry) -> Unit,
+        tagsViewModel: TagsViewModel = viewModel {
+            graph.tagsViewModelFactory.create(createSavedStateHandle())
+        }
     ) {
+        val dataYearHeaderState =
+            rememberDataYearHeaderState(tagsViewModel.dataYear, null)
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 val scaffoldState = rememberBottomSheetScaffoldState()
@@ -186,7 +190,7 @@ object BrowseScreen {
                                             textStyle = LocalTextStyle.current,
                                             onFavoriteToggle = {
                                                 if (data != null) {
-                                                    onSeriesFavoriteToggle(data, it)
+                                                    tagsViewModel.onSeriesFavoriteToggle(data, it)
                                                 }
                                             },
                                             onClick = { data?.let { onSeriesClick(it.series) } },
@@ -214,7 +218,7 @@ object BrowseScreen {
                                         data = data,
                                         onFavoriteToggle = {
                                             if (data != null) {
-                                                onMerchFavoriteToggle(data, it)
+                                                tagsViewModel.onMerchFavoriteToggle(data, it)
                                             }
                                         },
                                         onClick = {

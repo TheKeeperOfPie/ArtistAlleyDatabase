@@ -41,6 +41,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -63,6 +65,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_favorites_sea
 import artistalleydatabase.modules.alley.generated.resources.alley_favorites_series
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
+import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
@@ -70,14 +73,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen.DisplayType
@@ -112,9 +113,7 @@ object FavoritesScreen {
 
     @Composable
     operator fun invoke(
-        favoritesViewModel: FavoritesViewModel,
-        artistSortFilterController: ArtistSortFilterController,
-        stampRallySortFilterController: StampRallySortFilterController,
+        graph: ArtistAlleyGraph,
         artistsScrollStateSaver: ScrollStateSaver,
         ralliesScrollStateSaver: ScrollStateSaver,
         seriesScrollStateSaver: ScrollStateSaver,
@@ -123,41 +122,44 @@ object FavoritesScreen {
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
+        viewModel: FavoritesViewModel = viewModel {
+            graph.favoritesViewModelFactory.create(createSavedStateHandle())
+        }
     ) {
         val navigationController = LocalNavigationController.current
-        val series by favoritesViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
+        val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         FavoritesScreen(
-            state = remember(favoritesViewModel) {
+            state = remember(viewModel) {
                 State(
-                    randomSeed = favoritesViewModel.randomSeed,
-                    tab = favoritesViewModel.tab,
-                    query = favoritesViewModel.query,
-                    displayType = favoritesViewModel.displayType,
-                    year = favoritesViewModel.year,
-                    artistsEntries = favoritesViewModel.artistEntries,
-                    artistsSearchState = favoritesViewModel.artistSearchState,
-                    artistsSortOption = artistSortFilterController.sortOption,
-                    artistsSortAscending = artistSortFilterController.sortAscending,
-                    artistsUnfilteredCount = favoritesViewModel.artistsUnfilteredCount,
-                    ralliesEntries = favoritesViewModel.stampRallyEntries,
-                    ralliesSearchState = favoritesViewModel.stampRallySearchState,
-                    ralliesSortOption = stampRallySortFilterController.sortOption,
-                    ralliesSortAscending = stampRallySortFilterController.sortAscending,
-                    ralliesUnfilteredCount = favoritesViewModel.stampRallyUnfilteredCount,
-                    seriesEntries = favoritesViewModel.seriesEntries,
-                    merchEntries = favoritesViewModel.merchEntries,
+                    randomSeed = viewModel.randomSeed,
+                    tab = viewModel.tab,
+                    query = viewModel.query,
+                    displayType = viewModel.displayType,
+                    year = viewModel.year,
+                    artistsEntries = viewModel.artistEntries,
+                    artistsSearchState = viewModel.artistSearchState,
+                    artistsSortOption = viewModel.artistSortFilterController.sortOption,
+                    artistsSortAscending = viewModel.artistSortFilterController.sortAscending,
+                    artistsUnfilteredCount = viewModel.artistsUnfilteredCount,
+                    ralliesEntries = viewModel.stampRallyEntries,
+                    ralliesSearchState = viewModel.stampRallySearchState,
+                    ralliesSortOption = viewModel.stampRallySortFilterController.sortOption,
+                    ralliesSortAscending = viewModel.stampRallySortFilterController.sortAscending,
+                    ralliesUnfilteredCount = viewModel.stampRallyUnfilteredCount,
+                    seriesEntries = viewModel.seriesEntries,
+                    merchEntries = viewModel.merchEntries,
                 )
             },
             series = { series },
-            artistSortFilterState = artistSortFilterController.state,
-            stampRallySortFilterState = stampRallySortFilterController.state,
+            artistSortFilterState = viewModel.artistSortFilterController.state,
+            stampRallySortFilterState = viewModel.stampRallySortFilterController.state,
             artistsScrollStateSaver = artistsScrollStateSaver,
             ralliesScrollStateSaver = ralliesScrollStateSaver,
             seriesScrollStateSaver = seriesScrollStateSaver,
             merchScrollStateSaver = merchScrollStateSaver,
-            getSeriesImage = favoritesViewModel::getSeriesImage,
+            getSeriesImage = viewModel::getSeriesImage,
             eventSink = {
-                favoritesViewModel.onEvent(
+                viewModel.onEvent(
                     navigationController = navigationController,
                     event = it,
                     onNavigateToArtists = onNavigateToArtists,
