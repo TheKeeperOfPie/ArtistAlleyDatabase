@@ -21,6 +21,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_fandom
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
@@ -31,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderSta
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -46,13 +46,17 @@ object StampRallySearchScreen {
         lockedSeries: String?,
         scrollStateSaver: ScrollStateSaver,
         onClickBack: (() -> Unit)? = null,
+        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
         viewModel: StampRallySearchViewModel = viewModel {
             graph.stampRallySearchViewModelFactory.create(
                 lockedYear = lockedYear,
                 lockedSeries = lockedSeries,
                 savedStateHandle = createSavedStateHandle(),
             )
-        }
+        },
     ) {
         val gridState = scrollStateSaver.lazyStaggeredGridState()
         viewModel.sortFilterController.state.ImmediateScrollResetEffect(gridState)
@@ -60,7 +64,6 @@ object StampRallySearchScreen {
         CompositionLocalProvider(LocalStableRandomSeed provides viewModel.randomSeed) {
             val dataYearHeaderState = rememberDataYearHeaderState(viewModel.dataYear, lockedYear)
             val entries = viewModel.results.collectAsLazyPagingItems()
-            val navigationController = LocalNavigationController.current
             val lockedSeriesEntry by viewModel.lockedSeriesEntry.collectAsStateWithLifecycle()
             val languageOptionMedia = LocalLanguageOptionMedia.current
             val unfilteredCount by viewModel.unfilteredCount.collectAsStateWithLifecycle()
@@ -68,7 +71,15 @@ object StampRallySearchScreen {
             SearchScreen(
                 state = viewModel.searchState,
                 eventSink = {
-                    viewModel.onEvent(navigationController, Event.SearchEvent(it))
+                    when (it) {
+                        is SearchScreen.Event.FavoriteToggle<StampRallyEntryGridModel> ->
+                            viewModel.toggleFavorite(it.entry, it.favorite)
+                        is SearchScreen.Event.IgnoreToggle<StampRallyEntryGridModel> ->
+                            viewModel.toggleIgnored(it.entry, it.ignored)
+                        is SearchScreen.Event.OpenEntry<StampRallyEntryGridModel> ->
+                            onOpenStampRally(it.entry.stampRally, it.imageIndex.toString())
+                        is SearchScreen.Event.ClearFilters<*> -> viewModel.sortFilterController.clear()
+                    }
                 },
                 query = viewModel.query,
                 entries = entries,
@@ -76,7 +87,15 @@ object StampRallySearchScreen {
                 scaffoldState = scaffoldState,
                 sortFilterState = viewModel.sortFilterController.state,
                 gridState = gridState,
-                header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
+                header = {
+                    BottomSheetFilterDataYearHeader(
+                        dataYearHeaderState = dataYearHeaderState,
+                        scaffoldState = scaffoldState,
+                        onOpenExport = onOpenExport,
+                        onOpenChangelog = onOpenChangelog,
+                        onOpenSettings = onOpenSettings,
+                    )
+                },
                 title = { lockedSeriesEntry?.name(languageOptionMedia) },
                 onClickBack = onClickBack,
                 itemToSharedElementId = { it.stampRally.id },

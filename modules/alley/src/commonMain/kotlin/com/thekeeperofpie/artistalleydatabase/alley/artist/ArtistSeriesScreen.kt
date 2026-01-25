@@ -24,14 +24,15 @@ import artistalleydatabase.modules.alley.generated.resources.alley_open_rallies
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen.Event
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilterController
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
+import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.stringResource
 
@@ -46,6 +47,12 @@ object ArtistSeriesScreen {
         scrollStateSaver: ScrollStateSaver,
         onClickRallies: (DataYear) -> Unit,
         onClickMap: (DataYear?) -> Unit,
+        onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
+        onOpenMerch: (DataYear, String) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         artistSearchViewModel: ArtistSearchViewModel = viewModel {
             graph.artistSearchViewModelFactory.create(
@@ -74,6 +81,12 @@ object ArtistSeriesScreen {
             showRalliesButton = { hasRallies },
             onClickRallies = { onClickRallies(artistSearchViewModel.year.value) },
             onClickMap = { onClickMap(artistSearchViewModel.lockedYear) },
+            onOpenArtist = onOpenArtist,
+            onOpenMerch = onOpenMerch,
+            onOpenSeries = onOpenSeries,
+            onOpenExport = onOpenExport,
+            onOpenChangelog = onOpenChangelog,
+            onOpenSettings = onOpenSettings,
             scaffoldState = scaffoldState,
         )
 
@@ -89,12 +102,17 @@ object ArtistSeriesScreen {
         showRalliesButton: () -> Boolean,
         onClickRallies: () -> Unit,
         onClickMap: () -> Unit,
+        onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
+        onOpenMerch: (DataYear, String) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     ) {
         val state = remember(artistSearchViewModel, sortFilterController) {
             ArtistSearchScreen.State(artistSearchViewModel, sortFilterController)
         }
-        val navigationController = LocalNavigationController.current
         val seriesEntry by artistSeriesViewModel.seriesEntry.collectAsStateWithLifecycle()
         val seriesImage by artistSeriesViewModel.seriesImage.collectAsStateWithLifecycle()
         val series by artistSearchViewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
@@ -102,7 +120,27 @@ object ArtistSeriesScreen {
             state = state,
             series = { series },
             sortFilterState = sortFilterController.state,
-            eventSink = { artistSearchViewModel.onEvent(navigationController, it) },
+            eventSink = {
+                when (it) {
+                    is Event.SearchEvent -> when (val searchEvent = it.event) {
+                        is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
+                            artistSearchViewModel.toggleFavorite(
+                                searchEvent.entry,
+                                searchEvent.favorite
+                            )
+                        is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
+                            artistSearchViewModel.toggleIgnored(
+                                searchEvent.entry,
+                                searchEvent.ignored
+                            )
+                        is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
+                            onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
+                        is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
+                    }
+                    is Event.OpenMerch -> onOpenMerch(artistSearchViewModel.year.value, it.merch)
+                    is Event.OpenSeries -> onOpenSeries(artistSearchViewModel.year.value, it.series)
+                }
+            },
             onClickBack = onClickBack,
             header = {
                 Header(
@@ -112,6 +150,9 @@ object ArtistSeriesScreen {
                     seriesEntry = { seriesEntry },
                     seriesImage = { seriesImage },
                     onFavoriteToggle = artistSeriesViewModel::onFavoriteToggle,
+                    onOpenExport = onOpenExport,
+                    onOpenChangelog = onOpenChangelog,
+                    onOpenSettings = onOpenSettings,
                 )
             },
             scaffoldState = scaffoldState,
@@ -143,6 +184,9 @@ object ArtistSeriesScreen {
         seriesEntry: () -> SeriesWithUserData?,
         seriesImage: () -> String?,
         onFavoriteToggle: (SeriesWithUserData, Boolean) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
     ) {
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
         Column {
@@ -163,7 +207,13 @@ object ArtistSeriesScreen {
                 sortFilterController.showOnlyConfirmedTagsSection
                     .Content(sortFilterController.state.expanded, false)
             }
-            BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
+            BottomSheetFilterDataYearHeader(
+                dataYearHeaderState = dataYearHeaderState,
+                scaffoldState = scaffoldState,
+                onOpenExport = onOpenExport,
+                onOpenChangelog = onOpenChangelog,
+                onOpenSettings = onOpenSettings,
+            )
         }
     }
 }

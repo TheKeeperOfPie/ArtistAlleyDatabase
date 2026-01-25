@@ -11,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -32,7 +31,6 @@ import kotlin.random.Random
 class ArtistMapViewModel(
     artistEntryDao: ArtistEntryDao,
     userEntryDao: UserEntryDao,
-    navigationTypeMap: NavigationTypeMap,
     settings: ArtistAlleySettings,
     @Assisted route: AlleyDestination.ArtistMap,
     @Assisted savedStateHandle: SavedStateHandle,

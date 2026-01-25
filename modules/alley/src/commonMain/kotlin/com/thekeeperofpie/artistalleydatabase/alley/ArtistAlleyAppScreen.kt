@@ -24,7 +24,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.toRoute
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Images.Type.StampRally
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsScreen
@@ -34,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -60,11 +62,32 @@ object ArtistAlleyAppScreen {
     ) {
         Surface(color = MaterialTheme.colorScheme.background) {
             val navigationController = LocalNavigationController.current
-            val onArtistClick = { entry: ArtistEntryGridModel, imageIndex: Int ->
+            val onOpenArtist = { entry: ArtistEntry, imageIndex: Int? ->
                 navigationController.navigate(
-                    AlleyDestination.ArtistDetails(entry.artist, imageIndex)
+                    AlleyDestination.ArtistDetails(entry, imageIndex)
                 )
             }
+            val onOpenSeries = { year: DataYear?, series: String ->
+                navigationController.navigate(
+                    AlleyDestination.Series(year, series)
+                )
+            }
+            val onOpenMerch = { year: DataYear?, merch: String ->
+                navigationController.navigate(
+                    AlleyDestination.Merch(year, merch)
+                )
+            }
+            val onOpenStampRally = { entry: StampRallyEntry, initialImageIndex: String? ->
+                navigationController.navigate(
+                    AlleyDestination.StampRallyDetails(
+                        entry = entry,
+                        initialImageIndex = initialImageIndex
+                    )
+                )
+            }
+            val onOpenExport = { navigationController.navigate(AlleyDestination.Export) }
+            val onOpenChangelog = { navigationController.navigate(AlleyDestination.Changelog) }
+            val onOpenSettings = { navigationController.navigate(AlleyDestination.Settings) }
             Column(modifier = Modifier.fillMaxSize()) {
                 SharedTransitionLayout(modifier = Modifier.weight(1f)) {
                     val languageOption by graph.settings.languageOption
@@ -83,33 +106,72 @@ object ArtistAlleyAppScreen {
                                 AlleyRootScreen(
                                     graph = graph,
                                     snackbarHostState = rootSnackbarHostState,
-                                    onArtistClick = onArtistClick,
-                                    onSeriesClick = {
-                                        navigationController.navigate(
-                                            AlleyDestination.Series(
-                                                null,
-                                                it
-                                            )
-                                        )
-                                    },
-                                    onMerchClick = {
-                                        navigationController.navigate(
-                                            AlleyDestination.Merch(
-                                                null,
-                                                it
-                                            )
-                                        )
-                                    },
+                                    onOpenArtist = onOpenArtist,
+                                    onOpenSeries = onOpenSeries,
+                                    onOpenMerch = onOpenMerch,
+                                    onOpenStampRally = onOpenStampRally,
+                                    onOpenExport = onOpenExport,
+                                    onOpenChangelog = onOpenChangelog,
+                                    onOpenSettings = onOpenSettings,
                                 )
                             }
 
                             sharedElementComposable<AlleyDestination.ArtistDetails>(
                                 navigationTypeMap = navigationTypeMap,
                             ) {
+                                val route = it.toRoute<AlleyDestination.ArtistDetails>()
                                 ArtistDetailsScreen(
                                     graph = graph,
-                                    route = it.toRoute<AlleyDestination.ArtistDetails>(),
+                                    route = route,
                                     entrySavedStateHandle = it.savedStateHandle,
+                                    onOpenArtist = { year, artistId ->
+                                        navigationController.navigate(
+                                            AlleyDestination.ArtistDetails(
+                                                year = year,
+                                                id = artistId,
+                                                booth = null,
+                                                name = null,
+                                                images = null,
+                                                imageIndex = null,
+                                            )
+                                        )
+                                    },
+                                    onOpenMerch = onOpenMerch,
+                                    onOpenSeries = onOpenSeries,
+                                    onOpenStampRally = { onOpenStampRally(it, null) },
+                                    onOpenOtherYear = {
+                                        navigationController
+                                            .navigate(
+                                                route.copy(
+                                                    year = it,
+                                                    booth = null,
+                                                    name = null,
+                                                    images = null,
+                                                )
+                                            )
+                                    },
+                                    onOpenMap = {
+                                        navigationController.navigate(
+                                            AlleyDestination.ArtistMap(route.id)
+                                        )
+                                    },
+                                    onOpenImages = { year, artistId, booth, name, images, imageIndex ->
+                                        navigationController.navigate(
+                                            AlleyDestination.Images(
+                                                year = year,
+                                                id = route.id,
+                                                type = AlleyDestination.Images.Type.Artist(
+                                                    // TODO: Does this have to be passed in separately?
+                                                    id = artistId,
+                                                    booth = booth,
+                                                    name = name,
+                                                ),
+                                                images = images,
+                                                initialImageIndex = imageIndex,
+                                            )
+                                        )
+                                    },
+                                    onNavigateUp = navigationController::navigateUp,
                                 )
                             }
 
@@ -122,8 +184,18 @@ object ArtistAlleyAppScreen {
                                     lockedMerch = null,
                                     isRoot = false,
                                     lockedSerializedBooths = route.serializedBooths,
-                                    onClickBack = navigationController::navigateUp,
                                     scrollStateSaver = ScrollStateSaver(),
+                                    onClickBack = navigationController::navigateUp,
+                                    onOpenArtist = { artist, imageIndex ->
+                                        navigationController.navigate(
+                                            AlleyDestination.ArtistDetails(artist, imageIndex)
+                                        )
+                                    },
+                                    onOpenMerch = onOpenMerch,
+                                    onOpenSeries = onOpenSeries,
+                                    onOpenExport = onOpenExport,
+                                    onOpenChangelog = onOpenChangelog,
+                                    onOpenSettings = onOpenSettings,
                                 )
                             }
 
@@ -134,7 +206,9 @@ object ArtistAlleyAppScreen {
                                     graph = graph,
                                     route = it.toRoute<AlleyDestination.ArtistMap>(),
                                     onClickBack = navigationController::popBackStack,
-                                    onArtistClick = onArtistClick,
+                                    onArtistClick = { entry, imageIndex ->
+                                        onOpenArtist(entry.artist, imageIndex)
+                                    },
                                 )
                             }
 
@@ -178,13 +252,20 @@ object ArtistAlleyAppScreen {
                                     route = it.toRoute<AlleyDestination.Images>(),
                                     previousDestinationSavedStateHandle =
                                         navHostController.previousBackStackEntry?.savedStateHandle,
+                                    onNavigateBack = navigationController::popBackStack,
                                 )
                             }
 
                             sharedElementComposable<AlleyDestination.Settings>(
                                 navigationTypeMap = navigationTypeMap,
                             ) {
-                                AlleySettingsScreen(graph = graph)
+                                AlleySettingsScreen(
+                                    graph = graph,
+                                    onNavigateBack = navigationController::popBackStack,
+                                    onOpenExport = {
+                                        navigationController.navigate(AlleyDestination.Export)
+                                    },
+                                )
                             }
 
                             sharedElementComposable<AlleyDestination.StampRallies>(
@@ -197,6 +278,10 @@ object ArtistAlleyAppScreen {
                                     lockedSeries = route.series,
                                     scrollStateSaver = ScrollStateSaver(),
                                     onClickBack = navigationController::popBackStack,
+                                    onOpenStampRally = onOpenStampRally,
+                                    onOpenExport = onOpenExport,
+                                    onOpenChangelog = onOpenChangelog,
+                                    onOpenSettings = onOpenSettings,
                                 )
                             }
 
@@ -208,6 +293,32 @@ object ArtistAlleyAppScreen {
                                     graph = graph,
                                     route = route,
                                     entrySavedStateHandle = it.savedStateHandle,
+                                    onNavigateUp = navigationController::navigateUp,
+                                    onOpenImages = { rallyId, hostTable, fandom, images, imageIndex ->
+                                        navigationController.navigate(
+                                            AlleyDestination.Images(
+                                                year = route.year,
+                                                id = route.id,
+                                                type = StampRally(
+                                                    id = rallyId,
+                                                    hostTable = hostTable,
+                                                    fandom = fandom,
+                                                ),
+                                                images = images,
+                                                initialImageIndex = imageIndex,
+                                            )
+                                        )
+                                    },
+                                    onOpenMap = {
+                                        navigationController.navigate(
+                                            AlleyDestination.StampRallyMap(
+                                                year = route.year,
+                                                id = route.id,
+                                            )
+                                        )
+                                    },
+                                    onOpenArtist = onOpenArtist,
+                                    onOpenSeries = onOpenSeries,
                                 )
                             }
 
@@ -245,6 +356,12 @@ object ArtistAlleyAppScreen {
                                             AlleyDestination.SeriesMap(it, route.series)
                                         )
                                     },
+                                    onOpenArtist = onOpenArtist,
+                                    onOpenMerch = onOpenMerch,
+                                    onOpenSeries = onOpenSeries,
+                                    onOpenExport = onOpenExport,
+                                    onOpenChangelog = onOpenChangelog,
+                                    onOpenSettings = onOpenSettings,
                                 )
                             }
 
@@ -262,6 +379,12 @@ object ArtistAlleyAppScreen {
                                             AlleyDestination.MerchMap(it, route.merch)
                                         )
                                     },
+                                    onOpenArtist = onOpenArtist,
+                                    onOpenMerch = onOpenMerch,
+                                    onOpenSeries = onOpenSeries,
+                                    onOpenExport = onOpenExport,
+                                    onOpenChangelog = onOpenChangelog,
+                                    onOpenSettings = onOpenSettings,
                                 )
                             }
 
@@ -275,7 +398,9 @@ object ArtistAlleyAppScreen {
                                     series = route.series,
                                     merch = null,
                                     onClickBack = navigationController::popBackStack,
-                                    onArtistClick = onArtistClick,
+                                    onArtistClick = { entry, imageIndex ->
+                                        onOpenArtist(entry.artist, imageIndex)
+                                    },
                                 )
                             }
 
@@ -289,14 +414,15 @@ object ArtistAlleyAppScreen {
                                     series = null,
                                     merch = route.merch,
                                     onClickBack = navigationController::popBackStack,
-                                    onArtistClick = onArtistClick,
+                                    onArtistClick = { entry, imageIndex ->
+                                        onOpenArtist(entry.artist, imageIndex)
+                                    },
                                 )
                             }
 
                             sharedElementComposable<AlleyDestination.Import>(
                                 navigationTypeMap = navigationTypeMap,
                             ) {
-                                val navigationController = LocalNavigationController.current
                                 ImportScreen(
                                     graph = graph,
                                     route = it.toRoute<AlleyDestination.Import>(),
@@ -307,7 +433,10 @@ object ArtistAlleyAppScreen {
                             sharedElementDialog<AlleyDestination.Export>(
                                 navigationTypeMap = navigationTypeMap,
                             ) {
-                                QrCodeScreen(graph = graph)
+                                QrCodeScreen(
+                                    graph = graph,
+                                    onNavigateBack = navigationController::popBackStack,
+                                )
                             }
                         }
                     }

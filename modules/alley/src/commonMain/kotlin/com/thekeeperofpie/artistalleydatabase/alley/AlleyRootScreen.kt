@@ -29,13 +29,15 @@ import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_brows
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_favorites
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_map
 import artistalleydatabase.modules.alley.generated.resources.alley_nav_bar_stamp_rallies
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -47,9 +49,13 @@ object AlleyRootScreen {
     operator fun invoke(
         graph: ArtistAlleyGraph,
         snackbarHostState: SnackbarHostState,
-        onArtistClick: (ArtistEntryGridModel, Int) -> Unit,
-        onSeriesClick: (String) -> Unit,
-        onMerchClick: (String) -> Unit,
+        onOpenArtist: (ArtistEntry, Int?) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
+        onOpenMerch: (DataYear, String) -> Unit,
+        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
     ) {
         val scrollPositions = ScrollStateSaver.scrollPositions()
         val mapTransformState = MapScreen.rememberTransformState()
@@ -86,6 +92,12 @@ object AlleyRootScreen {
                                 isRoot = true,
                                 lockedSerializedBooths = null,
                                 onClickBack = null,
+                                onOpenArtist = onOpenArtist,
+                                onOpenMerch = onOpenMerch,
+                                onOpenSeries = onOpenSeries,
+                                onOpenExport = onOpenExport,
+                                onOpenChangelog = onOpenChangelog,
+                                onOpenSettings = onOpenSettings,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.ARTISTS.name,
                                     scrollPositions,
@@ -94,8 +106,11 @@ object AlleyRootScreen {
                         Destination.BROWSE ->
                             BrowseScreen(
                                 graph = graph,
-                                onSeriesClick = { onSeriesClick(it.id) },
-                                onMerchClick = { onMerchClick(it.name) },
+                                onSeriesClick = onOpenSeries,
+                                onMerchClick = onOpenMerch,
+                                onOpenExport = onOpenExport,
+                                onOpenChangelog = onOpenChangelog,
+                                onOpenSettings = onOpenSettings,
                             )
                         Destination.FAVORITES ->
                             FavoritesScreen(
@@ -128,18 +143,31 @@ object AlleyRootScreen {
                                     // TODO: This doesn't tab over to merch
                                     currentDestination = Destination.BROWSE
                                 },
+                                onOpenArtist = onOpenArtist,
+                                onOpenMerch = onOpenMerch,
+                                onOpenSeries = onOpenSeries,
+                                onOpenStampRally = onOpenStampRally,
+                                onOpenExport = onOpenExport,
+                                onOpenChangelog = onOpenChangelog,
+                                onOpenSettings = onOpenSettings,
                             )
                         Destination.MAP ->
                             FavoritesMapScreen(
                                 graph = graph,
                                 mapTransformState = mapTransformState,
-                                onArtistClick = onArtistClick,
+                                onArtistClick = { entry, imageIndex ->
+                                    onOpenArtist(entry.artist, imageIndex)
+                                },
                             )
                         Destination.STAMP_RALLIES ->
                             StampRallySearchScreen(
                                 graph = graph,
                                 lockedYear = null,
                                 lockedSeries = null,
+                                onOpenStampRally = onOpenStampRally,
+                                onOpenExport = onOpenExport,
+                                onOpenChangelog = onOpenChangelog,
+                                onOpenSettings = onOpenSettings,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     Destination.STAMP_RALLIES.name,
                                     scrollPositions,

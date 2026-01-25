@@ -69,12 +69,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -97,7 +99,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStat
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.HorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
@@ -122,11 +123,17 @@ object FavoritesScreen {
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
+        onOpenArtist: (ArtistEntry, Int) -> Unit,
+        onOpenMerch: (DataYear, String) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
+        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
         viewModel: FavoritesViewModel = viewModel {
             graph.favoritesViewModelFactory.create(createSavedStateHandle())
-        }
+        },
     ) {
-        val navigationController = LocalNavigationController.current
         val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         FavoritesScreen(
             state = remember(viewModel) {
@@ -160,12 +167,18 @@ object FavoritesScreen {
             getSeriesImage = viewModel::getSeriesImage,
             eventSink = {
                 viewModel.onEvent(
-                    navigationController = navigationController,
                     event = it,
                     onNavigateToArtists = onNavigateToArtists,
                     onNavigateToRallies = onNavigateToRallies,
                     onNavigateToSeries = onNavigateToSeries,
                     onNavigateToMerch = onNavigateToMerch,
+                    onOpenArtist = onOpenArtist,
+                    onOpenMerch = onOpenMerch,
+                    onOpenSeries = onOpenSeries,
+                    onOpenStampRally = onOpenStampRally,
+                    onOpenExport = onOpenExport,
+                    onOpenChangelog = onOpenChangelog,
+                    onOpenSettings = onOpenSettings,
                 )
             },
         )
@@ -263,6 +276,7 @@ object FavoritesScreen {
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
                                     scaffoldState = scaffoldState,
+                                    eventSink = eventSink,
                                 )
                             },
                             noResultsItem = { NoResultsItem(EntryTab.ARTISTS, eventSink) },
@@ -283,6 +297,7 @@ object FavoritesScreen {
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
                                     scaffoldState = scaffoldState,
+                                    eventSink = eventSink,
                                 )
                             },
                             noResultsItem = { NoResultsItem(EntryTab.RALLIES, eventSink) },
@@ -297,6 +312,7 @@ object FavoritesScreen {
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
                                     scaffoldState = null,
+                                    eventSink = eventSink,
                                 )
                             },
                             eventSink = eventSink,
@@ -310,6 +326,7 @@ object FavoritesScreen {
                                     onTabChange = { tab = it },
                                     dataYearHeaderState = dataYearHeaderState,
                                     scaffoldState = null,
+                                    eventSink = eventSink,
                                 )
                             },
                             eventSink = eventSink,
@@ -567,7 +584,7 @@ object FavoritesScreen {
         eventSink: (Event) -> Unit,
     ) {
         val scrollAreaState = rememberScrollAreaState(listState)
-        ScrollArea(state = scrollAreaState ,modifier = Modifier.fillMaxSize()) {
+        ScrollArea(state = scrollAreaState, modifier = Modifier.fillMaxSize()) {
             val width = LocalWindowConfiguration.current.screenWidthDp
             val horizontalContentPadding = if (width > 800.dp) {
                 (width - 800.dp) / 2
@@ -646,9 +663,16 @@ object FavoritesScreen {
         onTabChange: (EntryTab) -> Unit,
         dataYearHeaderState: DataYearHeaderState,
         scaffoldState: BottomSheetScaffoldState?,
+        eventSink: (Event) -> Unit,
     ) {
         Column {
-            BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
+            BottomSheetFilterDataYearHeader(
+                dataYearHeaderState = dataYearHeaderState,
+                scaffoldState = scaffoldState,
+                onOpenExport = { eventSink(Event.OpenExport) },
+                onOpenChangelog = { eventSink(Event.OpenChangelog) },
+                onOpenSettings = { eventSink(Event.OpenSettings) },
+            )
             val tab = tab()
             PrimaryScrollableTabRow(EntryTab.entries.indexOf(tab)) {
                 EntryTab.entries.forEach {
@@ -732,6 +756,9 @@ object FavoritesScreen {
         data class SearchEvent(val event: SearchScreen.Event<*>) : Event
         data class OpenSeries(val series: String) : Event
         data class OpenMerch(val merch: String) : Event
+        data object OpenExport : Event
+        data object OpenChangelog : Event
+        data object OpenSettings : Event
         data object NavigateToArtists : Event
         data object NavigateToRallies : Event
         data object NavigateToSeries : Event

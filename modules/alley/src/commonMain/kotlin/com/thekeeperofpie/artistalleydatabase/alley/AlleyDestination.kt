@@ -124,6 +124,7 @@ sealed interface AlleyDestination : NavDestination {
         val hostTable: String?,
         val fandom: String?,
         val images: List<CatalogImage>,
+        // TODO: Why is this a string?
         val initialImageIndex: String? = null,
     ) : AlleyDestination {
         constructor(entry: StampRallyEntry, initialImageIndex: String? = null) : this(

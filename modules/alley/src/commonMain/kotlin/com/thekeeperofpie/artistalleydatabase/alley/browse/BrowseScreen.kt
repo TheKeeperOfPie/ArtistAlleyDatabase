@@ -66,8 +66,6 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_w
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
-import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesFilterOption
 import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
@@ -76,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
@@ -100,11 +99,14 @@ object BrowseScreen {
     @Composable
     operator fun invoke(
         graph: ArtistAlleyGraph,
-        onSeriesClick: (SeriesInfo) -> Unit,
-        onMerchClick: (MerchEntry) -> Unit,
+        onSeriesClick: (DataYear, String) -> Unit,
+        onMerchClick: (DataYear, String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
         tagsViewModel: TagsViewModel = viewModel {
             graph.tagsViewModelFactory.create(createSavedStateHandle())
-        }
+        },
     ) {
         val dataYearHeaderState =
             rememberDataYearHeaderState(tagsViewModel.dataYear, null)
@@ -193,9 +195,19 @@ object BrowseScreen {
                                                     tagsViewModel.onSeriesFavoriteToggle(data, it)
                                                 }
                                             },
-                                            onClick = { data?.let { onSeriesClick(it.series) } },
+                                            onClick = {
+                                                data?.let {
+                                                    onSeriesClick(
+                                                        tagsViewModel.dataYear.value,
+                                                        it.series.id
+                                                    )
+                                                }
+                                            },
                                         )
                                     },
+                                    onOpenExport = onOpenExport,
+                                    onOpenChangelog = onOpenChangelog,
+                                    onOpenSettings = onOpenSettings,
                                     scrollStateSaver = scrollStateSaver,
                                     additionalHeader = {
                                         item(key = "seriesLanguageOption") {
@@ -223,12 +235,18 @@ object BrowseScreen {
                                         },
                                         onClick = {
                                             if (data != null) {
-                                                onMerchClick(data.merch)
+                                                onMerchClick(
+                                                    tagsViewModel.dataYear.value,
+                                                    data.merch.name
+                                                )
                                             }
                                         },
                                     )
                                 },
-                                scrollStateSaver = scrollStateSaver
+                                onOpenExport = onOpenExport,
+                                onOpenChangelog = onOpenChangelog,
+                                onOpenSettings = onOpenSettings,
+                                scrollStateSaver = scrollStateSaver,
                             )
                         }
                     }
@@ -248,6 +266,9 @@ object BrowseScreen {
         itemKey: (T) -> Any,
         item: @Composable (T?) -> Unit,
         scrollStateSaver: ScrollStateSaver,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
         additionalHeader: LazyListScope.() -> Unit = {},
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -332,7 +353,13 @@ object BrowseScreen {
                         .align(Alignment.TopCenter)
                 ) {
                     item(key = "dataYearHeader") {
-                        BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState)
+                        BottomSheetFilterDataYearHeader(
+                            dataYearHeaderState = dataYearHeaderState,
+                            scaffoldState = scaffoldState,
+                            onOpenExport = onOpenExport,
+                            onOpenChangelog = onOpenChangelog,
+                            onOpenSettings = onOpenSettings,
+                        )
                     }
 
                     additionalHeader()

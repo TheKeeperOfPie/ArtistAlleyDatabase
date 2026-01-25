@@ -52,7 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ImportExportUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.jetbrains.compose.resources.stringResource
@@ -66,10 +65,12 @@ internal object QrCodeScreen {
     @Composable
     operator fun invoke(
         graph: ArtistAlleyGraph,
+        onNavigateBack: () -> Unit,
         viewModel: QrCodeViewModel = viewModel { graph.qrCodeViewModel() },
     ) {
         QrCodeScreen(
             exportPartialForYear = viewModel::exportPartialForYear,
+            onNavigateBack = onNavigateBack,
             onClickDownload = viewModel::download,
         )
     }
@@ -77,13 +78,13 @@ internal object QrCodeScreen {
     @Composable
     operator fun invoke(
         exportPartialForYear: suspend (DataYear) -> String,
+        onNavigateBack: () -> Unit,
         onClickDownload: () -> Unit,
     ) {
         OutlinedCard {
             Column {
                 Row {
-                    val navigationController = LocalNavigationController.current
-                    IconButton(onClick = navigationController::popBackStack) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = stringResource(Res.string.alley_close_content_description),
@@ -213,5 +214,9 @@ internal object QrCodeScreen {
 @Preview
 @Composable
 private fun QrCodeScreenPreview() {
-    QrCodeScreen(exportPartialForYear = { "EXPORT_DATA" }, onClickDownload = {})
+    QrCodeScreen(
+        exportPartialForYear = { "EXPORT_DATA" },
+        onNavigateBack = {},
+        onClickDownload = {},
+    )
 }

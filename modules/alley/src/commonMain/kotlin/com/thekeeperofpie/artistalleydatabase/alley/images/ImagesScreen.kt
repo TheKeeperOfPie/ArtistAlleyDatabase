@@ -27,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
 import org.jetbrains.compose.resources.stringResource
 
@@ -38,6 +37,7 @@ object ImagesScreen {
     operator fun invoke(
         route: AlleyDestination.Images,
         previousDestinationSavedStateHandle: SavedStateHandle?,
+        onNavigateBack: () -> Unit,
     ) {
         val imagePagerState = rememberImagePagerState(
             images = route.images,
@@ -72,8 +72,7 @@ object ImagesScreen {
                         }
                     },
                     navigationIcon = {
-                        val navigationController = LocalNavigationController.current
-                        IconButton(onClick = { navigationController.popBackStack() }) {
+                        IconButton(onClick = onNavigateBack) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = stringResource(Res.string.alley_details_close_image),

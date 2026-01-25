@@ -64,6 +64,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_search_title_
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesTitles
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistListRow
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
@@ -86,7 +87,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.SortFilterState
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -101,7 +101,6 @@ object ArtistSearchScreen {
     @Composable
     operator fun invoke(
         graph: ArtistAlleyGraph,
-        onClickBack: (() -> Unit)?,
         scaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
         scrollStateSaver: ScrollStateSaver,
         lockedYear: DataYear?,
@@ -109,6 +108,13 @@ object ArtistSearchScreen {
         lockedMerch: String?,
         isRoot: Boolean,
         lockedSerializedBooths: String?,
+        onClickBack: (() -> Unit)?,
+        onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
+        onOpenMerch: (DataYear, String) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
         viewModel: ArtistSearchViewModel = viewModel {
             graph.artistSearchViewModelFactory.create(
                 lockedYear = lockedYear,
@@ -125,15 +131,36 @@ object ArtistSearchScreen {
             State(viewModel, sortFilterController)
         }
         val dataYearHeaderState = rememberDataYearHeaderState(state.year, state.lockedYear)
-        val navigationController = LocalNavigationController.current
         val series by viewModel.seriesEntryCache.series.collectAsStateWithLifecycle()
         ArtistSearchScreen(
             state = state,
             sortFilterState = sortFilterController.state,
             series = { series },
-            eventSink = { viewModel.onEvent(navigationController, it) },
+            eventSink = {
+                when (it) {
+                    is Event.SearchEvent -> when (val searchEvent = it.event) {
+                        is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
+                            viewModel.toggleFavorite(searchEvent.entry, searchEvent.favorite)
+                        is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
+                            viewModel.toggleIgnored(searchEvent.entry, searchEvent.ignored)
+                        is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
+                            onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
+                        is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
+                    }
+                    is Event.OpenMerch -> onOpenMerch(viewModel.year.value, it.merch)
+                    is Event.OpenSeries -> onOpenSeries(viewModel.year.value, it.series)
+                }
+            },
             onClickBack,
-            header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
+            header = {
+                BottomSheetFilterDataYearHeader(
+                    dataYearHeaderState = dataYearHeaderState,
+                    scaffoldState = scaffoldState,
+                    onOpenExport = onOpenExport,
+                    onOpenChangelog = onOpenChangelog,
+                    onOpenSettings = onOpenSettings,
+                )
+            },
             scaffoldState,
             scrollStateSaver,
         )
@@ -548,7 +575,15 @@ object ArtistSearchScreen {
             series = { emptyMap() },
             eventSink = {},
             onClickBack = {},
-            header = { BottomSheetFilterDataYearHeader(dataYearHeaderState, scaffoldState) },
+            header = {
+                BottomSheetFilterDataYearHeader(
+                    dataYearHeaderState = dataYearHeaderState,
+                    scaffoldState = scaffoldState,
+                    onOpenExport = {},
+                    onOpenChangelog = {},
+                    onOpenSettings = {},
+                )
+            },
             scrollStateSaver = ScrollStateSaver.STUB,
         )
     }

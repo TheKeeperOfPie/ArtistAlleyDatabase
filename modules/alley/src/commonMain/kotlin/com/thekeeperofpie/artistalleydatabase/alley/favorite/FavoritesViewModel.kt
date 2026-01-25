@@ -7,11 +7,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.StampRallyDetails
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchQuery
@@ -21,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
@@ -46,7 +44,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
@@ -320,17 +317,21 @@ class FavoritesViewModel(
     fun getSeriesImage(series: SeriesInfo) = seriesImageLoader.getSeriesImage(series)
 
     fun onEvent(
-        navigationController: NavigationController,
         event: FavoritesScreen.Event,
         onNavigateToArtists: () -> Unit,
         onNavigateToRallies: () -> Unit,
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
+        onOpenArtist: (ArtistEntry, Int) -> Unit,
+        onOpenMerch: (DataYear, String) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
+        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenExport: () -> Unit,
+        onOpenChangelog: () -> Unit,
+        onOpenSettings: () -> Unit,
     ) = when (event) {
-        is FavoritesScreen.Event.OpenMerch ->
-            navigationController.navigate(Merch(merch = event.merch))
-        is FavoritesScreen.Event.OpenSeries ->
-            navigationController.navigate(Series(series = event.series))
+        is FavoritesScreen.Event.OpenMerch -> onOpenMerch(year.value, event.merch)
+        is FavoritesScreen.Event.OpenSeries -> onOpenSeries(year.value, event.series)
         is FavoritesScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
             is SearchScreen.Event.FavoriteToggle<*> -> when (searchEvent.entry) {
                 is ArtistEntryGridModel -> artistMutationUpdates.tryEmit(
@@ -355,18 +356,13 @@ class FavoritesViewModel(
                 )
             }
             is SearchScreen.Event.OpenEntry<*> -> when (searchEvent.entry) {
-                is ArtistEntryGridModel -> navigationController.navigate(
-                    ArtistDetails(
-                        searchEvent.entry.artist,
-                        searchEvent.imageIndex,
+                is ArtistEntryGridModel ->
+                    onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
+                is StampRallyEntryGridModel ->
+                    onOpenStampRally(
+                        searchEvent.entry.stampRally,
+                        searchEvent.imageIndex.toString(),
                     )
-                )
-                is StampRallyEntryGridModel -> navigationController.navigate(
-                    StampRallyDetails(
-                        entry = searchEvent.entry.stampRally,
-                        initialImageIndex = searchEvent.imageIndex.toString(),
-                    )
-                )
                 else -> throw IllegalArgumentException(
                     "Entry model not supported: ${searchEvent.entry}"
                 )
@@ -389,6 +385,9 @@ class FavoritesViewModel(
             seriesMutationUpdates.tryEmit(event.series.userEntry.copy(favorite = event.favorite))
         is FavoritesScreen.Event.MerchFavoriteToggle ->
             merchMutationUpdates.tryEmit(event.merch.userEntry.copy(favorite = event.favorite))
+        FavoritesScreen.Event.OpenChangelog -> onOpenChangelog()
+        FavoritesScreen.Event.OpenExport -> onOpenExport()
+        FavoritesScreen.Event.OpenSettings -> onOpenSettings()
     }
 
     @AssistedFactory

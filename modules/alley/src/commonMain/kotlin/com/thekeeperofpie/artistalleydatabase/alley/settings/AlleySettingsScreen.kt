@@ -61,7 +61,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
@@ -76,7 +75,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.utils_compose.appendParagraph
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.delay
@@ -101,19 +99,22 @@ object AlleySettingsScreen {
 }
 
 @Composable
-internal fun AlleySettingsScreen(graph: ArtistAlleyGraph) {
+internal fun AlleySettingsScreen(
+    graph: ArtistAlleyGraph,
+    onNavigateBack: () -> Unit,
+    onOpenExport: () -> Unit,
+) {
     val viewModel = viewModel { graph.alleySettingsViewModel() }
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
-        val navigationController = LocalNavigationController.current
         SettingsScreen(
             sections = viewModel.state.sections,
-            upIconOption = UpIconOption.Back(navigationController),
+            upIconOption = UpIconOption.Back(onNavigateBack),
             automaticallyInsertDividers = false,
             modifier = Modifier.widthIn(max = 1200.dp),
         ) {
             when (it.id) {
                 "header" -> Header()
-                "export" -> ExportSection()
+                "export" -> ExportSection(onOpenExport)
                 "import" -> ImportSection(
                     state = { viewModel.state.importState },
                     onResetState = { viewModel.state.importState = LoadingResult.empty<Unit>() },
@@ -123,7 +124,10 @@ internal fun AlleySettingsScreen(graph: ArtistAlleyGraph) {
                 "clear" -> ClearSection(
                     onClear = { viewModel.onEvent(AlleySettingsScreen.Event.ClearUserData) },
                 )
-                "faq" -> FaqSection(onInstallClick = { PlatformSpecificConfig.requestInstall() })
+                "faq" -> FaqSection(
+                    onInstallClick = { PlatformSpecificConfig.requestInstall() },
+                    onOpenExport = onOpenExport,
+                )
                 else -> throw IllegalArgumentException()
             }
         }
@@ -206,7 +210,7 @@ private fun Header() {
 }
 
 @Composable
-private fun ExportSection() {
+private fun ExportSection(onOpenExport: () -> Unit) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -226,8 +230,7 @@ private fun ExportSection() {
                 )
             }
 
-            val navigationController = LocalNavigationController.current
-            Button(onClick = { navigationController.navigate(AlleyDestination.Export) }) {
+            Button(onClick = onOpenExport) {
                 Text(text = stringResource(Res.string.alley_settings_export))
             }
         }
@@ -366,7 +369,7 @@ private fun ClearSection(onClear: () -> Unit) {
 }
 
 @Composable
-private fun FaqSection(onInstallClick: () -> Unit) {
+private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
     OutlinedCard(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
         Text(
             text = "FAQ",
@@ -442,7 +445,6 @@ private fun FaqSection(onInstallClick: () -> Unit) {
         HorizontalDivider()
 
         if (PlatformSpecificConfig.installable) {
-            val navigationController = LocalNavigationController.current
             QuestionAnswer(
                 "Can I use this offline?",
                 answer = {
@@ -476,9 +478,7 @@ private fun FaqSection(onInstallClick: () -> Unit) {
                         withLink(
                             LinkAnnotation.Clickable(
                                 tag = "export",
-                                linkInteractionListener = {
-                                    navigationController.navigate(AlleyDestination.Export)
-                                },
+                                linkInteractionListener = { onOpenExport() },
                             )
                         ) {
                             append("Export")
@@ -540,7 +540,7 @@ private fun HeaderPreview() = PreviewDark {
 @Preview
 @Composable
 private fun ExportPreview() = PreviewDark {
-    ExportSection()
+    ExportSection(onOpenExport = {})
 }
 
 @Preview
@@ -565,5 +565,5 @@ private fun ImportPreview() = PreviewDark {
 @Preview
 @Composable
 private fun FaqPreview() = PreviewDark {
-    FaqSection(onInstallClick = {})
+    FaqSection(onInstallClick = {}, onOpenExport = {})
 }

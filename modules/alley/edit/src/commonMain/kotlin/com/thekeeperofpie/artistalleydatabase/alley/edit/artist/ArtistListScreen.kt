@@ -164,6 +164,9 @@ internal object ArtistListScreen {
                             DataYearHeader(
                                 state = dataYearHeaderState,
                                 showFeedbackReminder = false,
+                                onOpenExport = {},
+                                onOpenChangelog = {},
+                                onOpenSettings = {},
                                 additionalActions = {
                                     var expanded by remember { mutableStateOf(false) }
                                     Row(

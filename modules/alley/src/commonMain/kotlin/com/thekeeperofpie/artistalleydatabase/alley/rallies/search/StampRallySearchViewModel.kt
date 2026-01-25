@@ -22,8 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.filter.RangeData
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
@@ -158,23 +156,13 @@ class StampRallySearchViewModel(
         .map { it.mapOnIO { StampRallyEntryGridModel.buildFromEntry(it) } }
         .cachedIn(viewModelScope)
 
-    fun onEvent(navigationController: NavigationController, event: StampRallySearchScreen.Event) =
-        when (event) {
-            is StampRallySearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
-                is SearchScreen.Event.FavoriteToggle<StampRallyEntryGridModel> ->
-                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
-                is SearchScreen.Event.IgnoreToggle<StampRallyEntryGridModel> ->
-                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
-                is SearchScreen.Event.OpenEntry<StampRallyEntryGridModel> ->
-                    navigationController.navigate(
-                        StampRallyDetails(
-                            entry = searchEvent.entry.stampRally,
-                            initialImageIndex = searchEvent.imageIndex.toString(),
-                        )
-                    )
-                is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
-            }
-        }
+    fun toggleFavorite(entry: StampRallyEntryGridModel, favorite: Boolean) {
+        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
+    }
+
+    fun toggleIgnored(entry: StampRallyEntryGridModel, ignored: Boolean) {
+        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
+    }
 
     @AssistedFactory
     interface Factory {

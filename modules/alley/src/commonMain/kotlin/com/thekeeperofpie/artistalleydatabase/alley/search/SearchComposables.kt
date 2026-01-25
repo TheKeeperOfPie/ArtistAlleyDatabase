@@ -22,8 +22,16 @@ import org.jetbrains.compose.resources.stringResource
 internal fun BottomSheetFilterDataYearHeader(
     dataYearHeaderState: DataYearHeaderState,
     scaffoldState: BottomSheetScaffoldState?,
+    onOpenExport: () -> Unit,
+    onOpenChangelog: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
-    DataYearHeader(dataYearHeaderState) {
+    DataYearHeader(
+        state = dataYearHeaderState,
+        onOpenExport = onOpenExport,
+        onOpenChangelog = onOpenChangelog,
+        onOpenSettings = onOpenSettings,
+    ) {
         val scope = rememberCoroutineScope()
         if (scaffoldState != null) {
             IconButton(onClick = {

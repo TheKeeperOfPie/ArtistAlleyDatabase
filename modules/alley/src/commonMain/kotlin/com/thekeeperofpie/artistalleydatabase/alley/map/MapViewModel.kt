@@ -45,6 +45,7 @@ class MapViewModel(
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
             // TODO: This is very inefficient to respond to favorites updates
+            // TODO: Pass in DataYear
             userEntryDao.getBoothsWithFavorites()
                 .map { (dataYear, booths) ->
                     when (dataYear) {

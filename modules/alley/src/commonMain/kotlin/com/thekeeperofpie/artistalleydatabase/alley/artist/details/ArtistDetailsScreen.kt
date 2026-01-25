@@ -95,6 +95,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
@@ -120,7 +121,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -133,12 +133,20 @@ object ArtistDetailsScreen {
         graph: ArtistAlleyGraph,
         entrySavedStateHandle: SavedStateHandle,
         route: AlleyDestination.ArtistDetails,
+        onOpenArtist: (DataYear, artistId: String) -> Unit,
+        onOpenMerch: (DataYear, String) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
+        onOpenStampRally: (StampRallyEntry) -> Unit,
+        onOpenOtherYear: (DataYear) -> Unit,
+        onOpenMap: () -> Unit,
+        onOpenImages: (DataYear, artistId: String, booth: String, name: String, images: List<CatalogImage>, imageIndex: Int) -> Unit,
+        onNavigateUp: () -> Unit,
         viewModel: ArtistDetailsViewModel = viewModel {
             graph.artistDetailsViewModelFactory.create(
                 route = route,
                 savedStateHandle = createSavedStateHandle(),
             )
-        }
+        },
     ) {
         val catalog by viewModel.catalog.collectAsStateWithLifecycle()
         val images = catalog.result?.images.orEmpty()
@@ -166,7 +174,6 @@ object ArtistDetailsScreen {
         val seriesInferred by viewModel.seriesInferred.collectAsStateWithLifecycle()
         val seriesConfirmed by viewModel.seriesConfirmed.collectAsStateWithLifecycle()
         val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
-        val navigationController = LocalNavigationController.current
         ArtistDetailsScreen(
             route = route,
             entry = { entry },
@@ -180,39 +187,11 @@ object ArtistDetailsScreen {
             otherYears = viewModel::otherYears,
             eventSink = {
                 when (it) {
-                    is Event.OpenArtist ->
-                        navigationController.navigate(
-                            AlleyDestination.ArtistDetails(
-                                year = route.year,
-                                id = it.artistId,
-                                booth = null,
-                                name = null,
-                                images = null,
-                                imageIndex = null,
-                            )
-                        )
-                    is Event.OpenMerch ->
-                        navigationController.navigate(
-                            AlleyDestination.Merch(route.year, it.merch)
-                        )
-                    is Event.OpenSeries ->
-                        navigationController.navigate(
-                            AlleyDestination.Series(route.year, it.series)
-                        )
-                    is Event.OpenStampRally ->
-                        navigationController.navigate(
-                            AlleyDestination.StampRallyDetails(it.entry)
-                        )
-                    is Event.OpenOtherYear ->
-                        navigationController
-                            .navigate(
-                                route.copy(
-                                    year = it.year,
-                                    booth = null,
-                                    name = null,
-                                    images = null,
-                                )
-                            )
+                    is Event.OpenArtist -> onOpenArtist(route.year, it.artistId)
+                    is Event.OpenMerch -> onOpenMerch(route.year, it.merch)
+                    is Event.OpenSeries -> onOpenSeries(route.year, it.series)
+                    is Event.OpenStampRally -> onOpenStampRally(it.entry)
+                    is Event.OpenOtherYear -> onOpenOtherYear(it.year)
                     is Event.SeriesFavoriteToggle ->
                         viewModel.onSeriesFavoriteToggle(
                             data = it.series,
@@ -222,8 +201,7 @@ object ArtistDetailsScreen {
                         when (val event = it.event) {
                             is DetailsScreen.Event.FavoriteToggle ->
                                 viewModel.onFavoriteToggle(event.favorite)
-                            DetailsScreen.Event.NavigateUp ->
-                                navigationController.navigateUp()
+                            DetailsScreen.Event.NavigateUp -> onNavigateUp()
                             is DetailsScreen.Event.OpenImage -> {
                                 val artist = viewModel.entry.value?.artist
                                 val booth = artist?.booth
@@ -233,27 +211,19 @@ object ArtistDetailsScreen {
                                     val year = catalog.result?.fallbackYear
                                         ?.takeIf { showingOutdatedCatalogs }
                                         ?: route.year
-                                    navigationController.navigate(
-                                        AlleyDestination.Images(
-                                            year = year,
-                                            id = route.id,
-                                            type = AlleyDestination.Images.Type.Artist(
-                                                id = artist.id,
-                                                booth = booth
-                                                    .takeUnless { showingOutdatedCatalogs }
-                                                    .orEmpty(),
-                                                name = artist.name,
-                                            ),
-                                            images = images,
-                                            initialImageIndex = event.imageIndex,
-                                        )
+                                    onOpenImages(
+                                        year,
+                                        artist.id,
+                                        booth
+                                            .takeUnless { showingOutdatedCatalogs }
+                                            .orEmpty(),
+                                        artist.name,
+                                        images,
+                                        event.imageIndex,
                                     )
                                 }
                             }
-                            DetailsScreen.Event.OpenMap ->
-                                navigationController.navigate(
-                                    AlleyDestination.ArtistMap(route.id)
-                                )
+                            DetailsScreen.Event.OpenMap -> onOpenMap()
                             DetailsScreen.Event.ShowFallback ->
                                 viewModel.onShowFallback()
                             DetailsScreen.Event.AlwaysShowFallback ->

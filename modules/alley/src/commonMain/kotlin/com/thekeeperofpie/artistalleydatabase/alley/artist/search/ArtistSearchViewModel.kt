@@ -7,9 +7,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.ArtistDetails
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Merch
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Series
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryGridModel
@@ -25,8 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getOrPut
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.paging.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
@@ -47,7 +42,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -228,27 +222,13 @@ class ArtistSearchViewModel(
         val query: String,
     )
 
-    fun onEvent(navigationController: NavigationController, event: ArtistSearchScreen.Event) =
-        when (event) {
-            is ArtistSearchScreen.Event.SearchEvent -> when (val searchEvent = event.event) {
-                is SearchScreen.Event.FavoriteToggle<ArtistEntryGridModel> ->
-                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(favorite = searchEvent.favorite))
-                is SearchScreen.Event.IgnoreToggle<ArtistEntryGridModel> ->
-                    mutationUpdates.tryEmit(searchEvent.entry.userEntry.copy(ignored = searchEvent.ignored))
-                is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
-                    navigationController.navigate(
-                        ArtistDetails(
-                            searchEvent.entry.artist,
-                            searchEvent.imageIndex,
-                        )
-                    )
-                is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
-            }
-            is ArtistSearchScreen.Event.OpenMerch ->
-                navigationController.navigate(Merch(lockedYear, event.merch))
-            is ArtistSearchScreen.Event.OpenSeries ->
-                navigationController.navigate(Series(lockedYear, event.series))
-        }
+    fun toggleFavorite(entry: ArtistEntryGridModel, favorite: Boolean) {
+        mutationUpdates.tryEmit(entry.userEntry.copy(favorite = favorite))
+    }
+
+    fun toggleIgnored(entry: ArtistEntryGridModel, ignored: Boolean) {
+        mutationUpdates.tryEmit(entry.userEntry.copy(ignored = ignored))
+    }
 
     @AssistedFactory
     interface Factory {

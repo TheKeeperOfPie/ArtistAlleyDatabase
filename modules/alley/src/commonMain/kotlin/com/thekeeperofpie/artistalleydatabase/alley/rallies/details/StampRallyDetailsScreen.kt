@@ -50,7 +50,6 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_d
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_prize_limit
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_details_series
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Images.Type.StampRally
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistWithUserDataProvider
@@ -68,13 +67,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -86,6 +85,11 @@ object StampRallyDetailsScreen {
         graph: ArtistAlleyGraph,
         route: AlleyDestination.StampRallyDetails,
         entrySavedStateHandle: SavedStateHandle,
+        onNavigateUp: () -> Unit,
+        onOpenImages: (rallyId: String, hostTable: String, fandom: String, images: List<CatalogImage>, imageIndex: Int) -> Unit,
+        onOpenMap: () -> Unit,
+        onOpenArtist: (ArtistEntry, Int?) -> Unit,
+        onOpenSeries: (DataYear, String) -> Unit,
     ) {
         val viewModel = viewModel {
             graph.stampRallyDetailsViewModelFactory.create(
@@ -116,7 +120,6 @@ object StampRallyDetailsScreen {
         val entry by viewModel.entry.collectAsStateWithLifecycle()
         val series by viewModel.series.collectAsStateWithLifecycle()
         val seriesImages by viewModel.seriesImages.collectAsStateWithLifecycle()
-        val navigationController = LocalNavigationController.current
         StampRallyDetailsScreen(
             route = route,
             entry = { entry },
@@ -131,43 +134,24 @@ object StampRallyDetailsScreen {
                         when (val event = it.event) {
                             is DetailsScreen.Event.FavoriteToggle ->
                                 viewModel.onFavoriteToggle(event.favorite)
-                            DetailsScreen.Event.NavigateUp ->
-                                navigationController.navigateUp()
+                            DetailsScreen.Event.NavigateUp -> onNavigateUp()
                             is DetailsScreen.Event.OpenImage -> {
                                 viewModel.entry.value?.stampRally?.let {
-                                    navigationController.navigate(
-                                        AlleyDestination.Images(
-                                            year = route.year,
-                                            id = route.id,
-                                            type = StampRally(
-                                                id = it.id,
-                                                hostTable = it.hostTable,
-                                                fandom = it.fandom,
-                                            ),
-                                            images = viewModel.images,
-                                            initialImageIndex = event.imageIndex,
-                                        )
+                                    onOpenImages(
+                                        it.id,
+                                        it.hostTable,
+                                        it.fandom,
+                                        viewModel.images,
+                                        event.imageIndex,
                                     )
                                 }
                             }
-                            DetailsScreen.Event.OpenMap ->
-                                navigationController.navigate(
-                                    AlleyDestination.StampRallyMap(
-                                        year = route.year,
-                                        id = route.id,
-                                    )
-                                )
+                            DetailsScreen.Event.OpenMap -> onOpenMap()
                             DetailsScreen.Event.ShowFallback -> Unit
                             DetailsScreen.Event.AlwaysShowFallback -> Unit
                         }
-                    is Event.OpenArtist ->
-                        navigationController.navigate(
-                            AlleyDestination.ArtistDetails(it.artist)
-                        )
-                    is Event.OpenSeries ->
-                        navigationController.navigate(
-                            AlleyDestination.Series(route.year, it.series)
-                        )
+                    is Event.OpenArtist -> onOpenArtist(it.artist, null)
+                    is Event.OpenSeries -> onOpenSeries(route.year, it.series)
                     is Event.SeriesFavoriteToggle ->
                         viewModel.onSeriesFavoriteToggle(
                             data = it.series,

@@ -126,7 +126,6 @@ import coil3.compose.AsyncImage
 import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
@@ -152,7 +151,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.SharedTran
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.renderMaybeInSharedTransitionScopeOverlay
 import com.thekeeperofpie.artistalleydatabase.utils_compose.collectAsMutableStateWithLifecycle
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.VerticalScrollbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -540,6 +538,9 @@ private val UPCOMING_PROMPT_DURATION = 15.days
 fun DataYearHeader(
     state: DataYearHeaderState,
     showFeedbackReminder: Boolean = true,
+    onOpenExport: () -> Unit,
+    onOpenChangelog: () -> Unit,
+    onOpenSettings: () -> Unit,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
     Column {
@@ -581,8 +582,7 @@ fun DataYearHeader(
                         text = text,
                         modifier = Modifier.weight(1f)
                     )
-                    val navigationController = LocalNavigationController.current
-                    Button(onClick = { navigationController.navigate(AlleyDestination.Export) }) {
+                    Button(onClick = onOpenExport) {
                         Text(stringResource(Res.string.alley_con_upcoming_show_qr))
                     }
                 }
@@ -672,15 +672,14 @@ fun DataYearHeader(
                     additionalActions()
                 }
 
-                val navigationController = LocalNavigationController.current
-                IconButton(onClick = { navigationController.navigate(AlleyDestination.Changelog) }) {
+                IconButton(onClick = onOpenChangelog) {
                     Icon(
                         imageVector = Icons.Default.ChangeHistory,
                         contentDescription = stringResource(Res.string.alley_changelog),
                     )
                 }
 
-                IconButton(onClick = { navigationController.navigate(AlleyDestination.Settings) }) {
+                IconButton(onClick = onOpenSettings) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = stringResource(Res.string.alley_settings),
