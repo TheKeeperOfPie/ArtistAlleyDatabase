@@ -31,7 +31,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     abstract val outputFile: RegularFileProperty
 
     init {
-        snapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/edit"))
+        snapshotsDirectory.convention(layout.projectDirectory.dir("inputs/snapshots/animeExpo2026"))
         outputFile.convention(layout.buildDirectory.file("generated/changelog.json"))
     }
 
