@@ -4,13 +4,23 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.db.SqlDriver
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
+@SingleIn(AppScope::class)
 class ImportExportDao(
     val driver: suspend () -> SqlDriver,
     val database: suspend () -> AlleySqlDatabase,
 ) {
+    @Inject
+    constructor(database: ArtistAlleyDatabase) : this(
+        driver = database::driver,
+        database = database::database,
+    )
+
     suspend fun getExportPartialArtists2023() =
         database().userImportExportQueries.getExportPartialArtists2023().awaitAsList()
 

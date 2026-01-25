@@ -11,12 +11,16 @@ import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.GetMerchById
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
 import com.thekeeperofpie.artistalleydatabase.alley.data.MerchEntry
+import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.user.MerchUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
@@ -53,11 +57,18 @@ fun GetMerchById.toMerchWithUserData() = MerchWithUserData(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@SingleIn(AppScope::class)
 class MerchEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val merchDao: suspend () -> MerchQueries = { database().merchQueries },
 ) {
+    @Inject
+    constructor(database: ArtistAlleyDatabase) : this(
+        driver = database::driver,
+        database = database::database,
+    )
+
     fun getMerchById(id: String) = flowFromSuspend { merchDao() }
         .flatMapLatest {
             it.getMerchById(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO)

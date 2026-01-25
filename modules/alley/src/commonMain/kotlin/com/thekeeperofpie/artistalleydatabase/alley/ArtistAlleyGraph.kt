@@ -55,35 +55,6 @@ interface ArtistAlleyGraph {
     val alleySettingsViewModel: Provider<AlleySettingsViewModel>
     val qrCodeViewModel: Provider<QrCodeViewModel>
 
-    @Provides
-    fun provideArtistEntryDao(database: ArtistAlleyDatabase): ArtistEntryDao = database.artistEntryDao
-
-    @Provides
-    fun provideStampRallyEntryDao(database: ArtistAlleyDatabase): StampRallyEntryDao =
-        database.stampRallyEntryDao
-
-    @Provides
-    fun provideImportExportDao(database: ArtistAlleyDatabase): ImportExportDao =
-        database.importExportDao
-
-    @Provides
-    fun provideImageEntryDao(database: ArtistAlleyDatabase): ImageEntryDao = database.imageEntryDao
-
-    @Provides
-    fun provideMerchEntryDao(database: ArtistAlleyDatabase): MerchEntryDao = database.merchEntryDao
-
-    @Provides
-    fun provideSeriesEntryDao(database: ArtistAlleyDatabase): SeriesEntryDao = database.seriesEntryDao
-
-    @Provides
-    fun provideTagEntryDao(database: ArtistAlleyDatabase): TagEntryDao = database.tagEntryDao
-
-    @Provides
-    fun provideUserEntryDao(database: ArtistAlleyDatabase): UserEntryDao = database.userEntryDao
-
-    @Provides
-    fun provideUserNotesDao(database: ArtistAlleyDatabase): UserNotesDao = database.userNotesDao
-
     val navigationTypeMap: NavigationTypeMap
     val settings: ArtistAlleySettings
 

@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetSeriesByIdsWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
 import com.thekeeperofpie.artistalleydatabase.alley.data.SeriesEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -23,6 +24,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.data.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -81,11 +85,18 @@ fun GetSeriesByIdsWithUserData.toSeriesWithUserData() = SeriesWithUserData(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@SingleIn(AppScope::class)
 class SeriesEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
     private val seriesDao: suspend () -> SeriesQueries = { database().seriesQueries },
 ) {
+    @Inject
+    constructor(database: ArtistAlleyDatabase) : this(
+        driver = database::driver,
+        database = database::database,
+    )
+
     suspend fun getSeriesIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
 
     fun getSeriesById(id: String): Flow<SeriesInfo> =

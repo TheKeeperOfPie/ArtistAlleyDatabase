@@ -3,13 +3,22 @@ package com.thekeeperofpie.artistalleydatabase.alley.database
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.NotesQueries
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.utils.PersistentStorageRequester
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 
+@SingleIn(AppScope::class)
 class UserNotesDao(
     private val database: suspend () -> AlleySqlDatabase,
     private val dao: suspend () -> NotesQueries = { database().notesQueries },
 ) {
+    @Inject
+    constructor(database: ArtistAlleyDatabase) : this(database = database::database)
+
     companion object {
         const val MAX_CHARACTER_COUNT = 1000
     }

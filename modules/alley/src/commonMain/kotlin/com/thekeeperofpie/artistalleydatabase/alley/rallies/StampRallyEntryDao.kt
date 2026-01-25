@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
@@ -26,6 +27,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.json.Json
@@ -318,6 +322,7 @@ fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyEntry(
     confirmed = confirmed,
 )
 
+@SingleIn(AppScope::class)
 class StampRallyEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
@@ -326,6 +331,12 @@ class StampRallyEntryDao(
     private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
     private val daoAnimeExpo2026: suspend () -> StampRallyEntryAnimeExpo2026Queries = { database().stampRallyEntryAnimeExpo2026Queries },
 ) {
+    @Inject
+    constructor(database: ArtistAlleyDatabase) : this(
+        driver = database::driver,
+        database = database::database,
+    )
+
     suspend fun getEntry(year: DataYear, stampRallyId: String) =
         when (year) {
             DataYear.ANIME_EXPO_2023 -> dao2023()

@@ -4,16 +4,24 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.thekeeperofpie.artistalleydatabase.alley.AlleySqlDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.MerchQueries
 import com.thekeeperofpie.artistalleydatabase.alley.SeriesQueries
+import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapQuery
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@SingleIn(AppScope::class)
 class TagEntryDao(
     private val database: suspend () -> AlleySqlDatabase,
     private val seriesDao: suspend () -> SeriesQueries = { database().seriesQueries },
     private val merchDao: suspend () -> MerchQueries = { database().merchQueries },
 ) {
+    @Inject
+    constructor(database: ArtistAlleyDatabase) : this(database = database::database)
 
     suspend fun getBooths(year: DataYear, tagMapQuery: TagMapQuery): Set<String> =
         if (year == DataYear.ANIME_EXPO_2023) {

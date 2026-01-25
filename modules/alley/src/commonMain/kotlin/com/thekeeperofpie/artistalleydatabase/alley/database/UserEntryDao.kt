@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeE
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
+import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -21,6 +22,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.alley.utils.PersistentStorageRequester
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
@@ -88,6 +92,7 @@ private fun GetBoothsWithFavoritesAnimeNyc2025.toBoothWithFavorite() =
     )
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@SingleIn(AppScope::class)
 class UserEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
@@ -97,6 +102,12 @@ class UserEntryDao(
     companion object {
         private val NOTIFY_DELAY = 350.milliseconds
     }
+
+    @Inject
+    constructor(
+        database: ArtistAlleyDatabase,
+        settings: ArtistAlleySettings,
+    ) : this(driver = database::driver, database = database::database, settings = settings)
 
     suspend fun getArtistFavorites() = dao()
         .getArtistFavorites()
