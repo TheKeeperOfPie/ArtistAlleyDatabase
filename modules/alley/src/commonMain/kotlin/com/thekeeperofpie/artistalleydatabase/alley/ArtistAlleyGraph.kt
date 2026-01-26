@@ -1,38 +1,24 @@
 package com.thekeeperofpie.artistalleydatabase.alley
 
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.database.ImportExportDao
-import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.images.ImageEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortFilterViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
-import com.thekeeperofpie.artistalleydatabase.alley.tags.TagEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationTypeMap
-import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Provider
-import dev.zacsweers.metro.Provides
-import dev.zacsweers.metro.SingleIn
 
 interface ArtistAlleyGraph {
 
@@ -55,10 +41,5 @@ interface ArtistAlleyGraph {
     val alleySettingsViewModel: Provider<AlleySettingsViewModel>
     val qrCodeViewModel: Provider<QrCodeViewModel>
 
-    val navigationTypeMap: NavigationTypeMap
     val settings: ArtistAlleySettings
-
-    @SingleIn(AppScope::class)
-    @Provides
-    fun provideNavigationTypeMap(): NavigationTypeMap = NavigationTypeMap(AlleyDestination.typeMap)
 }

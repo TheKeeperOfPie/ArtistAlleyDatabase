@@ -24,7 +24,6 @@ class MerchResolutionViewModel(
     private val artistCache: ArtistCache,
     private val editDatabase: AlleyEditDatabase,
     dispatchers: CustomDispatchers,
-    navigationTypeMap: NavigationTypeMap,
     private val tagAutocomplete: TagAutocomplete,
     @Assisted private val merchId: String,
     @Assisted savedStateHandle: SavedStateHandle,

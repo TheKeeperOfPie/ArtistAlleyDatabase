@@ -14,12 +14,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_details_close_image
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
@@ -27,26 +27,32 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistTitle
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ImagesScreen {
 
+    val RESULT_KEY = NavigationResults.Key<Int>("ImagesScreen")
+
     @Composable
     operator fun invoke(
         route: AlleyDestination.Images,
-        previousDestinationSavedStateHandle: SavedStateHandle?,
         onNavigateBack: () -> Unit,
     ) {
         val imagePagerState = rememberImagePagerState(
             images = route.images,
             initialImageIndex = route.initialImageIndex ?: 0,
         )
-        val targetPage = imagePagerState.targetPage
-        LaunchedEffect(targetPage) {
-            previousDestinationSavedStateHandle
-                ?.set("imageIndex", targetPage)
+        val navigationResults = LocalNavigationResults.current
+        LaunchedEffect(imagePagerState, navigationResults) {
+            snapshotFlow { imagePagerState.targetPage }
+                .collectLatest {
+                    navigationResults[RESULT_KEY] = it
+                }
         }
         Scaffold(
             topBar = {

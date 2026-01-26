@@ -132,7 +132,6 @@ class ImageWithDimensionsDecoder private constructor(
                 isSampled = isSampled,
             )
         }
-        ConsoleLogger.log("convert bitmap timing: ${time - value.first}")
 
         return value.second
     }

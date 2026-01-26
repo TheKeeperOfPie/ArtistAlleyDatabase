@@ -93,7 +93,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
 
                 implementation(libs.coil3.coil.compose)
-                implementation(libs.jetBrainsAndroidX.navigation.compose)
+                implementation(libs.jetBrainsAndroidX.navigation3.ui)
                 implementation(libs.jetBrainsAndroidX.navigationevent.compose)
                 implementation(libs.kermit)
             }

@@ -11,7 +11,6 @@ import dev.zacsweers.metro.Provides
 interface ArtistAlleyWebGraph : ArtistAlleyAppGraph {
     val appFileSystem: AppFileSystem
     val artistImageCache: ArtistImageCache
-    val deepLinker: DeepLinker
 
     @Binds
     val ArtistAlleyWebSettings.bindArtistAlleySettings: ArtistAlleySettings

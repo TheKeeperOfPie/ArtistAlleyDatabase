@@ -22,6 +22,7 @@ class BrowserInput<T : NavKey>(
     private val routeHistory: Flow<NavigationRouteHistory>,
     private val parseRoute: (String) -> T?,
     private val onPopNavigate: (T) -> Unit,
+    private val routePrefix: String = "",
 ) :
     NavigationEventInput() {
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
@@ -102,7 +103,7 @@ class BrowserInput<T : NavKey>(
         val scope = CoroutineScope(Job() + Dispatchers.Main)
         scope.launch { popStateFlow.collect(::onPopState) }
         scope.launch {
-            browserWindow.history.replaceState(null, "", "${window.location.origin}/edit")
+            browserWindow.history.replaceState(null, "", "${window.location.origin}$routePrefix")
             routeHistory.collectLatest { routeHistory ->
                 val update = Update.diff(currentHistory, routeHistory)
                 val currentRoute by lazy {
@@ -191,7 +192,7 @@ class BrowserInput<T : NavKey>(
         replaceState(
             route.route,
             "",
-            "${window.location.origin}/edit/${route.route}"
+            "${window.location.origin}$routePrefix/${route.route}"
         )
     }
 
@@ -199,7 +200,7 @@ class BrowserInput<T : NavKey>(
         pushState(
             route.route,
             "",
-            "${window.location.origin}/edit/${route.route}"
+            "${window.location.origin}$routePrefix/${route.route}"
         )
     }
 

@@ -12,11 +12,11 @@ import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
 import androidx.navigation.serialization.decodeArguments
 import androidx.navigation.serialization.generateNavArguments
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalAnimatedVisibilityScope
 import kotlinx.serialization.InternalSerializationApi
@@ -82,17 +82,15 @@ inline fun <reified K : NavKey> EntryProviderScope<in K>.sharedElementEntry(
     }
 }
 
-inline fun <reified T : NavDestination> NavGraphBuilder.sharedElementDialog(
-    navigationTypeMap: NavigationTypeMap,
-    deepLinks: List<NavDeepLink> = emptyList(),
-    noinline content: @Composable (NavBackStackEntry) -> Unit,
-) = dialog<T>(
-    typeMap = navigationTypeMap.typeMap,
-    deepLinks = deepLinks,
+inline fun <reified K : NavKey> EntryProviderScope<in K>.sharedElementDialog(
+    noinline clazzContentKey: (key: @JvmSuppressWildcards K) -> Any = { it.toString() },
+    noinline content: @Composable (K) -> Unit,
 ) {
-    AnimatedVisibility(true) {
-        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-            content(it)
+    addEntryProvider(K::class, clazzContentKey, metadata = DialogSceneStrategy.dialog()) {
+        AnimatedVisibility(true) {
+            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                content(it)
+            }
         }
     }
 }

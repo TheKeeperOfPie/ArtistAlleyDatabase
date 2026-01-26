@@ -25,8 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
@@ -74,6 +73,8 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -84,7 +85,6 @@ object StampRallyDetailsScreen {
     operator fun invoke(
         graph: ArtistAlleyGraph,
         route: AlleyDestination.StampRallyDetails,
-        entrySavedStateHandle: SavedStateHandle,
         onNavigateUp: () -> Unit,
         onOpenImages: (rallyId: String, hostTable: String, fandom: String, images: List<CatalogImage>, imageIndex: Int) -> Unit,
         onOpenMap: () -> Unit,
@@ -97,25 +97,24 @@ object StampRallyDetailsScreen {
                 savedStateHandle = createSavedStateHandle(),
             )
         }
-        val images = viewModel.images
+        val imagesResult by viewModel.images.collectAsStateWithLifecycle()
+        // TODO: Loading indicator
+        val images = imagesResult.result.orEmpty()
         val pageCount = when {
             images.isEmpty() -> 0
             images.size == 1 -> 1
             else -> images.size + 1
         }
-        val imageIndex = entrySavedStateHandle
-            .remove<Int>("imageIndex")
-            ?.coerceAtMost(pageCount - 1)
-            ?.takeIf { it >= 0 }
+
         val imagePagerState = rememberImagePagerState(
             images,
-            imageIndex ?: viewModel.initialImageIndex
+            viewModel.initialImageIndex
         )
-        LifecycleStartEffect(imagePagerState, imageIndex) {
-            if (imageIndex != null) {
-                imagePagerState.requestScrollToPage(imageIndex)
+
+        NavigationResultEffect(ImagesScreen.RESULT_KEY) {
+            if (it in (0 until imagePagerState.pageCount)) {
+                imagePagerState.scrollToPage(it)
             }
-            onStopOrDispose {}
         }
         val entry by viewModel.entry.collectAsStateWithLifecycle()
         val series by viewModel.series.collectAsStateWithLifecycle()
@@ -125,7 +124,7 @@ object StampRallyDetailsScreen {
             entry = { entry },
             series = { series },
             userNotesTextState = viewModel.userNotes,
-            images = viewModel::images,
+            images = { images },
             imagePagerState = imagePagerState,
             seriesImages = { seriesImages },
             eventSink = {
@@ -141,7 +140,7 @@ object StampRallyDetailsScreen {
                                         it.id,
                                         it.hostTable,
                                         it.fandom,
-                                        viewModel.images,
+                                        images,
                                         event.imageIndex,
                                     )
                                 }

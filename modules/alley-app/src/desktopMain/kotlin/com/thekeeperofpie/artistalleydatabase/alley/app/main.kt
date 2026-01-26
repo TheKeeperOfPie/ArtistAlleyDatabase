@@ -1,16 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.alley.app
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.decode.DataSource
@@ -28,8 +30,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationController
 import dev.zacsweers.metro.createGraphFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.io.asInputStream
@@ -96,13 +96,12 @@ fun main() {
                     )
                 }
 
-                val navHostController = rememberNavController()
-                val navigationController = rememberNavigationController(navHostController)
                 CompositionLocalProvider(
                     LocalWindowConfiguration provides windowConfiguration,
-                    LocalNavigationController provides navigationController,
                 ) {
-                    ArtistAlleyAppScreen(graph, navHostController)
+                    Scaffold {
+                        ArtistAlleyAppScreen(graph = graph, modifier = Modifier.padding(it))
+                    }
                 }
             }
         }

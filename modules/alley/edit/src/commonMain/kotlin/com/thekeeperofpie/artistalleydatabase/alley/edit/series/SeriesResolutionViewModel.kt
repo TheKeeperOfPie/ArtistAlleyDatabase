@@ -27,7 +27,6 @@ class SeriesResolutionViewModel(
     private val artistCache: ArtistCache,
     private val editDatabase: AlleyEditDatabase,
     dispatchers: CustomDispatchers,
-    navigationTypeMap: NavigationTypeMap,
     private val tagAutocomplete: TagAutocomplete,
     seriesImagesStore: SeriesImagesStore,
     @Assisted private val seriesId: String,

@@ -124,13 +124,15 @@ private fun Content(graph: ArtistAlleyEditGraph) {
                 onDebugOpenForm = { window.open(it, "_self") },
             )
 
-            val scope = rememberCoroutineScope()
             val navigationEventDispatcherOwner = LocalNavigationEventDispatcherOwner.current
-            val browserInput = remember(scope, navStack) { BrowserInput(
-                routeHistory = navStack.routeHistory,
-                parseRoute = AlleyEditDestination::parseRoute,
-                onPopNavigate = navStack::navigateOnBrowserPop,
-            ) }
+            val browserInput = remember(navStack) {
+                BrowserInput(
+                    routeHistory = navStack.routeHistory,
+                    parseRoute = AlleyEditDestination::parseRoute,
+                    onPopNavigate = navStack::navigateOnBrowserPop,
+                    routePrefix = "/edit",
+                )
+            }
             DisposableEffect(navigationEventDispatcherOwner, browserInput) {
                 val dispatcher = navigationEventDispatcherOwner?.navigationEventDispatcher
                     ?: return@DisposableEffect onDispose {}

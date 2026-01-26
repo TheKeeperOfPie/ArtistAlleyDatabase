@@ -38,7 +38,7 @@ window.addEventListener("beforeinstallprompt", event => {
 if ("serviceWorker" in navigator) {
     console.log("Registering serviceWorker.js")
     // TODO: Automatically call update()?
-    navigator.serviceWorker.register("serviceWorker.js")
+    navigator.serviceWorker.register("/serviceWorker.js")
         .then(registration => {
             console.log("serviceWorker.js success", registration);
             const installingWorker = registration.installing;
