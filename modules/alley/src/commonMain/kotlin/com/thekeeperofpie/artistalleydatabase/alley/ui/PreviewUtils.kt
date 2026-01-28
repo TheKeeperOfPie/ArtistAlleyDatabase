@@ -9,9 +9,6 @@ import coil3.ColorImage
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationController
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -19,17 +16,8 @@ fun PreviewDark(content: @Composable () -> Unit) {
     val previewHandler = AsyncImagePreviewHandler {
         ColorImage(it.data.hashCode())
     }
-    val navigationController = object : NavigationController {
-        override fun navigateUp() = false
-        override fun navigate(navDestination: NavDestination) = Unit
-        override fun popBackStack() = false
-        override fun popBackStack(navDestination: NavDestination) = false
-    }
 
-    CompositionLocalProvider(
-        LocalAsyncImagePreviewHandler provides previewHandler,
-        LocalNavigationController provides navigationController,
-    ) {
+    CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
         MaterialTheme(colorScheme = darkColorScheme()) {
             Surface(content = content)
         }

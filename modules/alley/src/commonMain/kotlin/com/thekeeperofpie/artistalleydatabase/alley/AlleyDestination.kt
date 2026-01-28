@@ -5,10 +5,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavDestination
 import kotlinx.serialization.Serializable
 
-sealed interface AlleyDestination : NavDestination, NavKey {
+@Serializable
+sealed interface AlleyDestination : NavKey {
 
     @Serializable
     data object Home : AlleyDestination
@@ -140,9 +140,7 @@ sealed interface AlleyDestination : NavDestination, NavKey {
         is StampRallyMap -> "stamp_rally/map/${year.serializedName}/$id"
     }
 
-
     companion object {
-
         private val DataYear?.serializedNameOrAll get() = this?.serializedName ?: "all"
         private fun String?.toDataYearOrLatest() =
             this?.let(DataYear::deserialize) ?: DataYear.LATEST

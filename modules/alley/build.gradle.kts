@@ -20,9 +20,6 @@ kotlin {
     sourceSets {
         val jvmMain by creating {
             dependsOn(commonMain.get())
-            dependencies {
-                implementation(libs.commons.csv)
-            }
         }
         commonMain.dependencies {
             api(projects.modules.alley.data)
