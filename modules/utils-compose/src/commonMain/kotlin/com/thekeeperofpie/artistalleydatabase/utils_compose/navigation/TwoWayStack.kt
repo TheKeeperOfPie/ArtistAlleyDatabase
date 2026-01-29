@@ -68,14 +68,18 @@ class TwoWayStack internal constructor(
             Snapshot.withMutableSnapshot {
                 val lastIndex = navBackStack.lastIndexOf(destination)
                 if (lastIndex >= 0) {
-                    if (lastIndex + 1 <= navBackStack.lastIndex) {
-                        navForwardStack.clear()
-                    }
-                    while (lastIndex + 1 <= navBackStack.lastIndex) {
-                        navForwardStack += navBackStack.removeAt(lastIndex + 1)
+                    repeat(navBackStack.lastIndex - lastIndex) {
+                        navForwardStack += navBackStack.removeLast()
                     }
                 } else {
-                    navigate(destination)
+                    val forwardLastIndex = navForwardStack.lastIndexOf(destination)
+                    if (forwardLastIndex >= 0) {
+                        repeat(navForwardStack.lastIndex - lastIndex) {
+                            navBackStack += navForwardStack.removeLast()
+                        }
+                    } else {
+                        navigate(destination)
+                    }
                 }
             }
         }
