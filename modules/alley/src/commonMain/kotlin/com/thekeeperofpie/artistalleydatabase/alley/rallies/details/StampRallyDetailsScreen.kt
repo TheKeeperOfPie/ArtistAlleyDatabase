@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.pager.PagerState
@@ -15,6 +13,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -73,7 +72,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.twoColumnInfoText
 import org.jetbrains.compose.resources.stringResource
@@ -192,7 +190,7 @@ object StampRallyDetailsScreen {
             eventSink = { eventSink(Event.DetailsEvent(it)) },
         ) {
             detailsContent(
-                entry = entry,
+                entry = entry(),
                 series = series,
                 userNotesTextState = userNotesTextState,
                 seriesImages = seriesImages,
@@ -208,54 +206,58 @@ object StampRallyDetailsScreen {
     }
 
     private fun LazyListScope.detailsContent(
-        entry: () -> StampRallyDetailsViewModel.Entry?,
+        entry: StampRallyDetailsViewModel.Entry?,
         series: () -> List<SeriesWithUserData>?,
         userNotesTextState: TextFieldState,
         seriesImages: () -> Map<String, String>,
         eventSink: (Event) -> Unit,
         onClickOpenUri: (String) -> Unit,
     ) {
-        item("stampRallyFandom") {
-            Spacer(Modifier.height(16.dp))
-            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                SelectionContainer {
-                    Column {
-                        InfoText(
-                            stringResource(Res.string.alley_stamp_rally_details_fandom),
-                            entry()?.stampRally?.fandom,
+        if (entry == null) {
+            item("loading") {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CircularWavyProgressIndicator()
+                }
+            }
+        } else {
+            item("stampRallyFandom") {
+                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    SelectionContainer {
+                        Column {
+                            InfoText(
+                                stringResource(Res.string.alley_stamp_rally_details_fandom),
+                                entry.stampRally.fandom,
+                                showDividerAbove = false,
+                            )
+                        }
+                    }
+                }
+            }
+
+            val links = entry.stampRally.links
+            if (links.isNotEmpty()) {
+                item("stampRallyLinks") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_stamp_rally_details_links,
+                            contentDescriptionTextRes = null,
+                            values = links,
+                            valueToText = { it },
+                            onClick = onClickOpenUri,
+                            allowExpand = false,
                             showDividerAbove = false,
                         )
                     }
                 }
             }
-            Spacer(Modifier.height(16.dp))
-        }
 
-        val links = entry()?.stampRally?.links
-        if (links?.isNotEmpty() != false) {
-            item("stampRallyLinks") {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = Res.string.alley_stamp_rally_details_links,
-                        contentDescriptionTextRes = null,
-                        values = links,
-                        valueToText = { it },
-                        onClick = onClickOpenUri,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                    )
-                }
-                Spacer(Modifier.height(16.dp))
-            }
-        }
-
-        val prize = entry()?.stampRally?.prize
-        if (prize != null) {
-            item("stampRallyPrize") {
-                Column(Modifier.animateItem()) {
-                    ThemeAwareElevatedCard(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
+            val prize = entry.stampRally.prize
+            if (prize != null) {
+                item("stampRallyPrize") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SelectionContainer {
                             Column {
                                 InfoText(
@@ -266,111 +268,103 @@ object StampRallyDetailsScreen {
                             }
                         }
                     }
-                    Spacer(Modifier.height(16.dp))
                 }
             }
-        }
 
-        item("stampRallyCostAndPrizes") {
-            val stampRally = entry()?.stampRally
-            ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                val body = if (stampRally == null) {
-                    null
-                } else {
-                    val tableMin = stampRally.tableMin
-                    val totalCost = stampRally.totalCost
-                    val tableCount = stampRally.tables.count()
-                    when (tableMin) {
-                        TableMin.Any ->
-                            if (tableCount > 0) {
-                                stringResource(
-                                    Res.string.alley_stamp_rally_cost_equation_any,
-                                    tableCount
-                                )
+            item("stampRallyCostAndPrizes") {
+                val stampRally = entry.stampRally
+                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    val body = run {
+                        val tableMin = stampRally.tableMin
+                        val totalCost = stampRally.totalCost
+                        val tableCount = stampRally.tables.count()
+                        when (tableMin) {
+                            TableMin.Any ->
+                                if (tableCount > 0) {
+                                    stringResource(
+                                        Res.string.alley_stamp_rally_cost_equation_any,
+                                        tableCount
+                                    )
+                                } else {
+                                    stringResource(Res.string.alley_stamp_rally_cost_any)
+                                }
+                            TableMin.Free -> stringResource(Res.string.alley_stamp_rally_cost_free)
+                            TableMin.Other -> stringResource(Res.string.alley_stamp_rally_cost_other)
+                            TableMin.Paid -> stringResource(Res.string.alley_stamp_rally_cost_paid)
+                            is TableMin.Price -> if (totalCost == null) {
+                                stringResource(Res.string.alley_stamp_rally_cost_paid)
                             } else {
-                                stringResource(Res.string.alley_stamp_rally_cost_any)
+                                stringResource(
+                                    Res.string.alley_stamp_rally_cost_equation_paid,
+                                    tableMin.usd,
+                                    tableCount,
+                                    totalCost
+                                )
                             }
-                        TableMin.Free -> stringResource(Res.string.alley_stamp_rally_cost_free)
-                        TableMin.Other -> stringResource(Res.string.alley_stamp_rally_cost_other)
-                        TableMin.Paid -> stringResource(Res.string.alley_stamp_rally_cost_paid)
-                        is TableMin.Price -> if (totalCost == null) {
-                            stringResource(Res.string.alley_stamp_rally_cost_paid)
-                        } else {
-                            stringResource(
-                                Res.string.alley_stamp_rally_cost_equation_paid,
-                                tableMin.usd,
-                                tableCount,
-                                totalCost
-                            )
+                            null -> stringResource(Res.string.alley_stamp_rally_cost_unknown)
                         }
-                        null -> stringResource(Res.string.alley_stamp_rally_cost_unknown)
+                    }
+
+                    SelectionContainer {
+                        twoColumnInfoText(
+                            labelOne = stringResource(Res.string.alley_stamp_rally_details_cost),
+                            bodyOne = body,
+                            labelTwo = stringResource(Res.string.alley_stamp_rally_details_prize_limit),
+                            bodyTwo = stampRally.prizeLimitText(),
+                            showDividerAbove = false,
+                        )
                     }
                 }
-
-                SelectionContainer {
-                    twoColumnInfoText(
-                        labelOne = stringResource(Res.string.alley_stamp_rally_details_cost),
-                        bodyOne = body,
-                        labelTwo = stringResource(Res.string.alley_stamp_rally_details_prize_limit),
-                        bodyTwo = stampRally?.prizeLimitText(),
-                        showDividerAbove = false,
-                    )
-                }
             }
-            Spacer(Modifier.height(16.dp))
-        }
 
-        val artists = entry()?.artists
-        if (artists?.isNotEmpty() != false) {
-            item("stampRallyArtists") {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = Res.string.alley_stamp_rally_details_artists,
-                        contentDescriptionTextRes = null,
-                        values = artists,
-                        valueToText = {
-                            val booth = it.booth
-                            if (booth.isNullOrBlank()) {
-                                it.name
-                            } else {
-                                stringResource(
-                                    Res.string.alley_artist_details_booth_and_table_name,
-                                    booth,
+            val artists = entry.artists
+            if (artists.isNotEmpty()) {
+                item("stampRallyArtists") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_stamp_rally_details_artists,
+                            contentDescriptionTextRes = null,
+                            values = artists,
+                            valueToText = {
+                                val booth = it.booth
+                                if (booth.isNullOrBlank()) {
                                     it.name
-                                )
-                            }
-                        },
-                        onClick = { eventSink(Event.OpenArtist(it)) },
-                        allowExpand = false,
-                        showDividerAbove = false,
-                    )
+                                } else {
+                                    stringResource(
+                                        Res.string.alley_artist_details_booth_and_table_name,
+                                        booth,
+                                        it.name
+                                    )
+                                }
+                            },
+                            onClick = { eventSink(Event.OpenArtist(it)) },
+                            allowExpand = false,
+                            showDividerAbove = false,
+                        )
+                    }
                 }
-                Spacer(Modifier.height(16.dp))
             }
-        }
 
-        val otherTables = entry()?.otherTables
-        if (otherTables?.isNotEmpty() != false) {
-            item("stampRallyOtherTables") {
-                ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    expandableListInfoText(
-                        labelTextRes = Res.string.alley_stamp_rally_details_other_tables,
-                        contentDescriptionTextRes = null,
-                        values = otherTables,
-                        valueToText = { it },
-                        onClick = null,
-                        allowExpand = false,
-                        showDividerAbove = false,
-                    )
+            val otherTables = entry.otherTables
+            if (otherTables.isNotEmpty()) {
+                item("stampRallyOtherTables") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        expandableListInfoText(
+                            labelTextRes = Res.string.alley_stamp_rally_details_other_tables,
+                            contentDescriptionTextRes = null,
+                            values = otherTables,
+                            valueToText = { it },
+                            onClick = null,
+                            allowExpand = false,
+                            showDividerAbove = false,
+                        )
+                    }
                 }
-                Spacer(Modifier.height(16.dp))
             }
-        }
 
-        val series = series()
-        if (series?.isNotEmpty() != false) {
-            item("artistSeries") {
-                Column(Modifier.animateItem()) {
+            val series = series()
+            if (series?.isNotEmpty() != false) {
+                item("artistSeries") {
                     val languageOption = LocalLanguageOptionMedia.current
                     val sorted = remember(series, languageOption) {
                         series?.sortedBy { it.series.name(languageOption) }
@@ -409,18 +403,13 @@ object StampRallyDetailsScreen {
                             },
                         )
                     }
-                    Spacer(Modifier.height(16.dp))
                 }
             }
-        }
 
-        val notes = entry()?.stampRally?.notes
-        if (!notes.isNullOrEmpty()) {
-            item("stampRallyMaintainerNotes") {
-                Column(Modifier.animateItem()) {
-                    ThemeAwareElevatedCard(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
+            val notes = entry.stampRally.notes
+            if (!notes.isNullOrEmpty()) {
+                item("stampRallyMaintainerNotes") {
+                    ThemeAwareElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SelectionContainer {
                             Column {
                                 InfoText(
@@ -431,36 +420,34 @@ object StampRallyDetailsScreen {
                             }
                         }
                     }
-                    Spacer(Modifier.height(16.dp))
                 }
             }
-        }
 
-        if (entry()?.stampRally?.confirmed == true) {
-            item("stampRallyUserNotes") {
-                UserNotesText(
-                    state = userNotesTextState,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(Modifier.height(16.dp))
-            }
-        }
-
-        item("stampRallyButtons") {
-            FilledTonalButton(
-                onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
-                modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        Icons.Default.Map,
-                        contentDescription = stringResource(Res.string.alley_open_in_map),
+            if (entry.stampRally.confirmed) {
+                item("stampRallyUserNotes") {
+                    UserNotesText(
+                        state = userNotesTextState,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                    Text(stringResource(Res.string.alley_open_in_map))
+                }
+            }
+
+            item("stampRallyButtons") {
+                FilledTonalButton(
+                    onClick = { eventSink(Event.DetailsEvent(DetailsScreen.Event.OpenMap)) },
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.Default.Map,
+                            contentDescription = stringResource(Res.string.alley_open_in_map),
+                        )
+                        Text(stringResource(Res.string.alley_open_in_map))
+                    }
                 }
             }
         }

@@ -54,9 +54,9 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalo
 import artistalleydatabase.modules.alley.generated.resources.alley_favorite_icon_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_unfavorite_dialog_text_generic
-import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.UnfavoriteDialog
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
+import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImagePreviewProvider
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -172,6 +172,7 @@ object DetailsScreen {
             val showFallbackPrompt = !hasImages && showFallbackImages == false &&
                     fallbackYear != null
             LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(
                     start = horizontalContentPadding,
                     end = horizontalContentPadding,
@@ -225,6 +226,7 @@ object DetailsScreen {
         content: LazyListScope.() -> Unit,
     ) {
         LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 32.dp),
             modifier = Modifier.fillMaxSize()
         ) {
