@@ -211,13 +211,6 @@ fun ImagePager(
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalPlatformContext.current)
                                     .data(image)
-                                    .run {
-                                        if (downsample) {
-                                            size(targetSizeWidth, Dimension.Undefined)
-                                        } else {
-                                            this
-                                        }
-                                    }
                                     .memoryCacheKey(image.coilImageModel.toString())
                                     .build(),
                                 contentScale = imageContentScale,

@@ -199,7 +199,6 @@ fun <EntryModel : SearchEntryModel> ItemCard(
                 pagerState = pagerState,
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
-                downsample = true,
             )
             if (showingFallback) {
                 ImageFallbackBanner(
@@ -264,7 +263,6 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
                 clipCorners = false,
-                downsample = true,
             )
 
             if (showingFallback) {
