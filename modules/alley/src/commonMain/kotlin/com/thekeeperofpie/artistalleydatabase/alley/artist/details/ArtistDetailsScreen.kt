@@ -101,8 +101,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
 import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
@@ -135,7 +135,7 @@ object ArtistDetailsScreen {
         onOpenArtist: (DataYear, artistId: String) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyEntry) -> Unit,
+        onOpenStampRally: (StampRallyDatabaseEntry) -> Unit,
         onOpenOtherYear: (DataYear) -> Unit,
         onOpenMap: () -> Unit,
         onOpenImages: (DataYear, artistId: String, booth: String, name: String, images: List<CatalogImage>, imageIndex: Int) -> Unit,
@@ -831,7 +831,7 @@ object ArtistDetailsScreen {
         data class OpenMerch(val merch: String) : Event
         data class OpenOtherYear(val year: DataYear) : Event
         data class OpenSeries(val series: String) : Event
-        data class OpenStampRally(val entry: StampRallyEntry) : Event
+        data class OpenStampRally(val entry: StampRallyDatabaseEntry) : Event
         data class SeriesFavoriteToggle(
             val series: SeriesWithUserData,
             val favorite: Boolean,

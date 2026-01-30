@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -56,7 +55,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.stringResource
@@ -293,12 +291,11 @@ object ArtistAddScreen {
         locked: Boolean,
         onClickSameArtist: (artistId: Uuid) -> Unit,
     ) {
-        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
         Column {
             PotentialSameArtists(state.sameArtistState.inferredArtists, onClickSameArtist)
 
             ArtistForm(
-                initialArtist = { initialArtist },
+                initialArtist = { null },
                 state = state.artistFormState,
                 seriesById = seriesById,
                 errorState = errorState,
@@ -313,7 +310,6 @@ object ArtistAddScreen {
 
     @Stable
     class State(
-        val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
         val artistFormState: ArtistFormState,
         val saveTaskState: TaskState<BackendRequest.ArtistSave.Response>,
         val sameArtistState: SameArtistPrompter.State,

@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.Assisted
@@ -23,7 +23,7 @@ class StampRallyMapViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var stampRally by mutableStateOf<StampRallyEntry?>(null)
+    var stampRally by mutableStateOf<StampRallyDatabaseEntry?>(null)
         private set
     var artistTables by mutableStateOf(emptySet<String>())
         private set

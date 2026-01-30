@@ -41,8 +41,6 @@ class ArtistAddViewModel(
 ) : ViewModel() {
     private val saveTask: ExclusiveTask<Triple<List<EditImage>, ArtistDatabaseEntry.Impl, Boolean>, BackendRequest.ArtistSave.Response> =
         ExclusiveTask(viewModelScope, ::save)
-    private val artist =
-        savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>("artist", null)
     private val artistFormState = savedStateHandle.saveable(
         key = "artistFormState",
         saver = ArtistFormState.Saver,
@@ -58,7 +56,6 @@ class ArtistAddViewModel(
     )
 
     val state = ArtistAddScreen.State(
-        initialArtist = artist,
         artistFormState = artistFormState,
         saveTaskState = saveTask.state,
         sameArtistState = sameArtistPrompter.state,
@@ -86,7 +83,7 @@ class ArtistAddViewModel(
         withContext(dispatchers.io) {
             val (images, databaseEntry, isManual) = triple
 
-            val hasChanged = ArtistDatabaseEntry.hasChanged(artist.value, databaseEntry)
+            val hasChanged = ArtistDatabaseEntry.hasChanged(null, databaseEntry)
             if (!isManual && !hasChanged && images.none { it is EditImage.LocalImage }) {
                 // Don't save if no data has changed
                 return@withContext BackendRequest.ArtistSave.Response.Success
@@ -114,11 +111,10 @@ class ArtistAddViewModel(
             })
             database.saveArtist(
                 dataYear = dataYear,
-                initial = artist.value,
+                initial = null,
                 updated = updatedArtist,
             ).also {
                 if (it is BackendRequest.ArtistSave.Response.Success) {
-                    artist.value = updatedArtist
                     if (!isManual) {
                         state.artistFormState.applyDatabaseEntry(
                             artist = updatedArtist,

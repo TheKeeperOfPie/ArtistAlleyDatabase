@@ -33,7 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.alley.favorite.FavoritesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.MapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesMapScreen
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.scroll.ScrollStateSaver
@@ -49,7 +49,7 @@ object AlleyRootScreen {
         onOpenArtist: (ArtistEntry, Int?) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: String) -> Unit,
         onOpenExport: () -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,

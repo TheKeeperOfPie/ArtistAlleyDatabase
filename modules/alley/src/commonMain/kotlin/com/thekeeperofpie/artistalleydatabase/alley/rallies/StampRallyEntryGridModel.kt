@@ -6,13 +6,14 @@ import androidx.compose.runtime.setValue
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
 class StampRallyEntryGridModel(
-    val stampRally: StampRallyEntry,
+    val stampRally: StampRallyDatabaseEntry,
     val userEntry: StampRallyUserEntry,
     override val images: List<CatalogImage>,
     override val placeholderText: String,

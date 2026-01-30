@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.details.DetailsScreenCatalog
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesWithUserData
@@ -214,7 +214,7 @@ class ArtistDetailsViewModel(
     class Entry(
         val artist: ArtistEntry,
         val userEntry: ArtistUserEntry,
-        val stampRallies: List<StampRallyEntry>,
+        val stampRallies: List<StampRallyDatabaseEntry>,
     ) {
         var favorite by mutableStateOf(userEntry.favorite)
     }

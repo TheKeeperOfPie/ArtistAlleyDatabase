@@ -162,14 +162,14 @@ fun StampRallyListRow(
                 )
             }
             val totalCost = stampRally.totalCost
-            val text = when (stampRally.tableMin) {
+            val text = when (val tableMin = stampRally.tableMin) {
                 TableMin.Free -> stringResource(Res.string.alley_stamp_rally_cost_free)
                 TableMin.Other -> stringResource(Res.string.alley_stamp_rally_cost_other)
                 TableMin.Any -> stringResource(Res.string.alley_stamp_rally_cost_any)
                 TableMin.Paid -> stringResource(Res.string.alley_stamp_rally_cost_paid)
                 is TableMin.Price -> when (totalCost) {
                     null -> {
-                        val totalCostUsd = stampRally.tableMin.totalCost(stampRally.tables.size)
+                        val totalCostUsd = tableMin.totalCost(stampRally.tables.size)
                         if (totalCostUsd != null) {
                             stringResource(
                                 Res.string.alley_stamp_rally_total_cost,

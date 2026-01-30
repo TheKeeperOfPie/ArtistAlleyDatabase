@@ -3,6 +3,7 @@
     <string name="alley_edit_top_level_nav_artists">Artists</string>
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
+    <string name="alley_edit_top_level_nav_rallies">Rallies</string>
     <string name="alley_edit_top_level_nav_forms">Forms</string>
     <string name="alley_edit_top_level_nav_tag_resolution">Resolution</string>
     <string name="alley_edit_top_level_nav_admin">Admin</string>
@@ -243,4 +244,11 @@
     <string name="alley_edit_tag_resolution_error_message">Failed to commit tag, %1$s</string>
     <string name="alley_edit_series_resolution_title">Series resolution</string>
     <string name="alley_edit_merch_resolution_title">Merch resolution</string>
+
+    <string name="alley_edit_stamp_rally_list_search_placeholder">Search %1$d entries...</string>
+    <string name="alley_edit_stamp_rally_list_sort_content_description">Sort stamp rallies</string>
+    <string name="alley_edit_stamp_rally_list_sort_host">Host</string>
+    <string name="alley_edit_stamp_rally_list_sort_fandom">Fandom</string>
+    <string name="alley_edit_stamp_rally_action_refresh_content_description">Refresh rallies</string>
+    <string name="alley_edit_stamp_rally_action_add">Add stamp rally</string>
 </resources>

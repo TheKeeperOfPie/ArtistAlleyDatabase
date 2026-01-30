@@ -21,7 +21,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_c
 import artistalleydatabase.modules.alley.generated.resources.alley_stamp_rally_column_fandom
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.LocalStableRandomSeed
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.search.BottomSheetFilterDataYearHeader
@@ -46,7 +46,7 @@ object StampRallySearchScreen {
         lockedSeries: String?,
         scrollStateSaver: ScrollStateSaver,
         onClickBack: (() -> Unit)? = null,
-        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: String) -> Unit,
         onOpenExport: () -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,

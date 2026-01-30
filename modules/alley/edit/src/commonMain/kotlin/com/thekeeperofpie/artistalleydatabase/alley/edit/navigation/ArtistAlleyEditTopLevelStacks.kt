@@ -50,6 +50,9 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyEditDestination.TagResolution.serializer())
             subclass(serializer = AlleyEditDestination.SeriesResolution.serializer())
             subclass(serializer = AlleyEditDestination.MerchResolution.serializer())
+            subclass(serializer = AlleyEditDestination.StampRallies.serializer())
+            subclass(serializer = AlleyEditDestination.StampRallyAdd.serializer())
+            subclass(serializer = AlleyEditDestination.StampRallyEdit.serializer())
         }
     }
 }

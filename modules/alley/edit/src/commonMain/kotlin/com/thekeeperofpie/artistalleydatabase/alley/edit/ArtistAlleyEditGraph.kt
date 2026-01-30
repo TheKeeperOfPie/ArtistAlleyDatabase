@@ -14,6 +14,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewMo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchResolutionViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyAddViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyEditViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionViewModel
@@ -53,6 +56,9 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
     val tagResolutionViewModelFactory: TagResolutionViewModel.Factory
     val seriesResolutionViewModelFactory: SeriesResolutionViewModel.Factory
     val merchResolutionViewModelFactory: MerchResolutionViewModel.Factory
+    val stampRallyListViewModelFactory: StampRallyListViewModel.Factory
+    val stampRallyAddViewModelFactory: StampRallyAddViewModel.Factory
+    val stampRallyEditViewModelFactory: StampRallyEditViewModel.Factory
 
     @Provides
     fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient

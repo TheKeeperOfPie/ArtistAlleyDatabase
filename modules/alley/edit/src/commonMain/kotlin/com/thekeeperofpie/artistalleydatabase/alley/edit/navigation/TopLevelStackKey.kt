@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Tag
@@ -13,6 +14,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artists
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_merch
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rallies
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_tag_resolution
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
@@ -37,6 +39,11 @@ internal enum class TopLevelStackKey(
         initialDestination = AlleyEditDestination.Merch,
         icon = Icons.Default.ShoppingBag,
         title = Res.string.alley_edit_top_level_nav_merch,
+    ),
+    RALLIES(
+        initialDestination = AlleyEditDestination.StampRallies,
+        icon = Icons.Default.Approval,
+        title = Res.string.alley_edit_top_level_nav_rallies,
     ),
     FORMS(
         initialDestination = AlleyEditDestination.ArtistFormQueue,

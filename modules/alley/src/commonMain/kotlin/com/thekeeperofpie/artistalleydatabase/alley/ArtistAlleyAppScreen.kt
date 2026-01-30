@@ -31,7 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -109,7 +109,7 @@ object ArtistAlleyAppScreen {
                 AlleyDestination.Merch(year, merch)
             )
         }
-        val onOpenStampRally = { entry: StampRallyEntry, initialImageIndex: String? ->
+        val onOpenStampRally = { entry: StampRallyDatabaseEntry, initialImageIndex: String? ->
             navStack.navigate(
                 AlleyDestination.StampRallyDetails(
                     entry = entry,

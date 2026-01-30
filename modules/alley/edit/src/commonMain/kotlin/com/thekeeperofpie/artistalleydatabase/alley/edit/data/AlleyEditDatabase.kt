@@ -13,9 +13,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImageInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -32,6 +33,7 @@ class AlleyEditDatabase(
     private val artistEntryDao: ArtistEntryDao,
     private val merchEntryDao: MerchEntryDao,
     private val seriesEntryDao: SeriesEntryDao,
+    private val stampRallyEntryDao: StampRallyEntryDao,
     private val remoteDatabase: AlleyEditRemoteDatabase,
 ) {
     suspend fun databaseCreate() = remoteDatabase.databaseCreate()
@@ -186,4 +188,18 @@ class AlleyEditDatabase(
 
     suspend fun fakeArtistFormLink(): String? = remoteDatabase.fakeArtistFormLink()
     suspend fun deleteFakeArtistData() = remoteDatabase.deleteFakeArtistData()
+
+    suspend fun loadStampRallies(dataYear: DataYear): List<StampRallySummary> {
+        // TODO: Load remote
+        val remoteRallies = emptyList<StampRallySummary>()
+        val remoteIds = remoteRallies.map { it.id }.toSet()
+        val databaseRallies = stampRallyEntryDao.getAllEntries(dataYear)
+            .filter { it.id !in remoteIds }
+        return databaseRallies + remoteRallies
+    }
+
+    // TODO: Load remote
+    suspend fun loadStampRally(year: DataYear, stampRallyId: String) =
+        stampRallyEntryDao.getEntry(year, stampRallyId)
+            ?.stampRally
 }

@@ -76,7 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSc
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyListRow
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
@@ -126,7 +126,7 @@ object FavoritesScreen {
         onOpenArtist: (ArtistEntry, Int) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: String) -> Unit,
         onOpenExport: () -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,

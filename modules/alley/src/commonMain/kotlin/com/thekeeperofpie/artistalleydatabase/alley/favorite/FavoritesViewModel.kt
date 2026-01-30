@@ -18,7 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSortFilt
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
@@ -325,7 +325,7 @@ class FavoritesViewModel(
         onOpenArtist: (ArtistEntry, Int) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyEntry, initialImageIndex: String) -> Unit,
+        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: String) -> Unit,
         onOpenExport: () -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,

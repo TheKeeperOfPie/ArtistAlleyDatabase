@@ -21,17 +21,22 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.StampRallyEntryAnimeExp
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchSortOption
 import com.thekeeperofpie.artistalleydatabase.alley.user.StampRallyUserEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseUtils
+import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2023.GetEntry as GetEntry2023
 import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntry2024.GetEntry as GetEntry2024
@@ -41,22 +46,25 @@ import com.thekeeperofpie.artistalleydatabase.alley.stampRallyEntryAnimeExpo2026
 fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
-        stampRally = StampRallyEntry(
+        stampRally = StampRallyDatabaseEntry(
             year = DataYear.ANIME_EXPO_2023,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
             tables = getString(3)!!.let(Json::decodeFromString),
             links = getString(4)!!.let(Json::decodeFromString),
-            _tableMin = null,
+            tableMin = null,
             totalCost = null,
             prize = null,
             prizeLimit = null,
             series = emptyList(),
             notes = null,
             images = getString(5)!!.let(Json::decodeFromString),
-            counter = getLong(6)!!,
+            // counter = getLong(6)!!,
             confirmed = true,
+            editorNotes = null,
+            lastEditor = null,
+            lastEditTime = null,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
@@ -69,22 +77,25 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
 fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
-        stampRally = StampRallyEntry(
+        stampRally = StampRallyDatabaseEntry(
             year = DataYear.ANIME_EXPO_2024,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
             tables = getString(3)!!.let(Json::decodeFromString),
             links = getString(4)!!.let(Json::decodeFromString),
-            _tableMin = getLong(5),
+            tableMin = TableMin.parseFromValue(getLong(5)?.toInt()),
             totalCost = getLong(6),
             prize = null,
             prizeLimit = getLong(7),
             series = emptyList(),
             notes = getString(8),
             images = getString(9)!!.let(Json::decodeFromString),
-            counter = getLong(10)!!,
+            //counter = getLong(10)!!,
             confirmed = true,
+            editorNotes = null,
+            lastEditor = null,
+            lastEditTime = null,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
@@ -97,22 +108,25 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
 fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
-        stampRally = StampRallyEntry(
+        stampRally = StampRallyDatabaseEntry(
             year = DataYear.ANIME_EXPO_2025,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
             tables = getString(3)!!.let(Json::decodeFromString),
             links = getString(4)!!.let(Json::decodeFromString),
-            _tableMin = getLong(5),
+            tableMin = TableMin.parseFromValue(getLong(5)?.toInt()),
             totalCost = getLong(6),
             prize = getString(7),
             prizeLimit = getLong(8),
             series = getString(9)!!.let(Json::decodeFromString),
             notes = getString(10),
             images = getString(11)!!.let(Json::decodeFromString),
-            counter = getLong(12)!!,
+            //counter = getLong(12)!!,
             confirmed = getBooleanFixed(13),
+            editorNotes = null,
+            lastEditor = null,
+            lastEditTime = null,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
@@ -125,22 +139,25 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
 fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
     return StampRallyWithUserData(
-        stampRally = StampRallyEntry(
+        stampRally = StampRallyDatabaseEntry(
             year = DataYear.ANIME_EXPO_2026,
             id = stampRallyId,
             fandom = getString(1)!!,
             hostTable = getString(2)!!,
             tables = getString(3)!!.let(Json::decodeFromString),
             links = getString(4)!!.let(Json::decodeFromString),
-            _tableMin = getLong(5),
+            tableMin = TableMin.parseFromValue(getLong(5)?.toInt()),
             totalCost = getLong(6),
             prize = getString(7),
             prizeLimit = getLong(8),
             series = getString(9)!!.let(Json::decodeFromString),
             notes = getString(10),
             images = getString(11)!!.let(Json::decodeFromString),
-            counter = getLong(12)!!,
+            //counter = getLong(12)!!,
             confirmed = getBooleanFixed(13),
+            editorNotes = null,
+            lastEditor = null,
+            lastEditTime = null,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
@@ -151,22 +168,25 @@ fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
 }
 
 private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
-    stampRally = StampRallyEntry(
+    stampRally = StampRallyDatabaseEntry(
         year = DataYear.ANIME_EXPO_2023,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
         tables = tables,
         links = links,
-        _tableMin = null,
+        tableMin = null,
         totalCost = null,
         prize = null,
         prizeLimit = null,
         series = emptyList(),
         notes = null,
         images = images,
-        counter = counter,
+        //counter = counter,
         confirmed = true,
+        editorNotes = null,
+        lastEditor = null,
+        lastEditTime = null,
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
@@ -176,22 +196,25 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
 )
 
 private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
-    stampRally = StampRallyEntry(
+    stampRally = StampRallyDatabaseEntry(
         year = DataYear.ANIME_EXPO_2024,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
         tables = tables,
         links = links,
-        _tableMin = tableMin,
+        tableMin = TableMin.parseFromValue(tableMin?.toInt()),
         totalCost = totalCost,
         prize = null,
         prizeLimit = prizeLimit,
         series = emptyList(),
         notes = notes,
         images = images,
-        counter = counter,
+        //counter = counter,
         confirmed = true,
+        editorNotes = null,
+        lastEditor = null,
+        lastEditTime = null,
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
@@ -201,22 +224,24 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
 )
 
 private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
-    stampRally = StampRallyEntry(
+    stampRally = StampRallyDatabaseEntry(
         year = DataYear.ANIME_EXPO_2025,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
         tables = tables,
         links = links,
-        _tableMin = tableMin,
+        tableMin = TableMin.parseFromValue(tableMin?.toInt()),
         totalCost = totalCost,
         prize = prize,
         prizeLimit = prizeLimit,
         series = series,
         notes = notes,
         images = images,
-        counter = counter,
         confirmed = confirmed,
+        editorNotes = null,
+        lastEditor = null,
+        lastEditTime = null,
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
@@ -226,22 +251,24 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
 )
 
 private fun GetEntryAnimeExpo2026.toStampRallyWithUserData() = StampRallyWithUserData(
-    stampRally = StampRallyEntry(
+    stampRally = StampRallyDatabaseEntry(
         year = DataYear.ANIME_EXPO_2026,
         id = id,
         fandom = fandom,
         hostTable = hostTable,
         tables = tables,
         links = links,
-        _tableMin = tableMin,
+        tableMin = TableMin.parseFromValue(tableMin?.toInt()),
         totalCost = totalCost,
         prize = prize,
         prizeLimit = prizeLimit,
         series = series,
         notes = notes,
         images = images,
-        counter = counter,
         confirmed = confirmed,
+        editorNotes = null,
+        lastEditor = null,
+        lastEditTime = null,
     ),
     userEntry = StampRallyUserEntry(
         stampRallyId = id,
@@ -250,91 +277,101 @@ private fun GetEntryAnimeExpo2026.toStampRallyWithUserData() = StampRallyWithUse
     )
 )
 
-fun StampRallyEntry2023.toStampRallyEntry() = StampRallyEntry(
+fun StampRallyEntry2023.toStampRallyEntry() = StampRallyDatabaseEntry(
     year = DataYear.ANIME_EXPO_2023,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
     tables = tables,
     links = links,
-    _tableMin = null,
+    tableMin = null,
     totalCost = null,
     prize = null,
     prizeLimit = null,
     series = emptyList(),
     notes = null,
     images = images,
-    counter = counter,
     confirmed = true,
+    editorNotes = null,
+    lastEditor = null,
+    lastEditTime = null,
 )
 
-fun StampRallyEntry2024.toStampRallyEntry() = StampRallyEntry(
+fun StampRallyEntry2024.toStampRallyEntry() = StampRallyDatabaseEntry(
     year = DataYear.ANIME_EXPO_2024,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
     tables = tables,
     links = links,
-    _tableMin = tableMin,
+    tableMin = TableMin.parseFromValue(tableMin?.toInt()),
     totalCost = totalCost,
     prize = null,
     prizeLimit = prizeLimit,
     series = emptyList(),
     notes = notes,
     images = images,
-    counter = counter,
     confirmed = true,
+    editorNotes = null,
+    lastEditor = null,
+    lastEditTime = null,
 )
 
-fun StampRallyEntry2025.toStampRallyEntry() = StampRallyEntry(
+fun StampRallyEntry2025.toStampRallyEntry() = StampRallyDatabaseEntry(
     year = DataYear.ANIME_EXPO_2025,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
     tables = tables,
     links = links,
-    _tableMin = tableMin,
+    tableMin = TableMin.parseFromValue(tableMin?.toInt()),
     totalCost = totalCost,
     prize = prize,
     prizeLimit = prizeLimit,
     series = series,
     notes = notes,
     images = images,
-    counter = counter,
     confirmed = confirmed,
+    editorNotes = null,
+    lastEditor = null,
+    lastEditTime = null,
 )
 
-fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyEntry(
+fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyDatabaseEntry(
     year = DataYear.ANIME_EXPO_2026,
     id = id,
     fandom = fandom,
     hostTable = hostTable,
     tables = tables,
     links = links,
-    _tableMin = tableMin,
+    tableMin = TableMin.parseFromValue(tableMin?.toInt()),
     totalCost = totalCost,
     prize = prize,
     prizeLimit = prizeLimit,
     series = series,
     notes = notes,
     images = images,
-    counter = counter,
     confirmed = confirmed,
+    editorNotes = null,
+    lastEditor = null,
+    lastEditTime = null,
 )
 
 @SingleIn(AppScope::class)
 class StampRallyEntryDao(
     private val driver: suspend () -> SqlDriver,
     private val database: suspend () -> AlleySqlDatabase,
+    private val dispatchers: CustomDispatchers,
     private val dao2023: suspend () -> StampRallyEntry2023Queries = { database().stampRallyEntry2023Queries },
     private val dao2024: suspend () -> StampRallyEntry2024Queries = { database().stampRallyEntry2024Queries },
     private val dao2025: suspend () -> StampRallyEntry2025Queries = { database().stampRallyEntry2025Queries },
     private val daoAnimeExpo2026: suspend () -> StampRallyEntryAnimeExpo2026Queries = { database().stampRallyEntryAnimeExpo2026Queries },
 ) {
     @Inject
-    constructor(database: ArtistAlleyDatabase) : this(
+    constructor(database: ArtistAlleyDatabase, dispatchers: CustomDispatchers) : this(
         driver = database::driver,
         database = database::database,
+        dispatchers = dispatchers,
     )
 
     suspend fun getEntry(year: DataYear, stampRallyId: String) =
@@ -620,5 +657,20 @@ class StampRallyEntryDao(
             tableNames = listOf("${tableName}_fts", "stampRallyUserEntry"),
             mapper = mapper,
         )
+    }
+
+    suspend fun getAllEntries(year: DataYear) = withContext(dispatchers.io) {
+        when (year) {
+            DataYear.ANIME_EXPO_2023 -> dao2023().getAllEntries().awaitAsList()
+                .map { StampRallySummary(it.id, it.fandom, it.hostTable) }
+            DataYear.ANIME_EXPO_2024 -> dao2024().getAllEntries().awaitAsList()
+                .map { StampRallySummary(it.id, it.fandom, it.hostTable) }
+            DataYear.ANIME_EXPO_2025 -> dao2025().getAllEntries().awaitAsList()
+                .map { StampRallySummary(it.id, it.fandom, it.hostTable) }
+            DataYear.ANIME_EXPO_2026 -> emptyList() // TODO: Load remote
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> emptyList()
+        }
     }
 }

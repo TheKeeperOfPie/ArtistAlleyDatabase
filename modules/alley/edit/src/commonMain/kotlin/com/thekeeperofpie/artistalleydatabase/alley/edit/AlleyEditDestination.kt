@@ -79,6 +79,20 @@ sealed interface AlleyEditDestination : NavKey {
     @Serializable
     data class MerchResolution(val merchId: String) : AlleyEditDestination
 
+    @Serializable
+    data object StampRallies : AlleyEditDestination
+
+    @Serializable
+    data class StampRallyAdd(
+        val dataYear: DataYear,
+        val stampRallyId: String = Uuid.random().toString(),
+    ) :
+        AlleyEditDestination
+
+    @Serializable
+    data class StampRallyEdit(val dataYear: DataYear, val stampRallyId: String) :
+        AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
@@ -87,6 +101,7 @@ sealed interface AlleyEditDestination : NavKey {
                 route == "series" -> Series
                 route == "merch" -> Merch
                 route == "queue" -> ArtistFormQueue
+                route == "rallies" -> StampRallies
                 route.startsWith("resolution") -> {
                     val segments = route.split("/").filter { it.isNotEmpty() }
                     when {
@@ -121,6 +136,18 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     ArtistEdit(dataYear, artistId)
                 }
+                route.startsWith("rally/add") -> {
+                    val (dataYear, stampRallyId) = parseDataYearThenStampRallyId(
+                        route.removePrefix("rally/add/")
+                    ) ?: return null
+                    StampRallyAdd(dataYear, stampRallyId)
+                }
+                route.startsWith("rally") -> {
+                    val (dataYear, stampRallyId) = parseDataYearThenStampRallyId(
+                        route.removePrefix("artist/")
+                    ) ?: return null
+                    StampRallyEdit(dataYear, stampRallyId)
+                }
                 else -> {
                     ConsoleLogger.log("Failed to find route for $route")
                     null
@@ -151,6 +178,11 @@ sealed interface AlleyEditDestination : NavKey {
             TagResolution -> "resolution"
             is SeriesResolution -> "resolution/series/${destination.seriesId}"
             is MerchResolution -> "resolution/merch/${destination.merchId}"
+            StampRallies -> "rallies"
+            is StampRallyAdd -> "rally/add/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.stampRallyId)
+            is StampRallyEdit -> "rally/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.stampRallyId)
             Home -> ""
             is ImagesEdit,
             is MerchEdit,
@@ -163,6 +195,12 @@ sealed interface AlleyEditDestination : NavKey {
             val dataYear = DataYear.deserialize(year) ?: return null
             val artistId = Uuid.parse(artist)
             return dataYear to artistId
+        }
+
+        private fun parseDataYearThenStampRallyId(trailingPathSegments: String): Pair<DataYear, String>? {
+            val (year, stampRallyId) = trailingPathSegments.split("/")
+            val dataYear = DataYear.deserialize(year) ?: return null
+            return dataYear to stampRallyId
         }
     }
 }

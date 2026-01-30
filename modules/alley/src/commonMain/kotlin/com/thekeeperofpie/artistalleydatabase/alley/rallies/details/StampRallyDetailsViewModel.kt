@@ -18,7 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.database.UserNotesDao
 import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -163,7 +163,7 @@ class StampRallyDetailsViewModel(
 
     @Stable
     class Entry(
-        val stampRally: StampRallyEntry,
+        val stampRally: StampRallyDatabaseEntry,
         val userEntry: StampRallyUserEntry,
         val artists: List<ArtistEntry>,
         val otherTables: List<String>,

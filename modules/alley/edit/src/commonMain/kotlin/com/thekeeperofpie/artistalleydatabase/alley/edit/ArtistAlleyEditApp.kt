@@ -36,6 +36,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.ArtistAlleyE
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.TopLevelStackKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberDecoratedNavEntries
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyAddScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionScreen
@@ -342,6 +345,33 @@ private fun entryProvider(
             merchId = it.merchId,
             graph = graph,
             onClickBack = { onClickBack(true) },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.StampRallies> {
+        StampRallyListScreen(
+            graph = graph,
+            onAddStampRally = {
+                navStack.navigate(AlleyEditDestination.StampRallyAdd(it))
+            },
+            onEditStampRally = { dataYear, stampRallyId ->
+                navStack.navigate(AlleyEditDestination.StampRallyEdit(dataYear, stampRallyId))
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.StampRallyAdd> { route ->
+        StampRallyAddScreen(
+            dataYear = route.dataYear,
+            stampRallyId = route.stampRallyId,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.StampRallyEdit> { route ->
+        StampRallyEditScreen(
+            dataYear = route.dataYear,
+            stampRallyId = route.stampRallyId,
+            graph = graph,
+            onClickBack = onClickBack,
         )
     }
 }

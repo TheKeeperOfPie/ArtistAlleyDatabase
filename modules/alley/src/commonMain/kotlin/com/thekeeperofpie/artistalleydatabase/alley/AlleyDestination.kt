@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import androidx.navigation3.runtime.NavKey
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
-import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
@@ -102,7 +102,7 @@ sealed interface AlleyDestination : NavKey {
         // TODO: Why is this a string?
         val initialImageIndex: String? = null,
     ) : AlleyDestination {
-        constructor(entry: StampRallyEntry, initialImageIndex: String? = null) : this(
+        constructor(entry: StampRallyDatabaseEntry, initialImageIndex: String? = null) : this(
             year = entry.year,
             id = entry.id,
             hostTable = entry.hostTable,
