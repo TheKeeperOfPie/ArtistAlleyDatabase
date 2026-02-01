@@ -1,14 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.LayoutScopeMarker
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
@@ -17,10 +11,8 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Brush
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Diversity3
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Store
@@ -28,7 +20,6 @@ import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -43,7 +34,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
@@ -72,24 +62,21 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_label
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_placeholder
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
 import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormEditActions
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHeaderIconAndTitle
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.LinksSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ListFieldRevertDialog
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ListRevertDialogState
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.MultiTextSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.NotesSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.RevertDialogState
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ShowListRevertIconButton
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.SeriesSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ShowRevertIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.rememberListRevertDialogState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
@@ -99,7 +86,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.UnrecognizedTagIcon
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
@@ -107,7 +93,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
-import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
@@ -116,7 +101,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
@@ -407,7 +391,10 @@ private abstract class ArtistFormScopeImpl(
         SingleTextSection(
             state = state,
             headerText = {
-                FormHeaderIconAndTitle(CustomIcons.TextAd, Res.string.alley_edit_artist_edit_summary)
+                FormHeaderIconAndTitle(
+                    CustomIcons.TextAd,
+                    Res.string.alley_edit_artist_edit_summary
+                )
             },
             outputTransformation = revertDialogState.outputTransformation,
             label = label,
@@ -531,8 +518,8 @@ private abstract class ArtistFormScopeImpl(
         label: @Composable (() -> Unit)?,
         pendingErrorMessage: () -> String?,
     ) {
-        val revertDialogState = rememberListRevertDialogState(initialArtist?.catalogLinks)
-        ArtistForm.MultiTextSection(
+        val listRevertDialogState = rememberListRevertDialogState(initialArtist?.catalogLinks)
+        BasicMultiTextSection(
             state = state,
             header = {
                 FormHeaderIconAndTitle(
@@ -548,15 +535,11 @@ private abstract class ArtistFormScopeImpl(
             itemToCommitted = { it },
             label = label,
             pendingErrorMessage = pendingErrorMessage,
-            additionalHeaderActions = {
-                with(this@ArtistFormScopeImpl) {
-                    ShowListRevertIconButton(revertDialogState, catalogLinks)
-                }
-            },
+            listRevertDialogState = listRevertDialogState,
         )
 
         ListFieldRevertDialog(
-            dialogState = revertDialogState,
+            dialogState = listRevertDialogState,
             label = Res.string.alley_edit_artist_edit_catalog_links,
             items = catalogLinks,
             itemsToText = { it.joinToString() },
@@ -576,7 +559,7 @@ private abstract class ArtistFormScopeImpl(
         val initialCommissions = remember(initialArtist?.commissions) {
             initialArtist?.commissions?.map(CommissionModel::parse).orEmpty()
         }
-        val revertDialogState = rememberListRevertDialogState(initialCommissions)
+        val listRevertDialogState = rememberListRevertDialogState(initialCommissions)
         fun itemToText(model: CommissionModel): String =
             when (model) {
                 is CommissionModel.Link -> model.host ?: model.link
@@ -584,7 +567,7 @@ private abstract class ArtistFormScopeImpl(
                 CommissionModel.Online -> onlineText
                 is CommissionModel.Unknown -> model.value
             }
-        ArtistForm.MultiTextSection(
+        BasicMultiTextSection(
             state = state,
             header = {
                 FormHeaderIconAndTitle(
@@ -629,15 +612,11 @@ private abstract class ArtistFormScopeImpl(
                 )
             },
             preferPrediction = false,
-            additionalHeaderActions = {
-                with(this@ArtistFormScopeImpl) {
-                    ShowListRevertIconButton(revertDialogState, commissions)
-                }
-            },
+            listRevertDialogState = listRevertDialogState,
         )
 
         ListFieldRevertDialog(
-            dialogState = revertDialogState,
+            dialogState = listRevertDialogState,
             label = Res.string.alley_edit_artist_edit_commissions,
             items = commissions,
             itemsToText = { it.joinToString { itemToText(it) } },
@@ -683,7 +662,7 @@ private abstract class ArtistFormScopeImpl(
 
         val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
 
-        ArtistForm.SeriesSection(
+        SeriesSection(
             state = state.stateInferred,
             title = Res.string.alley_edit_artist_edit_series_inferred,
             header = {
@@ -705,7 +684,7 @@ private abstract class ArtistFormScopeImpl(
                         onClick = { requestedShowSeriesInferred = it },
                     )
                 }
-            }
+            },
         )
 
         if (showConfirmed) {
@@ -715,7 +694,7 @@ private abstract class ArtistFormScopeImpl(
                     .orEmpty()
             }
             val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
-            ArtistForm.SeriesSection(
+            SeriesSection(
                 state = state.stateConfirmed,
                 title = Res.string.alley_edit_artist_edit_series_confirmed,
                 header = {
@@ -748,8 +727,8 @@ private abstract class ArtistFormScopeImpl(
         val initialInferred = remember(merchById, initialArtist?.merchInferred) {
             initialArtist?.merchInferred?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
         }
-        val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
-        ArtistForm.MultiTextSection(
+        val listRevertDialogStateInferred = rememberListRevertDialogState(initialInferred)
+        BasicMultiTextSection(
             state = state.stateInferred,
             header = {
                 FormHeaderIconAndTitle(
@@ -778,10 +757,8 @@ private abstract class ArtistFormScopeImpl(
                     it.name
                 }
             },
+            listRevertDialogState = listRevertDialogStateInferred,
             additionalHeaderActions = {
-                with(this@ArtistFormScopeImpl) {
-                    ShowListRevertIconButton(revertDialogStateInferred, state.inferred)
-                }
                 if (!this@ArtistFormScopeImpl.forceLocked && showConfirmed) {
                     ArtistForm.ShowInferredButton(
                         hasConfirmed = hasConfirmedMerch,
@@ -793,7 +770,7 @@ private abstract class ArtistFormScopeImpl(
         )
 
         ListFieldRevertDialog(
-            dialogState = revertDialogStateInferred,
+            dialogState = listRevertDialogStateInferred,
             label = Res.string.alley_edit_artist_edit_merch_inferred,
             items = state.inferred,
             itemsToText = { it.joinToString { it.name } },
@@ -804,8 +781,8 @@ private abstract class ArtistFormScopeImpl(
                 initialArtist?.merchConfirmed?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
             }
 
-            val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
-            ArtistForm.MultiTextSection(
+            val listRevertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
+            BasicMultiTextSection(
                 state = state.stateConfirmed,
                 header = {
                     FormHeaderIconAndTitle(
@@ -833,15 +810,11 @@ private abstract class ArtistFormScopeImpl(
                         it.name
                     }
                 },
-                additionalHeaderActions = {
-                    with(this@ArtistFormScopeImpl) {
-                        ShowListRevertIconButton(revertDialogStateConfirmed, state.confirmed)
-                    }
-                },
+                listRevertDialogState = listRevertDialogStateConfirmed,
             )
 
             ListFieldRevertDialog(
-                dialogState = revertDialogStateConfirmed,
+                dialogState = listRevertDialogStateConfirmed,
                 label = Res.string.alley_edit_artist_edit_merch_confirmed,
                 items = state.confirmed,
                 itemsToText = { it.joinToString { it.name } },
@@ -857,18 +830,7 @@ private abstract class ArtistFormScopeImpl(
         label: @Composable (() -> Unit)?,
     ) {
         val revertDialogState = rememberRevertDialogState(initialValue)
-        LongTextSection(
-            state = state,
-            headerText = { FormHeaderIconAndTitle(Icons.AutoMirrored.Default.Notes, header) },
-            label = label,
-            outputTransformation = revertDialogState.outputTransformation,
-            additionalHeaderActions = {
-                with(this@ArtistFormScopeImpl) {
-                    ShowRevertIconButton(revertDialogState, state)
-                }
-            },
-        )
-        FieldRevertDialog(revertDialogState, state, header)
+        NotesSection(state, revertDialogState, header, label)
     }
 
     @Composable
@@ -1028,171 +990,6 @@ object ArtistForm {
                 }
             }
         }
-    }
-
-    context(formScope: ArtistFormScope)
-    @Composable
-    internal fun <T> MultiTextSection(
-        state: EntryForm2.SingleTextState,
-        header: @Composable () -> Unit,
-        initialItems: List<T>?,
-        items: SnapshotStateList<T>,
-        showItems: () -> Boolean = { true },
-        predictions: suspend (String) -> Flow<List<T>> = { emptyFlow() },
-        itemToText: (T) -> String,
-        itemToSubText: (T) -> String?,
-        itemToSerializedValue: (T) -> String,
-        itemToCommitted: ((String) -> T)? = null,
-        leadingIcon: @Composable ((T) -> Unit)? = null,
-        predictionToText: (T) -> String = itemToText,
-        label: @Composable (() -> Unit)? = null,
-        pendingErrorMessage: () -> String? = { null },
-        preferPrediction: Boolean = true,
-        equalsComparison: (T) -> Any? = { it },
-        additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
-    ) {
-        MultiTextSection(
-            state = state,
-            header = header,
-            items = items,
-            showItems = showItems,
-            entryPredictions = predictions,
-            itemToCommitted = itemToCommitted,
-            removeLastItem = { items.removeLastOrNull()?.let { itemToSerializedValue(it) } },
-            sortValue = itemToText,
-            item = { _, item ->
-                Box {
-                    val existed = initialItems?.any {
-                        equalsComparison(it) == equalsComparison(item)
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(start = 16.dp)
-                    ) {
-                        leadingIcon?.invoke(item)
-                        Column(
-                            modifier = Modifier.weight(1f)
-                                .padding(top = 16.dp, bottom = 16.dp, end = 16.dp)
-                        ) {
-                            Text(
-                                text = itemToText(item),
-                                style = LocalTextStyle.current.copy(
-                                    color = if (formScope.initialArtist == null || existed != false) {
-                                        LocalTextStyle.current.color
-                                    } else {
-                                        AlleyTheme.colorScheme.positive
-                                    }
-                                ),
-                            )
-                            val subText = itemToSubText(item)
-                            if (!subText.isNullOrBlank()) {
-                                Text(
-                                    text = subText,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(start = 24.dp)
-                                )
-                            }
-                        }
-
-                        FormEditActions(
-                            state = state,
-                            forceLocked = formScope.forceLocked,
-                            items = items,
-                            item = item,
-                            itemToText = itemToSerializedValue,
-                        )
-                    }
-                }
-            },
-            prediction = { _, value ->
-                Column {
-                    Text(text = predictionToText(value))
-                    val subText = itemToSubText(value)
-                    if (!subText.isNullOrBlank()) {
-                        Text(
-                            text = subText,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 24.dp)
-                        )
-                    }
-                }
-            },
-            label = label,
-            pendingErrorMessage = pendingErrorMessage,
-            preferPrediction = preferPrediction,
-            additionalHeaderActions = additionalHeaderActions,
-        )
-    }
-
-    context(formScope: ArtistFormScope)
-    @Composable
-    internal fun SeriesSection(
-        state: EntryForm2.SingleTextState,
-        title: StringResource,
-        header: @Composable () -> Unit,
-        listRevertDialogState: ListRevertDialogState<SeriesInfo>,
-        items: SnapshotStateList<SeriesInfo>,
-        showItems: () -> Boolean = { true },
-        predictions: suspend (String) -> Flow<List<SeriesInfo>>,
-        image: (SeriesInfo) -> String?,
-        additionalHeaderActions: @Composable (RowScope.() -> Unit)? = null,
-    ) {
-        MultiTextSection(
-            state = state,
-            header = header,
-            items = items,
-            itemToCommitted = SeriesInfo::fake,
-            showItems = showItems,
-            entryPredictions = predictions,
-            removeLastItem = { items.removeLastOrNull()?.titlePreferred },
-            prediction = { _, value ->
-                SeriesPrediction(query = state.value.text.toString(), series = value)
-            },
-            sortValue = { it.titlePreferred },
-            item = { _, value ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    val existed = listRevertDialogState.initialItems?.any { it.id == value.id } != false
-                    val textStyle = if (formScope.initialArtist == null || existed) {
-                        MaterialTheme.typography.bodyMedium
-                    } else {
-                        MaterialTheme.typography.bodyMedium.copy(color = AlleyTheme.colorScheme.positive)
-                    }
-                    SeriesRow(
-                        series = value,
-                        image = { image(value) },
-                        textStyle = textStyle,
-                        showAllTitles = true,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    AnimatedVisibility(
-                        visible = state.lockState.editable && !formScope.forceLocked,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        TooltipIconButton(
-                            icon = Icons.Default.Delete,
-                            tooltipText = stringResource(Res.string.alley_edit_row_delete_tooltip),
-                            onClick = { items.remove(value) },
-                        )
-                    }
-                }
-            },
-            additionalHeaderActions = {
-                with(formScope) {
-                    ShowListRevertIconButton(listRevertDialogState, items)
-                }
-                additionalHeaderActions?.invoke(this)
-            },
-        )
-
-        ListFieldRevertDialog(
-            dialogState = listRevertDialogState,
-            label = title,
-            items = items,
-            itemsToText = { it.joinToString { it.titlePreferred } },
-        )
     }
 
     @Composable

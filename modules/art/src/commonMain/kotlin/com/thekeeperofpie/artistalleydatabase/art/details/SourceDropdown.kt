@@ -38,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
 import com.thekeeperofpie.artistalleydatabase.entry.form.DropdownSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
+import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
 import com.thekeeperofpie.artistalleydatabase.utils_compose.text.ForceEnabledTextField
@@ -123,7 +124,7 @@ object SourceDropdown {
                     label = { Text(stringResource(Res.string.art_entry_source_convention_label_year)) },
                     placeholder = { Text(stringResource(Res.string.art_entry_source_convention_placeholder_year)) },
                     readOnly = readOnly,
-                    inputTransformation = DigitOnlyInputTransformation,
+                    inputTransformation = InputTransformation.digits(),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Number,
                         autoCorrectEnabled = KeyboardOptions.Default.autoCorrectEnabled,

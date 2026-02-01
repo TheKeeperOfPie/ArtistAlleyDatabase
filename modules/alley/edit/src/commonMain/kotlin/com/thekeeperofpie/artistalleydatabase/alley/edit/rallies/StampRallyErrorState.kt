@@ -12,12 +12,10 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.rememberUuidValidator
 @Stable
 class StampRallyErrorState(
     val idErrorMessage: () -> String?,
-    val hostTableErrorMessage: () -> String?,
     val linksErrorMessage: () -> String?,
 ) {
     val hasAnyError by derivedStateOf {
         idErrorMessage() != null ||
-                hostTableErrorMessage() != null ||
                 linksErrorMessage() != null
     }
 }
@@ -27,11 +25,9 @@ class StampRallyErrorState(
 @Composable
 internal fun rememberErrorState(state: StampRallyFormState): StampRallyErrorState {
     val idErrorMessage by rememberUuidValidator(state.editorState.id)
-    val hostTableErrorMessage by rememberBoothValidator(state.hostTable)
     val linksErrorMessage by rememberLinkValidator(state.stateLinks)
     return StampRallyErrorState(
         idErrorMessage = { idErrorMessage },
-        hostTableErrorMessage = { hostTableErrorMessage },
         linksErrorMessage = { linksErrorMessage },
     )
 }

@@ -32,7 +32,6 @@ class StampRallyFormState(
     val stateLinks: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val links: SnapshotStateList<LinkModel> = SnapshotStateList(),
     val tableMin: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
-    val totalCost: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val prize: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val prizeLimit: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
     val stateSeries: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
@@ -54,7 +53,6 @@ class StampRallyFormState(
             with(EntryForm2.SingleTextState.Saver) { save(value.stateLinks) },
             with(StateUtils.snapshotListJsonSaver<LinkModel>()) { save(value.links) },
             with(EntryForm2.SingleTextState.Saver) { save(value.tableMin) },
-            with(EntryForm2.SingleTextState.Saver) { save(value.totalCost) },
             with(EntryForm2.SingleTextState.Saver) { save(value.prize) },
             with(EntryForm2.SingleTextState.Saver) { save(value.prizeLimit) },
             with(EntryForm2.SingleTextState.Saver) { save(value.stateSeries) },
@@ -76,14 +74,13 @@ class StampRallyFormState(
             stateLinks = with(EntryForm2.SingleTextState.Saver) { restore(value[7]!!) },
             links = with(StateUtils.snapshotListJsonSaver<LinkModel>()) { restore(value[8] as String) },
             tableMin = with(EntryForm2.SingleTextState.Saver) { restore(value[9]!!) },
-            totalCost = with(EntryForm2.SingleTextState.Saver) { restore(value[10]!!) },
-            prize = with(EntryForm2.SingleTextState.Saver) { restore(value[11]!!) },
-            prizeLimit = with(EntryForm2.SingleTextState.Saver) { restore(value[12]!!) },
-            stateSeries = with(EntryForm2.SingleTextState.Saver) { restore(value[13]!!) },
-            series = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[14] as String) },
-            stateMerch = with(EntryForm2.SingleTextState.Saver) { restore(value[15]!!) },
-            merch = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[16] as String) },
-            notes = with(EntryForm2.SingleTextState.Saver) { restore(value[17]!!) },
+            prize = with(EntryForm2.SingleTextState.Saver) { restore(value[10]!!) },
+            prizeLimit = with(EntryForm2.SingleTextState.Saver) { restore(value[11]!!) },
+            stateSeries = with(EntryForm2.SingleTextState.Saver) { restore(value[12]!!) },
+            series = with(StateUtils.snapshotListJsonSaver<SeriesInfo>()) { restore(value[13] as String) },
+            stateMerch = with(EntryForm2.SingleTextState.Saver) { restore(value[14]!!) },
+            merch = with(StateUtils.snapshotListJsonSaver<MerchInfo>()) { restore(value[15] as String) },
+            notes = with(EntryForm2.SingleTextState.Saver) { restore(value[16]!!) },
         )
     }
 
@@ -120,7 +117,6 @@ class StampRallyFormState(
             stampRally.tableMin?.serializedValue?.toString(),
             mergeBehavior,
         )
-        FormUtils.applyValue(this.totalCost, stampRally.totalCost?.toString(), mergeBehavior)
         FormUtils.applyValue(this.prize, stampRally.prize, mergeBehavior)
         FormUtils.applyValue(this.prizeLimit, stampRally.prizeLimit?.toString(), mergeBehavior)
 
@@ -142,6 +138,7 @@ class StampRallyFormState(
             .plus(stateLinks.value.text.toString().takeIf { it.isNotBlank() })
             .filterNotNull()
             .distinct()
+        val tableMin = tableMin.value.text.toString().toIntOrNull()?.let(TableMin::parseFromValue)
         val images = images.toList()
         return images to StampRallyDatabaseEntry(
             year = dataYear,
@@ -150,8 +147,15 @@ class StampRallyFormState(
             hostTable = hostTable.value.text.toString(),
             tables = tables.toList(),
             links = links,
-            tableMin = tableMin.value.text.toString().toIntOrNull()?.let(TableMin::parseFromValue),
-            totalCost = totalCost.value.text.toString().toLongOrNull(),
+            tableMin = tableMin,
+            totalCost = when (tableMin) {
+                TableMin.Any -> null
+                TableMin.Free -> 0
+                TableMin.Other -> null
+                TableMin.Paid -> null
+                is TableMin.Price -> tableMin.usd * tables.size.toLong()
+                null -> null
+            },
             prize = prize.value.text.toString(),
             prizeLimit = prizeLimit.value.text.toString().toLongOrNull(),
             series = series.toList().map { it.id },

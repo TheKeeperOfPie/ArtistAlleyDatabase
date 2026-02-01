@@ -79,7 +79,7 @@ internal fun <T> ShowListRevertIconButton(
 ) {
     val show by remember(items, dialogState) {
         derivedStateOf {
-            items.toList().toSet() != dialogState.initialItems?.toSet()
+            items.toList().toSet() != dialogState.initialItems?.toSet().orEmpty()
         }
     }
     if (show && !scope.forceLocked) {

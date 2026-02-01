@@ -1,8 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.utils_compose
 
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.then
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.Lifecycle
@@ -71,4 +74,11 @@ internal class MutableStateFlowState<T>(private val flow: MutableStateFlow<T>) :
 
     override fun component1()  = value
     override fun component2(): (T) -> Unit = { value = it }
+}
+
+@Stable
+fun InputTransformation.digits() = this.then {
+    if (!asCharSequence().all { it.isDigit() }) {
+        revertAllChanges()
+    }
 }

@@ -257,4 +257,13 @@
     <string name="alley_edit_stamp_rally_edit_id">ID</string>
     <string name="alley_edit_stamp_rally_edit_fandom">Name</string>
     <string name="alley_edit_stamp_rally_edit_host_table">Host table</string>
+    <string name="alley_edit_stamp_rally_edit_tables">Tables</string>
+    <string name="alley_edit_stamp_rally_edit_links">Links</string>
+    <string name="alley_edit_stamp_rally_edit_table_min">Table min</string>
+    <string name="alley_edit_stamp_rally_edit_prize">Prize</string>
+    <string name="alley_edit_stamp_rally_edit_prize_limit">Prize limit</string>
+    <string name="alley_edit_stamp_rally_edit_series">Series</string>
+    <string name="alley_edit_stamp_rally_edit_merch">Merch</string>
+    <string name="alley_edit_stamp_rally_edit_notes">Notes</string>
+    <string name="alley_edit_stamp_rally_edit_editor_notes">Editor notes</string>
 </resources>
