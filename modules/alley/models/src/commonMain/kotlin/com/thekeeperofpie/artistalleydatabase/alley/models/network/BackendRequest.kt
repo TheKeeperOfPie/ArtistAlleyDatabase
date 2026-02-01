@@ -8,6 +8,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -226,6 +228,33 @@ sealed interface BackendRequest {
 
             @Serializable
             data class Outdated(val current: MerchInfo) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
+    @Serializable
+    data class StampRally(
+        val dataYear: DataYear,
+        val stampRallyId: String,
+    ) : BackendRequest, WithResponse<StampRallyDatabaseEntry?>
+
+    @Serializable
+    data object StampRallies : BackendRequest, WithResponse<List<StampRallySummary>>
+
+    @Serializable
+    data class StampRallySave(
+        val dataYear: DataYear,
+        val initial: StampRallyDatabaseEntry?,
+        val updated: StampRallyDatabaseEntry,
+    ) : BackendRequest, WithResponse<StampRallySave.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: StampRallyDatabaseEntry) : Response
 
             @Serializable
             data class Failed(val errorMessage: String) : Response

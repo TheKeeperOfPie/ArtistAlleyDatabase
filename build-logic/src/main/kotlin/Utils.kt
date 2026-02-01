@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.json.Json
 import org.gradle.api.Task
 import org.gradle.api.artifacts.VersionCatalog
@@ -73,6 +74,12 @@ internal object Utils {
         override fun decode(databaseValue: String) = Uuid.parse(databaseValue)
 
         override fun encode(value: Uuid) = value.toString()
+    }
+
+    val tableMinAdapter = object : ColumnAdapter<TableMin, Long> {
+        override fun decode(databaseValue: Long) = TableMin.parseFromValue(databaseValue.toInt())
+
+        override fun encode(value: TableMin) = value.serializedValue.toLong()
     }
 
     fun hash(file: File, vararg inputs: Any): Long {
@@ -202,18 +209,23 @@ internal object Utils {
                 tablesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                tableMinAdapter = tableMinAdapter,
             ),
             stampRallyEntry2025Adapter = StampRallyEntry2025.Adapter(
                 tablesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
                 seriesAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                tableMinAdapter = tableMinAdapter,
             ),
             stampRallyEntryAnimeExpo2026Adapter = StampRallyEntryAnimeExpo2026.Adapter(
                 tablesAdapter = listStringAdapter,
                 linksAdapter = listStringAdapter,
                 seriesAdapter = listStringAdapter,
+                merchAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                lastEditTimeAdapter = instantAdapter,
+                tableMinAdapter = tableMinAdapter,
             ),
             artistNotesAdapter = ArtistNotes.Adapter(
                 dataYearAdapter = dataYearAdapter,

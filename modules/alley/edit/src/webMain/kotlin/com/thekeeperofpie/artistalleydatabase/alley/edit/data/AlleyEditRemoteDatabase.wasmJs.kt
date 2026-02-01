@@ -12,6 +12,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
@@ -110,10 +112,23 @@ actual class AlleyEditRemoteDatabase(
             try {
                 sendRequest(
                     ListImages.Request(
-                        EditImage.NetworkImage.makePrefix(
-                            dataYear,
-                            artistId
-                        )
+                        EditImage.NetworkImage.makePrefix(dataYear, artistId.toString())
+                    )
+                )!!
+                    .idsAndKeys
+                    .map { imageFromIdAndKey(it.first, it.second) }
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
+    actual suspend fun listImages(dataYear: DataYear, stampRallyId: String): List<EditImage> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    ListImages.Request(
+                        EditImage.NetworkImage.makePrefix(dataYear, stampRallyId)
                     )
                 )!!
                     .idsAndKeys
@@ -130,7 +145,25 @@ actual class AlleyEditRemoteDatabase(
         platformFile: PlatformFile,
         id: Uuid,
     ): EditImage = withContext(dispatchers.io) {
-        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId) +
+        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString()) +
+                "/$id.${platformFile.extension}"
+        val bytes = platformFile.readBytes()
+
+        ktorClient.put(window.origin + "/edit/api/uploadImage/$key") {
+            contentType(ContentType.Application.OctetStream)
+            setBody(bytes)
+        }
+
+        imageFromIdAndKey(id, key)
+    }
+
+    actual suspend fun uploadImage(
+        dataYear: DataYear,
+        stampRallyId: String,
+        platformFile: PlatformFile,
+        id: Uuid,
+    ): EditImage = withContext(dispatchers.io) {
+        val key = EditImage.NetworkImage.makePrefix(dataYear, stampRallyId) +
                 "/$id.${platformFile.extension}"
         val bytes = platformFile.readBytes()
 
@@ -327,6 +360,36 @@ actual class AlleyEditRemoteDatabase(
             sendRequest(BackendRequest.DeleteFakeArtistData)
         }
     }
+
+    actual suspend fun loadStampRallies(dataYear: DataYear): List<StampRallySummary> =
+        withContext(dispatchers.io) {
+            sendRequest(BackendRequest.StampRallies).orEmpty()
+        }
+
+    actual suspend fun loadStampRally(dataYear: DataYear, stampRallyId: String): StampRallyDatabaseEntry? =
+        withContext(dispatchers.io) {
+            sendRequest(BackendRequest.StampRally(dataYear, stampRallyId))
+        }
+
+    actual suspend fun saveStampRally(
+        dataYear: DataYear,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry
+    ): BackendRequest.StampRallySave.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.StampRallySave(
+                        dataYear = dataYear,
+                        initial = initial,
+                        updated = updated,
+                    )
+                )!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.StampRallySave.Response.Failed(t.message.orEmpty())
+            }
+        }
 
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(

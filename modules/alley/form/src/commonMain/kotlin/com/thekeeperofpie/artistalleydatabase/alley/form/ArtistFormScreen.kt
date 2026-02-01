@@ -92,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.Artist
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistPreviousYearData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeArtistPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
@@ -721,7 +722,7 @@ object ArtistFormScreen {
             artist: ArtistDatabaseEntry.Impl,
             seriesById: Map<String, SeriesInfo>,
             merchById: Map<String, MerchInfo>,
-            mergeBehavior: ArtistFormState.MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) = apply {
             formState.info.applyValues(
                 booth = artist.booth,

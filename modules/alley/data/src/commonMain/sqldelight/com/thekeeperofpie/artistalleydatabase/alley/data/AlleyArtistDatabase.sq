@@ -6,6 +6,7 @@ import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin;
 
 CREATE TABLE
     IF NOT EXISTS artistEntry2023 (
@@ -292,7 +293,7 @@ CREATE TABLE
         hostTable TEXT NOT NULL COLLATE NOCASE,
         tables TEXT AS List<String> NOT NULL,
         links TEXT AS List<String> NOT NULL,
-        tableMin INTEGER,
+        tableMin INTEGER AS TableMin,
         totalCost INTEGER,
         prizeLimit INTEGER,
         notes TEXT,
@@ -318,7 +319,7 @@ CREATE TABLE
         hostTable TEXT NOT NULL COLLATE NOCASE,
         tables TEXT AS List<String> NOT NULL,
         links TEXT AS List<String> NOT NULL,
-        tableMin INTEGER,
+        tableMin INTEGER AS TableMin,
         totalCost INTEGER,
         prize TEXT,
         prizeLimit INTEGER,
@@ -349,15 +350,19 @@ CREATE TABLE
         hostTable TEXT NOT NULL COLLATE NOCASE,
         tables TEXT AS List<String> NOT NULL,
         links TEXT AS List<String> NOT NULL,
-        tableMin INTEGER,
+        tableMin INTEGER AS TableMin,
         totalCost INTEGER,
         prize TEXT,
         prizeLimit INTEGER,
         series TEXT AS List<String> NOT NULL,
+        merch TEXT AS List<String> NOT NULL,
         notes TEXT,
         images TEXT AS List<CatalogImage> NOT NULL,
         counter INTEGER NOT NULL DEFAULT 1,
         confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
+        editorNotes TEXT,
+        lastEditor TEXT,
+        lastEditTime TEXT AS Instant,
         PRIMARY KEY (id)
     );
 

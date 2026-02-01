@@ -42,8 +42,8 @@ sealed interface EditImage : ImageWithDimensions {
         override val coilImageModel: Uri get() = uri
 
         companion object {
-            fun makePrefix(dataYear: DataYear, artistId: Uuid) =
-                "${dataYear.serializedName}/$artistId"
+            fun makePrefix(dataYear: DataYear, id: String) =
+                "${dataYear.serializedName}/$id"
         }
     }
 

@@ -30,12 +30,11 @@ sealed class TableMin(val serializedValue: Int) {
     }
 
     companion object {
-        fun parseFromValue(serializedValue: Int?) = when (serializedValue) {
+        fun parseFromValue(serializedValue: Int) = when (serializedValue) {
             Other.serializedValue -> Other
             Paid.serializedValue -> Paid
             Free.serializedValue -> Free
             Any.serializedValue -> Any
-            null -> null
             else -> Price(serializedValue)
         }
     }

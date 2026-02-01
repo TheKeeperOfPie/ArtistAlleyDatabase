@@ -8,6 +8,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import io.github.vinceglb.filekit.PlatformFile
@@ -30,15 +32,23 @@ expect class AlleyEditRemoteDatabase {
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
     ): BackendRequest.ArtistSave.Response
+
     suspend fun deleteArtist(
         dataYear: DataYear,
         expected: ArtistDatabaseEntry.Impl,
     ): BackendRequest.ArtistDelete.Response
 
     suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage>
+    suspend fun listImages(dataYear: DataYear, stampRallyId: String): List<EditImage>
     suspend fun uploadImage(
         dataYear: DataYear,
         artistId: Uuid,
+        platformFile: PlatformFile,
+        id: Uuid,
+    ): EditImage
+    suspend fun uploadImage(
+        dataYear: DataYear,
+        stampRallyId: String,
         platformFile: PlatformFile,
         id: Uuid,
     ): EditImage
@@ -48,6 +58,7 @@ expect class AlleyEditRemoteDatabase {
         initial: SeriesInfo?,
         updated: SeriesInfo,
     ): BackendRequest.SeriesSave.Response
+
     suspend fun deleteSeries(expected: SeriesInfo): BackendRequest.SeriesDelete.Response
 
     suspend fun loadMerch(): List<MerchInfo>
@@ -55,6 +66,7 @@ expect class AlleyEditRemoteDatabase {
         initial: MerchInfo?,
         updated: MerchInfo,
     ): BackendRequest.MerchSave.Response
+
     suspend fun deleteMerch(expected: MerchInfo): BackendRequest.MerchDelete.Response
 
     suspend fun generateFormLink(
@@ -85,4 +97,12 @@ expect class AlleyEditRemoteDatabase {
 
     suspend fun fakeArtistFormLink(): String?
     suspend fun deleteFakeArtistData()
+
+    suspend fun loadStampRallies(dataYear: DataYear): List<StampRallySummary>
+    suspend fun loadStampRally(dataYear: DataYear, stampRallyId: String): StampRallyDatabaseEntry?
+    suspend fun saveStampRally(
+        dataYear: DataYear,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+    ): BackendRequest.StampRallySave.Response
 }

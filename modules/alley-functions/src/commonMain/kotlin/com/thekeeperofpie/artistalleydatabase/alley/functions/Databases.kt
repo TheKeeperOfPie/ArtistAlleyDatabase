@@ -43,6 +43,17 @@ internal object Databases {
             formTimestampAdapter = ColumnAdapters.instantAdapter,
         ),
         seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
+        stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
+        stampRallyEntryAnimeExpo2026HistoryAdapter = StampRallyEntryAnimeExpo2026History.Adapter(
+            tablesAdapter = ColumnAdapters.listStringAdapter,
+            linksAdapter = ColumnAdapters.listStringAdapter,
+            tableMinAdapter = ColumnAdapters.tableMinAdapter,
+            seriesAdapter = ColumnAdapters.listStringAdapter,
+            merchAdapter = ColumnAdapters.listStringAdapter,
+            imagesAdapter = ColumnAdapters.listCatalogImageAdapter,
+            lastEditTimeAdapter = ColumnAdapters.instantAdapter,
+            formTimestampAdapter = ColumnAdapters.instantAdapter,
+        ),
     )
 
     fun formDatabase(context: EventContext) = AlleyFormDatabase(

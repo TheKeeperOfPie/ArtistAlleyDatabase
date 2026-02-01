@@ -97,6 +97,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import com.materialkolor.ktx.harmonize
 import com.materialkolor.utils.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
@@ -340,7 +341,7 @@ object ArtistHistoryScreen {
                                     artist = it,
                                     seriesById = seriesById,
                                     merchById = merchById,
-                                    mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
+                                    mergeBehavior = FormMergeBehavior.REPLACE,
                                 )
                             }
                         }

@@ -1,0 +1,15 @@
+getStampRallies:
+SELECT id, hostTable, fandom
+FROM stampRallyEntryAnimeExpo2026;
+
+getStampRally:
+SELECT * FROM stampRallyEntryAnimeExpo2026
+WHERE stampRallyEntryAnimeExpo2026.id = :id;
+
+insertStampRally:
+INSERT OR REPLACE INTO stampRallyEntryAnimeExpo2026
+VALUES ?;
+
+insertHistory:
+INSERT INTO stampRallyEntryAnimeExpo2026History
+VALUES ?;

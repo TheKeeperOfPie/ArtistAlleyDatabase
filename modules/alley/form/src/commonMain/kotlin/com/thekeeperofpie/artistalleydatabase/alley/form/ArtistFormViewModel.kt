@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.Artist
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.FormTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -140,7 +141,7 @@ class ArtistFormViewModel(
                 artist = artist,
                 seriesById = tagAutocomplete.seriesById.first(),
                 merchById = tagAutocomplete.merchById.first(),
-                mergeBehavior = ArtistFormState.MergeBehavior.REPLACE,
+                mergeBehavior = FormMergeBehavior.REPLACE,
             )
             formDiff?.formNotes?.let {
                 state.formState.formNotes.value.setTextAndPlaceCursorAtEnd(it)
@@ -194,7 +195,7 @@ class ArtistFormViewModel(
             artist = mergeEntry,
             seriesById = seriesById,
             merchById = merchById,
-            mergeBehavior = ArtistFormState.MergeBehavior.APPEND,
+            mergeBehavior = FormMergeBehavior.APPEND,
         )
     }
 

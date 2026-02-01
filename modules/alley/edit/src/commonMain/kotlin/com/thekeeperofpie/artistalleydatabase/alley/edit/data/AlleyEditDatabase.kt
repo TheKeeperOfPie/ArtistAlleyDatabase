@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
@@ -133,6 +134,22 @@ class AlleyEditDatabase(
             .fillSize(width, height)
     }
 
+    suspend fun uploadImage(
+        dataYear: DataYear,
+        stampRallyId: String,
+        platformFile: PlatformFile,
+        id: Uuid,
+    ): EditImage? {
+        val (width, height) = try {
+            platformFile.toImageBitmap().run { width to height }
+        } catch (_: Throwable) {
+            // TODO: Error handling
+            return null
+        }
+        return remoteDatabase.uploadImage(dataYear, stampRallyId, platformFile, id)
+            .fillSize(width, height)
+    }
+
     suspend fun saveSeries(
         initial: SeriesInfo?,
         updated: SeriesInfo,
@@ -190,16 +207,21 @@ class AlleyEditDatabase(
     suspend fun deleteFakeArtistData() = remoteDatabase.deleteFakeArtistData()
 
     suspend fun loadStampRallies(dataYear: DataYear): List<StampRallySummary> {
-        // TODO: Load remote
-        val remoteRallies = emptyList<StampRallySummary>()
+        val remoteRallies = remoteDatabase.loadStampRallies(dataYear)
         val remoteIds = remoteRallies.map { it.id }.toSet()
         val databaseRallies = stampRallyEntryDao.getAllEntries(dataYear)
             .filter { it.id !in remoteIds }
         return databaseRallies + remoteRallies
     }
 
-    // TODO: Load remote
-    suspend fun loadStampRally(year: DataYear, stampRallyId: String) =
-        stampRallyEntryDao.getEntry(year, stampRallyId)
-            ?.stampRally
+    suspend fun loadStampRally(dataYear: DataYear, stampRallyId: String) =
+        remoteDatabase.loadStampRally(dataYear, stampRallyId)
+            ?: stampRallyEntryDao.getEntry(dataYear, stampRallyId)
+                ?.stampRally
+
+    suspend fun saveStampRally(
+        dataYear: DataYear,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+    ) = remoteDatabase.saveStampRally(dataYear, initial, updated)
 }

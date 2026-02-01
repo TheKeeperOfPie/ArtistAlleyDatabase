@@ -73,10 +73,10 @@
     <string name="alley_edit_artist_edit_action_confirm_merge">Confirm merge</string>
     <string name="alley_edit_artist_edit_action_dismiss_merge">Cancel</string>
 
-    <string name="alley_edit_artist_edit_revert_tooltip">Revert field</string>
-    <string name="alley_edit_artist_edit_revert_title">Revert %1$s to initial state?</string>
-    <string name="alley_edit_artist_edit_revert_action_confirm">Revert</string>
-    <string name="alley_edit_artist_edit_revert_action_dismiss">Cancel</string>
+    <string name="alley_edit_revert_tooltip">Revert field</string>
+    <string name="alley_edit_revert_title">Revert %1$s to initial state?</string>
+    <string name="alley_edit_revert_action_confirm">Revert</string>
+    <string name="alley_edit_revert_action_dismiss">Cancel</string>
 
     <string name="alley_edit_artist_refresh_action_view_tooltip">Refresh artist</string>
     <string name="alley_edit_artist_refresh_abandon_title">Abandon pending changes?</string>
@@ -98,7 +98,6 @@
 
     <string name="alley_edit_artist_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
     <string name="alley_edit_artist_error_saving_bad_fields">Could not save because some fields have errors</string>
-    <string name="alley_edit_artist_error_duplicate_entry">Entry already added</string>
 
     <string name="alley_edit_image_title">Editing images for %1$s - %2$s</string>
     <string name="alley_edit_image_width_and_height">Width: %1$d - Height: %2$d</string>
@@ -121,6 +120,7 @@
 
     <string name="alley_edit_row_edit_tooltip">Edit row</string>
     <string name="alley_edit_row_delete_tooltip">Delete row</string>
+    <string name="alley_edit_row_duplicate_entry">Entry already added</string>
 
     <string name="alley_edit_series_header_image">Image</string>
     <string name="alley_edit_series_header_canonical">Series</string>
@@ -251,4 +251,10 @@
     <string name="alley_edit_stamp_rally_list_sort_fandom">Fandom</string>
     <string name="alley_edit_stamp_rally_action_refresh_content_description">Refresh rallies</string>
     <string name="alley_edit_stamp_rally_action_add">Add stamp rally</string>
+    <string name="alley_edit_stamp_rally_action_save_tooltip">Save stamp rally</string>
+    <string name="alley_edit_stamp_rally_action_save_and_exit_tooltip">Save and exit</string>
+
+    <string name="alley_edit_stamp_rally_edit_id">ID</string>
+    <string name="alley_edit_stamp_rally_edit_fandom">Name</string>
+    <string name="alley_edit_stamp_rally_edit_host_table">Host table</string>
 </resources>

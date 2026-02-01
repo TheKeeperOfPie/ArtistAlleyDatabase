@@ -64,6 +64,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_generate_link_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_request_merge_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_confirm
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_delete
@@ -111,10 +112,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameAr
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.rememberArtistInferenceFieldState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
@@ -528,7 +531,7 @@ object ArtistEditScreen {
                     artist = mergeEntry,
                     seriesById = seriesById(),
                     merchById = merchById(),
-                    mergeBehavior = ArtistFormState.MergeBehavior.APPEND,
+                    mergeBehavior = FormMergeBehavior.APPEND,
                 )
                 formEntry to restored
             }
@@ -596,7 +599,12 @@ object ArtistEditScreen {
         HistoryButton(hasPendingChanges, onClickHistory)
 
         val enabled = !errorState.hasAnyError
-        ArtistSaveButton(enabled, saveTaskState, onClickSave)
+        FormSaveButton(
+            enabled = enabled,
+            saveTaskState = saveTaskState,
+            tooltip = Res.string.alley_edit_artist_action_save_tooltip,
+            onClickSave = onClickSave,
+        )
         TooltipIconButton(
             icon = Icons.Default.DoneAll,
             tooltipText = stringResource(Res.string.alley_edit_artist_action_save_and_exit_tooltip),

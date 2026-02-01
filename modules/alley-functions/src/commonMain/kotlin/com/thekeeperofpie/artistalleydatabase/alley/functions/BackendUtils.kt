@@ -4,12 +4,16 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 internal fun ArtistDatabaseEntry.Impl.fixForJs() =
     copy(verifiedArtist = coerceBooleanForJs(verifiedArtist))
+
+internal fun StampRallyDatabaseEntry.fixForJs() =
+    copy(confirmed = coerceBooleanForJs(confirmed))
 
 // TODO: js target boolean equality broken
 // JS interop infers this as 0, whereas KotlinX Serialization requires true

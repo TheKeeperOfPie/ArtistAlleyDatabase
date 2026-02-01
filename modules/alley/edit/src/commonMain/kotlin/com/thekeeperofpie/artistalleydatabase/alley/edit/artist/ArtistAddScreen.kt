@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.Scaffold
@@ -12,7 +11,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -23,12 +21,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_adding
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -37,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameAr
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
@@ -46,13 +45,11 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
-import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -150,8 +147,6 @@ object ArtistAddScreen {
                 }
         }
 
-        val windowSizeClass = currentWindowSizeClass()
-        val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
         val errorState = rememberErrorState(state.artistFormState)
         Scaffold(
             topBar = {
@@ -173,8 +168,6 @@ object ArtistAddScreen {
                             onClickDone = onClickDone,
                         )
                     },
-                    modifier = Modifier
-                        .conditionally(!isExpanded, Modifier.widthIn(max = 960.dp))
                 )
             },
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -270,7 +263,12 @@ object ArtistAddScreen {
         onClickDone: () -> Unit,
     ) {
         val enabled = !errorState.hasAnyError
-        ArtistSaveButton(enabled, saveTaskState, onClickSave)
+        FormSaveButton(
+            enabled = enabled,
+            saveTaskState = saveTaskState,
+            tooltip = Res.string.alley_edit_artist_action_save_tooltip,
+            onClickSave = onClickSave,
+        )
         TooltipIconButton(
             icon = Icons.Default.DoneAll,
             tooltipText = stringResource(Res.string.alley_edit_artist_action_save_and_exit_tooltip),

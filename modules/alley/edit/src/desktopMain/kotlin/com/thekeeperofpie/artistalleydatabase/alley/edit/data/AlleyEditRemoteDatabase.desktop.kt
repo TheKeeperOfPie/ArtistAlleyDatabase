@@ -13,8 +13,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.toStampRallySummary
+import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -24,7 +28,6 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.extension
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlin.math.exp
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
@@ -37,6 +40,7 @@ import kotlin.uuid.Uuid
 @Inject
 actual class AlleyEditRemoteDatabase(
     private val artistEntryDao: ArtistEntryDao,
+    private val stampRallyEntryDao: StampRallyEntryDao,
 ) {
 
     private val artistsByDataYearAndId =
@@ -47,6 +51,11 @@ actual class AlleyEditRemoteDatabase(
 
     private val series = mutableMapOf<Uuid, SeriesInfo>()
     private val merch = mutableMapOf<Uuid, MerchInfo>()
+
+    private val stampRalliesByDataYearAndId =
+        mutableMapOf<DataYear, MutableMap<String, StampRallyDatabaseEntry>>()
+    private val stampRallyHistoryByDataYearAndId =
+        mutableMapOf<DataYear, MutableMap<String, MutableList<StampRallyHistoryEntry>>>()
 
     internal val artistKeys = mutableMapOf<Uuid, AlleyCryptographyKeys>()
     internal val artistFormQueue = mutableMapOf<Uuid, FormSubmission>()
@@ -240,7 +249,15 @@ actual class AlleyEditRemoteDatabase(
         dataYear: DataYear,
         artistId: Uuid,
     ): List<EditImage> {
-        val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId)
+        val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString())
+        return images.entries.filter { it.key.startsWith(prefix) }.map { it.value }
+    }
+
+    actual suspend fun listImages(
+        dataYear: DataYear,
+        stampRallyId: String,
+    ): List<EditImage> {
+        val prefix = EditImage.NetworkImage.makePrefix(dataYear, stampRallyId)
         return images.entries.filter { it.key.startsWith(prefix) }.map { it.value }
     }
 
@@ -251,7 +268,24 @@ actual class AlleyEditRemoteDatabase(
         id: Uuid,
     ): EditImage {
         simulateLatency()
-        val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId)
+        val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString())
+        val key = "$prefix/$id.${platformFile.extension}"
+        val imageKey = PlatformImageKey(id)
+            .takeIf { PlatformImageCache[it] != null }
+            ?: PlatformImageCache.add(platformFile)
+        val image = EditImage.LocalImage(imageKey, name = key)
+        images[key] = image
+        return image
+    }
+
+    actual suspend fun uploadImage(
+        dataYear: DataYear,
+        stampRallyId: String,
+        platformFile: PlatformFile,
+        id: Uuid,
+    ): EditImage {
+        simulateLatency()
+        val prefix = EditImage.NetworkImage.makePrefix(dataYear, stampRallyId)
         val key = "$prefix/$id.${platformFile.extension}"
         val imageKey = PlatformImageKey(id)
             .takeIf { PlatformImageCache[it] != null }
@@ -405,6 +439,46 @@ actual class AlleyEditRemoteDatabase(
         artistFormQueue.remove(AlleyCryptography.FAKE_ARTIST_ID)
     }
 
+    actual suspend fun loadStampRallies(dataYear: DataYear) =
+        stampRalliesByDataYearAndId[dataYear]?.values.orEmpty().toList()
+            .map { it.toStampRallySummary() }
+
+    actual suspend fun loadStampRally(
+        dataYear: DataYear,
+        stampRallyId: String,
+    ): StampRallyDatabaseEntry? {
+        simulateLatency()
+        return stampRalliesByDataYearAndId[dataYear]?.get(stampRallyId)
+            ?: stampRallyEntryDao.getEntry(dataYear, stampRallyId)
+                ?.stampRally
+    }
+
+    actual suspend fun saveStampRally(
+        dataYear: DataYear,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+    ): BackendRequest.StampRallySave.Response = saveStampRally(dataYear, initial, updated, null)
+
+    private suspend fun saveStampRally(
+        dataYear: DataYear,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+        formTimestamp: Instant?,
+    ): BackendRequest.StampRallySave.Response {
+        simulateLatency()
+        val oldStampRally = loadStampRally(dataYear, updated.id)
+        if (oldStampRally != null && oldStampRally != initial) {
+            return BackendRequest.StampRallySave.Response.Outdated(oldStampRally)
+        }
+        val historyEntry = StampRallyHistoryEntry.create(oldStampRally, updated, formTimestamp)
+            .copy(lastEditor = "local")
+        stampRallyHistoryByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }
+            .getOrPut(updated.id) { mutableListOf() }
+            .add(historyEntry)
+        stampRalliesByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }[updated.id] = updated
+        return BackendRequest.StampRallySave.Response.Success
+    }
+
     private suspend fun simulateLatency() = simulatedLatency?.let { delay(it) }
 
     private fun findFormHistoryEntry(dataYear: DataYear, artistId: Uuid, formTimestamp: Instant) =
@@ -417,7 +491,7 @@ actual class AlleyEditRemoteDatabase(
     private fun FormSubmission.toArtistEntryDiff() =
         ArtistEntryDiff(
             booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
-            name = after.name.orEmpty().takeIf { it != before.name.orEmpty() },
+            name = after.name.takeIf { it != before.name },
             summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
             notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
             socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),

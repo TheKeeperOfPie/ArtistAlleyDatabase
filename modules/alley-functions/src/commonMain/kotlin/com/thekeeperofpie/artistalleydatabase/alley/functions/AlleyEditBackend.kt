@@ -11,6 +11,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
@@ -23,6 +25,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -78,6 +83,15 @@ object AlleyEditBackend {
                     is BackendRequest.Series -> loadSeries(context)
                     is BackendRequest.SeriesDelete -> makeResponse(deleteSeries(context, this))
                     is BackendRequest.SeriesSave -> makeResponse(saveSeries(context, this))
+                    is BackendRequest.StampRallies -> makeResponse(loadStampRallies(context))
+                    is BackendRequest.StampRally -> makeResponse(loadStampRally(context, this))
+                    is BackendRequest.StampRallySave -> makeResponse(
+                        saveStampRally(
+                            context,
+                            this,
+                            null
+                        )
+                    )
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
@@ -217,10 +231,18 @@ object AlleyEditBackend {
         val artist = BackendUtils.loadArtist(context, request.dataYear, request.artistId)
             ?: return null
 
-        val formDiff = BackendUtils.loadFormHistoryDiff(context, request.dataYear, request.artistId, request.formTimestamp)
+        val formDiff = BackendUtils.loadFormHistoryDiff(
+            context,
+            request.dataYear,
+            request.artistId,
+            request.formTimestamp
+        )
             ?: return null
 
-        return BackendRequest.ArtistWithHistoricalFormEntry.Response(artist = artist, formDiff = formDiff)
+        return BackendRequest.ArtistWithHistoricalFormEntry.Response(
+            artist = artist,
+            formDiff = formDiff
+        )
     }
 
     private suspend fun commitArtistForm(
@@ -507,6 +529,75 @@ object AlleyEditBackend {
         return BackendRequest.MerchDelete.Response.Success
     }
 
+    private suspend fun loadStampRallies(context: EventContext): List<StampRallySummary> =
+        Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
+            .getStampRallies()
+            .awaitAsList()
+            .map {
+                StampRallySummary(
+                    id = it.id,
+                    fandom = it.fandom,
+                    hostTable = it.hostTable,
+                )
+            }
+
+    private suspend fun loadStampRally(
+        context: EventContext,
+        request: BackendRequest.StampRally,
+    ): StampRallyDatabaseEntry? =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
+                .stampRallyEntryAnimeExpo2026Queries
+                .getStampRally(request.stampRallyId)
+                .awaitAsOneOrNull()
+                ?.toStampRallyDatabaseEntry()
+                ?.fixForJs()
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> null // TODO: Return legacy years?
+        }
+
+    private suspend fun saveStampRally(
+        context: EventContext,
+        request: BackendRequest.StampRallySave,
+        formTimestamp: Instant?,
+    ) = when (request.dataYear) {
+        DataYear.ANIME_EXPO_2026 -> {
+            val database = Databases.editDatabase(context)
+            val currentStampRally =
+                database.stampRallyEntryAnimeExpo2026Queries
+                    .getStampRally(request.updated.id)
+                    .awaitAsOneOrNull()
+                    ?.toStampRallyDatabaseEntry()
+                    ?.fixForJs()
+            if (currentStampRally != null && currentStampRally != request.initial) {
+                BackendRequest.StampRallySave.Response.Outdated(currentStampRally)
+            } else {
+                val updatedStampRally = request.updated.copy(
+                    lastEditor = context.data?.cloudflareAccess?.JWT?.payload?.email,
+                    lastEditTime = Clock.System.now(),
+                )
+                val historyEntry = StampRallyHistoryEntry.create(
+                    before = currentStampRally,
+                    after = updatedStampRally,
+                    formTimestamp = formTimestamp
+                ).toDatabaseEntry(updatedStampRally.id)
+                database.stampRallyEntryAnimeExpo2026Queries.insertHistory(historyEntry)
+                database.stampRallyEntryAnimeExpo2026Queries.insertStampRally(updatedStampRally.toStampRallyEntryAnimeExpo2026())
+                BackendRequest.StampRallySave.Response.Success
+            }
+        }
+        DataYear.ANIME_EXPO_2023,
+        DataYear.ANIME_EXPO_2024,
+        DataYear.ANIME_EXPO_2025,
+        DataYear.ANIME_NYC_2024,
+        DataYear.ANIME_NYC_2025,
+            -> BackendRequest.StampRallySave.Response.Failed("Editing legacy years not supported")
+    }
+
     private fun literalJsonResponse(value: String) = Response(
         body = value,
         init = ResponseInit(status = 200, headers = Headers().apply {
@@ -590,6 +681,49 @@ object AlleyEditBackend {
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
             images = images,
+            editorNotes = editorNotes,
+            lastEditor = lastEditor,
+            timestamp = lastEditTime,
+            formTimestamp = formTimestamp,
+        )
+
+    private fun StampRallyHistoryEntry.toDatabaseEntry(id: String) =
+        StampRallyEntryAnimeExpo2026History(
+            id = id,
+            fandom = fandom,
+            hostTable = hostTable,
+            tables = tables,
+            links = links,
+            tableMin = tableMin,
+            totalCost = totalCost,
+            prize = prize,
+            prizeLimit = prizeLimit,
+            series = series,
+            merch = merch,
+            notes = notes,
+            images = images,
+            confirmed = confirmed,
+            editorNotes = editorNotes,
+            lastEditor = lastEditor,
+            lastEditTime = timestamp,
+            formTimestamp = formTimestamp,
+        )
+
+    private fun StampRallyEntryAnimeExpo2026History.toHistoryEntry() =
+        StampRallyHistoryEntry(
+            fandom = fandom,
+            hostTable = hostTable,
+            tables = tables,
+            links = links,
+            tableMin = tableMin,
+            totalCost = totalCost,
+            prize = prize,
+            prizeLimit = prizeLimit,
+            series = series,
+            merch = merch,
+            notes = notes,
+            images = images,
+            confirmed = confirmed,
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             timestamp = lastEditTime,

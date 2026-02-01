@@ -2,11 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -19,14 +19,12 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @Stable
 class ArtistFormState(
-    val metadata: Metadata = Metadata(),
+    val metadata: EntryEditMetadata = EntryEditMetadata(),
     val images: SnapshotStateList<EditImage> = SnapshotStateList(),
     val editorState: EditorState = EditorState(),
     val info: InfoState = InfoState(),
@@ -34,66 +32,9 @@ class ArtistFormState(
     val series: SeriesState = SeriesState(),
     val merch: MerchState = MerchState(),
 ) {
-    companion object {
-        fun <T> applyValue(
-            state: EntryForm2.SingleTextState,
-            list: SnapshotStateList<T>,
-            value: List<T>,
-            mergeBehavior: MergeBehavior,
-        ) {
-            when (mergeBehavior) {
-                MergeBehavior.APPEND -> {
-                    if (value.isNotEmpty()) {
-                        list.replaceAll((list.toList() + value).distinct())
-                    }
-                }
-                MergeBehavior.REPLACE -> {
-                    list.replaceAll(value)
-                    state.lockState = if (value.isEmpty()) {
-                        EntryLockState.UNLOCKED
-                    } else {
-                        EntryLockState.LOCKED
-                    }
-                }
-                MergeBehavior.IGNORE -> {
-                    if (list.isEmpty()) {
-                        list.replaceAll(value)
-                        if (value.isNotEmpty()) {
-                            state.lockState = EntryLockState.LOCKED
-                        }
-                    }
-                }
-            }
-        }
-
-        fun applyValue(
-            state: EntryForm2.SingleTextState,
-            value: String?,
-            mergeBehavior: MergeBehavior,
-        ) {
-            val valueOrEmpty = value.orEmpty()
-            when (mergeBehavior) {
-                // For non-lists, both append and replace do a replace
-                MergeBehavior.APPEND,
-                MergeBehavior.REPLACE -> {
-                    state.value.setTextAndPlaceCursorAtEnd(valueOrEmpty)
-                }
-                MergeBehavior.IGNORE -> {
-                    if (state.value.text.isEmpty()) {
-                        state.value.setTextAndPlaceCursorAtEnd(valueOrEmpty)
-                    }
-                }
-            }
-
-            if (valueOrEmpty.isNotBlank()) {
-                state.lockState = EntryLockState.LOCKED
-            }
-        }
-    }
-
     object Saver : ComposeSaver<ArtistFormState, List<Any?>> {
         override fun SaverScope.save(value: ArtistFormState) = listOf(
-            with(Metadata.Saver) { save(value.metadata) },
+            with(EntryEditMetadata.Saver) { save(value.metadata) },
             with(StateUtils.snapshotListJsonSaver<EditImage>()) { save(value.images) },
             with(EditorState.Saver) { save(value.editorState) },
             with(InfoState.Saver) { save(value.info) },
@@ -104,7 +45,7 @@ class ArtistFormState(
 
         @Suppress("UNCHECKED_CAST")
         override fun restore(value: List<Any?>) = ArtistFormState(
-            metadata = with(Metadata.Saver) { restore(value[0] as List<Any?>) },
+            metadata = with(EntryEditMetadata.Saver) { restore(value[0] as List<Any?>) },
             images = with(StateUtils.snapshotListJsonSaver<EditImage>()) { restore(value[1] as String) },
             editorState = with(EditorState.Saver) { restore(value[2] as List<Any>) },
             info = with(InfoState.Saver) { restore(value[3] as List<Any>) },
@@ -122,7 +63,7 @@ class ArtistFormState(
         artist: ArtistDatabaseEntry,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
-        mergeBehavior: MergeBehavior = MergeBehavior.IGNORE,
+        mergeBehavior: FormMergeBehavior = FormMergeBehavior.IGNORE,
     ) = apply {
         val status = artist.status
         editorState.applyValues(
@@ -203,30 +144,6 @@ class ArtistFormState(
     }
 
     @Stable
-    class Metadata(
-        lastEditor: String? = null,
-        lastEditTime: Instant? = null,
-    ) {
-        var lastEditor by mutableStateOf(lastEditor)
-        var lastEditTime by mutableStateOf(lastEditTime)
-
-        object Saver : ComposeSaver<Metadata, List<Any?>> {
-            override fun SaverScope.save(value: Metadata) = listOf(
-                value.lastEditor,
-                value.lastEditTime?.toString()
-            )
-
-            override fun restore(value: List<Any?>): Metadata {
-                val (lastEditor, lastEditTime) = value
-                return Metadata(
-                    lastEditor = lastEditor as String?,
-                    lastEditTime = (lastEditTime as? String?)?.let(Instant.Companion::parseOrNull)
-                )
-            }
-        }
-    }
-
-    @Stable
     class EditorState(
         val id: EntryForm2.SingleTextState = EntryForm2.SingleTextState(
             initialLockState = EntryLockState.LOCKED,
@@ -241,11 +158,11 @@ class ArtistFormState(
             id: String,
             status: ArtistStatus,
             editorNotes: String?,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) {
             this.id.value.setTextAndPlaceCursorAtEnd(id)
             this.status.selectedIndex = ArtistStatus.entries.indexOf(status)
-            applyValue(this.editorNotes, editorNotes, mergeBehavior)
+            FormUtils.applyValue(this.editorNotes, editorNotes, mergeBehavior)
         }
 
         fun captureValues() = InternalDatabaseValues(
@@ -287,12 +204,12 @@ class ArtistFormState(
             name: String,
             summary: String?,
             notes: String?,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) {
-            applyValue(this.booth, booth, mergeBehavior)
-            applyValue(this.name, name, mergeBehavior)
-            applyValue(this.summary, summary, mergeBehavior)
-            applyValue(this.notes, notes, mergeBehavior)
+            FormUtils.applyValue(this.booth, booth, mergeBehavior)
+            FormUtils.applyValue(this.name, name, mergeBehavior)
+            FormUtils.applyValue(this.summary, summary, mergeBehavior)
+            FormUtils.applyValue(this.notes, notes, mergeBehavior)
         }
 
         fun captureValues() = InfoDatabaseValues(
@@ -345,13 +262,13 @@ class ArtistFormState(
             portfolioLinks: List<LinkModel>,
             catalogLinks: List<String>,
             commissions: List<CommissionModel>,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) {
-            applyValue(stateSocialLinks, this.socialLinks, socialLinks, mergeBehavior)
-            applyValue(stateStoreLinks, this.storeLinks, storeLinks, mergeBehavior)
-            applyValue(statePortfolioLinks, this.portfolioLinks, portfolioLinks, mergeBehavior)
-            applyValue(stateCatalogLinks, this.catalogLinks, catalogLinks, mergeBehavior)
-            applyValue(stateCommissions, this.commissions, commissions, mergeBehavior)
+            FormUtils.applyValue(stateSocialLinks, this.socialLinks, socialLinks, mergeBehavior)
+            FormUtils.applyValue(stateStoreLinks, this.storeLinks, storeLinks, mergeBehavior)
+            FormUtils.applyValue(statePortfolioLinks, this.portfolioLinks, portfolioLinks, mergeBehavior)
+            FormUtils.applyValue(stateCatalogLinks, this.catalogLinks, catalogLinks, mergeBehavior)
+            FormUtils.applyValue(stateCommissions, this.commissions, commissions, mergeBehavior)
         }
 
         fun applyRawValues(
@@ -360,7 +277,7 @@ class ArtistFormState(
             portfolioLinks: List<String>,
             catalogLinks: List<String>,
             commissions: List<String>,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) = applyValues(
             socialLinks = socialLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
             storeLinks = storeLinks.map(LinkModel.Companion::parse).sortedBy { it.logo },
@@ -449,17 +366,17 @@ class ArtistFormState(
         fun applyValues(
             inferred: List<SeriesInfo>,
             confirmed: List<SeriesInfo>,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) {
-            applyValue(this.stateInferred, this.inferred, inferred, mergeBehavior)
-            applyValue(this.stateConfirmed, this.confirmed, confirmed, mergeBehavior)
+            FormUtils.applyValue(this.stateInferred, this.inferred, inferred, mergeBehavior)
+            FormUtils.applyValue(this.stateConfirmed, this.confirmed, confirmed, mergeBehavior)
         }
 
         fun applyValues(
             inferred: List<String>,
             confirmed: List<String>,
             seriesById: Map<String, SeriesInfo>,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) = applyValues(
             inferred = inferred.map { seriesById[it] ?: SeriesInfo.fake(it) },
             confirmed = confirmed.map { seriesById[it] ?: SeriesInfo.fake(it) },
@@ -500,17 +417,17 @@ class ArtistFormState(
         fun applyValues(
             inferred: List<MerchInfo>,
             confirmed: List<MerchInfo>,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) {
-            applyValue(this.stateInferred, this.inferred, inferred, mergeBehavior)
-            applyValue(this.stateConfirmed, this.confirmed, confirmed, mergeBehavior)
+            FormUtils.applyValue(this.stateInferred, this.inferred, inferred, mergeBehavior)
+            FormUtils.applyValue(this.stateConfirmed, this.confirmed, confirmed, mergeBehavior)
         }
 
         fun applyValues(
             inferred: List<String>,
             confirmed: List<String>,
             merchById: Map<String, MerchInfo>,
-            mergeBehavior: MergeBehavior,
+            mergeBehavior: FormMergeBehavior,
         ) = applyValues(
             inferred = inferred.map { merchById[it] ?: MerchInfo.fake(it) },
             confirmed = confirmed.map { merchById[it] ?: MerchInfo.fake(it) },
@@ -539,9 +456,5 @@ class ArtistFormState(
                 },
             )
         }
-    }
-
-    enum class MergeBehavior {
-        APPEND, REPLACE, IGNORE
     }
 }

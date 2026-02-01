@@ -19,10 +19,26 @@ data class StampRallyDatabaseEntry(
     val prize: String?,
     val prizeLimit: Long?,
     val series: List<String>,
+    val merch: List<String>,
     val notes: String?,
     val images: List<CatalogImage>,
+    val counter: Long,
     val confirmed: Boolean,
     val editorNotes: String?,
     val lastEditor: String?,
     val lastEditTime: Instant?,
+) {
+    companion object {
+
+        // Need to ignore metadata for equality
+        fun hasChanged(before: StampRallyDatabaseEntry?, after: StampRallyDatabaseEntry) =
+            before?.copy(counter = 0, lastEditTime = null, lastEditor = null) !=
+                    after.copy(counter = 0, lastEditTime = null, lastEditor = null)
+    }
+}
+
+fun StampRallyDatabaseEntry.toStampRallySummary() = StampRallySummary(
+    id = id,
+    fandom = fandom,
+    hostTable = hostTable,
 )
