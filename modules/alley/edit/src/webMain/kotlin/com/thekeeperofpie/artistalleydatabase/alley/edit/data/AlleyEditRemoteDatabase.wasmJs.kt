@@ -391,6 +391,19 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun deleteStampRally(
+        dataYear: DataYear,
+        expected: StampRallyDatabaseEntry,
+    ): BackendRequest.StampRallyDelete.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.StampRallyDelete(dataYear, expected))!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.StampRallyDelete.Response.Failed(t.message.orEmpty())
+            }
+        }
+
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(
             BuildKonfig.imagesUrl.ifBlank { "${window.origin}/edit/api/image" } + "/$key"

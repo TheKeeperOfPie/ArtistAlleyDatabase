@@ -360,6 +360,20 @@ actual class AlleyEditRemoteDatabase(
         updated: StampRallyDatabaseEntry,
     ): BackendRequest.StampRallySave.Response = saveStampRally(dataYear, initial, updated, null)
 
+    actual suspend fun deleteStampRally(
+        dataYear: DataYear,
+        expected: StampRallyDatabaseEntry
+    ): BackendRequest.StampRallyDelete.Response {
+        val stampRallyId = expected.id
+        val currentStampRally = loadStampRally(dataYear, stampRallyId)
+        if (expected != currentStampRally) {
+            return BackendRequest.StampRallyDelete.Response.Outdated(currentStampRally)
+        }
+
+        stampRalliesByDataYearAndId[dataYear]?.remove(expected.id)
+        return BackendRequest.StampRallyDelete.Response.Success
+    }
+
     private suspend fun saveStampRally(
         dataYear: DataYear,
         initial: StampRallyDatabaseEntry?,

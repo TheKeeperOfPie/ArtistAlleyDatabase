@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 import androidx.compose.foundation.layout.LayoutScopeMarker
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.allCaps
 import androidx.compose.foundation.text.input.maxLength
@@ -20,9 +21,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_editor_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_fandom
@@ -36,6 +38,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_table_min
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_tables
+import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormEditActions
@@ -103,6 +106,7 @@ internal object StampRallyForm {
             }
 
             with(scope) {
+                MetadataSection(state.metadata)
                 IdSection(state.editorState.id, errorState.idErrorMessage)
                 FandomSection(state.fandom)
                 HostTableSection(state.hostTable)
@@ -210,7 +214,8 @@ private abstract class StampRallyFormScope(
         state: EntryForm2.SingleTextState,
         tables: SnapshotStateList<String>,
     ) {
-        val listRevertDialogState = rememberListRevertDialogState(initialStampRally?.tables)
+        val initialTables = initialStampRally?.tables
+        val listRevertDialogState = rememberListRevertDialogState(initialTables)
         MultiTextSection(
             state = state,
             header = {
@@ -225,16 +230,21 @@ private abstract class StampRallyFormScope(
             item = { _, value ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    val color = AlleyTheme.colorScheme.positive
+                    val existed = initialTables?.any { it == value }
                     Text(
                         text = value,
-                        style = if (color.isSpecified) {
-                            MaterialTheme.typography.bodyMedium.copy(color = color)
-                        } else {
-                            MaterialTheme.typography.bodyMedium
-                        },
+                        style = MaterialTheme.typography.bodyMedium
+                            .copy(
+                                fontFamily = FontFamily.Monospace,
+                                color = if (initialTables == null || existed != false) {
+                                    MaterialTheme.typography.bodyMedium.color
+                                } else {
+                                    AlleyTheme.colorScheme.positive
+                                }
+                            ),
+                        modifier = Modifier.weight(1f)
                     )
 
                     FormEditActions(

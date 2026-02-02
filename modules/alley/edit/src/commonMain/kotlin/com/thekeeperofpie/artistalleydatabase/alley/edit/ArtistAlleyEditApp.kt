@@ -372,6 +372,12 @@ private fun entryProvider(
             stampRallyId = route.stampRallyId,
             graph = graph,
             onClickBack = onClickBack,
+            onClickEditImages = { _, _ ->
+                // TODO: Open images screen
+            },
+            onClickHistory = {
+                // TODO: Open history screen
+            },
         )
     }
 }

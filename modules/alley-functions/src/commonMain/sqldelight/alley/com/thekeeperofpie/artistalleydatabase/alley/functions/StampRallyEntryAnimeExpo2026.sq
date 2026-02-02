@@ -13,3 +13,7 @@ VALUES ?;
 insertHistory:
 INSERT INTO stampRallyEntryAnimeExpo2026History
 VALUES ?;
+
+deleteStampRally:
+DELETE FROM stampRallyEntryAnimeExpo2026
+WHERE id = :stampRallyId;

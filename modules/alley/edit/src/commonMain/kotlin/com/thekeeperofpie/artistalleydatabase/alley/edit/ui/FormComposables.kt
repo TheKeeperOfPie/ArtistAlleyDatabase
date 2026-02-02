@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
@@ -13,22 +14,47 @@ import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_confirm
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_delete
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_text
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_history_abandon_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_history_abandon_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_history_action_abandon
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_history_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_history_action_view_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_refresh_abandon_description
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_refresh_abandon_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_refresh_action_abandon
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_refresh_action_cancel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_refresh_action_view_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_delete_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_row_duplicate_entry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
@@ -42,10 +68,12 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.LongTextSection
 import com.thekeeperofpie.artistalleydatabase.entry.form.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun FormSaveButton(
@@ -339,4 +367,139 @@ internal fun NotesSection(
         },
     )
     FieldRevertDialog(revertDialogState, state, header)
+}
+
+@Composable
+internal fun DeleteButton(onConfirmDelete: () -> Unit, modifier: Modifier = Modifier) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    FilledTonalButton(onClick = { showDialog = true }, modifier = modifier) {
+        Text(stringResource(Res.string.alley_edit_artist_edit_delete_action_delete))
+    }
+
+    var loading by remember { mutableStateOf(false) }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(stringResource(Res.string.alley_edit_artist_edit_delete_title)) },
+            text = { Text(stringResource(Res.string.alley_edit_artist_edit_delete_text)) },
+            confirmButton = {
+                val countdown by produceState(5) {
+                    (4 downTo 0).forEach {
+                        delay(1.seconds)
+                        value = it
+                    }
+                }
+                TextButton(
+                    onClick = {
+                        if (countdown <= 0) {
+                            loading = true
+                            onConfirmDelete()
+                        }
+                    },
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        val textAlpha by animateFloatAsState(if (countdown <= 0) 1f else 0f)
+                        Text(
+                            text = stringResource(Res.string.alley_edit_artist_edit_delete_action_confirm),
+                            modifier = Modifier.graphicsLayer { alpha = textAlpha }
+                        )
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = countdown > 0,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            Text(countdown.toString())
+                        }
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = loading,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            CircularWavyProgressIndicator()
+                        }
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(stringResource(Res.string.alley_edit_artist_edit_delete_action_cancel))
+                }
+            },
+        )
+    }
+}
+
+@Composable
+internal fun FormRefreshButton(hasPendingChanges: () -> Boolean, onClickRefresh: () -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    TooltipIconButton(
+        icon = Icons.Default.Refresh,
+        tooltipText = stringResource(Res.string.alley_edit_refresh_action_view_tooltip),
+        onClick = {
+            if (hasPendingChanges()) {
+                showDialog = true
+            } else {
+                onClickRefresh()
+            }
+        },
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(stringResource(Res.string.alley_edit_refresh_abandon_title)) },
+            text = { Text(stringResource(Res.string.alley_edit_refresh_abandon_description)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onClickRefresh()
+                    showDialog = false
+                }) {
+                    Text(stringResource(Res.string.alley_edit_refresh_action_abandon))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(stringResource(Res.string.alley_edit_refresh_action_cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+internal fun FormHistoryButton(hasPendingChanges: () -> Boolean, onClickHistory: () -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    TooltipIconButton(
+        icon = Icons.Default.History,
+        tooltipText = stringResource(Res.string.alley_edit_history_action_view_tooltip),
+        onClick = {
+            if (hasPendingChanges()) {
+                showDialog = true
+            } else {
+                onClickHistory()
+            }
+        },
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(stringResource(Res.string.alley_edit_history_abandon_title)) },
+            text = { Text(stringResource(Res.string.alley_edit_history_abandon_description)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onClickHistory()
+                    showDialog = false
+                }) {
+                    Text(stringResource(Res.string.alley_edit_history_action_abandon))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(stringResource(Res.string.alley_edit_history_action_cancel))
+                }
+            }
+        )
+    }
 }

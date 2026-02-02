@@ -78,23 +78,11 @@
     <string name="alley_edit_revert_action_confirm">Revert</string>
     <string name="alley_edit_revert_action_dismiss">Cancel</string>
 
-    <string name="alley_edit_artist_refresh_action_view_tooltip">Refresh artist</string>
-    <string name="alley_edit_artist_refresh_abandon_title">Abandon pending changes?</string>
-    <string name="alley_edit_artist_refresh_abandon_description">Refreshing this artist will reset any pending edits</string>
-    <string name="alley_edit_artist_refresh_action_abandon">Abandon</string>
-    <string name="alley_edit_artist_refresh_action_cancel">Cancel</string>
-
     <string name="alley_edit_artist_action_save_tooltip">Save artist</string>
     <string name="alley_edit_artist_action_save_and_exit_tooltip">Save and exit</string>
     <string name="alley_edit_artist_action_generate_link_tooltip">Generate form link</string>
     <string name="alley_edit_artist_action_request_merge_tooltip">Merge previous year data</string>
     <string name="alley_edit_artist_action_add">Add artist</string>
-
-    <string name="alley_edit_artist_history_action_view_tooltip">View history</string>
-    <string name="alley_edit_artist_history_abandon_title">Abandon pending changes?</string>
-    <string name="alley_edit_artist_history_abandon_description">Commiting a history revert will lose any pending edits to this artist</string>
-    <string name="alley_edit_artist_history_action_abandon">Abandon</string>
-    <string name="alley_edit_artist_history_action_cancel">Cancel</string>
 
     <string name="alley_edit_artist_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
     <string name="alley_edit_artist_error_saving_bad_fields">Could not save because some fields have errors</string>
@@ -253,6 +241,7 @@
     <string name="alley_edit_stamp_rally_action_add">Add stamp rally</string>
     <string name="alley_edit_stamp_rally_action_save_tooltip">Save stamp rally</string>
     <string name="alley_edit_stamp_rally_action_save_and_exit_tooltip">Save and exit</string>
+    <string name="alley_edit_stamp_rally_error_saving_bad_fields">Could not save because some fields have errors</string>
 
     <string name="alley_edit_stamp_rally_edit_id">ID</string>
     <string name="alley_edit_stamp_rally_edit_fandom">Name</string>
@@ -266,4 +255,20 @@
     <string name="alley_edit_stamp_rally_edit_merch">Merch</string>
     <string name="alley_edit_stamp_rally_edit_notes">Notes</string>
     <string name="alley_edit_stamp_rally_edit_editor_notes">Editor notes</string>
+    <string name="alley_edit_stamp_rally_edit_delete_failed">Failed to delete</string>
+    <string name="alley_edit_stamp_rally_edit_delete_failed_outdated">Failed to delete, stamp rally was outdated</string>
+    <string name="alley_edit_stamp_rally_edit_title_editing_name">Editing %1$s - %2$s</string>
+    <string name="alley_edit_stamp_rally_edit_title_editing_booth_name">Editing %1$s - %2$s - %3$s</string>
+
+    <string name="alley_edit_refresh_action_view_tooltip">Refresh artist</string>
+    <string name="alley_edit_refresh_abandon_title">Abandon pending changes?</string>
+    <string name="alley_edit_refresh_abandon_description">Refreshing will reset any pending edits</string>
+    <string name="alley_edit_refresh_action_abandon">Abandon</string>
+    <string name="alley_edit_refresh_action_cancel">Cancel</string>
+
+    <string name="alley_edit_history_action_view_tooltip">View history</string>
+    <string name="alley_edit_history_abandon_title">Abandon pending changes?</string>
+    <string name="alley_edit_history_abandon_description">Commiting a history revert will lose any pending edits</string>
+    <string name="alley_edit_history_action_abandon">Abandon</string>
+    <string name="alley_edit_history_action_cancel">Cancel</string>
 </resources>

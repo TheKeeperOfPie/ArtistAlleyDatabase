@@ -85,13 +85,10 @@ object AlleyEditBackend {
                     is BackendRequest.SeriesSave -> makeResponse(saveSeries(context, this))
                     is BackendRequest.StampRallies -> makeResponse(loadStampRallies(context))
                     is BackendRequest.StampRally -> makeResponse(loadStampRally(context, this))
-                    is BackendRequest.StampRallySave -> makeResponse(
-                        saveStampRally(
-                            context,
-                            this,
-                            null
-                        )
-                    )
+                    is BackendRequest.StampRallySave ->
+                        makeResponse(saveStampRally(context, this, null))
+                    is BackendRequest.StampRallyDelete ->
+                        makeResponse(deleteStampRally(context, this))
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
@@ -597,6 +594,35 @@ object AlleyEditBackend {
         DataYear.ANIME_NYC_2025,
             -> BackendRequest.StampRallySave.Response.Failed("Editing legacy years not supported")
     }
+
+    private suspend fun deleteStampRally(
+        context: EventContext,
+        request: BackendRequest.StampRallyDelete,
+    ): BackendRequest.StampRallyDelete.Response =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                val database = Databases.editDatabase(context)
+                val currentStampRally =
+                    database.stampRallyEntryAnimeExpo2026Queries
+                        .getStampRally(request.expected.id)
+                        .awaitAsOneOrNull()
+                        ?.toStampRallyDatabaseEntry()
+                        ?.fixForJs()
+                if (currentStampRally == null || currentStampRally != request.expected) {
+                    BackendRequest.StampRallyDelete.Response.Outdated(currentStampRally)
+                } else {
+                    database.stampRallyEntryAnimeExpo2026Queries
+                        .deleteStampRally(request.expected.id)
+                    BackendRequest.StampRallyDelete.Response.Success
+                }
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> BackendRequest.StampRallyDelete.Response.Failed("Cannot delete legacy years")
+        }
 
     private fun literalJsonResponse(value: String) = Response(
         body = value,

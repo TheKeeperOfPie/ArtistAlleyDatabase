@@ -105,4 +105,9 @@ expect class AlleyEditRemoteDatabase {
         initial: StampRallyDatabaseEntry?,
         updated: StampRallyDatabaseEntry,
     ): BackendRequest.StampRallySave.Response
+
+    suspend fun deleteStampRally(
+        dataYear: DataYear,
+        expected: StampRallyDatabaseEntry,
+    ): BackendRequest.StampRallyDelete.Response
 }

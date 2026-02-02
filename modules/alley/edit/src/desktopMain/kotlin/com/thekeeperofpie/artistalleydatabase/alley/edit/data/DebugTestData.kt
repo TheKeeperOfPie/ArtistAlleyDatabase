@@ -144,9 +144,14 @@ object DebugTestData {
                     tables = listOf("C38", "C39", "C40"),
                     links = listOf("https://example.com"),
                     confirmed = true,
+                    lastEditor = "firstlast@example.org",
                 )
-            },{
-                it.copy(notes = "Sticker pack contains 5 stickers")
+            },
+            {
+                it.copy(
+                    notes = "Sticker pack contains 5 stickers",
+                    lastEditor = "fakeemail@example.org",
+                )
             },
         )
 
@@ -171,7 +176,11 @@ object DebugTestData {
             lastEditor = null,
             lastEditTime = Clock.System.now(),
         )
-        database.saveStampRally(dataYear = DataYear.ANIME_EXPO_2026, initial = null, updated = previous)
+        database.saveStampRally(
+            dataYear = DataYear.ANIME_EXPO_2026,
+            initial = null,
+            updated = previous
+        )
         updates.forEach {
             val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.minutes)
             database.saveStampRally(

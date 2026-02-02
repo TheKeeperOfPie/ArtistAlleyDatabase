@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
@@ -224,4 +225,32 @@ class AlleyEditDatabase(
         initial: StampRallyDatabaseEntry?,
         updated: StampRallyDatabaseEntry,
     ) = remoteDatabase.saveStampRally(dataYear, initial, updated)
+
+    suspend fun loadStampRallyImages(
+        year: DataYear,
+        stampRally: StampRallyDatabaseEntry,
+    ): List<EditImage> {
+        val databaseImages = AlleyImageUtils.getRallyImages(year = year, images = stampRally.images)
+            .map {
+                EditImage.DatabaseImage(
+                    uri = it.uri,
+                    name = it.uri.toString(),
+                    width = it.width,
+                    height = it.height,
+                )
+            }
+        val networkImages = remoteDatabase.listImages(year, stampRally.id)
+            .associateBy { it.name }
+        return stampRally.images.mapNotNull {
+            val targetName = it.name
+            networkImages.entries.find { it.key.contains(targetName) }?.value
+                ?.fillSize(it.width, it.height)
+                ?: databaseImages.find { it.name.contains(targetName) }
+        }
+    }
+
+    suspend fun deleteStampRally(
+        dataYear: DataYear,
+        expected: StampRallyDatabaseEntry,
+    ) = remoteDatabase.deleteStampRally(dataYear, expected)
 }

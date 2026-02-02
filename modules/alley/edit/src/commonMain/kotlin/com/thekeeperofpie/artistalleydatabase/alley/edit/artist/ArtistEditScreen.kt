@@ -10,13 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Merge
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -30,7 +27,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -65,13 +61,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_request_merge_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_and_exit_tooltip
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_save_tooltip
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_cancel
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_confirm
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_action_delete
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_failed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_failed_outdated
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_text
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_delete_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_cancel
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_copy
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_form_link_action_generate
@@ -89,16 +80,6 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing_booth_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_title_editing_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_error_saving_bad_fields
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_abandon_description
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_abandon_title
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_abandon
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_cancel
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_view_tooltip
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_abandon_description
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_abandon_title
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_action_abandon
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_action_cancel
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_refresh_action_view_tooltip
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
@@ -117,6 +98,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.DeleteButton
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHistoryButton
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormRefreshButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
@@ -129,14 +113,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
-import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -271,8 +253,6 @@ object ArtistEditScreen {
 
         DeleteProgressEffect(state.deleteProgress, snackbarHostState, onClickBack)
 
-        val windowSizeClass = currentWindowSizeClass()
-        val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
         val errorState = rememberErrorState(state.artistFormState)
         var showFormLinkDialog by mutableStateOf(false)
         var requestedMergingArtist by rememberSaveable { mutableStateOf(false) }
@@ -320,8 +300,6 @@ object ArtistEditScreen {
                             },
                         )
                     },
-                    modifier = Modifier
-                        .conditionally(!isExpanded, Modifier.widthIn(max = 960.dp))
                 )
             },
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -375,7 +353,6 @@ object ArtistEditScreen {
                 ScrollableSideBySide(
                     showSecondary = { !sameArtist.isEmpty() || showMergingArtist },
                     primary = {
-                        val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                         Form(
                             state = state,
                             artistFormState = if (showMergingArtist) {
@@ -588,7 +565,7 @@ object ArtistEditScreen {
             )
         }
 
-        RefreshButton(hasPendingChanges, onClickRefresh)
+        FormRefreshButton(hasPendingChanges, onClickRefresh)
 
         TooltipIconButton(
             icon = Icons.Default.AddLink,
@@ -596,7 +573,7 @@ object ArtistEditScreen {
             onClick = onClickGenerateFormLink,
         )
 
-        HistoryButton(hasPendingChanges, onClickHistory)
+        FormHistoryButton(hasPendingChanges, onClickHistory)
 
         val enabled = !errorState.hasAnyError
         FormSaveButton(
@@ -611,80 +588,6 @@ object ArtistEditScreen {
             enabled = enabled,
             onClick = onClickDone,
         )
-    }
-
-    @Composable
-    private fun RefreshButton(hasPendingChanges: () -> Boolean, onClickRefresh: () -> Unit) {
-        var showDialog by remember { mutableStateOf(false) }
-        TooltipIconButton(
-            icon = Icons.Default.Refresh,
-            tooltipText = stringResource(Res.string.alley_edit_artist_refresh_action_view_tooltip),
-            onClick = {
-                if (hasPendingChanges()) {
-                    showDialog = true
-                } else {
-                    onClickRefresh()
-                }
-            },
-        )
-
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(stringResource(Res.string.alley_edit_artist_refresh_abandon_title)) },
-                text = { Text(stringResource(Res.string.alley_edit_artist_refresh_abandon_description)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        onClickRefresh()
-                        showDialog = false
-                    }) {
-                        Text(stringResource(Res.string.alley_edit_artist_refresh_action_abandon))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text(stringResource(Res.string.alley_edit_artist_refresh_action_cancel))
-                    }
-                }
-            )
-        }
-    }
-
-    @Composable
-    private fun HistoryButton(hasPendingChanges: () -> Boolean, onClickHistory: () -> Unit) {
-        var showDialog by remember { mutableStateOf(false) }
-        TooltipIconButton(
-            icon = Icons.Default.History,
-            tooltipText = stringResource(Res.string.alley_edit_artist_history_action_view_tooltip),
-            onClick = {
-                if (hasPendingChanges()) {
-                    showDialog = true
-                } else {
-                    onClickHistory()
-                }
-            },
-        )
-
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(stringResource(Res.string.alley_edit_artist_history_abandon_title)) },
-                text = { Text(stringResource(Res.string.alley_edit_artist_history_abandon_description)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        onClickHistory()
-                        showDialog = false
-                    }) {
-                        Text(stringResource(Res.string.alley_edit_artist_history_action_abandon))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text(stringResource(Res.string.alley_edit_artist_history_action_cancel))
-                    }
-                }
-            )
-        }
     }
 
     @Composable
@@ -934,67 +837,6 @@ object ArtistEditScreen {
             } else null,
             properties = DialogProperties(dismissOnClickOutside = false),
         )
-    }
-
-    @Composable
-    private fun DeleteButton(onConfirmDelete: () -> Unit, modifier: Modifier = Modifier) {
-        var showDialog by remember { mutableStateOf(false) }
-
-        FilledTonalButton(onClick = { showDialog = true }, modifier = modifier) {
-            Text(stringResource(Res.string.alley_edit_artist_edit_delete_action_delete))
-        }
-
-        var loading by remember { mutableStateOf(false) }
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(stringResource(Res.string.alley_edit_artist_edit_delete_title)) },
-                text = { Text(stringResource(Res.string.alley_edit_artist_edit_delete_text)) },
-                confirmButton = {
-                    val countdown by produceState(5) {
-                        (4 downTo 0).forEach {
-                            delay(1.seconds)
-                            value = it
-                        }
-                    }
-                    TextButton(
-                        onClick = {
-                            if (countdown <= 0) {
-                                loading = true
-                                onConfirmDelete()
-                            }
-                        },
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            val textAlpha by animateFloatAsState(if (countdown <= 0) 1f else 0f)
-                            Text(
-                                text = stringResource(Res.string.alley_edit_artist_edit_delete_action_confirm),
-                                modifier = Modifier.graphicsLayer { alpha = textAlpha }
-                            )
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = countdown > 0,
-                                enter = fadeIn(),
-                                exit = fadeOut(),
-                            ) {
-                                Text(countdown.toString())
-                            }
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = loading,
-                                enter = fadeIn(),
-                                exit = fadeOut(),
-                            ) {
-                                CircularWavyProgressIndicator()
-                            }
-                        }
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text(stringResource(Res.string.alley_edit_artist_edit_delete_action_cancel))
-                    }
-                },
-            )
-        }
     }
 
     @Stable
