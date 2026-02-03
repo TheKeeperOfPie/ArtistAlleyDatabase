@@ -93,6 +93,12 @@ sealed interface AlleyEditDestination : NavKey {
     data class StampRallyEdit(val dataYear: DataYear, val stampRallyId: String) :
         AlleyEditDestination
 
+    @Serializable
+    data class StampRallyHistory(
+        val dataYear: DataYear,
+        val stampRallyId: String,
+    ) : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
@@ -148,6 +154,12 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     StampRallyEdit(dataYear, stampRallyId)
                 }
+                route.startsWith("rally/history") -> {
+                    val (dataYear, stampRallyId) = parseDataYearThenStampRallyId(
+                        route.removePrefix("rally/history/")
+                    ) ?: return null
+                    StampRallyHistory(dataYear, stampRallyId)
+                }
                 else -> {
                     ConsoleLogger.log("Failed to find route for $route")
                     null
@@ -183,6 +195,8 @@ sealed interface AlleyEditDestination : NavKey {
                     Uri.encode(destination.stampRallyId)
             is StampRallyEdit -> "rally/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.stampRallyId)
+            is StampRallyHistory -> "rally/history/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    Uri.encode(destination.stampRallyId.toString())
             Home -> ""
             is ImagesEdit,
             is MerchEdit,

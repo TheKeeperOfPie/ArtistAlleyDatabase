@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
@@ -233,6 +234,7 @@ sealed interface BackendRequest {
             data class Failed(val errorMessage: String) : Response
         }
     }
+
     @Serializable
     data class StampRally(
         val dataYear: DataYear,
@@ -278,4 +280,8 @@ sealed interface BackendRequest {
             data class Failed(val errorMessage: String) : Response
         }
     }
+
+    @Serializable
+    data class StampRallyHistory(val dataYear: DataYear, val stampRallyId: String) : BackendRequest,
+        WithResponse<List<StampRallyHistoryEntry>>
 }

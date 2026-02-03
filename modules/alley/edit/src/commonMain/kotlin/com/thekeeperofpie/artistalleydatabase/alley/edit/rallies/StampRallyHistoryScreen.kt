@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
+package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,27 +52,23 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_booth
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_commissions
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_editor_notes
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_portfolio_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_status
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_apply_changes
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_refresh_tooltip
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_return_to_history_tooltip
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_action_revert_tooltip
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_select_all
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_editor_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_fandom
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_host_table
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_links
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_merch
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_notes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_prize_limit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_series
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_table_min
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_tables
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_action_apply_changes
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_action_refresh_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_action_return_to_history_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_action_revert_tooltip
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_select_all
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_history_title
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryCardHeader
@@ -80,13 +76,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryEntryCar
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistoryListChangeRow
 import com.thekeeperofpie.artistalleydatabase.alley.edit.history.HistorySingleChangeRow
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -102,31 +99,30 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
-import kotlin.uuid.Uuid
 
-object ArtistHistoryScreen {
+object StampRallyHistoryScreen {
 
-    val RESULT_KEY = NavigationResults.Key<Unit>("ArtistHistoryScreen")
+    val RESULT_KEY = NavigationResults.Key<Unit>("StampRallyHistoryScreen")
 
     @Composable
     operator fun invoke(
         dataYear: DataYear,
-        artistId: Uuid,
+        stampRallyId: String,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: ArtistHistoryViewModel = viewModel {
-            graph.artistHistoryViewModelFactory.create(dataYear, artistId)
+        viewModel: StampRallyHistoryViewModel = viewModel {
+            graph.stampRallyHistoryViewModelFactory.create(dataYear, stampRallyId)
         },
     ) {
         val history by viewModel.history.collectAsStateWithLifecycle()
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
-        val initialArtist by viewModel.initial.collectAsStateWithLifecycle()
-        ArtistHistoryScreen(
+        val initialStampRally by viewModel.initial.collectAsStateWithLifecycle()
+        StampRallyHistoryScreen(
             history = { history },
             dataYear = dataYear,
-            artistId = artistId,
-            initialArtist = { initialArtist },
+            stampRallyId = stampRallyId,
+            initialStampRally = { initialStampRally },
             seriesById = { seriesById },
             merchById = { merchById },
             saveProgress = viewModel.saveProgress,
@@ -139,30 +135,30 @@ object ArtistHistoryScreen {
 
     @Composable
     operator fun invoke(
-        history: () -> List<ArtistHistoryEntryWithDiff>,
+        history: () -> List<StampRallyHistoryEntryWithDiff>,
         dataYear: DataYear,
-        artistId: Uuid,
-        initialArtist: () -> ArtistDatabaseEntry.Impl?,
+        stampRallyId: String,
+        initialStampRally: () -> StampRallyDatabaseEntry?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        saveProgress: MutableStateFlow<JobProgress<BackendRequest.ArtistSave.Response>>,
+        saveProgress: MutableStateFlow<JobProgress<BackendRequest.StampRallySave.Response>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickRefresh: () -> Unit,
-        onApplied: (ArtistHistoryEntry) -> Unit,
+        onApplied: (StampRallyHistoryEntry) -> Unit,
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val navigationResults = LocalNavigationResults.current
         LaunchedEffect(navigationResults) {
             saveProgress.collectLatest {
-                if (it is JobProgress.Finished.Result<BackendRequest.ArtistSave.Response>) {
+                if (it is JobProgress.Finished.Result<BackendRequest.StampRallySave.Response>) {
                     when (val result = it.value) {
-                        is BackendRequest.ArtistSave.Response.Failed ->
+                        is BackendRequest.StampRallySave.Response.Failed ->
                             snackbarHostState.showSnackbar(message = result.errorMessage)
-                        is BackendRequest.ArtistSave.Response.Outdated -> {
+                        is BackendRequest.StampRallySave.Response.Outdated -> {
                             // TODO
                         }
-                        is BackendRequest.ArtistSave.Response.Success -> {
+                        is BackendRequest.StampRallySave.Response.Success -> {
                             saveProgress.value = JobProgress.Idle()
                             navigationResults[RESULT_KEY] = Unit
                             onClickBack(true)
@@ -176,14 +172,14 @@ object ArtistHistoryScreen {
                 TopAppBar(
                     title = {
                         val history = history()
-                        val name = remember(history) {
-                            history.firstNotNullOfOrNull { it.entry.name }.orEmpty()
+                        val fandom = remember(history) {
+                            history.firstNotNullOfOrNull { it.entry.fandom }.orEmpty()
                         }
                         Text(
                             stringResource(
-                                Res.string.alley_edit_artist_history_title,
+                                Res.string.alley_edit_stamp_rally_history_title,
                                 stringResource(dataYear.shortName),
-                                name,
+                                fandom,
                             )
                         )
                     },
@@ -191,7 +187,7 @@ object ArtistHistoryScreen {
                     actions = {
                         TooltipIconButton(
                             icon = Icons.Default.Refresh,
-                            tooltipText = stringResource(Res.string.alley_edit_artist_history_action_refresh_tooltip),
+                            tooltipText = stringResource(Res.string.alley_edit_stamp_rally_history_action_refresh_tooltip),
                             onClick = onClickRefresh,
                         )
                     },
@@ -210,7 +206,7 @@ object ArtistHistoryScreen {
                     var activeRevert by rememberSaveable(history) { mutableStateOf<Int?>(null) }
 
                     val timelineListState = rememberLazyListState()
-                    val activeRevertPair by produceState<Pair<ArtistHistoryEntryWithDiff, ArtistDatabaseEntry.Impl>?>(
+                    val activeRevertPair by produceState<Pair<StampRallyHistoryEntryWithDiff, StampRallyDatabaseEntry>?>(
                         initialValue = null,
                         key1 = history,
                     ) {
@@ -219,9 +215,9 @@ object ArtistHistoryScreen {
                                 if (activeRevertIndex == null) {
                                     null
                                 } else {
-                                    history[activeRevertIndex] to ArtistHistoryEntry.rebuild(
+                                    history[activeRevertIndex] to StampRallyHistoryEntry.rebuild(
                                         dataYear = dataYear,
-                                        artistId = artistId,
+                                        stampRallyId = stampRallyId,
                                         list = history.drop(activeRevertIndex).map { it.entry },
                                     )
                                 }
@@ -234,17 +230,17 @@ object ArtistHistoryScreen {
                             rememberFieldState(activeRevertPairValue.first)
                         }
                         val rebuiltEntry = activeRevertPairValue.second
-                        val artist by remember {
+                        val stampRally by remember {
                             derivedStateOf {
-                                val initial = initialArtist() ?: return@derivedStateOf null
+                                val initial = initialStampRally() ?: return@derivedStateOf null
                                 val changes = fieldState.applyChanges(rebuiltEntry)
-                                ArtistHistoryEntry.applyOver(initial, changes)
+                                StampRallyHistoryEntry.applyOver(initial, changes)
                             }
                         }
 
-                        ArtistPreview(
-                            initialArtist = initialArtist,
-                            artist = { artist },
+                        StampRallyPreview(
+                            initialStampRally = initialStampRally,
+                            stampRally = { stampRally },
                             seriesById = seriesById(),
                             merchById = merchById(),
                             seriesImage = seriesImage,
@@ -252,7 +248,7 @@ object ArtistHistoryScreen {
                         )
 
                         RevertFieldsList(
-                            initialArtist = initialArtist,
+                            initialStampRally = initialStampRally,
                             fieldState = fieldState,
                             entryWithDiff = activeRevertPairValue.first,
                             rebuiltEntry = activeRevertPairValue.second,
@@ -261,18 +257,18 @@ object ArtistHistoryScreen {
                             modifier = Modifier.weight(1f)
                         )
                     } else {
-                        val artist by remember {
+                        val stampRally by remember {
                             derivedStateOf {
-                                ArtistHistoryEntry.rebuild(
+                                StampRallyHistoryEntry.rebuild(
                                     dataYear = dataYear,
-                                    artistId = artistId,
+                                    stampRallyId = stampRallyId,
                                     list = history().drop(selectedIndex).map { it.entry },
                                 )
                             }
                         }
-                        ArtistPreview(
-                            initialArtist = initialArtist,
-                            artist = { artist },
+                        StampRallyPreview(
+                            initialStampRally = initialStampRally,
+                            stampRally = { stampRally },
                             seriesById = seriesById(),
                             merchById = merchById(),
                             seriesImage = seriesImage,
@@ -294,27 +290,27 @@ object ArtistHistoryScreen {
     }
 
     @Composable
-    private fun ArtistPreview(
-        initialArtist: () -> ArtistDatabaseEntry.Impl?,
-        artist: () -> ArtistDatabaseEntry?,
+    private fun StampRallyPreview(
+        initialStampRally: () -> StampRallyDatabaseEntry?,
+        stampRally: () -> StampRallyDatabaseEntry?,
         seriesById: Map<String, SeriesInfo>,
         merchById: Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
         Column(modifier = modifier) {
-            val artistFormState by produceState<ArtistFormState?>(
+            val stampRallyFormState by produceState<StampRallyFormState?>(
                 initialValue = null,
                 seriesById,
                 merchById,
             ) {
                 if (seriesById.isNotEmpty() && merchById.isNotEmpty()) {
-                    snapshotFlow { artist() }
+                    snapshotFlow { stampRally() }
                         .filterNotNull()
                         .mapLatest {
                             withContext(PlatformDispatchers.IO) {
-                                ArtistFormState().applyDatabaseEntry(
-                                    artist = it,
+                                StampRallyFormState().applyDatabaseEntry(
+                                    stampRally = it,
                                     seriesById = seriesById,
                                     merchById = merchById,
                                     mergeBehavior = FormMergeBehavior.REPLACE,
@@ -325,11 +321,11 @@ object ArtistHistoryScreen {
                 }
             }
 
-            val formState = artistFormState
+            val formState = stampRallyFormState
             if (formState != null) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    ArtistForm(
-                        initialArtist = initialArtist,
+                    StampRallyForm(
+                        initialStampRally = initialStampRally,
                         state = formState,
                         errorState = rememberErrorState(formState),
                         seriesById = { seriesById },
@@ -347,7 +343,7 @@ object ArtistHistoryScreen {
 
     @Composable
     private fun HistoryTimeline(
-        history: () -> List<ArtistHistoryEntryWithDiff>,
+        history: () -> List<StampRallyHistoryEntryWithDiff>,
         listState: LazyListState,
         selectedIndex: () -> Int,
         onSelectedIndexChange: (Int) -> Unit,
@@ -369,7 +365,7 @@ object ArtistHistoryScreen {
                         {
                             TooltipIconButton(
                                 icon = Icons.AutoMirrored.Default.Undo,
-                                tooltipText = stringResource(Res.string.alley_edit_artist_history_action_revert_tooltip),
+                                tooltipText = stringResource(Res.string.alley_edit_stamp_rally_history_action_revert_tooltip),
                                 onClick = { onRevertSelected(index) },
                             )
                         }
@@ -381,7 +377,7 @@ object ArtistHistoryScreen {
 
     @Composable
     private fun HistoryEntryCard(
-        entryWithDiff: ArtistHistoryEntryWithDiff,
+        entryWithDiff: StampRallyHistoryEntryWithDiff,
         selected: Boolean,
         onClick: (() -> Unit)? = null,
         additionalActions: (@Composable () -> Unit)? = null,
@@ -401,62 +397,48 @@ object ArtistHistoryScreen {
             content = {
                 val entry = entryWithDiff.entry
                 HistorySingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_status,
-                    entry.status?.title?.let { stringResource(it) })
-                HistorySingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_booth,
-                    entry.booth
-                )
-                HistorySingleChangeRow(label = Res.string.alley_edit_artist_field_label_name, entry.name)
-                HistorySingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_summary,
-                    entry.summary
+                    label = Res.string.alley_edit_stamp_rally_field_label_fandom,
+                    entry.fandom
                 )
                 HistorySingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_notes,
+                    label = Res.string.alley_edit_stamp_rally_field_label_host_table,
+                    entry.hostTable
+                )
+                HistoryListChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_tables,
+                    entryWithDiff.tablesDiff
+                )
+                HistoryListChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_links,
+                    entryWithDiff.linksDiff
+                )
+                HistorySingleChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_table_min,
+                    entry.tableMin?.toString()
+                )
+                HistorySingleChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_prize,
+                    entry.prize
+                )
+                HistorySingleChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_prize_limit,
+                    entry.prizeLimit?.toString()
+                )
+                HistoryListChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_series,
+                    entryWithDiff.seriesDiff
+                )
+                HistoryListChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_merch,
+                    entryWithDiff.merchDiff
+                )
+                HistorySingleChangeRow(
+                    label = Res.string.alley_edit_stamp_rally_field_label_notes,
                     entry.notes
                 )
                 HistorySingleChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_editor_notes,
+                    label = Res.string.alley_edit_stamp_rally_field_label_editor_notes,
                     entry.editorNotes
-                )
-
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_social_links,
-                    entryWithDiff.socialLinksDiff,
-                )
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_store_links,
-                    entryWithDiff.storeLinksDiff,
-                )
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_portfolio_links,
-                    entryWithDiff.portfolioLinksDiff,
-                )
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_catalog_links,
-                    entryWithDiff.catalogLinksDiff,
-                )
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_commissions,
-                    entryWithDiff.commissionsDiff,
-                )
-
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_series_inferred,
-                    entryWithDiff.seriesInferredDiff,
-                )
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_series_confirmed,
-                    entryWithDiff.seriesConfirmedDiff,
-                )
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_merch_inferred,
-                    entryWithDiff.merchInferredDiff,
-                )
-                HistoryListChangeRow(
-                    label = Res.string.alley_edit_artist_field_label_merch_confirmed,
-                    entryWithDiff.merchConfirmedDiff,
                 )
             },
         )
@@ -464,12 +446,12 @@ object ArtistHistoryScreen {
 
     @Composable
     private fun RevertFieldsList(
-        initialArtist: () -> ArtistDatabaseEntry.Impl?,
+        initialStampRally: () -> StampRallyDatabaseEntry?,
         fieldState: FieldState,
-        entryWithDiff: ArtistHistoryEntryWithDiff,
-        rebuiltEntry: ArtistDatabaseEntry.Impl,
+        entryWithDiff: StampRallyHistoryEntryWithDiff,
+        rebuiltEntry: StampRallyDatabaseEntry,
         onActiveRevertCleared: () -> Unit,
-        onApplied: (ArtistHistoryEntry) -> Unit,
+        onApplied: (StampRallyHistoryEntry) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         NavigationBackHandler(
@@ -484,7 +466,7 @@ object ArtistHistoryScreen {
                 additionalActions = {
                     TooltipIconButton(
                         icon = Icons.Default.Close,
-                        tooltipText = stringResource(Res.string.alley_edit_artist_history_action_return_to_history_tooltip),
+                        tooltipText = stringResource(Res.string.alley_edit_stamp_rally_history_action_return_to_history_tooltip),
                         onClick = onActiveRevertCleared,
                     )
                 }
@@ -517,47 +499,23 @@ object ArtistHistoryScreen {
                         }
                     },
                 )
-                Text(stringResource(Res.string.alley_edit_artist_history_select_all))
+                Text(stringResource(Res.string.alley_edit_stamp_rally_history_select_all))
             }
 
-            val initialArtist = initialArtist()
-            ArtistField.entries.forEach { field ->
+            val initialStampRally = initialStampRally()
+            StampRallyField.entries.forEach { field ->
                 val fieldText = when (field) {
-                    ArtistField.STATUS -> rebuiltEntry.status
-                        .takeIf { it != initialArtist?.status }
-                        ?.let { stringResource(it.title) }
-                    ArtistField.BOOTH -> rebuiltEntry.booth.takeIf { it != initialArtist?.booth }
-                    ArtistField.NAME -> rebuiltEntry.name.takeIf { it != initialArtist?.name }
-                    ArtistField.SUMMARY -> rebuiltEntry.summary.takeIf { it != initialArtist?.summary }
-                    ArtistField.SOCIAL_LINKS -> rebuiltEntry.socialLinks.takeIf { it != initialArtist?.socialLinks }
-                        ?.joinToString()
-                    ArtistField.STORE_LINKS -> rebuiltEntry.storeLinks
-                        .takeIf { it != initialArtist?.storeLinks }
-                        ?.joinToString()
-                    ArtistField.PORTFOLIO_LINKS -> rebuiltEntry.portfolioLinks
-                        .takeIf { it != initialArtist?.portfolioLinks }
-                        ?.joinToString()
-                    ArtistField.CATALOG_LINKS -> rebuiltEntry.catalogLinks
-                        .takeIf { it != initialArtist?.catalogLinks }
-                        ?.joinToString()
-                    ArtistField.NOTES -> rebuiltEntry.notes.takeIf { it != initialArtist?.notes }
-                    ArtistField.COMMISSIONS -> rebuiltEntry.commissions
-                        .takeIf { it != initialArtist?.commissions }
-                        ?.joinToString()
-                    ArtistField.SERIES_INFERRED -> rebuiltEntry.seriesInferred
-                        .takeIf { it != initialArtist?.seriesInferred }
-                        ?.joinToString()
-                    ArtistField.SERIES_CONFIRMED -> rebuiltEntry.seriesConfirmed
-                        .takeIf { it != initialArtist?.seriesConfirmed }
-                        ?.joinToString()
-                    ArtistField.MERCH_INFERRED -> rebuiltEntry.merchInferred
-                        .takeIf { it != initialArtist?.merchInferred }
-                        ?.joinToString()
-                    ArtistField.MERCH_CONFIRMED -> rebuiltEntry.merchConfirmed
-                        .takeIf { it != initialArtist?.merchConfirmed }
-                        ?.joinToString()
-                    ArtistField.EDITOR_NOTES -> rebuiltEntry.editorNotes
-                        .takeIf { it != initialArtist?.editorNotes }
+                    StampRallyField.FANDOM -> rebuiltEntry.fandom.takeIf { it != initialStampRally?.fandom }
+                    StampRallyField.HOST_TABLE -> rebuiltEntry.hostTable.takeIf { it != initialStampRally?.hostTable }
+                    StampRallyField.TABLES -> rebuiltEntry.tables.takeIf { it != initialStampRally?.tables }?.joinToString()
+                    StampRallyField.LINKS -> rebuiltEntry.links.takeIf { it != initialStampRally?.links }?.joinToString()
+                    StampRallyField.TABLE_MIN -> rebuiltEntry.tableMin.takeIf { it != initialStampRally?.tableMin }?.toString()
+                    StampRallyField.PRIZE -> rebuiltEntry.prize.takeIf { it != initialStampRally?.prize }
+                    StampRallyField.PRIZE_LIMIT -> rebuiltEntry.prizeLimit.takeIf { it != initialStampRally?.prizeLimit }?.toString()
+                    StampRallyField.SERIES -> rebuiltEntry.series.takeIf { it != initialStampRally?.series }?.joinToString()
+                    StampRallyField.MERCH -> rebuiltEntry.merch.takeIf { it != initialStampRally?.merch }?.joinToString()
+                    StampRallyField.NOTES -> rebuiltEntry.notes.takeIf { it != initialStampRally?.notes }
+                    StampRallyField.EDITOR_NOTES -> rebuiltEntry.editorNotes.takeIf { it != initialStampRally?.editorNotes }
                 }
 
                 if (fieldText != null) {
@@ -580,74 +538,67 @@ object ArtistHistoryScreen {
                 FilledTonalButton(
                     onClick = { onApplied(fieldState.applyChanges(rebuiltEntry)) },
                 ) {
-                    Text(stringResource(Res.string.alley_edit_artist_history_action_apply_changes))
+                    Text(stringResource(Res.string.alley_edit_stamp_rally_history_action_apply_changes))
                 }
             }
         }
     }
 
     @Stable
-    private class FieldState(val map: SnapshotStateMap<ArtistField, Boolean>) {
-        operator fun get(field: ArtistField) = map[field]!!
-        operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
+    private class FieldState(val map: SnapshotStateMap<StampRallyField, Boolean>) {
+        operator fun get(field: StampRallyField) = map[field]!!
+        operator fun set(field: StampRallyField, checked: Boolean) = map.set(field, checked)
 
-        fun applyChanges(entry: ArtistDatabaseEntry.Impl) = ArtistHistoryEntry(
-            status = entry.status.takeIf { this[ArtistField.STATUS] },
-            booth = entry.booth.takeIf { this[ArtistField.BOOTH] },
-            name = entry.name.takeIf { this[ArtistField.NAME] },
-            summary = if (this[ArtistField.SUMMARY]) {
-                entry.summary.orEmpty()
-            } else {
-                null
-            },
-            socialLinks = entry.socialLinks.takeIf { this[ArtistField.SOCIAL_LINKS] },
-            storeLinks = entry.storeLinks.takeIf { this[ArtistField.STORE_LINKS] },
-            portfolioLinks = entry.portfolioLinks.takeIf { this[ArtistField.PORTFOLIO_LINKS] },
-            catalogLinks = entry.catalogLinks.takeIf { this[ArtistField.CATALOG_LINKS] },
-            notes = if (this[ArtistField.NOTES]) {
-                entry.notes.orEmpty()
-            } else {
-                null
-            },
-            commissions = entry.commissions.takeIf { this[ArtistField.COMMISSIONS] },
-            seriesInferred = entry.seriesInferred.takeIf { this[ArtistField.SERIES_INFERRED] },
-            seriesConfirmed = entry.seriesConfirmed.takeIf { this[ArtistField.SERIES_CONFIRMED] },
-            merchInferred = entry.merchInferred.takeIf { this[ArtistField.MERCH_INFERRED] },
-            merchConfirmed = entry.merchConfirmed.takeIf { this[ArtistField.MERCH_CONFIRMED] },
-            images = null,
-            editorNotes = if (this[ArtistField.EDITOR_NOTES]) {
-                entry.editorNotes.orEmpty()
-            } else {
-                null
-            },
-            lastEditor = null,
-            timestamp = Clock.System.now(),
-            formTimestamp = null,
-        )
+        fun applyChanges(entry: StampRallyDatabaseEntry): StampRallyHistoryEntry {
+            val tableMin = entry.tableMin.takeIf { this[StampRallyField.TABLE_MIN] }
+            val tables = entry.tables.takeIf { this[StampRallyField.TABLES] }
+            return StampRallyHistoryEntry(
+                fandom = entry.fandom.takeIf { this[StampRallyField.FANDOM] },
+                hostTable = entry.hostTable.takeIf { this[StampRallyField.HOST_TABLE] },
+                tables = tables,
+                links = entry.links.takeIf { this[StampRallyField.LINKS] },
+                tableMin = tableMin,
+                prize = entry.prize.takeIf { this[StampRallyField.PRIZE] },
+                prizeLimit = entry.prizeLimit.takeIf { this[StampRallyField.PRIZE_LIMIT] },
+                series = entry.series.takeIf { this[StampRallyField.SERIES] },
+                merch = entry.merch.takeIf { this[StampRallyField.MERCH] },
+                notes = entry.notes.takeIf { this[StampRallyField.NOTES] },
+                editorNotes = entry.editorNotes.takeIf { this[StampRallyField.EDITOR_NOTES] },
+                totalCost = when (tableMin) {
+                    TableMin.Any -> null
+                    TableMin.Free -> 0
+                    TableMin.Other -> null
+                    TableMin.Paid -> null
+                    is TableMin.Price -> tableMin.usd * (tables?.size?.toLong() ?: 0)
+                    null -> null
+                },
+                confirmed = false,
+                images = null,
+                lastEditor = null,
+                timestamp = Clock.System.now(),
+                formTimestamp = null,
+            )
+        }
     }
 
     @Composable
-    private fun rememberFieldState(entryWithDiff: ArtistHistoryEntryWithDiff): FieldState {
+    private fun rememberFieldState(entryWithDiff: StampRallyHistoryEntryWithDiff): FieldState {
         val map = rememberSaveable(entryWithDiff) {
-            mutableStateMapOf<ArtistField, Boolean>().apply {
-                ArtistField.entries.forEach {
+            mutableStateMapOf<StampRallyField, Boolean>().apply {
+                StampRallyField.entries.forEach {
                     val entry = entryWithDiff.entry
                     this[it] = when (it) {
-                        ArtistField.STATUS -> entry.status != null
-                        ArtistField.BOOTH -> entry.booth != null
-                        ArtistField.NAME -> entry.name != null
-                        ArtistField.SUMMARY -> entry.summary != null
-                        ArtistField.SOCIAL_LINKS -> entry.socialLinks != null
-                        ArtistField.STORE_LINKS -> entry.storeLinks != null
-                        ArtistField.PORTFOLIO_LINKS -> entry.portfolioLinks != null
-                        ArtistField.CATALOG_LINKS -> entry.catalogLinks != null
-                        ArtistField.NOTES -> entry.notes != null
-                        ArtistField.COMMISSIONS -> entry.commissions != null
-                        ArtistField.SERIES_INFERRED -> entry.seriesInferred != null
-                        ArtistField.SERIES_CONFIRMED -> entry.seriesConfirmed != null
-                        ArtistField.MERCH_INFERRED -> entry.merchInferred != null
-                        ArtistField.MERCH_CONFIRMED -> entry.merchConfirmed != null
-                        ArtistField.EDITOR_NOTES -> entry.editorNotes != null
+                        StampRallyField.FANDOM -> entry.fandom != null
+                        StampRallyField.HOST_TABLE -> entry.hostTable != null
+                        StampRallyField.TABLES -> entry.tables != null
+                        StampRallyField.LINKS -> entry.links != null
+                        StampRallyField.TABLE_MIN -> entry.tableMin != null
+                        StampRallyField.PRIZE -> entry.prize != null
+                        StampRallyField.PRIZE_LIMIT -> entry.prizeLimit != null
+                        StampRallyField.SERIES -> entry.series != null
+                        StampRallyField.MERCH -> entry.merch != null
+                        StampRallyField.NOTES -> entry.notes != null
+                        StampRallyField.EDITOR_NOTES -> entry.editorNotes != null
                     }
                 }
             }
@@ -655,21 +606,17 @@ object ArtistHistoryScreen {
         return remember(map) { FieldState(map) }
     }
 
-    private enum class ArtistField(val label: StringResource) {
-        STATUS(Res.string.alley_edit_artist_field_label_status),
-        BOOTH(Res.string.alley_edit_artist_field_label_booth),
-        NAME(Res.string.alley_edit_artist_field_label_name),
-        SUMMARY(Res.string.alley_edit_artist_field_label_summary),
-        SOCIAL_LINKS(Res.string.alley_edit_artist_field_label_social_links),
-        STORE_LINKS(Res.string.alley_edit_artist_field_label_store_links),
-        PORTFOLIO_LINKS(Res.string.alley_edit_artist_field_label_portfolio_links),
-        CATALOG_LINKS(Res.string.alley_edit_artist_field_label_catalog_links),
-        NOTES(Res.string.alley_edit_artist_field_label_notes),
-        COMMISSIONS(Res.string.alley_edit_artist_field_label_commissions),
-        SERIES_INFERRED(Res.string.alley_edit_artist_field_label_series_inferred),
-        SERIES_CONFIRMED(Res.string.alley_edit_artist_field_label_series_confirmed),
-        MERCH_INFERRED(Res.string.alley_edit_artist_field_label_merch_inferred),
-        MERCH_CONFIRMED(Res.string.alley_edit_artist_field_label_merch_confirmed),
-        EDITOR_NOTES(Res.string.alley_edit_artist_field_label_editor_notes),
+    private enum class StampRallyField(val label: StringResource) {
+        FANDOM(Res.string.alley_edit_stamp_rally_field_label_fandom),
+        HOST_TABLE(Res.string.alley_edit_stamp_rally_field_label_host_table),
+        TABLES(Res.string.alley_edit_stamp_rally_field_label_tables),
+        LINKS(Res.string.alley_edit_stamp_rally_field_label_links),
+        TABLE_MIN(Res.string.alley_edit_stamp_rally_field_label_table_min),
+        PRIZE(Res.string.alley_edit_stamp_rally_field_label_prize),
+        PRIZE_LIMIT(Res.string.alley_edit_stamp_rally_field_label_prize_limit),
+        SERIES(Res.string.alley_edit_stamp_rally_field_label_series),
+        MERCH(Res.string.alley_edit_stamp_rally_field_label_merch),
+        NOTES(Res.string.alley_edit_stamp_rally_field_label_notes),
+        EDITOR_NOTES(Res.string.alley_edit_stamp_rally_field_label_editor_notes),
     }
 }

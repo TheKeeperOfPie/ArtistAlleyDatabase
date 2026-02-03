@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKe
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -35,36 +36,36 @@ actual class AlleyFormRemoteDatabase(
                         .takeIf { it != before.summary.orEmpty() },
                     notes = after.notes.orEmpty()
                         .takeIf { it != before.notes.orEmpty() },
-                    socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
-                    storeLinks = ArtistEntryDiff.diffList(
+                    socialLinks = HistoryListDiff.diffList(before.socialLinks, after.socialLinks),
+                    storeLinks = HistoryListDiff.diffList(
                         before.storeLinks,
                         after.storeLinks
                     ),
-                    portfolioLinks = ArtistEntryDiff.diffList(
+                    portfolioLinks = HistoryListDiff.diffList(
                         before.portfolioLinks,
                         after.portfolioLinks
                     ),
-                    catalogLinks = ArtistEntryDiff.diffList(
+                    catalogLinks = HistoryListDiff.diffList(
                         before.catalogLinks,
                         after.catalogLinks
                     ),
-                    commissions = ArtistEntryDiff.diffList(
+                    commissions = HistoryListDiff.diffList(
                         before.commissions,
                         after.commissions
                     ),
-                    seriesInferred = ArtistEntryDiff.diffList(
+                    seriesInferred = HistoryListDiff.diffList(
                         before.seriesInferred,
                         after.seriesInferred
                     ),
-                    seriesConfirmed = ArtistEntryDiff.diffList(
+                    seriesConfirmed = HistoryListDiff.diffList(
                         before.seriesConfirmed,
                         after.seriesConfirmed
                     ),
-                    merchInferred = ArtistEntryDiff.diffList(
+                    merchInferred = HistoryListDiff.diffList(
                         before.merchInferred,
                         after.merchInferred
                     ),
-                    merchConfirmed = ArtistEntryDiff.diffList(
+                    merchConfirmed = HistoryListDiff.diffList(
                         before.merchConfirmed,
                         after.merchConfirmed
                     ),

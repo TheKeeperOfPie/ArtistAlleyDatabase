@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.FormTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
@@ -107,10 +108,10 @@ class ArtistFormViewModel(
 
             fun applyDiff(
                 base: List<String>,
-                diff: ArtistEntryDiff.Diff?,
+                diff: HistoryListDiff?,
             ): List<String> {
                 val base = base.toMutableSet()
-                base.removeAll(diff?.removed.orEmpty().toSet())
+                base.removeAll(diff?.deleted.orEmpty().toSet())
                 base.addAll(diff?.added.orEmpty().toSet())
                 return base.toMutableList()
             }

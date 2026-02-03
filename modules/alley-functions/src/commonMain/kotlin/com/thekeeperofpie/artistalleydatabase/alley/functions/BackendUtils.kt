@@ -4,6 +4,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlin.time.Instant
@@ -59,39 +60,39 @@ internal object BackendUtils {
                 .takeIf { it != formEntry.beforeSummary.orEmpty() },
             notes = formEntry.afterNotes.orEmpty()
                 .takeIf { it != formEntry.beforeNotes.orEmpty() },
-            socialLinks = ArtistEntryDiff.diffList(
+            socialLinks = HistoryListDiff.diffList(
                 formEntry.beforeSocialLinks,
                 formEntry.afterSocialLinks
             ),
-            storeLinks = ArtistEntryDiff.diffList(
+            storeLinks = HistoryListDiff.diffList(
                 formEntry.beforeStoreLinks,
                 formEntry.afterStoreLinks
             ),
-            portfolioLinks = ArtistEntryDiff.diffList(
+            portfolioLinks = HistoryListDiff.diffList(
                 formEntry.beforePortfolioLinks,
                 formEntry.afterPortfolioLinks
             ),
-            catalogLinks = ArtistEntryDiff.diffList(
+            catalogLinks = HistoryListDiff.diffList(
                 formEntry.beforeCatalogLinks,
                 formEntry.afterCatalogLinks
             ),
-            commissions = ArtistEntryDiff.diffList(
+            commissions = HistoryListDiff.diffList(
                 formEntry.beforeCommissions,
                 formEntry.afterCommissions
             ),
-            seriesInferred = ArtistEntryDiff.diffList(
+            seriesInferred = HistoryListDiff.diffList(
                 formEntry.beforeSeriesInferred,
                 formEntry.afterSeriesInferred
             ),
-            seriesConfirmed = ArtistEntryDiff.diffList(
+            seriesConfirmed = HistoryListDiff.diffList(
                 formEntry.beforeSeriesConfirmed,
                 formEntry.afterSeriesConfirmed
             ),
-            merchInferred = ArtistEntryDiff.diffList(
+            merchInferred = HistoryListDiff.diffList(
                 formEntry.beforeMerchInferred,
                 formEntry.afterMerchInferred
             ),
-            merchConfirmed = ArtistEntryDiff.diffList(
+            merchConfirmed = HistoryListDiff.diffList(
                 formEntry.beforeMerchConfirmed,
                 formEntry.afterMerchConfirmed
             ),
@@ -120,39 +121,39 @@ internal object BackendUtils {
                 .takeIf { it != formEntry.beforeSummary.orEmpty() },
             notes = formEntry.afterNotes.orEmpty()
                 .takeIf { it != formEntry.beforeNotes.orEmpty() },
-            socialLinks = ArtistEntryDiff.diffList(
+            socialLinks = HistoryListDiff.diffList(
                 formEntry.beforeSocialLinks,
                 formEntry.afterSocialLinks
             ),
-            storeLinks = ArtistEntryDiff.diffList(
+            storeLinks = HistoryListDiff.diffList(
                 formEntry.beforeStoreLinks,
                 formEntry.afterStoreLinks
             ),
-            portfolioLinks = ArtistEntryDiff.diffList(
+            portfolioLinks = HistoryListDiff.diffList(
                 formEntry.beforePortfolioLinks,
                 formEntry.afterPortfolioLinks
             ),
-            catalogLinks = ArtistEntryDiff.diffList(
+            catalogLinks = HistoryListDiff.diffList(
                 formEntry.beforeCatalogLinks,
                 formEntry.afterCatalogLinks
             ),
-            commissions = ArtistEntryDiff.diffList(
+            commissions = HistoryListDiff.diffList(
                 formEntry.beforeCommissions,
                 formEntry.afterCommissions
             ),
-            seriesInferred = ArtistEntryDiff.diffList(
+            seriesInferred = HistoryListDiff.diffList(
                 formEntry.beforeSeriesInferred,
                 formEntry.afterSeriesInferred
             ),
-            seriesConfirmed = ArtistEntryDiff.diffList(
+            seriesConfirmed = HistoryListDiff.diffList(
                 formEntry.beforeSeriesConfirmed,
                 formEntry.afterSeriesConfirmed
             ),
-            merchInferred = ArtistEntryDiff.diffList(
+            merchInferred = HistoryListDiff.diffList(
                 formEntry.beforeMerchInferred,
                 formEntry.afterMerchInferred
             ),
-            merchConfirmed = ArtistEntryDiff.diffList(
+            merchConfirmed = HistoryListDiff.diffList(
                 formEntry.beforeMerchConfirmed,
                 formEntry.afterMerchConfirmed
             ),

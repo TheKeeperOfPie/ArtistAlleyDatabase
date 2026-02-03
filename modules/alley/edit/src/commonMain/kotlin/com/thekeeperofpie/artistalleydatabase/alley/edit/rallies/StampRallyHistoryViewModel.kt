@@ -1,13 +1,13 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
+package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -22,25 +22,24 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Clock
-import kotlin.uuid.Uuid
 
 @AssistedInject
-class ArtistHistoryViewModel(
+class StampRallyHistoryViewModel(
     private val database: AlleyEditDatabase,
     dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
-    @Assisted private val artistId: Uuid,
+    @Assisted private val stampRallyId: String,
 ) : ViewModel() {
     private val refreshFlow = RefreshFlow()
 
     val initial = refreshFlow.updates
-        .mapLatest { database.loadArtist(dataYear, artistId) }
+        .mapLatest { database.loadStampRally(dataYear, stampRallyId) }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
     val history = refreshFlow.updates
-        .mapLatest { database.loadArtistHistory(dataYear, artistId) }
-        .mapLatest(ArtistHistoryEntryWithDiff::calculateDiffs)
+        .mapLatest { database.loadStampRallyHistory(dataYear, stampRallyId) }
+        .mapLatest(StampRallyHistoryEntryWithDiff::calculateDiffs)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
 
@@ -51,25 +50,23 @@ class ArtistHistoryViewModel(
 
     fun onClickRefresh() = refreshFlow.refresh()
 
-    fun onApplied(entry: ArtistHistoryEntry) {
+    fun onApplied(entry: StampRallyHistoryEntry) {
         val initial = initial.value ?: return
         saveJob.launch {
             initial.copy(
-                status = entry.status ?: initial.status,
-                booth = entry.booth ?: initial.booth,
-                name = entry.name ?: initial.name,
-                summary = entry.summary ?: initial.summary,
-                socialLinks = entry.socialLinks ?: initial.socialLinks,
-                storeLinks = entry.storeLinks ?: initial.storeLinks,
-                portfolioLinks = entry.portfolioLinks ?: initial.portfolioLinks,
-                catalogLinks = entry.catalogLinks ?: initial.catalogLinks,
+                fandom = entry.fandom ?: initial.fandom,
+                hostTable = entry.hostTable ?: initial.hostTable,
+                tables = entry.tables ?: initial.tables,
+                links = entry.links ?: initial.links,
+                tableMin = entry.tableMin ?: initial.tableMin,
+                totalCost = entry.totalCost ?: initial.totalCost,
+                prize = entry.prize ?: initial.prize,
+                prizeLimit = entry.prizeLimit ?: initial.prizeLimit,
+                series = entry.series ?: initial.series,
+                merch = entry.merch ?: initial.merch,
                 notes = entry.notes ?: initial.notes,
-                commissions = entry.commissions ?: initial.commissions,
-                seriesInferred = entry.seriesInferred ?: initial.seriesInferred,
-                seriesConfirmed = entry.seriesConfirmed ?: initial.seriesConfirmed,
-                merchInferred = entry.merchInferred ?: initial.merchInferred,
-                merchConfirmed = entry.merchConfirmed ?: initial.merchConfirmed,
                 images = entry.images ?: initial.images,
+                confirmed = entry.confirmed ?: initial.confirmed,
                 editorNotes = entry.editorNotes ?: initial.editorNotes,
                 lastEditor = null,
                 lastEditTime = Clock.System.now(),
@@ -77,14 +74,14 @@ class ArtistHistoryViewModel(
         }
     }
 
-    private suspend fun save(artist: ArtistDatabaseEntry.Impl) =
-        database.saveArtist(dataYear, initial.value, artist)
+    private suspend fun save(stampRally: StampRallyDatabaseEntry) =
+        database.saveStampRally(dataYear, initial.value, stampRally)
 
     @AssistedFactory
     interface Factory {
         fun create(
             dataYear: DataYear,
-            artistId: Uuid,
-        ): ArtistHistoryViewModel
+            stampRallyId: String,
+        ): StampRallyHistoryViewModel
     }
 }

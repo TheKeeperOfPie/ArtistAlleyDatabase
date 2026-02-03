@@ -70,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -380,24 +381,24 @@ internal object ArtistFormMergeScreen {
                         ArtistField.NAME -> diff?.name
                         ArtistField.SUMMARY -> diff?.summary
                         ArtistField.SOCIAL_LINKS_ADDED -> diff?.socialLinks?.added?.joinToString()
-                        ArtistField.SOCIAL_LINKS_REMOVED -> diff?.socialLinks?.removed?.joinToString()
+                        ArtistField.SOCIAL_LINKS_REMOVED -> diff?.socialLinks?.deleted?.joinToString()
                         ArtistField.STORE_LINKS_ADDED -> diff?.storeLinks?.added?.joinToString()
-                        ArtistField.STORE_LINKS_REMOVED -> diff?.storeLinks?.removed?.joinToString()
+                        ArtistField.STORE_LINKS_REMOVED -> diff?.storeLinks?.deleted?.joinToString()
                         ArtistField.PORTFOLIO_LINKS_ADDED -> diff?.portfolioLinks?.added?.joinToString()
-                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff?.portfolioLinks?.removed?.joinToString()
+                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff?.portfolioLinks?.deleted?.joinToString()
                         ArtistField.CATALOG_LINKS_ADDED -> diff?.catalogLinks?.added?.joinToString()
-                        ArtistField.CATALOG_LINKS_REMOVED -> diff?.catalogLinks?.removed?.joinToString()
+                        ArtistField.CATALOG_LINKS_REMOVED -> diff?.catalogLinks?.deleted?.joinToString()
                         ArtistField.NOTES -> diff?.notes
                         ArtistField.COMMISSIONS_ADDED -> diff?.commissions?.added?.joinToString()
-                        ArtistField.COMMISSIONS_REMOVED -> diff?.commissions?.removed?.joinToString()
+                        ArtistField.COMMISSIONS_REMOVED -> diff?.commissions?.deleted?.joinToString()
                         ArtistField.SERIES_INFERRED_ADDED -> diff?.seriesInferred?.added?.joinToString()
-                        ArtistField.SERIES_INFERRED_REMOVED -> diff?.seriesInferred?.removed?.joinToString()
+                        ArtistField.SERIES_INFERRED_REMOVED -> diff?.seriesInferred?.deleted?.joinToString()
                         ArtistField.SERIES_CONFIRMED_ADDED -> diff?.seriesConfirmed?.added?.joinToString()
-                        ArtistField.SERIES_CONFIRMED_REMOVED -> diff?.seriesConfirmed?.removed?.joinToString()
+                        ArtistField.SERIES_CONFIRMED_REMOVED -> diff?.seriesConfirmed?.deleted?.joinToString()
                         ArtistField.MERCH_INFERRED_ADDED -> diff?.merchInferred?.added?.joinToString()
-                        ArtistField.MERCH_INFERRED_REMOVED -> diff?.merchInferred?.removed?.joinToString()
+                        ArtistField.MERCH_INFERRED_REMOVED -> diff?.merchInferred?.deleted?.joinToString()
                         ArtistField.MERCH_CONFIRMED_ADDED -> diff?.merchConfirmed?.added?.joinToString()
-                        ArtistField.MERCH_CONFIRMED_REMOVED -> diff?.merchConfirmed?.removed?.joinToString()
+                        ArtistField.MERCH_CONFIRMED_REMOVED -> diff?.merchConfirmed?.deleted?.joinToString()
                     }.orEmpty()
                     Text(
                         text = fieldText,
@@ -437,12 +438,12 @@ internal object ArtistFormMergeScreen {
 
             fun applyDiff(
                 base: List<String>,
-                diff: ArtistEntryDiff.Diff?,
+                diff: HistoryListDiff?,
                 added: ArtistField,
-                removed: ArtistField,
+                deleted: ArtistField,
             ): List<String> {
                 val base = base.toMutableSet()
-                if (this[removed]) base.removeAll(diff?.removed.orEmpty().toSet())
+                if (this[deleted]) base.removeAll(diff?.deleted.orEmpty().toSet())
                 if (this[added]) base.addAll(diff?.added.orEmpty().toSet())
                 return base.toMutableList()
             }
@@ -527,24 +528,24 @@ internal object ArtistFormMergeScreen {
                         ArtistField.NAME -> diff.name != null
                         ArtistField.SUMMARY -> diff.summary != null
                         ArtistField.SOCIAL_LINKS_ADDED -> diff.socialLinks?.added != null
-                        ArtistField.SOCIAL_LINKS_REMOVED -> diff.socialLinks?.removed != null
+                        ArtistField.SOCIAL_LINKS_REMOVED -> diff.socialLinks?.deleted != null
                         ArtistField.STORE_LINKS_ADDED -> diff.storeLinks?.added != null
-                        ArtistField.STORE_LINKS_REMOVED -> diff.storeLinks?.removed != null
+                        ArtistField.STORE_LINKS_REMOVED -> diff.storeLinks?.deleted != null
                         ArtistField.PORTFOLIO_LINKS_ADDED -> diff.portfolioLinks?.added != null
-                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff.portfolioLinks?.removed != null
+                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff.portfolioLinks?.deleted != null
                         ArtistField.CATALOG_LINKS_ADDED -> diff.catalogLinks?.added != null
-                        ArtistField.CATALOG_LINKS_REMOVED -> diff.catalogLinks?.removed != null
+                        ArtistField.CATALOG_LINKS_REMOVED -> diff.catalogLinks?.deleted != null
                         ArtistField.NOTES -> diff.notes != null
                         ArtistField.COMMISSIONS_ADDED -> diff.commissions?.added != null
-                        ArtistField.COMMISSIONS_REMOVED -> diff.commissions?.removed != null
+                        ArtistField.COMMISSIONS_REMOVED -> diff.commissions?.deleted != null
                         ArtistField.SERIES_INFERRED_ADDED -> diff.seriesInferred?.added != null
-                        ArtistField.SERIES_INFERRED_REMOVED -> diff.seriesInferred?.removed != null
+                        ArtistField.SERIES_INFERRED_REMOVED -> diff.seriesInferred?.deleted != null
                         ArtistField.SERIES_CONFIRMED_ADDED -> diff.seriesConfirmed?.added != null
-                        ArtistField.SERIES_CONFIRMED_REMOVED -> diff.seriesConfirmed?.removed != null
+                        ArtistField.SERIES_CONFIRMED_REMOVED -> diff.seriesConfirmed?.deleted != null
                         ArtistField.MERCH_INFERRED_ADDED -> diff.merchInferred?.added != null
-                        ArtistField.MERCH_INFERRED_REMOVED -> diff.merchInferred?.removed != null
+                        ArtistField.MERCH_INFERRED_REMOVED -> diff.merchInferred?.deleted != null
                         ArtistField.MERCH_CONFIRMED_ADDED -> diff.merchConfirmed?.added != null
-                        ArtistField.MERCH_CONFIRMED_REMOVED -> diff.merchConfirmed?.removed != null
+                        ArtistField.MERCH_CONFIRMED_REMOVED -> diff.merchConfirmed?.deleted != null
                     }
                     if (!include) return@forEach
                     this[it] = it.isRemoved

@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
@@ -370,6 +371,13 @@ actual class AlleyEditRemoteDatabase(
         withContext(dispatchers.io) {
             sendRequest(BackendRequest.StampRally(dataYear, stampRallyId))
         }
+
+    actual suspend fun loadStampRallyHistory(
+        dataYear: DataYear,
+        stampRallyId: String,
+    ): List<StampRallyHistoryEntry> = withContext(dispatchers.io) {
+        sendRequest(BackendRequest.StampRallyHistory(dataYear, stampRallyId)).orEmpty()
+    }
 
     actual suspend fun saveStampRally(
         dataYear: DataYear,

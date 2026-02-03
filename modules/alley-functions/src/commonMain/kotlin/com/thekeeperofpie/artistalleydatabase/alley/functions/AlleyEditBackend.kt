@@ -89,6 +89,8 @@ object AlleyEditBackend {
                         makeResponse(saveStampRally(context, this, null))
                     is BackendRequest.StampRallyDelete ->
                         makeResponse(deleteStampRally(context, this))
+                    is BackendRequest.StampRallyHistory ->
+                        makeResponse(loadStampRallyHistory(context, this))
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
@@ -622,6 +624,23 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> BackendRequest.StampRallyDelete.Response.Failed("Cannot delete legacy years")
+        }
+
+    private suspend fun loadStampRallyHistory(
+        context: EventContext,
+        request: BackendRequest.StampRallyHistory,
+    ): List<StampRallyHistoryEntry> =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
+                .getHistory(request.stampRallyId)
+                .awaitAsList()
+                .map { it.toHistoryEntry() }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> emptyList() // TODO: Return legacy years?
         }
 
     private fun literalJsonResponse(value: String) = Response(

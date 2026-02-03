@@ -38,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArti
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberDecoratedNavEntries
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyAddScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
@@ -376,8 +377,21 @@ private fun entryProvider(
                 // TODO: Open images screen
             },
             onClickHistory = {
-                // TODO: Open history screen
+                navStack.navigate(
+                    AlleyEditDestination.StampRallyHistory(
+                        dataYear = route.dataYear,
+                        stampRallyId = route.stampRallyId,
+                    )
+                )
             },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.StampRallyHistory> { route ->
+        StampRallyHistoryScreen(
+            dataYear = route.dataYear,
+            stampRallyId = route.stampRallyId,
+            graph = graph,
+            onClickBack = onClickBack,
         )
     }
 }

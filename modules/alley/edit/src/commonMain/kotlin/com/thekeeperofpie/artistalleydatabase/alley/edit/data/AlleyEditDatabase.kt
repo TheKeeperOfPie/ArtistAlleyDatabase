@@ -249,6 +249,9 @@ class AlleyEditDatabase(
         }
     }
 
+    suspend fun loadStampRallyHistory(dataYear: DataYear, stampRallyId: String) =
+        remoteDatabase.loadStampRallyHistory(dataYear, stampRallyId)
+
     suspend fun deleteStampRally(
         dataYear: DataYear,
         expected: StampRallyDatabaseEntry,

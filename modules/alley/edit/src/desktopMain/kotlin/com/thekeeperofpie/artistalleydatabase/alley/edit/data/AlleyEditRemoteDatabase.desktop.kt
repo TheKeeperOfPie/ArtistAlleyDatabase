@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -354,6 +355,13 @@ actual class AlleyEditRemoteDatabase(
                 ?.stampRally
     }
 
+    actual suspend fun loadStampRallyHistory(
+        dataYear: DataYear,
+        stampRallyId: String,
+    ): List<StampRallyHistoryEntry> =
+        stampRallyHistoryByDataYearAndId[dataYear]?.get(stampRallyId).orEmpty()
+            .sortedByDescending { it.timestamp }
+
     actual suspend fun saveStampRally(
         dataYear: DataYear,
         initial: StampRallyDatabaseEntry?,
@@ -409,22 +417,22 @@ actual class AlleyEditRemoteDatabase(
             name = after.name.takeIf { it != before.name },
             summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
             notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
-            socialLinks = ArtistEntryDiff.diffList(before.socialLinks, after.socialLinks),
-            storeLinks = ArtistEntryDiff.diffList(before.storeLinks, after.storeLinks),
-            portfolioLinks = ArtistEntryDiff.diffList(
+            socialLinks = HistoryListDiff.diffList(before.socialLinks, after.socialLinks),
+            storeLinks = HistoryListDiff.diffList(before.storeLinks, after.storeLinks),
+            portfolioLinks = HistoryListDiff.diffList(
                 before.portfolioLinks,
                 after.portfolioLinks
             ),
-            catalogLinks = ArtistEntryDiff.diffList(before.catalogLinks, after.catalogLinks),
-            commissions = ArtistEntryDiff.diffList(before.commissions, after.commissions),
-            seriesInferred = ArtistEntryDiff.diffList(
+            catalogLinks = HistoryListDiff.diffList(before.catalogLinks, after.catalogLinks),
+            commissions = HistoryListDiff.diffList(before.commissions, after.commissions),
+            seriesInferred = HistoryListDiff.diffList(
                 before.seriesInferred,
                 after.seriesInferred
             ),
             seriesConfirmed =
-                ArtistEntryDiff.diffList(before.seriesConfirmed, after.seriesConfirmed),
-            merchInferred = ArtistEntryDiff.diffList(before.merchInferred, after.merchInferred),
-            merchConfirmed = ArtistEntryDiff.diffList(
+                HistoryListDiff.diffList(before.seriesConfirmed, after.seriesConfirmed),
+            merchInferred = HistoryListDiff.diffList(before.merchInferred, after.merchInferred),
+            merchConfirmed = HistoryListDiff.diffList(
                 before.merchConfirmed,
                 after.merchConfirmed
             ),

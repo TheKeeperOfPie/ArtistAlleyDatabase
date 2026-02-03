@@ -79,6 +79,7 @@ internal object StampRallyForm {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        forceLocked: Boolean = false,
         modifier: Modifier = Modifier,
     ) {
         val focusState = rememberFocusState(
@@ -97,7 +98,7 @@ internal object StampRallyForm {
             )
         )
 
-        EntryForm2(focusState = focusState, modifier = modifier) {
+        EntryForm2(forceLocked = forceLocked, focusState = focusState, modifier = modifier) {
             val scope = remember(this, initialStampRally) {
                 object : StampRallyFormScope(this) {
                     override val initialStampRally: StampRallyDatabaseEntry?
