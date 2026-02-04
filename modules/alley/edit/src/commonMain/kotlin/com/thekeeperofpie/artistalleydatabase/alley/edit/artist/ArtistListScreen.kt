@@ -68,7 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ReadOnlyStateFlow
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
@@ -267,30 +266,21 @@ internal object ArtistListScreen {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = modifier.padding(horizontal = 16.dp),
         ) {
-            artist.booth?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.titleLarge
-                        .copy(fontFamily = FontFamily.Monospace),
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
-                        .sharedElement("booth", artist.id)
-                )
-            }
+            Text(
+                text = artist.booth?.ifEmpty { null } ?: "   ",
+                style = MaterialTheme.typography.titleLarge
+                    .copy(fontFamily = FontFamily.Monospace),
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
 
-            val text = artist.name?.takeUnless { it.isBlank() } ?: artist.id.toString()
+            val text = artist.name.takeUnless { it.isBlank() } ?: artist.id.toString()
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
-                    .sharedElement("name", artist.id)
                     .weight(1f)
-                    .padding(
-                        start = if (artist.booth.isNullOrBlank()) 16.dp else 0.dp,
-                        top = 12.dp,
-                        bottom = 12.dp,
-                    )
+                    .padding(vertical = 12.dp)
             )
         }
     }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -62,10 +64,12 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_list_sort_content_description
 import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
+import com.thekeeperofpie.artistalleydatabase.alley.series.name
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeader
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
-import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedElement
+import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
@@ -88,8 +92,10 @@ internal object StampRallyListScreen {
             graph.stampRallyListViewModelFactory.create(createSavedStateHandle())
         },
     ) {
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
         StampRallyListScreen(
             state = viewModel.state,
+            seriesById = { seriesById },
             onRefresh = viewModel::refresh,
             onAddStampRally = { onAddStampRally(viewModel.state.dataYear.value) },
             onEditStampRally = { onEditStampRally(viewModel.state.dataYear.value, it) },
@@ -99,6 +105,7 @@ internal object StampRallyListScreen {
     @Composable
     operator fun invoke(
         state: State,
+        seriesById: () -> Map<String, SeriesInfo>,
         onRefresh: () -> Unit,
         onAddStampRally: () -> Unit,
         onEditStampRally: (id: String) -> Unit,
@@ -232,8 +239,10 @@ internal object StampRallyListScreen {
                     items(items = entries, key = { it.id }, contentType = { "artistRow" }) {
                         Column {
                             StampRallyRow(
-                                it,
-                                modifier = Modifier.clickable { onEditStampRally(it.id) })
+                                stampRally = it,
+                                seriesById = seriesById,
+                                modifier = Modifier.clickable { onEditStampRally(it.id) }
+                            )
                             HorizontalDivider()
                         }
                     }
@@ -243,36 +252,52 @@ internal object StampRallyListScreen {
     }
 
     @Composable
-    private fun StampRallyRow(stampRally: StampRallySummary, modifier: Modifier = Modifier) {
+    private fun StampRallyRow(
+        stampRally: StampRallySummary,
+        seriesById: () -> Map<String, SeriesInfo>,
+        modifier: Modifier = Modifier,
+    ) {
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = modifier.padding(horizontal = 16.dp),
+            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
         ) {
-            if (stampRally.hostTable.isNotBlank()) {
-                Text(
-                    text = stampRally.hostTable,
-                    style = MaterialTheme.typography.titleLarge
-                        .copy(fontFamily = FontFamily.Monospace),
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
-                        .sharedElement("booth", stampRally.id)
-                )
-            }
+            Text(
+                text = stampRally.hostTable.ifEmpty { null } ?: "   ",
+                style = MaterialTheme.typography.titleLarge
+                    .copy(fontFamily = FontFamily.Monospace),
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
 
             val text = stampRally.fandom.takeUnless { it.isBlank() } ?: stampRally.id
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .sharedElement("name", stampRally.id)
-                    .weight(1f)
-                    .padding(
-                        start = if (stampRally.hostTable.isBlank()) 16.dp else 0.dp,
-                        top = 12.dp,
-                        bottom = 12.dp,
-                    )
+                modifier = Modifier.padding(vertical = 12.dp)
             )
+
+            if (stampRally.series.isNotEmpty()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .wrapContentWidth(align = Alignment.Start, unbounded = true)
+                        .padding(vertical = 8.dp)
+                ) {
+                    val seriesById = seriesById()
+                    val series = remember(stampRally.series) {
+                        stampRally.series.map { seriesById[it] ?: SeriesInfo.fake(it) }
+                    }
+                    series.forEach {
+                        AssistChip(
+                            onClick = {},
+                            label = {
+                                Text(it.name(LocalLanguageOptionMedia.current))
+                            },
+                        )
+                    }
+                }
+            }
         }
     }
 

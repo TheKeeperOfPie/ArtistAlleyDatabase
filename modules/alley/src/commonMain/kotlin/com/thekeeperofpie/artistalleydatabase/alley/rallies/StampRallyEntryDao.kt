@@ -680,11 +680,11 @@ class StampRallyEntryDao(
     suspend fun getAllEntries(year: DataYear) = withContext(dispatchers.io) {
         when (year) {
             DataYear.ANIME_EXPO_2023 -> dao2023().getAllEntries().awaitAsList()
-                .map { StampRallySummary(it.id, it.fandom, it.hostTable) }
+                .map { StampRallySummary(it.id, it.fandom, it.hostTable, it.tables, emptyList()) }
             DataYear.ANIME_EXPO_2024 -> dao2024().getAllEntries().awaitAsList()
-                .map { StampRallySummary(it.id, it.fandom, it.hostTable) }
+                .map { StampRallySummary(it.id, it.fandom, it.hostTable, it.tables, emptyList()) }
             DataYear.ANIME_EXPO_2025 -> dao2025().getAllEntries().awaitAsList()
-                .map { StampRallySummary(it.id, it.fandom, it.hostTable) }
+                .map { StampRallySummary(it.id, it.fandom, it.hostTable, it.tables, it.series) }
             DataYear.ANIME_EXPO_2026 -> emptyList() // TODO: Load remote
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,

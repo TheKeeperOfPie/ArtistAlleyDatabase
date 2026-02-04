@@ -83,7 +83,7 @@ object AlleyEditBackend {
                     is BackendRequest.Series -> loadSeries(context)
                     is BackendRequest.SeriesDelete -> makeResponse(deleteSeries(context, this))
                     is BackendRequest.SeriesSave -> makeResponse(saveSeries(context, this))
-                    is BackendRequest.StampRallies -> makeResponse(loadStampRallies(context))
+                    is BackendRequest.StampRallies -> loadStampRallies(context)
                     is BackendRequest.StampRally -> makeResponse(loadStampRally(context, this))
                     is BackendRequest.StampRallySave ->
                         makeResponse(saveStampRally(context, this, null))
@@ -528,8 +528,14 @@ object AlleyEditBackend {
         return BackendRequest.MerchDelete.Response.Success
     }
 
-    private suspend fun loadStampRallies(context: EventContext): List<StampRallySummary> =
-        Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
+    private suspend fun loadStampRallies(context: EventContext): Response {
+        val cacher = KeyValueCacher(context)
+        val cachedStampRalliesJson = cacher.getStampRalliesJson()
+        if (cachedStampRalliesJson != null) {
+            return literalJsonResponse(cachedStampRalliesJson)
+        }
+
+        val stampRallies = Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
             .getStampRallies()
             .awaitAsList()
             .map {
@@ -537,8 +543,12 @@ object AlleyEditBackend {
                     id = it.id,
                     fandom = it.fandom,
                     hostTable = it.hostTable,
+                    tables = it.tables,
+                    series = it.series,
                 )
             }
+        return literalJsonResponse(cacher.putStampRallies(stampRallies))
+    }
 
     private suspend fun loadStampRally(
         context: EventContext,
@@ -586,6 +596,7 @@ object AlleyEditBackend {
                 ).toDatabaseEntry(updatedStampRally.id)
                 database.stampRallyEntryAnimeExpo2026Queries.insertHistory(historyEntry)
                 database.stampRallyEntryAnimeExpo2026Queries.insertStampRally(updatedStampRally.toStampRallyEntryAnimeExpo2026())
+                KeyValueCacher(context).invalidateStampRallies()
                 BackendRequest.StampRallySave.Response.Success
             }
         }
@@ -615,6 +626,7 @@ object AlleyEditBackend {
                 } else {
                     database.stampRallyEntryAnimeExpo2026Queries
                         .deleteStampRally(request.expected.id)
+                    KeyValueCacher(context).invalidateStampRallies()
                     BackendRequest.StampRallyDelete.Response.Success
                 }
             }

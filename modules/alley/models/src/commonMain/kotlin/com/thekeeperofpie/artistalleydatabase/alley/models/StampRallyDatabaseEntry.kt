@@ -41,4 +41,6 @@ fun StampRallyDatabaseEntry.toStampRallySummary() = StampRallySummary(
     id = id,
     fandom = fandom,
     hostTable = hostTable,
+    tables = tables,
+    series = series,
 )
