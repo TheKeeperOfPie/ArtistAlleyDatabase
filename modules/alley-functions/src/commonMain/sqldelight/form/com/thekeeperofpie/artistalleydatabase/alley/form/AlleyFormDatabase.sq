@@ -5,6 +5,7 @@ import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin;
 
 CREATE TABLE IF NOT EXISTS artistFormNonce (
     artistId TEXT AS Uuid NOT NULL,
@@ -89,4 +90,60 @@ CREATE TABLE IF NOT EXISTS artistFormEntryHistory (
     formNotes TEXT,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId, timestamp)
+);
+
+CREATE TABLE IF NOT EXISTS stampRallyFormEntry (
+    dataYear TEXT AS DataYear NOT NULL,
+    artistId TEXT AS Uuid NOT NULL,
+    stampRallyId TEXT NOT NULL,
+    beforeFandom TEXT,
+    beforeTables TEXT AS List<String>,
+    beforeLinks TEXT AS List<String>,
+    beforeTableMin INTEGER AS TableMin,
+    beforePrize TEXT,
+    beforePrizeLimit INTEGER,
+    beforeSeries TEXT AS List<String>,
+    beforeMerch TEXT AS List<String>,
+    beforeNotes TEXT,
+    beforeImages TEXT AS List<CatalogImage>,
+    afterFandom TEXT,
+    afterTables TEXT AS List<String>,
+    afterLinks TEXT AS List<String>,
+    afterTableMin INTEGER AS TableMin,
+    afterPrize TEXT,
+    afterPrizeLimit INTEGER,
+    afterSeries TEXT AS List<String>,
+    afterMerch TEXT AS List<String>,
+    afterNotes TEXT,
+    afterImages TEXT AS List<CatalogImage>,
+    timestamp TEXT AS Instant NOT NULL,
+    PRIMARY KEY (dataYear, stampRallyId)
+);
+
+CREATE TABLE IF NOT EXISTS stampRallyFormEntryHistory (
+    dataYear TEXT AS DataYear NOT NULL,
+    artistId TEXT AS Uuid NOT NULL,
+    stampRallyId TEXT NOT NULL,
+    beforeFandom TEXT,
+    beforeTables TEXT AS List<String>,
+    beforeLinks TEXT AS List<String>,
+    beforeTableMin INTEGER AS TableMin,
+    beforePrize TEXT,
+    beforePrizeLimit INTEGER,
+    beforeSeries TEXT AS List<String>,
+    beforeMerch TEXT AS List<String>,
+    beforeNotes TEXT,
+    beforeImages TEXT AS List<CatalogImage>,
+    afterFandom TEXT,
+    afterTables TEXT AS List<String>,
+    afterLinks TEXT AS List<String>,
+    afterTableMin INTEGER AS TableMin,
+    afterPrize TEXT,
+    afterPrizeLimit INTEGER,
+    afterSeries TEXT AS List<String>,
+    afterMerch TEXT AS List<String>,
+    afterNotes TEXT,
+    afterImages TEXT AS List<CatalogImage>,
+    timestamp TEXT AS Instant NOT NULL,
+    PRIMARY KEY (dataYear, artistId, stampRallyId, timestamp)
 );

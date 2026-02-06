@@ -1,0 +1,7 @@
+getFormEntries:
+SELECT * FROM stampRallyFormEntry
+WHERE dataYear = :dataYear AND artistId = :artistId;
+
+insertFormEntry:
+INSERT OR REPLACE INTO stampRallyFormEntry
+VALUES ?;

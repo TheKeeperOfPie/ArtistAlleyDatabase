@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditRemoteDatabase.FormSubmission
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -14,12 +14,50 @@ import kotlin.uuid.Uuid
 
 object DebugTestData {
 
-    suspend fun initialize(database: AlleyEditRemoteDatabase) {
-        initializeTestArtist(database)
-        initializeTestStampRally(database)
+    private var initialized = false
+
+    suspend fun initialize(
+        editDatabase: AlleyEditRemoteDatabase,
+        formDatabase: AlleyFormRemoteDatabase,
+    ) {
+        if (initialized) return
+        initialized = true
+        val artist = initializeTestArtist(editDatabase)
+        val artistAfter = artist.copy(
+            name = artist.name + " - edited",
+            summary = "New description",
+            seriesInferred = artist.seriesInferred.drop(1) + "SeriesD",
+            merchConfirmed = artist.merchConfirmed.drop(1) + "Photocards",
+        )
+
+        val stampRally = initializeTestStampRally(editDatabase)
+        val stampRallyAfter = stampRally.copy(
+            fandom = stampRally.fandom + " - edited",
+            tables = listOf("C38", "C39", "C41"),
+            prizeLimit = 25,
+            series = stampRally.series.drop(1) + "SeriesD",
+            merch = stampRally.merch.drop(1) + "Photocards",
+        )
+
+        editDatabase
+            .generateFormLink(
+                dataYear = artist.year,
+                artistId = Uuid.parse(artist.id),
+                forceRegenerate = false,
+            )
+            ?.substringAfter("${AlleyCryptography.ACCESS_KEY_PARAM}=")
+            ?.let(ArtistFormAccessKey::setKey)
+        formDatabase.saveArtist(
+            artist.year,
+            beforeArtist = artist,
+            afterArtist = artistAfter,
+            beforeStampRallies = listOf(stampRally),
+            afterStampRallies = listOf(stampRallyAfter),
+            formNotes = "Some test artist form notes",
+        )
     }
 
-    private suspend fun initializeTestArtist(database: AlleyEditRemoteDatabase) {
+    private suspend fun initializeTestArtist(database: AlleyEditRemoteDatabase): ArtistDatabaseEntry.Impl {
         // Seed some initial data to make it easier to test out features locally
         val artistUpdates = listOf<(ArtistDatabaseEntry.Impl) -> ArtistDatabaseEntry.Impl>(
             { it.copy(name = "First Last", lastEditor = "firstlast@example.org") },
@@ -120,24 +158,10 @@ object DebugTestData {
             previous = next
         }
 
-        val after = previous.copy(
-            name = previous.name + " - edited",
-            summary = "New description",
-            seriesInferred = previous.seriesInferred.drop(1) + "SeriesD",
-            merchConfirmed = previous.merchConfirmed.drop(1) + "Photocards",
-        )
-
-        database.artistFormQueue[Uuid.parse(previous.id)] =
-            FormSubmission(previous, after, "Some test artist form notes")
-
-        database.generateFormLink(
-            dataYear = after.year,
-            artistId = Uuid.parse(after.id),
-            forceRegenerate = false,
-        )
+        return previous
     }
 
-    private suspend fun initializeTestStampRally(database: AlleyEditRemoteDatabase) {
+    private suspend fun initializeTestStampRally(database: AlleyEditRemoteDatabase): StampRallyDatabaseEntry {
         val updates = listOf<(StampRallyDatabaseEntry) -> StampRallyDatabaseEntry>(
             {
                 it.copy(
@@ -190,5 +214,7 @@ object DebugTestData {
             )
             previous = next
         }
+
+        return previous
     }
 }

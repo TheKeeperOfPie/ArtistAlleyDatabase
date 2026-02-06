@@ -44,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormEditActions
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHeaderIconAndTitle
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.LinksSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ListFieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.MultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.NotesSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.RevertDialogState
@@ -67,7 +68,7 @@ import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-internal object StampRallyForm {
+object StampRallyForm {
 
     @Composable
     operator fun invoke(
@@ -94,10 +95,68 @@ internal object StampRallyForm {
                 state.prizeLimit,
                 state.stateSeries,
                 state.stateMerch,
+                state.notes,
                 state.editorState.editorNotes,
             )
         )
+        StampRallyForm(
+            state = state,
+            errorState = errorState,
+            focusState = focusState,
+            initialStampRally = initialStampRally,
+            seriesById = seriesById,
+            seriesPredictions = seriesPredictions,
+            merchById = merchById,
+            merchPredictions = merchPredictions,
+            seriesImage = seriesImage,
+            forceLocked = forceLocked,
+            modifier = modifier,
+        ) {
+            MetadataSection(state.metadata)
+            IdSection(state.editorState.id, errorState.idErrorMessage)
+            FandomSection(state.fandom)
+            HostTableSection(state.hostTable)
+            TablesSection(state.stateTables, state.tables)
+            LinksSection(state.stateLinks, state.links, errorState.linksErrorMessage)
+            TableMinSection(state.tableMin)
+            PrizeSection(state.prize)
+            PrizeLimitSection(state.prizeLimit)
+            SeriesSection(
+                state = state.stateSeries,
+                series = state.series,
+                seriesById = seriesById,
+                seriesPredictions = seriesPredictions,
+                seriesImage = seriesImage,
+            )
+            MerchSection(state.stateMerch, state.merch, merchById, merchPredictions)
+            NotesSection(
+                state.notes,
+                this.initialStampRally?.notes,
+                Res.string.alley_edit_stamp_rally_edit_notes
+            )
+            NotesSection(
+                state = state.editorState.editorNotes,
+                initialValue = this.initialStampRally?.editorNotes,
+                header = Res.string.alley_edit_stamp_rally_edit_editor_notes,
+            )
+        }
+    }
 
+    @Composable
+    operator fun invoke(
+        state: StampRallyFormState,
+        errorState: StampRallyErrorState,
+        focusState: EntryForm2.FocusState,
+        initialStampRally: () -> StampRallyDatabaseEntry?,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+        forceLocked: Boolean = false,
+        modifier: Modifier = Modifier,
+        content: @Composable StampRallyFormScope.() -> Unit,
+    ) {
         EntryForm2(forceLocked = forceLocked, focusState = focusState, modifier = modifier) {
             val scope = remember(this, initialStampRally) {
                 object : StampRallyFormScope(this) {
@@ -107,33 +166,7 @@ internal object StampRallyForm {
             }
 
             with(scope) {
-                MetadataSection(state.metadata)
-                IdSection(state.editorState.id, errorState.idErrorMessage)
-                FandomSection(state.fandom)
-                HostTableSection(state.hostTable)
-                TablesSection(state.stateTables, state.tables)
-                LinksSection(state.stateLinks, state.links, errorState.linksErrorMessage)
-                TableMinSection(state.tableMin)
-                PrizeSection(state.prize)
-                PrizeLimitSection(state.prizeLimit)
-                SeriesSection(
-                    state = state.stateSeries,
-                    series = state.series,
-                    seriesById = seriesById,
-                    seriesPredictions = seriesPredictions,
-                    seriesImage = seriesImage,
-                )
-                MerchSection(state.stateMerch, state.merch, merchById, merchPredictions)
-                NotesSection(
-                    state.notes,
-                    scope.initialStampRally?.notes,
-                    Res.string.alley_edit_stamp_rally_edit_notes
-                )
-                NotesSection(
-                    state = state.editorState.editorNotes,
-                    initialValue = scope.initialStampRally?.editorNotes,
-                    header = Res.string.alley_edit_stamp_rally_edit_editor_notes,
-                )
+                content()
             }
         }
     }
@@ -141,7 +174,7 @@ internal object StampRallyForm {
 
 @LayoutScopeMarker
 @Stable
-private abstract class StampRallyFormScope(
+abstract class StampRallyFormScope(
     entryFormScope: EntryFormScope,
 ) : EntryFormScope by entryFormScope {
     abstract val initialStampRally: StampRallyDatabaseEntry?
@@ -267,6 +300,13 @@ private abstract class StampRallyFormScope(
                     ShowListRevertIconButton(listRevertDialogState, tables)
                 }
             },
+        )
+
+        ListFieldRevertDialog(
+            dialogState = listRevertDialogState,
+            label = Res.string.alley_edit_stamp_rally_edit_tables,
+            items = tables,
+            itemsToText = { it.joinToString() },
         )
     }
 
@@ -408,6 +448,13 @@ private abstract class StampRallyFormScope(
                 }
             },
             listRevertDialogState = listRevertDialogState,
+        )
+
+        ListFieldRevertDialog(
+            dialogState = listRevertDialogState,
+            label = Res.string.alley_edit_stamp_rally_edit_merch,
+            items = merch,
+            itemsToText = { it.joinToString() },
         )
     }
 

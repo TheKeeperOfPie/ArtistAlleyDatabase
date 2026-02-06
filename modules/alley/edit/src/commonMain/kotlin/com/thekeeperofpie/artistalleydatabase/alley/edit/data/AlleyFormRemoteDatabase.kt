@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 
@@ -10,8 +11,10 @@ expect class AlleyFormRemoteDatabase {
 
     suspend fun saveArtist(
         dataYear: DataYear,
-        before: ArtistDatabaseEntry.Impl,
-        after: ArtistDatabaseEntry.Impl,
+        beforeArtist: ArtistDatabaseEntry.Impl,
+        afterArtist: ArtistDatabaseEntry.Impl,
+        beforeStampRallies: List<StampRallyDatabaseEntry>,
+        afterStampRallies: List<StampRallyDatabaseEntry>,
         formNotes: String,
     ): BackendFormRequest.ArtistSave.Response
 }

@@ -2,6 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.models.network
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -21,7 +24,10 @@ sealed interface BackendFormRequest {
         @Serializable
         data class Response(
             val artist: ArtistDatabaseEntry.Impl,
-            val formDiff: ArtistEntryDiff?,
+            val stampRallies: List<StampRallyDatabaseEntry>,
+            val artistFormDiff: ArtistEntryDiff?,
+            val stampRallyFormDiffs: List<StampRallyEntryDiff>,
+            val allStampRallySummaries: List<StampRallySummary>,
         )
     }
 
@@ -29,8 +35,10 @@ sealed interface BackendFormRequest {
     data class ArtistSave(
         val nonce: Uuid,
         val dataYear: DataYear,
-        val before: ArtistDatabaseEntry.Impl,
-        val after: ArtistDatabaseEntry.Impl,
+        val beforeArtist: ArtistDatabaseEntry.Impl,
+        val afterArtist: ArtistDatabaseEntry.Impl,
+        val beforeStampRallies: List<StampRallyDatabaseEntry>,
+        val afterStampRallies: List<StampRallyDatabaseEntry>,
         val formNotes: String,
     ) : BackendFormRequest, WithResponse<ArtistSave.Response> {
 

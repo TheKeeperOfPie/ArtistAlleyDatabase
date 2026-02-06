@@ -1,11 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
+import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import kotlinx.coroutines.await
 import kotlinx.io.bytestring.hexToByteString
 import kotlinx.serialization.json.Json
@@ -88,7 +92,7 @@ internal object AlleyFormBackend {
                     )
                 )
                 is BackendFormRequest.ArtistSave -> {
-                    if (Uuid.parse(this.after.id) != expectedArtistId) {
+                    if (Uuid.parse(this.afterArtist.id) != expectedArtistId) {
                         Utils.unauthorizedResponse
                     } else {
                         makeResponse(saveArtist(context, this, expectedArtistId))
@@ -125,8 +129,45 @@ internal object AlleyFormBackend {
             ) // Strip identifying info
             ?: return null
 
-        val formDiff = BackendUtils.loadFormDiff(context, request.dataYear, artistId)
-        return BackendFormRequest.Artist.Response(artist = artist, formDiff = formDiff)
+        val booth = artist.booth
+
+        val cacher = KeyValueCacher(context)
+        val cachedStampRalliesJson = cacher.getStampRalliesJson()
+        val stampRallySummaries = try {
+            cachedStampRalliesJson?.let { Json.decodeFromString<List<StampRallySummary>>(it) }
+        } catch (_: Exception) {
+            null
+        } ?: run {
+            Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
+                .getStampRallies()
+                .awaitAsList()
+                .map {
+                    StampRallySummary(
+                        id = it.id,
+                        fandom = it.fandom,
+                        hostTable = it.hostTable,
+                        tables = it.tables,
+                        series = it.series,
+                    )
+                }
+                .also { cacher.putStampRallies(it) }
+        }
+        val stampRallies =
+            stampRallySummaries.filter { it.hostTable == booth || it.tables.contains(booth) }
+                .mapNotNull {
+                    val request = BackendRequest.StampRally(artist.year, it.id)
+                    BackendUtils.loadStampRally(context, request)
+                }
+
+        val artistFormDiff = BackendUtils.loadArtistFormDiff(context, request.dataYear, artistId)
+        val stampRallyFormDiffs = BackendUtils.loadStampRallyFormDiffs(context, request.dataYear, artistId)
+        return BackendFormRequest.Artist.Response(
+            artist = artist,
+            stampRallies = stampRallies,
+            artistFormDiff = artistFormDiff,
+            stampRallyFormDiffs = stampRallyFormDiffs,
+            allStampRallySummaries = stampRallySummaries,
+        )
     }
 
     private suspend fun saveArtist(
@@ -145,44 +186,78 @@ internal object AlleyFormBackend {
             database.alleyFormNonceQueries.clearNonce(artistId)
         }
 
-        val before = request.before
-        val after = request.after
-        database.artistFormEntryQueries.insertFormEntry(
+        val beforeArtist = request.beforeArtist
+        val afterArtist = request.afterArtist
+        val timestamp = Clock.System.now()
+        val artistFormEntry =
             ArtistFormEntry(
                 artistId = artistId,
                 dataYear = request.dataYear,
-                beforeBooth = before.booth,
-                beforeName = before.name,
-                beforeSummary = before.summary,
-                beforeSocialLinks = before.socialLinks,
-                beforeStoreLinks = before.storeLinks,
-                beforePortfolioLinks = before.portfolioLinks,
-                beforeCatalogLinks = before.catalogLinks,
-                beforeNotes = before.notes,
-                beforeCommissions = before.commissions,
-                beforeSeriesInferred = before.seriesInferred,
-                beforeSeriesConfirmed = before.seriesConfirmed,
-                beforeMerchInferred = before.merchInferred,
-                beforeMerchConfirmed = before.merchConfirmed,
-                beforeImages = before.images,
-                afterBooth = after.booth,
-                afterName = after.name,
-                afterSummary = after.summary,
-                afterSocialLinks = after.socialLinks,
-                afterStoreLinks = after.storeLinks,
-                afterPortfolioLinks = after.portfolioLinks,
-                afterCatalogLinks = after.catalogLinks,
-                afterNotes = after.notes,
-                afterCommissions = after.commissions,
-                afterSeriesInferred = after.seriesInferred,
-                afterSeriesConfirmed = after.seriesConfirmed,
-                afterMerchInferred = after.merchInferred,
-                afterMerchConfirmed = after.merchConfirmed,
-                afterImages = after.images,
+                beforeBooth = beforeArtist.booth,
+                beforeName = beforeArtist.name,
+                beforeSummary = beforeArtist.summary,
+                beforeSocialLinks = beforeArtist.socialLinks,
+                beforeStoreLinks = beforeArtist.storeLinks,
+                beforePortfolioLinks = beforeArtist.portfolioLinks,
+                beforeCatalogLinks = beforeArtist.catalogLinks,
+                beforeNotes = beforeArtist.notes,
+                beforeCommissions = beforeArtist.commissions,
+                beforeSeriesInferred = beforeArtist.seriesInferred,
+                beforeSeriesConfirmed = beforeArtist.seriesConfirmed,
+                beforeMerchInferred = beforeArtist.merchInferred,
+                beforeMerchConfirmed = beforeArtist.merchConfirmed,
+                beforeImages = beforeArtist.images,
+                afterBooth = afterArtist.booth,
+                afterName = afterArtist.name,
+                afterSummary = afterArtist.summary,
+                afterSocialLinks = afterArtist.socialLinks,
+                afterStoreLinks = afterArtist.storeLinks,
+                afterPortfolioLinks = afterArtist.portfolioLinks,
+                afterCatalogLinks = afterArtist.catalogLinks,
+                afterNotes = afterArtist.notes,
+                afterCommissions = afterArtist.commissions,
+                afterSeriesInferred = afterArtist.seriesInferred,
+                afterSeriesConfirmed = afterArtist.seriesConfirmed,
+                afterMerchInferred = afterArtist.merchInferred,
+                afterMerchConfirmed = afterArtist.merchConfirmed,
+                afterImages = afterArtist.images,
                 formNotes = request.formNotes,
-                timestamp = Clock.System.now(),
+                timestamp = timestamp,
             )
-        )
+        val stampRallyFormEntries = request.afterStampRallies.map { after ->
+            val before = request.beforeStampRallies.find { it.id == after.id }
+            StampRallyFormEntry(
+                dataYear = request.dataYear,
+                artistId = artistId,
+                stampRallyId = after.id,
+                beforeFandom = before?.fandom,
+                beforeTables = before?.tables,
+                beforeLinks = before?.links,
+                beforeTableMin = before?.tableMin,
+                beforePrize = before?.prize,
+                beforePrizeLimit = before?.prizeLimit,
+                beforeSeries = before?.series,
+                beforeMerch = before?.merch,
+                beforeNotes = before?.notes,
+                beforeImages = before?.images,
+                afterFandom = after.fandom,
+                afterTables = after.tables,
+                afterLinks = after.links,
+                afterTableMin = after.tableMin,
+                afterPrize = after.prize,
+                afterPrizeLimit = after.prizeLimit,
+                afterSeries = after.series,
+                afterMerch = after.merch,
+                afterNotes = after.notes,
+                afterImages = after.images,
+                timestamp = timestamp,
+            )
+        }
+
+        database.artistFormEntryQueries.insertFormEntry(artistFormEntry)
+        stampRallyFormEntries.forEach {
+            database.stampRallyFormEntryQueries.insertFormEntry(it)
+        }
         Databases.editDatabase(context)
             .artistEntryAnimeExpo2026Queries
             .markArtistHasSubmittedForm(artistId.toString())

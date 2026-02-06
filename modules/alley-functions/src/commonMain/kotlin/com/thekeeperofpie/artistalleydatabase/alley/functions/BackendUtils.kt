@@ -1,11 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -41,7 +45,7 @@ internal object BackendUtils {
                 -> null
         }
 
-    suspend fun loadFormDiff(
+    suspend fun loadArtistFormDiff(
         context: EventContext,
         dataYear: DataYear,
         artistId: Uuid,
@@ -101,7 +105,7 @@ internal object BackendUtils {
         )
     }
 
-    suspend fun loadFormHistoryDiff(
+    suspend fun loadArtistFormHistoryDiff(
         context: EventContext,
         dataYear: DataYear,
         artistId: Uuid,
@@ -161,4 +165,53 @@ internal object BackendUtils {
             timestamp = formEntry.timestamp,
         )
     }
+
+    suspend fun loadStampRally(
+        context: EventContext,
+        request: BackendRequest.StampRally,
+    ): StampRallyDatabaseEntry? =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
+                .stampRallyEntryAnimeExpo2026Queries
+                .getStampRally(request.stampRallyId)
+                .awaitAsOneOrNull()
+                ?.toStampRallyDatabaseEntry()
+                ?.fixForJs()
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> null // TODO: Return legacy years?
+        }
+
+    suspend fun loadStampRallyFormDiffs(
+        context: EventContext,
+        dataYear: DataYear,
+        artistId: Uuid,
+    ): List<StampRallyEntryDiff> = Databases.formDatabase(context)
+        .stampRallyFormEntryQueries
+        .getFormEntries(dataYear, artistId)
+        .awaitAsList()
+        .map { formEntry ->
+            StampRallyEntryDiff(
+                id = formEntry.stampRallyId,
+                fandom = formEntry.afterFandom.orEmpty()
+                    .takeIf { it != formEntry.beforeFandom.orEmpty() },
+                tables = HistoryListDiff.diffList(
+                    formEntry.beforeTables,
+                    formEntry.afterTables
+                ),
+                links = HistoryListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+                tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
+                prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
+                prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
+                series = HistoryListDiff.diffList(
+                    formEntry.beforeSeries,
+                    formEntry.afterSeries
+                ),
+                merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
+                notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
+            )
+        }
 }

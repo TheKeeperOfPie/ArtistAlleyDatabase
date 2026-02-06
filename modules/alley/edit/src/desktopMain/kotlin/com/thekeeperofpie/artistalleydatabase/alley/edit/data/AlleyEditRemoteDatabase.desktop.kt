@@ -64,14 +64,7 @@ actual class AlleyEditRemoteDatabase(
 
     private var fakeArtistPrivateKey: String? = null
 
-    private var simulatedLatency: Duration? = null
-
-    init {
-        runBlocking {
-            DebugTestData.initialize(this@AlleyEditRemoteDatabase)
-            simulatedLatency = 3.seconds
-        }
-    }
+    internal var simulatedLatency: Duration? = null
 
     actual suspend fun databaseCreate(): Unit = Unit
 
@@ -278,9 +271,9 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun loadArtistFormHistory(): List<ArtistFormHistoryEntry> =
         artistFormHistory.map {
             ArtistFormHistoryEntry(
-                artistId = Uuid.parse(it.after.id),
-                booth = it.after.booth ?: it.before.booth.orEmpty(),
-                name = it.after.name,
+                artistId = Uuid.parse(it.afterArtist.id),
+                booth = it.afterArtist.booth ?: it.beforeArtist.booth.orEmpty(),
+                name = it.afterArtist.name,
                 timestamp = it.timestamp,
             )
         }
@@ -337,7 +330,7 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun deleteFakeArtistData() {
         fakeArtistPrivateKey = null
         artistKeys.remove(AlleyCryptography.FAKE_ARTIST_ID)
-        artistFormHistory.removeIf { it.before.id == AlleyCryptography.FAKE_ARTIST_ID.toString() }
+        artistFormHistory.removeIf { it.beforeArtist.id == AlleyCryptography.FAKE_ARTIST_ID.toString() }
         artistFormQueue.remove(AlleyCryptography.FAKE_ARTIST_ID)
     }
 
@@ -406,13 +399,15 @@ actual class AlleyEditRemoteDatabase(
 
     private fun findFormHistoryEntry(dataYear: DataYear, artistId: Uuid, formTimestamp: Instant) =
         artistFormHistory.find {
-            it.after.year == dataYear &&
-                    it.after.id == artistId.toString() &&
+            it.afterArtist.year == dataYear &&
+                    it.afterArtist.id == artistId.toString() &&
                     it.timestamp == formTimestamp
         }
 
-    private fun FormSubmission.toArtistEntryDiff() =
-        ArtistEntryDiff(
+    private fun FormSubmission.toArtistEntryDiff(): ArtistEntryDiff {
+        val before = beforeArtist
+        val after = afterArtist
+        return ArtistEntryDiff(
             booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
             name = after.name.takeIf { it != before.name },
             summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
@@ -439,10 +434,13 @@ actual class AlleyEditRemoteDatabase(
             formNotes = formNotes,
             timestamp = timestamp,
         )
+    }
 
     internal data class FormSubmission(
-        val before: ArtistDatabaseEntry.Impl,
-        val after: ArtistDatabaseEntry.Impl,
+        val beforeArtist: ArtistDatabaseEntry.Impl,
+        val afterArtist: ArtistDatabaseEntry.Impl,
+        val beforeRallies: List<StampRallyDatabaseEntry>,
+        val afterRallies: List<StampRallyDatabaseEntry>,
         val formNotes: String,
         val timestamp: Instant = Clock.System.now(),
     )

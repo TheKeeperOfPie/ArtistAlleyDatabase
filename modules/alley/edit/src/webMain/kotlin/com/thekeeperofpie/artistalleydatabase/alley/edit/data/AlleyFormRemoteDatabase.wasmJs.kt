@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -36,8 +37,10 @@ actual class AlleyFormRemoteDatabase(
 
     actual suspend fun saveArtist(
         dataYear: DataYear,
-        before: ArtistDatabaseEntry.Impl,
-        after: ArtistDatabaseEntry.Impl,
+        beforeArtist: ArtistDatabaseEntry.Impl,
+        afterArtist: ArtistDatabaseEntry.Impl,
+        beforeStampRallies: List<StampRallyDatabaseEntry>,
+        afterStampRallies: List<StampRallyDatabaseEntry>,
         formNotes: String,
     ): BackendFormRequest.ArtistSave.Response = withContext(dispatchers.io) {
         val accessKey = ArtistFormAccessKey.key
@@ -54,8 +57,10 @@ actual class AlleyFormRemoteDatabase(
             request = BackendFormRequest.ArtistSave(
                 nonce = nonce,
                 dataYear = dataYear,
-                before = before,
-                after = after,
+                beforeArtist = beforeArtist,
+                afterArtist = afterArtist,
+                beforeStampRallies = beforeStampRallies,
+                afterStampRallies = afterStampRallies,
                 formNotes = formNotes,
             ),
             accessKey = accessKey,

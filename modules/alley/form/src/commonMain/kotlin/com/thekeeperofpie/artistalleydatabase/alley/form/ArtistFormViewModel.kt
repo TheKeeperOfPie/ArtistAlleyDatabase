@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
@@ -14,11 +14,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.FormTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
@@ -32,6 +34,8 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.utils.launch
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
 import com.thekeeperofpie.artistalleydatabase.utils_compose.getMutableStateFlow
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -61,6 +65,8 @@ class ArtistFormViewModel(
     ) { ArtistFormScreen.State.Progress.LOADING }
     private val artist =
         savedStateHandle.getMutableStateFlow<ArtistDatabaseEntry.Impl?>("artist", null)
+    private val rallies =
+        savedStateHandle.getMutableStateFlow<List<StampRallyDatabaseEntry>>("rallies", emptyList())
     private val initialFormDiff =
         savedStateHandle.getMutableStateFlow<ArtistEntryDiff?>("initialFormDiff", null)
     private val previousYearData =
@@ -72,10 +78,18 @@ class ArtistFormViewModel(
                 artistInference.getPreviousYearData(it)
             }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
+
     val state = ArtistFormScreen.State(
         initialArtist = artist,
+        initialRallies = rallies,
         previousYearData = previousYearData,
         progress = progress,
+        stampRallyStates = savedStateHandle.saveable(
+            key = "stampRallyStates",
+            saver = StateUtils.SnapshotListSaver(StampRallyFormState.Saver),
+        ) {
+            SnapshotStateList<StampRallyFormState>()
+        },
         formState = savedStateHandle.saveable(
             key = "formState",
             saver = ArtistFormScreen.State.FormState.Saver,
@@ -105,6 +119,7 @@ class ArtistFormViewModel(
             }
             val baseArtist = response.artist
             this@ArtistFormViewModel.artist.value = baseArtist
+            this@ArtistFormViewModel.rallies.value = response.stampRallies
 
             fun applyDiff(
                 base: List<String>,
@@ -116,25 +131,37 @@ class ArtistFormViewModel(
                 return base.toMutableList()
             }
 
-            val formDiff = response.formDiff
-            val artist = if (formDiff == null) {
+            val artistFormDiff = response.artistFormDiff
+            val artist = if (artistFormDiff == null) {
                 baseArtist
             } else {
                 baseArtist.copy(
-                    booth = formDiff.booth ?: baseArtist.booth,
-                    name = formDiff.name ?: baseArtist.name,
-                    summary = formDiff.summary ?: baseArtist.summary,
-                    socialLinks = applyDiff(baseArtist.socialLinks, formDiff.socialLinks),
-                    storeLinks = applyDiff(baseArtist.storeLinks, formDiff.storeLinks),
-                    portfolioLinks = applyDiff(baseArtist.portfolioLinks, formDiff.portfolioLinks),
-                    catalogLinks = applyDiff(baseArtist.catalogLinks, formDiff.catalogLinks),
-                    notes = formDiff.notes ?: baseArtist.notes,
-                    commissions = applyDiff(baseArtist.commissions, formDiff.commissions),
-                    seriesInferred = applyDiff(baseArtist.seriesInferred, formDiff.seriesInferred),
+                    booth = artistFormDiff.booth ?: baseArtist.booth,
+                    name = artistFormDiff.name ?: baseArtist.name,
+                    summary = artistFormDiff.summary ?: baseArtist.summary,
+                    socialLinks = applyDiff(baseArtist.socialLinks, artistFormDiff.socialLinks),
+                    storeLinks = applyDiff(baseArtist.storeLinks, artistFormDiff.storeLinks),
+                    portfolioLinks = applyDiff(
+                        baseArtist.portfolioLinks,
+                        artistFormDiff.portfolioLinks
+                    ),
+                    catalogLinks = applyDiff(baseArtist.catalogLinks, artistFormDiff.catalogLinks),
+                    notes = artistFormDiff.notes ?: baseArtist.notes,
+                    commissions = applyDiff(baseArtist.commissions, artistFormDiff.commissions),
+                    seriesInferred = applyDiff(
+                        baseArtist.seriesInferred,
+                        artistFormDiff.seriesInferred
+                    ),
                     seriesConfirmed =
-                        applyDiff(baseArtist.seriesConfirmed, formDiff.seriesConfirmed),
-                    merchInferred = applyDiff(baseArtist.merchInferred, formDiff.merchInferred),
-                    merchConfirmed = applyDiff(baseArtist.merchConfirmed, formDiff.merchConfirmed),
+                        applyDiff(baseArtist.seriesConfirmed, artistFormDiff.seriesConfirmed),
+                    merchInferred = applyDiff(
+                        baseArtist.merchInferred,
+                        artistFormDiff.merchInferred
+                    ),
+                    merchConfirmed = applyDiff(
+                        baseArtist.merchConfirmed,
+                        artistFormDiff.merchConfirmed
+                    ),
                 )
             }
 
@@ -144,11 +171,56 @@ class ArtistFormViewModel(
                 merchById = tagAutocomplete.merchById.first(),
                 mergeBehavior = FormMergeBehavior.REPLACE,
             )
-            formDiff?.formNotes?.let {
+
+            val existingStampRallyStates = state.stampRallyStates.toList()
+            val emptyStampRallyDatabaseEntry by lazy {
+                StampRallyFormState("").captureDatabaseEntry(dataYear).second
+            }
+            val newStampRallyStates =
+                (response.stampRallies.map { it.id } + response.stampRallyFormDiffs.map { it.id })
+                    .distinct()
+                    .map { stampRallyId ->
+                        response.stampRallies.find { it.id == stampRallyId }
+                            ?: emptyStampRallyDatabaseEntry.copy(id = stampRallyId)
+                    }
+                    .map { baseStampRally ->
+                        val existingState =
+                            existingStampRallyStates.find { it.editorState.id.value.text.toString() == baseStampRally.id }
+                        val baseState = existingState ?: StampRallyFormState(baseStampRally.id)
+                        val stampRallyFormDiff =
+                            response.stampRallyFormDiffs.find { it.id == baseStampRally.id }
+                        val stampRally = if (stampRallyFormDiff == null) {
+                            baseStampRally
+                        } else {
+                            // TODO: hostTable isn't handled, remove in favor of index 0?
+                            baseStampRally.copy(
+                                fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
+                                tables = applyDiff(
+                                    baseStampRally.tables,
+                                    stampRallyFormDiff.tables
+                                ),
+                                links = applyDiff(baseStampRally.links, stampRallyFormDiff.links),
+                                tableMin = stampRallyFormDiff.tableMin ?: baseStampRally.tableMin,
+                                prize = stampRallyFormDiff.prize ?: baseStampRally.prize,
+                                prizeLimit = stampRallyFormDiff.prizeLimit ?: baseStampRally.prizeLimit,
+                                series = applyDiff(baseStampRally.series, stampRallyFormDiff.series),
+                                merch = applyDiff(baseStampRally.merch, stampRallyFormDiff.merch),
+                            )
+                        }
+                        baseState.applyDatabaseEntry(
+                            stampRally = stampRally,
+                            seriesById = tagAutocomplete.seriesById.first(),
+                            merchById = tagAutocomplete.merchById.first(),
+                            mergeBehavior = FormMergeBehavior.REPLACE,
+                        )
+                    }
+            state.stampRallyStates.replaceAll(newStampRallyStates)
+
+            artistFormDiff?.formNotes?.let {
                 state.formState.formNotes.value.setTextAndPlaceCursorAtEnd(it)
                 state.formState.formNotes.lockState = EntryLockState.LOCKED
             }
-            initialFormDiff.value = formDiff
+            initialFormDiff.value = artistFormDiff
 
             // TODO: Support images?
             progress.value = ArtistFormScreen.State.Progress.LOADED
@@ -167,9 +239,12 @@ class ArtistFormViewModel(
         val artist = artist.value ?: return
         saveTask.triggerManual {
             val (images, artist) = state.captureDatabaseEntry(artist)
+            val stampRallyEntries = state.stampRallyStates.toList()
+                .map { it.captureDatabaseEntry(dataYear).second }
             CapturedState(
                 images = images,
                 artist = artist,
+                stampRallyEntries = stampRallyEntries,
                 formNotes = state.formState.formNotes.value.text.toString(),
             )
         }
@@ -215,8 +290,10 @@ class ArtistFormViewModel(
         // TODO: Image support
         formDatabase.saveArtist(
             dataYear = dataYear,
-            before = artist.value!!,
-            after = data.artist,
+            beforeArtist = artist.value!!,
+            afterArtist = data.artist,
+            beforeStampRallies = rallies.value,
+            afterStampRallies = data.stampRallyEntries,
             formNotes = data.formNotes,
         ).also {
             progress.value = ArtistFormScreen.State.Progress.DONE
@@ -225,6 +302,7 @@ class ArtistFormViewModel(
     data class CapturedState(
         val images: List<EditImage>,
         val artist: ArtistDatabaseEntry.Impl,
+        val stampRallyEntries: List<StampRallyDatabaseEntry>,
         val formNotes: String,
     )
 

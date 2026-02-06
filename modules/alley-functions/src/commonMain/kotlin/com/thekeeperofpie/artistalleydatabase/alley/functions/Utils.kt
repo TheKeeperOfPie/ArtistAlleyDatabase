@@ -16,4 +16,11 @@ internal object Utils {
             set("Content-Type", "application/json")
         })
     )
+
+    fun literalJsonResponse(value: String) = Response(
+        body = value,
+        init = ResponseInit(status = 200, headers = Headers().apply {
+            set("Content-Type", "application/json")
+        })
+    )
 }

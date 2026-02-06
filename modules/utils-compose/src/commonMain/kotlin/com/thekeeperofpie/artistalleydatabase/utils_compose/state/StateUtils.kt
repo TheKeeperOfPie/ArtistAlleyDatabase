@@ -51,6 +51,15 @@ object StateUtils {
         )
     }
 
+    class SnapshotListSaver<T : Any, V : Any>(private val itemSaver: Saver<T, V>) :
+        Saver<SnapshotStateList<T>, List<V>> {
+        override fun SaverScope.save(value: SnapshotStateList<T>) =
+            value.toList().map { with(itemSaver) { save(it)!! } }
+
+        override fun restore(value: List<V>): SnapshotStateList<T> =
+            value.map { itemSaver.restore(it) as T }.toMutableStateList()
+    }
+
     inline fun <reified T : Any> snapshotListJsonSaver(): SnapshotListJsonSaver<T> {
         val listSerializer = ListSerializer(T::class.serializer())
         return SnapshotListJsonSaver(listSerializer)

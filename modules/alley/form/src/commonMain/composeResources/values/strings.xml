@@ -43,5 +43,8 @@
     <string name="alley_form_artist_commissions_placeholder">Commission availability (VGen links, Online/On-site, etc.)</string>
     <string name="alley_form_artist_notes_placeholder">Anything not captured in another field, should be exceptional</string>
     <string name="alley_form_artist_form_notes_placeholder">Any clarifications, misc. requests, or comments</string>
-    <string name="alley_form_artist_instructions_footer">Catalog upload and stamp rallies will be available closer to con</string>
+    <string name="alley_form_artist_instructions_footer">Catalog upload will be available closer to con</string>
+
+    <string name="alley_form_stamp_rallies_header">Stamp rallies</string>
+    <string name="alley_form_stamp_rallies_action_add">Add new rally</string>
 </resources>

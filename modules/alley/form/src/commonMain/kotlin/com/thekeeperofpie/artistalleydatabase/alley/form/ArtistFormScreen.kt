@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,11 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -28,10 +32,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -40,6 +46,7 @@ import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -49,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_notes
 import artistalleydatabase.modules.alley.form.generated.resources.Res
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_done
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_save_tooltip
@@ -84,6 +92,8 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_pri
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_2
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_private_key_prompt_link
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_action_add
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_header
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
@@ -95,6 +105,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothVal
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallySummaryRow
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.rememberErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
@@ -104,10 +118,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
+import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
@@ -116,7 +132,9 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
+import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import kotlinx.coroutines.flow.Flow
@@ -246,13 +264,16 @@ object ArtistFormScreen {
                         }
                     State.Progress.LOADED -> {
                         val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
+                        val initialRallies by state.initialRallies.collectAsStateWithLifecycle()
                         val initialFormDiff by state.initialFormDiff.collectAsStateWithLifecycle()
                         val previousYearEntry by state.previousYearData.collectAsStateWithLifecycle()
                         Form(
+                            dataYear = dataYear,
                             saveTaskState = saveTaskState,
-                            formState = state.formState,
+                            state = state,
                             errorState = errorState,
                             initialArtist = { initialArtist },
+                            initialRallies = { initialRallies },
                             initialFormDiff = { initialFormDiff },
                             previousYearData = { previousYearEntry },
                             seriesById = seriesById,
@@ -282,9 +303,11 @@ object ArtistFormScreen {
 
     @Composable
     private fun Form(
-        formState: State.FormState,
+        dataYear: DataYear,
+        state: State,
         errorState: ErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
+        initialRallies: () -> List<StampRallyDatabaseEntry>,
         initialFormDiff: () -> ArtistEntryDiff?,
         previousYearData: () -> ArtistPreviousYearData?,
         saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
@@ -326,20 +349,69 @@ object ArtistFormScreen {
                     ScrollableSideBySide(
                         showSecondary = { showMerge && previousYearData != null },
                         primary = {
-                            Form(
-                                formState = formState,
-                                errorState = errorState,
-                                initialArtist = initialArtist,
-                                initialFormDiff = initialFormDiff,
-                                previousYearData = previousYearData,
-                                seriesById = seriesById,
-                                seriesPredictions = seriesPredictions,
-                                merchById = merchById,
-                                merchPredictions = merchPredictions,
-                                seriesImage = seriesImage,
-                                onClickMerge = { showMerge = true },
-                                onClickDone = onClickDone,
-                            )
+                            Column {
+                                ArtistForm(
+                                    formState = state.formState,
+                                    errorState = errorState,
+                                    initialArtist = initialArtist,
+                                    initialFormDiff = initialFormDiff,
+                                    previousYearData = previousYearData,
+                                    seriesById = seriesById,
+                                    seriesPredictions = seriesPredictions,
+                                    merchById = merchById,
+                                    merchPredictions = merchPredictions,
+                                    seriesImage = seriesImage,
+                                    onClickMerge = { showMerge = true },
+                                )
+
+                                Spacer(Modifier.height(16.dp))
+                                HorizontalDivider()
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.alley_form_stamp_rallies_header),
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    FilledTonalButton(
+                                        onClick = {
+                                            state.stampRallyStates += StampRallyFormState().apply {
+                                                hostTable.value.setTextAndPlaceCursorAtEnd(
+                                                    state.formState.info.booth.value.text.toString()
+                                                )
+                                            }
+                                        },
+                                    ) {
+                                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                            Text(stringResource(Res.string.alley_form_stamp_rallies_action_add))
+                                        }
+                                    }
+                                }
+
+                                StampRallyForms(
+                                    dataYear = dataYear,
+                                    state = state,
+                                    initialRallies = initialRallies,
+                                    seriesById = seriesById,
+                                    seriesPredictions = seriesPredictions,
+                                    merchById = merchById,
+                                    merchPredictions = merchPredictions,
+                                    seriesImage = seriesImage
+                                )
+
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                                FilledTonalButton(
+                                    onClick = onClickDone,
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                ) {
+                                    Text(stringResource(Res.string.alley_form_action_done))
+                                }
+                            }
                         },
                         secondary = { mergeList() },
                         secondaryExpanded = { mergeList() },
@@ -352,7 +424,7 @@ object ArtistFormScreen {
     }
 
     @Composable
-    private fun Form(
+    private fun ArtistForm(
         formState: State.FormState,
         errorState: ErrorState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
@@ -364,7 +436,6 @@ object ArtistFormScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickMerge: () -> Unit,
-        onClickDone: () -> Unit,
     ) {
         val focusState = rememberFocusState(
             listOfNotNull(
@@ -461,12 +532,137 @@ object ArtistFormScreen {
             )
 
             InstructionsFooter()
+        }
+    }
 
-            FilledTonalButton(
-                onClick = onClickDone,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(stringResource(Res.string.alley_form_action_done))
+    @Composable
+    private fun StampRallyForms(
+        dataYear: DataYear,
+        state: State,
+        initialRallies: () -> List<StampRallyDatabaseEntry>,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            state.stampRallyStates.forEach { formState ->
+                var expanded by remember { mutableStateOf(false) }
+                ThemeAwareElevatedCard {
+                    val errorState = key(formState) { rememberErrorState(formState) }
+                    val focusState = key(formState) {
+                        rememberFocusState(
+                            listOf(
+                                formState.fandom,
+                                formState.hostTable,
+                                formState.stateTables,
+                                formState.stateLinks,
+                                formState.tableMin,
+                                formState.prize,
+                                formState.prizeLimit,
+                                formState.stateSeries,
+                                formState.stateMerch,
+                                formState.notes,
+                            )
+                        )
+                    }
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { expanded = !expanded }
+                        ) {
+                            val edited by remember {
+                                derivedStateOf {
+                                    // TODO: Is this too expensive?
+                                    val before = initialRallies().find {
+                                        it.id == formState.editorState.id.value.text.toString()
+                                    }
+                                    val after = formState.captureDatabaseEntry(dataYear).second
+                                    StampRallyDatabaseEntry.hasChanged(before, after)
+                                }
+                            }
+                            CompositionLocalProvider(
+                                LocalContentColor provides if (edited) {
+                                    AlleyTheme.colorScheme.positive
+                                } else {
+                                    LocalContentColor.current
+                                }
+                            ) {
+                                StampRallySummaryRow(
+                                    stampRallyId = formState.editorState.id.value.text.toString(),
+                                    fandom = formState.fandom.value.text.toString(),
+                                    hostTable = formState.hostTable.value.text.toString(),
+                                    series = formState.series.map { it.id }
+                                        .plus(
+                                            formState.stateSeries.value.text.toString()
+                                                .ifBlank { null })
+                                        .filterNotNull(),
+                                    seriesById = seriesById,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
+                            TrailingDropdownIcon(
+                                expanded = expanded,
+                                contentDescription = null,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+
+                        if (expanded) {
+                            HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                            StampRallyForm(
+                                state = formState,
+                                errorState = errorState,
+                                focusState = focusState,
+                                initialStampRally = {
+                                    initialRallies().find {
+                                        it.id == formState.editorState.id.value.text.toString()
+                                    }
+                                },
+                                seriesById = seriesById,
+                                seriesPredictions = seriesPredictions,
+                                merchById = merchById,
+                                merchPredictions = merchPredictions,
+                                seriesImage = seriesImage,
+                            ) {
+                                FandomSection(formState.fandom)
+                                HostTableSection(formState.hostTable)
+                                TablesSection(formState.stateTables, formState.tables)
+                                LinksSection(
+                                    formState.stateLinks,
+                                    formState.links,
+                                    errorState.linksErrorMessage
+                                )
+                                TableMinSection(formState.tableMin)
+                                PrizeSection(formState.prize)
+                                PrizeLimitSection(formState.prizeLimit)
+                                SeriesSection(
+                                    state = formState.stateSeries,
+                                    series = formState.series,
+                                    seriesById = seriesById,
+                                    seriesPredictions = seriesPredictions,
+                                    seriesImage = seriesImage,
+                                )
+                                MerchSection(
+                                    formState.stateMerch,
+                                    formState.merch,
+                                    merchById,
+                                    merchPredictions
+                                )
+                                NotesSection(
+                                    formState.notes,
+                                    this.initialStampRally?.notes,
+                                    artistalleydatabase.modules.alley.edit.generated.resources.Res.string.alley_edit_stamp_rally_edit_notes
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -712,9 +908,11 @@ object ArtistFormScreen {
     @Stable
     class State(
         val initialArtist: StateFlow<ArtistDatabaseEntry.Impl?>,
+        val initialRallies: StateFlow<List<StampRallyDatabaseEntry>>,
         val initialFormDiff: StateFlow<ArtistEntryDiff?>,
         val previousYearData: StateFlow<ArtistPreviousYearData?>,
         val progress: StateFlow<Progress>,
+        val stampRallyStates: SnapshotStateList<StampRallyFormState>,
         val formState: FormState,
         val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
     ) {

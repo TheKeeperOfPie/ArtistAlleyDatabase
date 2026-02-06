@@ -217,7 +217,7 @@ object AlleyEditBackend {
         val artist = BackendUtils.loadArtist(context, request.dataYear, request.artistId)
             ?: return null
 
-        val formDiff = BackendUtils.loadFormDiff(context, request.dataYear, request.artistId)
+        val formDiff = BackendUtils.loadArtistFormDiff(context, request.dataYear, request.artistId)
             ?: return null
 
         return BackendRequest.ArtistWithFormEntry.Response(artist = artist, formDiff = formDiff)
@@ -230,7 +230,7 @@ object AlleyEditBackend {
         val artist = BackendUtils.loadArtist(context, request.dataYear, request.artistId)
             ?: return null
 
-        val formDiff = BackendUtils.loadFormHistoryDiff(
+        val formDiff = BackendUtils.loadArtistFormHistoryDiff(
             context,
             request.dataYear,
             request.artistId,
@@ -553,21 +553,7 @@ object AlleyEditBackend {
     private suspend fun loadStampRally(
         context: EventContext,
         request: BackendRequest.StampRally,
-    ): StampRallyDatabaseEntry? =
-        when (request.dataYear) {
-            DataYear.ANIME_EXPO_2026 -> Databases.editDatabase(context)
-                .stampRallyEntryAnimeExpo2026Queries
-                .getStampRally(request.stampRallyId)
-                .awaitAsOneOrNull()
-                ?.toStampRallyDatabaseEntry()
-                ?.fixForJs()
-            DataYear.ANIME_EXPO_2023,
-            DataYear.ANIME_EXPO_2024,
-            DataYear.ANIME_EXPO_2025,
-            DataYear.ANIME_NYC_2024,
-            DataYear.ANIME_NYC_2025,
-                -> null // TODO: Return legacy years?
-        }
+    ): StampRallyDatabaseEntry? = BackendUtils.loadStampRally(context, request)
 
     private suspend fun saveStampRally(
         context: EventContext,

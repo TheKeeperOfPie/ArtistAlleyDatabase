@@ -172,7 +172,7 @@ object EntryForm2 {
                 EntryFormScopeImpl(this, focusState, forceLocked)
             }
             scope.content()
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(16.dp))
         }
     }
 
