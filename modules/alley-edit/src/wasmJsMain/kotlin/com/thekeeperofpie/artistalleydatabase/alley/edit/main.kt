@@ -22,6 +22,7 @@ import coil3.request.crossfade
 import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
@@ -41,18 +42,11 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.WebResourcesConfiguration
-import org.w3c.dom.events.Event
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
-        DisposableEffect(Unit) {
-            val listener: (Event) -> Unit = { it.preventDefault() }
-            window.addEventListener("beforeunload", listener)
-            onDispose {
-                window.removeEventListener("beforeunload", listener)
-            }
-        }
+        PreventUnloadEffect()
         SideEffect {
             WebResourcesConfiguration.resourcePathMapping { "${window.location.origin}/$it" }
         }

@@ -111,10 +111,14 @@ class BrowserInput<T : NavKey>(
                 }
                 when (update) {
                     Update.Backward -> if (currentRoute != routeHistory.current) {
-                        browserWindow.history.go(-1)
+                        disableOnPopStateCallback {
+                            browserWindow.history.goAndWait(-1)
+                        }
                     }
                     Update.Forward -> if (currentRoute != routeHistory.current) {
-                        browserWindow.history.go(1)
+                        disableOnPopStateCallback {
+                            browserWindow.history.goAndWait(1)
+                        }
                     }
                     is Update.Push -> {
                         browserWindow.history.pushState(update.route)
@@ -142,16 +146,20 @@ class BrowserInput<T : NavKey>(
                                     browserWindow.history.goAndWait(delta)
                                 }
                             }
-                            if (allRouteHistory.size == 1) {
-                                val route = allRouteHistory.single()
-                                browserWindow.history.replaceState(route)
-                            } else {
-                                allRouteHistory.forEach { route ->
-                                    browserWindow.history.pushState(route)
-                                }
+                            allRouteHistory.take(1).forEach {
+                                browserWindow.history.replaceState(it)
+                            }
+
+                            var added = 0
+                            allRouteHistory.drop(1).forEach {
+                                added++
+                                browserWindow.history.pushState(it)
+                            }
+                            if (added != 0) {
+                                browserWindow.history.go(-added)
                             }
                         } else {
-                            val delta = lastMatchingIndex - routeHistory.back.size
+                            val delta = lastMatchingIndex - currentHistory.back.size
                             if (delta != 0) {
                                 disableOnPopStateCallback {
                                     browserWindow.history.goAndWait(delta)
@@ -161,11 +169,6 @@ class BrowserInput<T : NavKey>(
                                 val route = allRouteHistory[index]
                                 browserWindow.history.pushState(route)
                             }
-                        }
-
-                        val deltaToCurrent = lastMatchingIndex + 1 - allRouteHistory.size
-                        if (deltaToCurrent != 0) {
-                            browserWindow.history.go(deltaToCurrent)
                         }
                     }
                 }
