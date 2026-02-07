@@ -102,10 +102,9 @@ class StampRallyFormState(
 
         FormUtils.applyValue(this.fandom, stampRally.fandom, mergeBehavior)
         FormUtils.applyValue(this.hostTable, stampRally.hostTable, mergeBehavior)
-        FormUtils.applyValue(this.hostTable, stampRally.hostTable, mergeBehavior)
-        FormUtils.applyValue(stateTables, this.tables, stampRally.tables, mergeBehavior)
+        FormUtils.applyValue(this.stateTables, this.tables, stampRally.tables, mergeBehavior)
         FormUtils.applyValue(
-            stateLinks,
+            this.stateLinks,
             this.links,
             stampRally.links.map(LinkModel.Companion::parse).sortedBy { it.logo },
             mergeBehavior,

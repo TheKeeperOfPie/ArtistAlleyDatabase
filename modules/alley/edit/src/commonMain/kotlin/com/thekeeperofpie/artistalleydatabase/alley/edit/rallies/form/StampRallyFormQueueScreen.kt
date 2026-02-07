@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,34 +39,33 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_action_refresh
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_tab_history
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_tab_queue
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_queue_title
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_queue_action_refresh
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_queue_tab_history
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_queue_tab_queue
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_queue_title
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
-import kotlin.uuid.Uuid
 
-internal object ArtistFormQueueScreen {
+internal object StampRallyFormQueueScreen {
 
     @Composable
     operator fun invoke(
         graph: ArtistAlleyEditGraph,
-        onSelectEntry: (artistId: Uuid) -> Unit,
-        onSelectHistoryEntry: (artistId: Uuid, formTimestamp: Instant) -> Unit,
-        viewModel: ArtistFormQueueViewModel = viewModel {
-            graph.artistFormQueueViewModelFactory.create(createSavedStateHandle())
+        onSelectEntry: (stampRallyId: String) -> Unit,
+        onSelectHistoryEntry: (stampRallyId: String, formTimestamp: Instant) -> Unit,
+        viewModel: StampRallyFormQueueViewModel = viewModel {
+            graph.stampRallyFormQueueViewModelFactory.create(createSavedStateHandle())
         },
     ) {
         val queue by viewModel.queue.collectAsStateWithLifecycle()
         val history by viewModel.history.collectAsStateWithLifecycle()
-        ArtistFormQueueScreen(
+        StampRallyFormQueueScreen(
             queue = { queue },
             history = { history },
             onRefresh = viewModel::refresh,
@@ -77,11 +76,11 @@ internal object ArtistFormQueueScreen {
 
     @Composable
     operator fun invoke(
-        queue: () -> List<ArtistFormQueueEntry>,
-        history: () -> List<ArtistFormHistoryEntry>,
+        queue: () -> List<StampRallyFormQueueEntry>,
+        history: () -> List<StampRallyFormHistoryEntry>,
         onRefresh: () -> Unit,
-        onSelectEntry: (artistId: Uuid) -> Unit,
-        onSelectHistoryEntry: (artistId: Uuid, formTimestamp: Instant) -> Unit,
+        onSelectEntry: (stampRallyId: String) -> Unit,
+        onSelectHistoryEntry: (stampRallyId: String, formTimestamp: Instant) -> Unit,
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -91,11 +90,11 @@ internal object ArtistFormQueueScreen {
                     EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                         Column {
                             TopAppBar(
-                                title = { Text(stringResource(Res.string.alley_edit_artist_form_queue_title)) },
+                                title = { Text(stringResource(Res.string.alley_edit_stamp_rally_form_queue_title)) },
                                 actions = {
                                     TooltipIconButton(
                                         icon = Icons.Default.Refresh,
-                                        tooltipText = stringResource(Res.string.alley_edit_artist_form_queue_action_refresh),
+                                        tooltipText = stringResource(Res.string.alley_edit_stamp_rally_form_queue_action_refresh),
                                         onClick = onRefresh,
                                     )
                                 }
@@ -128,13 +127,14 @@ internal object ArtistFormQueueScreen {
                         ) {
                             items(
                                 items = queue(),
-                                key = { it.artistId },
+                                key = { it.stampRallyId },
                             ) {
                                 Column {
-                                    ArtistRow(
-                                        booth = it.booth,
-                                        name = it.name?.ifBlank { null } ?: it.artistId.toString(),
-                                        modifier = Modifier.clickable { onSelectEntry(it.artistId) }
+                                    StampRallyRow(
+                                        stampRallyId = it.stampRallyId,
+                                        fandom = it.fandom,
+                                        hostTable = it.hostTable,
+                                        modifier = Modifier.clickable { onSelectEntry(it.stampRallyId) }
                                     )
                                     HorizontalDivider()
                                 }
@@ -147,15 +147,21 @@ internal object ArtistFormQueueScreen {
                         ) {
                             items(
                                 items = history(),
-                                key = { listOf(it.artistId.toString(), it.timestamp.toString()) },
+                                key = {
+                                    listOf(
+                                        it.stampRallyId.toString(),
+                                        it.timestamp.toString()
+                                    )
+                                },
                             ) {
                                 Column {
-                                    ArtistRow(
-                                        booth = it.booth,
-                                        name = it.name ?: it.artistId.toString(),
+                                    StampRallyRow(
+                                        stampRallyId = it.stampRallyId,
+                                        fandom = it.fandom,
+                                        hostTable = it.hostTable,
                                         modifier = Modifier.clickable {
                                             onSelectHistoryEntry(
-                                                it.artistId,
+                                                it.stampRallyId,
                                                 it.timestamp
                                             )
                                         }
@@ -170,32 +176,30 @@ internal object ArtistFormQueueScreen {
     }
 
     @Composable
-    private fun ArtistRow(
-        booth: String?,
-        name: String,
+    private fun StampRallyRow(
+        stampRallyId: String,
+        fandom: String?,
+        hostTable: String?,
         modifier: Modifier = Modifier,
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = modifier.padding(horizontal = 16.dp),
         ) {
-            if (booth != null) {
-                Text(
-                    text = booth,
-                    style = MaterialTheme.typography.titleLarge
-                        .copy(fontFamily = FontFamily.Monospace),
-                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
-                )
-            }
-
             Text(
-                text = name,
+                text = hostTable?.ifBlank { null } ?: "   ",
+                style = MaterialTheme.typography.titleLarge
+                    .copy(fontFamily = FontFamily.Monospace),
+                modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp)
+            )
+            Text(
+                text = fandom ?: stampRallyId,
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .weight(1f)
                     .padding(
-                        start = if (booth.isNullOrBlank()) 16.dp else 0.dp,
+                        start = if (fandom.isNullOrBlank()) 16.dp else 0.dp,
                         top = 12.dp,
                         bottom = 12.dp,
                     )
@@ -204,7 +208,7 @@ internal object ArtistFormQueueScreen {
     }
 
     private enum class Tab(val icon: ImageVector, val label: StringResource) {
-        QUEUE(Icons.AutoMirrored.Default.List, Res.string.alley_edit_artist_form_queue_tab_queue),
-        HISTORY(Icons.Default.History, Res.string.alley_edit_artist_form_queue_tab_history),
+        QUEUE(Icons.AutoMirrored.Default.List, Res.string.alley_edit_stamp_rally_form_queue_tab_queue),
+        HISTORY(Icons.Default.History, Res.string.alley_edit_stamp_rally_form_queue_tab_history),
     }
 }

@@ -26,6 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -91,6 +93,9 @@ object AlleyEditBackend {
                         makeResponse(deleteStampRally(context, this))
                     is BackendRequest.StampRallyHistory ->
                         makeResponse(loadStampRallyHistory(context, this))
+                    is BackendRequest.StampRallyFormHistory ->
+                        makeResponse(loadStampRallyFormHistory(context))
+                    is BackendRequest.StampRallyFormQueue -> makeResponse(loadStampRallyFormQueue(context))
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
@@ -189,10 +194,8 @@ object AlleyEditBackend {
             .map {
                 ArtistFormQueueEntry(
                     artistId = it.artistId,
-                    beforeBooth = it.beforeBooth,
-                    beforeName = it.beforeName,
-                    afterBooth = it.afterBooth,
-                    afterName = it.afterName,
+                    booth = it.afterBooth?.ifBlank { null } ?: it.beforeBooth,
+                    name = it.afterName?.ifBlank { null } ?: it.beforeName,
                 )
             }
 
@@ -640,6 +643,33 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2025,
                 -> emptyList() // TODO: Return legacy years?
         }
+
+    private suspend fun loadStampRallyFormQueue(context: EventContext): List<StampRallyFormQueueEntry> =
+        Databases.formDatabase(context)
+            .stampRallyFormEntryQueries
+            .getFormQueue()
+            .awaitAsList()
+            .map {
+                StampRallyFormQueueEntry(
+                    stampRallyId = it.stampRallyId,
+                    hostTable = it.afterHostTable?.ifBlank { null } ?: it.beforeHostTable,
+                    fandom = it.afterFandom?.ifBlank { null } ?: it.beforeFandom,
+                )
+            }
+
+    private suspend fun loadStampRallyFormHistory(context: EventContext): List<StampRallyFormHistoryEntry> =
+        Databases.formDatabase(context)
+            .stampRallyFormEntryQueries
+            .getFormHistory()
+            .awaitAsList()
+            .map {
+                StampRallyFormHistoryEntry(
+                    stampRallyId = it.stampRallyId,
+                    hostTable = it.afterHostTable?.ifBlank { null } ?: it.beforeHostTable,
+                    fandom = it.afterFandom?.ifBlank { null } ?: it.beforeFandom,
+                    timestamp = it.timestamp,
+                )
+            }
 
     private fun literalJsonResponse(value: String) = Response(
         body = value,

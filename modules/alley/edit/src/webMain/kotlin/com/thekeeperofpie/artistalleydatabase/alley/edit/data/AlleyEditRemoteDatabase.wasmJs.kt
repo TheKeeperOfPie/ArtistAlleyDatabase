@@ -13,6 +13,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -409,6 +411,26 @@ actual class AlleyEditRemoteDatabase(
             } catch (t: Throwable) {
                 t.printStackTrace()
                 BackendRequest.StampRallyDelete.Response.Failed(t.message.orEmpty())
+            }
+        }
+
+    actual suspend fun loadStampRallyFormQueue(): List<StampRallyFormQueueEntry> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.StampRallyFormQueue) ?: emptyList()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
+            }
+        }
+
+    actual suspend fun loadStampRallyFormHistory(): List<StampRallyFormHistoryEntry> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.StampRallyFormHistory) ?: emptyList()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emptyList()
             }
         }
 

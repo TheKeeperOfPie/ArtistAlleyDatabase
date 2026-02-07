@@ -12,8 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import kotlinx.coroutines.runBlocking
-import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
@@ -28,9 +26,9 @@ actual class AlleyFormRemoteDatabase(
             ?.copy(editorNotes = null, lastEditor = null, lastEditTime = null)
             ?: return null
         val formSubmission = editDatabase.artistFormQueue[artistId]
-        val artistFormDiff = formSubmission?.let {
-            val before = it.beforeArtist
-            val after = it.afterArtist
+        val stampRallyFormSubmissions =
+            editDatabase.stampRallyFormQueue.filter { it.key.first == artistId }
+        val artistFormDiff = formSubmission?.run {
             ArtistEntryDiff(
                 booth = after.booth.orEmpty()
                     .takeIf { it != before.booth.orEmpty() },
@@ -73,30 +71,28 @@ actual class AlleyFormRemoteDatabase(
                     before.merchConfirmed,
                     after.merchConfirmed
                 ),
-                formNotes = it.formNotes,
-                timestamp = it.timestamp,
+                formNotes = formNotes,
+                timestamp = timestamp,
             )
         }
 
-        val stampRallyFormDiffs = formSubmission?.let {
-            val beforeRallies = it.beforeRallies
-            it.afterRallies.map { after ->
-                val before = beforeRallies.find { it.id == after.id }
-                StampRallyEntryDiff(
-                    id = after.id,
-                    fandom = after.fandom.orEmpty()
-                        .takeIf { it != before?.fandom.orEmpty() },
-                    tables = HistoryListDiff.diffList(before?.tables, after.tables),
-                    links = HistoryListDiff.diffList(before?.links, after.links),
-                    tableMin = after.tableMin.takeIf { it != before?.tableMin },
-                    prize = after.prize.takeIf { it != before?.prize },
-                    prizeLimit = after.prizeLimit.takeIf { it != before?.prizeLimit },
-                    series = HistoryListDiff.diffList(before?.series, after.series),
-                    merch = HistoryListDiff.diffList(before?.merch, after.merch),
-                    notes = after.notes.takeIf { it != before?.notes },
-                )
-            }
-        }.orEmpty()
+        val stampRallyFormDiffs = stampRallyFormSubmissions.map {
+            val before = it.value.before
+            val after = it.value.after
+            StampRallyEntryDiff(
+                id = after.id,
+                fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
+                hostTable = after.hostTable.takeIf { it != before?.hostTable.orEmpty() },
+                tables = HistoryListDiff.diffList(before?.tables, after.tables),
+                links = HistoryListDiff.diffList(before?.links, after.links),
+                tableMin = after.tableMin.takeIf { it != before?.tableMin },
+                prize = after.prize.takeIf { it != before?.prize },
+                prizeLimit = after.prizeLimit.takeIf { it != before?.prizeLimit },
+                series = HistoryListDiff.diffList(before?.series, after.series),
+                merch = HistoryListDiff.diffList(before?.merch, after.merch),
+                notes = after.notes.takeIf { it != before?.notes },
+            )
+        }
 
         val booth = artist.booth
         val stampRallySummaries = editDatabase.loadStampRallies(dataYear)
@@ -135,13 +131,18 @@ actual class AlleyFormRemoteDatabase(
             ?: return BackendFormRequest.ArtistSave.Response.Failed("Invalid access key")
 
         editDatabase.artistFormQueue[artistId] =
-            AlleyEditRemoteDatabase.FormSubmission(
-                beforeArtist = beforeArtist,
-                afterArtist = afterArtist,
-                beforeRallies = beforeStampRallies,
-                afterRallies = afterStampRallies,
+            AlleyEditRemoteDatabase.ArtistFormSubmission(
+                before = beforeArtist,
+                after = afterArtist,
                 formNotes = formNotes,
             )
+
+        afterStampRallies.forEach { after ->
+            val before = beforeStampRallies.find { it.id == after.id }
+            editDatabase.stampRallyFormQueue[artistId to after.id] =
+                AlleyEditRemoteDatabase.StampRallyFormSubmission(before, after)
+        }
+
         return BackendFormRequest.ArtistSave.Response.Success
     }
 

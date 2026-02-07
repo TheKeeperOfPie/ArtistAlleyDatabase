@@ -9,6 +9,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -284,4 +286,10 @@ sealed interface BackendRequest {
     @Serializable
     data class StampRallyHistory(val dataYear: DataYear, val stampRallyId: String) : BackendRequest,
         WithResponse<List<StampRallyHistoryEntry>>
+
+    @Serializable
+    data object StampRallyFormHistory : BackendRequest, WithResponse<List<StampRallyFormHistoryEntry>>
+
+    @Serializable
+    data object StampRallyFormQueue : BackendRequest, WithResponse<List<StampRallyFormQueueEntry>>
 }

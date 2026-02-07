@@ -40,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyAddSc
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionScreen
@@ -392,6 +393,17 @@ private fun entryProvider(
             stampRallyId = route.stampRallyId,
             graph = graph,
             onClickBack = onClickBack,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.StampRallyFormQueue> {
+        StampRallyFormQueueScreen(
+            graph = graph,
+            onSelectEntry = {
+                // TODO
+            },
+            onSelectHistoryEntry = { _, _ ->
+                // TODO
+            },
         )
     }
 }

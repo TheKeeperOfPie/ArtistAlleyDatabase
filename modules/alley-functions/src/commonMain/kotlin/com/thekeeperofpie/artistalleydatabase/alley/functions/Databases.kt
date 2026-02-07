@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntry
+import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntryHistory
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -118,6 +119,23 @@ internal object Databases {
             artistIdAdapter = ColumnAdapters.uuidAdapter,
         ),
         stampRallyFormEntryAdapter = StampRallyFormEntry.Adapter(
+            dataYearAdapter = ColumnAdapters.dataYearAdapter,
+            artistIdAdapter = ColumnAdapters.uuidAdapter,
+            beforeTablesAdapter = ColumnAdapters.listStringAdapter,
+            beforeLinksAdapter = ColumnAdapters.listStringAdapter,
+            beforeTableMinAdapter = ColumnAdapters.tableMinAdapter,
+            beforeSeriesAdapter = ColumnAdapters.listStringAdapter,
+            beforeMerchAdapter = ColumnAdapters.listStringAdapter,
+            beforeImagesAdapter = ColumnAdapters.listCatalogImageAdapter,
+            afterTablesAdapter = ColumnAdapters.listStringAdapter,
+            afterLinksAdapter = ColumnAdapters.listStringAdapter,
+            afterTableMinAdapter = ColumnAdapters.tableMinAdapter,
+            afterSeriesAdapter = ColumnAdapters.listStringAdapter,
+            afterMerchAdapter = ColumnAdapters.listStringAdapter,
+            afterImagesAdapter = ColumnAdapters.listCatalogImageAdapter,
+            timestampAdapter = ColumnAdapters.instantAdapter,
+        ),
+        stampRallyFormEntryHistoryAdapter = StampRallyFormEntryHistory.Adapter(
             dataYearAdapter = ColumnAdapters.dataYearAdapter,
             artistIdAdapter = ColumnAdapters.uuidAdapter,
             beforeTablesAdapter = ColumnAdapters.listStringAdapter,

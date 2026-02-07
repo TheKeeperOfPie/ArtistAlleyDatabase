@@ -15,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
@@ -256,4 +258,10 @@ class AlleyEditDatabase(
         dataYear: DataYear,
         expected: StampRallyDatabaseEntry,
     ) = remoteDatabase.deleteStampRally(dataYear, expected)
+
+    suspend fun loadStampRallyFormQueue(): List<StampRallyFormQueueEntry> =
+        remoteDatabase.loadStampRallyFormQueue()
+
+    suspend fun loadStampRallyFormQueueHistory(): List<StampRallyFormHistoryEntry> =
+        remoteDatabase.loadStampRallyFormHistory()
 }

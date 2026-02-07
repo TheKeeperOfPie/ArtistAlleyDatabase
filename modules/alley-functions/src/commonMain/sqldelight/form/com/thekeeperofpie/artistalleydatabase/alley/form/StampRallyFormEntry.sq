@@ -5,3 +5,13 @@ WHERE dataYear = :dataYear AND artistId = :artistId;
 insertFormEntry:
 INSERT OR REPLACE INTO stampRallyFormEntry
 VALUES ?;
+
+getFormQueue:
+SELECT stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom
+FROM stampRallyFormEntry
+ORDER BY timestamp DESC;
+
+getFormHistory:
+SELECT stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom, timestamp
+FROM stampRallyFormEntryHistory
+ORDER BY timestamp DESC;

@@ -4,7 +4,8 @@
     <string name="alley_edit_top_level_nav_series">Series</string>
     <string name="alley_edit_top_level_nav_merch">Merch</string>
     <string name="alley_edit_top_level_nav_rallies">Rallies</string>
-    <string name="alley_edit_top_level_nav_forms">Forms</string>
+    <string name="alley_edit_top_level_nav_artist_forms">Artist Forms</string>
+    <string name="alley_edit_top_level_nav_rally_forms">Rally Forms</string>
     <string name="alley_edit_top_level_nav_tag_resolution">Resolution</string>
     <string name="alley_edit_top_level_nav_admin">Admin</string>
 
@@ -290,4 +291,9 @@
     <string name="alley_edit_stamp_rally_field_label_merch">Merch:</string>
     <string name="alley_edit_stamp_rally_field_label_notes">Notes:</string>
     <string name="alley_edit_stamp_rally_field_label_editor_notes">Editor notes:</string>
+
+    <string name="alley_edit_stamp_rally_form_queue_title">Stamp rally form queue</string>
+    <string name="alley_edit_stamp_rally_form_queue_action_refresh">Refresh form queue</string>
+    <string name="alley_edit_stamp_rally_form_queue_tab_queue">Queue</string>
+    <string name="alley_edit_stamp_rally_form_queue_tab_history">History</string>
 </resources>

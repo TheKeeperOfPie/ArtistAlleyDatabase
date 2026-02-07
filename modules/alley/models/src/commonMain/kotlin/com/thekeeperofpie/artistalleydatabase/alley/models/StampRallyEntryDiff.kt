@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class StampRallyEntryDiff(
     val id: String,
     val fandom: String?,
+    val hostTable: String?,
     val tables: HistoryListDiff?,
     val links: HistoryListDiff?,
     val tableMin: TableMin?,

@@ -11,10 +11,11 @@ import androidx.compose.material.icons.filled.Tv
 import androidx.compose.ui.graphics.vector.ImageVector
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_admin
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artist_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_artists
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rallies
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rally_forms
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_tag_resolution
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
@@ -45,10 +46,15 @@ internal enum class TopLevelStackKey(
         icon = Icons.Default.Approval,
         title = Res.string.alley_edit_top_level_nav_rallies,
     ),
-    FORMS(
+    ARTIST_FORMS(
         initialDestination = AlleyEditDestination.ArtistFormQueue,
         icon = Icons.AutoMirrored.Default.List,
-        title = Res.string.alley_edit_top_level_nav_forms,
+        title = Res.string.alley_edit_top_level_nav_artist_forms,
+    ),
+    RALLY_FORMS(
+        initialDestination = AlleyEditDestination.StampRallyFormQueue,
+        icon = Icons.AutoMirrored.Default.List,
+        title = Res.string.alley_edit_top_level_nav_rally_forms,
     ),
     TAG_RESOLUTION(
         initialDestination = AlleyEditDestination.TagResolution,

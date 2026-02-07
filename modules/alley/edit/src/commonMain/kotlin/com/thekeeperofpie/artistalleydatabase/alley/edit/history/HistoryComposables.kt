@@ -173,7 +173,7 @@ internal fun HistoryListChangeRow(label: StringResource, diff: HistoryListDiff?)
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                 ChangeLabel(label)
                 Column(modifier = Modifier.weight(1f)) {
-                    diff.added.forEach {
+                    diff.added?.forEach {
                         Text(
                             text = stringResource(
                                 Res.string.alley_edit_artist_field_label_list_added,
@@ -183,7 +183,7 @@ internal fun HistoryListChangeRow(label: StringResource, diff: HistoryListDiff?)
                         )
                     }
 
-                    diff.deleted.forEach {
+                    diff.deleted?.forEach {
                         Text(
                             text = stringResource(
                                 Res.string.alley_edit_artist_field_label_list_deleted,

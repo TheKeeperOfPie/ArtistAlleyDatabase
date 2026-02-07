@@ -195,6 +195,7 @@ class ArtistFormViewModel(
                             // TODO: hostTable isn't handled, remove in favor of index 0?
                             baseStampRally.copy(
                                 fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
+                                hostTable = stampRallyFormDiff.hostTable ?: baseStampRally.hostTable,
                                 tables = applyDiff(
                                     baseStampRally.tables,
                                     stampRallyFormDiff.tables
