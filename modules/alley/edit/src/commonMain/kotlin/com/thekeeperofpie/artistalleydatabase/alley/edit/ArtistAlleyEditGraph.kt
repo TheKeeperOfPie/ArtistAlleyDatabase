@@ -7,9 +7,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddViewMod
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormHistoryViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormHistoryViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormQueueViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListViewModel

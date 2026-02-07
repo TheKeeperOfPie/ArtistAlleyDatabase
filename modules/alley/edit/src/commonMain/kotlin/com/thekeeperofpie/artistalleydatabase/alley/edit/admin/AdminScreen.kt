@@ -15,7 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 
 object AdminScreen {

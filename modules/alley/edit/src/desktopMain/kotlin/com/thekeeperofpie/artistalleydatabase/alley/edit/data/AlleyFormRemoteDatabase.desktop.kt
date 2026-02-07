@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
@@ -21,13 +21,6 @@ import kotlin.uuid.Uuid
 actual class AlleyFormRemoteDatabase(
     private val editDatabase: AlleyEditRemoteDatabase,
 ) {
-    init {
-        runBlocking {
-            DebugTestData.initialize(editDatabase, this@AlleyFormRemoteDatabase)
-            editDatabase.simulatedLatency = 3.seconds
-        }
-    }
-
     actual suspend fun loadArtist(dataYear: DataYear): BackendFormRequest.Artist.Response? {
         val request = BackendFormRequest.Artist(dataYear)
         val artistId = assertSignatureAndGetArtistId(request) ?: return null

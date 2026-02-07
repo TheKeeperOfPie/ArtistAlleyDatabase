@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberErrorState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide

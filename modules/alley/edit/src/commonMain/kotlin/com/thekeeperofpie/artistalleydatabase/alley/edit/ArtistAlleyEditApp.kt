@@ -25,9 +25,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistAddScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistListScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormHistoryScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormQueueScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormHistoryScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.merch.MerchListScreen

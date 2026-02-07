@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect

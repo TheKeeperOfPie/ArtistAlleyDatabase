@@ -91,8 +91,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeA
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompter
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.rememberArtistInferenceFieldState
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormMergeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen

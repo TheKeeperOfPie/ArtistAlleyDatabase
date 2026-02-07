@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditRemoteDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormRemoteDatabase
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
 import com.thekeeperofpie.artistalleydatabase.utils_network.NetworkClient
 import com.thekeeperofpie.artistalleydatabase.utils_network.buildNetworkClient
@@ -12,6 +14,9 @@ import dev.zacsweers.metro.SingleIn
 @SingleIn(AppScope::class)
 @DependencyGraph
 internal interface ArtistAlleyFormDesktopGraph : ArtistAlleyFormGraph, ArtistAlleyEditGraph {
+
+    val editDatabase: AlleyEditRemoteDatabase
+    val formDatabase: AlleyFormRemoteDatabase
 
     @Provides
     @SingleIn(AppScope::class)

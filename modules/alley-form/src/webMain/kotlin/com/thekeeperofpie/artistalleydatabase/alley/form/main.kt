@@ -23,7 +23,7 @@ import coil3.request.crossfade
 import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography

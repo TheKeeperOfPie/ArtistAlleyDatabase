@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

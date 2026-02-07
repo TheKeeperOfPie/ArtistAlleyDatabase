@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry

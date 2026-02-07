@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable

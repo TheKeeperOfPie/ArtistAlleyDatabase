@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
 
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography

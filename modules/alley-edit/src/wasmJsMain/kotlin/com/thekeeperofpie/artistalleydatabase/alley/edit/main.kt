@@ -22,7 +22,7 @@ import coil3.request.crossfade
 import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.PreventUnloadEffect
+import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks

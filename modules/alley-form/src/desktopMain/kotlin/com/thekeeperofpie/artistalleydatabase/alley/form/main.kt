@@ -9,6 +9,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,7 @@ import coil3.request.Options
 import coil3.request.crossfade
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditApp
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.DebugTestData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
@@ -49,6 +51,7 @@ import dev.zacsweers.metro.createGraphFactory
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.io.asInputStream
 import okio.FileSystem
 import okio.buffer
@@ -100,6 +103,12 @@ fun main() {
                 }
                 .crossfade(true)
                 .build()
+        }
+
+        LaunchedEffect(Unit) {
+            runBlocking {
+                DebugTestData.initialize(graph.editDatabase, graph.formDatabase)
+            }
         }
 
         val windowState = rememberWindowState()

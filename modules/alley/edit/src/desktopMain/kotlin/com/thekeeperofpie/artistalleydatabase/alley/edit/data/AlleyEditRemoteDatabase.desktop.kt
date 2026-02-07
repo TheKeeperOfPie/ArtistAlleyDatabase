@@ -64,7 +64,7 @@ actual class AlleyEditRemoteDatabase(
 
     private var fakeArtistPrivateKey: String? = null
 
-    internal var simulatedLatency: Duration? = null
+    private val simulatedLatency = 1.seconds
 
     actual suspend fun databaseCreate(): Unit = Unit
 

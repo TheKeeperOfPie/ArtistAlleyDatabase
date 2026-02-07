@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
 
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
@@ -19,7 +19,7 @@ actual object ArtistFormAccessKey {
         }
 
     actual fun setKey(key: String) {
-        val key = Uri.parseOrNull(key)
+        val key = Uri.Companion.parseOrNull(key)
             ?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
             ?: key.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
         _key = key

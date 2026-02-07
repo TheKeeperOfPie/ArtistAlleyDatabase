@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import kotlinx.browser.localStorage

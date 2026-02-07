@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.Artist
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState

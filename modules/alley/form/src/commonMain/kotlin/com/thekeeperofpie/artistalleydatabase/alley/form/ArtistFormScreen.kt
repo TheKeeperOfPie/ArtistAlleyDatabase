@@ -103,7 +103,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.Artist
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeArtistPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
-import com.thekeeperofpie.artistalleydatabase.alley.edit.form.PreventUnloadEffect
+import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
