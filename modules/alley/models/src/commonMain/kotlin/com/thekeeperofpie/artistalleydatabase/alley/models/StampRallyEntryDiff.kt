@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 data class StampRallyEntryDiff(
@@ -16,4 +17,5 @@ data class StampRallyEntryDiff(
     val series: HistoryListDiff?,
     val merch: HistoryListDiff?,
     val notes: String?,
+    val timestamp: Instant,
 )

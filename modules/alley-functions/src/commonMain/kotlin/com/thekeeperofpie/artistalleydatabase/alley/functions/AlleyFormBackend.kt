@@ -226,10 +226,15 @@ internal object AlleyFormBackend {
             )
         val stampRallyFormEntries = request.afterStampRallies.map { after ->
             val before = request.beforeStampRallies.find { it.id == after.id }
+            val stampRallyId = if (before == null || Uuid.parseOrNull(after.id) == null) {
+                Uuid.random().toString()
+            } else {
+                after.id
+            }
             StampRallyFormEntry(
                 dataYear = request.dataYear,
                 artistId = artistId,
-                stampRallyId = after.id,
+                stampRallyId = stampRallyId,
                 beforeFandom = before?.fandom,
                 beforeHostTable = before?.hostTable,
                 beforeTables = before?.tables,

@@ -80,8 +80,8 @@ object ArtistAddScreen {
                 viewModel.state.artistFormState.images += images
             }
         }
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
-        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         ArtistAddScreen(
             dataYear = dataYear,
             state = viewModel.state,

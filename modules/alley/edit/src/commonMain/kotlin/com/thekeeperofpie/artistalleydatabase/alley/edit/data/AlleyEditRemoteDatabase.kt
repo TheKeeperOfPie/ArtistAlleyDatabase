@@ -117,4 +117,25 @@ expect class AlleyEditRemoteDatabase {
 
     suspend fun loadStampRallyFormQueue(): List<StampRallyFormQueueEntry>
     suspend fun loadStampRallyFormHistory(): List<StampRallyFormHistoryEntry>
+
+    suspend fun loadStampRallyWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+    ): BackendRequest.StampRallyWithFormEntry.Response?
+
+    suspend fun loadStampRallyWithHistoricalFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+        formTimestamp: Instant,
+    ): BackendRequest.StampRallyWithHistoricalFormEntry.Response?
+
+    suspend fun saveStampRallyAndClearFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.StampRallyCommitForm.Response
 }

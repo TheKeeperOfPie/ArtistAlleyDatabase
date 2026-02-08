@@ -51,14 +51,15 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 internal object StampRallyFormQueueScreen {
 
     @Composable
     operator fun invoke(
         graph: ArtistAlleyEditGraph,
-        onSelectEntry: (stampRallyId: String) -> Unit,
-        onSelectHistoryEntry: (stampRallyId: String, formTimestamp: Instant) -> Unit,
+        onSelectEntry: (artistId: Uuid, stampRallyId: String) -> Unit,
+        onSelectHistoryEntry: (artistId: Uuid, stampRallyId: String, formTimestamp: Instant) -> Unit,
         viewModel: StampRallyFormQueueViewModel = viewModel {
             graph.stampRallyFormQueueViewModelFactory.create(createSavedStateHandle())
         },
@@ -79,8 +80,8 @@ internal object StampRallyFormQueueScreen {
         queue: () -> List<StampRallyFormQueueEntry>,
         history: () -> List<StampRallyFormHistoryEntry>,
         onRefresh: () -> Unit,
-        onSelectEntry: (stampRallyId: String) -> Unit,
-        onSelectHistoryEntry: (stampRallyId: String, formTimestamp: Instant) -> Unit,
+        onSelectEntry: (artistId: Uuid, stampRallyId: String) -> Unit,
+        onSelectHistoryEntry: (artistId: Uuid, stampRallyId: String, formTimestamp: Instant) -> Unit,
     ) {
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -134,7 +135,12 @@ internal object StampRallyFormQueueScreen {
                                         stampRallyId = it.stampRallyId,
                                         fandom = it.fandom,
                                         hostTable = it.hostTable,
-                                        modifier = Modifier.clickable { onSelectEntry(it.stampRallyId) }
+                                        modifier = Modifier.clickable {
+                                            onSelectEntry(
+                                                it.artistId,
+                                                it.stampRallyId
+                                            )
+                                        }
                                     )
                                     HorizontalDivider()
                                 }
@@ -161,6 +167,7 @@ internal object StampRallyFormQueueScreen {
                                         hostTable = it.hostTable,
                                         modifier = Modifier.clickable {
                                             onSelectHistoryEntry(
+                                                it.artistId,
                                                 it.stampRallyId,
                                                 it.timestamp
                                             )
@@ -208,7 +215,10 @@ internal object StampRallyFormQueueScreen {
     }
 
     private enum class Tab(val icon: ImageVector, val label: StringResource) {
-        QUEUE(Icons.AutoMirrored.Default.List, Res.string.alley_edit_stamp_rally_form_queue_tab_queue),
+        QUEUE(
+            Icons.AutoMirrored.Default.List,
+            Res.string.alley_edit_stamp_rally_form_queue_tab_queue
+        ),
         HISTORY(Icons.Default.History, Res.string.alley_edit_stamp_rally_form_queue_tab_history),
     }
 }

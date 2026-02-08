@@ -83,6 +83,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceFieldState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
@@ -91,8 +93,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeA
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameArtistPrompter
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.rememberArtistInferenceFieldState
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
@@ -165,8 +165,8 @@ object ArtistEditScreen {
         LaunchedEffect(viewModel) {
             viewModel.initialize()
         }
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
-        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         ArtistEditScreen(
             dataYear = dataYear,
             state = viewModel.state,

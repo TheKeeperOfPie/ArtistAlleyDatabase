@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -29,16 +30,13 @@ class ArtistFormMergeViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
+    val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted artistId: Uuid,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val entry = flowFromSuspend { database.loadArtistWithFormEntry(dataYear, artistId) }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
-    val seriesById = flowFromSuspend { database.loadSeries() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
-    val merchById = flowFromSuspend { database.loadMerch() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val saveTask: ExclusiveTask<SaveData, BackendRequest.ArtistCommitForm.Response> =
         ExclusiveTask(viewModelScope, ::save)

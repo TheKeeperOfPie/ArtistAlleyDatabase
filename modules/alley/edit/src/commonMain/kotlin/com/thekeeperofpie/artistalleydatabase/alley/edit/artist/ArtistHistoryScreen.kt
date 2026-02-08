@@ -119,8 +119,8 @@ object ArtistHistoryScreen {
         },
     ) {
         val history by viewModel.history.collectAsStateWithLifecycle()
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
-        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val initialArtist by viewModel.initial.collectAsStateWithLifecycle()
         ArtistHistoryScreen(
             history = { history },

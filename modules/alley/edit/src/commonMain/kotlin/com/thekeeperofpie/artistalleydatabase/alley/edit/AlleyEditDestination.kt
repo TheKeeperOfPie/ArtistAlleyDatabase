@@ -102,6 +102,13 @@ sealed interface AlleyEditDestination : NavKey {
     @Serializable
     data object StampRallyFormQueue : AlleyEditDestination
 
+    @Serializable
+    data class StampRallyFormMerge(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val stampRallyId: String,
+    ) : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
@@ -164,6 +171,12 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     StampRallyHistory(dataYear, stampRallyId)
                 }
+                route.startsWith("rally/merge") -> {
+                    val (dataYear, artistId, stampRallyId) = parseDataYearThenArtistIdAndStampRallyId(
+                        route.removePrefix("rally/merge/")
+                    ) ?: return null
+                    StampRallyFormMerge(dataYear, artistId, stampRallyId)
+                }
                 else -> {
                     ConsoleLogger.log("Failed to find route for $route")
                     null
@@ -200,8 +213,10 @@ sealed interface AlleyEditDestination : NavKey {
             is StampRallyEdit -> "rally/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.stampRallyId)
             is StampRallyHistory -> "rally/history/${Uri.encode(destination.dataYear.serializedName)}/" +
-                    Uri.encode(destination.stampRallyId.toString())
+                    Uri.encode(destination.stampRallyId)
             is StampRallyFormQueue -> "rally/queue"
+            is StampRallyFormMerge -> "rally/merge/${Uri.encode(destination.dataYear.serializedName)}/" +
+                    "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"
             Home -> ""
             is ImagesEdit,
             is MerchEdit,
@@ -220,6 +235,13 @@ sealed interface AlleyEditDestination : NavKey {
             val (year, stampRallyId) = trailingPathSegments.split("/")
             val dataYear = DataYear.deserialize(year) ?: return null
             return dataYear to stampRallyId
+        }
+
+        private fun parseDataYearThenArtistIdAndStampRallyId(trailingPathSegments: String): Triple<DataYear, Uuid, String>? {
+            val (year, artist, stampRallyId) = trailingPathSegments.split("/")
+            val dataYear = DataYear.deserialize(year) ?: return null
+            val artistId = Uuid.parse(artist)
+            return Triple(dataYear, artistId, stampRallyId)
         }
     }
 }

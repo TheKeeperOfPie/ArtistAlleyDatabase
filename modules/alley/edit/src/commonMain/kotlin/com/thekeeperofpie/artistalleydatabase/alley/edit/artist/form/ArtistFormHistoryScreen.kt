@@ -41,8 +41,8 @@ object ArtistFormHistoryScreen {
         },
     ) {
         val artistWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()
-        val seriesById by viewModel.seriesById.collectAsStateWithLifecycle()
-        val merchById by viewModel.merchById.collectAsStateWithLifecycle()
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = viewModel.saveTaskState
         ArtistFormMergeScreen(

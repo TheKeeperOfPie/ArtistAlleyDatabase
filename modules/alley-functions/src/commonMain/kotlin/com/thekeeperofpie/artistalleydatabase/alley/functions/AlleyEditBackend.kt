@@ -95,7 +95,17 @@ object AlleyEditBackend {
                         makeResponse(loadStampRallyHistory(context, this))
                     is BackendRequest.StampRallyFormHistory ->
                         makeResponse(loadStampRallyFormHistory(context))
-                    is BackendRequest.StampRallyFormQueue -> makeResponse(loadStampRallyFormQueue(context))
+                    is BackendRequest.StampRallyFormQueue -> makeResponse(
+                        loadStampRallyFormQueue(
+                            context
+                        )
+                    )
+                    is BackendRequest.StampRallyWithFormEntry ->
+                        makeResponse(loadStampRallyWithFormEntry(context, this))
+                    is BackendRequest.StampRallyWithHistoricalFormEntry ->
+                        makeResponse(loadStampRallyWithHistoricalFormEntry(context, this))
+                    is BackendRequest.StampRallyCommitForm ->
+                        makeResponse(commitStampRallyForm(context, this))
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
@@ -651,6 +661,7 @@ object AlleyEditBackend {
             .awaitAsList()
             .map {
                 StampRallyFormQueueEntry(
+                    artistId = it.artistId,
                     stampRallyId = it.stampRallyId,
                     hostTable = it.afterHostTable?.ifBlank { null } ?: it.beforeHostTable,
                     fandom = it.afterFandom?.ifBlank { null } ?: it.beforeFandom,
@@ -664,12 +675,97 @@ object AlleyEditBackend {
             .awaitAsList()
             .map {
                 StampRallyFormHistoryEntry(
+                    artistId = it.artistId,
                     stampRallyId = it.stampRallyId,
                     hostTable = it.afterHostTable?.ifBlank { null } ?: it.beforeHostTable,
                     fandom = it.afterFandom?.ifBlank { null } ?: it.beforeFandom,
                     timestamp = it.timestamp,
                 )
             }
+
+    private suspend fun loadStampRallyWithFormEntry(
+        context: EventContext,
+        request: BackendRequest.StampRallyWithFormEntry,
+    ): BackendRequest.StampRallyWithFormEntry.Response? {
+        val stampRally = BackendUtils.loadStampRally(
+            context,
+            BackendRequest.StampRally(request.dataYear, request.stampRallyId)
+        )
+
+        val formDiff =
+            BackendUtils.loadStampRallyFormDiff(
+                context,
+                request.dataYear,
+                request.artistId,
+                request.stampRallyId
+            )
+                ?: return null
+
+        return BackendRequest.StampRallyWithFormEntry.Response(
+            stampRally = stampRally,
+            formDiff = formDiff
+        )
+    }
+
+    private suspend fun loadStampRallyWithHistoricalFormEntry(
+        context: EventContext,
+        request: BackendRequest.StampRallyWithHistoricalFormEntry,
+    ): BackendRequest.StampRallyWithHistoricalFormEntry.Response? {
+        val stampRally = BackendUtils.loadStampRally(
+            context,
+            BackendRequest.StampRally(request.dataYear, request.stampRallyId)
+        )?: return null
+
+        val formDiff = BackendUtils.loadStampRallyFormHistoryDiff(
+            context = context,
+            dataYear = request.dataYear,
+            artistId = request.artistId,
+            stampRallyId = request.stampRallyId,
+            timestamp = request.formTimestamp,
+        )
+            ?: return null
+
+        return BackendRequest.StampRallyWithHistoricalFormEntry.Response(
+            stampRally = stampRally,
+            formDiff = formDiff
+        )
+    }
+
+    private suspend fun commitStampRallyForm(
+        context: EventContext,
+        request: BackendRequest.StampRallyCommitForm,
+    ): BackendRequest.StampRallyCommitForm.Response {
+        val saveRequest = BackendRequest.StampRallySave(
+            dataYear = request.dataYear,
+            initial = request.initial,
+            updated = request.updated,
+        )
+        when (val saveResponse = saveStampRally(context, saveRequest, request.formEntryTimestamp)) {
+            is BackendRequest.StampRallySave.Response.Failed ->
+                return BackendRequest.StampRallyCommitForm.Response.Failed(saveResponse.errorMessage)
+            is BackendRequest.StampRallySave.Response.Outdated ->
+                return BackendRequest.StampRallyCommitForm.Response.Outdated(saveResponse.current)
+            BackendRequest.StampRallySave.Response.Success -> Unit
+        }
+
+        Databases.formDatabase(context).stampRallyFormEntryQueries.run {
+            // D1 only supports transactions in a batched statement, which is hard to set up
+            // A single write and delete should be consistent enough that it shouldn't matter
+            moveFormEntryToHistory(
+                dataYear = request.dataYear,
+                artistId = request.artistId,
+                stampRallyId = request.updated.id,
+                timestamp = request.formEntryTimestamp,
+            )
+            consumeFormEntry(
+                dataYear = request.dataYear,
+                artistId = request.artistId,
+                stampRallyId = request.updated.id,
+                timestamp = request.formEntryTimestamp,
+            )
+        }
+        return BackendRequest.StampRallyCommitForm.Response.Success
+    }
 
     private fun literalJsonResponse(value: String) = Response(
         body = value,

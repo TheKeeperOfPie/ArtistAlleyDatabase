@@ -85,8 +85,8 @@ object StampRallyEditScreen {
         LaunchedEffect(viewModel) {
             viewModel.initialize()
         }
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
-        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         StampRallyEditScreen(
             dataYear = dataYear,
             state = viewModel.state,

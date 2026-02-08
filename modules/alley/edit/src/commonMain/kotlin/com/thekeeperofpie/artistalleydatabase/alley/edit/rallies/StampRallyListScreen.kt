@@ -86,7 +86,7 @@ internal object StampRallyListScreen {
             graph.stampRallyListViewModelFactory.create(createSavedStateHandle())
         },
     ) {
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
         StampRallyListScreen(
             state = viewModel.state,
             seriesById = { seriesById },

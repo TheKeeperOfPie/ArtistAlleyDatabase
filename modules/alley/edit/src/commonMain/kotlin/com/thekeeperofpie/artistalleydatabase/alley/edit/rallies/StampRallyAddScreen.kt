@@ -57,8 +57,8 @@ object StampRallyAddScreen {
             )
         },
     ) {
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
-        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         StampRallyAddScreen(
             dataYear = dataYear,
             state = viewModel.state,

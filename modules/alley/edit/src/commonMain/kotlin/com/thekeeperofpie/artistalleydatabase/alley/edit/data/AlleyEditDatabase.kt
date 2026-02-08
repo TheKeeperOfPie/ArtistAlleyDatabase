@@ -264,4 +264,33 @@ class AlleyEditDatabase(
 
     suspend fun loadStampRallyFormQueueHistory(): List<StampRallyFormHistoryEntry> =
         remoteDatabase.loadStampRallyFormHistory()
+
+    suspend fun loadStampRallyWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+    ): BackendRequest.StampRallyWithFormEntry.Response? =
+        remoteDatabase.loadStampRallyWithFormEntry(dataYear, artistId, stampRallyId)
+
+    suspend fun loadStampRallyWithHistoricalFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+        formTimestamp: Instant,
+    ): BackendRequest.StampRallyWithHistoricalFormEntry.Response? =
+        remoteDatabase.loadStampRallyWithHistoricalFormEntry(dataYear, artistId, stampRallyId, formTimestamp)
+
+    suspend fun saveStampRallyAndClearFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.StampRallyCommitForm.Response = remoteDatabase.saveStampRallyAndClearFormEntry(
+        dataYear = dataYear,
+        artistId = artistId,
+        initial = initial,
+        updated = updated,
+        formEntryTimestamp = formEntryTimestamp,
+    )
 }

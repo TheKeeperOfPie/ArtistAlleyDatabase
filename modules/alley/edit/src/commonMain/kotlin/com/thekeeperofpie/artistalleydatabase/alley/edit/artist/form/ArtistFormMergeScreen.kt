@@ -112,8 +112,8 @@ internal object ArtistFormMergeScreen {
         },
     ) {
         val artistWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()
-        val seriesById by viewModel.seriesById.collectAsStateWithLifecycle()
-        val merchById by viewModel.merchById.collectAsStateWithLifecycle()
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = viewModel.saveTaskState
         ArtistFormMergeScreen(
@@ -168,7 +168,6 @@ internal object ArtistFormMergeScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
     ) {
-
         val entry = entry()
         val initialArtist = entry()?.first
         val formDiff = entry()?.second

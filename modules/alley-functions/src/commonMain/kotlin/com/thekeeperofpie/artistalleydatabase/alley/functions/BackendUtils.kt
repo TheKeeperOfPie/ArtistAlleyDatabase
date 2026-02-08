@@ -191,7 +191,7 @@ internal object BackendUtils {
         artistId: Uuid,
     ): List<StampRallyEntryDiff> = Databases.formDatabase(context)
         .stampRallyFormEntryQueries
-        .getFormEntries(dataYear, artistId)
+        .getFormEntriesByArtist(dataYear, artistId)
         .awaitAsList()
         .map { formEntry ->
             StampRallyEntryDiff(
@@ -214,6 +214,76 @@ internal object BackendUtils {
                 ),
                 merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
                 notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
+                timestamp = formEntry.timestamp,
+            )
+        }
+
+    suspend fun loadStampRallyFormDiff(
+        context: EventContext,
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+    ): StampRallyEntryDiff? = Databases.formDatabase(context)
+        .stampRallyFormEntryQueries
+        .getFormEntriesByStampRally(dataYear, artistId, stampRallyId)
+        .awaitAsOneOrNull()
+        ?.let { formEntry ->
+            StampRallyEntryDiff(
+                id = formEntry.stampRallyId,
+                fandom = formEntry.afterFandom.orEmpty()
+                    .takeIf { it != formEntry.beforeFandom.orEmpty() },
+                hostTable = formEntry.afterHostTable.orEmpty()
+                    .takeIf { it != formEntry.beforeHostTable.orEmpty() },
+                tables = HistoryListDiff.diffList(
+                    formEntry.beforeTables,
+                    formEntry.afterTables
+                ),
+                links = HistoryListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+                tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
+                prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
+                prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
+                series = HistoryListDiff.diffList(
+                    formEntry.beforeSeries,
+                    formEntry.afterSeries
+                ),
+                merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
+                notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
+                timestamp = formEntry.timestamp,
+            )
+        }
+
+    suspend fun loadStampRallyFormHistoryDiff(
+        context: EventContext,
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+        timestamp: Instant,
+    ): StampRallyEntryDiff? = Databases.formDatabase(context)
+        .stampRallyFormEntryQueries
+        .getFormHistoryEntry(dataYear, artistId, stampRallyId, timestamp)
+        .awaitAsOneOrNull()
+        ?.let { formEntry ->
+            StampRallyEntryDiff(
+                id = formEntry.stampRallyId,
+                fandom = formEntry.afterFandom.orEmpty()
+                    .takeIf { it != formEntry.beforeFandom.orEmpty() },
+                hostTable = formEntry.afterHostTable.orEmpty()
+                    .takeIf { it != formEntry.beforeHostTable.orEmpty() },
+                tables = HistoryListDiff.diffList(
+                    formEntry.beforeTables,
+                    formEntry.afterTables
+                ),
+                links = HistoryListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+                tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
+                prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
+                prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
+                series = HistoryListDiff.diffList(
+                    formEntry.beforeSeries,
+                    formEntry.afterSeries
+                ),
+                merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
+                notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
+                timestamp = formEntry.timestamp,
             )
         }
 }

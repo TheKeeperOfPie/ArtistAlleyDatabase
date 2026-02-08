@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
@@ -292,4 +293,53 @@ sealed interface BackendRequest {
 
     @Serializable
     data object StampRallyFormQueue : BackendRequest, WithResponse<List<StampRallyFormQueueEntry>>
+
+    @Serializable
+    data class StampRallyWithFormEntry(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val stampRallyId: String,
+    ) : BackendRequest, WithResponse<StampRallyWithFormEntry.Response> {
+        @Serializable
+        data class Response(
+            val stampRally: StampRallyDatabaseEntry?,
+            val formDiff: StampRallyEntryDiff,
+        )
+    }
+
+    @Serializable
+    data class StampRallyWithHistoricalFormEntry(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val stampRallyId: String,
+        val formTimestamp: Instant,
+    ) : BackendRequest, WithResponse<StampRallyWithHistoricalFormEntry.Response> {
+
+        @Serializable
+        data class Response(
+            val stampRally: StampRallyDatabaseEntry,
+            val formDiff: StampRallyEntryDiff,
+        )
+    }
+
+    @Serializable
+    data class StampRallyCommitForm(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val initial: StampRallyDatabaseEntry?,
+        val updated: StampRallyDatabaseEntry,
+        val formEntryTimestamp: Instant,
+    ) : BackendRequest, WithResponse<StampRallyCommitForm.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: StampRallyDatabaseEntry) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
 }

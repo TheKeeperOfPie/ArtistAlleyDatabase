@@ -115,8 +115,8 @@ object StampRallyHistoryScreen {
         },
     ) {
         val history by viewModel.history.collectAsStateWithLifecycle()
-        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle(emptyMap())
-        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle(emptyMap())
+        val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
+        val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val initialStampRally by viewModel.initial.collectAsStateWithLifecycle()
         StampRallyHistoryScreen(
             history = { history },

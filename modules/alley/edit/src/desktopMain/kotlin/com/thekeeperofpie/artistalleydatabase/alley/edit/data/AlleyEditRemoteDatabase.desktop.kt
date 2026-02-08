@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
@@ -22,7 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.toStampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -30,11 +30,7 @@ import dev.zacsweers.metro.SingleIn
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.extension
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlin.time.Clock
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -296,7 +292,8 @@ actual class AlleyEditRemoteDatabase(
         artistId: Uuid,
         formTimestamp: Instant,
     ): BackendRequest.ArtistWithHistoricalFormEntry.Response? {
-        val formSubmission = findFormHistoryEntry(dataYear, artistId, formTimestamp) ?: return null
+        val formSubmission =
+            findArtistFormHistoryEntry(dataYear, artistId, formTimestamp) ?: return null
         return BackendRequest.ArtistWithHistoricalFormEntry.Response(
             artist = loadArtist(dataYear, artistId) ?: return null,
             formDiff = formSubmission.toArtistEntryDiff(),
@@ -311,7 +308,7 @@ actual class AlleyEditRemoteDatabase(
     ): BackendRequest.ArtistCommitForm.Response {
         val artistId = Uuid.parse(updated.id)
         if (artistFormQueue[artistId]?.timestamp == formEntryTimestamp ||
-            findFormHistoryEntry(dataYear, artistId, formEntryTimestamp) != null
+            findArtistFormHistoryEntry(dataYear, artistId, formEntryTimestamp) != null
         ) {
             saveArtist(
                 dataYear = dataYear,
@@ -365,7 +362,7 @@ actual class AlleyEditRemoteDatabase(
 
     actual suspend fun deleteStampRally(
         dataYear: DataYear,
-        expected: StampRallyDatabaseEntry
+        expected: StampRallyDatabaseEntry,
     ): BackendRequest.StampRallyDelete.Response {
         val stampRallyId = expected.id
         val currentStampRally = loadStampRally(dataYear, stampRallyId)
@@ -380,6 +377,7 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun loadStampRallyFormQueue(): List<StampRallyFormQueueEntry> =
         stampRallyFormQueue.values.map {
             StampRallyFormQueueEntry(
+                artistId = it.artistId,
                 stampRallyId = it.after.id,
                 hostTable = it.after.hostTable.ifBlank { null } ?: it.before?.hostTable,
                 fandom = it.after.fandom.ifBlank { null } ?: it.before?.fandom,
@@ -389,6 +387,7 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun loadStampRallyFormHistory(): List<StampRallyFormHistoryEntry> =
         stampRallyFormHistory.map {
             StampRallyFormHistoryEntry(
+                artistId = it.artistId,
                 stampRallyId = it.after.id,
                 hostTable = it.after.hostTable.ifBlank { null } ?: it.before?.hostTable,
                 fandom = it.after.fandom.ifBlank { null } ?: it.before?.fandom,
@@ -416,17 +415,95 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.StampRallySave.Response.Success
     }
 
+
+    actual suspend fun loadStampRallyWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+    ): BackendRequest.StampRallyWithFormEntry.Response? {
+        val formSubmission = stampRallyFormQueue[artistId to stampRallyId] ?: return null
+        return BackendRequest.StampRallyWithFormEntry.Response(
+            stampRally = loadStampRally(dataYear, stampRallyId),
+            formDiff = formSubmission.toStampRallyEntryDiff(),
+        )
+    }
+
+    actual suspend fun loadStampRallyWithHistoricalFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+        formTimestamp: Instant,
+    ): BackendRequest.StampRallyWithHistoricalFormEntry.Response? {
+        val formSubmission =
+            findStampRallyFormHistoryEntry(dataYear, artistId, stampRallyId, formTimestamp)
+                ?: return null
+        return BackendRequest.StampRallyWithHistoricalFormEntry.Response(
+            stampRally = loadStampRally(dataYear, stampRallyId) ?: return null,
+            formDiff = formSubmission.toStampRallyEntryDiff(),
+        )
+    }
+
+    actual suspend fun saveStampRallyAndClearFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.StampRallyCommitForm.Response {
+        val stampRallyId = updated.id
+        if (stampRallyFormQueue[artistId to stampRallyId]?.timestamp == formEntryTimestamp ||
+            findStampRallyFormHistoryEntry(
+                dataYear,
+                artistId,
+                stampRallyId,
+                formEntryTimestamp
+            ) != null
+        ) {
+            saveStampRally(
+                dataYear = dataYear,
+                initial = initial,
+                updated = updated,
+                formTimestamp = formEntryTimestamp,
+            )
+            stampRallyFormQueue.remove(artistId to stampRallyId)?.let {
+                stampRallyFormHistory += it
+            }
+        }
+        return BackendRequest.StampRallyCommitForm.Response.Success
+    }
+
     private suspend fun simulateLatency() = delay(simulatedLatency)
 
-    private fun findFormHistoryEntry(dataYear: DataYear, artistId: Uuid, formTimestamp: Instant) =
+    private fun findArtistFormHistoryEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        formTimestamp: Instant,
+    ) =
         artistFormHistory.find {
             it.after.year == dataYear &&
                     it.after.id == artistId.toString() &&
                     it.timestamp == formTimestamp
         }
 
-    private fun ArtistFormSubmission.toArtistEntryDiff(): ArtistEntryDiff {
-        return ArtistEntryDiff(
+    private fun findStampRallyFormHistoryEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+        formTimestamp: Instant,
+    ) = stampRallyFormHistory.find {
+        it.after.year == dataYear &&
+                it.artistId == artistId &&
+                it.after.id == stampRallyId &&
+                it.timestamp == formTimestamp
+    }
+
+    internal data class ArtistFormSubmission(
+        val before: ArtistDatabaseEntry.Impl,
+        val after: ArtistDatabaseEntry.Impl,
+        val formNotes: String,
+        val timestamp: Instant = Clock.System.now(),
+    ) {
+        fun toArtistEntryDiff() = ArtistEntryDiff(
             booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
             name = after.name.takeIf { it != before.name },
             summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
@@ -455,16 +532,25 @@ actual class AlleyEditRemoteDatabase(
         )
     }
 
-    internal data class ArtistFormSubmission(
-        val before: ArtistDatabaseEntry.Impl,
-        val after: ArtistDatabaseEntry.Impl,
-        val formNotes: String,
-        val timestamp: Instant = Clock.System.now(),
-    )
-
     internal data class StampRallyFormSubmission(
+        val artistId: Uuid,
         val before: StampRallyDatabaseEntry?,
         val after: StampRallyDatabaseEntry,
         val timestamp: Instant = Clock.System.now(),
-    )
+    ) {
+        fun toStampRallyEntryDiff() = StampRallyEntryDiff(
+            id = after.id,
+            fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
+            hostTable = after.hostTable.takeIf { it != before?.hostTable.orEmpty() },
+            tables = HistoryListDiff.diffList(before?.tables, after.tables),
+            links = HistoryListDiff.diffList(before?.links, after.links),
+            tableMin = after.tableMin.takeIf { it != before?.tableMin },
+            prize = after.prize.takeIf { it != before?.prize },
+            prizeLimit = after.prizeLimit.takeIf { it != before?.prizeLimit },
+            series = HistoryListDiff.diffList(before?.series, after.series),
+            merch = HistoryListDiff.diffList(before?.merch, after.merch),
+            notes = after.notes.takeIf { it != before?.notes },
+            timestamp = timestamp,
+        )
+    }
 }

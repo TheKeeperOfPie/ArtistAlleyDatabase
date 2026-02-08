@@ -296,4 +296,11 @@
     <string name="alley_edit_stamp_rally_form_queue_action_refresh">Refresh form queue</string>
     <string name="alley_edit_stamp_rally_form_queue_tab_queue">Queue</string>
     <string name="alley_edit_stamp_rally_form_queue_tab_history">History</string>
+
+    <string name="alley_edit_stamp_rally_form_merge_timestamp_prefix">Stamp rally submitted form at</string>
+    <string name="alley_edit_stamp_rally_form_merge_title_fandom">Merging %1$s - %2$s</string>
+    <string name="alley_edit_stamp_rally_form_merge_title_host_table_fandom">Merging %1$s - %2$s - %3$s</string>
+    <string name="alley_edit_stamp_rally_form_merge_notes">Notes from submission</string>
+    <string name="alley_edit_stamp_rally_form_merge_action_save">Apply form merge</string>
+    <string name="alley_edit_stamp_rally_form_merge_outdated">Outdated initial stamp rally, reload page to try re-merge</string>
 </resources>

@@ -34,6 +34,28 @@ data class StampRallyDatabaseEntry(
         fun hasChanged(before: StampRallyDatabaseEntry?, after: StampRallyDatabaseEntry) =
             before?.copy(counter = 0, lastEditTime = null, lastEditor = null) !=
                     after.copy(counter = 0, lastEditTime = null, lastEditor = null)
+
+        fun empty(year: DataYear, id: String) = StampRallyDatabaseEntry(
+            year = year,
+            id = id,
+            fandom = "",
+            hostTable = "",
+            tables = emptyList(),
+            links = emptyList(),
+            tableMin = null,
+            totalCost = null,
+            prize = null,
+            prizeLimit = null,
+            series = emptyList(),
+            merch = emptyList(),
+            notes = null,
+            images = emptyList(),
+            counter = 0,
+            confirmed = false,
+            editorNotes = null,
+            lastEditor = null,
+            lastEditTime = null,
+        )
     }
 }
 

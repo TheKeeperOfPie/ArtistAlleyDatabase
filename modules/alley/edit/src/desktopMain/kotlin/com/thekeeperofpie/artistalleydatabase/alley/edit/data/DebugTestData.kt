@@ -9,7 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.Uuid
 
 object DebugTestData {
@@ -149,7 +149,7 @@ object DebugTestData {
             )
         )
         artistUpdates.forEach {
-            val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.minutes)
+            val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.seconds)
             database.saveArtist(
                 dataYear = DataYear.ANIME_EXPO_2026,
                 initial = previous,
@@ -206,7 +206,7 @@ object DebugTestData {
             updated = previous
         )
         updates.forEach {
-            val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.minutes)
+            val next = it(previous).copy(lastEditTime = previous.lastEditTime!! + 1.seconds)
             database.saveStampRally(
                 dataYear = DataYear.ANIME_EXPO_2026,
                 initial = previous,

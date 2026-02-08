@@ -1,17 +1,34 @@
-getFormEntries:
+getFormEntriesByArtist:
 SELECT * FROM stampRallyFormEntry
 WHERE dataYear = :dataYear AND artistId = :artistId;
+
+getFormEntriesByStampRally:
+SELECT * FROM stampRallyFormEntry
+WHERE dataYear = :dataYear AND artistId = :artistId AND stampRallyId = :stampRallyId;
 
 insertFormEntry:
 INSERT OR REPLACE INTO stampRallyFormEntry
 VALUES ?;
 
 getFormQueue:
-SELECT stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom
+SELECT artistId, stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom
 FROM stampRallyFormEntry
 ORDER BY timestamp DESC;
 
 getFormHistory:
-SELECT stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom, timestamp
+SELECT artistId, stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom, timestamp
 FROM stampRallyFormEntryHistory
 ORDER BY timestamp DESC;
+
+moveFormEntryToHistory:
+INSERT INTO stampRallyFormEntryHistory
+SELECT * FROM stampRallyFormEntry
+WHERE dataYear = :dataYear AND artistId = :artistId AND stampRallyId = :stampRallyId AND timestamp = :timestamp;
+
+consumeFormEntry:
+DELETE FROM stampRallyFormEntry
+WHERE dataYear = :dataYear AND artistId = :artistId AND stampRallyId = :stampRallyId AND timestamp = :timestamp;
+
+getFormHistoryEntry:
+SELECT * FROM stampRallyFormEntryHistory
+WHERE dataYear = :dataYear AND artistId = :artistId AND stampRallyId = :stampRallyId AND timestamp = :timestamp;

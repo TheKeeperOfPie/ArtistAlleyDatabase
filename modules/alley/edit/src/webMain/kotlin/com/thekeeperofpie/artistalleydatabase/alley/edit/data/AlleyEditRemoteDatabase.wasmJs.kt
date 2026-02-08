@@ -369,7 +369,10 @@ actual class AlleyEditRemoteDatabase(
             sendRequest(BackendRequest.StampRallies).orEmpty()
         }
 
-    actual suspend fun loadStampRally(dataYear: DataYear, stampRallyId: String): StampRallyDatabaseEntry? =
+    actual suspend fun loadStampRally(
+        dataYear: DataYear,
+        stampRallyId: String,
+    ): StampRallyDatabaseEntry? =
         withContext(dispatchers.io) {
             sendRequest(BackendRequest.StampRally(dataYear, stampRallyId))
         }
@@ -384,7 +387,7 @@ actual class AlleyEditRemoteDatabase(
     actual suspend fun saveStampRally(
         dataYear: DataYear,
         initial: StampRallyDatabaseEntry?,
-        updated: StampRallyDatabaseEntry
+        updated: StampRallyDatabaseEntry,
     ): BackendRequest.StampRallySave.Response =
         withContext(dispatchers.io) {
             try {
@@ -431,6 +434,73 @@ actual class AlleyEditRemoteDatabase(
             } catch (t: Throwable) {
                 t.printStackTrace()
                 emptyList()
+            }
+        }
+
+    actual suspend fun loadStampRallyWithFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+    ): BackendRequest.StampRallyWithFormEntry.Response? =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.StampRallyWithFormEntry(
+                        dataYear = dataYear,
+                        artistId = artistId,
+                        stampRallyId = stampRallyId,
+                    )
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
+        }
+
+    actual suspend fun loadStampRallyWithHistoricalFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+        formTimestamp: Instant,
+    ): BackendRequest.StampRallyWithHistoricalFormEntry.Response? =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.StampRallyWithHistoricalFormEntry(
+                        dataYear = dataYear,
+                        artistId = artistId,
+                        stampRallyId = stampRallyId,
+                        formTimestamp = formTimestamp,
+                    )
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
+        }
+
+    actual suspend fun saveStampRallyAndClearFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        initial: StampRallyDatabaseEntry?,
+        updated: StampRallyDatabaseEntry,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.StampRallyCommitForm.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.StampRallyCommitForm(
+                        dataYear = dataYear,
+                        artistId = artistId,
+                        initial = initial,
+                        updated = updated,
+                        formEntryTimestamp = formEntryTimestamp
+                    )
+                )
+                    ?: BackendRequest.StampRallyCommitForm.Response.Failed("Failed to commit form diff")
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.StampRallyCommitForm.Response.Failed(t.message.orEmpty())
             }
         }
 

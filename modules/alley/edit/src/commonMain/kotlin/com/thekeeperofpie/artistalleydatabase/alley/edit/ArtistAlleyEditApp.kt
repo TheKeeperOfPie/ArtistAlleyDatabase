@@ -40,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyAddSc
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
@@ -398,12 +399,27 @@ private fun entryProvider(
     sharedElementEntry<AlleyEditDestination.StampRallyFormQueue> {
         StampRallyFormQueueScreen(
             graph = graph,
-            onSelectEntry = {
+            onSelectEntry = { artistId, stampRallyId ->
+                navStack.navigate(
+                    AlleyEditDestination.StampRallyFormMerge(
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                        artistId = artistId,
+                        stampRallyId = stampRallyId,
+                    )
+                )
+            },
+            onSelectHistoryEntry = { _, _, _ ->
                 // TODO
             },
-            onSelectHistoryEntry = { _, _ ->
-                // TODO
-            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.StampRallyFormMerge> { route ->
+        StampRallyFormMergeScreen(
+            dataYear = route.dataYear,
+            artistId = route.artistId,
+            stampRallyId = route.stampRallyId,
+            graph = graph,
+            onClickBack = onClickBack,
         )
     }
 }

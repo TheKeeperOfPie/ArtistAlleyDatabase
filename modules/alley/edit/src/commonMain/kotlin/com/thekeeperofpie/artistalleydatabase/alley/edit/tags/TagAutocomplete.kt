@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 
 @SingleIn(AppScope::class)
 open class TagAutocomplete(
@@ -38,10 +39,10 @@ open class TagAutocomplete(
     )
 
     val seriesById = flowFromSuspend { loadSeries() }
-        .shareIn(applicationScope, SharingStarted.Eagerly, 1)
+        .stateIn(applicationScope, SharingStarted.Eagerly, emptyMap())
 
     val merchById = flowFromSuspend { loadMerch() }
-        .shareIn(applicationScope, SharingStarted.Eagerly, 1)
+        .stateIn(applicationScope, SharingStarted.Eagerly, emptyMap())
 
     fun seriesPredictions(query: String, allowCustom: Boolean = true) = when {
         query.isBlank() -> flowOf(emptyList())
