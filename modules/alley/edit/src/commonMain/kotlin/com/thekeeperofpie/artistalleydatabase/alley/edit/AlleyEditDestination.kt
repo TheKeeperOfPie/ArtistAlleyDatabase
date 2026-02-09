@@ -109,6 +109,14 @@ sealed interface AlleyEditDestination : NavKey {
         val stampRallyId: String,
     ) : AlleyEditDestination
 
+    @Serializable
+    data class StampRallyFormHistory(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val stampRallyId: String,
+        val formTimestamp: Instant,
+    ) : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
@@ -128,6 +136,12 @@ sealed interface AlleyEditDestination : NavKey {
                             segments.getOrNull(1)?.let(::MerchResolution)
                         else -> null
                     } ?: TagResolution
+                }
+                route.startsWith("artist/form/history") -> {
+                    val (dataYear, artistId, formTimestamp) = parseDataYearThenArtistIdAndTimestamp(
+                        route.removePrefix("artist/form/history/")
+                    ) ?: return null
+                    ArtistFormHistory(dataYear, artistId, formTimestamp)
                 }
                 route.startsWith("artist/history") -> {
                     val (dataYear, artistId) = parseDataYearThenArtistId(
@@ -177,6 +191,12 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     StampRallyFormMerge(dataYear, artistId, stampRallyId)
                 }
+                route.startsWith("rally/form/history") -> {
+                    val (dataYear, artistId, stampRallyId, formTimestamp) = parseDataYearThenArtistIdAndStampRallyIdAndTimestamp(
+                        route.removePrefix("rally/form/history/")
+                    ) ?: return null
+                    StampRallyFormHistory(dataYear, artistId, stampRallyId, formTimestamp)
+                }
                 else -> {
                     ConsoleLogger.log("Failed to find route for $route")
                     null
@@ -215,7 +235,9 @@ sealed interface AlleyEditDestination : NavKey {
             is StampRallyHistory -> "rally/history/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.stampRallyId)
             is StampRallyFormQueue -> "rally/queue"
-            is StampRallyFormMerge -> "rally/merge/${Uri.encode(destination.dataYear.serializedName)}/" +
+            is StampRallyFormMerge -> "rally/merge/${Uri.encode(destination.dataYear.serializedName)}" +
+                    "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"
+            is StampRallyFormHistory -> "rally/form/history${Uri.encode(destination.dataYear.serializedName)}" +
                     "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"
             Home -> ""
             is ImagesEdit,
@@ -231,6 +253,13 @@ sealed interface AlleyEditDestination : NavKey {
             return dataYear to artistId
         }
 
+        private fun parseDataYearThenArtistIdAndTimestamp(trailingPathSegments: String): Triple<DataYear, Uuid, Instant>? {
+            val (year, artist, timestamp) = trailingPathSegments.split("/")
+            val dataYear = DataYear.deserialize(year) ?: return null
+            val artistId = Uuid.parse(artist)
+            return Triple(dataYear, artistId, Instant.parse(timestamp))
+        }
+
         private fun parseDataYearThenStampRallyId(trailingPathSegments: String): Pair<DataYear, String>? {
             val (year, stampRallyId) = trailingPathSegments.split("/")
             val dataYear = DataYear.deserialize(year) ?: return null
@@ -243,5 +272,24 @@ sealed interface AlleyEditDestination : NavKey {
             val artistId = Uuid.parse(artist)
             return Triple(dataYear, artistId, stampRallyId)
         }
+
+        private fun parseDataYearThenArtistIdAndStampRallyIdAndTimestamp(trailingPathSegments: String): StampRallyFormMetadata? {
+            val (year, artist, stampRallyId, timestamp) = trailingPathSegments.split("/")
+            val dataYear = DataYear.deserialize(year) ?: return null
+            val artistId = Uuid.parse(artist)
+            return StampRallyFormMetadata(
+                year = dataYear,
+                artistId = artistId,
+                stampRallyId = stampRallyId,
+                formTimestamp = Instant.parse(timestamp),
+            )
+        }
+
+        private data class StampRallyFormMetadata(
+            val year: DataYear,
+            val artistId: Uuid,
+            val stampRallyId: String,
+            val formTimestamp: Instant,
+        )
     }
 }

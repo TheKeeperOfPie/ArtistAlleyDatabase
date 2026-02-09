@@ -261,7 +261,7 @@
     <string name="alley_edit_stamp_rally_edit_title_editing_name">Editing %1$s - %2$s</string>
     <string name="alley_edit_stamp_rally_edit_title_editing_booth_name">Editing %1$s - %2$s - %3$s</string>
 
-    <string name="alley_edit_refresh_action_view_tooltip">Refresh artist</string>
+    <string name="alley_edit_refresh_action_view_tooltip">Refresh</string>
     <string name="alley_edit_refresh_abandon_title">Abandon pending changes?</string>
     <string name="alley_edit_refresh_abandon_description">Refreshing will reset any pending edits</string>
     <string name="alley_edit_refresh_action_abandon">Abandon</string>
