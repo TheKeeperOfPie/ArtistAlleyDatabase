@@ -58,6 +58,7 @@ internal object StampRallyFormHistoryScreen {
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
+            onConfirmDelete = null,
         )
 
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)

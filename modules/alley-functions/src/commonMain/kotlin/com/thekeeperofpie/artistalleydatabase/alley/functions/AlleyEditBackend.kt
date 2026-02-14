@@ -91,15 +91,14 @@ object AlleyEditBackend {
                         makeResponse(saveStampRally(context, this, null))
                     is BackendRequest.StampRallyDelete ->
                         makeResponse(deleteStampRally(context, this))
+                    is BackendRequest.StampRallyDeleteFromForm ->
+                        makeResponse(deleteStampRallyFromForm(context, this))
                     is BackendRequest.StampRallyHistory ->
                         makeResponse(loadStampRallyHistory(context, this))
                     is BackendRequest.StampRallyFormHistory ->
                         makeResponse(loadStampRallyFormHistory(context))
-                    is BackendRequest.StampRallyFormQueue -> makeResponse(
-                        loadStampRallyFormQueue(
-                            context
-                        )
-                    )
+                    is BackendRequest.StampRallyFormQueue ->
+                        makeResponse(loadStampRallyFormQueue(context))
                     is BackendRequest.StampRallyWithFormEntry ->
                         makeResponse(loadStampRallyWithFormEntry(context, this))
                     is BackendRequest.StampRallyWithHistoricalFormEntry ->
@@ -637,6 +636,45 @@ object AlleyEditBackend {
                 -> BackendRequest.StampRallyDelete.Response.Failed("Cannot delete legacy years")
         }
 
+    private suspend fun deleteStampRallyFromForm(
+        context: EventContext,
+        request: BackendRequest.StampRallyDeleteFromForm,
+    ): BackendRequest.StampRallyDeleteFromForm.Response =
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                val database = Databases.editDatabase(context)
+                val currentStampRally =
+                    database.stampRallyEntryAnimeExpo2026Queries
+                        .getStampRally(request.expected.id)
+                        .awaitAsOneOrNull()
+                        ?.toStampRallyDatabaseEntry()
+                        ?.fixForJs()
+                if (currentStampRally == null || currentStampRally != request.expected) {
+                    BackendRequest.StampRallyDeleteFromForm.Response.Outdated(currentStampRally)
+                } else {
+                    database.stampRallyEntryAnimeExpo2026Queries
+                        .deleteStampRally(request.expected.id)
+                    KeyValueCacher(context).invalidateStampRallies()
+
+                    consumeStampRallyFormEntry(
+                        context = context,
+                        dataYear = request.dataYear,
+                        artistId = request.artistId,
+                        stampRallyId = request.expected.id,
+                        formEntryTimestamp = request.formEntryTimestamp,
+                    )
+
+                    BackendRequest.StampRallyDeleteFromForm.Response.Success
+                }
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> BackendRequest.StampRallyDeleteFromForm.Response.Failed("Cannot delete legacy years")
+        }
+
     private suspend fun loadStampRallyHistory(
         context: EventContext,
         request: BackendRequest.StampRallyHistory,
@@ -714,7 +752,7 @@ object AlleyEditBackend {
         val stampRally = BackendUtils.loadStampRally(
             context,
             BackendRequest.StampRally(request.dataYear, request.stampRallyId)
-        )?: return null
+        ) ?: return null
 
         val formDiff = BackendUtils.loadStampRallyFormHistoryDiff(
             context = context,
@@ -748,23 +786,40 @@ object AlleyEditBackend {
             BackendRequest.StampRallySave.Response.Success -> Unit
         }
 
+        consumeStampRallyFormEntry(
+            context = context,
+            dataYear = request.dataYear,
+            artistId = request.artistId,
+            stampRallyId = request.updated.id,
+            formEntryTimestamp = request.formEntryTimestamp,
+        )
+
+        return BackendRequest.StampRallyCommitForm.Response.Success
+    }
+
+    private suspend fun consumeStampRallyFormEntry(
+        context: EventContext,
+        dataYear: DataYear,
+        artistId: Uuid,
+        stampRallyId: String,
+        formEntryTimestamp: Instant,
+    ) {
         Databases.formDatabase(context).stampRallyFormEntryQueries.run {
             // D1 only supports transactions in a batched statement, which is hard to set up
             // A single write and delete should be consistent enough that it shouldn't matter
             moveFormEntryToHistory(
-                dataYear = request.dataYear,
-                artistId = request.artistId,
-                stampRallyId = request.updated.id,
-                timestamp = request.formEntryTimestamp,
+                dataYear = dataYear,
+                artistId = artistId,
+                stampRallyId = stampRallyId,
+                timestamp = formEntryTimestamp,
             )
             consumeFormEntry(
-                dataYear = request.dataYear,
-                artistId = request.artistId,
-                stampRallyId = request.updated.id,
-                timestamp = request.formEntryTimestamp,
+                dataYear = dataYear,
+                artistId = artistId,
+                stampRallyId = stampRallyId,
+                timestamp = formEntryTimestamp,
             )
         }
-        return BackendRequest.StampRallyCommitForm.Response.Success
     }
 
     private fun literalJsonResponse(value: String) = Response(
@@ -871,7 +926,7 @@ object AlleyEditBackend {
             merch = merch,
             notes = notes,
             images = images,
-            confirmed = confirmed,
+            confirmed = coerceBooleanForJs(confirmed),
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             lastEditTime = timestamp,
@@ -892,7 +947,7 @@ object AlleyEditBackend {
             merch = merch,
             notes = notes,
             images = images,
-            confirmed = confirmed,
+            confirmed = coerceBooleanForJs(confirmed),
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             timestamp = lastEditTime,

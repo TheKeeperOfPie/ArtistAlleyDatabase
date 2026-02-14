@@ -417,6 +417,23 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
+    actual suspend fun deleteStampRallyAndClearFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        expected: StampRallyDatabaseEntry,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.StampRallyDeleteFromForm.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.StampRallyDeleteFromForm(dataYear, artistId, expected, formEntryTimestamp)
+                )!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.StampRallyDeleteFromForm.Response.Failed(t.message.orEmpty())
+            }
+        }
+
     actual suspend fun loadStampRallyFormQueue(): List<StampRallyFormQueueEntry> =
         withContext(dispatchers.io) {
             try {

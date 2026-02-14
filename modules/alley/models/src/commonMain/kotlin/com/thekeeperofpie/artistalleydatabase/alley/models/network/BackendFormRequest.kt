@@ -39,6 +39,7 @@ sealed interface BackendFormRequest {
         val afterArtist: ArtistDatabaseEntry.Impl,
         val beforeStampRallies: List<StampRallyDatabaseEntry>,
         val afterStampRallies: List<StampRallyDatabaseEntry>,
+        val deletedRallyIds: List<String>,
         val formNotes: String,
     ) : BackendFormRequest, WithResponse<ArtistSave.Response> {
 

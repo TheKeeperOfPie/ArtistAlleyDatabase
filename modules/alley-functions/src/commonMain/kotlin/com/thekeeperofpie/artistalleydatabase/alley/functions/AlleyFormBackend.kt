@@ -224,7 +224,7 @@ internal object AlleyFormBackend {
                 formNotes = request.formNotes,
                 timestamp = timestamp,
             )
-        val stampRallyFormEntries = request.afterStampRallies.map { after ->
+        val updatedStampRallyFormEntries = request.afterStampRallies.map { after ->
             val before = request.beforeStampRallies.find { it.id == after.id }
             val stampRallyId = if (before == null || Uuid.parseOrNull(after.id) == null) {
                 Uuid.random().toString()
@@ -257,12 +257,49 @@ internal object AlleyFormBackend {
                 afterMerch = after.merch,
                 afterNotes = after.notes,
                 afterImages = after.images,
+                deleted = false,
                 timestamp = timestamp,
             )
         }
 
+        val deletedStampRallies = request.deletedRallyIds
+            .map {
+                StampRallyFormEntry(
+                    dataYear = request.dataYear,
+                    artistId = artistId,
+                    stampRallyId = it,
+                    beforeFandom = null,
+                    beforeHostTable = null,
+                    beforeTables = null,
+                    beforeLinks = null,
+                    beforeTableMin = null,
+                    beforePrize = null,
+                    beforePrizeLimit = null,
+                    beforeSeries = null,
+                    beforeMerch = null,
+                    beforeNotes = null,
+                    beforeImages = null,
+                    afterFandom = null,
+                    afterHostTable = null,
+                    afterTables = null,
+                    afterLinks = null,
+                    afterTableMin = null,
+                    afterPrize = null,
+                    afterPrizeLimit = null,
+                    afterSeries = null,
+                    afterMerch = null,
+                    afterNotes = null,
+                    afterImages = null,
+                    deleted = true,
+                    timestamp = timestamp,
+                )
+            }
+
         database.artistFormEntryQueries.insertFormEntry(artistFormEntry)
-        stampRallyFormEntries.forEach {
+        updatedStampRallyFormEntries.forEach {
+            database.stampRallyFormEntryQueries.insertFormEntry(it)
+        }
+        deletedStampRallies.forEach {
             database.stampRallyFormEntryQueries.insertFormEntry(it)
         }
         Databases.editDatabase(context)

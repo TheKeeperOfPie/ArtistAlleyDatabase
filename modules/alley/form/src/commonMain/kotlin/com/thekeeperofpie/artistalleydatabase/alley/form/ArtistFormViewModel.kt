@@ -6,12 +6,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
@@ -195,7 +195,8 @@ class ArtistFormViewModel(
                             // TODO: hostTable isn't handled, remove in favor of index 0?
                             baseStampRally.copy(
                                 fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
-                                hostTable = stampRallyFormDiff.hostTable ?: baseStampRally.hostTable,
+                                hostTable = stampRallyFormDiff.hostTable
+                                    ?: baseStampRally.hostTable,
                                 tables = applyDiff(
                                     baseStampRally.tables,
                                     stampRallyFormDiff.tables
@@ -203,8 +204,12 @@ class ArtistFormViewModel(
                                 links = applyDiff(baseStampRally.links, stampRallyFormDiff.links),
                                 tableMin = stampRallyFormDiff.tableMin ?: baseStampRally.tableMin,
                                 prize = stampRallyFormDiff.prize ?: baseStampRally.prize,
-                                prizeLimit = stampRallyFormDiff.prizeLimit ?: baseStampRally.prizeLimit,
-                                series = applyDiff(baseStampRally.series, stampRallyFormDiff.series),
+                                prizeLimit = stampRallyFormDiff.prizeLimit
+                                    ?: baseStampRally.prizeLimit,
+                                series = applyDiff(
+                                    baseStampRally.series,
+                                    stampRallyFormDiff.series
+                                ),
                                 merch = applyDiff(baseStampRally.merch, stampRallyFormDiff.merch),
                             )
                         }
@@ -214,6 +219,8 @@ class ArtistFormViewModel(
                             merchById = tagAutocomplete.merchById.first(),
                             mergeBehavior = FormMergeBehavior.REPLACE,
                         )
+                        baseState.editorState.deleted = stampRallyFormDiff?.deleted == true
+                        baseState
                     }
             state.stampRallyStates.replaceAll(newStampRallyStates)
 
@@ -246,6 +253,8 @@ class ArtistFormViewModel(
                 images = images,
                 artist = artist,
                 stampRallyEntries = stampRallyEntries,
+                deletedRallyIds = state.stampRallyStates.filter { it.editorState.deleted }
+                    .map { it.editorState.id.value.text.toString() },
                 formNotes = state.formState.formNotes.value.text.toString(),
             )
         }
@@ -295,6 +304,7 @@ class ArtistFormViewModel(
             afterArtist = data.artist,
             beforeStampRallies = rallies.value,
             afterStampRallies = data.stampRallyEntries,
+            deletedRallyIds = data.deletedRallyIds,
             formNotes = data.formNotes,
         ).also {
             progress.value = ArtistFormScreen.State.Progress.DONE
@@ -304,6 +314,7 @@ class ArtistFormViewModel(
         val images: List<EditImage>,
         val artist: ArtistDatabaseEntry.Impl,
         val stampRallyEntries: List<StampRallyDatabaseEntry>,
+        val deletedRallyIds: List<String>,
         val formNotes: String,
     )
 

@@ -1,3 +1,4 @@
+import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
 import kotlin.time.Instant;
@@ -118,6 +119,7 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntry (
     afterMerch TEXT AS List<String>,
     afterNotes TEXT,
     afterImages TEXT AS List<CatalogImage>,
+    deleted INTEGER AS Boolean NOT NULL DEFAULT 0,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, stampRallyId)
 );
@@ -148,6 +150,7 @@ CREATE TABLE IF NOT EXISTS stampRallyFormEntryHistory (
     afterMerch TEXT AS List<String>,
     afterNotes TEXT,
     afterImages TEXT AS List<CatalogImage>,
+    deleted INTEGER AS Boolean NOT NULL DEFAULT 0,
     timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (dataYear, artistId, stampRallyId, timestamp)
 );

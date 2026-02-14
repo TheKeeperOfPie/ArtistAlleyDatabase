@@ -20,6 +20,7 @@ class AlleyFormDatabase(
         afterArtist: ArtistDatabaseEntry.Impl,
         beforeStampRallies: List<StampRallyDatabaseEntry>,
         afterStampRallies: List<StampRallyDatabaseEntry>,
+        deletedRallyIds: List<String>,
         formNotes: String,
     ) = remoteDatabase.saveArtist(
         dataYear = dataYear,
@@ -27,6 +28,7 @@ class AlleyFormDatabase(
         afterArtist = afterArtist,
         beforeStampRallies = beforeStampRallies,
         afterStampRallies = afterStampRallies,
+        deletedRallyIds = deletedRallyIds,
         formNotes = formNotes,
     )
 }

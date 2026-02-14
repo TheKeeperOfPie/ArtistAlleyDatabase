@@ -303,4 +303,6 @@
     <string name="alley_edit_stamp_rally_form_merge_notes">Notes from submission</string>
     <string name="alley_edit_stamp_rally_form_merge_action_save">Apply form merge</string>
     <string name="alley_edit_stamp_rally_form_merge_outdated">Outdated initial stamp rally, reload page to try re-merge</string>
+    <string name="alley_edit_stamp_rally_form_merge_delete_prompt">Artist deleted this rally, merging this entry will delete the rally for everyone</string>
+    <string name="alley_edit_stamp_rally_form_merge_delete_action_confirm">Confirm delete</string>
 </resources>

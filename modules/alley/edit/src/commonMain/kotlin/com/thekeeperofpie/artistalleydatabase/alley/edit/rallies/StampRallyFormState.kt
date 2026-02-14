@@ -2,7 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
@@ -178,7 +181,10 @@ class StampRallyFormState(
         // TODO: Remove this field entirely
         // Intentionally prefixed with "editor" to avoid confusion with regular notes field
         val editorNotes: EntryForm2.SingleTextState = EntryForm2.SingleTextState(),
+        deleted: Boolean = false,
     ) {
+        var deleted by mutableStateOf(deleted)
+
         fun applyValues(
             id: String,
             editorNotes: String?,
@@ -202,11 +208,13 @@ class StampRallyFormState(
             override fun SaverScope.save(value: EditorState) = listOf(
                 with(EntryForm2.SingleTextState.Saver) { save(value.id) },
                 with(EntryForm2.SingleTextState.Saver) { save(value.editorNotes) },
+                value.deleted,
             )
 
             override fun restore(value: List<Any>) = EditorState(
                 id = with(EntryForm2.SingleTextState.Saver) { restore(value[0]) },
-                editorNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[2]) },
+                editorNotes = with(EntryForm2.SingleTextState.Saver) { restore(value[1]) },
+                deleted = value[2] as Boolean,
             )
         }
     }

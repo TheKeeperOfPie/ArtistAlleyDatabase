@@ -4,12 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeViewModel
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormMergeViewModel.SaveData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -39,12 +36,16 @@ class StampRallyFormMergeViewModel(
     @Assisted stampRallyId: String,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    val entry = flowFromSuspend { database.loadStampRallyWithFormEntry(dataYear, artistId, stampRallyId) }
-        .stateIn(viewModelScope, SharingStarted.Lazily, null)
+    val entry =
+        flowFromSuspend { database.loadStampRallyWithFormEntry(dataYear, artistId, stampRallyId) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, null)
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
     private val saveTask: ExclusiveTask<SaveData, BackendRequest.StampRallyCommitForm.Response> =
         ExclusiveTask(viewModelScope, ::save)
+    private val deleteTask: ExclusiveTask<DeleteData, BackendRequest.StampRallyDeleteFromForm.Response> =
+        ExclusiveTask(viewModelScope, ::delete)
     val saveTaskState get() = saveTask.state
+    val deleteTaskState get() = deleteTask.state
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
@@ -55,6 +56,17 @@ class StampRallyFormMergeViewModel(
                 images = images,
                 initial = entry.stampRally,
                 updated = updated,
+                formEntryTimestamp = entry.formDiff.timestamp,
+            )
+        }
+    }
+
+    fun onConfirmDelete() {
+        val entry = entry.value ?: return
+        val stampRally = entry.stampRally ?: return
+        deleteTask.triggerManual {
+            DeleteData(
+                initial = stampRally,
                 formEntryTimestamp = entry.formDiff.timestamp,
             )
         }
@@ -72,10 +84,25 @@ class StampRallyFormMergeViewModel(
             )
         }
 
+    private suspend fun delete(data: DeleteData) =
+        withContext(dispatchers.io) {
+            database.deleteStampRallyAndClearFormEntry(
+                dataYear = dataYear,
+                artistId = artistId,
+                expected = data.initial,
+                formEntryTimestamp = data.formEntryTimestamp,
+            )
+        }
+
     private data class SaveData(
         val images: List<EditImage>,
         val initial: StampRallyDatabaseEntry?,
         val updated: StampRallyDatabaseEntry,
+        val formEntryTimestamp: Instant,
+    )
+
+    private data class DeleteData(
+        val initial: StampRallyDatabaseEntry,
         val formEntryTimestamp: Instant,
     )
 

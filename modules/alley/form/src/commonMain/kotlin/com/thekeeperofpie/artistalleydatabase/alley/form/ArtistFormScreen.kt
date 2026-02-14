@@ -16,7 +16,9 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -49,6 +51,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
@@ -94,6 +97,8 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_pri
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_saved_changes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_action_add
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_header
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_action_delete
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_action_restore
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
@@ -103,7 +108,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.Artist
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeArtistPrompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
-import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
@@ -112,6 +116,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.rememberErrorSt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
+import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.ErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -586,10 +591,10 @@ object ArtistFormScreen {
                                 }
                             }
                             CompositionLocalProvider(
-                                LocalContentColor provides if (edited) {
-                                    AlleyTheme.colorScheme.positive
-                                } else {
-                                    LocalContentColor.current
+                                LocalContentColor provides when {
+                                    formState.editorState.deleted -> AlleyTheme.colorScheme.negative
+                                    edited -> AlleyTheme.colorScheme.positive
+                                    else -> LocalContentColor.current
                                 }
                             ) {
                                 StampRallySummaryRow(
@@ -603,17 +608,38 @@ object ArtistFormScreen {
                                         .filterNotNull(),
                                     seriesById = seriesById,
                                     modifier = Modifier.weight(1f)
+                                        .alpha(if (formState.editorState.deleted) 0.35f else 1f)
                                 )
                             }
 
-                            TrailingDropdownIcon(
-                                expanded = expanded,
-                                contentDescription = null,
-                                modifier = Modifier.padding(16.dp)
+                            TooltipIconButton(
+                                icon = if (formState.editorState.deleted) {
+                                    Icons.Default.RestoreFromTrash
+                                } else {
+                                    Icons.Default.Delete
+                                },
+                                tooltipText = stringResource(
+                                    if (formState.editorState.deleted) {
+                                        Res.string.alley_form_stamp_rally_action_restore
+                                    } else {
+                                        Res.string.alley_form_stamp_rally_action_delete
+                                    }
+                                ),
+                                onClick = {
+                                    formState.editorState.deleted = !formState.editorState.deleted
+                                },
                             )
+
+                            if (!formState.editorState.deleted) {
+                                TrailingDropdownIcon(
+                                    expanded = expanded,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
                         }
 
-                        if (expanded) {
+                        if (!formState.editorState.deleted && expanded) {
                             HorizontalDivider(Modifier.padding(horizontal = 16.dp))
                             StampRallyForm(
                                 state = formState,

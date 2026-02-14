@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -53,6 +54,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_table_min
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_tables
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_action_save
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_delete_action_confirm
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_delete_prompt
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_timestamp_prefix
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_form_merge_title_fandom
@@ -115,20 +118,26 @@ internal object StampRallyFormMergeScreen {
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = viewModel.saveTaskState
+        val deleteTaskState = viewModel.deleteTaskState
         StampRallyFormMergeScreen(
             dataYear = dataYear,
             stampRallyId = stampRallyId,
             snackbarHostState = snackbarHostState,
             entry = { stampRallyWithFormEntry?.run { stampRally to formDiff } },
-            saving = { saveTaskState.showBlockingLoadingIndicator },
+            saving = {
+                saveTaskState.showBlockingLoadingIndicator ||
+                        deleteTaskState.showBlockingLoadingIndicator
+            },
             seriesById = { seriesById },
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
+            onConfirmDelete = viewModel::onConfirmDelete,
         )
 
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)
+        GenericTaskErrorEffect(deleteTaskState, snackbarHostState)
 
         val navigationResults = LocalNavigationResults.current
         LaunchedEffect(navigationResults, saveTaskState) {
@@ -152,6 +161,27 @@ internal object StampRallyFormMergeScreen {
                     }
                 }
         }
+        LaunchedEffect(navigationResults, deleteTaskState) {
+            snapshotFlow { deleteTaskState.lastResult }
+                .filterNotNull()
+                .collectLatest { (_, result) ->
+                    when (result) {
+                        is BackendRequest.StampRallyDeleteFromForm.Response.Failed -> {
+                            snackbarHostState.showSnackbar(message = result.errorMessage)
+                            deleteTaskState.clearResult()
+                        }
+                        is BackendRequest.StampRallyDeleteFromForm.Response.Outdated -> {
+                            snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_stamp_rally_form_merge_outdated))
+                            deleteTaskState.clearResult()
+                        }
+                        is BackendRequest.StampRallyDeleteFromForm.Response.Success -> {
+                            deleteTaskState.clearResult()
+                            navigationResults[RESULT_KEY] = Unit
+                            onClickBack(true)
+                        }
+                    }
+                }
+        }
     }
 
     @Composable
@@ -166,6 +196,7 @@ internal object StampRallyFormMergeScreen {
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, StampRallyDatabaseEntry) -> Unit,
+        onConfirmDelete: (() -> Unit)?,
     ) {
         val entry = entry()
         val initialStampRally = entry()?.first
@@ -177,7 +208,10 @@ internal object StampRallyFormMergeScreen {
             derivedStateOf {
                 formDiff ?: return@derivedStateOf null
                 fieldState.applyChanges(
-                    base = initialStampRally ?: StampRallyDatabaseEntry.empty(dataYear, stampRallyId),
+                    base = initialStampRally ?: StampRallyDatabaseEntry.empty(
+                        dataYear,
+                        stampRallyId
+                    ),
                     seriesById = seriesByIdMap,
                     merchById = merchByIdMap,
                     diff = formDiff,
@@ -209,15 +243,17 @@ internal object StampRallyFormMergeScreen {
                     },
                     navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
                     actions = {
-                        TooltipIconButton(
-                            icon = Icons.Default.Save,
-                            tooltipText = stringResource(Res.string.alley_edit_stamp_rally_form_merge_action_save),
-                            onClick = {
-                                stampRallyFormState?.captureDatabaseEntry(dataYear)?.let {
-                                    onClickSave(it.first, it.second)
-                                }
-                            },
-                        )
+                        if (formDiff?.deleted == false) {
+                            TooltipIconButton(
+                                icon = Icons.Default.Save,
+                                tooltipText = stringResource(Res.string.alley_edit_stamp_rally_form_merge_action_save),
+                                onClick = {
+                                    stampRallyFormState?.captureDatabaseEntry(dataYear)?.let {
+                                        onClickSave(it.first, it.second)
+                                    }
+                                },
+                            )
+                        }
                     },
                 )
             },
@@ -237,9 +273,13 @@ internal object StampRallyFormMergeScreen {
                         CircularWavyProgressIndicator()
                     }
                 } else {
-                    val fieldsList = remember {
+                    val secondary = remember {
                         movableContentOf {
-                            FieldsList(fieldState = fieldState, diff = formDiff)
+                            if (formDiff?.deleted == true && onConfirmDelete != null) {
+                                DeletePrompt(onConfirmDelete = onConfirmDelete)
+                            } else {
+                                FieldsList(fieldState = fieldState, diff = formDiff)
+                            }
                         }
                     }
                     ScrollableSideBySide(
@@ -254,8 +294,8 @@ internal object StampRallyFormMergeScreen {
                                 merchById = merchById,
                             )
                         },
-                        secondary = { fieldsList() },
-                        secondaryExpanded = { fieldsList() },
+                        secondary = { secondary() },
+                        secondaryExpanded = { secondary() },
                     )
                 }
             }
@@ -307,6 +347,20 @@ internal object StampRallyFormMergeScreen {
                     seriesImage = seriesImage,
                     modifier = modifier.fillMaxWidth(),
                 )
+            }
+        }
+    }
+
+    @Composable
+    private fun DeletePrompt(onConfirmDelete: () -> Unit) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(stringResource(Res.string.alley_edit_stamp_rally_form_merge_delete_prompt))
+            FilledTonalButton(onClick = onConfirmDelete) {
+                Text(stringResource(Res.string.alley_edit_stamp_rally_form_merge_delete_action_confirm))
             }
         }
     }

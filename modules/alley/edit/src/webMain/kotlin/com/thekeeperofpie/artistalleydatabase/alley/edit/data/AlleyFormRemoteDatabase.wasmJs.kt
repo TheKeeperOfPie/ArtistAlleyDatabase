@@ -41,6 +41,7 @@ actual class AlleyFormRemoteDatabase(
         afterArtist: ArtistDatabaseEntry.Impl,
         beforeStampRallies: List<StampRallyDatabaseEntry>,
         afterStampRallies: List<StampRallyDatabaseEntry>,
+        deletedRallyIds: List<String>,
         formNotes: String,
     ): BackendFormRequest.ArtistSave.Response = withContext(dispatchers.io) {
         val accessKey = ArtistFormAccessKey.key
@@ -61,6 +62,7 @@ actual class AlleyFormRemoteDatabase(
                 afterArtist = afterArtist,
                 beforeStampRallies = beforeStampRallies,
                 afterStampRallies = afterStampRallies,
+                deletedRallyIds = deletedRallyIds,
                 formNotes = formNotes,
             ),
             accessKey = accessKey,

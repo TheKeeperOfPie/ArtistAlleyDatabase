@@ -53,6 +53,7 @@ object DebugTestData {
             afterArtist = artistAfter,
             beforeStampRallies = listOf(stampRally),
             afterStampRallies = listOf(stampRallyAfter),
+            deletedRallyIds = emptyList(),
             formNotes = "Some test artist form notes",
         )
     }

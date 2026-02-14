@@ -17,5 +17,6 @@ data class StampRallyEntryDiff(
     val series: HistoryListDiff?,
     val merch: HistoryListDiff?,
     val notes: String?,
+    val deleted: Boolean,
     val timestamp: Instant,
 )

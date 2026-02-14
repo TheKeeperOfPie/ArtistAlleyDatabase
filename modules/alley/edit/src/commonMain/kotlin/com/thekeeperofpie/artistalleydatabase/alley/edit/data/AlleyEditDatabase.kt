@@ -259,6 +259,18 @@ class AlleyEditDatabase(
         expected: StampRallyDatabaseEntry,
     ) = remoteDatabase.deleteStampRally(dataYear, expected)
 
+    suspend fun deleteStampRallyAndClearFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        expected: StampRallyDatabaseEntry,
+        formEntryTimestamp: Instant,
+    ) = remoteDatabase.deleteStampRallyAndClearFormEntry(
+        dataYear = dataYear,
+        artistId = artistId,
+        expected = expected,
+        formEntryTimestamp = formEntryTimestamp,
+    )
+
     suspend fun loadStampRallyFormQueue(): List<StampRallyFormQueueEntry> =
         remoteDatabase.loadStampRallyFormQueue()
 
@@ -278,7 +290,12 @@ class AlleyEditDatabase(
         stampRallyId: String,
         formTimestamp: Instant,
     ): BackendRequest.StampRallyWithHistoricalFormEntry.Response? =
-        remoteDatabase.loadStampRallyWithHistoricalFormEntry(dataYear, artistId, stampRallyId, formTimestamp)
+        remoteDatabase.loadStampRallyWithHistoricalFormEntry(
+            dataYear,
+            artistId,
+            stampRallyId,
+            formTimestamp
+        )
 
     suspend fun saveStampRallyAndClearFormEntry(
         dataYear: DataYear,
@@ -286,11 +303,12 @@ class AlleyEditDatabase(
         initial: StampRallyDatabaseEntry?,
         updated: StampRallyDatabaseEntry,
         formEntryTimestamp: Instant,
-    ): BackendRequest.StampRallyCommitForm.Response = remoteDatabase.saveStampRallyAndClearFormEntry(
-        dataYear = dataYear,
-        artistId = artistId,
-        initial = initial,
-        updated = updated,
-        formEntryTimestamp = formEntryTimestamp,
-    )
+    ): BackendRequest.StampRallyCommitForm.Response =
+        remoteDatabase.saveStampRallyAndClearFormEntry(
+            dataYear = dataYear,
+            artistId = artistId,
+            initial = initial,
+            updated = updated,
+            formEntryTimestamp = formEntryTimestamp,
+        )
 }

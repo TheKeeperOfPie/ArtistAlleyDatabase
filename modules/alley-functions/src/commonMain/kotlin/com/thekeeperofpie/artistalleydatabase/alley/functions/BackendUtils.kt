@@ -214,6 +214,7 @@ internal object BackendUtils {
                 ),
                 merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
                 notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
+                deleted = coerceBooleanForJs(formEntry.deleted),
                 timestamp = formEntry.timestamp,
             )
         }
@@ -248,6 +249,7 @@ internal object BackendUtils {
                 ),
                 merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
                 notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
+                deleted = coerceBooleanForJs(formEntry.deleted),
                 timestamp = formEntry.timestamp,
             )
         }
@@ -283,6 +285,7 @@ internal object BackendUtils {
                 ),
                 merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
                 notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
+                deleted = coerceBooleanForJs(formEntry.deleted),
                 timestamp = formEntry.timestamp,
             )
         }

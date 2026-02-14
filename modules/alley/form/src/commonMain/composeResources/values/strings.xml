@@ -47,4 +47,6 @@
 
     <string name="alley_form_stamp_rallies_header">Stamp rallies</string>
     <string name="alley_form_stamp_rallies_action_add">Add new rally</string>
+    <string name="alley_form_stamp_rally_action_restore">Restore rally</string>
+    <string name="alley_form_stamp_rally_action_delete">Delete rally</string>
 </resources>

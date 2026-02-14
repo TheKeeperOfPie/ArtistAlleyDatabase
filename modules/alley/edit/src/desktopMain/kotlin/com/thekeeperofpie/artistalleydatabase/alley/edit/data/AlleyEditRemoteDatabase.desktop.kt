@@ -374,13 +374,42 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.StampRallyDelete.Response.Success
     }
 
+    actual suspend fun deleteStampRallyAndClearFormEntry(
+        dataYear: DataYear,
+        artistId: Uuid,
+        expected: StampRallyDatabaseEntry,
+        formEntryTimestamp: Instant,
+    ): BackendRequest.StampRallyDeleteFromForm.Response {
+        val stampRallyId = expected.id
+        val currentStampRally = loadStampRally(dataYear, stampRallyId)
+        if (expected != currentStampRally) {
+            return BackendRequest.StampRallyDeleteFromForm.Response.Outdated(currentStampRally)
+        }
+
+        if (stampRallyFormQueue[artistId to stampRallyId]?.timestamp == formEntryTimestamp ||
+            findStampRallyFormHistoryEntry(
+                dataYear = dataYear,
+                artistId = artistId,
+                stampRallyId = stampRallyId,
+                formTimestamp = formEntryTimestamp,
+            ) != null
+        ) {
+            stampRallyFormQueue.remove(artistId to stampRallyId)?.let {
+                stampRallyFormHistory += it
+            }
+
+            stampRalliesByDataYearAndId[dataYear]?.remove(expected.id)
+        }
+        return BackendRequest.StampRallyDeleteFromForm.Response.Success
+    }
+
     actual suspend fun loadStampRallyFormQueue(): List<StampRallyFormQueueEntry> =
         stampRallyFormQueue.values.map {
             StampRallyFormQueueEntry(
                 artistId = it.artistId,
-                stampRallyId = it.after.id,
-                hostTable = it.after.hostTable.ifBlank { null } ?: it.before?.hostTable,
-                fandom = it.after.fandom.ifBlank { null } ?: it.before?.fandom,
+                stampRallyId = it.stampRallyId,
+                hostTable = it.after?.hostTable?.ifBlank { null } ?: it.before?.hostTable,
+                fandom = it.after?.fandom?.ifBlank { null } ?: it.before?.fandom,
             )
         }
 
@@ -388,9 +417,9 @@ actual class AlleyEditRemoteDatabase(
         stampRallyFormHistory.map {
             StampRallyFormHistoryEntry(
                 artistId = it.artistId,
-                stampRallyId = it.after.id,
-                hostTable = it.after.hostTable.ifBlank { null } ?: it.before?.hostTable,
-                fandom = it.after.fandom.ifBlank { null } ?: it.before?.fandom,
+                stampRallyId = it.stampRallyId,
+                hostTable = it.after?.hostTable?.ifBlank { null } ?: it.before?.hostTable,
+                fandom = it.after?.fandom?.ifBlank { null } ?: it.before?.fandom,
                 timestamp = it.timestamp,
             )
         }
@@ -451,6 +480,10 @@ actual class AlleyEditRemoteDatabase(
         formEntryTimestamp: Instant,
     ): BackendRequest.StampRallyCommitForm.Response {
         val stampRallyId = updated.id
+        val currentStampRally = loadStampRally(dataYear, stampRallyId)
+        if (currentStampRally != null && initial != currentStampRally) {
+            return BackendRequest.StampRallyCommitForm.Response.Outdated(currentStampRally)
+        }
         if (stampRallyFormQueue[artistId to stampRallyId]?.timestamp == formEntryTimestamp ||
             findStampRallyFormHistoryEntry(
                 dataYear,
@@ -491,7 +524,7 @@ actual class AlleyEditRemoteDatabase(
         stampRallyId: String,
         formTimestamp: Instant,
     ) = stampRallyFormHistory.find {
-        it.after.year == dataYear &&
+        it.after?.year == dataYear &&
                 it.artistId == artistId &&
                 it.after.id == stampRallyId &&
                 it.timestamp == formTimestamp
@@ -534,23 +567,45 @@ actual class AlleyEditRemoteDatabase(
 
     internal data class StampRallyFormSubmission(
         val artistId: Uuid,
+        val stampRallyId: String,
         val before: StampRallyDatabaseEntry?,
-        val after: StampRallyDatabaseEntry,
+        val after: StampRallyDatabaseEntry?,
         val timestamp: Instant = Clock.System.now(),
     ) {
-        fun toStampRallyEntryDiff() = StampRallyEntryDiff(
-            id = after.id,
-            fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
-            hostTable = after.hostTable.takeIf { it != before?.hostTable.orEmpty() },
-            tables = HistoryListDiff.diffList(before?.tables, after.tables),
-            links = HistoryListDiff.diffList(before?.links, after.links),
-            tableMin = after.tableMin.takeIf { it != before?.tableMin },
-            prize = after.prize.takeIf { it != before?.prize },
-            prizeLimit = after.prizeLimit.takeIf { it != before?.prizeLimit },
-            series = HistoryListDiff.diffList(before?.series, after.series),
-            merch = HistoryListDiff.diffList(before?.merch, after.merch),
-            notes = after.notes.takeIf { it != before?.notes },
-            timestamp = timestamp,
-        )
+        fun toStampRallyEntryDiff(): StampRallyEntryDiff {
+            return if (after == null) {
+                StampRallyEntryDiff(
+                    id = stampRallyId,
+                    fandom = null,
+                    hostTable = null,
+                    tables = null,
+                    links = null,
+                    tableMin = null,
+                    prize = null,
+                    prizeLimit = null,
+                    series = null,
+                    merch = null,
+                    notes = null,
+                    deleted = true,
+                    timestamp = timestamp,
+                )
+            } else {
+                StampRallyEntryDiff(
+                    id = stampRallyId,
+                    fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
+                    hostTable = after.hostTable.takeIf { it != before?.hostTable.orEmpty() },
+                    tables = HistoryListDiff.diffList(before?.tables, after.tables),
+                    links = HistoryListDiff.diffList(before?.links, after.links),
+                    tableMin = after.tableMin.takeIf { it != before?.tableMin },
+                    prize = after.prize.takeIf { it != before?.prize },
+                    prizeLimit = after.prizeLimit.takeIf { it != before?.prizeLimit },
+                    series = HistoryListDiff.diffList(before?.series, after.series),
+                    merch = HistoryListDiff.diffList(before?.merch, after.merch),
+                    notes = after.notes.takeIf { it != before?.notes },
+                    deleted = false,
+                    timestamp = timestamp,
+                )
+            }
+        }
     }
 }

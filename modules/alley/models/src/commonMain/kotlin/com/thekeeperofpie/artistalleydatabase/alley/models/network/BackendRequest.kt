@@ -285,6 +285,26 @@ sealed interface BackendRequest {
     }
 
     @Serializable
+    data class StampRallyDeleteFromForm(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val expected: StampRallyDatabaseEntry,
+        val formEntryTimestamp: Instant,
+    ) : BackendRequest, WithResponse<StampRallyDeleteFromForm.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: StampRallyDatabaseEntry?) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
+
+    @Serializable
     data class StampRallyHistory(val dataYear: DataYear, val stampRallyId: String) : BackendRequest,
         WithResponse<List<StampRallyHistoryEntry>>
 

@@ -49,6 +49,7 @@ actual class AlleyFormRemoteDatabase(
         afterArtist: ArtistDatabaseEntry.Impl,
         beforeStampRallies: List<StampRallyDatabaseEntry>,
         afterStampRallies: List<StampRallyDatabaseEntry>,
+        deletedRallyIds: List<String>,
         formNotes: String,
     ): BackendFormRequest.ArtistSave.Response {
         val fakeNonce = Uuid.random()
@@ -59,6 +60,7 @@ actual class AlleyFormRemoteDatabase(
             afterArtist = afterArtist,
             beforeStampRallies = beforeStampRallies,
             afterStampRallies = afterStampRallies,
+            deletedRallyIds = deletedRallyIds,
             formNotes = formNotes,
         )
         val artistId = assertSignatureAndGetArtistId(request)
@@ -81,8 +83,20 @@ actual class AlleyFormRemoteDatabase(
             editDatabase.stampRallyFormQueue[artistId to stampRallyId] =
                 AlleyEditRemoteDatabase.StampRallyFormSubmission(
                     artistId = artistId,
+                    stampRallyId = stampRallyId,
                     before = before,
                     after = after.copy(id = stampRallyId),
+                )
+        }
+
+        deletedRallyIds.forEach { deletedRallyId ->
+            val before = beforeStampRallies.find { it.id == deletedRallyId }
+            editDatabase.stampRallyFormQueue[artistId to deletedRallyId] =
+                AlleyEditRemoteDatabase.StampRallyFormSubmission(
+                    artistId = artistId,
+                    stampRallyId = deletedRallyId,
+                    before = before,
+                    after = null,
                 )
         }
 
