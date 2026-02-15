@@ -226,6 +226,7 @@ abstract class StampRallyFormScope(
     fun TablesSection(
         state: EntryForm2.SingleTextState,
         tables: SnapshotStateList<String>,
+        label: @Composable (() -> Unit)? = null,
     ) {
         val initialTables = initialStampRally?.tables
         val listRevertDialogState = rememberListRevertDialogState(initialTables)
@@ -240,6 +241,7 @@ abstract class StampRallyFormScope(
             items = tables,
             itemToCommitted = { it },
             removeLastItem = { tables.removeLastOrNull() },
+            label = label,
             item = { _, value ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -294,6 +296,7 @@ abstract class StampRallyFormScope(
         state: EntryForm2.SingleTextState,
         links: SnapshotStateList<LinkModel>,
         pendingErrorMessage: () -> String?,
+        label: @Composable (() -> Unit)? = null,
     ) {
         LinksSection(
             state = state,
@@ -307,7 +310,7 @@ abstract class StampRallyFormScope(
             listRevertDialogState =
                 rememberListRevertDialogState(initialStampRally?.links?.map(LinkModel::parse)),
             items = links,
-            label = null,
+            label = label,
             pendingErrorMessage = pendingErrorMessage,
         )
     }

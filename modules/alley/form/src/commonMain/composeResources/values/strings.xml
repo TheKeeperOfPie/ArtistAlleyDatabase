@@ -49,4 +49,12 @@
     <string name="alley_form_stamp_rallies_action_add">Add new rally</string>
     <string name="alley_form_stamp_rally_action_restore">Restore rally</string>
     <string name="alley_form_stamp_rally_action_delete">Delete rally</string>
+
+    <string name="alley_form_stamp_rally_name_placeholder">Display name / theme of the rally</string>
+    <string name="alley_form_stamp_rally_tables_placeholder">List of tables (A01, KH-1000, SH-3003, WH-5005 format)</string>
+    <string name="alley_form_stamp_rally_links_placeholder">Social media post or more info link if one exists</string>
+    <string name="alley_form_stamp_rally_table_min_placeholder">Minimum price (USD) per table (blank, 1, and 0 are also valid)</string>
+    <string name="alley_form_stamp_rally_prize_placeholder">Description of prize when rally is completed</string>
+    <string name="alley_form_stamp_rally_prize_limit_placeholder">How many prize packs are available</string>
+    <string name="alley_form_stamp_rally_notes_placeholder">Anything else the attendee needs to know</string>
 </resources>

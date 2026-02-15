@@ -98,6 +98,13 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_sta
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rallies_header
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_action_delete
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_action_restore
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_links_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_name_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_notes_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_prize_limit_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_prize_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_table_min_placeholder
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_tables_placeholder
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
@@ -659,16 +666,33 @@ object ArtistFormScreen {
                                 merchPredictions = merchPredictions,
                                 seriesImage = seriesImage,
                             ) {
-                                FandomSection(formState.fandom)
-                                TablesSection(formState.stateTables, formState.tables)
-                                LinksSection(
-                                    formState.stateLinks,
-                                    formState.links,
-                                    errorState.linksErrorMessage
+                                FandomSection(
+                                    state = formState.fandom,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_name_placeholder)) },
                                 )
-                                TableMinSection(formState.tableMin)
-                                PrizeSection(formState.prize)
-                                PrizeLimitSection(formState.prizeLimit)
+                                TablesSection(
+                                    state = formState.stateTables,
+                                    tables = formState.tables,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_tables_placeholder)) },
+                                )
+                                LinksSection(
+                                    state = formState.stateLinks,
+                                    links = formState.links,
+                                    pendingErrorMessage = errorState.linksErrorMessage,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_links_placeholder)) },
+                                )
+                                TableMinSection(
+                                    state = formState.tableMin,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_table_min_placeholder)) },
+                                )
+                                PrizeSection(
+                                    state = formState.prize,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_prize_placeholder)) },
+                                )
+                                PrizeLimitSection(
+                                    state = formState.prizeLimit,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_prize_limit_placeholder)) },
+                                )
                                 SeriesSection(
                                     state = formState.stateSeries,
                                     series = formState.series,
@@ -683,9 +707,10 @@ object ArtistFormScreen {
                                     merchPredictions
                                 )
                                 NotesSection(
-                                    formState.notes,
-                                    this.initialStampRally?.notes,
-                                    artistalleydatabase.modules.alley.edit.generated.resources.Res.string.alley_edit_stamp_rally_edit_notes
+                                    state = formState.notes,
+                                    initialValue = this.initialStampRally?.notes,
+                                    header = artistalleydatabase.modules.alley.edit.generated.resources.Res.string.alley_edit_stamp_rally_edit_notes,
+                                    label = { Text(stringResource(Res.string.alley_form_stamp_rally_notes_placeholder)) },
                                 )
                             }
                         }
