@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -385,9 +384,11 @@ object ArtistFormScreen {
                                     FilledTonalButton(
                                         onClick = {
                                             state.stampRallyStates += StampRallyFormState().apply {
-                                                hostTable.value.setTextAndPlaceCursorAtEnd(
+                                                val booth =
                                                     state.formState.info.booth.value.text.toString()
-                                                )
+                                                if (booth.isNotBlank()) {
+                                                    tables += booth
+                                                }
                                             }
                                         },
                                     ) {
@@ -563,7 +564,6 @@ object ArtistFormScreen {
                         rememberFocusState(
                             listOf(
                                 formState.fandom,
-                                formState.hostTable,
                                 formState.stateTables,
                                 formState.stateLinks,
                                 formState.tableMin,
@@ -597,10 +597,13 @@ object ArtistFormScreen {
                                     else -> LocalContentColor.current
                                 }
                             ) {
+                                val booth =
+                                    formState.tables.toList().firstOrNull()?.ifBlank { null }
+                                        ?: formState.stateTables.value.text.toString()
                                 StampRallySummaryRow(
                                     stampRallyId = formState.editorState.id.value.text.toString(),
                                     fandom = formState.fandom.value.text.toString(),
-                                    hostTable = formState.hostTable.value.text.toString(),
+                                    hostTable = booth,
                                     series = formState.series.map { it.id }
                                         .plus(
                                             formState.stateSeries.value.text.toString()
@@ -657,7 +660,6 @@ object ArtistFormScreen {
                                 seriesImage = seriesImage,
                             ) {
                                 FandomSection(formState.fandom)
-                                HostTableSection(formState.hostTable)
                                 TablesSection(formState.stateTables, formState.tables)
                                 LinksSection(
                                     formState.stateLinks,

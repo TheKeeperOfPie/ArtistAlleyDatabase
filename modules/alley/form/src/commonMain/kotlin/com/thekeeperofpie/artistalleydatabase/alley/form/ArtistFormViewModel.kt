@@ -193,14 +193,11 @@ class ArtistFormViewModel(
                             baseStampRally
                         } else {
                             // TODO: hostTable isn't handled, remove in favor of index 0?
+                            val tables = applyDiff(baseStampRally.tables, stampRallyFormDiff.tables)
                             baseStampRally.copy(
                                 fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
-                                hostTable = stampRallyFormDiff.hostTable
-                                    ?: baseStampRally.hostTable,
-                                tables = applyDiff(
-                                    baseStampRally.tables,
-                                    stampRallyFormDiff.tables
-                                ),
+                                hostTable = tables.firstOrNull().orEmpty(),
+                                tables = tables,
                                 links = applyDiff(baseStampRally.links, stampRallyFormDiff.links),
                                 tableMin = stampRallyFormDiff.tableMin ?: baseStampRally.tableMin,
                                 prize = stampRallyFormDiff.prize ?: baseStampRally.prize,

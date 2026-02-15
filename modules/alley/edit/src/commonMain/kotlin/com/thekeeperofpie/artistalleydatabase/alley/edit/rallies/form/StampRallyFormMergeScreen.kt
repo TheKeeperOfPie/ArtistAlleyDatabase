@@ -44,7 +44,6 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_fandom
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_host_table
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_notes
@@ -410,7 +409,6 @@ internal object StampRallyFormMergeScreen {
 
                     val fieldText = when (field) {
                         StampRallyField.FANDOM -> diff?.fandom
-                        StampRallyField.HOST_TABLE -> diff?.hostTable
                         StampRallyField.TABLES_ADDED -> diff?.tables?.added?.joinToString()
                         StampRallyField.TABLES_REMOVED -> diff?.tables?.deleted?.joinToString()
                         StampRallyField.LINKS_ADDED -> diff?.links?.added?.joinToString()
@@ -482,7 +480,6 @@ internal object StampRallyFormMergeScreen {
 
             val stampRally = base.copy(
                 fandom = applyDiff(base.fandom, diff.fandom, StampRallyField.FANDOM),
-                hostTable = applyDiff(base.hostTable, diff.hostTable, StampRallyField.HOST_TABLE),
                 tables = tables,
                 links = applyDiff(
                     base.links,
@@ -536,7 +533,6 @@ internal object StampRallyFormMergeScreen {
                 StampRallyField.entries.forEach {
                     val include = when (it) {
                         StampRallyField.FANDOM -> diff.fandom != null
-                        StampRallyField.HOST_TABLE -> diff.hostTable != null
                         StampRallyField.TABLES_ADDED -> diff.tables?.added != null
                         StampRallyField.TABLES_REMOVED -> diff.tables?.deleted != null
                         StampRallyField.LINKS_ADDED -> diff.links?.added != null
@@ -560,7 +556,6 @@ internal object StampRallyFormMergeScreen {
 
     private enum class StampRallyField(val label: StringResource) {
         FANDOM(Res.string.alley_edit_stamp_rally_field_label_fandom),
-        HOST_TABLE(Res.string.alley_edit_stamp_rally_field_label_host_table),
         TABLES_ADDED(Res.string.alley_edit_stamp_rally_field_label_tables),
         TABLES_REMOVED(Res.string.alley_edit_stamp_rally_field_label_tables),
         LINKS_ADDED(Res.string.alley_edit_stamp_rally_field_label_links),
@@ -578,7 +573,6 @@ internal object StampRallyFormMergeScreen {
         val isRemoved: Boolean
             get() = when (this) {
                 FANDOM,
-                HOST_TABLE,
                 TABLES_ADDED,
                 LINKS_ADDED,
                 TABLE_MIN,

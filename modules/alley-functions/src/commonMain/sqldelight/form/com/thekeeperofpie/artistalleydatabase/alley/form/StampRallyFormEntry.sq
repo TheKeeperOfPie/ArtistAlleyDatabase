@@ -11,12 +11,12 @@ INSERT OR REPLACE INTO stampRallyFormEntry
 VALUES ?;
 
 getFormQueue:
-SELECT artistId, stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom
+SELECT artistId, stampRallyId, beforeTables, afterTables, beforeFandom, afterFandom
 FROM stampRallyFormEntry
 ORDER BY timestamp DESC;
 
 getFormHistory:
-SELECT artistId, stampRallyId, beforeHostTable, afterHostTable, beforeFandom, afterFandom, timestamp
+SELECT artistId, stampRallyId, beforeTables, afterTables, beforeFandom, afterFandom, timestamp
 FROM stampRallyFormEntryHistory
 ORDER BY timestamp DESC;
 

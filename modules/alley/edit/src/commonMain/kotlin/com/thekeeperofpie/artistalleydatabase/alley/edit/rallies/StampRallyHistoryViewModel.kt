@@ -55,7 +55,6 @@ class StampRallyHistoryViewModel(
         saveJob.launch {
             initial.copy(
                 fandom = entry.fandom ?: initial.fandom,
-                hostTable = entry.hostTable ?: initial.hostTable,
                 tables = entry.tables ?: initial.tables,
                 links = entry.links ?: initial.links,
                 tableMin = entry.tableMin ?: initial.tableMin,
@@ -66,7 +65,6 @@ class StampRallyHistoryViewModel(
                 merch = entry.merch ?: initial.merch,
                 notes = entry.notes ?: initial.notes,
                 images = entry.images ?: initial.images,
-                confirmed = entry.confirmed ?: initial.confirmed,
                 editorNotes = entry.editorNotes ?: initial.editorNotes,
                 lastEditor = null,
                 lastEditTime = Clock.System.now(),

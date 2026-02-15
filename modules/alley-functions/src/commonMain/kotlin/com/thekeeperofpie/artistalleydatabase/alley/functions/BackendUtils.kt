@@ -198,8 +198,6 @@ internal object BackendUtils {
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
-                hostTable = formEntry.afterHostTable.orEmpty()
-                    .takeIf { it != formEntry.beforeHostTable.orEmpty() },
                 tables = HistoryListDiff.diffList(
                     formEntry.beforeTables,
                     formEntry.afterTables
@@ -233,8 +231,6 @@ internal object BackendUtils {
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
-                hostTable = formEntry.afterHostTable.orEmpty()
-                    .takeIf { it != formEntry.beforeHostTable.orEmpty() },
                 tables = HistoryListDiff.diffList(
                     formEntry.beforeTables,
                     formEntry.afterTables
@@ -269,8 +265,6 @@ internal object BackendUtils {
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
-                hostTable = formEntry.afterHostTable.orEmpty()
-                    .takeIf { it != formEntry.beforeHostTable.orEmpty() },
                 tables = HistoryListDiff.diffList(
                     formEntry.beforeTables,
                     formEntry.afterTables

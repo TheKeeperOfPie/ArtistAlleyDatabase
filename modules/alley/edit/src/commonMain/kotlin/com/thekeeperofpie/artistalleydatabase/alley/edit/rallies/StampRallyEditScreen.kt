@@ -166,7 +166,8 @@ object StampRallyEditScreen {
                             formState.editorState.id.value.text.toString()
                         }
                         val conventionName = stringResource(dataYear.shortName)
-                        val booth = formState.hostTable.value.text.toString()
+                        val booth = formState.tables.toList().firstOrNull()?.ifBlank { null }
+                            ?: formState.stateTables.value.text.toString()
                         val text = if (booth.isNotEmpty()) {
                             stringResource(
                                 Res.string.alley_edit_stamp_rally_edit_title_editing_booth_name,

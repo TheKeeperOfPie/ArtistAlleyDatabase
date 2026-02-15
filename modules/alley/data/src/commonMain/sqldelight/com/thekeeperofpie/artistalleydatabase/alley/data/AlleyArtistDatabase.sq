@@ -347,7 +347,6 @@ CREATE TABLE
     IF NOT EXISTS stampRallyEntryAnimeExpo2026 (
         id TEXT NOT NULL,
         fandom TEXT NOT NULL COLLATE NOCASE,
-        hostTable TEXT NOT NULL COLLATE NOCASE,
         tables TEXT AS List<String> NOT NULL,
         links TEXT AS List<String> NOT NULL,
         tableMin INTEGER AS TableMin,
@@ -359,7 +358,6 @@ CREATE TABLE
         notes TEXT,
         images TEXT AS List<CatalogImage> NOT NULL,
         counter INTEGER NOT NULL DEFAULT 1,
-        confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
         editorNotes TEXT,
         lastEditor TEXT,
         lastEditTime TEXT AS Instant,

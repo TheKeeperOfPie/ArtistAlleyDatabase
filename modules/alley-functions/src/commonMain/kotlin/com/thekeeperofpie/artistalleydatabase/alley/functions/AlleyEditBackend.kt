@@ -554,7 +554,7 @@ object AlleyEditBackend {
                 StampRallySummary(
                     id = it.id,
                     fandom = it.fandom,
-                    hostTable = it.hostTable,
+                    hostTable = it.tables.firstOrNull().orEmpty(),
                     tables = it.tables,
                     series = it.series,
                 )
@@ -701,7 +701,8 @@ object AlleyEditBackend {
                 StampRallyFormQueueEntry(
                     artistId = it.artistId,
                     stampRallyId = it.stampRallyId,
-                    hostTable = it.afterHostTable?.ifBlank { null } ?: it.beforeHostTable,
+                    hostTable = it.afterTables?.firstOrNull()?.ifBlank { null }
+                        ?: it.beforeTables?.firstOrNull(),
                     fandom = it.afterFandom?.ifBlank { null } ?: it.beforeFandom,
                 )
             }
@@ -715,7 +716,8 @@ object AlleyEditBackend {
                 StampRallyFormHistoryEntry(
                     artistId = it.artistId,
                     stampRallyId = it.stampRallyId,
-                    hostTable = it.afterHostTable?.ifBlank { null } ?: it.beforeHostTable,
+                    hostTable = it.afterTables?.firstOrNull()?.ifBlank { null }
+                        ?: it.beforeTables?.firstOrNull(),
                     fandom = it.afterFandom?.ifBlank { null } ?: it.beforeFandom,
                     timestamp = it.timestamp,
                 )
@@ -915,7 +917,6 @@ object AlleyEditBackend {
         StampRallyEntryAnimeExpo2026History(
             id = id,
             fandom = fandom,
-            hostTable = hostTable,
             tables = tables,
             links = links,
             tableMin = tableMin,
@@ -926,7 +927,6 @@ object AlleyEditBackend {
             merch = merch,
             notes = notes,
             images = images,
-            confirmed = coerceBooleanForJs(confirmed),
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             lastEditTime = timestamp,
@@ -936,7 +936,6 @@ object AlleyEditBackend {
     private fun StampRallyEntryAnimeExpo2026History.toHistoryEntry() =
         StampRallyHistoryEntry(
             fandom = fandom,
-            hostTable = hostTable,
             tables = tables,
             links = links,
             tableMin = tableMin,
@@ -947,7 +946,6 @@ object AlleyEditBackend {
             merch = merch,
             notes = notes,
             images = images,
-            confirmed = coerceBooleanForJs(confirmed),
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             timestamp = lastEditTime,

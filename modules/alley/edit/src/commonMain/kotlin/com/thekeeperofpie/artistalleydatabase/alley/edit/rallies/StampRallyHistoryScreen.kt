@@ -54,7 +54,6 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_editor_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_fandom
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_host_table
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_notes
@@ -400,10 +399,6 @@ object StampRallyHistoryScreen {
                     label = Res.string.alley_edit_stamp_rally_field_label_fandom,
                     entry.fandom
                 )
-                HistorySingleChangeRow(
-                    label = Res.string.alley_edit_stamp_rally_field_label_host_table,
-                    entry.hostTable
-                )
                 HistoryListChangeRow(
                     label = Res.string.alley_edit_stamp_rally_field_label_tables,
                     entryWithDiff.tablesDiff
@@ -506,7 +501,6 @@ object StampRallyHistoryScreen {
             StampRallyField.entries.forEach { field ->
                 val fieldText = when (field) {
                     StampRallyField.FANDOM -> rebuiltEntry.fandom.takeIf { it != initialStampRally?.fandom }
-                    StampRallyField.HOST_TABLE -> rebuiltEntry.hostTable.takeIf { it != initialStampRally?.hostTable }
                     StampRallyField.TABLES -> rebuiltEntry.tables.takeIf { it != initialStampRally?.tables }?.joinToString()
                     StampRallyField.LINKS -> rebuiltEntry.links.takeIf { it != initialStampRally?.links }?.joinToString()
                     StampRallyField.TABLE_MIN -> rebuiltEntry.tableMin.takeIf { it != initialStampRally?.tableMin }?.toString()
@@ -554,7 +548,6 @@ object StampRallyHistoryScreen {
             val tables = entry.tables.takeIf { this[StampRallyField.TABLES] }
             return StampRallyHistoryEntry(
                 fandom = entry.fandom.takeIf { this[StampRallyField.FANDOM] },
-                hostTable = entry.hostTable.takeIf { this[StampRallyField.HOST_TABLE] },
                 tables = tables,
                 links = entry.links.takeIf { this[StampRallyField.LINKS] },
                 tableMin = tableMin,
@@ -572,7 +565,6 @@ object StampRallyHistoryScreen {
                     is TableMin.Price -> tableMin.usd * (tables?.size?.toLong() ?: 0)
                     null -> null
                 },
-                confirmed = false,
                 images = null,
                 lastEditor = null,
                 timestamp = Clock.System.now(),
@@ -589,7 +581,6 @@ object StampRallyHistoryScreen {
                     val entry = entryWithDiff.entry
                     this[it] = when (it) {
                         StampRallyField.FANDOM -> entry.fandom != null
-                        StampRallyField.HOST_TABLE -> entry.hostTable != null
                         StampRallyField.TABLES -> entry.tables != null
                         StampRallyField.LINKS -> entry.links != null
                         StampRallyField.TABLE_MIN -> entry.tableMin != null
@@ -608,7 +599,6 @@ object StampRallyHistoryScreen {
 
     private enum class StampRallyField(val label: StringResource) {
         FANDOM(Res.string.alley_edit_stamp_rally_field_label_fandom),
-        HOST_TABLE(Res.string.alley_edit_stamp_rally_field_label_host_table),
         TABLES(Res.string.alley_edit_stamp_rally_field_label_tables),
         LINKS(Res.string.alley_edit_stamp_rally_field_label_links),
         TABLE_MIN(Res.string.alley_edit_stamp_rally_field_label_table_min),

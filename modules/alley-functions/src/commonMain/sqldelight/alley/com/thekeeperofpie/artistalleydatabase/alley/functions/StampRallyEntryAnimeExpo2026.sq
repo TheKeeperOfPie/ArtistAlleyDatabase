@@ -1,5 +1,5 @@
 getStampRallies:
-SELECT id, fandom, hostTable, tables, series
+SELECT id, fandom, tables, series
 FROM stampRallyEntryAnimeExpo2026;
 
 getStampRally:

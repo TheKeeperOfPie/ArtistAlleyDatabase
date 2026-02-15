@@ -45,7 +45,6 @@ CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
 CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     id TEXT,
     fandom TEXT COLLATE NOCASE,
-    hostTable TEXT COLLATE NOCASE,
     tables TEXT AS List<String>,
     links TEXT AS List<String>,
     tableMin INTEGER AS TableMin,
@@ -56,7 +55,6 @@ CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     merch TEXT AS List<String>,
     notes TEXT,
     images TEXT AS List<CatalogImage>,
-    confirmed INTEGER AS Boolean,
     editorNotes TEXT,
     lastEditor TEXT,
     lastEditTime TEXT AS Instant NOT NULL,

@@ -10,7 +10,6 @@ import kotlin.time.Instant
 @Serializable
 data class StampRallyHistoryEntry(
     val fandom: String?,
-    val hostTable: String?,
     val tables: List<String>?,
     val links: List<String>?,
     val tableMin: TableMin?,
@@ -21,7 +20,6 @@ data class StampRallyHistoryEntry(
     val merch: List<String>?,
     val notes: String?,
     val images: List<CatalogImage>?,
-    val confirmed: Boolean?,
     val editorNotes: String?,
     val lastEditor: String?,
     val timestamp: Instant,
@@ -34,7 +32,6 @@ data class StampRallyHistoryEntry(
             formTimestamp: Instant?,
         ) = StampRallyHistoryEntry(
             fandom = after.fandom.takeIf { it != before?.fandom },
-            hostTable = after.hostTable.takeIf { it != before?.hostTable },
             tables = after.tables.takeIf { it != before?.tables },
             links = after.links.takeIf { it != before?.links },
             tableMin = after.tableMin.takeIf { it != before?.tableMin },
@@ -45,7 +42,6 @@ data class StampRallyHistoryEntry(
             merch = after.merch.takeIf { it != before?.merch },
             notes = after.notes.takeIf { it != before?.notes },
             images = after.images.takeIf { it != before?.images },
-            confirmed = after.confirmed.takeIf { it != before?.confirmed },
             editorNotes = after.editorNotes.takeIf { it != before?.editorNotes },
             lastEditor = after.lastEditor,
             timestamp = after.lastEditTime ?: Clock.System.now(),
@@ -58,7 +54,6 @@ data class StampRallyHistoryEntry(
             list: List<StampRallyHistoryEntry>,
         ): StampRallyDatabaseEntry {
             var fandom: String? = null
-            var hostTable: String? = null
             var tables: List<String>? = null
             var links: List<String>? = null
             var tableMin: TableMin? = null
@@ -69,13 +64,11 @@ data class StampRallyHistoryEntry(
             var merch: List<String>? = null
             var notes: String? = null
             var images: List<CatalogImage>? = null
-            var confirmed: Boolean? = null
             var editorNotes: String? = null
             var lastEditor: String? = null
 
             list.forEach {
                 fandom = fandom ?: it.fandom
-                hostTable = hostTable ?: it.hostTable
                 tables = tables ?: it.tables
                 links = links ?: it.links
                 tableMin = tableMin ?: it.tableMin
@@ -86,7 +79,6 @@ data class StampRallyHistoryEntry(
                 merch = merch ?: it.merch
                 notes = notes ?: it.notes
                 images = images ?: it.images
-                confirmed = confirmed ?: it.confirmed
                 editorNotes = editorNotes ?: it.editorNotes
                 lastEditor = lastEditor ?: it.lastEditor
             }
@@ -95,7 +87,7 @@ data class StampRallyHistoryEntry(
                 year = dataYear,
                 id = stampRallyId,
                 fandom = fandom.orEmpty(),
-                hostTable = hostTable.orEmpty(),
+                hostTable = tables?.firstOrNull().orEmpty(),
                 tables = tables.orEmpty(),
                 links = links.orEmpty(),
                 tableMin = tableMin,
@@ -107,7 +99,7 @@ data class StampRallyHistoryEntry(
                 notes = notes,
                 images = images.orEmpty(),
                 counter = 0L,
-                confirmed = confirmed ?: false,
+                confirmed = !images.isNullOrEmpty() || !links.isNullOrEmpty(),
                 editorNotes = editorNotes,
                 lastEditor = lastEditor,
                 lastEditTime = Clock.System.now(),
@@ -117,7 +109,6 @@ data class StampRallyHistoryEntry(
         fun applyOver(initial: StampRallyDatabaseEntry, entry: StampRallyHistoryEntry) =
             initial.copy(
                 fandom = entry.fandom ?: initial.fandom,
-                hostTable = entry.hostTable ?: initial.hostTable,
                 tables = entry.tables ?: initial.tables,
                 links = entry.links ?: initial.links,
                 tableMin = entry.tableMin ?: initial.tableMin,
@@ -127,7 +118,6 @@ data class StampRallyHistoryEntry(
                 series = entry.series ?: initial.series,
                 notes = entry.notes ?: initial.notes,
                 images = entry.images ?: initial.images,
-                confirmed = entry.confirmed ?: initial.confirmed,
                 editorNotes = entry.editorNotes ?: initial.editorNotes,
                 lastEditor = null,
                 lastEditTime = Clock.System.now(),

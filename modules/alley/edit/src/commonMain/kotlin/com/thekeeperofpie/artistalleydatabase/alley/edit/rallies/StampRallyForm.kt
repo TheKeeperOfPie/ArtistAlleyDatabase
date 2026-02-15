@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.InputTransformation
-import androidx.compose.foundation.text.input.allCaps
-import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Link
@@ -23,12 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_editor_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_fandom
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_host_table
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_id
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_merch
@@ -87,7 +83,6 @@ object StampRallyForm {
             listOf(
                 state.editorState.id,
                 state.fandom,
-                state.hostTable,
                 state.stateTables,
                 state.stateLinks,
                 state.tableMin,
@@ -115,7 +110,6 @@ object StampRallyForm {
             MetadataSection(state.metadata)
             IdSection(state.editorState.id, errorState.idErrorMessage)
             FandomSection(state.fandom)
-            HostTableSection(state.hostTable)
             TablesSection(state.stateTables, state.tables)
             LinksSection(state.stateLinks, state.links, errorState.linksErrorMessage)
             TableMinSection(state.tableMin)
@@ -226,21 +220,6 @@ abstract class StampRallyFormScope(
         )
 
         FieldRevertDialog(revertDialogState, state, Res.string.alley_edit_stamp_rally_edit_fandom)
-    }
-
-    @Composable
-    fun HostTableSection(
-        state: EntryForm2.SingleTextState,
-        label: @Composable (() -> Unit)? = null,
-    ) {
-        BasicTextSection(
-            state = state,
-            initialValue = initialStampRally?.hostTable,
-            icon = CustomIcons.ServerPerson,
-            title = Res.string.alley_edit_stamp_rally_edit_host_table,
-            inputTransformation = InputTransformation.maxLength(3).allCaps(Locale.current),
-            label = label,
-        )
     }
 
     @Composable

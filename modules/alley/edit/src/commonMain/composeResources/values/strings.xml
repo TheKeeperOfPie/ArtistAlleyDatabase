@@ -246,7 +246,6 @@
 
     <string name="alley_edit_stamp_rally_edit_id">ID</string>
     <string name="alley_edit_stamp_rally_edit_fandom">Name</string>
-    <string name="alley_edit_stamp_rally_edit_host_table">Host table</string>
     <string name="alley_edit_stamp_rally_edit_tables">Tables</string>
     <string name="alley_edit_stamp_rally_edit_links">Links</string>
     <string name="alley_edit_stamp_rally_edit_table_min">Table min</string>
@@ -281,7 +280,6 @@
     <string name="alley_edit_stamp_rally_history_select_all">Select all</string>
 
     <string name="alley_edit_stamp_rally_field_label_fandom">Name:</string>
-    <string name="alley_edit_stamp_rally_field_label_host_table">Host table:</string>
     <string name="alley_edit_stamp_rally_field_label_tables">Tables:</string>
     <string name="alley_edit_stamp_rally_field_label_links">Links:</string>
     <string name="alley_edit_stamp_rally_field_label_table_min">Table min:</string>

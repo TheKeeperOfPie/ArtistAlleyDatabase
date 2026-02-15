@@ -577,7 +577,6 @@ actual class AlleyEditRemoteDatabase(
                 StampRallyEntryDiff(
                     id = stampRallyId,
                     fandom = null,
-                    hostTable = null,
                     tables = null,
                     links = null,
                     tableMin = null,
@@ -593,7 +592,6 @@ actual class AlleyEditRemoteDatabase(
                 StampRallyEntryDiff(
                     id = stampRallyId,
                     fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
-                    hostTable = after.hostTable.takeIf { it != before?.hostTable.orEmpty() },
                     tables = HistoryListDiff.diffList(before?.tables, after.tables),
                     links = HistoryListDiff.diffList(before?.links, after.links),
                     tableMin = after.tableMin.takeIf { it != before?.tableMin },
