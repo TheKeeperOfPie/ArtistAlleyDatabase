@@ -35,10 +35,10 @@ object Versions {
 
     const val apollo = "4.0.0-beta.7"
     const val awaitility = "4.3.0"
-    const val benManesVersions = "0.52.0"
+    const val benManesVersions = "0.53.0"
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.17.1"
-    const val burst = "2.11.0-beta1"
+    const val burst = "2.12.0-beta1"
     const val coil = "3.3.0"
     const val colormath = "3.6.1"
     const val composeUnstyled = "1.49.3"
@@ -52,7 +52,7 @@ object Versions {
         const val appUpdate = "2.1.0"
         const val billing = "8.0.0"
         const val cronetOkHttp = "0.1.0"
-        const val ksp = "2.3.4"
+        const val ksp = "2.3.5"
         const val playServicesAds = "24.7.0"
         const val playServicesCronet = "18.1.1"
         const val truth = "1.4.5"
@@ -67,15 +67,15 @@ object Versions {
 
     object jetBrains {
         object androidX {
-            const val lifecycle = "2.10.0-alpha07"
+            const val lifecycle = "2.10.0-alpha08"
             const val navigation = "2.9.1"
-            const val navigation3 = "1.1.0-alpha01"
-            const val navigationevent = "1.0.0-rc02"
+            const val navigation3 = "1.1.0-alpha02"
+            const val navigationevent = "1.0.0"
         }
 
         object composeMultiplatform {
-            const val plugin = "1.11.0-alpha01"
-            const val runtime = "1.11.0-alpha01"
+            const val plugin = "1.11.0-alpha02"
+            const val runtime = "1.11.0-alpha02"
             const val windowSizeClass = "1.10.0-alpha04"
         }
     }
@@ -88,7 +88,7 @@ object Versions {
 
     object kotlin {
         const val browser = "0.5.0"
-        const val core = "2.3.0"
+        const val core = "2.3.20-Beta2"
         const val coroutines = "1.10.2"
         const val datetime = "0.7.1-0.6.x-compat"
         const val io = "0.8.0"
@@ -101,7 +101,7 @@ object Versions {
     const val manifoldGraphql = "2025.1.27"
     const val markwon = "4.6.2"
     const val materialKolor = "4.0.5"
-    const val metro = "0.9.2"
+    const val metro = "0.10.4"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.2.0"
     const val multiplatformMarkdown = "0.38.0-b01"
@@ -113,7 +113,7 @@ object Versions {
     const val qrose = "1.0.1"
     const val scrimage = "4.3.5"
     const val skrapeIt = "1.3.0-alpha.1"
-    const val sqldelight = "2.1.0"
+    const val sqldelight = "2.2.1"
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val telephoto = "0.18.0"

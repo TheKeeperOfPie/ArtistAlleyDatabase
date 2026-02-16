@@ -8,9 +8,9 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.3.20-Beta2"
     `kotlin-dsl`
-    alias(libs.plugins.app.cash.sqldelight).version("2.1.0")
+    alias(libs.plugins.app.cash.sqldelight).version("2.2.1")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
@@ -26,7 +26,7 @@ sqldelight {
     databases {
         create("BuildLogicDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.build_logic")
-            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             srcDirs(
                 project.layout.projectDirectory
                     .dir("../modules/alley/src/commonMain/sqldelight"),

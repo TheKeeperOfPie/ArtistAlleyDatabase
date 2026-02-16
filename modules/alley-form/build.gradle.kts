@@ -1,3 +1,4 @@
+import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -51,7 +52,7 @@ kotlin {
 
     compilerOptions {
         jvmToolchain(18)
-        freeCompilerArgs.add("-Xcontext-receivers")
+        freeCompilerArgs.add("-Xcontext-parameters")
 //        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
 
@@ -81,7 +82,11 @@ kotlin {
     }
 }
 
+@OptIn(DelicateMetroGradleApi::class)
 metro {
+    enableTopLevelFunctionInjection.set(false)
+    generateContributionHintsInFir.set(false)
+    supportedHintContributionPlatforms.set(emptySet())
     generateAssistedFactories.set(true)
 }
 

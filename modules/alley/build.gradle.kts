@@ -132,7 +132,7 @@ sqldelight {
     databases {
         create("AlleySqlDatabase") {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley")
-            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.1.0")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
             dependency(project(":modules:alley:user"))
             dependency(project(":modules:alley:data"))

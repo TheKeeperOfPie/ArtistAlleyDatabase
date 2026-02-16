@@ -16,7 +16,7 @@ kotlin {
     androidTarget()
     compilerOptions  {
         jvmToolchain(18)
-        freeCompilerArgs.add("-Xcontext-receivers")
+        freeCompilerArgs.add("-Xcontext-parameters")
         optIn.add("kotlin.time.ExperimentalTime")
     }
 }

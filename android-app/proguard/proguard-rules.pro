@@ -23,7 +23,7 @@
 -dontobfuscate
 
 # TODO: Shrinking is broken
--dontshrink
+#-dontshrink
 
 # AGPBI META-INF/services warnings
 -dontwarn org.apache.xalan.extensions.bsf.BSFManager
@@ -36,6 +36,7 @@
 # For AndroidX Compose, seems to be a library config error
 -keep class org.xml.sax.helpers.AttributesImpl
 -keep class org.apache.xml.dtm.ref.** { *; }
+-keep class androidx.compose.ui.semantics.SemanticsPropertiesKt { *; }
 
 # Unknown failure in ART Apex
 -keep class org.apache.xml.utils.** { *; }

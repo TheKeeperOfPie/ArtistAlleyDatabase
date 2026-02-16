@@ -19,7 +19,7 @@ kotlin {
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation("org.jetbrains.compose.material3:material3:1.10.0-alpha04")
+                implementation("org.jetbrains.compose.material3:material3:1.11.0-alpha02")
                 implementation(compose.materialIconsExtended)
                 implementation(compose.ui)
             }
