@@ -280,6 +280,8 @@ private class LazyStaggeredGridScrollAreaScrollAreaState(
         get() = gridState.layoutInfo.viewportSize.height.toDouble()
     override val interactionSource: InteractionSource
         get() = gridState.interactionSource
+    override val isScrollInProgress: Boolean
+        get() = gridState.isScrollInProgress
 
     private val visibleItems
         get() = gridState.layoutInfo.let {

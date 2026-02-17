@@ -9,20 +9,20 @@ object Versions {
     }
 
     object androidx {
-        const val activity = "1.12.2"
+        const val activity = "1.13.0-alpha01"
         const val annotation = "1.9.1"
-        const val browser = "1.10.0-alpha02"
-        const val core = "1.17.0"
-        const val media3 = "1.8.0"
-        const val paging = "3.4.0-alpha04"
+        const val browser = "1.10.0-alpha03"
+        const val core = "1.18.0-rc01"
+        const val media3 = "1.10.0-alpha01"
+        const val paging = "3.4.1"
         const val palette = "1.0.0"
         const val room = "2.8.4"
         const val securityCrypto = "1.1.0"
-        const val sqlite = "2.6.1"
+        const val sqlite = "2.6.2"
         const val testExt = "1.2.1"
         const val testRunner = "1.6.2"
-        const val tracing = "1.3.0"
-        const val work = "2.11.0"
+        const val tracing = "2.0.0-alpha01"
+        const val work = "2.11.1"
     }
 
     const val androidyoutubeplayer = "13.0.0"
@@ -30,7 +30,7 @@ object Versions {
     object apache {
         const val commonsCompress = "1.28.0"
         const val commonsCsv = "1.14.1"
-        const val commonsIo = "2.18.0"
+        const val commonsIo = "2.21.0"
     }
 
     const val apollo = "4.0.0-beta.7"
@@ -41,47 +41,47 @@ object Versions {
     const val burst = "2.12.0-beta1"
     const val coil = "3.3.0"
     const val colormath = "3.6.1"
-    const val composeUnstyled = "1.49.3"
-    const val cronetEmbedded = "141.7340.3"
-    const val diffUtils = "0.7.0"
+    const val composeUnstyled = "1.49.6"
+    const val cronetEmbedded = "143.7445.0"
+    const val diffUtils = "1.3.0"
     const val fileKit = "0.12.0"
     const val flowExt = "1.0.0"
     const val fluidI18n = "0.13.0"
 
     object google {
         const val appUpdate = "2.1.0"
-        const val billing = "8.0.0"
+        const val billing = "8.3.0"
         const val cronetOkHttp = "0.1.0"
         const val ksp = "2.3.5"
-        const val playServicesAds = "24.7.0"
+        const val playServicesAds = "24.9.0"
         const val playServicesCronet = "18.1.1"
         const val truth = "1.4.5"
-        const val userMessagingPlatform = "3.2.0"
+        const val userMessagingPlatform = "4.0.0"
     }
 
-    const val graphQlJava = "24.2"
+    const val graphQlJava = "25.0"
     const val htmlConverter = "1.1.0"
     const val htmlText = "1.6.0"
-    const val humanReadable = "1.12.0"
-    const val jackson = "2.20.0"
+    const val humanReadable = "1.12.3"
+    const val jackson = "2.21.0"
 
     object jetBrains {
         object androidX {
             const val lifecycle = "2.10.0-alpha08"
-            const val navigation = "2.9.1"
+            const val navigation = "2.9.2"
             const val navigation3 = "1.1.0-alpha02"
-            const val navigationevent = "1.0.0"
+            const val navigationevent = "1.0.1"
         }
 
         object composeMultiplatform {
             const val plugin = "1.11.0-alpha02"
             const val runtime = "1.11.0-alpha02"
-            const val windowSizeClass = "1.10.0-alpha04"
+            const val windowSizeClass = "1.11.0-alpha02"
         }
     }
 
     const val jimfs = "1.3.1"
-    const val jsonTree = "2.5.0"
+    const val jsonTree = "2.6.0"
 
     const val kermit = "2.0.8"
     const val kmpalette = "3.1.0"
@@ -91,38 +91,38 @@ object Versions {
         const val core = "2.3.20-Beta2"
         const val coroutines = "1.10.2"
         const val datetime = "0.7.1-0.6.x-compat"
-        const val io = "0.8.0"
-        const val serialization = "1.9.0"
+        const val io = "0.8.2"
+        const val serialization = "1.10.0"
     }
 
-    const val ktor = "3.3.3"
+    const val ktor = "3.4.0"
     const val ksoup = "0.2.5"
     const val leakCanary = "3.0-alpha-8"
-    const val manifoldGraphql = "2025.1.27"
+    const val manifoldGraphql = "2026.1.4"
     const val markwon = "4.6.2"
-    const val materialKolor = "4.0.5"
+    const val materialKolor = "5.0.0-alpha06"
     const val metro = "0.10.4"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.2.0"
-    const val multiplatformMarkdown = "0.38.0-b01"
-    const val netflixDgs = "9.1.0"
-    const val netflixDgsCodegen = "7.0.3"
-    const val okhttp = "5.2.1"
-    const val okio = "3.16.2"
+    const val multiplatformMarkdown = "0.39.2"
+    const val netflixDgs = "11.1.0"
+    const val netflixDgsCodegen = "11.1.0"
+    const val okhttp = "5.3.2"
+    const val okio = "3.16.4"
     const val placeholder = "1.0.12"
-    const val qrose = "1.0.1"
-    const val scrimage = "4.3.5"
+    const val qrose = "1.1.2"
+    const val scrimage = "4.3.6"
     const val skrapeIt = "1.3.0-alpha.1"
     const val sqldelight = "2.2.1"
     const val sqldelightAndroidXDriver = "0.0.7"
     const val statelyConcurrentCollections = "2.1.0"
     const val telephoto = "0.18.0"
     const val turbine = "1.2.1"
-    const val unityAds = "4.16.3"
+    const val unityAds = "4.16.6"
     const val uriKmp = "0.0.21"
     const val webpImageIo = "0.10.2"
     const val whyolegCryptography = "0.5.0"
-    const val xmlUtil = "0.91.2"
+    const val xmlUtil = "1.0.0-rc2"
 }
 
 extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionManagement) =
