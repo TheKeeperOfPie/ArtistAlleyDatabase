@@ -36,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
+import com.thekeeperofpie.artistalleydatabase.alley.utils.start
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
@@ -604,8 +605,9 @@ class ArtistEntryDao(
     ): Pair<DataYear, List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>? {
         // This check is required in every use case, so it's moved into this method
         if (images.isNotEmpty()) return null
-        return DataYear.entries.asReversed()
-            .dropWhile { it != year }
+        return DataYear.entries
+            .filter { it.dates.start < year.dates.start }
+            .sortedByDescending { it.dates.start }
             .firstNotNullOfOrNull { year ->
                 getEntry(year, id)
                     ?.artist?.images?.takeIf { it.isNotEmpty() }
