@@ -75,8 +75,8 @@ class AlleyNavStack(
         updateInfo()
     }
 
-    fun navigateOnBrowserPop(destination: NavKey) {
-        twoWayStack.navigateOnBrowserPop(destination)
+    fun <T : NavKey> navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) {
+        twoWayStack.navigateOnBrowserPop(destination, toRoute)
         updateInfo()
     }
 

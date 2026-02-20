@@ -135,7 +135,11 @@ private fun Content(graph: ArtistAlleyWebGraph) {
                 BrowserInput(
                     routeHistory = navStack.routeHistory,
                     parseRoute = AlleyDestination::parseRoute,
-                    onPopNavigate = navStack::navigateOnBrowserPop,
+                    onPopNavigate = {
+                        navStack.navigateOnBrowserPop(it) {
+                            (it as? AlleyDestination)?.toEncodedRoute()
+                        }
+                    },
                 )
             }
             DisposableEffect(navigationEventDispatcherOwner, browserInput) {

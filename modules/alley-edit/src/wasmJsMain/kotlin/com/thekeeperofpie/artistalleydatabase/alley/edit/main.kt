@@ -22,10 +22,10 @@ import coil3.request.crossfade
 import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
-import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.edit.navigation.rememberArtistAlleyEditTopLevelStacks
+import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
@@ -123,7 +123,13 @@ private fun Content(graph: ArtistAlleyEditGraph) {
                 BrowserInput(
                     routeHistory = navStack.routeHistory,
                     parseRoute = AlleyEditDestination::parseRoute,
-                    onPopNavigate = navStack::navigateOnBrowserPop,
+                    onPopNavigate = {
+                        navStack.navigateOnBrowserPop(it) {
+                            (it as? AlleyEditDestination)?.let {
+                                AlleyEditDestination.toEncodedRoute(it)
+                            }
+                        }
+                    },
                     routePrefix = "/edit",
                 )
             }

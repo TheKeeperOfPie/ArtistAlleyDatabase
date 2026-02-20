@@ -129,15 +129,15 @@ class ArtistAlleyEditTopLevelStacks internal constructor(
         updateInfo()
     }
 
-    fun navigateOnBrowserPop(destination: NavKey) {
+    fun <T : NavKey> navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) {
         val resetIndex = twoWayStacks.indexOfFirst {
-            it.navBackStack.find { it == destination } != null
+            it.navBackStack.map(toRoute).find { it == toRoute(destination) } != null
         }
         if (resetIndex > 0) {
-            twoWayStacks[resetIndex].navigateOnBrowserPop(destination)
+            twoWayStacks[resetIndex].navigateOnBrowserPop(destination, toRoute)
             topLevelStackIndex = resetIndex
         } else {
-            twoWayStacks[topLevelStackIndex].navigateOnBrowserPop(destination)
+            twoWayStacks[topLevelStackIndex].navigateOnBrowserPop(destination, toRoute)
         }
         updateInfo()
     }

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 import androidx.navigation3.runtime.NavKey
 import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventInput
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -23,8 +24,7 @@ class BrowserInput<T : NavKey>(
     private val parseRoute: (String) -> T?,
     private val onPopNavigate: (T) -> Unit,
     private val routePrefix: String = "",
-) :
-    NavigationEventInput() {
+) : NavigationEventInput() {
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private val browserWindow = window as BrowserWindow
 

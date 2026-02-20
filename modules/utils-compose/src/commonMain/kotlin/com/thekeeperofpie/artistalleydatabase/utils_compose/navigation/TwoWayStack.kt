@@ -61,18 +61,19 @@ class TwoWayStack internal constructor(
         }
     }
 
-    fun navigateOnBrowserPop(destination: NavKey) {
+    fun <T : NavKey> navigateOnBrowserPop(destination: T, toRoute: (NavKey) -> String?) {
         if (destination == navForwardStack.lastOrNull()) {
             onForward()
         } else {
             Snapshot.withMutableSnapshot {
-                val lastIndex = navBackStack.lastIndexOf(destination)
+                val lastIndex = navBackStack.map(toRoute).lastIndexOf(toRoute(destination))
                 if (lastIndex >= 0) {
                     repeat(navBackStack.lastIndex - lastIndex) {
                         navForwardStack += navBackStack.removeLast()
                     }
                 } else {
-                    val forwardLastIndex = navForwardStack.lastIndexOf(destination)
+                    val forwardLastIndex = navForwardStack.map(toRoute)
+                        .lastIndexOf(toRoute(destination))
                     if (forwardLastIndex >= 0) {
                         repeat(navForwardStack.lastIndex - lastIndex) {
                             navBackStack += navForwardStack.removeLast()
