@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -86,6 +87,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -123,6 +125,7 @@ import artistalleydatabase.modules.entry.generated.resources.entry_search_clear
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint
 import artistalleydatabase.modules.entry.generated.resources.entry_search_hint_with_entry_count
 import coil3.compose.AsyncImage
+import com.composables.core.HorizontalScrollbar
 import com.composables.core.ScrollAreaScope
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
@@ -971,9 +974,13 @@ fun ScrollAreaScope.PrimaryVerticalScrollbar(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ScrollAreaScope.PrimaryVerticalScrollbar(state: LazyStaggeredGridState, modifier: Modifier = Modifier) {
+fun ScrollAreaScope.PrimaryVerticalScrollbar(
+    state: LazyStaggeredGridState,
+    modifier: Modifier = Modifier,
+) {
     PrimaryVerticalScrollbar(modifier) {
-        VerticalScrollbar(state,
+        VerticalScrollbar(
+            state,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .fillMaxHeight()
@@ -985,7 +992,8 @@ fun ScrollAreaScope.PrimaryVerticalScrollbar(state: LazyStaggeredGridState, modi
 @Composable
 fun ScrollAreaScope.PrimaryVerticalScrollbar(state: LazyListState, modifier: Modifier = Modifier) {
     PrimaryVerticalScrollbar(modifier) {
-        VerticalScrollbar(state,
+        VerticalScrollbar(
+            state,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .fillMaxHeight()
@@ -1023,6 +1031,29 @@ private fun ScrollAreaScope.PrimaryVerticalScrollbar(
         }
     } else {
         compactScrollbar()
+    }
+}
+
+@Composable
+fun ScrollAreaScope.PrimaryHorizontalScrollbar(modifier: Modifier = Modifier) {
+    val interactionSource = remember { MutableInteractionSource() }
+    HorizontalScrollbar(
+        interactionSource = interactionSource,
+        modifier = modifier.fillMaxWidth().align(Alignment.BottomStart)
+    ) {
+        val isHovered by interactionSource.collectIsHoveredAsState()
+        val isDragging by interactionSource.collectIsDraggedAsState()
+        Thumb(
+            modifier = Modifier
+                .background(
+                    color = if (isHovered or isDragging) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    },
+                    shape = RoundedCornerShape(100),
+                ),
+        )
     }
 }
 

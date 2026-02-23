@@ -154,7 +154,7 @@ object ArtistDetailsScreen {
             viewModel.initialImageIndex
         )
 
-        NavigationResultEffect(ImagesScreen.RESULT_KEY) {
+        NavigationResultEffect(ImagesScreen.REQUEST_KEY) {
             if (it in (0 until imagePagerState.pageCount)) {
                 imagePagerState.scrollToPage(it)
             }

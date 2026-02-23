@@ -90,7 +90,7 @@ class ArtistFormViewModel(
         ) {
             SnapshotStateList<StampRallyFormState>()
         },
-        formState = savedStateHandle.saveable(
+        artistFormState = savedStateHandle.saveable(
             key = "formState",
             saver = ArtistFormScreen.State.FormState.Saver,
         ) {
@@ -222,8 +222,8 @@ class ArtistFormViewModel(
             state.stampRallyStates.replaceAll(newStampRallyStates)
 
             artistFormDiff?.formNotes?.let {
-                state.formState.formNotes.value.setTextAndPlaceCursorAtEnd(it)
-                state.formState.formNotes.lockState = EntryLockState.LOCKED
+                state.artistFormState.formNotes.value.setTextAndPlaceCursorAtEnd(it)
+                state.artistFormState.formNotes.lockState = EntryLockState.LOCKED
             }
             initialFormDiff.value = artistFormDiff
 
@@ -252,7 +252,7 @@ class ArtistFormViewModel(
                 stampRallyEntries = stampRallyEntries,
                 deletedRallyIds = state.stampRallyStates.filter { it.editorState.deleted }
                     .map { it.editorState.id.value.text.toString() },
-                formNotes = state.formState.formNotes.value.text.toString(),
+                formNotes = state.artistFormState.formNotes.value.text.toString(),
             )
         }
     }

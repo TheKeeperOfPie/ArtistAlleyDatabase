@@ -33,6 +33,7 @@
     <string name="alley_form_done_update_prompt">To update your data at any time, open your access link again.</string>
     <string name="alley_form_done_update_action_edit">Edit your response</string>
 
+    <string name="alley_form_artist_header">Artist info</string>
     <string name="alley_form_artist_instructions_header">All fields are optional. Non-empty fields are locked by default to avoid accidental edits; click the lock icon to unlock</string>
     <string name="alley_form_artist_booth_placeholder">Table number (i.e. A01), leave blank if not known yet</string>
     <string name="alley_form_artist_name_placeholder">Display/brand/artist name</string>
@@ -44,6 +45,10 @@
     <string name="alley_form_artist_notes_placeholder">Anything not captured in another field, should be exceptional</string>
     <string name="alley_form_artist_form_notes_placeholder">Any clarifications, misc. requests, or comments</string>
     <string name="alley_form_artist_instructions_footer">Catalog upload will be available closer to con</string>
+
+    <string name="alley_form_catalog_header">Catalog</string>
+    <string name="alley_form_catalog_action_add_images">Add images</string>
+    <string name="alley_form_catalog_action_edit_images">Edit images</string>
 
     <string name="alley_form_stamp_rallies_header">Stamp rallies</string>
     <string name="alley_form_stamp_rallies_action_add">Add new rally</string>

@@ -88,7 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -101,7 +101,7 @@ import kotlin.time.Clock
 
 object StampRallyHistoryScreen {
 
-    val RESULT_KEY = NavigationResults.Key<Unit>("StampRallyHistoryScreen")
+    val REQUEST_KEY = NavigationRequestKey<Unit>("StampRallyHistoryScreen")
 
     @Composable
     operator fun invoke(
@@ -159,7 +159,7 @@ object StampRallyHistoryScreen {
                         }
                         is BackendRequest.StampRallySave.Response.Success -> {
                             saveProgress.value = JobProgress.Idle()
-                            navigationResults[RESULT_KEY] = Unit
+                            navigationResults[REQUEST_KEY] = Unit
                             onClickBack(true)
                         }
                     }

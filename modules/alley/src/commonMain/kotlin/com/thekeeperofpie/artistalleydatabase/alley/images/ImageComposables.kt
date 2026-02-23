@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -64,7 +65,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
@@ -80,7 +80,6 @@ import coil3.decode.BlackholeDecoder
 import coil3.request.CachePolicy
 import coil3.request.Disposable
 import coil3.request.ImageRequest
-import coil3.size.Dimension
 import com.composables.core.ScrollArea
 import com.thekeeperofpie.artistalleydatabase.alley.ui.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
@@ -137,7 +136,6 @@ fun ImagePager(
     forceMinHeight: Boolean = true,
     imageContentScale: ContentScale = ContentScale.FillWidth,
     multiZoomableState: MultiZoomableState = rememberMultiZoomableState(images.size),
-    downsample: Boolean = false,
 ) {
     val scope = rememberCoroutineScope()
     Box(modifier = modifier) {
@@ -160,7 +158,6 @@ fun ImagePager(
 
         var anySuccess by remember { mutableStateOf(false) }
 
-        val targetSizeWidth = Dimension(LocalWindowInfo.current.containerSize.width / 2)
         CompositionLocalProvider(LocalViewConfiguration provides newViewConfiguration) {
             var minHeight by remember { mutableIntStateOf(0) }
             val density = LocalDensity.current
@@ -478,5 +475,80 @@ fun ImageGrid(
         }
 
         PrimaryVerticalScrollbar(gridState)
+    }
+}
+
+
+
+@Composable
+fun BoxScope.ImageRowActions(listState: LazyListState) {
+    val scope = rememberCoroutineScope()
+    val previousPageInteractionSource = remember { MutableInteractionSource() }
+    AnimatedVisibility(
+        visible = listState.canScrollBackward,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.align(Alignment.CenterStart)
+    ) {
+        IconButton(
+            onClick = {
+                val target = listState.firstVisibleItemIndex - 1
+                if (target >= 0) {
+                    scope.launch {
+                        listState.animateScrollToItem(target)
+                    }
+                }
+            },
+            modifier = Modifier.hoverable(previousPageInteractionSource)
+        ) {
+            val previousPageIsHovered by previousPageInteractionSource.collectIsHoveredAsState()
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceDim
+                            .copy(alpha = if (previousPageIsHovered) 0.15f else 0.5f),
+                        shape = CircleShape,
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
+                    contentDescription = stringResource(Res.string.alley_previous_page),
+                )
+            }
+        }
+    }
+
+    AnimatedVisibility(
+        visible = listState.canScrollForward,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.align(Alignment.CenterEnd)
+    ) {
+        val nextPageInteractionSource = remember { MutableInteractionSource() }
+        IconButton(
+            onClick = {
+                val target = (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
+                if (target < listState.layoutInfo.totalItemsCount) {
+                    scope.launch {
+                        listState.animateScrollToItem(target)
+                    }
+                }
+            },
+            modifier = Modifier.hoverable(nextPageInteractionSource)
+        ) {
+            val nextPageIsHovered by nextPageInteractionSource.collectIsHoveredAsState()
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                contentDescription = stringResource(Res.string.alley_next_page),
+                modifier = Modifier.padding(8.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceDim
+                            .copy(alpha = if (nextPageIsHovered) 0.15f else 0.5f),
+                        shape = CircleShape,
+                    )
+            )
+        }
     }
 }

@@ -220,11 +220,28 @@ interface ArtistFormScope : EntryFormScope {
     )
 
     @Composable
+    fun SeriesConfirmedSection(
+        state: EntryForm2.SingleTextState,
+        confirmed: SnapshotStateList<SeriesInfo>,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+    )
+
+    @Composable
     fun MerchSection(
         state: ArtistFormState.MerchState,
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         showConfirmed: Boolean = true,
+    )
+
+    @Composable
+    fun MerchConfirmedSection(
+        state: EntryForm2.SingleTextState,
+        confirmed: SnapshotStateList<MerchInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>
     )
 
     @Composable
@@ -655,9 +672,10 @@ private abstract class ArtistFormScopeImpl(
         val showSeriesInferred =
             forceLocked || !hasConfirmedSeries || requestedShowSeriesInferred || !showConfirmed
 
-        val seriesById = seriesById()
-        val initialInferred = remember(seriesById, initialArtist?.seriesInferred) {
-            initialArtist?.seriesInferred?.map { seriesById[it] ?: SeriesInfo.fake(it) }.orEmpty()
+        val seriesByIdMap = seriesById()
+        val initialInferred = remember(seriesByIdMap, initialArtist?.seriesInferred) {
+            initialArtist?.seriesInferred?.map { seriesByIdMap[it] ?: SeriesInfo.fake(it) }
+                .orEmpty()
         }
 
         val revertDialogStateInferred = rememberListRevertDialogState(initialInferred)
@@ -688,27 +706,45 @@ private abstract class ArtistFormScopeImpl(
         )
 
         if (showConfirmed) {
-            val initialConfirmed = remember(seriesById, initialArtist?.seriesConfirmed) {
-                initialArtist?.seriesConfirmed
-                    ?.map { seriesById[it] ?: SeriesInfo.fake(it) }
-                    .orEmpty()
-            }
-            val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
-            SeriesSection(
+            SeriesConfirmedSection(
                 state = state.stateConfirmed,
-                title = Res.string.alley_edit_artist_edit_series_confirmed,
-                header = {
-                    FormHeaderIconAndTitle(
-                        CustomIcons.TvGen,
-                        Res.string.alley_edit_artist_edit_series_confirmed
-                    )
-                },
-                listRevertDialogState = revertDialogStateConfirmed,
-                items = state.confirmed,
-                predictions = seriesPredictions,
-                image = seriesImage,
+                confirmed = state.confirmed,
+                seriesById = seriesById,
+                seriesPredictions = seriesPredictions,
+                seriesImage = seriesImage,
             )
         }
+    }
+
+    @Composable
+    override fun SeriesConfirmedSection(
+        state: EntryForm2.SingleTextState,
+        confirmed: SnapshotStateList<SeriesInfo>,
+        seriesById: () -> Map<String, SeriesInfo>,
+        seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
+        seriesImage: (SeriesInfo) -> String?,
+    ) {
+        val seriesById = seriesById()
+        val initialConfirmed = remember(seriesById, initialArtist?.seriesConfirmed) {
+            initialArtist?.seriesConfirmed
+                ?.map { seriesById[it] ?: SeriesInfo.fake(it) }
+                .orEmpty()
+        }
+        val revertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
+        SeriesSection(
+            state = state,
+            title = Res.string.alley_edit_artist_edit_series_confirmed,
+            header = {
+                FormHeaderIconAndTitle(
+                    CustomIcons.TvGen,
+                    Res.string.alley_edit_artist_edit_series_confirmed
+                )
+            },
+            listRevertDialogState = revertDialogStateConfirmed,
+            items = confirmed,
+            predictions = seriesPredictions,
+            image = seriesImage,
+        )
     }
 
     @Composable
@@ -723,9 +759,9 @@ private abstract class ArtistFormScopeImpl(
         val showMerchInferred =
             forceLocked || !hasConfirmedMerch || requestedShowMerchInferred || !showConfirmed
 
-        val merchById = merchById()
-        val initialInferred = remember(merchById, initialArtist?.merchInferred) {
-            initialArtist?.merchInferred?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
+        val merchByIdMap = merchById()
+        val initialInferred = remember(merchByIdMap, initialArtist?.merchInferred) {
+            initialArtist?.merchInferred?.map { merchByIdMap[it] ?: MerchInfo.fake(it) }.orEmpty()
         }
         val listRevertDialogStateInferred = rememberListRevertDialogState(initialInferred)
         BasicMultiTextSection(
@@ -777,49 +813,65 @@ private abstract class ArtistFormScopeImpl(
         )
 
         if (showConfirmed) {
-            val initialConfirmed = remember(merchById, initialArtist?.merchConfirmed) {
-                initialArtist?.merchConfirmed?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
-            }
-
-            val listRevertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
-            BasicMultiTextSection(
+            MerchConfirmedSection(
                 state = state.stateConfirmed,
-                header = {
-                    FormHeaderIconAndTitle(
-                        CustomIcons.Package2,
-                        Res.string.alley_edit_artist_edit_merch_confirmed
-                    )
-                },
-                initialItems = initialConfirmed,
-                equalsComparison = { it.name },
-                items = state.confirmed,
-                predictions = merchPredictions,
-                itemToCommitted = MerchInfo::fake,
-                itemToText = { it.name },
-                itemToSubText = { it.notes },
-                itemToSerializedValue = { it.name },
-                leadingIcon = {
-                    if (it.faked) {
-                        UnrecognizedTagIcon()
-                    }
-                },
-                predictionToText = {
-                    if (it.faked) {
-                        "\"${it.name}\""
-                    } else {
-                        it.name
-                    }
-                },
-                listRevertDialogState = listRevertDialogStateConfirmed,
-            )
-
-            ListFieldRevertDialog(
-                dialogState = listRevertDialogStateConfirmed,
-                label = Res.string.alley_edit_artist_edit_merch_confirmed,
-                items = state.confirmed,
-                itemsToText = { it.joinToString { it.name } },
+                confirmed = state.confirmed,
+                merchById = merchById,
+                merchPredictions = merchPredictions,
             )
         }
+    }
+
+    @Composable
+    override fun MerchConfirmedSection(
+        state: EntryForm2.SingleTextState,
+        confirmed: SnapshotStateList<MerchInfo>,
+        merchById: () -> Map<String, MerchInfo>,
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
+    ) {
+        val merchById = merchById()
+        val initialConfirmed = remember(merchById, initialArtist?.merchConfirmed) {
+            initialArtist?.merchConfirmed?.map { merchById[it] ?: MerchInfo.fake(it) }.orEmpty()
+        }
+
+        val listRevertDialogStateConfirmed = rememberListRevertDialogState(initialConfirmed)
+        BasicMultiTextSection(
+            state = state,
+            header = {
+                FormHeaderIconAndTitle(
+                    CustomIcons.Package2,
+                    Res.string.alley_edit_artist_edit_merch_confirmed
+                )
+            },
+            initialItems = initialConfirmed,
+            equalsComparison = { it.name },
+            items = confirmed,
+            predictions = merchPredictions,
+            itemToCommitted = MerchInfo::fake,
+            itemToText = { it.name },
+            itemToSubText = { it.notes },
+            itemToSerializedValue = { it.name },
+            leadingIcon = {
+                if (it.faked) {
+                    UnrecognizedTagIcon()
+                }
+            },
+            predictionToText = {
+                if (it.faked) {
+                    "\"${it.name}\""
+                } else {
+                    it.name
+                }
+            },
+            listRevertDialogState = listRevertDialogStateConfirmed,
+        )
+
+        ListFieldRevertDialog(
+            dialogState = listRevertDialogStateConfirmed,
+            label = Res.string.alley_edit_artist_edit_merch_confirmed,
+            items = confirmed,
+            itemsToText = { it.joinToString { it.name } },
+        )
     }
 
     @Composable

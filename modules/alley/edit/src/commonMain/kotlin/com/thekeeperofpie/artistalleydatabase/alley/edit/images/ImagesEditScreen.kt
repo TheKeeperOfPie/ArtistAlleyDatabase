@@ -69,13 +69,12 @@ import artistalleydatabase.modules.utils_compose.generated.resources.more_action
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
-import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DraggableItem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.dragContainer
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDragDropState
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -85,7 +84,7 @@ import artistalleydatabase.modules.utils_compose.generated.resources.Res as Util
 
 object ImagesEditScreen {
 
-    val RESULT_KEY = NavigationResults.Key<List<EditImage>>("ImagesEditScreen")
+    val REQUEST_KEY = NavigationRequestKey<List<EditImage>>("ImagesEditScreen")
 
     @Composable
     operator fun invoke(
@@ -93,16 +92,34 @@ object ImagesEditScreen {
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         viewModel: ImagesEditViewModel = viewModel {
-            graph.imagesEditViewModelFactory.create(route, createSavedStateHandle())
+            graph.imagesEditViewModelFactory.create(route.images, createSavedStateHandle())
         },
+    ) {
+        ImagesEditScreen(
+            requestKey = REQUEST_KEY,
+            displayName = route.displayName,
+            initialImages = route.images,
+            onClickBack = { onClickBack(false) },
+            viewModel = viewModel,
+        )
+    }
+
+    @Composable
+    operator fun invoke(
+        requestKey: NavigationRequestKey<List<EditImage>>,
+        displayName: String?,
+        initialImages: List<EditImage>,
+        onClickBack: (force: Boolean) -> Unit,
+        viewModel: ImagesEditViewModel,
     ) {
         val navigationResults = LocalNavigationResults.current
         ImagesEditScreen(
-            route = route,
+            displayName = displayName,
+            initialImages = initialImages,
             images = viewModel.images,
             onClickBack = { onClickBack(false) },
             onClickSave = {
-                navigationResults.launchSave(RESULT_KEY) { viewModel.images.toList() }
+                navigationResults.launchSave(requestKey) { viewModel.images.toList() }
                 onClickBack(true)
             },
         )
@@ -110,7 +127,8 @@ object ImagesEditScreen {
 
     @Composable
     operator fun invoke(
-        route: AlleyEditDestination.ImagesEdit,
+        displayName: String?,
+        initialImages: List<EditImage>,
         images: SnapshotStateList<EditImage>,
         onClickBack: () -> Unit,
         onClickSave: () -> Unit,
@@ -123,8 +141,7 @@ object ImagesEditScreen {
                             Text(
                                 stringResource(
                                     Res.string.alley_edit_image_title,
-                                    stringResource(route.dataYear.shortName),
-                                    route.displayName,
+                                    displayName.orEmpty(),
                                 )
                             )
                         },
@@ -194,7 +211,7 @@ object ImagesEditScreen {
                                     val width = image.width
                                     val height = image.height
                                     AsyncImage(
-                                        model = image,
+                                        model = image.coilImageModel,
                                         contentDescription = null,
                                         modifier = Modifier
                                             .width(240.dp)
@@ -281,7 +298,7 @@ object ImagesEditScreen {
             }
 
             ExitDialog(
-                route = route,
+                initialImages = initialImages,
                 images = images,
                 onClickBack = onClickBack,
                 onClickSave = onClickSave,
@@ -291,12 +308,12 @@ object ImagesEditScreen {
 
     @Composable
     private fun ExitDialog(
-        route: AlleyEditDestination.ImagesEdit,
+        initialImages: List<EditImage>,
         images: SnapshotStateList<EditImage>,
         onClickBack: () -> Unit,
         onClickSave: () -> Unit,
     ) {
-        val hasEdited by remember { derivedStateOf { route.images != images } }
+        val hasEdited by remember { derivedStateOf { initialImages != images } }
         var showBackDialog by rememberSaveable { mutableStateOf(false) }
         var hasConfirmedExit by remember { mutableStateOf(false) }
         NavigationBackHandler(
@@ -307,7 +324,7 @@ object ImagesEditScreen {
         }
         if (showBackDialog) {
             val diff by produceState<EditImage.Diff?>(null, key1 = images) {
-                value = EditImage.generateDiffs(route.images, images)
+                value = EditImage.generateDiffs(initialImages, images)
             }
             AlertDialog(
                 onDismissRequest = { showBackDialog = false },

@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlin.reflect.KClass
 
 @Composable
 fun rememberNavigationResults(): NavigationResults {
@@ -27,7 +26,7 @@ fun rememberNavigationResults(): NavigationResults {
 
 @Composable
 inline fun <reified T : Any> NavigationResultEffect(
-    key: NavigationResults.Key<T>,
+    key: NavigationRequestKey<T>,
     crossinline onResult: suspend (T) -> Unit,
 ) {
     val navigationResults = LocalNavigationResults.current
@@ -52,23 +51,20 @@ private object SnapshotStateMapSaver : ComposeSaver<SnapshotStateMap<String, Str
 
 @Stable
 class NavigationResults(val scope: CoroutineScope, val map: SnapshotStateMap<String, String>) {
-    inline fun <reified T : Any> remove(key: Key<T>) = map.remove(key.key)?.let {
+    inline fun <reified T : Any> remove(key: NavigationRequestKey<T>) = map.remove(key.key)?.let {
         Json.decodeFromString<T>(it)
     }
 
-    inline operator fun <reified T : Any> set(key: Key<T>, value: T) {
+    inline operator fun <reified T : Any> set(key: NavigationRequestKey<T>, value: T) {
         map[key.key] = Json.encodeToString<T>(value)
     }
 
-    inline fun <reified T : Any> launchSave(key: Key<T>, crossinline block: suspend () -> T) {
+    inline fun <reified T : Any> launchSave(
+        key: NavigationRequestKey<T>,
+        crossinline block: suspend () -> T,
+    ) {
         scope.launch(PlatformDispatchers.IO) {
             map[key.key] = Json.encodeToString<T>(block())
-        }
-    }
-
-    data class Key<T : Any>(val key: String, val clazz: KClass<T>) {
-        companion object {
-            inline operator fun <reified T : Any> invoke(key: String) = Key(key, T::class)
         }
     }
 }

@@ -177,11 +177,7 @@ private fun entryProvider(
             onClickBack = onClickBack,
             onClickEditImages = { displayName, images ->
                 navStack.navigate(
-                    AlleyEditDestination.ImagesEdit(
-                        route.dataYear,
-                        displayName,
-                        images
-                    )
+                    AlleyEditDestination.ImagesEdit(displayName, images)
                 )
             },
         )
@@ -194,11 +190,7 @@ private fun entryProvider(
             onClickBack = onClickBack,
             onClickEditImages = { displayName, images ->
                 navStack.navigate(
-                    AlleyEditDestination.ImagesEdit(
-                        route.dataYear,
-                        displayName,
-                        images
-                    )
+                    AlleyEditDestination.ImagesEdit(displayName, images)
                 )
             },
             onClickMerge = {

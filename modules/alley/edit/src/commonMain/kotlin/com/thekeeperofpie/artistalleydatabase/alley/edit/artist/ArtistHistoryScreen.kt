@@ -92,7 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.PlatformDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -106,7 +106,7 @@ import kotlin.uuid.Uuid
 
 object ArtistHistoryScreen {
 
-    val RESULT_KEY = NavigationResults.Key<Unit>("ArtistHistoryScreen")
+    val REQUEST_KEY = NavigationRequestKey<Unit>("ArtistHistoryScreen")
 
     @Composable
     operator fun invoke(
@@ -164,7 +164,7 @@ object ArtistHistoryScreen {
                         }
                         is BackendRequest.ArtistSave.Response.Success -> {
                             saveProgress.value = JobProgress.Idle()
-                            navigationResults[RESULT_KEY] = Unit
+                            navigationResults[REQUEST_KEY] = Unit
                             onClickBack(true)
                         }
                     }

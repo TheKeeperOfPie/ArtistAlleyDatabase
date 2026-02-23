@@ -74,7 +74,7 @@ object ArtistAddScreen {
             )
         },
     ) {
-        NavigationResultEffect(ImagesEditScreen.RESULT_KEY) { images ->
+        NavigationResultEffect(ImagesEditScreen.REQUEST_KEY) { images ->
             Snapshot.withMutableSnapshot {
                 viewModel.state.artistFormState.images.clear()
                 viewModel.state.artistFormState.images += images

@@ -28,7 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyTitle
 import com.thekeeperofpie.artistalleydatabase.alley.ui.sharedBounds
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ZoomSlider
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberMultiZoomableState
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.stringResource
@@ -36,7 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 object ImagesScreen {
 
-    val RESULT_KEY = NavigationResults.Key<Int>("ImagesScreen")
+    val REQUEST_KEY = NavigationRequestKey<Int>("ImagesScreen")
 
     @Composable
     operator fun invoke(
@@ -51,7 +51,7 @@ object ImagesScreen {
         LaunchedEffect(imagePagerState, navigationResults) {
             snapshotFlow { imagePagerState.targetPage }
                 .collectLatest {
-                    navigationResults[RESULT_KEY] = it
+                    navigationResults[REQUEST_KEY] = it
                 }
         }
         Scaffold(

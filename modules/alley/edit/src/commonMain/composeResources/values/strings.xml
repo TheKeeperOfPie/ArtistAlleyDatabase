@@ -88,11 +88,11 @@
     <string name="alley_edit_artist_error_booth">Booth must be formatted as [A-Z][0-9][0-9]</string>
     <string name="alley_edit_artist_error_saving_bad_fields">Could not save because some fields have errors</string>
 
-    <string name="alley_edit_image_title">Editing images for %1$s - %2$s</string>
+    <string name="alley_edit_image_title">Editing images for %1$s</string>
     <string name="alley_edit_image_width_and_height">Width: %1$d - Height: %2$d</string>
     <string name="alley_edit_image_action_delete">Delete image</string>
     <string name="alley_edit_image_action_change">Change image</string>
-    <string name="alley_edit_image_action_add">Add image</string>
+    <string name="alley_edit_image_action_add">Add images</string>
     <string name="alley_edit_image_action_save_content_description">Save image edits</string>
 
     <string name="alley_edit_image_save_changes_header_added">Added</string>

@@ -46,7 +46,6 @@ sealed interface AlleyEditDestination : NavKey {
 
     @Serializable
     data class ImagesEdit(
-        val dataYear: DataYear,
         val displayName: String,
         val images: List<EditImage>,
     ) : AlleyEditDestination
@@ -243,7 +242,7 @@ sealed interface AlleyEditDestination : NavKey {
             is ImagesEdit,
             is MerchEdit,
             is SeriesEdit,
-                -> null
+                -> null // TODO: Actually serialize these via ID
         }
 
         private fun parseDataYearThenArtistId(trailingPathSegments: String): Pair<DataYear, Uuid>? {

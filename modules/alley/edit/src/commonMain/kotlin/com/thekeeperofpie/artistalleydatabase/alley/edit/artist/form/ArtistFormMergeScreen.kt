@@ -83,7 +83,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResults
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -95,7 +95,7 @@ import kotlin.uuid.Uuid
 
 internal object ArtistFormMergeScreen {
 
-    val RESULT_KEY = NavigationResults.Key<Unit>("ArtistFormMergeScreen")
+    val REQUEST_KEY = NavigationRequestKey<Unit>("ArtistFormMergeScreen")
 
     @Composable
     operator fun invoke(
@@ -147,7 +147,7 @@ internal object ArtistFormMergeScreen {
                         }
                         is BackendRequest.ArtistCommitForm.Response.Success -> {
                             saveTaskState.clearResult()
-                            navigationResults[RESULT_KEY] = Unit
+                            navigationResults[REQUEST_KEY] = Unit
                             onClickBack(true)
                         }
                     }

@@ -24,6 +24,7 @@ import androidx.navigationevent.NavigationEventHandler
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.animation.LocalSharedTransitionScope
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationController
@@ -157,14 +158,32 @@ fun EntryProviderScope<NavKey>.addFormEntryProviders(
     }
     sharedElementEntry<AlleyFormDestination.ArtistForm> { route ->
         ArtistFormScreen(
+            graph = graph,
             dataYear = route.dataYear,
             onClickBack = onClickBack,
+            onClickEditImages = { displayName, key, images ->
+                onNavigate(
+                    AlleyFormDestination.ImagesEdit(
+                        requestKey = key,
+                        images = images,
+                        displayName = displayName,
+                    )
+                )
+            },
+        )
+    }
+    sharedElementEntry<AlleyFormDestination.ImagesEdit> { route ->
+        ImagesEditScreen(
+            requestKey = route.requestKey,
+            displayName = route.displayName,
+            initialImages = route.images,
+            onClickBack = onClickBack,
             viewModel = viewModel {
-                graph.artistFormViewModelFactory.create(
-                    dataYear = route.dataYear,
+                graph.imagesEditViewModelFactory.create(
+                    images = route.images,
                     savedStateHandle = createSavedStateHandle(),
                 )
-            }
+            },
         )
     }
 }
