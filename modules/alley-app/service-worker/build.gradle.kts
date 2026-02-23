@@ -18,7 +18,6 @@ kotlin {
     }
 
     compilerOptions {
-        jvmToolchain(18)
         freeCompilerArgs.add("-Xcontext-parameters")
     }
 

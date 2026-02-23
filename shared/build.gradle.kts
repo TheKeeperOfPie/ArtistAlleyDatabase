@@ -19,10 +19,6 @@ group = "com.thekeeperofpie.artistalleydatabase.shared"
 version = "0.0.1"
 
 kotlin {
-    compilerOptions {
-        jvmToolchain(18)
-    }
-
     androidTarget {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_18

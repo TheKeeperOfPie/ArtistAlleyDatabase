@@ -19,6 +19,10 @@ kotlin {
         compileSdk = 36
         minSdk = 28
 
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_18
+        }
+
         withDeviceTestBuilder {
             sourceSetTreeName = "test"
         }

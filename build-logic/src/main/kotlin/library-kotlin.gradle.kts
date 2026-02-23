@@ -14,7 +14,6 @@ kotlin {
     applyDefaultHierarchyTemplate()
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
-        jvmToolchain(18)
         freeCompilerArgs.addAll(
             listOf(
                 "-Xcontext-parameters",

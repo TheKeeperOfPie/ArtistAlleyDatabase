@@ -1,5 +1,8 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
@@ -13,9 +16,12 @@ plugins {
 }
 
 kotlin {
-    androidTarget()
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_18)
+        }
+    }
     compilerOptions  {
-        jvmToolchain(18)
         freeCompilerArgs.add("-Xcontext-parameters")
         optIn.add("kotlin.time.ExperimentalTime")
     }
@@ -29,7 +35,7 @@ android {
 
     defaultConfig {
         applicationId = "com.thekeeperofpie.anichive"
-        minSdk = 28
+        minSdk = 28 // TODO: App doesn't work on 28 emulator
         targetSdk = 34
         versionCode = 18
         versionName = "0.53"

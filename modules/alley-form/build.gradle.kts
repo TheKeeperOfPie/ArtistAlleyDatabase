@@ -51,7 +51,6 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     compilerOptions {
-        jvmToolchain(18)
         freeCompilerArgs.add("-Xcontext-parameters")
 //        freeCompilerArgs.add("-Xwasm-use-new-exception-proposal")
     }
