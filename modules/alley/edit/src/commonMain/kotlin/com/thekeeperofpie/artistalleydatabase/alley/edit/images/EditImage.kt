@@ -3,6 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.extension
+import io.github.vinceglb.filekit.name
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -26,9 +29,18 @@ sealed interface EditImage : ImageWithDimensions {
     @Serializable
     data class LocalImage(
         val key: PlatformImageKey,
-        override val name: String = key.value.toString(),
+        override val name: String,
+        val extension: String,
+        val id: Uuid = Uuid.random(),
     ) : EditImage {
         override val coilImageModel: PlatformImageKey get() = key
+
+        constructor(key: PlatformImageKey, file: PlatformFile): this(
+            key = key,
+            name = file.name.ifBlank { key.value.toString() },
+            extension = file.extension,
+        )
+
     }
 
     @Serializable

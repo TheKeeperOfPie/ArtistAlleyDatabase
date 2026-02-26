@@ -15,7 +15,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
-import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -51,9 +50,14 @@ object AlleyEditBackend {
 
         // Assumes that middleware has authorized non-form requests already
         return when (firstSegment) {
-            "image" -> loadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
-            "uploadImage" ->
-                uploadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
+            "image" -> BackendUtils.loadImage(
+                context,
+                pathSegments.drop(1).joinToString(separator = "/"),
+            )
+            "uploadImage" -> BackendUtils.uploadImage(
+                context,
+                pathSegments.drop(1).joinToString(separator = "/"),
+            )
             else -> Json.decodeFromString<BackendRequest>(context.request.text().await()).run {
                 when (this) {
                     is BackendRequest.Artist -> makeResponse(loadArtist(context, this))
@@ -418,21 +422,6 @@ object AlleyEditBackend {
         }
     }
 
-    /**
-     * Exposes image for local development so that it doesn't access the remote R2 bucket via the
-     * public domain.
-     */
-    private suspend fun loadImage(context: EventContext, key: String): Response {
-        val file = context.env.ARTIST_ALLEY_IMAGES_BUCKET.get(key).await()
-            ?: return Response(null, ResponseInit(status = 404))
-        return Response(file.body, ResponseInit(headers = Headers().apply {
-            val contentType = file.httpMetadata.contentType
-            if (contentType != null) {
-                set("Content-Type", contentType)
-            }
-        }))
-    }
-
     private suspend fun listImages(
         context: EventContext,
         request: ListImages.Request,
@@ -445,13 +434,6 @@ object AlleyEditBackend {
         return ListImages.Response(keys.map {
             Uuid.parse(it.substringAfterLast("/").substringBefore(".")) to it
         })
-    }
-
-    private suspend fun uploadImage(context: EventContext, path: String): Response {
-        context.env.ARTIST_ALLEY_IMAGES_BUCKET
-            .put(path, context.request.unsafeCast<ResponseWithBody>().body)
-            .await()
-        return Response("")
     }
 
     private suspend fun loadSeries(context: EventContext): Response {

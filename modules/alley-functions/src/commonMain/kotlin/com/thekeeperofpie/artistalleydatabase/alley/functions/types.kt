@@ -29,7 +29,9 @@ external interface Env {
     val ARTIST_ALLEY_FORM_DB: D1Database
     val ARTIST_ALLEY_IMAGES_BUCKET: R2Bucket
     val ARTIST_ALLEY_CACHE_KV: KeyValueStore
-    val ARTIST_ALLEY_FORM_KEYS_KV: KeyValueStore
+    val IMAGES_ACCESS_KEY_ID: String
+    val IMAGES_SECRET_ACCESS_KEY_ID: String
+    val IMAGES_CLOUDFLARE_URL: String
 }
 
 internal fun <T> promise(block: suspend () -> T) =

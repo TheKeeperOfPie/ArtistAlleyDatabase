@@ -261,6 +261,7 @@ extra["versions"] = fun(dependencyResolutionManagement: DependencyResolutionMana
                 }
 
                 withVersion(Versions.fileKit) {
+                    library("io.github.vinceglb:filekit-core")
                     library("io.github.vinceglb:filekit-dialogs-compose")
                     library("io.github.vinceglb:filekit-coil")
                 }

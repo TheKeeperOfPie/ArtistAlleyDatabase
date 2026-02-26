@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@cloudflare/pages-plugin-cloudflare-access" : "^1.0.5",
-    "@noble/curves" : "^2.0.1"
+    "@noble/curves" : "^2.0.1",
+    "aws4fetch" : "^1.0.20"
   }
 }

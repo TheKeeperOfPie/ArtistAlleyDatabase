@@ -21,6 +21,7 @@ import io.ktor.http.contentType
 import kotlinx.browser.window
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
+import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
 @Inject
@@ -70,6 +71,15 @@ actual class AlleyFormRemoteDatabase(
             "Failed to save artist, check system clock"
         )
     }
+
+    actual suspend fun fetchUploadImageUrls(
+        dataYear: DataYear,
+        artistId: Uuid,
+        imageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
+    ): Map<Uuid, String> = withContext(dispatchers.io) {
+        val accessKey = ArtistFormAccessKey.key ?: return@withContext null
+        sendRequest(BackendFormRequest.UploadImageUrls(dataYear, artistId, imageData), accessKey)
+    } ?: emptyMap()
 
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,

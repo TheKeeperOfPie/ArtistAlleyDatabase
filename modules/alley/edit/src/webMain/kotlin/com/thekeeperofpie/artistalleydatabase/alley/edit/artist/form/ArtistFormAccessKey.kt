@@ -19,7 +19,7 @@ actual object ArtistFormAccessKey {
         }
 
     actual fun setKey(key: String) {
-        val key = Uri.Companion.parseOrNull(key)
+        val key = Uri.parseOrNull(key)
             ?.getQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM)
             ?: key.substringAfter("?${AlleyCryptography.ACCESS_KEY_PARAM}=")
         _key = key

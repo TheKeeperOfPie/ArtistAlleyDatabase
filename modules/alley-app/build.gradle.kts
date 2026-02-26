@@ -429,7 +429,9 @@ tasks.register("webRelease") {
                 properties.getProperty("artistAlleyFormDatabaseId")
             )
             .replace("artistAlleyCacheKVId", properties.getProperty("artistAlleyCacheKVId"))
-            .replace("artistAlleyFormKeysKVId", properties.getProperty("artistAlleyFormKeysKVId"))
+            .replace("imagesAccessKeyId", properties.getProperty("imagesAccessKeyId"))
+            .replace("imagesSecretAccessKeyId", properties.getProperty("imagesSecretAccessKeyId"))
+            .replace("imagesCloudflareUrl", properties.getProperty("imagesCloudflareUrl"))
         wranglerToml.writeText(wranglerTomlEdited)
 
         // This is done here because syncing the site involves replacing all of the files in the

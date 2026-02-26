@@ -168,7 +168,7 @@ actual class AlleyEditRemoteDatabase(
         val imageKey = PlatformImageKey(id)
             .takeIf { PlatformImageCache[it] != null }
             ?: PlatformImageCache.add(platformFile)
-        val image = EditImage.LocalImage(imageKey, name = key)
+        val image = EditImage.LocalImage(imageKey, platformFile)
         images[key] = image
         return image
     }
@@ -185,7 +185,7 @@ actual class AlleyEditRemoteDatabase(
         val imageKey = PlatformImageKey(id)
             .takeIf { PlatformImageCache[it] != null }
             ?: PlatformImageCache.add(platformFile)
-        val image = EditImage.LocalImage(imageKey, name = key)
+        val image = EditImage.LocalImage(imageKey, platformFile)
         images[key] = image
         return image
     }

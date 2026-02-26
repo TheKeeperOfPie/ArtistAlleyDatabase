@@ -52,4 +52,18 @@ sealed interface BackendFormRequest {
             data class Failed(val errorMessage: String) : Response
         }
     }
+
+    @Serializable
+    data class UploadImageUrls(
+        val dataYear: DataYear,
+        val artistId: Uuid,
+        val imageData: List<ImageData>,
+    ) : BackendFormRequest, WithResponse<Map<Uuid, String>> {
+
+        @Serializable
+        data class ImageData(
+            val id: Uuid,
+            val extension: String,
+        )
+    }
 }

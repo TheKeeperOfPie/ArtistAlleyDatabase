@@ -8,7 +8,6 @@ compatibility_date = "2025-01-05"
 
 kv_namespaces = [
     { binding = "ARTIST_ALLEY_CACHE_KV", id = "artistAlleyCacheKVId" },
-    { binding = "ARTIST_ALLEY_FORM_KEYS_KV", id = "artistAlleyFormKeysKVId" }
 ]
 
 [placement]
@@ -29,3 +28,8 @@ preview_database_id = "ARTIST_ALLEY_FORM_DB"
 [[r2_buckets]]
 binding = "ARTIST_ALLEY_IMAGES_BUCKET"
 bucket_name = "artist-alley-images"
+
+[vars]
+IMAGES_ACCESS_KEY_ID = "imagesAccessKeyId"
+IMAGES_SECRET_ACCESS_KEY_ID = "imagesSecretAccessKeyId"
+IMAGES_CLOUDFLARE_URL = "imagesCloudflareUrl"

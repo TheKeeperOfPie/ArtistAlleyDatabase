@@ -4,6 +4,8 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
+import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
@@ -11,6 +13,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import kotlinx.coroutines.await
+import org.w3c.fetch.Headers
+import org.w3c.fetch.Response
+import org.w3c.fetch.ResponseInit
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -283,4 +289,28 @@ internal object BackendUtils {
                 timestamp = formEntry.timestamp,
             )
         }
+
+    /**
+     * Exposes image for local development so that it doesn't access the remote R2 bucket via the
+     * public domain.
+     */
+    suspend fun loadImage(context: EventContext, key: String): Response {
+        if (!BuildKonfig.debug) return Utils.unauthorizedResponse
+        val file = context.env.ARTIST_ALLEY_IMAGES_BUCKET.get(key).await()
+            ?: return Response(null, ResponseInit(status = 404))
+        return Response(file.body, ResponseInit(headers = Headers().apply {
+            val contentType = file.httpMetadata.contentType
+            if (contentType != null) {
+                set("Content-Type", contentType)
+            }
+        }))
+    }
+
+    suspend fun uploadImage(context: EventContext, path: String): Response {
+        if (!BuildKonfig.debug) return Utils.unauthorizedResponse
+        context.env.ARTIST_ALLEY_IMAGES_BUCKET
+            .put(path, context.request.unsafeCast<ResponseWithBody>().body)
+            .await()
+        return Response("")
+    }
 }

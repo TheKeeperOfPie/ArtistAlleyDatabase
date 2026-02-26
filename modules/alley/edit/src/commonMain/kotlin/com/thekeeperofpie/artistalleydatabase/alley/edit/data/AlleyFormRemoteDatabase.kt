@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import kotlin.uuid.Uuid
 
 expect class AlleyFormRemoteDatabase {
 
@@ -18,4 +19,10 @@ expect class AlleyFormRemoteDatabase {
         deletedRallyIds: List<String>,
         formNotes: String,
     ): BackendFormRequest.ArtistSave.Response
+
+    suspend fun fetchUploadImageUrls(
+        dataYear: DataYear,
+        artistId: Uuid,
+        imageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
+    ): Map<Uuid, String>
 }

@@ -164,9 +164,10 @@ object ImagesEditScreen {
                     mode = FileKitMode.Multiple(),
                 ) {
                     if (it != null) {
-                        images += it
-                            .map(PlatformImageCache::add)
-                            .map(EditImage::LocalImage)
+                        images += it.map {
+                            val imageKey = PlatformImageCache.add(it)
+                            EditImage.LocalImage(imageKey, it)
+                        }
                     }
                 }
                 val listState = rememberLazyListState()
@@ -247,7 +248,7 @@ object ImagesEditScreen {
                                     ) {
                                         if (it != null) {
                                             images[index] =
-                                                EditImage.LocalImage(PlatformImageCache.add(it))
+                                                EditImage.LocalImage(PlatformImageCache.add(it), it)
                                         }
                                     }
 

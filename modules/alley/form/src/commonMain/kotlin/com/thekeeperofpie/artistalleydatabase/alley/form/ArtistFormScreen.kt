@@ -130,6 +130,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothVal
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallySummaryRow
@@ -146,7 +147,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryHorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
@@ -171,6 +171,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberN
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -242,7 +245,7 @@ object ArtistFormScreen {
                 .filterNotNull()
                 .collectLatest {
                     when (it) {
-                        is BackendFormRequest.ArtistSave.Response.Failed -> {
+                        is State.SaveResult.ArtistSaveFailed -> {
                             snackbarHostState.showSnackbar(
                                 message = it.errorMessage,
                                 withDismissAction = true,
@@ -250,7 +253,15 @@ object ArtistFormScreen {
                             )
                             saveTaskState.clearError()
                         }
-                        is BackendFormRequest.ArtistSave.Response.Success -> {
+                        is State.SaveResult.ImageUploadFailed -> {
+                            snackbarHostState.showSnackbar(
+                                message = it.errorMessage,
+                                withDismissAction = true,
+                                duration = SnackbarDuration.Indefinite,
+                            )
+                            saveTaskState.clearError()
+                        }
+                        State.SaveResult.Success -> {
                             snackbarHostState.showSnackbar(
                                 message = getString(Res.string.alley_form_saved_changes),
                                 duration = SnackbarDuration.Long,
@@ -354,7 +365,7 @@ object ArtistFormScreen {
         initialRallies: () -> List<StampRallyDatabaseEntry>,
         initialFormDiff: () -> ArtistEntryDiff?,
         previousYearData: () -> ArtistPreviousYearData?,
-        saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
+        saveTaskState: TaskState<State.SaveResult>,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
         merchById: () -> Map<String, MerchInfo>,
@@ -403,19 +414,20 @@ object ArtistFormScreen {
 
                                 InstructionsHeader()
 
-                                CatalogSection(
-                                    state = state,
-                                    initialArtist = initialArtist,
-                                    seriesById = seriesById,
-                                    seriesPredictions = seriesPredictions,
-                                    merchById = merchById,
-                                    merchPredictions = merchPredictions,
-                                    seriesImage = seriesImage,
-                                    onClickEditImages = onClickEditImages,
-                                    onClickImage = {
-                                        // TODO: Open full size image?
-                                    },
-                                )
+                                // TODO: Image support
+//                                CatalogSection(
+//                                    state = state,
+//                                    initialArtist = initialArtist,
+//                                    seriesById = seriesById,
+//                                    seriesPredictions = seriesPredictions,
+//                                    merchById = merchById,
+//                                    merchPredictions = merchPredictions,
+//                                    seriesImage = seriesImage,
+//                                    onClickEditImages = onClickEditImages,
+//                                    onClickImage = {
+//                                        // TODO: Open full size image?
+//                                    },
+//                                )
 
                                 Text(
                                     text = stringResource(Res.string.alley_form_artist_header),
@@ -742,20 +754,21 @@ object ArtistFormScreen {
                                 merchPredictions = merchPredictions,
                                 seriesImage = seriesImage,
                             ) {
-                                val requestKey =
-                                    rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
-                                ImageSection(
-                                    images = formState.images,
-                                    requestKey = requestKey,
-                                    onClickEditImages = { requestKey, images ->
-                                        onClickEditImages(
-                                            formState.fandom.value.text.toString(),
-                                            requestKey,
-                                            images,
-                                        )
-                                    },
-                                    onClickImage = onClickImage,
-                                )
+                                // TODO: Image support
+//                                val requestKey =
+//                                    rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+//                                ImageSection(
+//                                    images = formState.images,
+//                                    requestKey = requestKey,
+//                                    onClickEditImages = { requestKey, images ->
+//                                        onClickEditImages(
+//                                            formState.fandom.value.text.toString(),
+//                                            requestKey,
+//                                            images,
+//                                        )
+//                                    },
+//                                    onClickImage = onClickImage,
+//                                )
                                 FandomSection(
                                     state = formState.fandom,
                                     label = { Text(stringResource(Res.string.alley_form_stamp_rally_name_placeholder)) },
@@ -1125,6 +1138,17 @@ object ArtistFormScreen {
 
             Column {
                 Box {
+                    val addLauncher = rememberFilePickerLauncher(
+                        type = FileKitType.Image,
+                        mode = FileKitMode.Multiple(),
+                    ) {
+                        if (it != null) {
+                            images += it.map {
+                                val imageKey = PlatformImageCache.add(it)
+                                EditImage.LocalImage(imageKey, it)
+                            }
+                        }
+                    }
                     LazyRow(
                         state = listState,
                         verticalAlignment = Alignment.CenterVertically,
@@ -1155,7 +1179,13 @@ object ArtistFormScreen {
                         }
                         item {
                             FilledTonalButton(
-                                onClick = { onClickEditImages(requestKey, images.toList()) },
+                                onClick = {
+                                    if (images.isEmpty()) {
+                                        addLauncher.launch()
+                                    } else {
+                                        onClickEditImages(requestKey, images.toList())
+                                    }
+                                },
                                 modifier = Modifier.padding(vertical = 16.dp)
                             ) {
                                 Text(
@@ -1200,7 +1230,7 @@ object ArtistFormScreen {
         val progress: StateFlow<Progress>,
         val stampRallyStates: SnapshotStateList<StampRallyFormState>,
         val artistFormState: FormState,
-        val saveTaskState: TaskState<BackendFormRequest.ArtistSave.Response>,
+        val saveTaskState: TaskState<SaveResult>,
     ) {
         fun applyDatabaseEntry(
             artist: ArtistDatabaseEntry.Impl,
@@ -1269,6 +1299,18 @@ object ArtistFormScreen {
         @Serializable
         enum class Progress {
             LOADING, LOADED, BAD_AUTH, DONE,
+        }
+
+        @Serializable
+        sealed interface SaveResult {
+            @Serializable
+            data object Success : SaveResult
+
+            @Serializable
+            data class ImageUploadFailed(val errorMessage: String) : SaveResult
+
+            @Serializable
+            data class ArtistSaveFailed(val errorMessage: String) : SaveResult
         }
 
         @Stable

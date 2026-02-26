@@ -2,10 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlin.uuid.Uuid
 
 @SingleIn(AppScope::class)
 @Inject
@@ -31,4 +33,10 @@ class AlleyFormDatabase(
         deletedRallyIds = deletedRallyIds,
         formNotes = formNotes,
     )
+
+    suspend fun fetchUploadImageUrls(
+        dataYear: DataYear,
+        artistId: Uuid,
+        imageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
+    ) = remoteDatabase.fetchUploadImageUrls(dataYear, artistId, imageData)
 }

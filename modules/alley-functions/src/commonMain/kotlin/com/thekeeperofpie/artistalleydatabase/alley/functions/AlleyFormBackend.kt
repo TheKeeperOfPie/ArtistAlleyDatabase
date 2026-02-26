@@ -5,7 +5,12 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntry
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsParamsInit
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsSignInit
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
+import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
@@ -15,7 +20,14 @@ import kotlinx.io.bytestring.hexToByteString
 import kotlinx.serialization.json.Json
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
+import org.w3c.dom.url.URL
+import org.w3c.fetch.FOLLOW
+import org.w3c.fetch.Headers
+import org.w3c.fetch.Request
+import org.w3c.fetch.RequestInit
+import org.w3c.fetch.RequestRedirect
 import org.w3c.fetch.Response
+import org.w3c.fetch.ResponseInit
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
@@ -26,13 +38,23 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 internal object AlleyFormBackend {
 
-    suspend fun handleRequest(context: EventContext): Response =
-        handleFormRequest(
-            context = context,
-            request = Json.decodeFromString<BackendFormRequest>(
-                context.request.text().await(),
-            ),
-        )
+    suspend fun handleRequest(context: EventContext, path: String): Response {
+        val pathSegments = path.removePrefix("/").split("/")
+        val firstSegment = pathSegments.getOrNull(0)
+
+        // Assumes that middleware has authorized non-form requests already
+        return when (firstSegment) {
+            "image" -> BackendUtils.loadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
+            "uploadImage" ->
+                BackendUtils.uploadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
+            else -> handleFormRequest(
+                context = context,
+                request = Json.decodeFromString<BackendFormRequest>(
+                    context.request.text().await(),
+                ),
+            )
+        }
+    }
 
     private suspend fun handleFormRequest(
         context: EventContext,
@@ -98,6 +120,13 @@ internal object AlleyFormBackend {
                         makeResponse(saveArtist(context, this, expectedArtistId))
                     }
                 }
+                is BackendFormRequest.UploadImageUrls -> {
+                    if (this.artistId != expectedArtistId) {
+                        Utils.unauthorizedResponse
+                    } else {
+                        makeResponse(generateUploadImageUrls(context, this))
+                    }
+                }
             }
         }
     }
@@ -160,7 +189,8 @@ internal object AlleyFormBackend {
                 }
 
         val artistFormDiff = BackendUtils.loadArtistFormDiff(context, request.dataYear, artistId)
-        val stampRallyFormDiffs = BackendUtils.loadStampRallyFormDiffs(context, request.dataYear, artistId)
+        val stampRallyFormDiffs =
+            BackendUtils.loadStampRallyFormDiffs(context, request.dataYear, artistId)
         return BackendFormRequest.Artist.Response(
             artist = artist,
             stampRallies = stampRallies,
@@ -302,6 +332,35 @@ internal object AlleyFormBackend {
             .artistEntryAnimeExpo2026Queries
             .markArtistHasSubmittedForm(artistId.toString())
         return BackendFormRequest.ArtistSave.Response.Success
+    }
+
+    private suspend fun generateUploadImageUrls(
+        context: EventContext,
+        request: BackendFormRequest.UploadImageUrls,
+    ): Map<Uuid, String> {
+        val awsClient = awsClient(context.env)
+        val baseImagesUrl = "${context.env.IMAGES_CLOUDFLARE_URL}/artist-alley-images"
+        return request.imageData
+            .associate {
+                val key =
+                    "${request.dataYear.serializedName}/${request.artistId}/${it.id}.${it.extension}"
+                val url =
+                    URL("$baseImagesUrl/$key").apply { searchParams.set("X-Amz-Expires", "3600") }
+                val request = Request(
+                    input = url,
+                    init = RequestInit(
+                        headers = Headers(),
+                        method = "PUT",
+                        cache = undefined,
+                        integrity = undefined,
+                        redirect = RequestRedirect.FOLLOW,
+                    )
+                )
+
+                it.id to awsClient.sign(request, AwsParamsInit(AwsSignInit(signQuery = true)))
+                    .await()
+                    .url
+            }
     }
 
     private inline fun <reified Request : BackendFormRequest.WithResponse<Response>, reified Response> Request.makeResponse(

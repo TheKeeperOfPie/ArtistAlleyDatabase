@@ -10,10 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormA
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceField
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInferenceUtils
-import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.FormTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -41,6 +41,7 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
@@ -51,10 +52,10 @@ import kotlin.uuid.Uuid
 class ArtistFormViewModel(
     artistInference: ArtistInference,
     dispatchers: CustomDispatchers,
-    editDatabase: AlleyEditDatabase,
     private val formDatabase: AlleyFormDatabase,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: FormTagAutocomplete,
+    private val imageUploader: ImageUploader,
     @Assisted private val dataYear: DataYear,
     @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -88,7 +89,7 @@ class ArtistFormViewModel(
             key = "stampRallyStates",
             saver = StateUtils.SnapshotListSaver(StampRallyFormState.Saver),
         ) {
-            SnapshotStateList<StampRallyFormState>()
+            SnapshotStateList()
         },
         artistFormState = savedStateHandle.saveable(
             key = "formState",
@@ -293,19 +294,34 @@ class ArtistFormViewModel(
         artistJob.launch()
     }
 
-    private suspend fun save(data: CapturedState): BackendFormRequest.ArtistSave.Response =
+    private suspend fun save(data: CapturedState): ArtistFormScreen.State.SaveResult {
+        val beforeArtist = artist.value!!
+
         // TODO: Image support
-        formDatabase.saveArtist(
+        // Show incremental progress to the user
+        val imageResult = imageUploader.uploadImages(dataYear, Uuid.parse(beforeArtist.id), data.images)
+            .lastOrNull()
+        val artistResult = formDatabase.saveArtist(
             dataYear = dataYear,
-            beforeArtist = artist.value!!,
+            beforeArtist = beforeArtist,
             afterArtist = data.artist,
             beforeStampRallies = rallies.value,
             afterStampRallies = data.stampRallyEntries,
             deletedRallyIds = data.deletedRallyIds,
             formNotes = data.formNotes,
-        ).also {
+        )
+
+        return if (imageResult == null || imageResult.errors.isNotEmpty()) {
+            progress.value = ArtistFormScreen.State.Progress.LOADED
+            ArtistFormScreen.State.SaveResult.ImageUploadFailed(imageResult?.errors.orEmpty().values.joinToString())
+        } else if (artistResult is BackendFormRequest.ArtistSave.Response.Failed) {
+            progress.value = ArtistFormScreen.State.Progress.LOADED
+            ArtistFormScreen.State.SaveResult.ArtistSaveFailed(artistResult.errorMessage)
+        } else {
             progress.value = ArtistFormScreen.State.Progress.DONE
+            ArtistFormScreen.State.SaveResult.Success
         }
+    }
 
     data class CapturedState(
         val images: List<EditImage>,

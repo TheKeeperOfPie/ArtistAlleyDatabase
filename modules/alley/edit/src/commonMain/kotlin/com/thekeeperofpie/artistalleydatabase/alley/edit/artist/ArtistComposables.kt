@@ -45,9 +45,10 @@ internal fun EditImagesButton(
             mode = FileKitMode.Multiple(),
         ) {
             if (it != null) {
-                images += it
-                    .map(PlatformImageCache::add)
-                    .map(EditImage::LocalImage)
+                images += it.map {
+                    val imageKey = PlatformImageCache.add(it)
+                    EditImage.LocalImage(imageKey, it)
+                }
             }
         }
         FilledTonalButton(onClick = { launcher.launch() }, modifier = modifier.padding(16.dp)) {
