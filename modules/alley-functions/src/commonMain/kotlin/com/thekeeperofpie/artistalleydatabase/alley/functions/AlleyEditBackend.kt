@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
@@ -21,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -39,7 +38,6 @@ import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
 import kotlin.time.Clock
 import kotlin.time.Instant
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 object AlleyEditBackend {
@@ -109,6 +107,10 @@ object AlleyEditBackend {
                         makeResponse(loadStampRallyWithHistoricalFormEntry(context, this))
                     is BackendRequest.StampRallyCommitForm ->
                         makeResponse(commitStampRallyForm(context, this))
+                    is BackendRequest.RemoteArtistData ->
+                        makeResponse(loadRemoteArtistData(context, this))
+                    is BackendRequest.SubmitRemoteArtistData ->
+                        makeResponse(submitRemoteArtistData(context, this))
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
@@ -803,6 +805,66 @@ object AlleyEditBackend {
                 stampRallyId = stampRallyId,
                 timestamp = formEntryTimestamp,
             )
+        }
+    }
+
+    private suspend fun loadRemoteArtistData(
+        context: EventContext,
+        request: BackendRequest.RemoteArtistData,
+    ): List<ArtistRemoteEntry> {
+        val database = Databases.editDatabase(context)
+        return when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 ->
+                database.artistRemoteDataAnimeExpo2026Queries
+                    .getMostRecentEntries()
+                    .awaitAsList()
+                    .map {
+                        ArtistRemoteEntry(
+                            confirmedId = it.confirmedId,
+                            booth = it.booth,
+                            name = it.name,
+                            summary = it.summary,
+                            links = it.links.orEmpty(),
+                            timestamp = it.timestamp,
+                        )
+                    }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> emptyList()
+        }
+    }
+
+    private suspend fun submitRemoteArtistData(
+        context: EventContext,
+        request: BackendRequest.SubmitRemoteArtistData,
+    ) {
+        val database = Databases.editDatabase(context)
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                val queries = database.artistRemoteDataAnimeExpo2026Queries
+                request.data
+                    .map {
+                        ArtistRemoteDataAnimeExpo2026(
+                            confirmedId = it.confirmedId,
+                            booth = it.booth,
+                            name = it.name,
+                            summary = it.summary,
+                            links = it.links,
+                            timestamp = it.timestamp,
+                            consumed = false,
+                        )
+                    }
+                    .forEach { queries.insertEntry(it) }
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> Unit
         }
     }
 

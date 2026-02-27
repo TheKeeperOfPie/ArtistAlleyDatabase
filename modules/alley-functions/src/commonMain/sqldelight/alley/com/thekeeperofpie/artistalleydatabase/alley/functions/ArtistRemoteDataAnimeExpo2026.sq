@@ -1,0 +1,14 @@
+getEntries:
+SELECT * FROM artistRemoteDataAnimeExpo2026;
+
+getMostRecentEntries:
+SELECT artistRemoteDataAnimeExpo2026.*
+FROM (
+  SELECT artistRemoteDataAnimeExpo2026.*, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
+  FROM artistRemoteDataAnimeExpo2026
+) artistRemoteDataAnimeExpo2026
+WHERE rowNumber = 1;
+
+insertEntry:
+INSERT OR REPLACE INTO artistRemoteDataAnimeExpo2026
+VALUES ?;

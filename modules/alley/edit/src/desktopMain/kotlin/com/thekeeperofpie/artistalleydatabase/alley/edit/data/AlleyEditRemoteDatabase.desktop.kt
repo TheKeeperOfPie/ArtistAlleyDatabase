@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
+import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
@@ -11,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -63,6 +65,8 @@ actual class AlleyEditRemoteDatabase(
     internal val stampRallyFormHistory = mutableListOf<StampRallyFormSubmission>()
 
     private var fakeArtistPrivateKey: String? = null
+
+    private var remoteData = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
 
     private val simulatedLatency = 1.seconds
 
@@ -503,6 +507,14 @@ actual class AlleyEditRemoteDatabase(
             }
         }
         return BackendRequest.StampRallyCommitForm.Response.Success
+    }
+
+    actual suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteEntry> =
+        remoteData[dataYear].orEmpty()
+
+    actual suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>) {
+        Logger.d("AlleyEditRemoteDatabase") { "submitRemoteArtistData $data" }
+        remoteData[dataYear] = data
     }
 
     private suspend fun simulateLatency() = delay(simulatedLatency)

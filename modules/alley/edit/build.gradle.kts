@@ -34,6 +34,7 @@ kotlin {
             implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.json.io)
+            implementation(libs.ksoup)
             implementation(libs.material.kolor)
             implementation(libs.stately.concurrent.collections)
 

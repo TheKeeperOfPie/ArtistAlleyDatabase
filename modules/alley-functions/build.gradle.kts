@@ -13,6 +13,7 @@ group = "com.thekeeperofpie.artistalleydatabase.alley.functions"
 kotlin {
     compilerOptions {
         optIn.addAll(
+            "kotlin.time.ExperimentalTime",
             "kotlin.uuid.ExperimentalUuidApi",
         )
     }

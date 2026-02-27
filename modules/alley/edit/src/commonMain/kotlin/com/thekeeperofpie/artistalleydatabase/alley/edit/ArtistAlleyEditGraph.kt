@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 interface ArtistAlleyEditGraph : ArtistAlleyGraph {
 
     val appFileSystem: AppFileSystem
-    val adminViewModelFactory: AdminViewModel.Factory
+    val adminViewModel: AdminViewModel
     val artistAddViewModelFactory: ArtistAddViewModel.Factory
     val artistEditViewModelFactory: ArtistEditViewModel.Factory
     val artistFormHistoryViewModelFactory: ArtistFormHistoryViewModel.Factory

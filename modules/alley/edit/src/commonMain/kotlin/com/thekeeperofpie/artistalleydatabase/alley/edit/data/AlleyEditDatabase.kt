@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -311,4 +312,10 @@ class AlleyEditDatabase(
             updated = updated,
             formEntryTimestamp = formEntryTimestamp,
         )
+
+    suspend fun loadRemoteArtistData(dataYear: DataYear) =
+        remoteDatabase.loadRemoteArtistData(dataYear)
+
+    suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>) =
+        remoteDatabase.submitRemoteArtistData(dataYear, data)
 }

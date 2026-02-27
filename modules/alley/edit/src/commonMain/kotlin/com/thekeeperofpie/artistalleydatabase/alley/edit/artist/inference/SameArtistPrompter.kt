@@ -81,7 +81,7 @@ class SameArtistPrompter(
         }
     }
         .flowOn(dispatchers.io)
-        .stateIn(scope, SharingStarted.Companion.WhileSubscribed(), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
 
     val state = State(inferredArtists = inferredArtists, sameArtist = sameArtist)
 

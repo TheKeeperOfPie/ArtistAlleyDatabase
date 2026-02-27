@@ -2,6 +2,7 @@ import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
 import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin;
@@ -63,3 +64,14 @@ CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
 );
 
 CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEntryAnimeExpo2026History (id);
+
+CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeExpo2026 (
+    confirmedId TEXT AS Uuid,
+    booth TEXT,
+    name TEXT,
+    summary TEXT,
+    links TEXT AS List<String>,
+    timestamp TEXT AS Instant NOT NULL,
+    consumed INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (booth, name, timestamp)
+);

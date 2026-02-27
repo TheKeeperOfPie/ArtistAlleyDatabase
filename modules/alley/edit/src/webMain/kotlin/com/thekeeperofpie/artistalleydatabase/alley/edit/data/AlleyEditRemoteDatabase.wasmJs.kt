@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -426,7 +427,12 @@ actual class AlleyEditRemoteDatabase(
         withContext(dispatchers.io) {
             try {
                 sendRequest(
-                    BackendRequest.StampRallyDeleteFromForm(dataYear, artistId, expected, formEntryTimestamp)
+                    BackendRequest.StampRallyDeleteFromForm(
+                        dataYear,
+                        artistId,
+                        expected,
+                        formEntryTimestamp
+                    )
                 )!!
             } catch (t: Throwable) {
                 t.printStackTrace()
@@ -520,6 +526,26 @@ actual class AlleyEditRemoteDatabase(
                 BackendRequest.StampRallyCommitForm.Response.Failed(t.message.orEmpty())
             }
         }
+
+    actual suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteEntry> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.RemoteArtistData(dataYear = dataYear))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            } ?: emptyList()
+        }
+
+    actual suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>) {
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.SubmitRemoteArtistData(dataYear = dataYear, data = data))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
+    }
 
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(

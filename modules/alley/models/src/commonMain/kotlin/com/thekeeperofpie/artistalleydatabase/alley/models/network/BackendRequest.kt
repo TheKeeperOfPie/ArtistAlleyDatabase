@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -309,7 +310,8 @@ sealed interface BackendRequest {
         WithResponse<List<StampRallyHistoryEntry>>
 
     @Serializable
-    data object StampRallyFormHistory : BackendRequest, WithResponse<List<StampRallyFormHistoryEntry>>
+    data object StampRallyFormHistory : BackendRequest,
+        WithResponse<List<StampRallyFormHistoryEntry>>
 
     @Serializable
     data object StampRallyFormQueue : BackendRequest, WithResponse<List<StampRallyFormQueueEntry>>
@@ -362,4 +364,12 @@ sealed interface BackendRequest {
             data class Failed(val errorMessage: String) : Response
         }
     }
+
+    @Serializable
+    data class RemoteArtistData(val dataYear: DataYear) : BackendRequest,
+        WithResponse<List<ArtistRemoteEntry>>
+
+    @Serializable
+    data class SubmitRemoteArtistData(val dataYear: DataYear, val data: List<ArtistRemoteEntry>) :
+        BackendRequest, WithResponse<Unit>
 }

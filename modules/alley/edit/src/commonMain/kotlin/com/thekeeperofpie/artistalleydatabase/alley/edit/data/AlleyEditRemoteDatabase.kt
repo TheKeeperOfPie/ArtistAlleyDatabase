@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -145,4 +146,7 @@ expect class AlleyEditRemoteDatabase {
         updated: StampRallyDatabaseEntry,
         formEntryTimestamp: Instant,
     ): BackendRequest.StampRallyCommitForm.Response
+
+    suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteEntry>
+    suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>)
 }
