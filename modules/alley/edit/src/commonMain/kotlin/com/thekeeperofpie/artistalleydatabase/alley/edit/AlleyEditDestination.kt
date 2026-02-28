@@ -116,6 +116,9 @@ sealed interface AlleyEditDestination : NavKey {
         val formTimestamp: Instant,
     ) : AlleyEditDestination
 
+    @Serializable
+    data object RemoteArtistDataQueue : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
@@ -126,6 +129,7 @@ sealed interface AlleyEditDestination : NavKey {
                 route == "artist/queue" -> ArtistFormQueue
                 route == "rallies" -> StampRallies
                 route == "rally/queue" -> StampRallyFormQueue
+                route == "remote/artist" -> RemoteArtistDataQueue
                 route.startsWith("resolution") -> {
                     val segments = route.split("/").filter { it.isNotEmpty() }
                     when {
@@ -238,6 +242,7 @@ sealed interface AlleyEditDestination : NavKey {
                     "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"
             is StampRallyFormHistory -> "rally/form/history${Uri.encode(destination.dataYear.serializedName)}" +
                     "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"
+            RemoteArtistDataQueue -> "remote/artist"
             Home -> ""
             is ImagesEdit,
             is MerchEdit,

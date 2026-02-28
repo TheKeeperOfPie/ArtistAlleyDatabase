@@ -120,7 +120,7 @@ internal object StampRallyFormQueueScreen {
                 modifier = Modifier.widthIn(max = 1200.dp)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                val entries = when (tab) {
+                when (tab) {
                     Tab.QUEUE ->
                         LazyColumn(
                             contentPadding = PaddingValues(bottom = 72.dp),
@@ -155,7 +155,7 @@ internal object StampRallyFormQueueScreen {
                                 items = history(),
                                 key = {
                                     listOf(
-                                        it.stampRallyId.toString(),
+                                        it.stampRallyId,
                                         it.timestamp.toString()
                                     )
                                 },

@@ -7,9 +7,10 @@ import kotlin.uuid.Uuid
 @Serializable
 data class ArtistRemoteEntry(
     val confirmedId: Uuid?,
-    val booth: String?,
-    val name: String?,
+    val booth: String,
+    val name: String,
     val summary: String?,
     val links: List<String>,
     val timestamp: Instant,
+    val consumed: Boolean,
 )

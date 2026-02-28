@@ -55,6 +55,7 @@ private val SavedStateConfig = SavedStateConfiguration {
             subclass(serializer = AlleyEditDestination.StampRallyEdit.serializer())
             subclass(serializer = AlleyEditDestination.StampRallyHistory.serializer())
             subclass(serializer = AlleyEditDestination.StampRallyFormQueue.serializer())
+            subclass(serializer = AlleyEditDestination.RemoteArtistDataQueue.serializer())
         }
     }
 }

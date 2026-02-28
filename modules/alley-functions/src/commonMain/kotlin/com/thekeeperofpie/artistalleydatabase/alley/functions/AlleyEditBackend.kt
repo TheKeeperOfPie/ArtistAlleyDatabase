@@ -826,6 +826,7 @@ object AlleyEditBackend {
                             summary = it.summary,
                             links = it.links.orEmpty(),
                             timestamp = it.timestamp,
+                            consumed = coerceBooleanForJs(it.consumed),
                         )
                     }
             DataYear.ANIME_EXPO_2023,

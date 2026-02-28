@@ -432,4 +432,13 @@ private fun entryProvider(
             onClickBack = onClickBack,
         )
     }
+
+    sharedElementEntry<AlleyEditDestination.RemoteArtistDataQueue> {
+        com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataQueueScreen(
+            graph = graph,
+            onSelectEntry = {
+                // TODO
+            },
+        )
+    }
 }

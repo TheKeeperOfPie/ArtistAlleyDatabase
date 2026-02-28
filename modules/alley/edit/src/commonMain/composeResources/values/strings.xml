@@ -6,6 +6,7 @@
     <string name="alley_edit_top_level_nav_rallies">Rallies</string>
     <string name="alley_edit_top_level_nav_artist_forms">Artist Forms</string>
     <string name="alley_edit_top_level_nav_rally_forms">Rally Forms</string>
+    <string name="alley_edit_top_level_nav_remote_artist_data">Remote artist data</string>
     <string name="alley_edit_top_level_nav_tag_resolution">Resolution</string>
     <string name="alley_edit_top_level_nav_admin">Admin</string>
 
@@ -303,4 +304,9 @@
     <string name="alley_edit_stamp_rally_form_merge_outdated">Outdated initial stamp rally, reload page to try re-merge</string>
     <string name="alley_edit_stamp_rally_form_merge_delete_prompt">Artist deleted this rally, merging this entry will delete the rally for everyone</string>
     <string name="alley_edit_stamp_rally_form_merge_delete_action_confirm">Confirm delete</string>
+
+    <string name="alley_edit_remote_artist_data_queue_title">Artist data queue</string>
+    <string name="alley_edit_remote_artist_data_queue_action_refresh">Refresh data queue</string>
+    <string name="alley_edit_remote_artist_data_queue_tab_queue">Queue</string>
+    <string name="alley_edit_remote_artist_data_queue_tab_history">History</string>
 </resources>

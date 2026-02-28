@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.Brush
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Tv
@@ -16,6 +17,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rallies
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_rally_forms
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_remote_artist_data
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_series
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_top_level_nav_tag_resolution
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
@@ -55,6 +57,11 @@ internal enum class TopLevelStackKey(
         initialDestination = AlleyEditDestination.StampRallyFormQueue,
         icon = Icons.AutoMirrored.Default.List,
         title = Res.string.alley_edit_top_level_nav_rally_forms,
+    ),
+    REMOTE_ARTIST_DATA(
+        initialDestination = AlleyEditDestination.RemoteArtistDataQueue,
+        icon = Icons.Default.CloudSync,
+        title = Res.string.alley_edit_top_level_nav_remote_artist_data,
     ),
     TAG_RESOLUTION(
         initialDestination = AlleyEditDestination.TagResolution,

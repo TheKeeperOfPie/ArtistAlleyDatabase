@@ -67,8 +67,8 @@ CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEnt
 
 CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeExpo2026 (
     confirmedId TEXT AS Uuid,
-    booth TEXT,
-    name TEXT,
+    booth TEXT NOT NULL,
+    name TEXT NOT NULL,
     summary TEXT,
     links TEXT AS List<String>,
     timestamp TEXT AS Instant NOT NULL,

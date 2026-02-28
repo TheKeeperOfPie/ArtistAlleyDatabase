@@ -45,9 +45,20 @@ class RemoteDataDiffer(
     private suspend fun parseEntries(file: PlatformFile, timestamp: Instant) =
         Ksoup.parse(file.readString())
             .select(".event")
-            .map {
+            .mapNotNull {
                 val title = it.selectFirst(".title")
-                val name = title?.selectFirst("a")?.text()?.ifEmpty { null } ?: title?.text()
+                val name = (title?.selectFirst("a")?.text()?.ifEmpty { null }
+                    ?: title?.text())
+                    ?.ifBlank { null }
+                    ?: return@mapNotNull null
+                val booth = it.selectFirst(".channel")?.selectFirst("span")?.text()
+                    ?.let {
+                        val letter = it.firstOrNull() ?: return@let null
+                        val number = it.drop(1).padStart(2, '0')
+                        "$letter$number"
+                    }
+                    ?.ifBlank { null }
+                    ?: return@mapNotNull null
                 val link = title?.selectFirst("a")?.attr("href")
                 val socials = title?.selectFirst(".socials").let {
                     try {
@@ -55,11 +66,6 @@ class RemoteDataDiffer(
                     } catch (_: Throwable) {
                         null
                     }
-                }
-                val booth = it.selectFirst(".channel")?.selectFirst("span")?.text()?.let {
-                    val letter = it.firstOrNull() ?: return@let null
-                    val number = it.drop(1).padStart(2, '0')
-                    "$letter$number"
                 }
                 val website = it.selectFirst(".start")
                     ?.selectFirst("a")
@@ -78,8 +84,10 @@ class RemoteDataDiffer(
                     summary = summary,
                     links = links,
                     timestamp = timestamp,
+                    consumed = false,
                 )
             }
+            .distinctBy { it.booth to it.name }
             .sortedBy { it.booth }
 
     private fun fixLink(link: String) = if (link.lowercase().startsWith("http")) {
