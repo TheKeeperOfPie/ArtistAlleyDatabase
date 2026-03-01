@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntr
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -109,8 +110,18 @@ object AlleyEditBackend {
                         makeResponse(commitStampRallyForm(context, this))
                     is BackendRequest.RemoteArtistData ->
                         makeResponse(loadRemoteArtistData(context, this))
+                    is BackendRequest.RemoteArtistDataEntry ->
+                        makeResponse(loadRemoteArtistDataEntry(context, this))
+                    is BackendRequest.RemoteArtistDataForDiff ->
+                        makeResponse(loadRemoteArtistDataForDiff(context, this))
+                    is BackendRequest.RemoteArtistDataHistory ->
+                        makeResponse(loadRemoteArtistDataHistory(context, this))
+                    is BackendRequest.RemoteArtistDataHistoryEntry ->
+                        makeResponse(loadRemoteArtistDataHistoryEntry(context, this))
                     is BackendRequest.SubmitRemoteArtistData ->
                         makeResponse(submitRemoteArtistData(context, this))
+                    is BackendRequest.SaveRemoteArtistData ->
+                        makeResponse(saveRemoteArtistData(context, this))
                     is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
@@ -811,12 +822,68 @@ object AlleyEditBackend {
     private suspend fun loadRemoteArtistData(
         context: EventContext,
         request: BackendRequest.RemoteArtistData,
-    ): List<ArtistRemoteEntry> {
+    ): List<ArtistRemoteSummary> {
         val database = Databases.editDatabase(context)
         return when (request.dataYear) {
             DataYear.ANIME_EXPO_2026 ->
                 database.artistRemoteDataAnimeExpo2026Queries
-                    .getMostRecentEntries()
+                    .getEntrySummaries()
+                    .awaitAsList()
+                    .map {
+                        ArtistRemoteSummary(
+                            confirmedId = it.confirmedId,
+                            booth = it.booth,
+                            name = it.name,
+                            timestamp = it.timestamp,
+                        )
+                    }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> emptyList()
+        }
+    }
+
+    private suspend fun loadRemoteArtistDataEntry(
+        context: EventContext,
+        request: BackendRequest.RemoteArtistDataEntry,
+    ): ArtistRemoteEntry? {
+        val database = Databases.editDatabase(context)
+        return when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 ->
+                database.artistRemoteDataAnimeExpo2026Queries
+                    .getEntry(booth = request.id.booth, name = request.id.name)
+                    .awaitAsOneOrNull()
+                    ?.let {
+                        ArtistRemoteEntry(
+                            confirmedId = it.confirmedId,
+                            booth = it.booth,
+                            name = it.name,
+                            summary = it.summary,
+                            links = it.links.orEmpty(),
+                            timestamp = it.timestamp,
+                        )
+                    }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> null
+        }
+    }
+
+    private suspend fun loadRemoteArtistDataForDiff(
+        context: EventContext,
+        request: BackendRequest.RemoteArtistDataForDiff,
+    ): Map<ArtistRemoteEntry.Id, ArtistRemoteEntry> {
+        val database = Databases.editDatabase(context)
+        return when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                val queries = database.artistRemoteDataAnimeExpo2026Queries
+                val history = queries.getMostRecentHistoryEntries()
                     .awaitAsList()
                     .map {
                         ArtistRemoteEntry(
@@ -826,7 +893,50 @@ object AlleyEditBackend {
                             summary = it.summary,
                             links = it.links.orEmpty(),
                             timestamp = it.timestamp,
-                            consumed = coerceBooleanForJs(it.consumed),
+                        )
+                    }
+                    .associateBy { it.id }
+
+                val entries = queries.getEntries()
+                    .awaitAsList()
+                    .map {
+                        ArtistRemoteEntry(
+                            confirmedId = it.confirmedId,
+                            booth = it.booth,
+                            name = it.name,
+                            summary = it.summary,
+                            links = it.links.orEmpty(),
+                            timestamp = it.timestamp,
+                        )
+                    }
+                    .associateBy { it.id }
+                history + entries
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> emptyMap()
+        }
+    }
+
+    private suspend fun loadRemoteArtistDataHistory(
+        context: EventContext,
+        request: BackendRequest.RemoteArtistDataHistory,
+    ): List<ArtistRemoteSummary> {
+        val database = Databases.editDatabase(context)
+        return when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 ->
+                database.artistRemoteDataAnimeExpo2026Queries
+                    .geHistoryEntrySummaries()
+                    .awaitAsList()
+                    .map {
+                        ArtistRemoteSummary(
+                            confirmedId = it.confirmedId,
+                            booth = it.booth,
+                            name = it.name,
+                            timestamp = it.timestamp,
                         )
                     }
             DataYear.ANIME_EXPO_2023,
@@ -835,6 +945,61 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2024,
             DataYear.ANIME_NYC_2025,
                 -> emptyList()
+        }
+    }
+
+    private suspend fun loadRemoteArtistDataHistoryEntry(
+        context: EventContext,
+        request: BackendRequest.RemoteArtistDataHistoryEntry,
+    ): ArtistRemoteEntry? {
+        val database = Databases.editDatabase(context)
+        return when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                val timestamp = request.timestamp
+                if (timestamp == null) {
+                    database.artistRemoteDataAnimeExpo2026Queries
+                        .getHistoryEntries(
+                            booth = request.id.booth,
+                            name = request.id.name,
+                        )
+                        .awaitAsList()
+                        .maxByOrNull { it.timestamp }
+                        ?.let {
+                            ArtistRemoteEntry(
+                                confirmedId = it.confirmedId,
+                                booth = it.booth,
+                                name = it.name,
+                                summary = it.summary,
+                                links = it.links.orEmpty(),
+                                timestamp = it.timestamp,
+                            )
+                        }
+                } else {
+                    database.artistRemoteDataAnimeExpo2026Queries
+                        .getHistoryEntry(
+                            booth = request.id.booth,
+                            name = request.id.name,
+                            timestamp = timestamp,
+                        )
+                        .awaitAsOneOrNull()
+                        ?.let {
+                            ArtistRemoteEntry(
+                                confirmedId = it.confirmedId,
+                                booth = it.booth,
+                                name = it.name,
+                                summary = it.summary,
+                                links = it.links.orEmpty(),
+                                timestamp = it.timestamp,
+                            )
+                        }
+                }
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> null
         }
     }
 
@@ -855,7 +1020,6 @@ object AlleyEditBackend {
                             summary = it.summary,
                             links = it.links,
                             timestamp = it.timestamp,
-                            consumed = false,
                         )
                     }
                     .forEach { queries.insertEntry(it) }
@@ -867,6 +1031,76 @@ object AlleyEditBackend {
             DataYear.ANIME_NYC_2025,
                 -> Unit
         }
+    }
+
+    private suspend fun saveRemoteArtistData(
+        context: EventContext,
+        request: BackendRequest.SaveRemoteArtistData,
+    ): BackendRequest.SaveRemoteArtistData.Response {
+        val database = Databases.editDatabase(context)
+        val saveRequest = BackendRequest.ArtistSave(
+            dataYear = request.dataYear,
+            initial = request.initial,
+            updated = request.updated.copy(verifiedArtist = true),
+        )
+        when (val saveResponse = saveArtist(context, saveRequest, null)) {
+            is BackendRequest.ArtistSave.Response.Failed ->
+                return BackendRequest.SaveRemoteArtistData.Response.Failed(saveResponse.errorMessage)
+            is BackendRequest.ArtistSave.Response.Outdated ->
+                return BackendRequest.SaveRemoteArtistData.Response.Outdated(saveResponse.current)
+            BackendRequest.ArtistSave.Response.Success -> Unit
+        }
+
+        // TODO: There's gotta be a better mechanism for this
+        if (request.isHistory) {
+            return BackendRequest.SaveRemoteArtistData.Response.Success
+        }
+
+        when (request.dataYear) {
+            DataYear.ANIME_EXPO_2026 -> {
+                database.artistRemoteDataAnimeExpo2026Queries.run {
+                    val currentEntry =
+                        getEntry(request.entry.booth, request.entry.name).awaitAsOneOrNull()
+                    if (currentEntry?.let {
+                            ArtistRemoteEntry(
+                                confirmedId = it.confirmedId,
+                                booth = it.booth,
+                                name = it.name,
+                                summary = it.summary,
+                                links = it.links.orEmpty(),
+                                timestamp = it.timestamp,
+                            )
+                        } != request.entry
+                    ) {
+                        return BackendRequest.SaveRemoteArtistData.Response.Failed(
+                            "Remote entry mismatch"
+                        )
+                    }
+                    insertHistory(
+                        ArtistRemoteDataAnimeExpo2026History(
+                            confirmedId = Uuid.parse(request.updated.id),
+                            booth = currentEntry.booth,
+                            name = currentEntry.name,
+                            summary = currentEntry.summary,
+                            links = currentEntry.links,
+                            timestamp = currentEntry.timestamp,
+                        )
+                    )
+                    consumeEntry(
+                        booth = request.entry.booth,
+                        name = request.entry.name,
+                        timestamp = request.entry.timestamp,
+                    )
+                }
+            }
+            DataYear.ANIME_EXPO_2023,
+            DataYear.ANIME_EXPO_2024,
+            DataYear.ANIME_EXPO_2025,
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> Unit
+        }
+        return BackendRequest.SaveRemoteArtistData.Response.Success
     }
 
     private fun literalJsonResponse(value: String) = Response(

@@ -49,6 +49,11 @@ internal object Databases {
             linksAdapter = ColumnAdapters.listStringAdapter,
             timestampAdapter = ColumnAdapters.instantAdapter,
         ),
+        artistRemoteDataAnimeExpo2026HistoryAdapter = ArtistRemoteDataAnimeExpo2026History.Adapter(
+            confirmedIdAdapter = ColumnAdapters.uuidAdapter,
+            linksAdapter = ColumnAdapters.listStringAdapter,
+            timestampAdapter = ColumnAdapters.instantAdapter,
+        ),
         seriesEntryAdapter = ColumnAdapters.seriesEntryAdapter,
         stampRallyEntryAnimeExpo2026Adapter = ColumnAdapters.stampRallyEntryAnimeExpo2026Adapter,
         stampRallyEntryAnimeExpo2026HistoryAdapter = StampRallyEntryAnimeExpo2026History.Adapter(

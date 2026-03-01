@@ -316,6 +316,39 @@ class AlleyEditDatabase(
     suspend fun loadRemoteArtistData(dataYear: DataYear) =
         remoteDatabase.loadRemoteArtistData(dataYear)
 
+    suspend fun loadRemoteArtistDataForDiff(dataYear: DataYear) =
+        remoteDatabase.loadRemoteArtistDataForDiff(dataYear)
+
+    suspend fun loadRemoteArtistData(dataYear: DataYear, id: ArtistRemoteEntry.Id) =
+        remoteDatabase.loadRemoteArtistData(dataYear = dataYear, id = id)
+
+    suspend fun loadRemoteArtistDataHistory(dataYear: DataYear) =
+        remoteDatabase.loadRemoteArtistDataHistory(dataYear)
+
+    suspend fun loadRemoteArtistDataHistory(
+        dataYear: DataYear,
+        id: ArtistRemoteEntry.Id,
+        timestamp: Instant?,
+    ) = remoteDatabase.loadRemoteArtistDataHistory(
+        dataYear = dataYear,
+        id = id,
+        timestamp = timestamp,
+    )
+
     suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>) =
         remoteDatabase.submitRemoteArtistData(dataYear, data)
+
+    suspend fun saveRemoteArtistData(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+        entry: ArtistRemoteEntry,
+        isHistory: Boolean,
+    ): BackendRequest.SaveRemoteArtistData.Response = remoteDatabase.saveRemoteArtistData(
+        dataYear = dataYear,
+        initial = initial,
+        updated = updated,
+        entry = entry,
+        isHistory = isHistory,
+    )
 }

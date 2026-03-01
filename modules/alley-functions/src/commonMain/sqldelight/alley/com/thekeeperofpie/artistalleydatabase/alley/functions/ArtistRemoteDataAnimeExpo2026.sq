@@ -1,14 +1,40 @@
+getEntrySummaries:
+SELECT confirmedId, booth, name, timestamp FROM artistRemoteDataAnimeExpo2026;
+
+geHistoryEntrySummaries:
+SELECT confirmedId, booth, name, timestamp FROM artistRemoteDataAnimeExpo2026History;
+
+getEntry:
+SELECT * FROM artistRemoteDataAnimeExpo2026
+WHERE booth = :booth AND name = :name;
+
+getHistoryEntry:
+SELECT * FROM artistRemoteDataAnimeExpo2026History
+WHERE booth = :booth AND name = :name AND timestamp = :timestamp;
+
+getHistoryEntries:
+SELECT * FROM artistRemoteDataAnimeExpo2026History
+WHERE booth = :booth AND name = :name;
+
 getEntries:
 SELECT * FROM artistRemoteDataAnimeExpo2026;
 
-getMostRecentEntries:
-SELECT artistRemoteDataAnimeExpo2026.*
+getMostRecentHistoryEntries:
+SELECT artistRemoteDataAnimeExpo2026History.*
 FROM (
-  SELECT artistRemoteDataAnimeExpo2026.*, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
-  FROM artistRemoteDataAnimeExpo2026
-) artistRemoteDataAnimeExpo2026
+  SELECT artistRemoteDataAnimeExpo2026History.*, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
+  FROM artistRemoteDataAnimeExpo2026History
+) artistRemoteDataAnimeExpo2026History
 WHERE rowNumber = 1;
 
 insertEntry:
 INSERT OR REPLACE INTO artistRemoteDataAnimeExpo2026
+VALUES ?;
+
+consumeEntry:
+DELETE FROM artistRemoteDataAnimeExpo2026
+WHERE booth = :booth AND name = :name AND timestamp = :timestamp;
+
+insertHistory:
+INSERT INTO artistRemoteDataAnimeExpo2026History
 VALUES ?;

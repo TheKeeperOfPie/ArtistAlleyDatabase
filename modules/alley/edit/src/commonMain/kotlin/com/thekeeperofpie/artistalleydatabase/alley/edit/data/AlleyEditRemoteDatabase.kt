@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntr
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -50,6 +51,7 @@ expect class AlleyEditRemoteDatabase {
         platformFile: PlatformFile,
         id: Uuid,
     ): EditImage
+
     suspend fun uploadImage(
         dataYear: DataYear,
         stampRallyId: String,
@@ -104,7 +106,11 @@ expect class AlleyEditRemoteDatabase {
 
     suspend fun loadStampRallies(dataYear: DataYear): List<StampRallySummary>
     suspend fun loadStampRally(dataYear: DataYear, stampRallyId: String): StampRallyDatabaseEntry?
-    suspend fun loadStampRallyHistory(dataYear: DataYear, stampRallyId: String): List<StampRallyHistoryEntry>
+    suspend fun loadStampRallyHistory(
+        dataYear: DataYear,
+        stampRallyId: String,
+    ): List<StampRallyHistoryEntry>
+
     suspend fun saveStampRally(
         dataYear: DataYear,
         initial: StampRallyDatabaseEntry?,
@@ -147,6 +153,26 @@ expect class AlleyEditRemoteDatabase {
         formEntryTimestamp: Instant,
     ): BackendRequest.StampRallyCommitForm.Response
 
-    suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteEntry>
+    suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteSummary>
+    suspend fun loadRemoteArtistDataForDiff(dataYear: DataYear): Map<ArtistRemoteEntry.Id, ArtistRemoteEntry>
+    suspend fun loadRemoteArtistData(
+        dataYear: DataYear,
+        id: ArtistRemoteEntry.Id,
+    ): ArtistRemoteEntry?
+
+    suspend fun loadRemoteArtistDataHistory(dataYear: DataYear): List<ArtistRemoteSummary>
+    suspend fun loadRemoteArtistDataHistory(
+        dataYear: DataYear,
+        id: ArtistRemoteEntry.Id,
+        timestamp: Instant?,
+    ): ArtistRemoteEntry?
+
     suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>)
+    suspend fun saveRemoteArtistData(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+        entry: ArtistRemoteEntry,
+        isHistory: Boolean,
+    ): BackendRequest.SaveRemoteArtistData.Response
 }

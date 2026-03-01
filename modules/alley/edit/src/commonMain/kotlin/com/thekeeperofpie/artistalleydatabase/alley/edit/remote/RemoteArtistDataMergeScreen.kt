@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
+package com.thekeeperofpie.artistalleydatabase.alley.edit.remote
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,24 +43,17 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_booth
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_commissions
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_portfolio_links
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_confirmed
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_series_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_social_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_summary
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_action_save
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
-import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_timestamp_prefix
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_booth_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_name
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_timestamp_prefix
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
@@ -70,7 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -83,7 +76,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffe
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -93,34 +85,33 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
-internal object ArtistFormMergeScreen {
-
-    val REQUEST_KEY = NavigationRequestKey<Unit>("ArtistFormMergeScreen")
+internal object RemoteArtistDataMergeScreen {
 
     @Composable
     operator fun invoke(
         dataYear: DataYear,
-        artistId: Uuid,
+        id: ArtistRemoteEntry.Id,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        viewModel: ArtistFormMergeViewModel = viewModel {
-            graph.artistFormMergeViewModelFactory.create(
-                dataYear,
-                artistId,
-                createSavedStateHandle()
+        viewModel: RemoteArtistDataMergeViewModel = viewModel {
+            graph.remoteArtistDataMergeViewModelFactory.create(
+                dataYear = dataYear,
+                id = id,
+                savedStateHandle = createSavedStateHandle(),
             )
         },
     ) {
-        val artistWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()
+        val entry by viewModel.currentEntry.collectAsStateWithLifecycle()
+        val entryInfo by viewModel.entryInfo.collectAsStateWithLifecycle()
         val seriesById by viewModel.tagAutocomplete.seriesById.collectAsStateWithLifecycle()
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = viewModel.saveTaskState
-        ArtistFormMergeScreen(
+        RemoteArtistDataMergeScreen(
             dataYear = dataYear,
-            artistId = artistId,
+            entry = entry,
+            entryInfo = entryInfo?.second,
             snackbarHostState = snackbarHostState,
-            entry = { artistWithFormEntry?.run { artist to formDiff } },
             saving = { saveTaskState.showBlockingLoadingIndicator },
             seriesById = { seriesById },
             merchById = { merchById },
@@ -137,17 +128,16 @@ internal object ArtistFormMergeScreen {
                 .filterNotNull()
                 .collectLatest { (_, result) ->
                     when (result) {
-                        is BackendRequest.ArtistCommitForm.Response.Failed -> {
+                        is BackendRequest.SaveRemoteArtistData.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
                             saveTaskState.clearResult()
                         }
-                        is BackendRequest.ArtistCommitForm.Response.Outdated -> {
+                        is BackendRequest.SaveRemoteArtistData.Response.Outdated -> {
                             snackbarHostState.showSnackbar(message = getString(Res.string.alley_edit_artist_form_merge_outdated))
                             saveTaskState.clearResult()
                         }
-                        is BackendRequest.ArtistCommitForm.Response.Success -> {
+                        is BackendRequest.SaveRemoteArtistData.Response.Success -> {
                             saveTaskState.clearResult()
-                            navigationResults[REQUEST_KEY] = Unit
                             onClickBack(true)
                         }
                     }
@@ -158,9 +148,9 @@ internal object ArtistFormMergeScreen {
     @Composable
     operator fun invoke(
         dataYear: DataYear,
-        artistId: Uuid,
+        entry: ArtistRemoteEntry?,
+        entryInfo: EntryInfo?,
         snackbarHostState: SnackbarHostState,
-        entry: () -> Pair<ArtistDatabaseEntry.Impl, ArtistEntryDiff>?,
         saving: () -> Boolean,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
@@ -168,21 +158,26 @@ internal object ArtistFormMergeScreen {
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
     ) {
-        val entry = entry()
-        val initialArtist = entry()?.first
-        val formDiff = entry()?.second
-        val fieldState = rememberFieldState(formDiff)
+        val initialArtist = entryInfo?.artist
+        val entryDiff = entryInfo?.diff
+        val fieldState = rememberFieldState(initialArtist, entryDiff)
         val seriesByIdMap = seriesById()
         val merchByIdMap = merchById()
-        val artistFormState by remember(entry, fieldState, seriesByIdMap, merchByIdMap) {
+        val artistFormState by remember(
+            entryInfo,
+            fieldState,
+            seriesByIdMap,
+            merchByIdMap
+        ) {
             derivedStateOf {
-                initialArtist ?: return@derivedStateOf null
-                formDiff ?: return@derivedStateOf null
+                entryDiff ?: return@derivedStateOf null
                 fieldState.applyChanges(
-                    base = initialArtist,
+                    base = initialArtist ?: ArtistFormState(
+                        entryInfo.artistId ?: Uuid.random()
+                    ).captureDatabaseEntry(dataYear, false).second,
                     seriesById = seriesByIdMap,
                     merchById = merchByIdMap,
-                    diff = formDiff,
+                    diff = entryDiff,
                 )
             }
         }
@@ -231,7 +226,7 @@ internal object ArtistFormMergeScreen {
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
                 val modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)
-                if (initialArtist == null || artistFormState == null) {
+                if (artistFormState == null) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = modifier.padding(32.dp)
@@ -243,7 +238,7 @@ internal object ArtistFormMergeScreen {
                         movableContentOf {
                             FieldsList(
                                 fieldState = fieldState,
-                                diff = formDiff,
+                                diff = entryDiff,
                             )
                         }
                     }
@@ -253,7 +248,7 @@ internal object ArtistFormMergeScreen {
                             ArtistPreview(
                                 initialArtist = { initialArtist },
                                 artistFormState = artistFormState,
-                                formTimestamp = formDiff?.timestamp,
+                                timestamp = entry?.timestamp,
                                 seriesById = seriesById,
                                 seriesImage = seriesImage,
                                 merchById = merchById,
@@ -271,7 +266,7 @@ internal object ArtistFormMergeScreen {
     private fun ArtistPreview(
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         artistFormState: ArtistFormState?,
-        formTimestamp: Instant?,
+        timestamp: Instant?,
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
@@ -279,7 +274,7 @@ internal object ArtistFormMergeScreen {
     ) {
         if (artistFormState != null) {
             Column {
-                if (formTimestamp != null) {
+                if (timestamp != null) {
                     OutlinedCard(
                         modifier = Modifier.fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -287,13 +282,13 @@ internal object ArtistFormMergeScreen {
                         Text(
                             text = buildAnnotatedString {
                                 withStyle(SpanStyle(color = LocalContentColor.current.copy(alpha = 0.6f))) {
-                                    append(stringResource(Res.string.alley_edit_artist_form_merge_timestamp_prefix))
+                                    append(stringResource(Res.string.alley_edit_remote_artist_data_merge_timestamp_prefix))
                                 }
                                 append(' ')
                                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                                     append(
                                         LocalDateTimeFormatter.current
-                                            .formatDateTime(formTimestamp)
+                                            .formatDateTime(timestamp)
                                     )
                                 }
                             },
@@ -322,25 +317,10 @@ internal object ArtistFormMergeScreen {
     @Composable
     private fun FieldsList(
         fieldState: FieldState,
-        diff: ArtistEntryDiff?,
+        diff: RemoteArtistDataDiff?,
         modifier: Modifier = Modifier,
     ) {
         Column(modifier = modifier.fillMaxWidth()) {
-            val formNotes = diff?.formNotes
-            if (!formNotes.isNullOrBlank()) {
-                OutlinedCard(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(Res.string.alley_edit_artist_form_merge_notes),
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                    )
-                    Text(
-                        text = formNotes,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
-            }
-
             val groupState by remember(fieldState) {
                 derivedStateOf {
                     when {
@@ -367,7 +347,7 @@ internal object ArtistFormMergeScreen {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
 
-            ArtistField.entries.forEach { field ->
+            ArtistDataField.entries.forEach { field ->
                 if (!fieldState.keys.contains(field)) return@forEach
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -381,28 +361,17 @@ internal object ArtistFormMergeScreen {
                     Text(stringResource(field.label))
 
                     val fieldText = when (field) {
-                        ArtistField.BOOTH -> diff?.booth
-                        ArtistField.NAME -> diff?.name
-                        ArtistField.SUMMARY -> diff?.summary
-                        ArtistField.SOCIAL_LINKS_ADDED -> diff?.socialLinks?.added?.joinToString()
-                        ArtistField.SOCIAL_LINKS_REMOVED -> diff?.socialLinks?.deleted?.joinToString()
-                        ArtistField.STORE_LINKS_ADDED -> diff?.storeLinks?.added?.joinToString()
-                        ArtistField.STORE_LINKS_REMOVED -> diff?.storeLinks?.deleted?.joinToString()
-                        ArtistField.PORTFOLIO_LINKS_ADDED -> diff?.portfolioLinks?.added?.joinToString()
-                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff?.portfolioLinks?.deleted?.joinToString()
-                        ArtistField.CATALOG_LINKS_ADDED -> diff?.catalogLinks?.added?.joinToString()
-                        ArtistField.CATALOG_LINKS_REMOVED -> diff?.catalogLinks?.deleted?.joinToString()
-                        ArtistField.NOTES -> diff?.notes
-                        ArtistField.COMMISSIONS_ADDED -> diff?.commissions?.added?.joinToString()
-                        ArtistField.COMMISSIONS_REMOVED -> diff?.commissions?.deleted?.joinToString()
-                        ArtistField.SERIES_INFERRED_ADDED -> diff?.seriesInferred?.added?.joinToString()
-                        ArtistField.SERIES_INFERRED_REMOVED -> diff?.seriesInferred?.deleted?.joinToString()
-                        ArtistField.SERIES_CONFIRMED_ADDED -> diff?.seriesConfirmed?.added?.joinToString()
-                        ArtistField.SERIES_CONFIRMED_REMOVED -> diff?.seriesConfirmed?.deleted?.joinToString()
-                        ArtistField.MERCH_INFERRED_ADDED -> diff?.merchInferred?.added?.joinToString()
-                        ArtistField.MERCH_INFERRED_REMOVED -> diff?.merchInferred?.deleted?.joinToString()
-                        ArtistField.MERCH_CONFIRMED_ADDED -> diff?.merchConfirmed?.added?.joinToString()
-                        ArtistField.MERCH_CONFIRMED_REMOVED -> diff?.merchConfirmed?.deleted?.joinToString()
+                        ArtistDataField.BOOTH -> diff?.booth
+                        ArtistDataField.NAME -> diff?.name
+                        ArtistDataField.SUMMARY -> diff?.summary
+                        ArtistDataField.SOCIAL_LINKS_ADDED -> diff?.socialLinks?.added?.joinToString()
+                        ArtistDataField.SOCIAL_LINKS_REMOVED -> diff?.socialLinks?.deleted?.joinToString()
+                        ArtistDataField.STORE_LINKS_ADDED -> diff?.storeLinks?.added?.joinToString()
+                        ArtistDataField.STORE_LINKS_REMOVED -> diff?.storeLinks?.deleted?.joinToString()
+                        ArtistDataField.PORTFOLIO_LINKS_ADDED -> diff?.portfolioLinks?.added?.joinToString()
+                        ArtistDataField.PORTFOLIO_LINKS_REMOVED -> diff?.portfolioLinks?.deleted?.joinToString()
+                        ArtistDataField.COMMISSIONS_ADDED -> diff?.commissions?.added?.joinToString()
+                        ArtistDataField.COMMISSIONS_REMOVED -> diff?.commissions?.deleted?.joinToString()
                     }.orEmpty()
                     Text(
                         text = fieldText,
@@ -418,22 +387,22 @@ internal object ArtistFormMergeScreen {
     }
 
     @Stable
-    private class FieldState(private val map: SnapshotStateMap<ArtistField, Boolean>) {
+    private class FieldState(private val map: SnapshotStateMap<ArtistDataField, Boolean>) {
         val keys get() = map.keys
         val values get() = map.values
-        operator fun get(field: ArtistField) = map[field] ?: false
-        operator fun set(field: ArtistField, checked: Boolean) = map.set(field, checked)
+        operator fun get(field: ArtistDataField) = map[field] ?: false
+        operator fun set(field: ArtistDataField, checked: Boolean) = map.set(field, checked)
 
         fun applyChanges(
             base: ArtistDatabaseEntry.Impl,
             seriesById: Map<String, SeriesInfo>,
             merchById: Map<String, MerchInfo>,
-            diff: ArtistEntryDiff,
+            diff: RemoteArtistDataDiff,
         ): ArtistFormState {
             fun <T> applyDiff(
                 base: T,
                 diff: T?,
-                field: ArtistField,
+                field: ArtistDataField,
             ) = if (this[field]) {
                 diff ?: base
             } else {
@@ -443,8 +412,8 @@ internal object ArtistFormMergeScreen {
             fun applyDiff(
                 base: List<String>,
                 diff: HistoryListDiff?,
-                added: ArtistField,
-                deleted: ArtistField,
+                added: ArtistDataField,
+                deleted: ArtistDataField,
             ): List<String> {
                 val base = base.toMutableSet()
                 if (this[deleted]) base.removeAll(diff?.deleted.orEmpty().toSet())
@@ -453,63 +422,33 @@ internal object ArtistFormMergeScreen {
             }
 
             val artist = base.copy(
-                booth = applyDiff(base.booth, diff.booth, ArtistField.BOOTH),
-                name = applyDiff(base.name, diff.name, ArtistField.NAME),
-                summary = applyDiff(base.summary, diff.summary, ArtistField.SUMMARY),
+                id = base.id,
+                booth = applyDiff(base.booth, diff.booth, ArtistDataField.BOOTH),
+                name = applyDiff(base.name, diff.name, ArtistDataField.NAME),
+                summary = applyDiff(base.summary, diff.summary, ArtistDataField.SUMMARY),
                 socialLinks = applyDiff(
                     base.socialLinks,
                     diff.socialLinks,
-                    ArtistField.SOCIAL_LINKS_ADDED,
-                    ArtistField.SOCIAL_LINKS_REMOVED,
+                    ArtistDataField.SOCIAL_LINKS_ADDED,
+                    ArtistDataField.SOCIAL_LINKS_REMOVED,
                 ),
                 storeLinks = applyDiff(
                     base.storeLinks,
                     diff.storeLinks,
-                    ArtistField.STORE_LINKS_ADDED,
-                    ArtistField.STORE_LINKS_REMOVED,
+                    ArtistDataField.STORE_LINKS_ADDED,
+                    ArtistDataField.STORE_LINKS_REMOVED,
                 ),
                 portfolioLinks = applyDiff(
                     base.portfolioLinks,
                     diff.portfolioLinks,
-                    ArtistField.PORTFOLIO_LINKS_ADDED,
-                    ArtistField.PORTFOLIO_LINKS_REMOVED,
+                    ArtistDataField.PORTFOLIO_LINKS_ADDED,
+                    ArtistDataField.PORTFOLIO_LINKS_REMOVED,
                 ),
-                catalogLinks = applyDiff(
-                    base.catalogLinks,
-                    diff.catalogLinks,
-                    ArtistField.CATALOG_LINKS_ADDED,
-                    ArtistField.CATALOG_LINKS_REMOVED,
-                ),
-                notes = diff.notes ?: base.notes,
                 commissions = applyDiff(
                     base.commissions,
                     diff.commissions,
-                    ArtistField.COMMISSIONS_ADDED,
-                    ArtistField.COMMISSIONS_REMOVED,
-                ),
-                seriesInferred = applyDiff(
-                    base.seriesInferred,
-                    diff.seriesInferred,
-                    ArtistField.SERIES_INFERRED_ADDED,
-                    ArtistField.SERIES_INFERRED_REMOVED,
-                ),
-                seriesConfirmed = applyDiff(
-                    base.seriesConfirmed,
-                    diff.seriesConfirmed,
-                    ArtistField.SERIES_CONFIRMED_ADDED,
-                    ArtistField.SERIES_CONFIRMED_REMOVED,
-                ),
-                merchInferred = applyDiff(
-                    base.merchInferred,
-                    diff.merchInferred,
-                    ArtistField.MERCH_INFERRED_ADDED,
-                    ArtistField.MERCH_INFERRED_REMOVED,
-                ),
-                merchConfirmed = applyDiff(
-                    base.merchConfirmed,
-                    diff.merchConfirmed,
-                    ArtistField.MERCH_CONFIRMED_ADDED,
-                    ArtistField.MERCH_CONFIRMED_REMOVED,
+                    ArtistDataField.COMMISSIONS_ADDED,
+                    ArtistDataField.COMMISSIONS_REMOVED,
                 ),
             )
             return ArtistFormState().applyDatabaseEntry(
@@ -522,44 +461,33 @@ internal object ArtistFormMergeScreen {
     }
 
     @Composable
-    private fun rememberFieldState(diff: ArtistEntryDiff?): FieldState {
-        val map = rememberSaveable(diff) {
-            mutableStateMapOf<ArtistField, Boolean>().apply {
+    private fun rememberFieldState(initialArtist: ArtistDatabaseEntry.Impl?, diff: RemoteArtistDataDiff?): FieldState {
+        val map = rememberSaveable(initialArtist, diff) {
+            mutableStateMapOf<ArtistDataField, Boolean>().apply {
                 if (diff == null) return@apply
-                ArtistField.entries.forEach {
+                ArtistDataField.entries.forEach {
                     val include = when (it) {
-                        ArtistField.BOOTH -> diff.booth != null
-                        ArtistField.NAME -> diff.name != null
-                        ArtistField.SUMMARY -> diff.summary != null
-                        ArtistField.SOCIAL_LINKS_ADDED -> diff.socialLinks?.added != null
-                        ArtistField.SOCIAL_LINKS_REMOVED -> diff.socialLinks?.deleted != null
-                        ArtistField.STORE_LINKS_ADDED -> diff.storeLinks?.added != null
-                        ArtistField.STORE_LINKS_REMOVED -> diff.storeLinks?.deleted != null
-                        ArtistField.PORTFOLIO_LINKS_ADDED -> diff.portfolioLinks?.added != null
-                        ArtistField.PORTFOLIO_LINKS_REMOVED -> diff.portfolioLinks?.deleted != null
-                        ArtistField.CATALOG_LINKS_ADDED -> diff.catalogLinks?.added != null
-                        ArtistField.CATALOG_LINKS_REMOVED -> diff.catalogLinks?.deleted != null
-                        ArtistField.NOTES -> diff.notes != null
-                        ArtistField.COMMISSIONS_ADDED -> diff.commissions?.added != null
-                        ArtistField.COMMISSIONS_REMOVED -> diff.commissions?.deleted != null
-                        ArtistField.SERIES_INFERRED_ADDED -> diff.seriesInferred?.added != null
-                        ArtistField.SERIES_INFERRED_REMOVED -> diff.seriesInferred?.deleted != null
-                        ArtistField.SERIES_CONFIRMED_ADDED -> diff.seriesConfirmed?.added != null
-                        ArtistField.SERIES_CONFIRMED_REMOVED -> diff.seriesConfirmed?.deleted != null
-                        ArtistField.MERCH_INFERRED_ADDED -> diff.merchInferred?.added != null
-                        ArtistField.MERCH_INFERRED_REMOVED -> diff.merchInferred?.deleted != null
-                        ArtistField.MERCH_CONFIRMED_ADDED -> diff.merchConfirmed?.added != null
-                        ArtistField.MERCH_CONFIRMED_REMOVED -> diff.merchConfirmed?.deleted != null
+                        ArtistDataField.BOOTH -> diff.booth != null
+                        ArtistDataField.NAME -> diff.name != null
+                        ArtistDataField.SUMMARY -> diff.summary != null
+                        ArtistDataField.SOCIAL_LINKS_ADDED -> diff.socialLinks?.added != null
+                        ArtistDataField.SOCIAL_LINKS_REMOVED -> diff.socialLinks?.deleted != null
+                        ArtistDataField.STORE_LINKS_ADDED -> diff.storeLinks?.added != null
+                        ArtistDataField.STORE_LINKS_REMOVED -> diff.storeLinks?.deleted != null
+                        ArtistDataField.PORTFOLIO_LINKS_ADDED -> diff.portfolioLinks?.added != null
+                        ArtistDataField.PORTFOLIO_LINKS_REMOVED -> diff.portfolioLinks?.deleted != null
+                        ArtistDataField.COMMISSIONS_ADDED -> diff.commissions?.added != null
+                        ArtistDataField.COMMISSIONS_REMOVED -> diff.commissions?.deleted != null
                     }
                     if (!include) return@forEach
-                    this[it] = it.isRemoved
+                    this[it] = initialArtist == null || it.isRemoved
                 }
             }
         }
         return remember(map) { FieldState(map) }
     }
 
-    private enum class ArtistField(val label: StringResource) {
+    private enum class ArtistDataField(val label: StringResource) {
         BOOTH(Res.string.alley_edit_artist_field_label_booth),
         NAME(Res.string.alley_edit_artist_field_label_name),
         SUMMARY(Res.string.alley_edit_artist_field_label_summary),
@@ -569,19 +497,8 @@ internal object ArtistFormMergeScreen {
         STORE_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_store_links),
         PORTFOLIO_LINKS_ADDED(Res.string.alley_edit_artist_field_label_portfolio_links),
         PORTFOLIO_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_portfolio_links),
-        CATALOG_LINKS_ADDED(Res.string.alley_edit_artist_field_label_catalog_links),
-        CATALOG_LINKS_REMOVED(Res.string.alley_edit_artist_field_label_catalog_links),
-        NOTES(Res.string.alley_edit_artist_field_label_notes),
         COMMISSIONS_ADDED(Res.string.alley_edit_artist_field_label_commissions),
         COMMISSIONS_REMOVED(Res.string.alley_edit_artist_field_label_commissions),
-        SERIES_INFERRED_ADDED(Res.string.alley_edit_artist_field_label_series_inferred),
-        SERIES_INFERRED_REMOVED(Res.string.alley_edit_artist_field_label_series_inferred),
-        SERIES_CONFIRMED_ADDED(Res.string.alley_edit_artist_field_label_series_confirmed),
-        SERIES_CONFIRMED_REMOVED(Res.string.alley_edit_artist_field_label_series_confirmed),
-        MERCH_INFERRED_ADDED(Res.string.alley_edit_artist_field_label_merch_inferred),
-        MERCH_INFERRED_REMOVED(Res.string.alley_edit_artist_field_label_merch_inferred),
-        MERCH_CONFIRMED_ADDED(Res.string.alley_edit_artist_field_label_merch_confirmed),
-        MERCH_CONFIRMED_REMOVED(Res.string.alley_edit_artist_field_label_merch_confirmed),
         ;
 
         val isRemoved: Boolean
@@ -592,24 +509,20 @@ internal object ArtistFormMergeScreen {
                 SOCIAL_LINKS_ADDED,
                 STORE_LINKS_ADDED,
                 PORTFOLIO_LINKS_ADDED,
-                CATALOG_LINKS_ADDED,
-                NOTES,
                 COMMISSIONS_ADDED,
-                SERIES_INFERRED_ADDED,
-                SERIES_CONFIRMED_ADDED,
-                MERCH_INFERRED_ADDED,
-                MERCH_CONFIRMED_ADDED,
                     -> false
                 SOCIAL_LINKS_REMOVED,
                 STORE_LINKS_REMOVED,
                 PORTFOLIO_LINKS_REMOVED,
-                CATALOG_LINKS_REMOVED,
                 COMMISSIONS_REMOVED,
-                SERIES_INFERRED_REMOVED,
-                SERIES_CONFIRMED_REMOVED,
-                MERCH_INFERRED_REMOVED,
-                MERCH_CONFIRMED_REMOVED,
                     -> true
             }
     }
+
+    data class EntryInfo(
+        val artistId: Uuid?,
+        val artist: ArtistDatabaseEntry.Impl?,
+        val previousEntry: ArtistRemoteEntry?,
+        val diff: RemoteArtistDataDiff,
+    )
 }

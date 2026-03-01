@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import co.touchlab.kermit.Logger
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
@@ -13,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntr
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -66,7 +66,8 @@ actual class AlleyEditRemoteDatabase(
 
     private var fakeArtistPrivateKey: String? = null
 
-    private var remoteData = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
+    private var remoteArtistData = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
+    private var remoteArtistDataHistory = mutableMapOf<DataYear, List<ArtistRemoteEntry>>()
 
     private val simulatedLatency = 1.seconds
 
@@ -509,12 +510,94 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.StampRallyCommitForm.Response.Success
     }
 
-    actual suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteEntry> =
-        remoteData[dataYear].orEmpty()
+    actual suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteSummary> =
+        remoteArtistData[dataYear]
+            ?.map {
+                ArtistRemoteSummary(
+                    confirmedId = it.confirmedId,
+                    booth = it.booth,
+                    name = it.name,
+                    timestamp = it.timestamp,
+                )
+            }
+            .orEmpty()
+
+    actual suspend fun loadRemoteArtistDataForDiff(
+        dataYear: DataYear,
+    ): Map<ArtistRemoteEntry.Id, ArtistRemoteEntry> =
+        remoteArtistDataHistory[dataYear]
+            ?.groupBy { it.id }
+            ?.mapValues { it.value.maxBy { it.timestamp } }
+            .orEmpty() +
+                remoteArtistData[dataYear]?.associateBy { it.id }.orEmpty()
+
+    actual suspend fun loadRemoteArtistData(
+        dataYear: DataYear,
+        id: ArtistRemoteEntry.Id,
+    ): ArtistRemoteEntry? = remoteArtistData[dataYear]?.find { it.id == id }
+
+    actual suspend fun loadRemoteArtistDataHistory(dataYear: DataYear): List<ArtistRemoteSummary> =
+        remoteArtistDataHistory[dataYear]
+            ?.groupBy { it.booth to it.name }
+            ?.map {
+                val entry = it.value.maxBy { it.timestamp }
+                ArtistRemoteSummary(
+                    confirmedId = entry.confirmedId,
+                    booth = it.key.first,
+                    name = it.key.second,
+                    timestamp = entry.timestamp,
+                )
+            }
+            .orEmpty()
+
+    actual suspend fun loadRemoteArtistDataHistory(
+        dataYear: DataYear,
+        id: ArtistRemoteEntry.Id,
+        timestamp: Instant?,
+    ): ArtistRemoteEntry? =
+        if (timestamp == null) {
+            remoteArtistDataHistory[dataYear]
+                ?.groupBy { it.booth to it.name }
+                ?.asSequence()
+                ?.map { it.value.maxBy { it.timestamp } }
+                ?.find { it.id == id }
+        } else {
+            remoteArtistDataHistory[dataYear]?.find { it.id == id && it.timestamp == timestamp }
+        }
 
     actual suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>) {
-        Logger.d("AlleyEditRemoteDatabase") { "submitRemoteArtistData $data" }
-        remoteData[dataYear] = data
+        remoteArtistData[dataYear] = data
+    }
+
+    actual suspend fun saveRemoteArtistData(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+        entry: ArtistRemoteEntry,
+        isHistory: Boolean,
+    ): BackendRequest.SaveRemoteArtistData.Response {
+        when (val artistSaveResponse = saveArtist(dataYear, initial, updated)) {
+            is BackendRequest.ArtistSave.Response.Failed ->
+                return BackendRequest.SaveRemoteArtistData.Response.Failed(
+                    artistSaveResponse.errorMessage
+                )
+            is BackendRequest.ArtistSave.Response.Outdated ->
+                return BackendRequest.SaveRemoteArtistData.Response.Outdated(
+                    artistSaveResponse.current
+                )
+            BackendRequest.ArtistSave.Response.Success -> Unit
+        }
+        remoteArtistData[dataYear]
+            ?.minus(entry)
+            ?.let { remoteArtistData[dataYear] = it }
+
+        if (!isHistory) {
+            remoteArtistDataHistory[dataYear] =
+                remoteArtistDataHistory[dataYear].orEmpty() +
+                        entry.copy(confirmedId = Uuid.parse(updated.id))
+        }
+
+        return BackendRequest.SaveRemoteArtistData.Response.Success
     }
 
     private suspend fun simulateLatency() = delay(simulatedLatency)

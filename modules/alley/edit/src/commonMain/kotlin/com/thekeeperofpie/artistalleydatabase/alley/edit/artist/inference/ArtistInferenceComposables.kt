@@ -11,6 +11,9 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
@@ -33,10 +36,14 @@ private fun ArtistInferenceMergeList(
 ) {
     Column(modifier = modifier) {
         if (fieldState != null) {
-            val groupState = when {
-                fieldState.map.values.all { it } -> ToggleableState.On
-                fieldState.map.values.any { it } -> ToggleableState.Indeterminate
-                else -> ToggleableState.Off
+            val groupState by remember(fieldState) {
+                derivedStateOf {
+                    when {
+                        fieldState.map.values.all { it } -> ToggleableState.On
+                        fieldState.map.values.any { it } -> ToggleableState.Indeterminate
+                        else -> ToggleableState.Off
+                    }
+                }
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,

@@ -27,7 +27,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,7 +43,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_rem
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_queue_tab_queue
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_queue_title
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
-import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.utils_compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import org.jetbrains.compose.resources.StringResource
@@ -56,26 +55,31 @@ internal object RemoteArtistDataQueueScreen {
     @Composable
     operator fun invoke(
         graph: ArtistAlleyEditGraph,
-        onSelectEntry: (ArtistRemoteEntry) -> Unit,
+        onSelectEntry: (ArtistRemoteSummary) -> Unit,
+        onSelectHistoryEntry: (ArtistRemoteSummary) -> Unit,
         viewModel: RemoteArtistDataQueueViewModel = viewModel {
             graph.remoteArtistDataQueueViewModel
         },
     ) {
-        val data by viewModel.data.collectAsStateWithLifecycle()
+        val queue by viewModel.queue.collectAsStateWithLifecycle()
+        val history by viewModel.history.collectAsStateWithLifecycle()
         RemoteArtistDataQueueScreen(
-            data = data,
+            queue = queue,
+            history = history,
             onRefresh = viewModel::refresh,
             onSelectEntry = onSelectEntry,
+            onSelectHistoryEntry = onSelectHistoryEntry,
         )
     }
 
     @Composable
     operator fun invoke(
-        data: List<ArtistRemoteEntry>,
+        queue: List<ArtistRemoteSummary>,
+        history: List<ArtistRemoteSummary>,
         onRefresh: () -> Unit,
-        onSelectEntry: (ArtistRemoteEntry) -> Unit,
+        onSelectEntry: (ArtistRemoteSummary) -> Unit,
+        onSelectHistoryEntry: (ArtistRemoteSummary) -> Unit,
     ) {
-        val (queue, history) = remember(data) { data.partition { !it.consumed } }
         Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxWidth()) {
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             var tab by rememberSaveable { mutableStateOf(Tab.QUEUE) }
@@ -127,8 +131,14 @@ internal object RemoteArtistDataQueueScreen {
                         Column {
                             ArtistDataRow(
                                 booth = it.booth,
-                                name = it.name.orEmpty(),
-                                modifier = Modifier.clickable { onSelectEntry(it) }
+                                name = it.name,
+                                modifier = Modifier.clickable {
+                                    if (tab == Tab.QUEUE) {
+                                        onSelectEntry(it)
+                                    } else {
+                                        onSelectHistoryEntry(it)
+                                    }
+                                }
                             )
                             HorizontalDivider()
                         }

@@ -24,14 +24,11 @@ class RemoteDataDiffer(
             // TODO: Better surface errors
             emptyList()
         } else {
-            val oldEntries = editDatabase.loadRemoteArtistData(dataYear)
+            val oldEntries = editDatabase.loadRemoteArtistDataForDiff(dataYear)
             val newEntries = parseEntries(file, timestamp)
             newEntries.mapNotNull { newEntry ->
                 // Infer previous via an exact match of name and booth
-                val previous = oldEntries.find { oldEntry ->
-                    newEntry.name == oldEntry.name &&
-                            newEntry.booth == oldEntry.booth
-                } ?: return@mapNotNull newEntry
+                val previous = oldEntries[newEntry.id] ?: return@mapNotNull newEntry
 
                 // Overwrite timestamp so that equality check passes
                 val compareEntry = previous.copy(timestamp = timestamp)
@@ -84,7 +81,6 @@ class RemoteDataDiffer(
                     summary = summary,
                     links = links,
                     timestamp = timestamp,
-                    consumed = false,
                 )
             }
             .distinctBy { it.booth to it.name }

@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntr
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -367,9 +368,49 @@ sealed interface BackendRequest {
 
     @Serializable
     data class RemoteArtistData(val dataYear: DataYear) : BackendRequest,
-        WithResponse<List<ArtistRemoteEntry>>
+        WithResponse<List<ArtistRemoteSummary>>
+
+    @Serializable
+    data class RemoteArtistDataEntry(val dataYear: DataYear, val id: ArtistRemoteEntry.Id) :
+        BackendRequest, WithResponse<ArtistRemoteEntry>
+
+    @Serializable
+    data class RemoteArtistDataHistory(val dataYear: DataYear) : BackendRequest,
+        WithResponse<List<ArtistRemoteSummary>>
+
+    @Serializable
+    data class RemoteArtistDataHistoryEntry(
+        val dataYear: DataYear,
+        val id: ArtistRemoteEntry.Id,
+        val timestamp: Instant?,
+    ) : BackendRequest, WithResponse<ArtistRemoteEntry>
+
+    @Serializable
+    data class RemoteArtistDataForDiff(val dataYear: DataYear) : BackendRequest,
+        WithResponse<Map<ArtistRemoteEntry.Id, ArtistRemoteEntry>>
 
     @Serializable
     data class SubmitRemoteArtistData(val dataYear: DataYear, val data: List<ArtistRemoteEntry>) :
         BackendRequest, WithResponse<Unit>
+
+    @Serializable
+    data class SaveRemoteArtistData(
+        val dataYear: DataYear,
+        val initial: ArtistDatabaseEntry.Impl?,
+        val updated: ArtistDatabaseEntry.Impl,
+        val entry: ArtistRemoteEntry,
+        val isHistory: Boolean,
+    ) : BackendRequest, WithResponse<SaveRemoteArtistData.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data object Success : Response
+
+            @Serializable
+            data class Outdated(val current: ArtistDatabaseEntry.Impl) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
 }

@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntr
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -527,7 +528,7 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteEntry> =
+    actual suspend fun loadRemoteArtistData(dataYear: DataYear): List<ArtistRemoteSummary> =
         withContext(dispatchers.io) {
             try {
                 sendRequest(BackendRequest.RemoteArtistData(dataYear = dataYear))
@@ -535,6 +536,61 @@ actual class AlleyEditRemoteDatabase(
                 t.printStackTrace()
                 null
             } ?: emptyList()
+        }
+
+    actual suspend fun loadRemoteArtistData(
+        dataYear: DataYear,
+        id: ArtistRemoteEntry.Id,
+    ): ArtistRemoteEntry? =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.RemoteArtistDataEntry(dataYear = dataYear, id = id))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
+        }
+
+    actual suspend fun loadRemoteArtistDataForDiff(
+        dataYear: DataYear,
+    ): Map<ArtistRemoteEntry.Id, ArtistRemoteEntry> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.RemoteArtistDataForDiff(dataYear = dataYear))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            } ?: emptyMap()
+        }
+
+    actual suspend fun loadRemoteArtistDataHistory(dataYear: DataYear): List<ArtistRemoteSummary> =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(BackendRequest.RemoteArtistDataHistory(dataYear = dataYear))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            } ?: emptyList()
+        }
+
+    actual suspend fun loadRemoteArtistDataHistory(
+        dataYear: DataYear,
+        id: ArtistRemoteEntry.Id,
+        timestamp: Instant?,
+    ): ArtistRemoteEntry? =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.RemoteArtistDataHistoryEntry(
+                        dataYear = dataYear,
+                        id = id,
+                        timestamp = timestamp,
+                    )
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                null
+            }
         }
 
     actual suspend fun submitRemoteArtistData(dataYear: DataYear, data: List<ArtistRemoteEntry>) {
@@ -546,6 +602,30 @@ actual class AlleyEditRemoteDatabase(
             }
         }
     }
+
+    actual suspend fun saveRemoteArtistData(
+        dataYear: DataYear,
+        initial: ArtistDatabaseEntry.Impl?,
+        updated: ArtistDatabaseEntry.Impl,
+        entry: ArtistRemoteEntry,
+        isHistory: Boolean,
+    ): BackendRequest.SaveRemoteArtistData.Response =
+        withContext(dispatchers.io) {
+            try {
+                sendRequest(
+                    BackendRequest.SaveRemoteArtistData(
+                        dataYear = dataYear,
+                        initial = initial,
+                        updated = updated,
+                        entry = entry,
+                        isHistory = isHistory,
+                    )
+                )!!
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                BackendRequest.SaveRemoteArtistData.Response.Failed(t.message.orEmpty())
+            }
+        }
 
     private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
         uri = Uri.parse(

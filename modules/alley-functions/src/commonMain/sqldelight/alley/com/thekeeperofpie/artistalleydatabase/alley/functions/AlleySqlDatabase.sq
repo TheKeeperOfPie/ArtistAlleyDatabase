@@ -72,6 +72,15 @@ CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeExpo2026 (
     summary TEXT,
     links TEXT AS List<String>,
     timestamp TEXT AS Instant NOT NULL,
-    consumed INTEGER AS Boolean NOT NULL DEFAULT 0,
+    PRIMARY KEY (booth, name)
+);
+
+CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeExpo2026History (
+    confirmedId TEXT AS Uuid,
+    booth TEXT NOT NULL,
+    name TEXT NOT NULL,
+    summary TEXT,
+    links TEXT AS List<String>,
+    timestamp TEXT AS Instant NOT NULL,
     PRIMARY KEY (booth, name, timestamp)
 );

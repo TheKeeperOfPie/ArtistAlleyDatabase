@@ -21,6 +21,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListV
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormHistoryViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormMergeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormQueueViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataHistoryMergeViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataMergeViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataQueueViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListViewModel
@@ -69,6 +71,8 @@ interface ArtistAlleyEditGraph : ArtistAlleyGraph {
     val stampRallyFormMergeViewModelFactory: StampRallyFormMergeViewModel.Factory
     val stampRallyFormHistoryViewModelFactory: StampRallyFormHistoryViewModel.Factory
     val remoteArtistDataQueueViewModel: RemoteArtistDataQueueViewModel
+    val remoteArtistDataMergeViewModelFactory: RemoteArtistDataMergeViewModel.Factory
+    val remoteArtistDataHistoryMergeViewModelFactory: RemoteArtistDataHistoryMergeViewModel.Factory
 
     @Provides
     fun provideHttpClient(networkClient: NetworkClient): HttpClient = networkClient.httpClient

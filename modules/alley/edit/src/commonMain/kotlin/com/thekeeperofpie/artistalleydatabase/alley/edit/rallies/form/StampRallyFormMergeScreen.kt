@@ -372,10 +372,14 @@ internal object StampRallyFormMergeScreen {
     ) {
         Column(modifier = modifier.fillMaxWidth()) {
             // TODO: Add rally specific form notes?
-            val groupState = when {
-                fieldState.values.all { it } -> ToggleableState.On
-                fieldState.values.any { it } -> ToggleableState.Indeterminate
-                else -> ToggleableState.Off
+            val groupState by remember(fieldState) {
+                derivedStateOf {
+                    when {
+                        fieldState.values.all { it } -> ToggleableState.On
+                        fieldState.values.any { it } -> ToggleableState.Indeterminate
+                        else -> ToggleableState.Off
+                    }
+                }
             }
 
             TriStateCheckbox(

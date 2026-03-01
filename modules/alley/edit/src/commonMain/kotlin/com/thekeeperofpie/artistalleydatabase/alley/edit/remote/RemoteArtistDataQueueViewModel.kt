@@ -13,8 +13,11 @@ import kotlinx.coroutines.flow.stateIn
 @Inject
 class RemoteArtistDataQueueViewModel(database: AlleyEditDatabase) : ViewModel() {
     private val refreshFlow = RefreshFlow()
-    val data = refreshFlow.updates
+    val queue = refreshFlow.updates
         .mapLatest { database.loadRemoteArtistData(DataYear.ANIME_EXPO_2026) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val history = refreshFlow.updates
+        .mapLatest { database.loadRemoteArtistDataHistory(DataYear.ANIME_EXPO_2026) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun refresh() = refreshFlow.refresh()

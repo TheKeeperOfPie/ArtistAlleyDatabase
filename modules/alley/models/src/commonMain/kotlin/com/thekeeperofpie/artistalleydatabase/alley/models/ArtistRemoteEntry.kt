@@ -12,5 +12,13 @@ data class ArtistRemoteEntry(
     val summary: String?,
     val links: List<String>,
     val timestamp: Instant,
-    val consumed: Boolean,
-)
+) {
+    val id = Id(booth, name)
+
+    @Serializable
+    value class Id(private val id: String) {
+        val booth get() = id.substringBefore("-")
+        val name get() = id.substringAfter("-")
+        constructor(booth: String, name: String) : this("$booth-$name")
+    }
+}

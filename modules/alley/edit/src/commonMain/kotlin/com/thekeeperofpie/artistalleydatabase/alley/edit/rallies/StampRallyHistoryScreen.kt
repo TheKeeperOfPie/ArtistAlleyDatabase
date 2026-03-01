@@ -469,10 +469,14 @@ object StampRallyHistoryScreen {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            val groupState = when {
-                fieldState.map.values.all { it } -> ToggleableState.On
-                fieldState.map.values.any { it } -> ToggleableState.Indeterminate
-                else -> ToggleableState.Off
+            val groupState by remember(fieldState) {
+                derivedStateOf {
+                    when {
+                        fieldState.map.values.all { it } -> ToggleableState.On
+                        fieldState.map.values.any { it } -> ToggleableState.Indeterminate
+                        else -> ToggleableState.Off
+                    }
+                }
             }
 
             Row(

@@ -43,6 +43,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyListS
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormMergeScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.form.StampRallyFormQueueScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataHistoryMergeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataMergeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataQueueScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesListScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesResolutionScreen
@@ -434,11 +437,43 @@ private fun entryProvider(
     }
 
     sharedElementEntry<AlleyEditDestination.RemoteArtistDataQueue> {
-        com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteArtistDataQueueScreen(
+        RemoteArtistDataQueueScreen(
             graph = graph,
             onSelectEntry = {
-                // TODO
+                // TODO: Support other years?
+                navStack.navigate(
+                    AlleyEditDestination.RemoteArtistDataMerge(
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                        id = it.id,
+                    )
+                )
             },
+            onSelectHistoryEntry = {
+                navStack.navigate(
+                    AlleyEditDestination.RemoteArtistDataHistoryMerge(
+                        dataYear = DataYear.ANIME_EXPO_2026,
+                        id = it.id,
+                        timestamp = it.timestamp,
+                    )
+                )
+            },
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.RemoteArtistDataMerge> {
+        RemoteArtistDataMergeScreen(
+            dataYear = it.dataYear,
+            id = it.id,
+            graph = graph,
+            onClickBack = onClickBack,
+        )
+    }
+    sharedElementEntry<AlleyEditDestination.RemoteArtistDataHistoryMerge> {
+        RemoteArtistDataHistoryMergeScreen(
+            dataYear = it.dataYear,
+            id = it.id,
+            timestamp = it.timestamp,
+            graph = graph,
+            onClickBack = onClickBack,
         )
     }
 }

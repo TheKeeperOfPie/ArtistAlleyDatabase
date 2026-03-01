@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.series.SeriesColumn
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -119,6 +120,19 @@ sealed interface AlleyEditDestination : NavKey {
     @Serializable
     data object RemoteArtistDataQueue : AlleyEditDestination
 
+    @Serializable
+    data class RemoteArtistDataMerge(
+        val dataYear: DataYear,
+        val id: ArtistRemoteEntry.Id,
+    ) : AlleyEditDestination
+
+    @Serializable
+    data class RemoteArtistDataHistoryMerge(
+        val dataYear: DataYear,
+        val id: ArtistRemoteEntry.Id,
+        val timestamp: Instant,
+    ) : AlleyEditDestination
+
     companion object {
         fun parseRoute(route: String): AlleyEditDestination? = try {
             when {
@@ -176,12 +190,6 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     StampRallyAdd(dataYear, stampRallyId)
                 }
-                route.startsWith("rally") -> {
-                    val (dataYear, stampRallyId) = parseDataYearThenStampRallyId(
-                        route.removePrefix("artist/")
-                    ) ?: return null
-                    StampRallyEdit(dataYear, stampRallyId)
-                }
                 route.startsWith("rally/history") -> {
                     val (dataYear, stampRallyId) = parseDataYearThenStampRallyId(
                         route.removePrefix("rally/history/")
@@ -200,12 +208,37 @@ sealed interface AlleyEditDestination : NavKey {
                     ) ?: return null
                     StampRallyFormHistory(dataYear, artistId, stampRallyId, formTimestamp)
                 }
+                route.startsWith("rally") -> {
+                    val (dataYear, stampRallyId) = parseDataYearThenStampRallyId(
+                        route.removePrefix("artist/")
+                    ) ?: return null
+                    StampRallyEdit(dataYear, stampRallyId)
+                }
+                route.startsWith("remote/artist/merge/history") -> {
+                    val (dataYear, booth, name, timestamp) =
+                        route.removePrefix("remote/artist/merge/history")
+                            .split("/")
+                    RemoteArtistDataHistoryMerge(
+                        dataYear = DataYear.deserialize(dataYear)!!,
+                        id = ArtistRemoteEntry.Id(booth = booth, name = name),
+                        timestamp = Instant.parse(timestamp),
+                    )
+                }
+                route.startsWith("remote/artist/merge") -> {
+                    val (dataYear, booth, name) = route.removePrefix("remote/artist/merge")
+                        .split("/")
+                    RemoteArtistDataMerge(
+                        dataYear = DataYear.deserialize(dataYear)!!,
+                        id = ArtistRemoteEntry.Id(booth = booth, name = name),
+                    )
+                }
                 else -> {
                     ConsoleLogger.log("Failed to find route for $route")
                     null
                 }
             }
         } catch (t: Throwable) {
+            ConsoleLogger.log("Failed to find route for $route")
             t.printStackTrace()
             null
         }
@@ -218,8 +251,9 @@ sealed interface AlleyEditDestination : NavKey {
                     Uri.encode(destination.artistId.toString())
             is ArtistFormMerge -> "artist/merge/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
-            is ArtistFormHistory -> "artist/form/history${Uri.encode(destination.dataYear.serializedName)}/" +
-                    Uri.encode(destination.artistId.toString())
+            is ArtistFormHistory -> "artist/form/history${Uri.encode(destination.dataYear.serializedName)}" +
+                    "/${Uri.encode(destination.artistId.toString())}" +
+                    "/${Uri.encode(destination.formTimestamp.toString())}"
             is ArtistFormQueue -> "artist/queue"
             is ArtistHistory -> "artist/history/${Uri.encode(destination.dataYear.serializedName)}/" +
                     Uri.encode(destination.artistId.toString())
@@ -241,8 +275,19 @@ sealed interface AlleyEditDestination : NavKey {
             is StampRallyFormMerge -> "rally/merge/${Uri.encode(destination.dataYear.serializedName)}" +
                     "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"
             is StampRallyFormHistory -> "rally/form/history${Uri.encode(destination.dataYear.serializedName)}" +
-                    "/${Uri.encode(destination.artistId.toString())}/${Uri.encode(destination.stampRallyId)}"
+                    "/${Uri.encode(destination.artistId.toString())}" +
+                    "/${Uri.encode(destination.stampRallyId)}" +
+                    "/${Uri.encode(destination.formTimestamp.toString())}"
             RemoteArtistDataQueue -> "remote/artist"
+            is RemoteArtistDataMerge -> "remote/artist/merge" +
+                    "/${Uri.encode(destination.dataYear.serializedName)}" +
+                    "/${Uri.encode(destination.id.booth)}" +
+                    "/${Uri.encode(destination.id.name)}"
+            is RemoteArtistDataHistoryMerge -> "remote/artist/merge/history" +
+                    "/${Uri.encode(destination.dataYear.serializedName)}" +
+                    "/${Uri.encode(destination.id.booth)}" +
+                    "/${Uri.encode(destination.id.name)}" +
+                    "/${Uri.encode(destination.timestamp.toString())}"
             Home -> ""
             is ImagesEdit,
             is MerchEdit,
