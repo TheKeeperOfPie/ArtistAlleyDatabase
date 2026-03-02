@@ -39,7 +39,7 @@ object Versions {
     const val bigNum = "0.3.10"
     const val buildKonfig = "0.17.1"
     const val burst = "2.12.0-beta1"
-    const val coil = "3.3.0"
+    const val coil = "3.4.0"
     const val colormath = "3.6.1"
     const val composeUnstyled = "1.49.6"
     const val cronetEmbedded = "143.7445.0"

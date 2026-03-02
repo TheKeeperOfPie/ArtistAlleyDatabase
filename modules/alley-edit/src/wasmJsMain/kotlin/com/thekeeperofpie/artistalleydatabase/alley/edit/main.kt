@@ -16,8 +16,11 @@ import androidx.compose.ui.window.ComposeViewport
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
+import coil3.network.DeDupeConcurrentRequestStrategy
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.toUri
 import com.eygraber.uri.Uri
@@ -32,8 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsDecoder
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsFetcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
 import dev.zacsweers.metro.createGraphFactory
 import io.github.vinceglb.filekit.PlatformFile
@@ -43,7 +44,7 @@ import kotlinx.browser.window
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.WebResourcesConfiguration
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
         PreventUnloadEffect()
@@ -59,6 +60,9 @@ fun main() {
             ImageLoader.Builder(it)
                 .crossfade(false)
                 .components {
+                    add(Mapper<ImageWithDimensions, Uri> { data, _ ->
+                        (data.coilImageModel as? Uri)
+                    })
                     add(Mapper<Uri, coil3.Uri> { data, _ ->
                         data.toString().toUri()
                     })
@@ -69,8 +73,13 @@ fun main() {
                         PlatformImageCache[data]
                     })
                     addPlatformFileSupport()
-                    add(ImageWithDimensionsFetcher.factory)
-                    add(ImageWithDimensionsDecoder::create)
+
+                    val concurrentRequestStrategy = DeDupeConcurrentRequestStrategy()
+                    add(
+                        KtorNetworkFetcherFactory(
+                            concurrentRequestStrategy = { concurrentRequestStrategy },
+                        )
+                    )
                 }
                 .memoryCache {
                     MemoryCache.Builder()

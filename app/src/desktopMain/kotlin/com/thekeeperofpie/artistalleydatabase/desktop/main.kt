@@ -28,8 +28,10 @@ import artistalleydatabase.modules.utils_compose.generated.resources.app_name
 import co.touchlab.kermit.Logger
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
+import coil3.network.DeDupeConcurrentRequestStrategy
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.toUri
@@ -58,6 +60,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 
+@OptIn(ExperimentalCoilApi::class)
 fun main() {
     val exitEvents = MutableStateFlow(false)
     val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
@@ -92,7 +95,14 @@ fun main() {
                     add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                         data.toString().toUri()
                     })
-                    add(KtorNetworkFetcherFactory(desktopComponent.httpClient))
+
+                    val concurrentRequestStrategy = DeDupeConcurrentRequestStrategy()
+                    add(
+                        KtorNetworkFetcherFactory(
+                            httpClient = { desktopComponent.httpClient },
+                            concurrentRequestStrategy = { concurrentRequestStrategy },
+                        )
+                    )
                 }
                 .memoryCache {
                     MemoryCache.Builder()

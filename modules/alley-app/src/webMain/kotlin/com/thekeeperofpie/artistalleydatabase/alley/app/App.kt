@@ -37,10 +37,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyAppScreen
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsDecoder
-import com.thekeeperofpie.artistalleydatabase.utils_compose.image.ImageWithDimensionsFetcher
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
 import kotlinx.browser.window
 import kotlinx.coroutines.delay
@@ -64,11 +63,12 @@ fun App(graph: ArtistAlleyWebGraph) {
             .crossfade(false)
             .precision(Precision.INEXACT)
             .components {
+                add(Mapper<ImageWithDimensions, com.eygraber.uri.Uri> { data, _ ->
+                    data.coilImageModel as? com.eygraber.uri.Uri
+                })
                 add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
                     data.toString().toUri()
                 })
-                add(ImageWithDimensionsFetcher.factory)
-                add(ImageWithDimensionsDecoder::create)
             }
             .memoryCache {
                 MemoryCache.Builder()
