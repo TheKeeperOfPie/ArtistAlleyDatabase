@@ -98,8 +98,8 @@ internal object Utils {
     }
 
     context(task: Task)
-    fun readSqlFile(databaseFile: File, sqlFile: File) {
-        if (!sqlFile.exists()) return
+    fun readSqlFile(databaseFile: File, sqlFile: File): Boolean {
+        if (!sqlFile.exists()) return false
 
         val process = ProcessBuilder(
             "sqlite3",
@@ -107,7 +107,8 @@ internal object Utils {
             "\".read \'${sqlFile.absolutePath}\'\""
         )
             .inheritIO()
-            .redirectErrorStream(true).start()
+            .redirectErrorStream(true)
+            .start()
         val success = process.waitFor(30, TimeUnit.SECONDS)
         if (!success) {
             val errorText = process.inputStream.use {
@@ -118,6 +119,7 @@ internal object Utils {
             task.logger.error("Failed to apply ${sqlFile.absolutePath}")
             errorText.lines().forEach(task.logger::error)
         }
+        return success
     }
 
     fun createDatabase(dbFile: File): Pair<JdbcSqliteDriver, BuildLogicDatabase> {

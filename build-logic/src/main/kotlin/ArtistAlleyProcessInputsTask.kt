@@ -9,7 +9,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -85,7 +85,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     @get:Inject
     abstract val layout: ProjectLayout
 
-    @get:InputDirectory
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputFolder: DirectoryProperty
 
@@ -103,13 +103,21 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     @Suppress("NewApi")
     @TaskAction
-    fun process() =
+    fun process() {
+        if (!inputFolder.get().asFile.exists()) return
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
             val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
             val dispatcher = it.asCoroutineDispatcher()
             runBlocking(dispatcher) {
                 // Copy over preserved pre-processed images
-                listOf("2023", "2024", "2025", "animeExpo2026", "animeNyc2024", "animeNyc2025").forEach {
+                listOf(
+                    "2023",
+                    "2024",
+                    "2025",
+                    "animeExpo2026",
+                    "animeNyc2024",
+                    "animeNyc2025"
+                ).forEach {
                     val processed = inputFolder.dir("images/$it/processed").get().asFile
                     if (processed.exists()) {
                         val output = outputResources.dir("files/$it").get().asFile
@@ -201,6 +209,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                 )
             }
         }
+    }
 
     private suspend fun CoroutineScope.processFolder(
         imageCacheDir: File,

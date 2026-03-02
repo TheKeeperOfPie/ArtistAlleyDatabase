@@ -21,8 +21,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -36,15 +35,15 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     @get:Inject
     abstract val layout: ProjectLayout
 
-    @get:InputDirectory
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputsDirectory: DirectoryProperty
 
-    @get:InputDirectory
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputImages: DirectoryProperty
 
-    @get:InputFile
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputChangelog: RegularFileProperty
 
@@ -58,6 +57,7 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
 
     @TaskAction
     fun process() {
+        if (!inputsDirectory.get().asFile.exists() || !inputImages.get().asFile.exists()) return
         val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
         val databaseFile = temporaryDir.resolve("artistAlleyDatabase.sqlite")
         if (databaseFile.exists() && !databaseFile.delete()) {
@@ -267,7 +267,9 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
     }
 
     private fun addArtistChangelog(database: BuildLogicDatabase) {
-        val diffs = inputChangelog.get().asFile.inputStream().use {
+        val file = inputChangelog.get().asFile
+        if (!file.exists()) return
+        val diffs = file.inputStream().use {
             Json.decodeFromStream<List<ArtistDiff>>(it)
         }
         database.transaction {

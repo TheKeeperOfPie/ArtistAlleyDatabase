@@ -1,4 +1,3 @@
-
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
@@ -8,11 +7,12 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 import javax.inject.Inject
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -23,7 +23,7 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
     @get:Inject
     abstract val layout: ProjectLayout
 
-    @get:InputDirectory
+    @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val snapshotsDirectory: DirectoryProperty
 
@@ -37,20 +37,56 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
 
     @TaskAction
     fun process() {
-        val before = temporaryDir.resolve("before.sqlite")
-        val after = temporaryDir.resolve("after.sqlite")
-        val diffs  = snapshotsDirectory.get().asFileTree.files
+        if (!snapshotsDirectory.get().asFile.exists()) return
+        val beforeSnapshotFilteredFile = temporaryDir.resolve("before.sql")
+        val afterSnapshotFilteredFile = temporaryDir.resolve("after.sql")
+        val beforeDatabaseFile = temporaryDir.resolve("before.sqlite")
+        val afterDatabaseFile = temporaryDir.resolve("after.sqlite")
+        val diffs = snapshotsDirectory.get().asFileTree.files
             .windowed(size = 2, step = 1)
             .flatMap { (beforeSnapshot, afterSnapshot) ->
-                before.delete()
-                after.delete()
-                Utils.readSqlFile(before, beforeSnapshot)
-                Utils.readSqlFile(after, afterSnapshot)
+                fun verifyDelete(file: File) {
+                    if (!file.delete()) {
+                        logger.error("Failed to delete ${file.absolutePath}")
+                    }
+                }
+                listOf(
+                    beforeSnapshotFilteredFile,
+                    afterSnapshotFilteredFile,
+                    beforeDatabaseFile,
+                    afterDatabaseFile,
+                ).forEach(::verifyDelete)
+
+                // First, create and immediately close the databases to initialize the schemas
+                Utils.createDatabase(beforeDatabaseFile).first.close()
+                Utils.createDatabase(afterDatabaseFile).first.close()
+
+                fun filterSnapshot(source: File, target: File) {
+                    target.writer().use { writer ->
+                        source.useLines {
+                            it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
+                                .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
+                                .forEach(writer::appendLine)
+                        }
+                    }
+                }
+
+                filterSnapshot(beforeSnapshot, beforeSnapshotFilteredFile)
+                filterSnapshot(afterSnapshot, afterSnapshotFilteredFile)
+
+                if (!Utils.readSqlFile(beforeDatabaseFile, beforeSnapshotFilteredFile)) {
+                    logger.error("Failed to apply before ${beforeSnapshot.absolutePath}")
+                    return@flatMap emptyList()
+                }
+                if (!Utils.readSqlFile(afterDatabaseFile, afterSnapshotFilteredFile)) {
+                    logger.error("Failed to apply after ${afterSnapshot.absolutePath}")
+                    return@flatMap emptyList()
+                }
                 val beforeDatabase =
-                    Utils.createDatabase(before).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                    Utils.createDatabase(beforeDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
                         .executeAsList()
                 val afterDatabase =
-                    Utils.createDatabase(after).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                    Utils.createDatabase(afterDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
                         .executeAsList()
 
                 val date = afterSnapshot.nameWithoutExtension

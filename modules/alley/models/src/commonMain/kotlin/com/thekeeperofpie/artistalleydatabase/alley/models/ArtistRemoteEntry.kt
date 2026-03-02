@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -15,6 +16,7 @@ data class ArtistRemoteEntry(
 ) {
     val id = Id(booth, name)
 
+    @JvmInline
     @Serializable
     value class Id(private val id: String) {
         val booth get() = id.substringBefore("-")
