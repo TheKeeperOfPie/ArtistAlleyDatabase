@@ -169,23 +169,20 @@ internal object ArtistFormMergeScreen {
         onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
     ) {
         val entry = entry()
-        val initialArtist = entry()?.first
-        val formDiff = entry()?.second
-        val fieldState = rememberFieldState(formDiff)
-        val seriesByIdMap = seriesById()
-        val merchByIdMap = merchById()
-        val artistFormState by remember(entry, fieldState, seriesByIdMap, merchByIdMap) {
+        val fieldState = rememberFieldState(entry()?.second)
+        val artistFormState by remember(entry, fieldState, seriesById, merchById) {
             derivedStateOf {
-                initialArtist ?: return@derivedStateOf null
-                formDiff ?: return@derivedStateOf null
+                val entry = entry() ?: return@derivedStateOf null
+                val (initialArtist, formDiff) = entry
                 fieldState.applyChanges(
                     base = initialArtist,
-                    seriesById = seriesByIdMap,
-                    merchById = merchByIdMap,
+                    seriesById = seriesById(),
+                    merchById = merchById(),
                     diff = formDiff,
                 )
             }
         }
+        val initialArtist = entry()?.first
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -239,11 +236,11 @@ internal object ArtistFormMergeScreen {
                         CircularWavyProgressIndicator()
                     }
                 } else {
-                    val fieldsList = remember {
+                    val fieldsList = remember(fieldState) {
                         movableContentOf {
                             FieldsList(
                                 fieldState = fieldState,
-                                diff = formDiff,
+                                diff = entry()?.second,
                             )
                         }
                     }
@@ -253,7 +250,7 @@ internal object ArtistFormMergeScreen {
                             ArtistPreview(
                                 initialArtist = { initialArtist },
                                 artistFormState = artistFormState,
-                                formTimestamp = formDiff?.timestamp,
+                                formTimestamp = entry()?.second?.timestamp,
                                 seriesById = seriesById,
                                 seriesImage = seriesImage,
                                 merchById = merchById,

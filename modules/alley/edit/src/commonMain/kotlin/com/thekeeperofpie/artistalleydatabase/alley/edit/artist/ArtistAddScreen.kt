@@ -290,7 +290,9 @@ object ArtistAddScreen {
         onClickSameArtist: (artistId: Uuid) -> Unit,
     ) {
         Column {
-            PotentialSameArtists(state.sameArtistState.inferredArtists, onClickSameArtist)
+            val inferredArtists by state.sameArtistState.inferredArtists
+                .collectAsStateWithLifecycle()
+            PotentialSameArtists(inferredArtists, onClickSameArtist)
 
             ArtistForm(
                 initialArtist = { null },

@@ -54,8 +54,8 @@ val Link.Type?.category: LinkCategory
         Link.Type.PATREON,
             -> LinkCategory.SUPPORT
 
+        Link.Type.VGEN -> LinkCategory.COMMISSIONS
         Link.Type.OTHER_NON_STORE,
-        Link.Type.VGEN,
         null,
             -> LinkCategory.OTHER
     }
@@ -65,5 +65,6 @@ enum class LinkCategory(val textRes: StringResource) {
     SOCIALS(Res.string.alley_link_type_category_socials),
     STORES(Res.string.alley_link_type_category_stores),
     SUPPORT(Res.string.alley_link_type_category_support),
+    COMMISSIONS(Res.string.alley_link_type_category_support),
     OTHER(Res.string.alley_link_type_category_other),
 }

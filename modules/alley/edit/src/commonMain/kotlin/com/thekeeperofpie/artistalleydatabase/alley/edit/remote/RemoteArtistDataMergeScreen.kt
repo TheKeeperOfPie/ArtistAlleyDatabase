@@ -2,17 +2,25 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.remote
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -26,8 +34,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -53,15 +63,21 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_booth_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_name
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_link_ignore
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_timestamp_prefix
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_which_artist_action_new_artist
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_which_artist_manual_id_action_submit
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_which_artist_manual_id_label
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_which_artist_prompt
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
-import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberErrorState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
@@ -70,14 +86,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
+import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
+import com.thekeeperofpie.artistalleydatabase.utils_compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
@@ -107,8 +124,11 @@ internal object RemoteArtistDataMergeScreen {
         val merchById by viewModel.tagAutocomplete.merchById.collectAsStateWithLifecycle()
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = viewModel.saveTaskState
+        val confirmedArtistId by viewModel.confirmedArtistId.collectAsStateWithLifecycle()
+        val inferredArtists by viewModel.inferredArtists.collectAsStateWithLifecycle()
         RemoteArtistDataMergeScreen(
             dataYear = dataYear,
+            confirmedArtistId = { confirmedArtistId },
             entry = entry,
             entryInfo = entryInfo?.second,
             snackbarHostState = snackbarHostState,
@@ -116,6 +136,8 @@ internal object RemoteArtistDataMergeScreen {
             seriesById = { seriesById },
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
+            inferredArtists = { inferredArtists },
+            onConfirmId = viewModel::onConfirmArtist,
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
         )
@@ -148,6 +170,7 @@ internal object RemoteArtistDataMergeScreen {
     @Composable
     operator fun invoke(
         dataYear: DataYear,
+        confirmedArtistId: () -> Uuid?,
         entry: ArtistRemoteEntry?,
         entryInfo: EntryInfo?,
         snackbarHostState: SnackbarHostState,
@@ -155,6 +178,8 @@ internal object RemoteArtistDataMergeScreen {
         seriesById: () -> Map<String, SeriesInfo>,
         merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
+        inferredArtists: () -> List<ArtistInference.MatchResult>,
+        onConfirmId: (Uuid) -> Unit,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
     ) {
@@ -165,9 +190,10 @@ internal object RemoteArtistDataMergeScreen {
         val merchByIdMap = merchById()
         val artistFormState by remember(
             entryInfo,
+            entryDiff,
             fieldState,
             seriesByIdMap,
-            merchByIdMap
+            merchByIdMap,
         ) {
             derivedStateOf {
                 entryDiff ?: return@derivedStateOf null
@@ -222,43 +248,110 @@ internal object RemoteArtistDataMergeScreen {
             modifier = Modifier.fillMaxWidth()
         ) { scaffoldPadding ->
             ContentSavingBox(
-                saving = saving(),
+                saving = saving() || artistFormState == null,
                 modifier = Modifier.fillMaxWidth().padding(scaffoldPadding)
             ) {
-                val modifier = Modifier.widthIn(max = 1200.dp).align(Alignment.TopCenter)
-                if (artistFormState == null) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = modifier.padding(32.dp)
-                    ) {
-                        CircularWavyProgressIndicator()
-                    }
-                } else {
-                    val fieldsList = remember {
-                        movableContentOf {
+                val secondary = remember(fieldState, entry, entryDiff) {
+                    movableContentOf {
+                        if (confirmedArtistId() == null) {
+                            RemoteDataSummary(entry)
+                        } else {
                             FieldsList(
                                 fieldState = fieldState,
                                 diff = entryDiff,
                             )
                         }
                     }
-                    ScrollableSideBySide(
-                        showSecondary = { true },
-                        primary = {
+                }
+                ScrollableSideBySide(
+                    showSecondary = { true },
+                    primary = {
+                        if (confirmedArtistId() == null) {
+                            ConfirmArtistIdPrompt(
+                                confirmedArtistId = confirmedArtistId,
+                                inferredArtists = inferredArtists,
+                                onConfirmId = onConfirmId,
+                            )
+                        } else {
                             ArtistPreview(
                                 initialArtist = { initialArtist },
                                 artistFormState = artistFormState,
                                 timestamp = entry?.timestamp,
-                                seriesById = seriesById,
-                                seriesImage = seriesImage,
-                                merchById = merchById,
                             )
-                        },
-                        secondary = { fieldsList() },
-                        secondaryExpanded = { fieldsList() },
-                    )
+                        }
+                    },
+                    secondary = { secondary() },
+                    secondaryExpanded = { secondary() },
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun ConfirmArtistIdPrompt(
+        confirmedArtistId: () -> Uuid?,
+        inferredArtists: () -> List<ArtistInference.MatchResult>,
+        onConfirmId: (Uuid) -> Unit,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .widthIn(min = 800.dp)
+                .width(IntrinsicSize.Min)
+                .padding(16.dp)
+        ) {
+            Text(stringResource(Res.string.alley_edit_remote_artist_data_merge_which_artist_prompt))
+
+            inferredArtists().forEach {
+                OutlinedCard(onClick = { onConfirmId(it.data.id) }) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(it.name)
+                        Text(text = it.via, modifier = Modifier.padding(start = 16.dp))
+                    }
                 }
             }
+
+            val manualInput = rememberTextFieldState()
+            LaunchedEffect(Unit) {
+                snapshotFlow { confirmedArtistId() }
+                    .collectLatest {
+                        manualInput.setTextAndPlaceCursorAtEnd(
+                            it?.toString().orEmpty()
+                        )
+                    }
+            }
+
+            OutlinedTextField(
+                state = manualInput,
+                label = {
+                    Text(stringResource(Res.string.alley_edit_remote_artist_data_merge_which_artist_manual_id_label))
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                FilledTonalButton(onClick = {
+                    Uuid.parseOrNull(manualInput.text.toString())?.let(onConfirmId)
+                }) {
+                    Text(stringResource(Res.string.alley_edit_remote_artist_data_merge_which_artist_manual_id_action_submit))
+                }
+                FilledTonalButton(onClick = { onConfirmId(Uuid.random()) }) {
+                    Text(stringResource(Res.string.alley_edit_remote_artist_data_merge_which_artist_action_new_artist))
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun RemoteDataSummary(entry: ArtistRemoteEntry?) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(entry.toString())
         }
     }
 
@@ -267,9 +360,6 @@ internal object RemoteArtistDataMergeScreen {
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         artistFormState: ArtistFormState?,
         timestamp: Instant?,
-        seriesById: () -> Map<String, SeriesInfo>,
-        merchById: () -> Map<String, MerchInfo>,
-        seriesImage: (SeriesInfo) -> String?,
         modifier: Modifier = Modifier,
     ) {
         if (artistFormState != null) {
@@ -296,20 +386,43 @@ internal object RemoteArtistDataMergeScreen {
                         )
                     }
                 }
-                ArtistForm(
-                    initialArtist = initialArtist,
-                    state = artistFormState,
-                    errorState = rememberErrorState(artistFormState),
-                    seriesById = seriesById,
-                    seriesPredictions = { emptyFlow() },
-                    merchById = merchById,
-                    merchPredictions = { emptyFlow() },
-                    seriesImage = seriesImage,
-                    forceLocked = true,
-                    showStatus = false,
-                    showEditorNotes = false,
-                    modifier = modifier.fillMaxWidth(),
+                val focusState = rememberFocusState(
+                    listOfNotNull(
+                        artistFormState.editorState.id,
+                        artistFormState.info.booth,
+                        artistFormState.info.name,
+                        artistFormState.info.summary,
+                        artistFormState.links.stateSocialLinks,
+                        artistFormState.links.stateStoreLinks,
+                        artistFormState.links.statePortfolioLinks,
+                        artistFormState.links.stateCommissions,
+                    )
                 )
+                ArtistForm(
+                    focusState = focusState,
+                    initialArtist = initialArtist,
+                    forceLocked = true,
+                    modifier = modifier.fillMaxWidth()
+                ) {
+                    IdSection(state = artistFormState.editorState.id)
+                    InfoSections(artistFormState.info)
+                    SocialLinksSection(
+                        state = artistFormState.links.stateSocialLinks,
+                        links = artistFormState.links.socialLinks,
+                    )
+                    StoreLinksSection(
+                        state = artistFormState.links.stateStoreLinks,
+                        storeLinks = artistFormState.links.storeLinks,
+                    )
+                    PortfolioLinksSection(
+                        state = artistFormState.links.statePortfolioLinks,
+                        portfolioLinks = artistFormState.links.portfolioLinks,
+                    )
+                    CommissionsSection(
+                        state = artistFormState.links.stateCommissions,
+                        commissions = artistFormState.links.commissions,
+                    )
+                }
             }
         }
     }
@@ -383,15 +496,72 @@ internal object RemoteArtistDataMergeScreen {
                     )
                 }
             }
+
+            diff?.otherLinks?.added?.forEach { link ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    var expanded by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                    ) {
+                        MinWidthTextField(
+                            value = stringResource(
+                                fieldState[link]?.textRes
+                                    ?: Res.string.alley_edit_remote_artist_data_link_ignore
+                            ),
+                            onValueChange = {},
+                            readOnly = true,
+                            minWidth = 100.dp,
+                            modifier = Modifier
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                        )
+
+                        ExposedDropdownMenu(expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.alley_edit_remote_artist_data_link_ignore)) },
+                                onClick = {
+                                    fieldState.remove(link)
+                                    expanded = false
+                                },
+                            )
+                            listOf(
+                                LinkCategory.SOCIALS,
+                                LinkCategory.STORES,
+                                LinkCategory.PORTFOLIOS,
+                                LinkCategory.COMMISSIONS
+                            ).forEach {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(it.textRes)) },
+                                    onClick = {
+                                        fieldState[link] = it
+                                        expanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    Text(link)
+                }
+            }
         }
     }
 
     @Stable
-    private class FieldState(private val map: SnapshotStateMap<ArtistDataField, Boolean>) {
+    private class FieldState(
+        private val map: SnapshotStateMap<ArtistDataField, Boolean>,
+        private val otherLinks: SnapshotStateMap<String, LinkCategory>,
+    ) {
         val keys get() = map.keys
         val values get() = map.values
         operator fun get(field: ArtistDataField) = map[field] ?: false
         operator fun set(field: ArtistDataField, checked: Boolean) = map.set(field, checked)
+        operator fun get(link: String) = otherLinks[link]
+        operator fun set(link: String, category: LinkCategory) = otherLinks.set(link, category)
+        fun remove(link: String) = otherLinks.remove(link)
 
         fun applyChanges(
             base: ArtistDatabaseEntry.Impl,
@@ -431,25 +601,25 @@ internal object RemoteArtistDataMergeScreen {
                     diff.socialLinks,
                     ArtistDataField.SOCIAL_LINKS_ADDED,
                     ArtistDataField.SOCIAL_LINKS_REMOVED,
-                ),
+                ) + otherLinks.filterValues { it == LinkCategory.SOCIALS || it == LinkCategory.SUPPORT }.keys,
                 storeLinks = applyDiff(
                     base.storeLinks,
                     diff.storeLinks,
                     ArtistDataField.STORE_LINKS_ADDED,
                     ArtistDataField.STORE_LINKS_REMOVED,
-                ),
+                ) + otherLinks.filterValues { it == LinkCategory.STORES }.keys,
                 portfolioLinks = applyDiff(
                     base.portfolioLinks,
                     diff.portfolioLinks,
                     ArtistDataField.PORTFOLIO_LINKS_ADDED,
                     ArtistDataField.PORTFOLIO_LINKS_REMOVED,
-                ),
+                ) + otherLinks.filterValues { it == LinkCategory.PORTFOLIOS }.keys,
                 commissions = applyDiff(
                     base.commissions,
                     diff.commissions,
                     ArtistDataField.COMMISSIONS_ADDED,
                     ArtistDataField.COMMISSIONS_REMOVED,
-                ),
+                ) + otherLinks.filterValues { it == LinkCategory.COMMISSIONS }.keys,
             )
             return ArtistFormState().applyDatabaseEntry(
                 artist = artist,
@@ -461,7 +631,10 @@ internal object RemoteArtistDataMergeScreen {
     }
 
     @Composable
-    private fun rememberFieldState(initialArtist: ArtistDatabaseEntry.Impl?, diff: RemoteArtistDataDiff?): FieldState {
+    private fun rememberFieldState(
+        initialArtist: ArtistDatabaseEntry.Impl?,
+        diff: RemoteArtistDataDiff?,
+    ): FieldState {
         val map = rememberSaveable(initialArtist, diff) {
             mutableStateMapOf<ArtistDataField, Boolean>().apply {
                 if (diff == null) return@apply
@@ -484,7 +657,10 @@ internal object RemoteArtistDataMergeScreen {
                 }
             }
         }
-        return remember(map) { FieldState(map) }
+        val otherLinks = rememberSaveable(initialArtist, diff) {
+            SnapshotStateMap<String, LinkCategory>()
+        }
+        return remember(map, otherLinks) { FieldState(map, otherLinks) }
     }
 
     private enum class ArtistDataField(val label: StringResource) {

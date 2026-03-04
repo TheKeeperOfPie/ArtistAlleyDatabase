@@ -5,6 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.StringUtils
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.ApplicationScope
@@ -24,35 +25,32 @@ class ArtistInference(
     applicationScope: ApplicationScope,
     private val artistEntryDao: ArtistEntryDao,
 ) {
-    private val artistInferenceData = flowFromSuspend {
+    private val artistInferenceDataFinalized = flowFromSuspend {
         (artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2025) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_NYC_2025) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2024) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_NYC_2024) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2023))
             .groupBy { it.artistId }
-            .mapValues {
-                ArtistData(
-                    id = it.key,
-                    names = it.value.map { it.name }.toSet(),
-                    socialLinks = it.value.flatMap { it.socialLinks }
-                        .map(LinkModel.Companion::parse).toSet(),
-                    storeLinks = it.value.flatMap { it.storeLinks }.map(LinkModel.Companion::parse)
-                        .toSet(),
-                    portfolioLinks = it.value.flatMap { it.portfolioLinks }
-                        .map(LinkModel.Companion::parse)
-                        .toSet(),
-                    catalogLinks = it.value.flatMap { it.catalogLinks }.toSet(),
-                )
-            }
+            .mapValues(::ArtistData)
             .values
-    }.shareIn(applicationScope, SharingStarted.Companion.Lazily, replay = 1)
+    }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
+
+    private val artistInferenceDataPending = flowFromSuspend {
+        artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2026)
+            .groupBy { it.artistId }
+            .mapValues(::ArtistData)
+            .values
+    }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
 
     suspend fun hasPreviousYear(artistId: String): Boolean = DataYear.entries.any {
         artistEntryDao.getEntry(it, artistId) != null
     }
 
-    suspend fun inferArtist(input: Input): List<MatchResult> {
+    suspend fun inferArtist(
+        input: Input,
+        includePendingDataYears: Boolean = false,
+    ): List<MatchResult> {
         if (input.name.length <= 3 &&
             input.socialLinks.isEmpty() &&
             input.storeLinks.isEmpty() &&
@@ -61,20 +59,23 @@ class ArtistInference(
         ) {
             return emptyList()
         }
-        return artistInferenceData.first()
-            .flatMapIndexed { index, data ->
-                if (index % 20 == 0) {
-                    yield()
-                }
-
-                matchingLinks(data, data.socialLinks, input.socialLinks) +
-                        matchingLinks(data, data.storeLinks, input.storeLinks) +
-                        matchingLinks(data, data.portfolioLinks, input.portfolioLinks) +
-                        matchingCatalogLinks(data, data.catalogLinks, input.catalogLinks) +
-                        data.names.map {
-                            MatchResult.Name(data, StringUtils.compareSimilarity(it, input.name))
-                        }
+        return if (includePendingDataYears) {
+            artistInferenceDataFinalized.first() + artistInferenceDataPending.first()
+        } else {
+            artistInferenceDataFinalized.first()
+        }.flatMapIndexed { index, data ->
+            if (index % 20 == 0) {
+                yield()
             }
+
+            matchingLinks(data, data.socialLinks, input.socialLinks) +
+                    matchingLinks(data, data.storeLinks, input.storeLinks) +
+                    matchingLinks(data, data.portfolioLinks, input.portfolioLinks) +
+                    matchingCatalogLinks(data, data.catalogLinks, input.catalogLinks) +
+                    data.names.map {
+                        MatchResult.Name(data, StringUtils.compareSimilarity(it, input.name))
+                    }
+        }
             .filter { it.score > 0.6f }
             .sortedByDescending { it.score }
             .distinctBy { it.data.id }
@@ -99,11 +100,17 @@ class ArtistInference(
         val results = mutableListOf<MatchResult.Link>()
         artistLinks.forEach { artistLink ->
             inputLinks.forEach { inputLink ->
-                if (artistLink.logo != inputLink.logo) return@forEach
-                val score = StringUtils.compareSimilarity(
-                    artistLink.identifier.removePrefix("https"),
-                    inputLink.identifier.removePrefix("https"),
-                )
+                if (artistLink.type != inputLink.type) return@forEach
+                val score = if (artistLink.type == inputLink.type &&
+                    artistLink.identifier == inputLink.identifier
+                ) {
+                    1f
+                } else {
+                    StringUtils.compareSimilarity(
+                        artistLink.identifier.removePrefix("https"),
+                        inputLink.identifier.removePrefix("https"),
+                    )
+                }
                 val result = MatchResult.Link(data, score, artistLink.link, inputLink.link)
 
                 // If any high score, just exit and return
@@ -163,7 +170,20 @@ class ArtistInference(
         val storeLinks: Set<LinkModel>,
         val portfolioLinks: Set<LinkModel>,
         val catalogLinks: Set<String>,
-    )
+    ) {
+        constructor(entry: Map.Entry<Uuid, List<ArtistInferenceData>>) : this(
+            id = entry.key,
+            names = entry.value.map { it.name }.toSet(),
+            socialLinks = entry.value.flatMap { it.socialLinks }
+                .map(LinkModel.Companion::parse).toSet(),
+            storeLinks = entry.value.flatMap { it.storeLinks }.map(LinkModel.Companion::parse)
+                .toSet(),
+            portfolioLinks = entry.value.flatMap { it.portfolioLinks }
+                .map(LinkModel.Companion::parse)
+                .toSet(),
+            catalogLinks = entry.value.flatMap { it.catalogLinks }.toSet(),
+        )
+    }
 
     data class Input(
         val name: String,
@@ -176,11 +196,11 @@ class ArtistInference(
             fun captureState(state: ArtistFormState) = Input(
                 name = state.info.name.value.text.toString(),
                 socialLinks = state.links.socialLinks.toList() +
-                        LinkModel.Companion.parse(state.links.stateSocialLinks.value.text.toString()),
+                        LinkModel.parse(state.links.stateSocialLinks.value.text.toString()),
                 storeLinks = state.links.storeLinks.toList() +
-                        LinkModel.Companion.parse(state.links.stateStoreLinks.value.text.toString()),
+                        LinkModel.parse(state.links.stateStoreLinks.value.text.toString()),
                 portfolioLinks = state.links.portfolioLinks.toList() +
-                        LinkModel.Companion.parse(state.links.statePortfolioLinks.value.text.toString()),
+                        LinkModel.parse(state.links.statePortfolioLinks.value.text.toString()),
                 catalogLinks = state.links.catalogLinks.toList() +
                         state.links.stateCatalogLinks.value.text.toString(),
             )

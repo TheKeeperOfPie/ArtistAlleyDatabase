@@ -5,10 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
+import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.ArtistInference
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -26,12 +30,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import kotlin.uuid.Uuid
 
 @AssistedInject
 class RemoteArtistDataMergeViewModel(
+    private val artistInference: ArtistInference,
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
     seriesImagesStore: SeriesImagesStore,
@@ -40,7 +46,7 @@ class RemoteArtistDataMergeViewModel(
     @Assisted private val id: ArtistRemoteEntry.Id,
     @Assisted private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val confirmedArtistId =
+    val confirmedArtistId =
         savedStateHandle.getMutableStateFlow<Uuid?>("confirmedArtistId", null)
 
     internal val currentEntry = flowFromSuspend {
@@ -50,6 +56,23 @@ class RemoteArtistDataMergeViewModel(
     private val previousEntry = flowFromSuspend {
         database.loadRemoteArtistDataHistory(dataYear = dataYear, id = id, timestamp = null)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val inferredArtists = currentEntry.mapLatest {
+        if (it == null) return@mapLatest emptyList()
+        val linkModels = it.links.map(LinkModel::parse)
+        artistInference.inferArtist(
+            input = ArtistInference.Input(
+                name = it.name,
+                socialLinks = linkModels.filter {
+                    it.type.category == LinkCategory.SOCIALS || it.type.category == LinkCategory.SUPPORT
+                },
+                storeLinks = linkModels.filter { it.type.category == LinkCategory.STORES },
+                portfolioLinks = linkModels.filter { it.type.category == LinkCategory.PORTFOLIOS },
+                catalogLinks = emptyList()
+            ),
+            includePendingDataYears = true,
+        )
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     // Not saved since this is supposed to be read-only
     internal val entryInfo =
@@ -72,7 +95,7 @@ class RemoteArtistDataMergeViewModel(
                         )
                     )
                     if (artist == null) {
-                        ArtistFormState(Uuid.random()) to entryInfo
+                        ArtistFormState(artistId ?: Uuid.random()) to entryInfo
                     } else {
                         ArtistFormState(Uuid.parse(artist.id))
                             .applyDatabaseEntry(

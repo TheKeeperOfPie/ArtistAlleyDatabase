@@ -14,11 +14,9 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
@@ -29,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCac
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
-import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -63,10 +60,9 @@ internal fun EditImagesButton(
 
 @Composable
 fun PotentialSameArtists(
-    inferredArtists: StateFlow<List<ArtistInference.MatchResult>>,
+    inferredArtists: List<ArtistInference.MatchResult>,
     onClickSameArtist: (artistId: Uuid) -> Unit,
 ) {
-    val inferredArtists by inferredArtists.collectAsStateWithLifecycle()
     if (inferredArtists.isNotEmpty()) {
         OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
             Text(

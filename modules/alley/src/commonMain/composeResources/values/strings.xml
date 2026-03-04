@@ -351,6 +351,7 @@
     <string name="alley_link_type_category_socials">Socials</string>
     <string name="alley_link_type_category_stores">Stores</string>
     <string name="alley_link_type_category_support">Support</string>
+    <string name="alley_link_type_category_commissions">Commissions</string>
     <string name="alley_link_type_category_other">Other</string>
 
     <string name="alley_exhibitor_tags_filter_label">Exhibitor tags</string>

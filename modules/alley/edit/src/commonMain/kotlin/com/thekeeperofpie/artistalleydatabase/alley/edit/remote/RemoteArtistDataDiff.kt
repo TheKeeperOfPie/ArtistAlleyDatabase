@@ -6,7 +6,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 
 data class RemoteArtistDataDiff(
     val booth: String?,
@@ -16,6 +15,7 @@ data class RemoteArtistDataDiff(
     val storeLinks: HistoryListDiff?,
     val portfolioLinks: HistoryListDiff?,
     val commissions: HistoryListDiff?,
+    val otherLinks: HistoryListDiff?,
 ) {
     companion object {
         /**
@@ -33,48 +33,71 @@ data class RemoteArtistDataDiff(
             previousEntry: ArtistRemoteEntry?,
             currentEntry: ArtistRemoteEntry,
         ): RemoteArtistDataDiff {
-            val linkModels = currentEntry.links.map(LinkModel::parse)
+            val previousLinkModels = previousEntry?.links?.map(LinkModel::parse)
+            val currentLinkModels = currentEntry.links.map(LinkModel::parse)
             return RemoteArtistDataDiff(
                 booth = currentEntry.booth.takeIf { artist == null || it != artist.booth && it != previousEntry?.booth },
                 name = currentEntry.name.takeIf { artist == null || it != artist.name && it != previousEntry?.name },
                 summary = currentEntry.summary.takeIf { it != artist?.summary && it != previousEntry?.summary },
-                socialLinks = if (previousEntry?.links.orEmpty() == currentEntry.links) {
-                    null
-                } else {
-                    HistoryListDiff.diffList(
-                        previous = artist?.socialLinks,
-                        next = linkModels.filter {
-                            (it.type.category == LinkCategory.SOCIALS || it.type.category == LinkCategory.SUPPORT) ||
-                                    (it.type.category == LinkCategory.OTHER && it.type != Link.Type.VGEN)
-                        }.map { it.link },
-                    )
-                },
-                storeLinks = if (previousEntry?.links.orEmpty() == currentEntry.links) {
-                    null
-                } else {
-                    HistoryListDiff.diffList(
-                        previous = artist?.storeLinks,
-                        next = linkModels.filter { it.type.category == LinkCategory.STORES }
-                            .map { it.link },
-                    )
-                },
-                portfolioLinks = if (previousEntry?.links.orEmpty() == currentEntry.links) {
-                    null
-                } else {
-                    HistoryListDiff.diffList(
-                        previous = artist?.portfolioLinks,
-                        next = linkModels.filter { it.type.category == LinkCategory.PORTFOLIOS }
-                            .map { it.link },
-                    )
-                },
-                commissions = if (previousEntry?.links.orEmpty() == currentEntry.links) {
-                    null
-                } else {
-                    HistoryListDiff.diffList(
-                        previous = artist?.commissions,
-                        next = linkModels.filter { it.type == Link.Type.VGEN }.map { it.link },
-                    )
-                },
+                socialLinks = diffList(
+                    current = artist?.socialLinks?.map(LinkModel::parse),
+                    previous = previousLinkModels?.filter {
+                        it.type.category == LinkCategory.SOCIALS || it.type.category == LinkCategory.SUPPORT
+                    },
+                    next = currentLinkModels.filter {
+                        it.type.category == LinkCategory.SOCIALS || it.type.category == LinkCategory.SUPPORT
+                    },
+                ),
+                storeLinks = diffList(
+                    current = artist?.storeLinks?.map(LinkModel::parse),
+                    previous = previousLinkModels?.filter { it.type.category == LinkCategory.STORES },
+                    next = currentLinkModels.filter { it.type.category == LinkCategory.STORES },
+                ),
+                portfolioLinks = diffList(
+                    current = artist?.portfolioLinks?.map(LinkModel::parse),
+                    previous = previousLinkModels?.filter { it.type.category == LinkCategory.PORTFOLIOS },
+                    next = currentLinkModels.filter { it.type.category == LinkCategory.PORTFOLIOS },
+                ),
+                commissions = diffList(
+                    current = artist?.commissions?.map(LinkModel::parse),
+                    previous = previousLinkModels?.filter { it.type.category == LinkCategory.COMMISSIONS },
+                    next = currentLinkModels.filter { it.type.category == LinkCategory.COMMISSIONS },
+                ),
+                otherLinks = diffList(
+                    current = emptyList(),
+                    previous = previousLinkModels?.filter { it.type.category == LinkCategory.OTHER },
+                    next = currentLinkModels.filter { it.type.category == LinkCategory.OTHER },
+                ),
+            )
+        }
+
+        private fun diffList(
+            current: List<LinkModel>?,
+            previous: List<LinkModel>?,
+            next: List<LinkModel>?,
+        ): HistoryListDiff? {
+            val added = next.orEmpty().filter {
+                current.orEmpty()
+                    .none { currentLink -> currentLink.type == it.type && currentLink.identifier == it.identifier }
+            }.ifEmpty { null }
+            val deleted = previous.orEmpty().filter {
+                next.orEmpty()
+                    .none { nextLink -> nextLink.type == it.type && nextLink.identifier == it.identifier }
+            }
+                .filter {
+                    current == null || current.any { currentLink ->
+                        (currentLink.type == it.type && currentLink.identifier == it.identifier) ||
+                                currentLink.link == it.link
+                    }
+                }
+                .ifEmpty { null }
+            if (added == null && deleted == null) {
+                return null
+            }
+
+            return HistoryListDiff(
+                added = added?.map { it.link },
+                deleted = deleted?.map { it.link },
             )
         }
     }

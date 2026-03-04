@@ -622,8 +622,10 @@ object ArtistEditScreen {
                     CircularWavyProgressIndicator()
                 }
             } else {
+                val inferredArtists by state.sameArtistState.inferredArtists
+                    .collectAsStateWithLifecycle()
                 PotentialSameArtists(
-                    inferredArtists = state.sameArtistState.inferredArtists,
+                    inferredArtists = inferredArtists,
                     onClickSameArtist = onClickSameArtist,
                 )
                 ArtistForm(

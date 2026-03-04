@@ -95,7 +95,6 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocu
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import kotlinx.coroutines.CoroutineScope
@@ -1032,15 +1031,14 @@ object ArtistForm {
                     state.stateStoreLinks.lockState = EntryLockState.UNLOCKED
                 }
             }
-            LinkCategory.OTHER -> {
-                if (linkModel.type == Link.Type.VGEN) {
-                    val commissionModel = CommissionModel.parse(fixedLink)
-                    if (!state.commissions.contains(commissionModel)) {
-                        state.commissions += commissionModel
-                        state.stateCommissions.lockState = EntryLockState.UNLOCKED
-                    }
+            LinkCategory.COMMISSIONS -> {
+                val commissionModel = CommissionModel.parse(fixedLink)
+                if (!state.commissions.contains(commissionModel)) {
+                    state.commissions += commissionModel
+                    state.stateCommissions.lockState = EntryLockState.UNLOCKED
                 }
             }
+            LinkCategory.OTHER -> Unit // TODO: Show an error?
         }
     }
 

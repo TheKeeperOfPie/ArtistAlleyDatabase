@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -55,6 +56,28 @@ object DebugTestData {
             afterStampRallies = listOf(stampRallyAfter),
             deletedRallyIds = emptyList(),
             formNotes = "Some test artist form notes",
+        )
+
+        editDatabase.submitRemoteArtistData(
+            dataYear = DataYear.ANIME_EXPO_2026,
+            data = listOf(
+                ArtistRemoteEntry(
+                    confirmedId = null,
+                    booth = "C38",
+                    name = "First last",
+                    summary = "New remote synced summary",
+                    links = artist.socialLinks + "https://instagram.com/example" + "https://example.carrd.co",
+                    timestamp = Clock.System.now(),
+                ),
+                ArtistRemoteEntry(
+                    confirmedId = null,
+                    booth = "C42",
+                    name = "Second third",
+                    summary = "Other artist remote synced summary",
+                    links = listOf("https://bsky.app/example", "https://example2.carrd.co"),
+                    timestamp = Clock.System.now(),
+                ),
+            )
         )
     }
 
