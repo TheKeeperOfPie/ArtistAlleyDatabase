@@ -109,21 +109,26 @@ actual class AlleyEditRemoteDatabase(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
-    ): BackendRequest.ArtistSave.Response = saveArtist(dataYear, initial, updated, null)
+    ): BackendRequest.ArtistSave.Response = saveArtist(dataYear, initial, updated, null, null)
 
     private suspend fun saveArtist(
         dataYear: DataYear,
         initial: ArtistDatabaseEntry.Impl?,
         updated: ArtistDatabaseEntry.Impl,
         formTimestamp: Instant?,
+        remoteTimestamp: Instant?,
     ): BackendRequest.ArtistSave.Response {
         simulateLatency()
         val oldArtist = loadArtist(dataYear, Uuid.parse(updated.id))
         if (oldArtist != null && oldArtist != initial) {
             return BackendRequest.ArtistSave.Response.Outdated(oldArtist)
         }
-        val historyEntry = ArtistHistoryEntry.create(oldArtist, updated, formTimestamp)
-            .copy(lastEditor = "local")
+        val historyEntry = ArtistHistoryEntry.create(
+            before = oldArtist,
+            after = updated,
+            formTimestamp = formTimestamp,
+            remoteTimestamp = remoteTimestamp,
+        ).copy(lastEditor = "local")
         artistHistoryByDataYearAndId.getOrPut(dataYear) { mutableMapOf() }
             .getOrPut(updated.id) { mutableListOf() }
             .add(historyEntry)
@@ -320,6 +325,7 @@ actual class AlleyEditRemoteDatabase(
                 initial = initial,
                 updated = updated.copy(verifiedArtist = true),
                 formTimestamp = formEntryTimestamp,
+                remoteTimestamp = null,
             )
             artistFormQueue.remove(artistId)?.let {
                 artistFormHistory += it
@@ -576,7 +582,13 @@ actual class AlleyEditRemoteDatabase(
         entry: ArtistRemoteEntry,
         isHistory: Boolean,
     ): BackendRequest.SaveRemoteArtistData.Response {
-        when (val artistSaveResponse = saveArtist(dataYear, initial, updated)) {
+        when (val artistSaveResponse = saveArtist(
+            dataYear = dataYear,
+            initial = initial,
+            updated = updated,
+            formTimestamp = null,
+            remoteTimestamp = entry.timestamp,
+        )) {
             is BackendRequest.ArtistSave.Response.Failed ->
                 return BackendRequest.SaveRemoteArtistData.Response.Failed(
                     artistSaveResponse.errorMessage

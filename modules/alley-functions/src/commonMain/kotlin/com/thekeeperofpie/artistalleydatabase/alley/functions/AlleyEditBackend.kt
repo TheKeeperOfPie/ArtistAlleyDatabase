@@ -75,7 +75,14 @@ object AlleyEditBackend {
                     is BackendRequest.ArtistHistory ->
                         makeResponse(loadArtistHistory(context, this))
                     is BackendRequest.Artists -> makeResponse(loadArtists(context))
-                    is BackendRequest.ArtistSave -> makeResponse(saveArtist(context, this, null))
+                    is BackendRequest.ArtistSave -> makeResponse(
+                        saveArtist(
+                            context = context,
+                            request = this,
+                            formTimestamp = null,
+                            remoteTimestamp = null,
+                        )
+                    )
                     is BackendRequest.DatabaseCreate -> makeResponse(databaseCreate(context))
                     is BackendRequest.GenerateFormKey ->
                         makeResponse(generateFormKey(context, this))
@@ -282,7 +289,12 @@ object AlleyEditBackend {
             initial = request.initial,
             updated = request.updated.copy(verifiedArtist = true),
         )
-        when (val saveResponse = saveArtist(context, saveRequest, request.formEntryTimestamp)) {
+        when (val saveResponse = saveArtist(
+            context = context,
+            request = saveRequest,
+            formTimestamp = request.formEntryTimestamp,
+            remoteTimestamp = null,
+        )) {
             is BackendRequest.ArtistSave.Response.Failed ->
                 return BackendRequest.ArtistCommitForm.Response.Failed(saveResponse.errorMessage)
             is BackendRequest.ArtistSave.Response.Outdated ->
@@ -358,6 +370,7 @@ object AlleyEditBackend {
         context: EventContext,
         request: BackendRequest.ArtistSave,
         formTimestamp: Instant?,
+        remoteTimestamp: Instant?,
     ) = when (request.dataYear) {
         DataYear.ANIME_EXPO_2026 -> {
             val database = Databases.editDatabase(context)
@@ -377,7 +390,8 @@ object AlleyEditBackend {
                 val historyEntry = ArtistHistoryEntry.create(
                     before = currentArtist,
                     after = updatedArtist,
-                    formTimestamp = formTimestamp
+                    formTimestamp = formTimestamp,
+                    remoteTimestamp = remoteTimestamp,
                 ).toDatabaseEntry(Uuid.parse(updatedArtist.id))
                 database.artistEntryAnimeExpo2026Queries.insertHistory(historyEntry)
                 database.artistEntryAnimeExpo2026Queries.insertArtist(updatedArtist.toArtistEntryAnimeExpo2026())
@@ -1043,7 +1057,12 @@ object AlleyEditBackend {
             initial = request.initial,
             updated = request.updated.copy(verifiedArtist = true),
         )
-        when (val saveResponse = saveArtist(context, saveRequest, null)) {
+        when (val saveResponse = saveArtist(
+            context = context,
+            request = saveRequest,
+            formTimestamp = null,
+            remoteTimestamp = request.entry.timestamp,
+        )) {
             is BackendRequest.ArtistSave.Response.Failed ->
                 return BackendRequest.SaveRemoteArtistData.Response.Failed(saveResponse.errorMessage)
             is BackendRequest.ArtistSave.Response.Outdated ->
@@ -1167,6 +1186,7 @@ object AlleyEditBackend {
             lastEditor = lastEditor,
             lastEditTime = timestamp,
             formTimestamp = formTimestamp,
+            remoteTimestamp = remoteTimestamp,
         )
 
     private fun ArtistEntryAnimeExpo2026History.toHistoryEntry() =
@@ -1190,6 +1210,7 @@ object AlleyEditBackend {
             lastEditor = lastEditor,
             timestamp = lastEditTime,
             formTimestamp = formTimestamp,
+            remoteTimestamp = remoteTimestamp,
         )
 
     private fun StampRallyHistoryEntry.toDatabaseEntry(id: String) =

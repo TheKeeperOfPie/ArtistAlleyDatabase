@@ -390,6 +390,7 @@ object StampRallyHistoryScreen {
                     editor = entry.lastEditor,
                     timestamp = entry.timestamp,
                     formTimestamp = entry.formTimestamp,
+                    remoteTimestamp = null,
                     additionalActions = additionalActions,
                 )
             },

@@ -395,6 +395,7 @@ object ArtistHistoryScreen {
                     editor = entry.lastEditor,
                     timestamp = entry.timestamp,
                     formTimestamp = entry.formTimestamp,
+                    remoteTimestamp = entry.remoteTimestamp,
                     additionalActions = additionalActions,
                 )
             },
@@ -627,6 +628,7 @@ object ArtistHistoryScreen {
             lastEditor = null,
             timestamp = Clock.System.now(),
             formTimestamp = null,
+            remoteTimestamp = null,
         )
     }
 

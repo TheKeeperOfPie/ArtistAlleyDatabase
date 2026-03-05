@@ -36,6 +36,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_list_added
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_list_deleted
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_form_timestamp
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_remote_timestamp
 import com.materialkolor.ktx.harmonize
 import com.materialkolor.utils.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
@@ -82,6 +83,7 @@ internal fun HistoryCardHeader(
     editor: String?,
     timestamp: Instant,
     formTimestamp: Instant?,
+    remoteTimestamp: Instant?,
     additionalActions: (@Composable () -> Unit)? = null,
 ) {
     Row(
@@ -138,6 +140,16 @@ internal fun HistoryCardHeader(
                     text = stringResource(
                         Res.string.alley_edit_artist_history_form_timestamp,
                         LocalDateTimeFormatter.current.formatDateTime(formTimestamp),
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+
+            if (remoteTimestamp != null) {
+                Text(
+                    text = stringResource(
+                        Res.string.alley_edit_artist_history_remote_timestamp,
+                        LocalDateTimeFormatter.current.formatDateTime(remoteTimestamp),
                     ),
                     style = MaterialTheme.typography.labelSmall,
                 )

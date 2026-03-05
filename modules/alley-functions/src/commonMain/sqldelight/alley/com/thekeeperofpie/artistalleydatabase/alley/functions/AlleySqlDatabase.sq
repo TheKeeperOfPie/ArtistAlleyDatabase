@@ -40,8 +40,11 @@ CREATE TABLE IF NOT EXISTS artistEntryAnimeExpo2026History (
     editorNotes TEXT,
     lastEditor TEXT,
     lastEditTime TEXT AS Instant NOT NULL,
-    formTimestamp TEXT AS Instant
+    formTimestamp TEXT AS Instant,
+    remoteTimestamp TEXT AS Instant
 );
+
+CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEntryAnimeExpo2026History (id);
 
 CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     id TEXT,
@@ -62,8 +65,6 @@ CREATE TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026History (
     formTimestamp TEXT AS Instant,
     PRIMARY KEY (id, formTimestamp)
 );
-
-CREATE INDEX IF NOT EXISTS index_artistEntryAnimeExpo2026History_id ON artistEntryAnimeExpo2026History (id);
 
 CREATE TABLE IF NOT EXISTS artistRemoteDataAnimeExpo2026 (
     confirmedId TEXT AS Uuid,

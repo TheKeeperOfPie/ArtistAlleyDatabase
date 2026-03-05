@@ -43,6 +43,7 @@ internal object Databases {
             imagesAdapter = ColumnAdapters.listCatalogImageAdapter,
             lastEditTimeAdapter = ColumnAdapters.instantAdapter,
             formTimestampAdapter = ColumnAdapters.instantAdapter,
+            remoteTimestampAdapter = ColumnAdapters.instantAdapter,
         ),
         artistRemoteDataAnimeExpo2026Adapter = ArtistRemoteDataAnimeExpo2026.Adapter(
             confirmedIdAdapter = ColumnAdapters.uuidAdapter,
