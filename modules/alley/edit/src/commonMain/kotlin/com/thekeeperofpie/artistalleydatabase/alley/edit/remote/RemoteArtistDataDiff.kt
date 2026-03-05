@@ -35,12 +35,16 @@ data class RemoteArtistDataDiff(
         ): RemoteArtistDataDiff {
             val previousLinkModels = previousEntry?.links?.map(LinkModel::parse)
             val currentLinkModels = currentEntry.links.map(LinkModel::parse)
+            val artistSocialLinks = artist?.socialLinks?.map(LinkModel::parse)
+            val artistStoreLinks = artist?.storeLinks?.map(LinkModel::parse)
+            val artistPortfolioLinks = artist?.portfolioLinks?.map(LinkModel::parse)
+            val artistCommissions = artist?.commissions?.map(LinkModel::parse)
             return RemoteArtistDataDiff(
                 booth = currentEntry.booth.takeIf { artist == null || it != artist.booth && it != previousEntry?.booth },
                 name = currentEntry.name.takeIf { artist == null || it != artist.name && it != previousEntry?.name },
                 summary = currentEntry.summary.takeIf { it != artist?.summary && it != previousEntry?.summary },
                 socialLinks = diffList(
-                    current = artist?.socialLinks?.map(LinkModel::parse),
+                    current = artistSocialLinks,
                     previous = previousLinkModels?.filter {
                         it.type.category == LinkCategory.SOCIALS || it.type.category == LinkCategory.SUPPORT
                     },
@@ -49,22 +53,25 @@ data class RemoteArtistDataDiff(
                     },
                 ),
                 storeLinks = diffList(
-                    current = artist?.storeLinks?.map(LinkModel::parse),
+                    current = artistStoreLinks,
                     previous = previousLinkModels?.filter { it.type.category == LinkCategory.STORES },
                     next = currentLinkModels.filter { it.type.category == LinkCategory.STORES },
                 ),
                 portfolioLinks = diffList(
-                    current = artist?.portfolioLinks?.map(LinkModel::parse),
+                    current = artistPortfolioLinks,
                     previous = previousLinkModels?.filter { it.type.category == LinkCategory.PORTFOLIOS },
                     next = currentLinkModels.filter { it.type.category == LinkCategory.PORTFOLIOS },
                 ),
                 commissions = diffList(
-                    current = artist?.commissions?.map(LinkModel::parse),
+                    current = artistCommissions,
                     previous = previousLinkModels?.filter { it.type.category == LinkCategory.COMMISSIONS },
                     next = currentLinkModels.filter { it.type.category == LinkCategory.COMMISSIONS },
                 ),
                 otherLinks = diffList(
-                    current = emptyList(),
+                    current = artistSocialLinks.orEmpty() +
+                            artistStoreLinks.orEmpty() +
+                            artistPortfolioLinks.orEmpty() +
+                            artistCommissions.orEmpty(),
                     previous = previousLinkModels?.filter { it.type.category == LinkCategory.OTHER },
                     next = currentLinkModels.filter { it.type.category == LinkCategory.OTHER },
                 ),

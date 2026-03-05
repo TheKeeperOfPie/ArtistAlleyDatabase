@@ -27,6 +27,14 @@ FROM (
 ) artistRemoteDataAnimeExpo2026History
 WHERE rowNumber = 1;
 
+getMostRecentHistorySummaries:
+SELECT confirmedId, booth, name, timestamp
+FROM (
+  SELECT confirmedId, booth, name, timestamp, row_number() OVER (PARTITION BY booth, name ORDER BY timestamp DESC) rowNumber
+  FROM artistRemoteDataAnimeExpo2026History
+) artistRemoteDataAnimeExpo2026History
+WHERE rowNumber = 1;
+
 insertEntry:
 INSERT OR REPLACE INTO artistRemoteDataAnimeExpo2026
 VALUES ?;

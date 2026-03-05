@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -58,21 +59,23 @@ class RemoteArtistDataMergeViewModel(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val inferredArtists = currentEntry.mapLatest {
-        if (it == null) return@mapLatest emptyList()
+        if (it == null) return@mapLatest LoadingResult.loading()
         val linkModels = it.links.map(LinkModel::parse)
-        artistInference.inferArtist(
-            input = ArtistInference.Input(
-                name = it.name,
-                socialLinks = linkModels.filter {
-                    it.type.category == LinkCategory.SOCIALS || it.type.category == LinkCategory.SUPPORT
-                },
-                storeLinks = linkModels.filter { it.type.category == LinkCategory.STORES },
-                portfolioLinks = linkModels.filter { it.type.category == LinkCategory.PORTFOLIOS },
-                catalogLinks = emptyList()
-            ),
-            includePendingDataYears = true,
+        LoadingResult.success(
+            artistInference.inferArtist(
+                input = ArtistInference.Input(
+                    name = it.name,
+                    socialLinks = linkModels.filter {
+                        it.type.category == LinkCategory.SOCIALS || it.type.category == LinkCategory.SUPPORT
+                    },
+                    storeLinks = linkModels.filter { it.type.category == LinkCategory.STORES },
+                    portfolioLinks = linkModels.filter { it.type.category == LinkCategory.PORTFOLIOS },
+                    catalogLinks = emptyList()
+                ),
+                includePendingDataYears = true,
+            )
         )
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, LoadingResult.loading())
 
     // Not saved since this is supposed to be read-only
     internal val entryInfo =

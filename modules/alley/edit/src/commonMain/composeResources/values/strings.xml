@@ -316,5 +316,6 @@
     <string name="alley_edit_remote_artist_data_merge_which_artist_manual_id_label">Manually input an artist UUID</string>
     <string name="alley_edit_remote_artist_data_merge_which_artist_manual_id_action_submit">Submit</string>
     <string name="alley_edit_remote_artist_data_merge_which_artist_action_new_artist">This is a new artist</string>
+    <string name="alley_edit_remote_artist_data_merge_artist_inference_failed">Failed to load similar artists</string>
     <string name="alley_edit_remote_artist_data_link_ignore">Ignore</string>
 </resources>

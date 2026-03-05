@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -54,7 +55,7 @@ internal object RemoteArtistDataHistoryMergeScreen {
             seriesById = { seriesById },
             merchById = { merchById },
             seriesImage = viewModel::seriesImage,
-            inferredArtists = { emptyList() },
+            inferredArtists = { LoadingResult.empty() },
             onConfirmId = {},
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,

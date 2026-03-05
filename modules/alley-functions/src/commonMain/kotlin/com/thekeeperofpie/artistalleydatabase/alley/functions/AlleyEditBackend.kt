@@ -943,7 +943,7 @@ object AlleyEditBackend {
         return when (request.dataYear) {
             DataYear.ANIME_EXPO_2026 ->
                 database.artistRemoteDataAnimeExpo2026Queries
-                    .geHistoryEntrySummaries()
+                    .getMostRecentHistorySummaries()
                     .awaitAsList()
                     .map {
                         ArtistRemoteSummary(
