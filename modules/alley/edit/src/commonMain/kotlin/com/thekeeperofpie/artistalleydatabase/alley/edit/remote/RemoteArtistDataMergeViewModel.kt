@@ -119,7 +119,7 @@ class RemoteArtistDataMergeViewModel(
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
 
-    fun onConfirmArtist(artistId: Uuid) {
+    fun onConfirmArtist(artistId: Uuid?) {
         confirmedArtistId.value = artistId
     }
 

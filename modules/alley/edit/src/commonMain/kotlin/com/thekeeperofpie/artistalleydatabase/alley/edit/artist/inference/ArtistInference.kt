@@ -15,6 +15,7 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.yield
 import kotlin.uuid.Uuid
@@ -25,23 +26,26 @@ class ArtistInference(
     applicationScope: ApplicationScope,
     private val artistEntryDao: ArtistEntryDao,
 ) {
-    private val artistInferenceDataFinalized = flowFromSuspend {
+    private val previousYears = flowFromSuspend {
         (artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2025) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_NYC_2025) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2024) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_NYC_2024) +
                 artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2023))
-            .groupBy { it.artistId }
-            .mapValues(::ArtistData)
-            .values
     }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
-
-    private val artistInferenceDataPending = flowFromSuspend {
-        artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2026)
-            .groupBy { it.artistId }
-            .mapValues(::ArtistData)
-            .values
-    }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
+    private val dataFinalized =
+        previousYears.mapLatest {
+            it.groupBy { it.artistId }
+                .mapValues(::ArtistData)
+                .values
+        }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
+    private val dataFinalizedAndPending =
+        previousYears.mapLatest {
+            (it + artistEntryDao.getArtistInferenceData(DataYear.ANIME_EXPO_2026))
+                .groupBy { it.artistId }
+                .mapValues(::ArtistData)
+                .values
+        }.shareIn(applicationScope, SharingStarted.Lazily, replay = 1)
 
     suspend fun hasPreviousYear(artistId: String): Boolean = DataYear.entries.any {
         artistEntryDao.getEntry(it, artistId) != null
@@ -60,9 +64,9 @@ class ArtistInference(
             return emptyList()
         }
         return if (includePendingDataYears) {
-            artistInferenceDataFinalized.first() + artistInferenceDataPending.first()
+            dataFinalizedAndPending.first()
         } else {
-            artistInferenceDataFinalized.first()
+            dataFinalized.first()
         }.flatMapIndexed { index, data ->
             if (index % 20 == 0) {
                 yield()

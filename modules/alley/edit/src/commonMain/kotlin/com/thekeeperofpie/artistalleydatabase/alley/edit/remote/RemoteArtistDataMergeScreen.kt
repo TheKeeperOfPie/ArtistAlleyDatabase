@@ -184,7 +184,7 @@ internal object RemoteArtistDataMergeScreen {
         merchById: () -> Map<String, MerchInfo>,
         seriesImage: (SeriesInfo) -> String?,
         inferredArtists: () -> LoadingResult<List<ArtistInference.MatchResult>>,
-        onConfirmId: (Uuid) -> Unit,
+        onConfirmId: (Uuid?) -> Unit,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
     ) {
@@ -235,7 +235,15 @@ internal object RemoteArtistDataMergeScreen {
                         }
                         Text(text = text)
                     },
-                    navigationIcon = { ArrowBackIconButton(onClick = { onClickBack(true) }) },
+                    navigationIcon = {
+                        ArrowBackIconButton(onClick = {
+                            if (confirmedArtistId() != null) {
+                                onConfirmId(null)
+                            } else {
+                                onClickBack(true)
+                            }
+                        })
+                    },
                     actions = {
                         TooltipIconButton(
                             icon = Icons.Default.Save,
@@ -324,6 +332,10 @@ internal object RemoteArtistDataMergeScreen {
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(it.name)
+                            Text(
+                                text = it.data.id.toString(),
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
                             Text(text = it.via, modifier = Modifier.padding(start = 16.dp))
                         }
                     }
