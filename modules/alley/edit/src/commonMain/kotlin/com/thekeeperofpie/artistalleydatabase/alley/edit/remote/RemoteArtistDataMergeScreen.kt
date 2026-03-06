@@ -596,6 +596,7 @@ internal object RemoteArtistDataMergeScreen {
                             onValueChange = {},
                             readOnly = true,
                             minWidth = 100.dp,
+                            isError = fieldState[link] == null,
                             modifier = Modifier
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                         )
@@ -626,6 +627,11 @@ internal object RemoteArtistDataMergeScreen {
                     }
                     Text(
                         text = link,
+                        color = if (fieldState[link] == null) {
+                            AlleyTheme.colorScheme.negative
+                        } else {
+                            Color.Unspecified
+                        },
                         modifier = Modifier.clickable {
                             try {
                                 uriHandler.openUri(link)

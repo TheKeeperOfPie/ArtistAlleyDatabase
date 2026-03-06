@@ -85,16 +85,23 @@ data class RemoteArtistDataDiff(
         ): HistoryListDiff? {
             val added = next.orEmpty().filter {
                 current.orEmpty()
-                    .none { currentLink -> currentLink.type == it.type && currentLink.identifier == it.identifier }
+                    .none { currentLink ->
+                        currentLink.type == it.type &&
+                                currentLink.identifier.equals(it.identifier, ignoreCase = true)
+                    }
             }.ifEmpty { null }
             val deleted = previous.orEmpty().filter {
                 next.orEmpty()
-                    .none { nextLink -> nextLink.type == it.type && nextLink.identifier == it.identifier }
+                    .none { nextLink ->
+                        nextLink.type == it.type &&
+                                nextLink.identifier.equals(it.identifier, ignoreCase = true)
+                    }
             }
                 .filter {
                     current == null || current.any { currentLink ->
-                        (currentLink.type == it.type && currentLink.identifier == it.identifier) ||
-                                currentLink.link == it.link
+                        (currentLink.type == it.type &&
+                                currentLink.identifier.equals(it.identifier, ignoreCase = true)) ||
+                                currentLink.link.equals(it.link, ignoreCase = true)
                     }
                 }
                 .ifEmpty { null }

@@ -2,6 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.remote
 
 import com.fleeksoft.ksoup.Ksoup
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
+import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
@@ -86,9 +89,19 @@ class RemoteDataDiffer(
             .distinctBy { it.booth to it.name }
             .sortedBy { it.booth }
 
-    private fun fixLink(link: String) = if (link.lowercase().startsWith("http")) {
-        link
-    } else {
-        "https://$link"
-    }.removeSuffix("/").lowercase()
+    private fun fixLink(link: String): String {
+        val trimmedLink = if (link.lowercase().startsWith("http")) {
+            link
+        } else {
+            "https://$link"
+        }.removeSuffix("/").removeSuffix("#").lowercase()
+
+        // TODO: There's more link types where this should apply
+        val linkModel = LinkModel.parse(trimmedLink)
+        if (linkModel.type.category == LinkCategory.SOCIALS) {
+            return linkModel.link.substringBefore("?")
+        }
+
+        return trimmedLink
+    }
 }
