@@ -79,7 +79,7 @@ object MerchEditScreen {
         viewModel: MerchEditViewModel = viewModel {
             graph.merchEditViewModelFactory.create(
                 merchId = merchId,
-                merch = initialInfo,
+                initialMerch = initialInfo,
                 savedStateHandle = createSavedStateHandle(),
             )
         },

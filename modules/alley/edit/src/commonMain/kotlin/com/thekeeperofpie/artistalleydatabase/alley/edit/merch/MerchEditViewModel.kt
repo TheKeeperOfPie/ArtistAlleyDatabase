@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -74,7 +73,7 @@ class MerchEditViewModel(
     interface Factory {
         fun create(
             merchId: Uuid,
-            merch: MerchInfo?,
+            initialMerch: MerchInfo?,
             savedStateHandle: SavedStateHandle,
         ): MerchEditViewModel
     }

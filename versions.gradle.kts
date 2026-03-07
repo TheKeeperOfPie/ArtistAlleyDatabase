@@ -9,7 +9,7 @@ object Versions {
     }
 
     object androidx {
-        const val activity = "1.13.0-alpha01"
+        const val activity = "1.13.0-rc01"
         const val annotation = "1.9.1"
         const val browser = "1.10.0-alpha03"
         const val core = "1.18.0-rc01"
@@ -67,41 +67,41 @@ object Versions {
 
     object jetBrains {
         object androidX {
-            const val lifecycle = "2.10.0-alpha08"
+            const val lifecycle = "2.10.0-beta01"
             const val navigation = "2.9.2"
-            const val navigation3 = "1.1.0-alpha02"
+            const val navigation3 = "1.1.0-alpha03"
             const val navigationevent = "1.0.1"
         }
 
         object composeMultiplatform {
-            const val plugin = "1.11.0-alpha02"
-            const val runtime = "1.11.0-alpha02"
-            const val windowSizeClass = "1.11.0-alpha02"
+            const val plugin = "1.11.0-alpha03"
+            const val runtime = "1.11.0-alpha03"
+            const val windowSizeClass = "1.11.0-alpha03"
         }
     }
 
     const val jimfs = "1.3.1"
     const val jsonTree = "2.6.0"
 
-    const val kermit = "2.0.8"
+    const val kermit = "2.1.0"
     const val kmpalette = "3.1.0"
 
     object kotlin {
         const val browser = "0.5.0"
-        const val core = "2.3.20-Beta2"
+        const val core = "2.3.20-RC2"
         const val coroutines = "1.10.2"
         const val datetime = "0.7.1-0.6.x-compat"
         const val io = "0.8.2"
         const val serialization = "1.10.0"
     }
 
-    const val ktor = "3.4.0"
+    const val ktor = "3.4.1"
     const val ksoup = "0.2.5"
     const val leakCanary = "3.0-alpha-8"
     const val manifoldGraphql = "2026.1.4"
     const val markwon = "4.6.2"
     const val materialKolor = "5.0.0-alpha06"
-    const val metro = "0.10.4"
+    const val metro = "0.11.2"
     const val moduleGraph = "0.10.1"
     const val molecule = "2.2.0"
     const val multiplatformMarkdown = "0.39.2"
