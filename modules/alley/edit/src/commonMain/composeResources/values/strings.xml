@@ -318,4 +318,6 @@
     <string name="alley_edit_remote_artist_data_merge_which_artist_action_new_artist">This is a new artist</string>
     <string name="alley_edit_remote_artist_data_merge_artist_inference_failed">Failed to load similar artists</string>
     <string name="alley_edit_remote_artist_data_link_ignore">Ignore</string>
+    <string name="alley_edit_remote_artist_data_action_save">Apply remote data</string>
+    <string name="alley_edit_remote_artist_data_action_save_and_edit">Apply and open artist edit</string>
 </resources>

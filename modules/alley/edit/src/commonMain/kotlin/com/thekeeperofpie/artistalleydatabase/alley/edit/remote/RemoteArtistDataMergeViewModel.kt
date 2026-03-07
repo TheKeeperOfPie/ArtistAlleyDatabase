@@ -16,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
@@ -113,8 +112,7 @@ class RemoteArtistDataMergeViewModel(
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     private val imageLoader = SeriesImageLoader(dispatchers, viewModelScope, seriesImagesStore)
-    private val saveTask: ExclusiveTask<SaveData, BackendRequest.SaveRemoteArtistData.Response> =
-        ExclusiveTask(viewModelScope, ::save)
+    private val saveTask = ExclusiveTask(viewModelScope, ::save)
     val saveTaskState get() = saveTask.state
 
     fun seriesImage(info: SeriesInfo) = imageLoader.getSeriesImage(info.toImageInfo())
@@ -123,7 +121,7 @@ class RemoteArtistDataMergeViewModel(
         confirmedArtistId.value = artistId
     }
 
-    fun onClickSave(images: List<EditImage>, updated: ArtistDatabaseEntry.Impl) {
+    fun onClickSave(images: List<EditImage>, updated: ArtistDatabaseEntry.Impl, openArtistEditAfter: Boolean) {
         val entry = currentEntry.value ?: return
         val initial = entryInfo.value?.second?.artist
         saveTask.triggerManual {
@@ -132,6 +130,7 @@ class RemoteArtistDataMergeViewModel(
                 initial = initial,
                 updated = updated,
                 entry = entry,
+                openArtistEditAfter = openArtistEditAfter,
             )
         }
     }
@@ -144,7 +143,7 @@ class RemoteArtistDataMergeViewModel(
                 updated = data.updated,
                 entry = data.entry,
                 isHistory = false,
-            )
+            ) to data.updated.id.takeIf { data.openArtistEditAfter }?.let(Uuid::parse)
         }
 
     private data class SaveData(
@@ -152,6 +151,7 @@ class RemoteArtistDataMergeViewModel(
         val initial: ArtistDatabaseEntry.Impl?,
         val updated: ArtistDatabaseEntry.Impl,
         val entry: ArtistRemoteEntry,
+        val openArtistEditAfter: Boolean,
     )
 
     @AssistedFactory

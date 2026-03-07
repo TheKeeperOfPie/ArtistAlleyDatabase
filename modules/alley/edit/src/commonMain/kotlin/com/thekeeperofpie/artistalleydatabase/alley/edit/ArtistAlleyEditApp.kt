@@ -459,12 +459,16 @@ private fun entryProvider(
             },
         )
     }
-    sharedElementEntry<AlleyEditDestination.RemoteArtistDataMerge> {
+    sharedElementEntry<AlleyEditDestination.RemoteArtistDataMerge> { route ->
         RemoteArtistDataMergeScreen(
-            dataYear = it.dataYear,
-            id = it.id,
+            dataYear = route.dataYear,
+            id = route.id,
             graph = graph,
             onClickBack = onClickBack,
+            onClickBackAndEditArtist = { artistId ->
+                onClickBack(true)
+                navStack.navigate(AlleyEditDestination.ArtistEdit(route.dataYear, artistId))
+            },
         )
     }
     sharedElementEntry<AlleyEditDestination.RemoteArtistDataHistoryMerge> {

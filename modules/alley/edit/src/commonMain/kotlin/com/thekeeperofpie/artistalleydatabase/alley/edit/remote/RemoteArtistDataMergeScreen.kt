@@ -12,7 +12,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -66,6 +67,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_outdated
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_booth_name
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_form_merge_title_name
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_action_save_and_edit
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_link_ignore
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_artist_inference_failed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_remote_artist_data_merge_timestamp_prefix
@@ -115,6 +117,7 @@ internal object RemoteArtistDataMergeScreen {
         id: ArtistRemoteEntry.Id,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
+        onClickBackAndEditArtist: (artistId: Uuid) -> Unit,
         viewModel: RemoteArtistDataMergeViewModel = viewModel {
             graph.remoteArtistDataMergeViewModelFactory.create(
                 dataYear = dataYear,
@@ -144,7 +147,20 @@ internal object RemoteArtistDataMergeScreen {
             inferredArtists = { inferredArtists },
             onConfirmId = viewModel::onConfirmArtist,
             onClickBack = onClickBack,
-            onClickSave = viewModel::onClickSave,
+            onClickSave = { images, entry ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = entry,
+                    openArtistEditAfter = false,
+                )
+            },
+            onClickSaveAndEdit = { images, entry ->
+                viewModel.onClickSave(
+                    images = images,
+                    updated = entry,
+                    openArtistEditAfter = true,
+                )
+            },
         )
 
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)
@@ -153,7 +169,8 @@ internal object RemoteArtistDataMergeScreen {
         LaunchedEffect(navigationResults, saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .filterNotNull()
-                .collectLatest { (_, result) ->
+                .collectLatest { (_, pair) ->
+                    val (result, artistId) = pair
                     when (result) {
                         is BackendRequest.SaveRemoteArtistData.Response.Failed -> {
                             snackbarHostState.showSnackbar(message = result.errorMessage)
@@ -165,7 +182,11 @@ internal object RemoteArtistDataMergeScreen {
                         }
                         is BackendRequest.SaveRemoteArtistData.Response.Success -> {
                             saveTaskState.clearResult()
-                            onClickBack(true)
+                            if (artistId == null) {
+                                onClickBack(true)
+                            } else {
+                                onClickBackAndEditArtist(artistId)
+                            }
                         }
                     }
                 }
@@ -187,6 +208,7 @@ internal object RemoteArtistDataMergeScreen {
         onConfirmId: (Uuid?) -> Unit,
         onClickBack: (force: Boolean) -> Unit,
         onClickSave: (List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit,
+        onClickSaveAndEdit: ((List<EditImage>, ArtistDatabaseEntry.Impl) -> Unit)?,
     ) {
         val initialArtist = entryInfo?.artist
         val entryDiff = entryInfo?.diff
@@ -245,8 +267,19 @@ internal object RemoteArtistDataMergeScreen {
                         })
                     },
                     actions = {
+                        if (onClickSaveAndEdit != null) {
+                            TooltipIconButton(
+                                icon = Icons.Default.SaveAs,
+                                tooltipText = stringResource(Res.string.alley_edit_remote_artist_data_action_save_and_edit),
+                                onClick = {
+                                    artistFormState?.captureDatabaseEntry(dataYear, true)?.let {
+                                        onClickSaveAndEdit(it.first, it.second)
+                                    }
+                                },
+                            )
+                        }
                         TooltipIconButton(
-                            icon = Icons.Default.Save,
+                            icon = Icons.Default.DoneAll,
                             tooltipText = stringResource(Res.string.alley_edit_artist_form_merge_action_save),
                             onClick = {
                                 artistFormState?.captureDatabaseEntry(dataYear, true)?.let {

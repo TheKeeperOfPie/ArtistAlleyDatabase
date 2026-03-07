@@ -59,6 +59,7 @@ internal object RemoteArtistDataHistoryMergeScreen {
             onConfirmId = {},
             onClickBack = onClickBack,
             onClickSave = viewModel::onClickSave,
+            onClickSaveAndEdit = null,
         )
 
         GenericTaskErrorEffect(saveTaskState, snackbarHostState)
