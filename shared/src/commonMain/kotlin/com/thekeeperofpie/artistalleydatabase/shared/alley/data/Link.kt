@@ -69,7 +69,7 @@ data class Link(
         val parsePath: (path: String) -> String? = { it },
         val parseHost: (host: String) -> String? = { null },
     ) {
-        ART_STATION("artstation.com"),
+        ART_STATION("artstation.com", parseHost = { it.substringBefore(".artstation.com") }),
         BIG_CARTEL("bigcartel.com", parseHost = { it.substringBefore(".bigcartel.com") }),
         BLUESKY(
             "bsky.app", "bsky.social",
