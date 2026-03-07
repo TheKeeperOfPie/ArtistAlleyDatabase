@@ -12,6 +12,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.Respons
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -219,7 +221,9 @@ internal object AlleyFormBackend {
         val beforeArtist = request.beforeArtist
         val afterArtist = request.afterArtist
         val timestamp = Clock.System.now()
-        val artistFormEntry =
+        val artistFormEntry = if (!ArtistDatabaseEntry.hasChanged(beforeArtist, afterArtist)) {
+            null
+        } else {
             ArtistFormEntry(
                 artistId = artistId,
                 dataYear = request.dataYear,
@@ -254,17 +258,17 @@ internal object AlleyFormBackend {
                 formNotes = request.formNotes,
                 timestamp = timestamp,
             )
-        val updatedStampRallyFormEntries = request.afterStampRallies.map { after ->
+        }
+        val updatedStampRallyFormEntries = request.afterStampRallies.mapNotNull { after ->
             val before = request.beforeStampRallies.find { it.id == after.id }
-            val stampRallyId = if (before == null || Uuid.parseOrNull(after.id) == null) {
-                Uuid.random().toString()
-            } else {
-                after.id
-            }
+            val stampRallyId = after.id.takeIf { it.isNotEmpty() }
+                ?.let(Uuid::parseOrNull)
+                ?: Uuid.random()
+            if (!StampRallyDatabaseEntry.hasChanged(before, after)) return@mapNotNull null
             StampRallyFormEntry(
                 dataYear = request.dataYear,
                 artistId = artistId,
-                stampRallyId = stampRallyId,
+                stampRallyId = stampRallyId.toString(),
                 beforeFandom = before?.fandom,
                 beforeTables = before?.tables,
                 beforeLinks = before?.links,
@@ -321,7 +325,9 @@ internal object AlleyFormBackend {
                 )
             }
 
-        database.artistFormEntryQueries.insertFormEntry(artistFormEntry)
+        if (artistFormEntry != null) {
+            database.artistFormEntryQueries.insertFormEntry(artistFormEntry)
+        }
         updatedStampRallyFormEntries.forEach {
             database.stampRallyFormEntryQueries.insertFormEntry(it)
         }

@@ -63,8 +63,17 @@ interface ArtistDatabaseEntry {
 
         // Need to ignore metadata for equality
         fun hasChanged(before: Impl?, after: Impl) =
-            before?.copy(counter = 0, lastEditTime = null, lastEditor = null) !=
-                    after.copy(counter = 0, lastEditTime = null, lastEditor = null)
+            before?.copy(
+                verifiedArtist = false,
+                counter = 0,
+                lastEditTime = null,
+                lastEditor = null
+            ) != after.copy(
+                verifiedArtist = false,
+                counter = 0,
+                lastEditTime = null,
+                lastEditor = null
+            )
 
         fun legacy(
             year: DataYear,
