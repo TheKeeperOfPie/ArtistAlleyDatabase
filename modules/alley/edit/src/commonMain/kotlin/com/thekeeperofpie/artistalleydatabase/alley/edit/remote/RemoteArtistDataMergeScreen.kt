@@ -86,7 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -708,7 +708,7 @@ internal object RemoteArtistDataMergeScreen {
 
             fun applyDiff(
                 base: List<String>,
-                diff: HistoryListDiff?,
+                diff: ListDiff<String>?,
                 added: ArtistDataField,
                 deleted: ArtistDataField,
             ): List<String> {

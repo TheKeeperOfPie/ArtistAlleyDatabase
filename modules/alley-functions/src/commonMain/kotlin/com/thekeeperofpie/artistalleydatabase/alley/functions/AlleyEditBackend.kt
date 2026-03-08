@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
-import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2ListOptions
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -30,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEn
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
@@ -129,7 +127,6 @@ object AlleyEditBackend {
                         makeResponse(submitRemoteArtistData(context, this))
                     is BackendRequest.SaveRemoteArtistData ->
                         makeResponse(saveRemoteArtistData(context, this))
-                    is ListImages.Request -> makeResponse(listImages(context, this))
                 }
             }
         }
@@ -447,20 +444,6 @@ object AlleyEditBackend {
             deleteFakeArtistFormEntryHistory()
             deleteFakeArtistPublicKey()
         }
-    }
-
-    private suspend fun listImages(
-        context: EventContext,
-        request: ListImages.Request,
-    ): ListImages.Response {
-        val keys = context.env.ARTIST_ALLEY_IMAGES_BUCKET
-            .list(R2ListOptions(request.prefix))
-            .await()
-            .objects
-            .map { it.key }
-        return ListImages.Response(keys.map {
-            Uuid.parse(it.substringAfterLast("/").substringBefore(".")) to it
-        })
     }
 
     private suspend fun loadSeries(context: EventContext): Response {

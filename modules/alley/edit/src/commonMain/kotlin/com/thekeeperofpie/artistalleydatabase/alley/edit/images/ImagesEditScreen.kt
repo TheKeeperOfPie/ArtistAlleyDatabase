@@ -28,6 +28,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,6 +61,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_ima
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_deleted
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_header_moved
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_save_changes_moved
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_size_megabytes_warning
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_title
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_image_width_and_height
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_save_changes_action_exit
@@ -69,6 +71,7 @@ import artistalleydatabase.modules.utils_compose.generated.resources.more_action
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DraggableItem
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -79,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberDragDropStat
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.size
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
@@ -222,7 +226,7 @@ object ImagesEditScreen {
                                     )
 
                                     Column(
-                                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
                                         modifier = Modifier.weight(1f)
                                             .padding(horizontal = 16.dp, vertical = 8.dp)
                                     ) {
@@ -239,6 +243,24 @@ object ImagesEditScreen {
                                                 ),
                                                 style = MaterialTheme.typography.bodySmall,
                                             )
+                                        }
+
+                                        if (image is EditImage.LocalImage) {
+                                            val key = image.coilImageModel
+                                            val size = PlatformImageCache[key]?.size()?.asBytes()
+                                            if (size != null && size > ImageUtils.MAX_UPLOAD_SIZE) {
+                                                OutlinedCard {
+                                                    Text(
+                                                        text = stringResource(
+                                                            Res.string.alley_edit_image_size_megabytes_warning,
+                                                            size.inWholeMegabytes,
+                                                            ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes,
+                                                        ),
+                                                        color = MaterialTheme.colorScheme.error,
+                                                        modifier = Modifier.padding(8.dp)
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
 

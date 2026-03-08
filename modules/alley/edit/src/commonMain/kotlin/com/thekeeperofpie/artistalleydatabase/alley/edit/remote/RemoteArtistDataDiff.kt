@@ -5,17 +5,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 
 data class RemoteArtistDataDiff(
     val booth: String?,
     val name: String?,
     val summary: String?,
-    val socialLinks: HistoryListDiff?,
-    val storeLinks: HistoryListDiff?,
-    val portfolioLinks: HistoryListDiff?,
-    val commissions: HistoryListDiff?,
-    val otherLinks: HistoryListDiff?,
+    val socialLinks: ListDiff<String>?,
+    val storeLinks: ListDiff<String>?,
+    val portfolioLinks: ListDiff<String>?,
+    val commissions: ListDiff<String>?,
+    val otherLinks: ListDiff<String>?,
 ) {
     companion object {
         /**
@@ -82,7 +82,7 @@ data class RemoteArtistDataDiff(
             current: List<LinkModel>?,
             previous: List<LinkModel>?,
             next: List<LinkModel>?,
-        ): HistoryListDiff? {
+        ): ListDiff<String>? {
             val added = next.orEmpty().filter {
                 current.orEmpty()
                     .none { currentLink ->
@@ -109,7 +109,7 @@ data class RemoteArtistDataDiff(
                 return null
             }
 
-            return HistoryListDiff(
+            return ListDiff(
                 added = added?.map { it.link },
                 deleted = deleted?.map { it.link },
             )

@@ -1,12 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import artistalleydatabase.modules.alley.data.generated.resources.Res
-import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
@@ -22,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.StampRallyEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesEntryDao
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -81,34 +77,6 @@ class AlleyEditDatabase(
     suspend fun loadMerch(): Map<String, MerchInfo> {
         return (merchEntryDao.getMerch().map { it.toMerchInfo() } + remoteDatabase.loadMerch())
             .associateBy { it.name }
-    }
-
-    fun getArtistEditImages(
-        year: DataYear,
-        images: List<CatalogImage>,
-    ) = images.map {
-        val path = "files/${year.folderName}/catalogs/${it.name}"
-        EditImage.DatabaseImage(
-            uri = Uri.parse(Res.getUri(path)),
-            name = it.name,
-            width = it.width,
-            height = it.height,
-        )
-    }
-
-    suspend fun loadArtistImages(year: DataYear, artist: ArtistDatabaseEntry): List<EditImage> {
-        val databaseImages = artistEntryDao.getImagesById(year, artist.id)
-            ?.let { getArtistEditImages(year, it) }
-            ?.associateBy { it.name }
-            .orEmpty()
-        val networkImages = remoteDatabase.listImages(year, Uuid.parse(artist.id))
-            .associateBy { it.name }
-        return artist.images.mapNotNull {
-            val targetName = it.name
-            networkImages.entries.find { it.key.contains(targetName) }?.value
-                ?.fillSize(it.width, it.height)
-                ?: databaseImages.entries.find { it.key.contains(targetName) }?.value
-        }
     }
 
     suspend fun saveArtist(
@@ -228,29 +196,6 @@ class AlleyEditDatabase(
         initial: StampRallyDatabaseEntry?,
         updated: StampRallyDatabaseEntry,
     ) = remoteDatabase.saveStampRally(dataYear, initial, updated)
-
-    suspend fun loadStampRallyImages(
-        year: DataYear,
-        stampRally: StampRallyDatabaseEntry,
-    ): List<EditImage> {
-        val databaseImages = AlleyImageUtils.getRallyImages(year = year, images = stampRally.images)
-            .map {
-                EditImage.DatabaseImage(
-                    uri = it.uri,
-                    name = it.uri.toString(),
-                    width = it.width,
-                    height = it.height,
-                )
-            }
-        val networkImages = remoteDatabase.listImages(year, stampRally.id)
-            .associateBy { it.name }
-        return stampRally.images.mapNotNull {
-            val targetName = it.name
-            networkImages.entries.find { it.key.contains(targetName) }?.value
-                ?.fillSize(it.width, it.height)
-                ?: databaseImages.find { it.name.contains(targetName) }
-        }
-    }
 
     suspend fun loadStampRallyHistory(dataYear: DataYear, stampRallyId: String) =
         remoteDatabase.loadStampRallyHistory(dataYear, stampRallyId)

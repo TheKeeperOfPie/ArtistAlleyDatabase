@@ -1,15 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
 import androidx.compose.ui.util.fastForEachReversed
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 
 data class StampRallyHistoryEntryWithDiff(
     val entry: StampRallyHistoryEntry,
-    val tablesDiff: HistoryListDiff?,
-    val linksDiff: HistoryListDiff?,
-    val seriesDiff: HistoryListDiff?,
-    val merchDiff: HistoryListDiff?,
+    val tablesDiff: ListDiff<String>?,
+    val linksDiff: ListDiff<String>?,
+    val seriesDiff: ListDiff<String>?,
+    val merchDiff: ListDiff<String>?,
 ) {
     companion object {
         fun calculateDiffs(entries: List<StampRallyHistoryEntry>): List<StampRallyHistoryEntryWithDiff> {
@@ -20,10 +20,10 @@ data class StampRallyHistoryEntryWithDiff(
             var lastMerch = oldestEntry?.merch.orEmpty()
             val results = mutableListOf<StampRallyHistoryEntryWithDiff>()
             entries.fastForEachReversed {
-                val tablesDiff = HistoryListDiff.diffList(lastTables, it.tables)
-                val linksDiff = HistoryListDiff.diffList(lastLinks, it.links)
-                val seriesDiff = HistoryListDiff.diffList(lastSeries, it.series)
-                val merchDiff = HistoryListDiff.diffList(lastMerch, it.merch)
+                val tablesDiff = ListDiff.diffList(lastTables, it.tables)
+                val linksDiff = ListDiff.diffList(lastLinks, it.links)
+                val seriesDiff = ListDiff.diffList(lastSeries, it.series)
+                val merchDiff = ListDiff.diffList(lastMerch, it.merch)
                 results += StampRallyHistoryEntryWithDiff(
                     entry = it,
                     tablesDiff = tablesDiff,

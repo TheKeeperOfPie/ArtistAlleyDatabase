@@ -4,7 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditRemoteDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormRemoteDatabase
+import com.thekeeperofpie.artistalleydatabase.alley.edit.data.DebugTestData
 import com.thekeeperofpie.artistalleydatabase.alley.edit.remote.RemoteDataDiffer
+import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
@@ -23,12 +27,15 @@ import kotlinx.coroutines.launch
 @Inject
 class AdminViewModel(
     private val database: AlleyEditDatabase,
+    private val editRemoteDatabase: AlleyEditRemoteDatabase,
+    private val formRemoteDatabase: AlleyFormRemoteDatabase,
     dispatchers: CustomDispatchers,
     remoteDataDiffer: RemoteDataDiffer,
 ) : ViewModel() {
 
     private val createJob = ExclusiveProgressJob(viewModelScope, ::createDatabases)
-    private val deleteFakeArtistDataJob = ExclusiveProgressJob(viewModelScope, ::deleteFakeArtistData)
+    private val deleteFakeArtistDataJob =
+        ExclusiveProgressJob(viewModelScope, ::deleteFakeArtistData)
     val fakeArtistFormLink = flowFromSuspend { database.fakeArtistFormLink() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
@@ -58,6 +65,12 @@ class AdminViewModel(
         }
     }
 
-    private suspend fun createDatabases() = database.databaseCreate()
+    private suspend fun createDatabases() {
+        database.databaseCreate()
+        if (BuildKonfig.isWasmDebug) {
+            DebugTestData.initialize(editRemoteDatabase, formRemoteDatabase)
+        }
+    }
+
     private suspend fun deleteFakeArtistData() = database.deleteFakeArtistData()
 }

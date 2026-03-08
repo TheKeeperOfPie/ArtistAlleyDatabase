@@ -67,7 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormS
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.rememberErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -464,7 +464,7 @@ internal object StampRallyFormMergeScreen {
 
             fun applyDiff(
                 base: List<String>,
-                diff: HistoryListDiff?,
+                diff: ListDiff<String>?,
                 added: StampRallyField,
                 deleted: StampRallyField,
             ): List<String> {

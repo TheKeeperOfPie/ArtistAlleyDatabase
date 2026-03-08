@@ -95,6 +95,7 @@
     <string name="alley_edit_image_action_change">Change image</string>
     <string name="alley_edit_image_action_add">Add images</string>
     <string name="alley_edit_image_action_save_content_description">Save image edits</string>
+    <string name="alley_edit_image_size_megabytes_warning">Size %1$d MB is larger than %2$d MB, will be compressed</string>
 
     <string name="alley_edit_image_save_changes_header_added">Added</string>
     <string name="alley_edit_image_save_changes_header_deleted">Deleted</string>
@@ -178,6 +179,7 @@
     <string name="alley_edit_open_link_content_description">Open link</string>
 
     <string name="alley_edit_artist_field_label_status">Status:</string>
+    <string name="alley_edit_artist_field_label_images">Images:</string>
     <string name="alley_edit_artist_field_label_booth">Booth:</string>
     <string name="alley_edit_artist_field_label_name">Name:</string>
     <string name="alley_edit_artist_field_label_summary">Description:</string>

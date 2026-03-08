@@ -35,7 +35,7 @@ sealed interface EditImage : ImageWithDimensions {
     ) : EditImage {
         override val coilImageModel: PlatformImageKey get() = key
 
-        constructor(key: PlatformImageKey, file: PlatformFile): this(
+        constructor(key: PlatformImageKey, file: PlatformFile) : this(
             key = key,
             name = file.name.ifBlank { key.value.toString() },
             extension = file.extension,
@@ -46,16 +46,22 @@ sealed interface EditImage : ImageWithDimensions {
     @Serializable
     data class NetworkImage(
         val uri: Uri,
-        val id: Uuid,
+        val key: String,
         override val width: Int? = null,
         override val height: Int? = null,
     ) : EditImage {
-        override val name = id.toString()
+        override val name get() = key
         override val coilImageModel: Uri get() = uri
 
         companion object {
-            fun makePrefix(dataYear: DataYear, id: String) =
-                "${dataYear.serializedName}/$id"
+            fun makePrefix(dataYear: DataYear, id: String) = "${dataYear.serializedName}/$id"
+
+            fun makeKey(
+                dataYear: DataYear,
+                entryId: Uuid,
+                imageId: Uuid,
+                platformFile: PlatformFile,
+            ) = "${dataYear.serializedName}/$entryId/$imageId.${platformFile.extension}"
         }
     }
 

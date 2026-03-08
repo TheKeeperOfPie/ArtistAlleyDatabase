@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.extension
 import io.ktor.client.HttpClient
 import kotlinx.browser.window
 import kotlin.uuid.Uuid
@@ -60,13 +59,12 @@ class FormImageUploader(
         platformFile: PlatformFile,
         id: Uuid,
     ): EditImage {
-        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString()) +
-                "/$id.${platformFile.extension}"
+        val key = EditImage.NetworkImage.makeKey(dataYear, artistId, id, platformFile)
         return EditImage.NetworkImage(
             uri = Uri.parse(
                 IMAGES_URL.ifBlank { "${window.origin}/edit/api/image" } + "/$key"
             ),
-            id = id,
+            key = key,
         )
     }
 }

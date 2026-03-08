@@ -1,10 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.LayoutScopeMarker
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.allCaps
 import androidx.compose.foundation.text.input.clearText
@@ -19,6 +27,7 @@ import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -34,7 +43,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
@@ -42,6 +54,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_add_images
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_hide_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_action_show_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_booth
@@ -66,9 +80,15 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_commis
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site_tooltip
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_online_tooltip
+import coil3.compose.AsyncImage
+import com.composables.core.ScrollArea
+import com.composables.core.rememberScrollAreaState
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHeaderIconAndTitle
@@ -79,6 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.RevertDialogState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.SeriesSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ShowRevertIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.rememberListRevertDialogState
+import com.thekeeperofpie.artistalleydatabase.alley.images.ImageRowActions
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkCategory
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
@@ -86,6 +107,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.links.category
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
+import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryHorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.UnrecognizedTagIcon
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
@@ -97,6 +119,15 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -119,6 +150,14 @@ interface ArtistFormScope : EntryFormScope {
     fun StatusSection(
         state: EntryForm2.DropdownState,
         metadata: EntryEditMetadata,
+    )
+
+    @Composable
+    fun ImagesSection(
+        images: SnapshotStateList<EditImage>,
+        requestKey: NavigationRequestKey<List<EditImage>>? = null,
+        onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
+        onClickImage: (EditImage) -> Unit,
     )
 
     @Composable
@@ -311,6 +350,118 @@ private abstract class ArtistFormScopeImpl(
                 }
             },
         )
+    }
+
+    @Composable
+    override fun ImagesSection(
+        images: SnapshotStateList<EditImage>,
+        requestKey: NavigationRequestKey<List<EditImage>>?,
+        onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)?,
+        onClickImage: (EditImage) -> Unit,
+    ) {
+        val listState = rememberLazyListState()
+        val scrollAreaState = rememberScrollAreaState(listState)
+        ScrollArea(state = scrollAreaState) {
+            if (requestKey != null) {
+                NavigationResultEffect(requestKey) {
+                    images.replaceAll(it)
+                }
+            }
+
+            Column {
+                Box {
+                    val addLauncher = if (onClickEditImages == null) {
+                        null
+                    } else {
+                        rememberFilePickerLauncher(
+                            type = FileKitType.Image,
+                            mode = FileKitMode.Multiple(),
+                        ) {
+                            if (it != null) {
+                                images += it.map {
+                                    val imageKey = PlatformImageCache.add(it)
+                                    EditImage.LocalImage(imageKey, it)
+                                }
+                            }
+                        }
+                    }
+                    LazyRow(
+                        state = listState,
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        modifier = Modifier.conditionally(
+                            images.isNotEmpty(),
+                            Modifier.height(200.dp)
+                        )
+                    ) {
+                        items(items = images, key = { it.coilImageModel.toString() }) {
+                            val imageWidth = it.width
+                            val imageHeight = it.height
+                            val width = if (imageWidth == null || imageHeight == null) {
+                                null
+                            } else {
+                                200.dp * (imageWidth / imageHeight)
+                            }
+                            AsyncImage(
+                                model = it.coilImageModel,
+                                contentDescription = null,
+                                contentScale = ContentScale.FillHeight,
+                                modifier = Modifier
+                                    .conditionallyNonNull(width) { width(it) }
+                                    .height(200.dp)
+                                    .clickable { onClickImage(it) }
+                            )
+                        }
+                        if (addLauncher != null) {
+                            item {
+                                FilledTonalButton(
+                                    onClick = {
+                                        if (images.isEmpty()) {
+                                            addLauncher.launch()
+                                        } else {
+                                            if (requestKey != null) {
+                                                onClickEditImages?.invoke(
+                                                    requestKey,
+                                                    images.toList()
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.padding(vertical = 16.dp)
+                                ) {
+                                    Text(
+                                        stringResource(
+                                            if (images.isEmpty()) {
+                                                Res.string.alley_edit_artist_action_add_images
+                                            } else {
+                                                Res.string.alley_edit_artist_action_edit_images
+                                            }
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    ImageRowActions(listState)
+                }
+
+                PrimaryHorizontalScrollbar(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            val scrollIndicatorState = listState.scrollIndicatorState
+                            alpha = if (scrollIndicatorState == null ||
+                                scrollIndicatorState.contentSize <= scrollIndicatorState.viewportSize
+                            ) {
+                                0f
+                            } else {
+                                1f
+                            }
+                        }
+                        .padding(horizontal = 16.dp)
+                )
+            }
+        }
     }
 
     @Composable
@@ -908,8 +1059,11 @@ object ArtistForm {
         modifier: Modifier = Modifier,
         forceLockId: Boolean = false,
         showStatus: Boolean = true,
+        showImages: Boolean = false,
         showEditorNotes: Boolean = true,
         forceLocked: Boolean = false,
+        onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
+        onClickImage: (EditImage) -> Unit = {},
     ) {
         val focusState = rememberFocusState(
             listOfNotNull(
@@ -941,6 +1095,16 @@ object ArtistForm {
             PasteLinkSection(state = state.links)
             if (showStatus) {
                 StatusSection(state = state.editorState.status, metadata = state.metadata)
+            }
+
+            if (showImages) {
+                val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                ImagesSection(
+                    images = state.images,
+                    requestKey = requestKey,
+                    onClickEditImages = onClickEditImages,
+                    onClickImage = onClickImage,
+                )
             }
             IdSection(
                 state = state.editorState.id,

@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEn
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
-import com.thekeeperofpie.artistalleydatabase.alley.models.network.ListImages
 import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -112,38 +111,6 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage> =
-        withContext(dispatchers.io) {
-            try {
-                sendRequest(
-                    ListImages.Request(
-                        EditImage.NetworkImage.makePrefix(dataYear, artistId.toString())
-                    )
-                )!!
-                    .idsAndKeys
-                    .map { imageFromIdAndKey(it.first, it.second) }
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                emptyList()
-            }
-        }
-
-    actual suspend fun listImages(dataYear: DataYear, stampRallyId: String): List<EditImage> =
-        withContext(dispatchers.io) {
-            try {
-                sendRequest(
-                    ListImages.Request(
-                        EditImage.NetworkImage.makePrefix(dataYear, stampRallyId)
-                    )
-                )!!
-                    .idsAndKeys
-                    .map { imageFromIdAndKey(it.first, it.second) }
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                emptyList()
-            }
-        }
-
     actual suspend fun uploadImage(
         dataYear: DataYear,
         artistId: Uuid,
@@ -159,7 +126,7 @@ actual class AlleyEditRemoteDatabase(
             setBody(bytes)
         }
 
-        imageFromIdAndKey(id, key)
+        imageFromIdAndKey(key)
     }
 
     actual suspend fun uploadImage(
@@ -177,7 +144,7 @@ actual class AlleyEditRemoteDatabase(
             setBody(bytes)
         }
 
-        imageFromIdAndKey(id, key)
+        imageFromIdAndKey(key)
     }
 
     // TODO: Cache this and rely on manual refresh to avoid extra row reads
@@ -627,11 +594,11 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    private fun imageFromIdAndKey(id: Uuid, key: String) = EditImage.NetworkImage(
+    private fun imageFromIdAndKey(key: String) = EditImage.NetworkImage(
         uri = Uri.parse(
             BuildKonfig.imagesUrl.ifBlank { "${window.origin}/edit/api/image" } + "/$key"
         ),
-        id = id,
+        key = key,
     )
 
     private fun formLink(accessKey: String): String =

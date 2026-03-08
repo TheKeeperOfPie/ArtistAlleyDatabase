@@ -39,12 +39,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_booth
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_catalog_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_commissions
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_confirmed
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_merch_inferred
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_field_label_name
@@ -67,11 +67,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -84,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -104,11 +106,7 @@ internal object ArtistFormMergeScreen {
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
         viewModel: ArtistFormMergeViewModel = viewModel {
-            graph.artistFormMergeViewModelFactory.create(
-                dataYear,
-                artistId,
-                createSavedStateHandle()
-            )
+            graph.artistFormMergeViewModelFactory.create(dataYear, artistId)
         },
     ) {
         val artistWithFormEntry by viewModel.entry.collectAsStateWithLifecycle()
@@ -309,6 +307,7 @@ internal object ArtistFormMergeScreen {
                     seriesImage = seriesImage,
                     forceLocked = true,
                     showStatus = false,
+                    showImages = true,
                     showEditorNotes = false,
                     modifier = modifier.fillMaxWidth(),
                 )
@@ -378,6 +377,8 @@ internal object ArtistFormMergeScreen {
                     Text(stringResource(field.label))
 
                     val fieldText = when (field) {
+                        ArtistField.IMAGES_ADDED -> diff?.images?.added?.joinToString()
+                        ArtistField.IMAGES_REMOVED -> diff?.images?.deleted?.joinToString()
                         ArtistField.BOOTH -> diff?.booth
                         ArtistField.NAME -> diff?.name
                         ArtistField.SUMMARY -> diff?.summary
@@ -437,12 +438,12 @@ internal object ArtistFormMergeScreen {
                 base
             }
 
-            fun applyDiff(
-                base: List<String>,
-                diff: HistoryListDiff?,
+            fun <T> applyDiff(
+                base: List<T>,
+                diff: ListDiff<T>?,
                 added: ArtistField,
                 deleted: ArtistField,
-            ): List<String> {
+            ): List<T> {
                 val base = base.toMutableSet()
                 if (this[deleted]) base.removeAll(diff?.deleted.orEmpty().toSet())
                 if (this[added]) base.addAll(diff?.added.orEmpty().toSet())
@@ -450,6 +451,12 @@ internal object ArtistFormMergeScreen {
             }
 
             val artist = base.copy(
+                images = applyDiff(
+                    base.images,
+                    diff.images,
+                    ArtistField.IMAGES_ADDED,
+                    ArtistField.IMAGES_REMOVED,
+                ),
                 booth = applyDiff(base.booth, diff.booth, ArtistField.BOOTH),
                 name = applyDiff(base.name, diff.name, ArtistField.NAME),
                 summary = applyDiff(base.summary, diff.summary, ArtistField.SUMMARY),
@@ -509,12 +516,15 @@ internal object ArtistFormMergeScreen {
                     ArtistField.MERCH_CONFIRMED_REMOVED,
                 ),
             )
-            return ArtistFormState().applyDatabaseEntry(
-                artist = artist,
-                seriesById = seriesById,
-                merchById = merchById,
-                mergeBehavior = FormMergeBehavior.REPLACE,
-            )
+            return ArtistFormState()
+                .applyDatabaseEntry(
+                    artist = artist,
+                    seriesById = seriesById,
+                    merchById = merchById,
+                    mergeBehavior = FormMergeBehavior.REPLACE,
+                ).apply {
+                    images.replaceAll(artist.images.map(ImageUtils::toEditImage))
+                }
         }
     }
 
@@ -525,6 +535,8 @@ internal object ArtistFormMergeScreen {
                 if (diff == null) return@apply
                 ArtistField.entries.forEach {
                     val include = when (it) {
+                        ArtistField.IMAGES_ADDED -> diff.images?.added != null
+                        ArtistField.IMAGES_REMOVED -> diff.images?.deleted != null
                         ArtistField.BOOTH -> diff.booth != null
                         ArtistField.NAME -> diff.name != null
                         ArtistField.SUMMARY -> diff.summary != null
@@ -557,6 +569,8 @@ internal object ArtistFormMergeScreen {
     }
 
     private enum class ArtistField(val label: StringResource) {
+        IMAGES_ADDED(Res.string.alley_edit_artist_field_label_images),
+        IMAGES_REMOVED(Res.string.alley_edit_artist_field_label_images),
         BOOTH(Res.string.alley_edit_artist_field_label_booth),
         NAME(Res.string.alley_edit_artist_field_label_name),
         SUMMARY(Res.string.alley_edit_artist_field_label_summary),
@@ -583,6 +597,7 @@ internal object ArtistFormMergeScreen {
 
         val isRemoved: Boolean
             get() = when (this) {
+                IMAGES_ADDED,
                 BOOTH,
                 NAME,
                 SUMMARY,
@@ -597,6 +612,7 @@ internal object ArtistFormMergeScreen {
                 MERCH_INFERRED_ADDED,
                 MERCH_CONFIRMED_ADDED,
                     -> false
+                IMAGES_REMOVED,
                 SOCIAL_LINKS_REMOVED,
                 STORE_LINKS_REMOVED,
                 PORTFOLIO_LINKS_REMOVED,

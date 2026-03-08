@@ -103,7 +103,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHistoryButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormRefreshButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.LazyColumnSideBySide
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableColumn
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -350,65 +351,83 @@ object ArtistEditScreen {
                     merchById = merchById,
                 )
 
-                ScrollableSideBySide(
-                    showSecondary = { !sameArtist.isEmpty() || showMergingArtist },
+                LazyColumnSideBySide(
+                    showSecondary = {
+                        !sameArtist.isEmpty() ||
+                                showMergingArtist ||
+                                state.artistFormState.images.isNotEmpty()
+                    },
                     primary = {
-                        Form(
-                            state = state,
-                            artistFormState = if (showMergingArtist) {
-                                mergingFormState.second
-                            } else {
-                                state.artistFormState
-                            },
-                            initialArtist = {
-                                if (showMergingArtist) {
-                                    mergingFormState.first
+                        item("form") {
+                            Form(
+                                state = state,
+                                artistFormState = if (showMergingArtist) {
+                                    mergingFormState.second
                                 } else {
-                                    initialArtist
-                                }
-                            },
-                            errorState = errorState,
-                            seriesById = seriesById,
-                            seriesPredictions = seriesPredictions,
-                            merchById = merchById,
-                            merchPredictions = merchPredictions,
-                            seriesImage = seriesImage,
-                            hasPendingChanges = hasPendingChanges,
-                            onClickMerge = onClickMerge,
-                            onClickSameArtist = onClickSameArtist,
-                            onConfirmDelete = onConfirmDelete,
-                            forceLocked = { !sameArtist.isEmpty() || showMergingArtist },
-                        )
+                                    state.artistFormState
+                                },
+                                initialArtist = {
+                                    if (showMergingArtist) {
+                                        mergingFormState.first
+                                    } else {
+                                        initialArtist
+                                    }
+                                },
+                                errorState = errorState,
+                                seriesById = seriesById,
+                                seriesPredictions = seriesPredictions,
+                                merchById = merchById,
+                                merchPredictions = merchPredictions,
+                                seriesImage = seriesImage,
+                                hasPendingChanges = hasPendingChanges,
+                                onClickMerge = onClickMerge,
+                                onClickSameArtist = onClickSameArtist,
+                                onConfirmDelete = onConfirmDelete,
+                                forceLocked = { !sameArtist.isEmpty() || showMergingArtist },
+                            )
+                        }
                     },
                     secondary = {
                         if (!sameArtist.isEmpty()) {
-                            sameArtistPrompt()
+                            item("sameArtistPrompt") {
+                                sameArtistPrompt()
+                            }
                         } else if (showMergingArtist) {
-                            mergeList()
+                            item("mergeList") {
+                                mergeList()
+                            }
                         } else {
-                            ImagePager(
-                                images = state.artistFormState.images,
-                                pagerState = imagePagerState,
-                                sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
-                                onClickPage = {
-                                    // TODO: Open images screen
-                                },
-                            )
+                            item("imagePager") {
+                                Column {
+                                    ImagePager(
+                                        images = state.artistFormState.images,
+                                        pagerState = imagePagerState,
+                                        sharedElementId = state.artistFormState.editorState.id.value.text.toString(),
+                                        onClickPage = {
+                                            // TODO: Open images screen
+                                        },
+                                    )
 
-                            if (initialArtist != null && artistProgress !is JobProgress.Loading) {
-                                EditImagesButton(
-                                    images = state.artistFormState.images,
-                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
+                                    if (initialArtist != null && artistProgress !is JobProgress.Loading) {
+                                        EditImagesButton(
+                                            images = state.artistFormState.images,
+                                            onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                                        )
+                                    }
+                                }
                             }
                         }
                     },
                     secondaryExpanded = {
-                        if (!sameArtist.isEmpty()) {
-                            sameArtistPrompt()
-                        } else if (showMergingArtist) {
-                            mergeList()
+                        if (!sameArtist.isEmpty() || showMergingArtist) {
+                            ScrollableColumn {
+                                if (!sameArtist.isEmpty()) {
+                                    sameArtistPrompt()
+                                } else if (showMergingArtist) {
+                                    mergeList()
+                                }
+                            }
                         } else {
                             Column {
                                 EditImagesButton(

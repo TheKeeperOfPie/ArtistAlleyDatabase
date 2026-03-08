@@ -47,8 +47,6 @@
     <string name="alley_form_artist_instructions_footer">Catalog upload will be available closer to con</string>
 
     <string name="alley_form_catalog_header">Catalog</string>
-    <string name="alley_form_catalog_action_add_images">Add images</string>
-    <string name="alley_form_catalog_action_edit_images">Edit images</string>
 
     <string name="alley_form_stamp_rallies_header">Stamp rallies</string>
     <string name="alley_form_stamp_rallies_action_add">Add new rally</string>

@@ -39,7 +39,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_history_remote_timestamp
 import com.materialkolor.ktx.harmonize
 import com.materialkolor.utils.ColorUtils
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
@@ -179,7 +179,7 @@ internal fun HistorySingleChangeRow(label: StringResource, value: String?) {
 }
 
 @Composable
-internal fun HistoryListChangeRow(label: StringResource, diff: HistoryListDiff?) {
+internal fun HistoryListChangeRow(label: StringResource, diff: ListDiff<String>?) {
     if (diff != null) {
         Column {
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {

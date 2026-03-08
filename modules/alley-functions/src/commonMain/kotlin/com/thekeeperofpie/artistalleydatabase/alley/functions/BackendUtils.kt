@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.Respons
 import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -62,6 +62,10 @@ internal object BackendUtils {
             .awaitAsOneOrNull()
             ?: return null
         return ArtistEntryDiff(
+            images = ListDiff.diffList(
+                formEntry.beforeImages,
+                formEntry.afterImages
+            ),
             booth = formEntry.afterBooth.orEmpty()
                 .takeIf { it != formEntry.beforeBooth.orEmpty() },
             name = formEntry.afterName.orEmpty()
@@ -70,39 +74,39 @@ internal object BackendUtils {
                 .takeIf { it != formEntry.beforeSummary.orEmpty() },
             notes = formEntry.afterNotes.orEmpty()
                 .takeIf { it != formEntry.beforeNotes.orEmpty() },
-            socialLinks = HistoryListDiff.diffList(
+            socialLinks = ListDiff.diffList(
                 formEntry.beforeSocialLinks,
                 formEntry.afterSocialLinks
             ),
-            storeLinks = HistoryListDiff.diffList(
+            storeLinks = ListDiff.diffList(
                 formEntry.beforeStoreLinks,
                 formEntry.afterStoreLinks
             ),
-            portfolioLinks = HistoryListDiff.diffList(
+            portfolioLinks = ListDiff.diffList(
                 formEntry.beforePortfolioLinks,
                 formEntry.afterPortfolioLinks
             ),
-            catalogLinks = HistoryListDiff.diffList(
+            catalogLinks = ListDiff.diffList(
                 formEntry.beforeCatalogLinks,
                 formEntry.afterCatalogLinks
             ),
-            commissions = HistoryListDiff.diffList(
+            commissions = ListDiff.diffList(
                 formEntry.beforeCommissions,
                 formEntry.afterCommissions
             ),
-            seriesInferred = HistoryListDiff.diffList(
+            seriesInferred = ListDiff.diffList(
                 formEntry.beforeSeriesInferred,
                 formEntry.afterSeriesInferred
             ),
-            seriesConfirmed = HistoryListDiff.diffList(
+            seriesConfirmed = ListDiff.diffList(
                 formEntry.beforeSeriesConfirmed,
                 formEntry.afterSeriesConfirmed
             ),
-            merchInferred = HistoryListDiff.diffList(
+            merchInferred = ListDiff.diffList(
                 formEntry.beforeMerchInferred,
                 formEntry.afterMerchInferred
             ),
-            merchConfirmed = HistoryListDiff.diffList(
+            merchConfirmed = ListDiff.diffList(
                 formEntry.beforeMerchConfirmed,
                 formEntry.afterMerchConfirmed
             ),
@@ -123,6 +127,10 @@ internal object BackendUtils {
             .awaitAsOneOrNull()
             ?: return null
         return ArtistEntryDiff(
+            images = ListDiff.diffList(
+                formEntry.beforeImages,
+                formEntry.afterImages,
+            ),
             booth = formEntry.afterBooth.orEmpty()
                 .takeIf { it != formEntry.beforeBooth.orEmpty() },
             name = formEntry.afterName.orEmpty()
@@ -131,39 +139,39 @@ internal object BackendUtils {
                 .takeIf { it != formEntry.beforeSummary.orEmpty() },
             notes = formEntry.afterNotes.orEmpty()
                 .takeIf { it != formEntry.beforeNotes.orEmpty() },
-            socialLinks = HistoryListDiff.diffList(
+            socialLinks = ListDiff.diffList(
                 formEntry.beforeSocialLinks,
                 formEntry.afterSocialLinks
             ),
-            storeLinks = HistoryListDiff.diffList(
+            storeLinks = ListDiff.diffList(
                 formEntry.beforeStoreLinks,
                 formEntry.afterStoreLinks
             ),
-            portfolioLinks = HistoryListDiff.diffList(
+            portfolioLinks = ListDiff.diffList(
                 formEntry.beforePortfolioLinks,
                 formEntry.afterPortfolioLinks
             ),
-            catalogLinks = HistoryListDiff.diffList(
+            catalogLinks = ListDiff.diffList(
                 formEntry.beforeCatalogLinks,
                 formEntry.afterCatalogLinks
             ),
-            commissions = HistoryListDiff.diffList(
+            commissions = ListDiff.diffList(
                 formEntry.beforeCommissions,
                 formEntry.afterCommissions
             ),
-            seriesInferred = HistoryListDiff.diffList(
+            seriesInferred = ListDiff.diffList(
                 formEntry.beforeSeriesInferred,
                 formEntry.afterSeriesInferred
             ),
-            seriesConfirmed = HistoryListDiff.diffList(
+            seriesConfirmed = ListDiff.diffList(
                 formEntry.beforeSeriesConfirmed,
                 formEntry.afterSeriesConfirmed
             ),
-            merchInferred = HistoryListDiff.diffList(
+            merchInferred = ListDiff.diffList(
                 formEntry.beforeMerchInferred,
                 formEntry.afterMerchInferred
             ),
-            merchConfirmed = HistoryListDiff.diffList(
+            merchConfirmed = ListDiff.diffList(
                 formEntry.beforeMerchConfirmed,
                 formEntry.afterMerchConfirmed
             ),
@@ -204,19 +212,19 @@ internal object BackendUtils {
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
-                tables = HistoryListDiff.diffList(
+                tables = ListDiff.diffList(
                     formEntry.beforeTables,
                     formEntry.afterTables
                 ),
-                links = HistoryListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+                links = ListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
-                series = HistoryListDiff.diffList(
+                series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
                 ),
-                merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
+                merch = ListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
                 notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
                 deleted = coerceBooleanForJs(formEntry.deleted),
                 timestamp = formEntry.timestamp,
@@ -237,19 +245,19 @@ internal object BackendUtils {
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
-                tables = HistoryListDiff.diffList(
+                tables = ListDiff.diffList(
                     formEntry.beforeTables,
                     formEntry.afterTables
                 ),
-                links = HistoryListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+                links = ListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
-                series = HistoryListDiff.diffList(
+                series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
                 ),
-                merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
+                merch = ListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
                 notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
                 deleted = coerceBooleanForJs(formEntry.deleted),
                 timestamp = formEntry.timestamp,
@@ -271,19 +279,19 @@ internal object BackendUtils {
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
-                tables = HistoryListDiff.diffList(
+                tables = ListDiff.diffList(
                     formEntry.beforeTables,
                     formEntry.afterTables
                 ),
-                links = HistoryListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
+                links = ListDiff.diffList(formEntry.beforeLinks, formEntry.afterLinks),
                 tableMin = formEntry.afterTableMin.takeIf { it != formEntry.beforeTableMin },
                 prize = formEntry.afterPrize.takeIf { it != formEntry.beforePrize },
                 prizeLimit = formEntry.afterPrizeLimit.takeIf { it != formEntry.beforePrizeLimit },
-                series = HistoryListDiff.diffList(
+                series = ListDiff.diffList(
                     formEntry.beforeSeries,
                     formEntry.afterSeries
                 ),
-                merch = HistoryListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
+                merch = ListDiff.diffList(formEntry.beforeMerch, formEntry.afterMerch),
                 notes = formEntry.afterNotes.takeIf { it != formEntry.beforeNotes },
                 deleted = coerceBooleanForJs(formEntry.deleted),
                 timestamp = formEntry.timestamp,

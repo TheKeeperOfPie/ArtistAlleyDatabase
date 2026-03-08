@@ -1,23 +1,25 @@
 package com.thekeeperofpie.artistalleydatabase.alley.models
 
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
 @Serializable
 data class ArtistEntryDiff(
+    val images: ListDiff<CatalogImage>?,
     val booth: String?,
     val name: String?,
     val summary: String?,
     val notes: String?,
-    val socialLinks: HistoryListDiff?,
-    val storeLinks: HistoryListDiff?,
-    val portfolioLinks: HistoryListDiff?,
-    val catalogLinks: HistoryListDiff?,
-    val commissions: HistoryListDiff?,
-    val seriesInferred: HistoryListDiff?,
-    val seriesConfirmed: HistoryListDiff?,
-    val merchInferred: HistoryListDiff?,
-    val merchConfirmed: HistoryListDiff?,
+    val socialLinks: ListDiff<String>?,
+    val storeLinks: ListDiff<String>?,
+    val portfolioLinks: ListDiff<String>?,
+    val catalogLinks: ListDiff<String>?,
+    val commissions: ListDiff<String>?,
+    val seriesInferred: ListDiff<String>?,
+    val seriesConfirmed: ListDiff<String>?,
+    val merchInferred: ListDiff<String>?,
+    val merchConfirmed: ListDiff<String>?,
     val formNotes: String,
     val timestamp: Instant,
 )

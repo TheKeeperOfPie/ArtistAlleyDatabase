@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameAr
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -119,7 +120,6 @@ class ArtistEditViewModel(
             return@withContext
         }
         val artist = response.artist
-        val images = database.loadArtistImages(dataYear, artist)
         withContext(dispatchers.main) {
             Snapshot.withMutableSnapshot {
                 this@ArtistEditViewModel.artist.value = artist
@@ -129,14 +129,12 @@ class ArtistEditViewModel(
                     merchById = tagAutocomplete.merchById.first(),
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 )
+                state.artistFormState.images
+                    .replaceAll(artist.images.map(ImageUtils::toEditImage))
                 formMetadata.value = ArtistEditScreen.State.FormMetadata(
                     hasPendingFormSubmission = response.hasPendingFormSubmission,
                     hasFormLink = response.hasFormLink,
                 )
-
-                if (images.isNotEmpty()) {
-                    state.artistFormState.images.replaceAll(images)
-                }
             }
         }
         hasLoaded = true

@@ -1,9 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
+import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import io.ktor.client.request.put
@@ -15,7 +18,7 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.flowOn
 import kotlin.uuid.Uuid
 
 abstract class ImageUploader(
@@ -33,60 +36,73 @@ abstract class ImageUploader(
         }
 
         return flow {
-            withContext(dispatchers.io) {
-                var result = UploadResult(images, emptyMap())
-                suspend fun updateResult(
-                    images: List<EditImage> = result.images,
-                    errors: Map<EditImage, String> = result.errors,
-                    finished: Boolean = result.finished,
-                ) {
-                    result = result.copy(images = images, errors = errors, finished = finished)
-                    emit(result)
-                }
-
-                try {
-                    val presignedUrls = getPresignedImageUrls(dataYear, artistId, imagesToUpload)
-                    imagesToUpload.forEach { imageToUpload ->
-                        val platformFile = PlatformImageCache[imageToUpload.key]
-                        if (platformFile == null) {
-                            updateResult(errors = result.errors + (imageToUpload to "Failed to read image"))
-                            return@forEach
-                        }
-                        val bytes = platformFile.readBytes()
-                        val imageUrl = presignedUrls[imageToUpload]!!
-                        val response = httpClient.put(imageUrl) {
-                            contentType(ContentType.Application.OctetStream)
-                            setBody(bytes)
-                        }
-                        val status = response.status
-                        if (status != HttpStatusCode.OK) {
-                            val errorMessage =
-                                "Failed to upload image: $status, ${response.bodyAsText()}"
-                            updateResult(errors = result.errors + (imageToUpload to errorMessage))
-                            return@forEach
-                        }
-                        updateResult(
-                            images = result.images.map {
-                                if (imageToUpload == it) {
-                                    imageFromIdAndKey(
-                                        original = it,
-                                        dataYear = dataYear,
-                                        artistId = artistId,
-                                        platformFile = platformFile,
-                                        id = imageToUpload.id,
-                                    )
-                                } else {
-                                    it
-                                }
-                            },
-                        )
-                    }
-                    updateResult(finished = true)
-                } catch (t: Throwable) {
-                    updateResult(errors = imagesToUpload.associateWith { t.message.orEmpty() })
-                }
+            var result = UploadResult(images, emptyMap())
+            suspend fun updateResult(
+                images: List<EditImage>? = null,
+                errors: Map<EditImage, String>? = null,
+                finished: Boolean? = null,
+            ) {
+                result = result.copy(
+                    images = images ?: result.images,
+                    errors = errors ?: result.errors,
+                    finished = finished ?: result.finished,
+                )
+                emit(result)
             }
-        }
+
+            try {
+                val presignedUrls = getPresignedImageUrls(dataYear, artistId, imagesToUpload)
+                imagesToUpload.forEach { imageToUpload ->
+                    val platformFile = PlatformImageCache[imageToUpload.key]
+                    if (platformFile == null) {
+                        updateResult(errors = result.errors + (imageToUpload to "Failed to read image"))
+                        return@forEach
+                    }
+                    val bytes = platformFile.readBytes()
+                    val imageUrl = presignedUrls[imageToUpload]
+                    if (imageUrl == null) {
+                        if (PlatformSpecificConfig.type == PlatformType.DESKTOP) {
+                            return@forEach
+                        } else {
+                            requireNotNull(imageUrl) {
+                                "Failed to get presigned URL for ${imageToUpload.key} ${platformFile.name}"
+                            }
+                        }
+                    }
+                    val response = httpClient.put(imageUrl) {
+                        contentType(ContentType.Application.OctetStream)
+                        setBody(bytes)
+                    }
+                    val status = response.status
+                    if (status != HttpStatusCode.OK) {
+                        val errorMessage =
+                            "Failed to upload image: $status, ${response.bodyAsText()}"
+                        updateResult(errors = result.errors + (imageToUpload to errorMessage))
+                        return@forEach
+                    }
+                    updateResult(
+                        images = result.images.map {
+                            if (imageToUpload == it) {
+                                imageFromIdAndKey(
+                                    original = it,
+                                    dataYear = dataYear,
+                                    artistId = artistId,
+                                    platformFile = platformFile,
+                                    id = imageToUpload.id,
+                                )
+                            } else {
+                                it
+                            }
+                        },
+                    )
+                }
+                updateResult(finished = true)
+            } catch (t: Throwable) {
+                updateResult(errors = imagesToUpload.associateWith {
+                    t.message.orEmpty().ifEmpty { t.stackTraceToString() }
+                })
+            }
+        }.flowOn(dispatchers.io)
     }
 
     protected abstract suspend fun getPresignedImageUrls(

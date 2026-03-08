@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -148,22 +148,6 @@ actual class AlleyEditRemoteDatabase(
 
         artistsByDataYearAndId[dataYear]?.remove(expected.id)
         return BackendRequest.ArtistDelete.Response.Success
-    }
-
-    actual suspend fun listImages(
-        dataYear: DataYear,
-        artistId: Uuid,
-    ): List<EditImage> {
-        val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString())
-        return images.entries.filter { it.key.startsWith(prefix) }.map { it.value }
-    }
-
-    actual suspend fun listImages(
-        dataYear: DataYear,
-        stampRallyId: String,
-    ): List<EditImage> {
-        val prefix = EditImage.NetworkImage.makePrefix(dataYear, stampRallyId)
-        return images.entries.filter { it.key.startsWith(prefix) }.map { it.value }
     }
 
     actual suspend fun uploadImage(
@@ -644,26 +628,27 @@ actual class AlleyEditRemoteDatabase(
         val timestamp: Instant = Clock.System.now(),
     ) {
         fun toArtistEntryDiff() = ArtistEntryDiff(
+            images = ListDiff.diffList(before.images, after.images),
             booth = after.booth.orEmpty().takeIf { it != before.booth.orEmpty() },
             name = after.name.takeIf { it != before.name },
             summary = after.summary.orEmpty().takeIf { it != before.summary.orEmpty() },
             notes = after.notes.orEmpty().takeIf { it != before.notes.orEmpty() },
-            socialLinks = HistoryListDiff.diffList(before.socialLinks, after.socialLinks),
-            storeLinks = HistoryListDiff.diffList(before.storeLinks, after.storeLinks),
-            portfolioLinks = HistoryListDiff.diffList(
+            socialLinks = ListDiff.diffList(before.socialLinks, after.socialLinks),
+            storeLinks = ListDiff.diffList(before.storeLinks, after.storeLinks),
+            portfolioLinks = ListDiff.diffList(
                 before.portfolioLinks,
                 after.portfolioLinks
             ),
-            catalogLinks = HistoryListDiff.diffList(before.catalogLinks, after.catalogLinks),
-            commissions = HistoryListDiff.diffList(before.commissions, after.commissions),
-            seriesInferred = HistoryListDiff.diffList(
+            catalogLinks = ListDiff.diffList(before.catalogLinks, after.catalogLinks),
+            commissions = ListDiff.diffList(before.commissions, after.commissions),
+            seriesInferred = ListDiff.diffList(
                 before.seriesInferred,
                 after.seriesInferred
             ),
             seriesConfirmed =
-                HistoryListDiff.diffList(before.seriesConfirmed, after.seriesConfirmed),
-            merchInferred = HistoryListDiff.diffList(before.merchInferred, after.merchInferred),
-            merchConfirmed = HistoryListDiff.diffList(
+                ListDiff.diffList(before.seriesConfirmed, after.seriesConfirmed),
+            merchInferred = ListDiff.diffList(before.merchInferred, after.merchInferred),
+            merchConfirmed = ListDiff.diffList(
                 before.merchConfirmed,
                 after.merchConfirmed
             ),
@@ -699,13 +684,13 @@ actual class AlleyEditRemoteDatabase(
                 StampRallyEntryDiff(
                     id = stampRallyId,
                     fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
-                    tables = HistoryListDiff.diffList(before?.tables, after.tables),
-                    links = HistoryListDiff.diffList(before?.links, after.links),
+                    tables = ListDiff.diffList(before?.tables, after.tables),
+                    links = ListDiff.diffList(before?.links, after.links),
                     tableMin = after.tableMin.takeIf { it != before?.tableMin },
                     prize = after.prize.takeIf { it != before?.prize },
                     prizeLimit = after.prizeLimit.takeIf { it != before?.prizeLimit },
-                    series = HistoryListDiff.diffList(before?.series, after.series),
-                    merch = HistoryListDiff.diffList(before?.merch, after.merch),
+                    series = ListDiff.diffList(before?.series, after.series),
+                    merch = ListDiff.diffList(before?.merch, after.merch),
                     notes = after.notes.takeIf { it != before?.notes },
                     deleted = false,
                     timestamp = timestamp,

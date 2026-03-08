@@ -43,8 +43,6 @@ expect class AlleyEditRemoteDatabase {
         expected: ArtistDatabaseEntry.Impl,
     ): BackendRequest.ArtistDelete.Response
 
-    suspend fun listImages(dataYear: DataYear, artistId: Uuid): List<EditImage>
-    suspend fun listImages(dataYear: DataYear, stampRallyId: String): List<EditImage>
     suspend fun uploadImage(
         dataYear: DataYear,
         artistId: Uuid,

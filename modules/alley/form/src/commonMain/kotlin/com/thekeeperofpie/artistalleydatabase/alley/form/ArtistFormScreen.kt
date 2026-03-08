@@ -4,18 +4,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
@@ -56,8 +51,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
@@ -85,8 +78,6 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_art
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_store_links_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_summary_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_action_add_images
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_action_edit_images
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_header
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_action
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_prompt
@@ -118,7 +109,6 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_sta
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_prize_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_table_min_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_stamp_rally_tables_placeholder
-import coil3.compose.AsyncImage
 import com.composables.core.ScrollArea
 import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm
@@ -130,7 +120,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothVal
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallySummaryRow
@@ -141,14 +130,12 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.ErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
-import com.thekeeperofpie.artistalleydatabase.alley.images.ImageRowActions
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
-import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryHorizontalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.currentWindowSizeClass
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
@@ -164,16 +151,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCa
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
-import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
-import io.github.vinceglb.filekit.dialogs.FileKitMode
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -240,6 +221,18 @@ object ArtistFormScreen {
         val snackbarHostState = remember { SnackbarHostState() }
         val saveTaskState = state.saveTaskState
         LaunchedEffect(saveTaskState) {
+            snapshotFlow { saveTaskState.lastError }
+                .filterNotNull()
+                .collectLatest {
+                    snackbarHostState.showSnackbar(
+                        message = it.message.toString(),
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Indefinite,
+                    )
+                    saveTaskState.clearError()
+                }
+        }
+        LaunchedEffect(saveTaskState) {
             snapshotFlow { saveTaskState.lastResult }
                 .map { it?.second }
                 .filterNotNull()
@@ -251,7 +244,7 @@ object ArtistFormScreen {
                                 withDismissAction = true,
                                 duration = SnackbarDuration.Indefinite,
                             )
-                            saveTaskState.clearError()
+                            saveTaskState.clearResult()
                         }
                         is State.SaveResult.ImageUploadFailed -> {
                             snackbarHostState.showSnackbar(
@@ -259,7 +252,7 @@ object ArtistFormScreen {
                                 withDismissAction = true,
                                 duration = SnackbarDuration.Indefinite,
                             )
-                            saveTaskState.clearError()
+                            saveTaskState.clearResult()
                         }
                         State.SaveResult.Success -> {
                             snackbarHostState.showSnackbar(
@@ -415,19 +408,19 @@ object ArtistFormScreen {
                                 InstructionsHeader()
 
                                 // TODO: Image support
-//                                CatalogSection(
-//                                    state = state,
-//                                    initialArtist = initialArtist,
-//                                    seriesById = seriesById,
-//                                    seriesPredictions = seriesPredictions,
-//                                    merchById = merchById,
-//                                    merchPredictions = merchPredictions,
-//                                    seriesImage = seriesImage,
-//                                    onClickEditImages = onClickEditImages,
-//                                    onClickImage = {
-//                                        // TODO: Open full size image?
-//                                    },
-//                                )
+                                CatalogSection(
+                                    state = state.artistFormState,
+                                    initialArtist = initialArtist,
+                                    seriesById = seriesById,
+                                    seriesPredictions = seriesPredictions,
+                                    merchById = merchById,
+                                    merchPredictions = merchPredictions,
+                                    seriesImage = seriesImage,
+                                    onClickEditImages = onClickEditImages,
+                                    onClickImage = {
+                                        // TODO: Open full size image?
+                                    },
+                                )
 
                                 Text(
                                     text = stringResource(Res.string.alley_form_artist_header),
@@ -1063,7 +1056,7 @@ object ArtistFormScreen {
 
     @Composable
     private fun CatalogSection(
-        state: State,
+        state: State.FormState,
         initialArtist: () -> ArtistDatabaseEntry.Impl?,
         seriesById: () -> Map<String, SeriesInfo>,
         seriesPredictions: suspend (String) -> Flow<List<SeriesInfo>>,
@@ -1080,24 +1073,10 @@ object ArtistFormScreen {
                 modifier = Modifier.padding(16.dp)
             )
 
-            val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
-            ImageSection(
-                images = state.artistFormState.images,
-                requestKey = requestKey,
-                onClickEditImages = { requestKey, images ->
-                    onClickEditImages(
-                        state.artistFormState.info.booth.value.text.toString(),
-                        requestKey,
-                        images,
-                    )
-                },
-                onClickImage = onClickImage,
-            )
-
             val focusState = rememberFocusState(
                 listOf(
-                    state.artistFormState.series.stateConfirmed,
-                    state.artistFormState.merch.stateConfirmed,
+                    state.series.stateConfirmed,
+                    state.merch.stateConfirmed,
                 )
             )
 
@@ -1105,118 +1084,35 @@ object ArtistFormScreen {
                 initialArtist = initialArtist,
                 focusState = focusState,
             ) {
-                SeriesConfirmedSection(
-                    state = state.artistFormState.series.stateConfirmed,
-                    confirmed = state.artistFormState.series.confirmed,
-                    seriesById = seriesById,
-                    seriesPredictions = seriesPredictions,
-                    seriesImage = seriesImage,
-                )
-                MerchConfirmedSection(
-                    state = state.artistFormState.merch.stateConfirmed,
-                    confirmed = state.artistFormState.merch.confirmed,
-                    merchById = merchById,
-                    merchPredictions = merchPredictions,
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun ImageSection(
-        images: SnapshotStateList<EditImage>,
-        requestKey: NavigationRequestKey<List<EditImage>>,
-        onClickEditImages: (NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
-        onClickImage: (EditImage) -> Unit,
-    ) {
-        val listState = rememberLazyListState()
-        val scrollAreaState = rememberScrollAreaState(listState)
-        ScrollArea(state = scrollAreaState) {
-            NavigationResultEffect(requestKey) {
-                images.replaceAll(it)
-            }
-
-            Column {
-                Box {
-                    val addLauncher = rememberFilePickerLauncher(
-                        type = FileKitType.Image,
-                        mode = FileKitMode.Multiple(),
-                    ) {
-                        if (it != null) {
-                            images += it.map {
-                                val imageKey = PlatformImageCache.add(it)
-                                EditImage.LocalImage(imageKey, it)
-                            }
-                        }
-                    }
-                    LazyRow(
-                        state = listState,
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        modifier = Modifier.conditionally(
-                            images.isNotEmpty(),
-                            Modifier.height(200.dp)
+                val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                ImagesSection(
+                    images = state.images,
+                    requestKey = requestKey,
+                    onClickEditImages = { requestKey, images ->
+                        onClickEditImages(
+                            state.info.booth.value.text.toString(),
+                            requestKey,
+                            images,
                         )
-                    ) {
-                        items(items = images, key = { it.coilImageModel.toString() }) {
-                            val imageWidth = it.width
-                            val imageHeight = it.height
-                            val width = if (imageWidth == null || imageHeight == null) {
-                                null
-                            } else {
-                                200.dp * (imageWidth / imageHeight)
-                            }
-                            AsyncImage(
-                                model = it.coilImageModel,
-                                contentDescription = null,
-                                contentScale = ContentScale.FillHeight,
-                                modifier = Modifier
-                                    .conditionallyNonNull(width) { width(it) }
-                                    .height(200.dp)
-                                    .clickable { onClickImage(it) }
-                            )
-                        }
-                        item {
-                            FilledTonalButton(
-                                onClick = {
-                                    if (images.isEmpty()) {
-                                        addLauncher.launch()
-                                    } else {
-                                        onClickEditImages(requestKey, images.toList())
-                                    }
-                                },
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            ) {
-                                Text(
-                                    stringResource(
-                                        if (images.isEmpty()) {
-                                            Res.string.alley_form_catalog_action_add_images
-                                        } else {
-                                            Res.string.alley_form_catalog_action_edit_images
-                                        }
-                                    )
-                                )
-                            }
-                        }
-                    }
-                    ImageRowActions(listState)
-                }
-
-                PrimaryHorizontalScrollbar(
-                    modifier = Modifier
-                        .graphicsLayer {
-                            val scrollIndicatorState = listState.scrollIndicatorState
-                            alpha = if (scrollIndicatorState == null ||
-                                scrollIndicatorState.contentSize <= scrollIndicatorState.viewportSize
-                            ) {
-                                0f
-                            } else {
-                                1f
-                            }
-                        }
-                        .padding(horizontal = 16.dp)
+                    },
+                    onClickImage = onClickImage,
                 )
+
+                if (state.images.isNotEmpty()) {
+                    SeriesConfirmedSection(
+                        state = state.series.stateConfirmed,
+                        confirmed = state.series.confirmed,
+                        seriesById = seriesById,
+                        seriesPredictions = seriesPredictions,
+                        seriesImage = seriesImage,
+                    )
+                    MerchConfirmedSection(
+                        state = state.merch.stateConfirmed,
+                        confirmed = state.merch.confirmed,
+                        merchById = merchById,
+                        merchPredictions = merchPredictions,
+                    )
+                }
             }
         }
     }

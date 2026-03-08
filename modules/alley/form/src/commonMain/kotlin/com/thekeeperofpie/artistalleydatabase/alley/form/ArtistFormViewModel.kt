@@ -18,7 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormS
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.FormTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -122,10 +123,10 @@ class ArtistFormViewModel(
             this@ArtistFormViewModel.artist.value = baseArtist
             this@ArtistFormViewModel.rallies.value = response.stampRallies
 
-            fun applyDiff(
-                base: List<String>,
-                diff: HistoryListDiff?,
-            ): List<String> {
+            fun <T> applyDiff(
+                base: List<T>,
+                diff: ListDiff<T>?,
+            ): List<T> {
                 val base = base.toMutableSet()
                 base.removeAll(diff?.deleted.orEmpty().toSet())
                 base.addAll(diff?.added.orEmpty().toSet())
@@ -137,6 +138,7 @@ class ArtistFormViewModel(
                 baseArtist
             } else {
                 baseArtist.copy(
+                    images = applyDiff(baseArtist.images, artistFormDiff.images),
                     booth = artistFormDiff.booth ?: baseArtist.booth,
                     name = artistFormDiff.name ?: baseArtist.name,
                     summary = artistFormDiff.summary ?: baseArtist.summary,
@@ -301,20 +303,26 @@ class ArtistFormViewModel(
         // Show incremental progress to the user
         val imageResult = imageUploader.uploadImages(dataYear, Uuid.parse(beforeArtist.id), data.images)
             .lastOrNull()
+
+        if (imageResult == null || imageResult.errors.isNotEmpty()) {
+            progress.value = ArtistFormScreen.State.Progress.LOADED
+            return ArtistFormScreen.State.SaveResult.ImageUploadFailed(imageResult?.errors.orEmpty().values.joinToString())
+        }
+
+        val afterArtist = data.artist.copy(images = imageResult.images.map {
+            CatalogImage(name = it.name, width = it.width, height = it.height)
+        })
         val artistResult = formDatabase.saveArtist(
             dataYear = dataYear,
             beforeArtist = beforeArtist,
-            afterArtist = data.artist,
+            afterArtist = afterArtist,
             beforeStampRallies = rallies.value,
             afterStampRallies = data.stampRallyEntries,
             deletedRallyIds = data.deletedRallyIds,
             formNotes = data.formNotes,
         )
 
-        return if (imageResult == null || imageResult.errors.isNotEmpty()) {
-            progress.value = ArtistFormScreen.State.Progress.LOADED
-            ArtistFormScreen.State.SaveResult.ImageUploadFailed(imageResult?.errors.orEmpty().values.joinToString())
-        } else if (artistResult is BackendFormRequest.ArtistSave.Response.Failed) {
+        return if (artistResult is BackendFormRequest.ArtistSave.Response.Failed) {
             progress.value = ArtistFormScreen.State.Progress.LOADED
             ArtistFormScreen.State.SaveResult.ArtistSaveFailed(artistResult.errorMessage)
         } else {

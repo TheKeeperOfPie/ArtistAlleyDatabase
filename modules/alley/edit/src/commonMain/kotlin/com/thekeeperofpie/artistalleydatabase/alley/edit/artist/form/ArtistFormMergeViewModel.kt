@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.flowFromSuspend
@@ -13,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
@@ -33,7 +33,6 @@ class ArtistFormMergeViewModel(
     val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
     @Assisted artistId: Uuid,
-    @Assisted savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val entry = flowFromSuspend { database.loadArtistWithFormEntry(dataYear, artistId) }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
@@ -58,11 +57,16 @@ class ArtistFormMergeViewModel(
 
     private suspend fun save(data: SaveData) =
         withContext(dispatchers.io) {
-            // TODO: Image support
             database.saveArtistAndClearFormEntry(
                 dataYear = dataYear,
                 initial = data.initial,
-                updated = data.updated,
+                updated = data.updated.copy(images = data.images.map {
+                    CatalogImage(
+                        name = it.name,
+                        width = it.width,
+                        height = it.height,
+                    )
+                }),
                 formEntryTimestamp = data.formEntryTimestamp,
             )
         }
@@ -79,7 +83,6 @@ class ArtistFormMergeViewModel(
         fun create(
             dataYear: DataYear,
             artistId: Uuid,
-            savedStateHandle: SavedStateHandle,
         ): ArtistFormMergeViewModel
     }
 }

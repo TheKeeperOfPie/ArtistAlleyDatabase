@@ -2,19 +2,19 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.compose.ui.util.fastForEachReversed
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.HistoryListDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 
 data class ArtistHistoryEntryWithDiff(
     val entry: ArtistHistoryEntry,
-    val socialLinksDiff: HistoryListDiff?,
-    val storeLinksDiff: HistoryListDiff?,
-    val portfolioLinksDiff: HistoryListDiff?,
-    val catalogLinksDiff: HistoryListDiff?,
-    val commissionsDiff: HistoryListDiff?,
-    val seriesInferredDiff: HistoryListDiff?,
-    val seriesConfirmedDiff: HistoryListDiff?,
-    val merchInferredDiff: HistoryListDiff?,
-    val merchConfirmedDiff: HistoryListDiff?,
+    val socialLinksDiff: ListDiff<String>?,
+    val storeLinksDiff: ListDiff<String>?,
+    val portfolioLinksDiff: ListDiff<String>?,
+    val catalogLinksDiff: ListDiff<String>?,
+    val commissionsDiff: ListDiff<String>?,
+    val seriesInferredDiff: ListDiff<String>?,
+    val seriesConfirmedDiff: ListDiff<String>?,
+    val merchInferredDiff: ListDiff<String>?,
+    val merchConfirmedDiff: ListDiff<String>?,
 ) {
     companion object {
         fun calculateDiffs(entries: List<ArtistHistoryEntry>): List<ArtistHistoryEntryWithDiff> {
@@ -30,15 +30,15 @@ data class ArtistHistoryEntryWithDiff(
             var lastMerchConfirmed = oldestEntry?.merchConfirmed.orEmpty()
             val results = mutableListOf<ArtistHistoryEntryWithDiff>()
             entries.fastForEachReversed {
-                val socialLinksDiff = HistoryListDiff.diffList(lastSocialLinks, it.socialLinks)
-                val storeLinksDiff = HistoryListDiff.diffList(lastStoreLinks, it.storeLinks)
-                val portfolioLinksDiff = HistoryListDiff.diffList(lastPortfolioLinks, it.portfolioLinks)
-                val catalogLinksDiff = HistoryListDiff.diffList(lastCatalogLinks, it.catalogLinks)
-                val commissionsDiff = HistoryListDiff.diffList(lastCommissions, it.commissions)
-                val seriesInferredDiff = HistoryListDiff.diffList(lastSeriesInferred, it.seriesInferred)
-                val seriesConfirmedDiff = HistoryListDiff.diffList(lastSeriesConfirmed, it.seriesConfirmed)
-                val merchInferredDiff = HistoryListDiff.diffList(lastMerchInferred, it.merchInferred)
-                val merchConfirmedDiff = HistoryListDiff.diffList(lastMerchConfirmed, it.merchConfirmed)
+                val socialLinksDiff = ListDiff.diffList(lastSocialLinks, it.socialLinks)
+                val storeLinksDiff = ListDiff.diffList(lastStoreLinks, it.storeLinks)
+                val portfolioLinksDiff = ListDiff.diffList(lastPortfolioLinks, it.portfolioLinks)
+                val catalogLinksDiff = ListDiff.diffList(lastCatalogLinks, it.catalogLinks)
+                val commissionsDiff = ListDiff.diffList(lastCommissions, it.commissions)
+                val seriesInferredDiff = ListDiff.diffList(lastSeriesInferred, it.seriesInferred)
+                val seriesConfirmedDiff = ListDiff.diffList(lastSeriesConfirmed, it.seriesConfirmed)
+                val merchInferredDiff = ListDiff.diffList(lastMerchInferred, it.merchInferred)
+                val merchConfirmedDiff = ListDiff.diffList(lastMerchConfirmed, it.merchConfirmed)
                 results += ArtistHistoryEntryWithDiff(
                     entry = it,
                     socialLinksDiff = socialLinksDiff,

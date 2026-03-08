@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -79,7 +80,6 @@ class StampRallyEditViewModel(
             hasLoaded = true
             return@withContext
         }
-        val images = database.loadStampRallyImages(dataYear, stampRally)
         withContext(dispatchers.main) {
             Snapshot.withMutableSnapshot {
                 this@StampRallyEditViewModel.stampRally.value = stampRally
@@ -89,10 +89,7 @@ class StampRallyEditViewModel(
                     merchById = tagAutocomplete.merchById.first(),
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 )
-
-                if (images.isNotEmpty()) {
-                    state.stampRallyFormState.images.replaceAll(images)
-                }
+                state.stampRallyFormState.images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))
             }
         }
         hasLoaded = true
