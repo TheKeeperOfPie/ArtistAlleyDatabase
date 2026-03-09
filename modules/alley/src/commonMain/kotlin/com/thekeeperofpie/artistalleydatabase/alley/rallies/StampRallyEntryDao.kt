@@ -504,7 +504,7 @@ class StampRallyEntryDao(
                 }
             }
 
-            if (year.dates.year >= 2025) {
+            if (year.dates.year == 2025) {
                 if (!filterParams.showUnconfirmed) {
                     this += "$tableName.confirmed = 1"
                 }

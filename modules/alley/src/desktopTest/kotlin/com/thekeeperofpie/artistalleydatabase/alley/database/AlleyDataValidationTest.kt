@@ -31,5 +31,6 @@ class AlleyDataValidationTest {
         override val dataYear = MutableStateFlow(DataYear.LATEST)
         override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
         override val showOutdatedCatalogs = MutableStateFlow(false)
+        override val easterEggEnabled = MutableStateFlow(false)
     }
 }

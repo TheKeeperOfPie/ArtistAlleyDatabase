@@ -143,7 +143,15 @@ class SettingsViewModel(
         children = listOf(
             SettingsSection.Dropdown(
                 labelTextRes = Res.string.settings_subsection_theme_label,
-                options = AppThemeSetting.entries,
+                options = AppThemeSetting.entries.filter {
+                    when (it) {
+                        AppThemeSetting.AUTO,
+                        AppThemeSetting.LIGHT,
+                        AppThemeSetting.DARK,
+                        AppThemeSetting.BLACK -> true
+                        AppThemeSetting.MIKU -> false
+                    }
+                },
                 optionToText = { stringResource(it.textRes) },
                 property = settings.appTheme,
             ),

@@ -60,6 +60,7 @@ actual fun AppTheme(
     }
     val isDarkTheme = appTheme == AppThemeSetting.DARK
             || appTheme == AppThemeSetting.BLACK
+            || appTheme == AppThemeSetting.MIKU
             || (appTheme == AppThemeSetting.AUTO && systemInDarkTheme)
 
     val view = LocalView.current

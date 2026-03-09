@@ -13,7 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -50,6 +49,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_export_qr_cod
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ImportExportUtils
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.QuestionAnswer
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
@@ -136,7 +136,7 @@ internal object QrCodeScreen {
                     }
                     val exportUrlRead = exportUrl
                     if (exportUrlRead == null) {
-                        CircularProgressIndicator()
+                        InfiniteProgressIndicator()
                     } else {
                         Text(stringResource(Res.string.alley_export_qr_code_explanation))
 

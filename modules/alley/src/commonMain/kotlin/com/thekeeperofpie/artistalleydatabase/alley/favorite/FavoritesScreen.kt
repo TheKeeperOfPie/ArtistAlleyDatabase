@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.BottomSheetScaffoldState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -89,6 +88,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.MerchRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
 import com.thekeeperofpie.artistalleydatabase.alley.ui.rememberDataYearHeaderState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -522,7 +522,7 @@ object FavoritesScreen {
                                 modifier = Modifier.fillMaxWidth()
                                     .padding(8.dp)
                             ) {
-                                CircularProgressIndicator()
+                                InfiniteProgressIndicator()
                             }
                         }
                     } else {
@@ -612,7 +612,7 @@ object FavoritesScreen {
                                 modifier = Modifier.fillMaxWidth()
                                     .padding(8.dp)
                             ) {
-                                CircularProgressIndicator()
+                                InfiniteProgressIndicator()
                             }
                         }
                     } else {

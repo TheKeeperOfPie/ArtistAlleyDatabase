@@ -29,4 +29,5 @@ interface ArtistAlleySettings {
     val dataYear: MutableStateFlow<DataYear>
     val languageOption: MutableStateFlow<AniListLanguageOption>
     val showOutdatedCatalogs: MutableStateFlow<Boolean>
+    val easterEggEnabled: MutableStateFlow<Boolean>
 }

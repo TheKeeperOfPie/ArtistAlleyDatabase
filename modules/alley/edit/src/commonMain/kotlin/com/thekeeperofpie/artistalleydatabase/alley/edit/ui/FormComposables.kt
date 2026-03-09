@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -61,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.SeriesPrediction
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.ArtistForm.AddUniqueErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
@@ -96,7 +96,7 @@ internal fun FormSaveButton(
             visible = isSaving,
             modifier = Modifier.matchParentSize()
         ) {
-            CircularWavyProgressIndicator(modifier = Modifier.padding(4.dp))
+            InfiniteProgressIndicator(modifier = Modifier.padding(4.dp))
         }
     }
 }
@@ -416,7 +416,7 @@ internal fun DeleteButton(onConfirmDelete: () -> Unit, modifier: Modifier = Modi
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
-                            CircularWavyProgressIndicator()
+                            InfiniteProgressIndicator()
                         }
                     }
                 }

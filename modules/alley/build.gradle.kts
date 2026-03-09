@@ -46,6 +46,8 @@ kotlin {
             implementation(libs.paging.compose)
             implementation(libs.qrose)
             implementation(libs.sqldelight.coroutines.extensions)
+            implementation(libs.whyoleg.cryptography.core)
+            implementation(libs.whyoleg.cryptography.provider.optimal)
             implementation(libs.zoomable)
         }
         androidMain {

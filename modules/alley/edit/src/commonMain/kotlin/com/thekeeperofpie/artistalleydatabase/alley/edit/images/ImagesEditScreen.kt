@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -71,6 +70,7 @@ import artistalleydatabase.modules.utils_compose.generated.resources.more_action
 import coil3.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.AlleyEditDestination
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.DraggableItem
@@ -361,7 +361,7 @@ object ImagesEditScreen {
                             contentAlignment = Alignment.TopCenter,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            CircularProgressIndicator()
+                            InfiniteProgressIndicator()
                         }
                     } else {
                         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {

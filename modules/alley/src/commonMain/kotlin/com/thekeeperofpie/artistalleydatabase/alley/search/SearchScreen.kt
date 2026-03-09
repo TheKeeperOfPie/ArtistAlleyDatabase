@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -29,7 +27,6 @@ import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
@@ -74,6 +71,7 @@ import com.composables.core.rememberScrollAreaState
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.DisplayTypeSearchBar
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemCard
 import com.thekeeperofpie.artistalleydatabase.alley.ui.ItemImage
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PrimaryVerticalScrollbar
@@ -276,11 +274,7 @@ object SearchScreen {
         if (displayType == DisplayType.TABLE) {
             Table(
                 horizontalScrollState = horizontalScrollState,
-                header = {
-                    item(key = "header") {
-                        header()
-                    }
-                },
+                header = header,
                 entries = entries,
                 unfilteredCount = unfilteredCount,
                 columns = state.columns,
@@ -296,11 +290,7 @@ object SearchScreen {
                 state = state,
                 eventSink = eventSink,
                 scaffoldPadding = scaffoldPadding,
-                header = {
-                    item(key = "header", span = StaggeredGridItemSpan.FullLine) {
-                        header()
-                    }
-                },
+                header = header,
                 entries = entries,
                 unfilteredCount = unfilteredCount,
                 gridState = gridState,
@@ -315,7 +305,7 @@ object SearchScreen {
     @Composable
     private fun <EntryModel, ColumnType> Table(
         horizontalScrollState: ScrollState,
-        header: LazyListScope.() -> Unit,
+        header: @Composable () -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int,
         columns: EnumEntries<ColumnType>,
@@ -362,7 +352,7 @@ object SearchScreen {
         state: State<*>,
         eventSink: (Event<EntryModel>) -> Unit,
         scaffoldPadding: PaddingValues,
-        header: LazyStaggeredGridScope.() -> Unit,
+        header: @Composable () -> Unit,
         entries: LazyPagingItems<EntryModel>,
         unfilteredCount: () -> Int,
         gridState: LazyStaggeredGridState,
@@ -443,19 +433,20 @@ object SearchScreen {
                     }.let(Arrangement::spacedBy),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    header()
+                    item("header", span = StaggeredGridItemSpan.FullLine) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            header()
+                            if (entries.loadState.refresh is LoadState.Loading) {
+                                InfiniteProgressIndicator()
+                            }
+                        }
+                    }
 
                     if (entries.itemCount == 0) {
-                        if (entries.loadState.refresh is LoadState.Loading) {
-                            item("searchLoadingIndicator", span = StaggeredGridItemSpan.FullLine) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            }
-                        } else {
+                        if (entries.loadState.refresh !is LoadState.Loading) {
                             if (moreResultsItem != null && unfilteredCount() > 0) {
                                 item("searchMoreResults", span = StaggeredGridItemSpan.FullLine) {
                                     moreResultsItem()

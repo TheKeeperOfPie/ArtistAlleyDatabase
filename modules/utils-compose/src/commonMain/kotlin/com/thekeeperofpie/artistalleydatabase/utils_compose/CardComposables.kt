@@ -54,7 +54,8 @@ private fun ThemeAwareElevatedCardImpl(
             AppThemeSetting.LIGHT,
             AppThemeSetting.DARK,
                 -> ElevatedCard(modifier = modifier, content = content)
-            AppThemeSetting.BLACK -> OutlinedCard(modifier = modifier, content = content)
+            AppThemeSetting.BLACK,
+            AppThemeSetting.MIKU, -> OutlinedCard(modifier = modifier, content = content)
         }
     } else {
         when (LocalAppTheme.current) {
@@ -62,7 +63,8 @@ private fun ThemeAwareElevatedCardImpl(
             AppThemeSetting.LIGHT,
             AppThemeSetting.DARK,
                 -> ElevatedCard(onClick = onClick, modifier = modifier, content = content)
-            AppThemeSetting.BLACK -> OutlinedCard(
+            AppThemeSetting.BLACK,
+            AppThemeSetting.MIKU, -> OutlinedCard(
                 onClick = onClick,
                 modifier = modifier,
                 content = content,

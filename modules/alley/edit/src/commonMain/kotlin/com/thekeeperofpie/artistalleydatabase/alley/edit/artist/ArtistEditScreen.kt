@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
@@ -114,6 +113,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.JobProgress
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
@@ -638,7 +638,7 @@ object ArtistEditScreen {
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize().padding(32.dp)
                 ) {
-                    CircularWavyProgressIndicator()
+                    InfiniteProgressIndicator()
                 }
             } else {
                 val inferredArtists by state.sameArtistState.inferredArtists
@@ -839,7 +839,7 @@ object ArtistEditScreen {
                                 enter = fadeIn(),
                                 exit = fadeOut(),
                             ) {
-                                CircularWavyProgressIndicator()
+                                InfiniteProgressIndicator()
                             }
                         }
                     }

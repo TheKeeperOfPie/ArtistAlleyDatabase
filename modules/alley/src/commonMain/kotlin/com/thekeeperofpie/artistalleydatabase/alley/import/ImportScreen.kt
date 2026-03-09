@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.import
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,6 +16,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import org.jetbrains.compose.resources.stringResource
 
@@ -86,7 +86,7 @@ internal object ImportScreen {
                             )
                         )
                         if (loading) {
-                            CircularProgressIndicator()
+                            InfiniteProgressIndicator()
                         }
                     }
                 }

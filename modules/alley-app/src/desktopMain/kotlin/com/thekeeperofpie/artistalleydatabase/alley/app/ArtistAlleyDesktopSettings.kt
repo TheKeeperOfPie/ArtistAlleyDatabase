@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @SingleIn(AppScope::class)
 @Inject
 class ArtistAlleyDesktopSettings : ArtistAlleySettings {
-    override val appTheme = MutableStateFlow(AppThemeSetting.AUTO)
+    override val appTheme = MutableStateFlow(AppThemeSetting.MIKU)
     override val lastKnownArtistsCsvSize = MutableStateFlow(-1L)
     override val lastKnownStampRalliesCsvSize = MutableStateFlow(-1L)
     override val displayType = MutableStateFlow(SearchScreen.DisplayType.CARD)
@@ -34,4 +34,5 @@ class ArtistAlleyDesktopSettings : ArtistAlleySettings {
     override val dataYear = MutableStateFlow(DataYear.LATEST)
     override val languageOption = MutableStateFlow(AniListLanguageOption.DEFAULT)
     override val showOutdatedCatalogs = MutableStateFlow(false)
+    override val easterEggEnabled = MutableStateFlow(true)
 }

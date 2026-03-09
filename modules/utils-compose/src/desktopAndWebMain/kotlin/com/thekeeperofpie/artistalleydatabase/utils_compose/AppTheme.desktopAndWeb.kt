@@ -28,6 +28,7 @@ actual fun AppTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> 
             surfaceContainerLowest = Color.Black,
             surfaceDim = Color.Black,
         )
+        AppThemeSetting.MIKU -> AppTheme.mikuTheme
     }
     CompositionLocalProvider(LocalAppTheme provides appTheme) {
         MaterialTheme(

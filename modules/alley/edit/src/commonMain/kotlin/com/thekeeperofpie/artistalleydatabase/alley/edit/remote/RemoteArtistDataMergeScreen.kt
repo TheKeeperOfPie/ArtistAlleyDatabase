@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -91,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.shortName
+import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -354,7 +354,7 @@ internal object RemoteArtistDataMergeScreen {
 
             val inferredArtists = inferredArtists()
             if (inferredArtists.loading) {
-                CircularWavyProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                InfiniteProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else if (!inferredArtists.success) {
                 Text(stringResource(Res.string.alley_edit_remote_artist_data_merge_artist_inference_failed))
             } else {

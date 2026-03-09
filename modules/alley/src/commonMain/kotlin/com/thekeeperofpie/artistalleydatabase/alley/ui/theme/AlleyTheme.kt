@@ -10,6 +10,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 
@@ -89,6 +90,19 @@ private val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+private val blackTheme = darkScheme.copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceVariant = Color.Black,
+    surfaceBright = Color.Black,
+    surfaceContainer = Color.Black,
+    surfaceContainerHigh = Color.Black,
+    surfaceContainerHighest = Color.Black,
+    surfaceContainerLow = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceDim = Color.Black,
+)
+
 @Immutable
 class AlleyColorScheme(
     val positive: Color,
@@ -121,25 +135,16 @@ fun AlleyTheme(appTheme: () -> AppThemeSetting, content: @Composable () -> Unit)
         AppThemeSetting.AUTO -> if (systemInDarkTheme) darkScheme else lightScheme
         AppThemeSetting.DARK -> darkScheme
         AppThemeSetting.LIGHT -> lightScheme
-        AppThemeSetting.BLACK -> darkScheme.copy(
-            background = Color.Black,
-            surface = Color.Black,
-            surfaceVariant = Color.Black,
-            surfaceBright = Color.Black,
-            surfaceContainer = Color.Black,
-            surfaceContainerHigh = Color.Black,
-            surfaceContainerHighest = Color.Black,
-            surfaceContainerLow = Color.Black,
-            surfaceContainerLowest = Color.Black,
-            surfaceDim = Color.Black,
-        )
+        AppThemeSetting.BLACK -> blackTheme
+        AppThemeSetting.MIKU -> AppTheme.mikuTheme
     }
 
     val alleyColorScheme = when (appTheme) {
         AppThemeSetting.AUTO -> if (systemInDarkTheme) alleyDarkScheme else alleyLightScheme
         AppThemeSetting.LIGHT -> alleyLightScheme
         AppThemeSetting.DARK,
-        AppThemeSetting.BLACK -> alleyDarkScheme
+        AppThemeSetting.BLACK,
+        AppThemeSetting.MIKU -> alleyDarkScheme
     }
 
     CompositionLocalProvider(

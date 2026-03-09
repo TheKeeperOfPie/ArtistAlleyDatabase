@@ -15,25 +15,38 @@ import com.thekeeperofpie.artistalleydatabase.settings.ui.SettingsSection
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
+import dev.whyoleg.cryptography.CryptographyProvider
+import dev.whyoleg.cryptography.algorithms.SHA3_512
 import dev.zacsweers.metro.Inject
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
+import kotlinx.io.bytestring.encodeToByteString
+import kotlinx.io.bytestring.toHexString
 import kotlinx.io.writeString
 import org.jetbrains.compose.resources.stringResource
 
 @Inject
 class AlleySettingsViewModel(
     private val dispatchers: CustomDispatchers,
-    settings: ArtistAlleySettings,
+    private val settings: ArtistAlleySettings,
     private val exporter: AlleyExporter,
     private val importExportDao: ImportExportDao,
 ) : ViewModel() {
 
     private val themeSection = SettingsSection.Dropdown(
         labelTextRes = Res.string.alley_settings_theme,
-        options = AppThemeSetting.entries,
+        options = AppThemeSetting.entries.filter {
+            when (it) {
+                AppThemeSetting.AUTO,
+                AppThemeSetting.LIGHT,
+                AppThemeSetting.DARK,
+                AppThemeSetting.BLACK,
+                    -> true
+                AppThemeSetting.MIKU -> settings.easterEggEnabled.value
+            }
+        },
         optionToText = { stringResource(it.textRes) },
         property = settings.appTheme,
     )
@@ -69,6 +82,18 @@ class AlleySettingsViewModel(
             previousJob?.cancel()
             importJob = viewModelScope.launch(dispatchers.io) {
                 state.importState = LoadingResult.loading<Unit>()
+                try {
+                    val hash = CryptographyProvider.Default.get(SHA3_512)
+                        .hasher()
+                        .hash(event.data.encodeToByteString())
+                    if (hash.toHexString() == "8ebe6e92225629c5e99ae78d6870a3a115308d951e6e8a5db206463a849f326c01975fe693579fe694218039265da7698607393c84e458b802106aa2fa98659d") {
+                        settings.easterEggEnabled.value = true
+                        settings.appTheme.value = AppThemeSetting.MIKU
+                        state.importState = LoadingResult.success(Unit)
+                        return@launch
+                    }
+                } catch (_: Throwable) {
+                }
                 previousJob?.join()
                 Buffer().use {
                     it.writeString(event.data.substringAfter("import="))

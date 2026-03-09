@@ -9,14 +9,19 @@ package com.thekeeperofpie.artistalleydatabase.alley.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -42,6 +47,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
@@ -53,6 +59,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,8 +94,13 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.group
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -142,7 +154,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.utils.start
 import com.thekeeperofpie.artistalleydatabase.alley.utils.timeZone
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ThemeAwareElevatedCard
@@ -1079,5 +1093,78 @@ fun UnrecognizedTagIcon() {
             contentDescription = null,
             tint = AlleyTheme.colorScheme.negative,
         )
+    }
+}
+
+private val MikuLeek = ImageVector.Builder(
+    name = "MikuLeek",
+    defaultWidth = 100.dp,
+    defaultHeight = 100.dp,
+    viewportWidth = 26.458332f,
+    viewportHeight = 26.458332f
+).apply {
+    group {
+        path(
+            fill = SolidColor(Color(0xFFFFFFFF)),
+            stroke = SolidColor(Color(0xFF000000)),
+        ) {
+            moveToRelative(8.274768f, 20.363722f)
+            lineToRelative(-3.897336f, 4.691206f)
+            curveToRelative(-1.335014f, 1.092911f, -2.2664125f, 1.772955f, -3.355096f, 0.707496f)
+            verticalLineToRelative(0f)
+            curveToRelative(-2.0612442f, -2.342291f, 0.029239f, -3.530104f, 1.1769485f, -4.448546f)
+            lineToRelative(9.678613f, -10.29146f)
+            lineToRelative(2.096606f, 3.67195f)
+            curveToRelative(-0.858493f, 0.333172f, -1.414981f, 0.918896f, -2.176389f, 1.705128f)
+            close()
+        }
+    }
+    group {
+        path(
+            fill = SolidColor(Color(0xFF05C63C)),
+            stroke = SolidColor(Color(0xFF000000)),
+        ) {
+            moveTo(11.876417f, 11.001338f)
+            lineTo(21.18614f, 1.1447079f)
+            curveTo(22.043394f, -0.06427126f, 22.67712f, -0.11645376f, 23.814842f, 0.7458797f)
+            curveTo(24.407707f, 1.30241f, 25.018215f, 1.8893527f, 24.864105f, 2.6444073f)
+            lineToRelative(-8.589598f, 8.638684f)
+            lineToRelative(8.7445f, -1.3601903f)
+            curveToRelative(0.943214f, -0.3254951f, 1.138798f, 0.6334823f, 1.31426f, 1.6270283f)
+            curveToRelative(0.103338f, 0.6182f, 0.22472f, 1.636574f, -0.991977f, 1.717147f)
+            lineToRelative(-11.2949f, 1.372112f)
+            lineToRelative(-6.83079f, 1.347633f)
+            close()
+        }
+    }
+}.build()
+
+@Composable
+fun InfiniteProgressIndicator(modifier: Modifier = Modifier) {
+    if (LocalAppTheme.current == AppThemeSetting.MIKU) {
+        MikuProgressIndicator(modifier)
+    } else {
+        CircularWavyProgressIndicator(modifier)
+    }
+}
+
+@Composable
+private fun MikuProgressIndicator(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by
+    infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1080f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(6000, easing = LinearEasing)
+        ),
+    )
+    val painter = rememberVectorPainter(MikuLeek)
+    Canvas(modifier.progressSemantics().size(40.dp)) {
+        inset(4.dp.toPx()) {
+            rotate(rotation) {
+                with(painter) { draw(size) }
+            }
+        }
     }
 }
