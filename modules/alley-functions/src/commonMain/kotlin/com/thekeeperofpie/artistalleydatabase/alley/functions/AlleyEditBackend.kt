@@ -1038,7 +1038,7 @@ object AlleyEditBackend {
         val saveRequest = BackendRequest.ArtistSave(
             dataYear = request.dataYear,
             initial = request.initial,
-            updated = request.updated.copy(verifiedArtist = true),
+            updated = request.updated,
         )
         when (val saveResponse = saveArtist(
             context = context,

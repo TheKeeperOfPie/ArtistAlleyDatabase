@@ -408,19 +408,19 @@ object ArtistFormScreen {
                                 InstructionsHeader()
 
                                 // TODO: Image support
-                                CatalogSection(
-                                    state = state.artistFormState,
-                                    initialArtist = initialArtist,
-                                    seriesById = seriesById,
-                                    seriesPredictions = seriesPredictions,
-                                    merchById = merchById,
-                                    merchPredictions = merchPredictions,
-                                    seriesImage = seriesImage,
-                                    onClickEditImages = onClickEditImages,
-                                    onClickImage = {
-                                        // TODO: Open full size image?
-                                    },
-                                )
+//                                CatalogSection(
+//                                    state = state.artistFormState,
+//                                    initialArtist = initialArtist,
+//                                    seriesById = seriesById,
+//                                    seriesPredictions = seriesPredictions,
+//                                    merchById = merchById,
+//                                    merchPredictions = merchPredictions,
+//                                    seriesImage = seriesImage,
+//                                    onClickEditImages = onClickEditImages,
+//                                    onClickImage = {
+//                                        // TODO: Open full size image?
+//                                    },
+//                                )
 
                                 Text(
                                     text = stringResource(Res.string.alley_form_artist_header),
