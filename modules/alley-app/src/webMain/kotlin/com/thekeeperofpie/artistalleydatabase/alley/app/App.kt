@@ -38,13 +38,17 @@ import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.rememberAlleyNavStack
 import com.thekeeperofpie.artistalleydatabase.alley.ui.theme.AlleyTheme
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
+import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalWindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.WindowConfiguration
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.BrowserInput
+import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.WebResourcesConfiguration
 import org.jetbrains.compose.resources.getString
+import org.w3c.dom.HTMLMetaElement
+import org.w3c.dom.get
 import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.time.Duration.Companion.seconds
 
@@ -86,6 +90,23 @@ fun App(graph: ArtistAlleyWebGraph) {
 @Composable
 private fun Content(graph: ArtistAlleyWebGraph) {
     val appTheme by graph.settings.appTheme.collectAsStateWithLifecycle()
+    LaunchedEffect(appTheme) {
+        try {
+            val themeColor = when (appTheme) {
+                AppThemeSetting.AUTO,
+                AppThemeSetting.LIGHT,
+                AppThemeSetting.DARK,
+                AppThemeSetting.BLACK -> "#EE3C35"
+                AppThemeSetting.MIKU -> "#00DBE4"
+            }
+
+            (document.getElementsByName("theme-color")[0] as? HTMLMetaElement)
+                ?.content = themeColor
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
     AlleyTheme(appTheme = { appTheme }) {
         val windowSize = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current

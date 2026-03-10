@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import dev.whyoleg.cryptography.CryptographyProvider
-import dev.whyoleg.cryptography.algorithms.SHA3_512
+import dev.whyoleg.cryptography.algorithms.SHA512
 import dev.zacsweers.metro.Inject
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Job
@@ -83,16 +83,18 @@ class AlleySettingsViewModel(
             importJob = viewModelScope.launch(dispatchers.io) {
                 state.importState = LoadingResult.loading<Unit>()
                 try {
-                    val hash = CryptographyProvider.Default.get(SHA3_512)
+                    val hash = CryptographyProvider.Default.get(SHA512)
                         .hasher()
                         .hash(event.data.encodeToByteString())
-                    if (hash.toHexString() == "8ebe6e92225629c5e99ae78d6870a3a115308d951e6e8a5db206463a849f326c01975fe693579fe694218039265da7698607393c84e458b802106aa2fa98659d") {
+                    println("hash = ${hash.toHexString()}")
+                    if (hash.toHexString() == "b5bca36023f56465bf80f1a09b4ff80f298fa4e4c9ee7cb21976e6e5809a14f8f2d93a2fad301b5fc54bf3b79085cafcd3e1747f343b61266e0627949a52edaa") {
                         settings.easterEggEnabled.value = true
                         settings.appTheme.value = AppThemeSetting.MIKU
                         state.importState = LoadingResult.success(Unit)
                         return@launch
                     }
-                } catch (_: Throwable) {
+                } catch (t: Throwable) {
+                    t.printStackTrace()
                 }
                 previousJob?.join()
                 Buffer().use {
