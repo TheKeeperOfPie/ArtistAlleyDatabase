@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_notes
 import artistalleydatabase.modules.alley.form.generated.resources.Res
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_action_done
@@ -78,6 +79,7 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_art
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_summary_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_title
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_header
+import artistalleydatabase.modules.alley.form.generated.resources.alley_form_catalog_subtitle_megabytes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_action
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_add_to_calendar_prompt
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_thanks_subtitle
@@ -118,7 +120,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.MergeA
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.rememberBoothValidator
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallySummaryRow
@@ -144,6 +148,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.entry.form.rememberLinkValidator
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
@@ -155,6 +160,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.Navigatio
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.ComposeSaver
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.StateUtils
+import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -164,6 +170,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
+import artistalleydatabase.modules.alley.edit.generated.resources.Res as AlleyRes
 
 object ArtistFormScreen {
 
@@ -458,9 +465,7 @@ object ArtistFormScreen {
                                             state.stampRallyStates += newStampRallyFormState(state)
                                         },
                                     ) {
-                                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                            Text(stringResource(Res.string.alley_form_stamp_rallies_action_add))
-                                        }
+                                        Text(stringResource(Res.string.alley_form_stamp_rallies_action_add))
                                     }
                                 }
 
@@ -1067,11 +1072,56 @@ object ArtistFormScreen {
         onClickImage: (EditImage) -> Unit,
     ) {
         Column {
-            Text(
-                text = stringResource(Res.string.alley_form_catalog_header),
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(16.dp)
-            )
+            val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp).weight(1f)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.alley_form_catalog_header),
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    val showError by remember {
+                        derivedStateOf {
+                            val images = state.images.toList()
+                            images.size > ImageUtils.MAX_UPLOAD_COUNT || images.any {
+                                it is EditImage.LocalImage && PlatformImageCache[it.key]?.size()
+                                    ?.asBytes()?.let { it > ImageUtils.MAX_UPLOAD_SIZE } == true
+                            }
+                        }
+                    }
+                    if (showError) {
+                        Text(
+                            text = stringResource(
+                                Res.string.alley_form_catalog_subtitle_megabytes,
+                                ImageUtils.MAX_UPLOAD_COUNT,
+                                ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AlleyTheme.colorScheme.negative,
+                        )
+                    }
+                }
+
+                if (state.images.isNotEmpty()) {
+                    FilledTonalButton(
+                        onClick = {
+                            onClickEditImages(
+                                state.info.booth.value.text.toString(),
+                                requestKey,
+                                state.images.toList(),
+                            )
+                        },
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Text(
+                            stringResource(AlleyRes.string.alley_edit_artist_action_edit_images)
+                        )
+                    }
+                }
+            }
 
             val focusState = rememberFocusState(
                 listOf(
@@ -1084,17 +1134,16 @@ object ArtistFormScreen {
                 initialArtist = initialArtist,
                 focusState = focusState,
             ) {
-                val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
                 ImagesSection(
                     images = state.images,
-                    requestKey = requestKey,
-                    onClickEditImages = { requestKey, images ->
+                    requestKey = requestKey.takeIf { state.images.isEmpty() },
+                    onClickEditImages = {
                         onClickEditImages(
                             state.info.booth.value.text.toString(),
                             requestKey,
-                            images,
+                            state.images.toList(),
                         )
-                    },
+                    }.takeIf { state.images.isEmpty() },
                     onClickImage = onClickImage,
                 )
 

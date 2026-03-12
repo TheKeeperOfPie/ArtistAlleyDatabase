@@ -68,6 +68,7 @@
 
     <string name="alley_edit_artist_action_add_images">Add images</string>
     <string name="alley_edit_artist_action_edit_images">Edit images</string>
+    <string name="alley_edit_artist_images_size_megabytes">%1$d MB</string>
     <string name="alley_edit_artist_save_changes_title">Save changes?</string>
     <string name="alley_edit_artist_action_refresh_content_description">Refresh artists</string>
     <string name="alley_edit_artist_edit_action_hide_inferred">Hide inferred</string>

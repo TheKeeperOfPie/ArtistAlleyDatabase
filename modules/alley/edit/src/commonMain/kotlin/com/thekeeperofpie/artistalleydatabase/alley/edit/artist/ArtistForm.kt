@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,10 +10,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.allCaps
 import androidx.compose.foundation.text.input.clearText
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -74,6 +78,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_art
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_status
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_store_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_edit_summary
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_images_size_megabytes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_label
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_paste_link_placeholder
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_commission_on_site
@@ -87,6 +92,7 @@ import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.EntryEditMetadata
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
@@ -117,6 +123,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocu
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus
+import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
@@ -128,6 +135,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -156,7 +164,7 @@ interface ArtistFormScope : EntryFormScope {
     fun ImagesSection(
         images: SnapshotStateList<EditImage>,
         requestKey: NavigationRequestKey<List<EditImage>>? = null,
-        onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
+        onClickEditImages: (() -> Unit)? = null,
         onClickImage: (EditImage) -> Unit,
     )
 
@@ -279,7 +287,7 @@ interface ArtistFormScope : EntryFormScope {
         state: EntryForm2.SingleTextState,
         confirmed: SnapshotStateList<MerchInfo>,
         merchById: () -> Map<String, MerchInfo>,
-        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>
+        merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
     )
 
     @Composable
@@ -356,7 +364,7 @@ private abstract class ArtistFormScopeImpl(
     override fun ImagesSection(
         images: SnapshotStateList<EditImage>,
         requestKey: NavigationRequestKey<List<EditImage>>?,
-        onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)?,
+        onClickEditImages: (() -> Unit)?,
         onClickImage: (EditImage) -> Unit,
     ) {
         val listState = rememberLazyListState()
@@ -396,49 +404,77 @@ private abstract class ArtistFormScopeImpl(
                         )
                     ) {
                         items(items = images, key = { it.coilImageModel.toString() }) {
-                            val imageWidth = it.width
-                            val imageHeight = it.height
-                            val width = if (imageWidth == null || imageHeight == null) {
-                                null
-                            } else {
-                                200.dp * (imageWidth / imageHeight)
+                            Box {
+                                val imageWidth = it.width
+                                val imageHeight = it.height
+                                val width = if (imageWidth == null || imageHeight == null) {
+                                    null
+                                } else {
+                                    200.dp * (imageWidth / imageHeight)
+                                }
+                                AsyncImage(
+                                    model = it.coilImageModel,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.FillHeight,
+                                    modifier = Modifier
+                                        .conditionallyNonNull(width) { width(it) }
+                                        .height(200.dp)
+                                        .clickable { onClickImage(it) }
+                                )
+                                if (it is EditImage.LocalImage) {
+                                    val size = remember(it.key) {
+                                        PlatformImageCache[it.key]?.size()?.asBytes()
+                                    }
+                                    if (size != null && size > ImageUtils.MAX_UPLOAD_SIZE) {
+                                        Text(
+                                            text = stringResource(
+                                                Res.string.alley_edit_artist_images_size_megabytes,
+                                                size.inWholeMegabytes,
+                                            ),
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .background(
+                                                    MaterialTheme.colorScheme.errorContainer,
+                                                    RoundedCornerShape(topStart = 12.dp)
+                                                )
+                                                .padding(16.dp)
+                                        )
+                                    }
+                                }
                             }
-                            AsyncImage(
-                                model = it.coilImageModel,
-                                contentDescription = null,
-                                contentScale = ContentScale.FillHeight,
-                                modifier = Modifier
-                                    .conditionallyNonNull(width) { width(it) }
-                                    .height(200.dp)
-                                    .clickable { onClickImage(it) }
-                            )
                         }
                         if (addLauncher != null) {
                             item {
-                                FilledTonalButton(
-                                    onClick = {
-                                        if (images.isEmpty()) {
-                                            addLauncher.launch()
-                                        } else {
-                                            if (requestKey != null) {
-                                                onClickEditImages?.invoke(
-                                                    requestKey,
-                                                    images.toList()
-                                                )
-                                            }
+                                val onClick = {
+                                    if (images.isEmpty()) {
+                                        addLauncher.launch()
+                                    } else {
+                                        if (requestKey != null) {
+                                            onClickEditImages?.invoke()
                                         }
-                                    },
-                                    modifier = Modifier.padding(vertical = 16.dp)
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            if (images.isEmpty()) {
-                                                Res.string.alley_edit_artist_action_add_images
-                                            } else {
-                                                Res.string.alley_edit_artist_action_edit_images
-                                            }
-                                        )
-                                    )
+                                    }
+                                }
+                                OutlinedCard(onClick = onClick) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.size(200.dp)
+                                    ) {
+                                        FilledTonalButton(
+                                            onClick = onClick,
+                                            modifier = Modifier.padding(vertical = 16.dp)
+                                        ) {
+                                            Text(
+                                                stringResource(
+                                                    if (images.isEmpty()) {
+                                                        Res.string.alley_edit_artist_action_add_images
+                                                    } else {
+                                                        Res.string.alley_edit_artist_action_edit_images
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1102,7 +1138,11 @@ object ArtistForm {
                 ImagesSection(
                     images = state.images,
                     requestKey = requestKey,
-                    onClickEditImages = onClickEditImages,
+                    onClickEditImages = if (onClickEditImages == null) null else {
+                        {
+                            onClickEditImages(requestKey, state.images.toList())
+                        }
+                    },
                     onClickImage = onClickImage,
                 )
             }

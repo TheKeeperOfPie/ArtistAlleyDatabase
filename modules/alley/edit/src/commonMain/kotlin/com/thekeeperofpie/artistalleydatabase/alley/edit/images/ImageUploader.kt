@@ -4,10 +4,13 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
+import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
+import io.github.vinceglb.filekit.size
 import io.ktor.client.HttpClient
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -33,6 +36,10 @@ abstract class ImageUploader(
         val imagesToUpload = images.filterIsInstance<EditImage.LocalImage>()
         if (imagesToUpload.isEmpty()) {
             return flowOf(UploadResult(images = images, errors = emptyMap(), finished = true))
+        } else if (imagesToUpload.size > ImageUtils.MAX_UPLOAD_COUNT) {
+            return flowOf(UploadResult(images = images, errors = imagesToUpload.associateWith {
+                "Only ${ImageUtils.MAX_UPLOAD_COUNT} images are allowed"
+            }, finished = true))
         }
 
         return flow {
@@ -58,7 +65,6 @@ abstract class ImageUploader(
                         updateResult(errors = result.errors + (imageToUpload to "Failed to read image"))
                         return@forEach
                     }
-                    val bytes = platformFile.readBytes()
                     val imageUrl = presignedUrls[imageToUpload]
                     if (imageUrl == null) {
                         if (PlatformSpecificConfig.type == PlatformType.DESKTOP) {
@@ -69,6 +75,29 @@ abstract class ImageUploader(
                             }
                         }
                     }
+                    var size = platformFile.size().asBytes()
+                    val bytes = if (size < ImageUtils.MAX_UPLOAD_SIZE) {
+                        platformFile.readBytes()
+                    } else {
+                        var bytes: ByteArray? = null
+                        var count = 0
+                        while (size > ImageUtils.MAX_UPLOAD_SIZE && count < 3) {
+                            val imageBytes = compressImage(file = platformFile)
+                            bytes = imageBytes
+                            if (imageBytes.size.asBytes() == size) {
+                                ConsoleLogger.log("Failed to compress ${platformFile.name}")
+                                break
+                            }
+                            size = imageBytes.size.asBytes()
+                            count++
+                        }
+                        bytes
+                    }
+                    if (bytes == null) {
+                        updateResult(errors = result.errors + (imageToUpload to "Failed to read image"))
+                        return@forEach
+                    }
+
                     val response = httpClient.put(imageUrl) {
                         contentType(ContentType.Application.OctetStream)
                         setBody(bytes)
@@ -118,6 +147,8 @@ abstract class ImageUploader(
         platformFile: PlatformFile,
         id: Uuid,
     ): EditImage
+
+    protected abstract suspend fun compressImage(file: PlatformFile): ByteArray
 
     data class UploadResult(
         val images: List<EditImage>,

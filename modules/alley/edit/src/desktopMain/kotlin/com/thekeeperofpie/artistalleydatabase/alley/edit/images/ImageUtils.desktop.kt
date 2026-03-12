@@ -6,6 +6,7 @@ import io.github.vinceglb.filekit.PlatformFile
 
 actual object ImageUtils {
     actual val MAX_UPLOAD_SIZE = 5.megabytes
+    actual val MAX_UPLOAD_COUNT = 5
 
     actual fun toEditImage(catalogImage: CatalogImage): EditImage {
         val file = PlatformFile(catalogImage.name)

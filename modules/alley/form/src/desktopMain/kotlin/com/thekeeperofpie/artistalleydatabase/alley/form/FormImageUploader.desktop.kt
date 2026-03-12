@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import kotlin.uuid.Uuid
 
@@ -28,4 +29,6 @@ class FormImageUploader(
         platformFile: PlatformFile,
         id: Uuid,
     ): EditImage = original
+
+    override suspend fun compressImage(file: PlatformFile): ByteArray = file.readBytes()
 }
