@@ -8,7 +8,6 @@ import kotlinx.browser.window
 
 actual object ImageUtils {
     actual val MAX_UPLOAD_SIZE = if (BuildKonfig.isWasmDebug) 5.megabytes else 10.megabytes
-    actual val MAX_UPLOAD_COUNT = if (BuildKonfig.isWasmDebug) 5 else 10
 
     actual fun toEditImage(catalogImage: CatalogImage): EditImage {
         val key = catalogImage.name

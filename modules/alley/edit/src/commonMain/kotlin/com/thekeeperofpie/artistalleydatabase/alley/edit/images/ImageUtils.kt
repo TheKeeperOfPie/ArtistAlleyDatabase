@@ -5,7 +5,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.Bits
 
 expect object ImageUtils {
     val MAX_UPLOAD_SIZE: Bits
-    val MAX_UPLOAD_COUNT: Int
 
     fun toEditImage(catalogImage: CatalogImage): EditImage
 }

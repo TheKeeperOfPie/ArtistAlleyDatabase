@@ -8,11 +8,10 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsParamsInit
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsSignInit
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
-import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
-import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
@@ -29,7 +28,6 @@ import org.w3c.fetch.Request
 import org.w3c.fetch.RequestInit
 import org.w3c.fetch.RequestRedirect
 import org.w3c.fetch.Response
-import org.w3c.fetch.ResponseInit
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
@@ -46,9 +44,15 @@ internal object AlleyFormBackend {
 
         // Assumes that middleware has authorized non-form requests already
         return when (firstSegment) {
-            "image" -> BackendUtils.loadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
+            "image" -> BackendUtils.loadImage(
+                context,
+                pathSegments.drop(1).joinToString(separator = "/")
+            )
             "uploadImage" ->
-                BackendUtils.uploadImage(context, pathSegments.drop(1).joinToString(separator = "/"))
+                BackendUtils.uploadImage(
+                    context,
+                    pathSegments.drop(1).joinToString(separator = "/")
+                )
             else -> handleFormRequest(
                 context = context,
                 request = Json.decodeFromString<BackendFormRequest>(
@@ -344,6 +348,9 @@ internal object AlleyFormBackend {
         context: EventContext,
         request: BackendFormRequest.UploadImageUrls,
     ): Map<Uuid, String> {
+        if (request.imageData.size > ImageUploadUtils.MAX_UPLOAD_COUNT) {
+            return emptyMap()
+        }
         val awsClient = awsClient(context.env)
         val baseImagesUrl = "${context.env.IMAGES_CLOUDFLARE_URL}/artist-alley-images"
         return request.imageData
@@ -351,7 +358,12 @@ internal object AlleyFormBackend {
                 val key =
                     "${request.dataYear.serializedName}/${request.artistId}/${it.id}.${it.extension}"
                 val url =
-                    URL("$baseImagesUrl/$key").apply { searchParams.set("X-Amz-Expires", "3600") }
+                    URL("$baseImagesUrl/$key").apply {
+                        searchParams.set(
+                            "X-Amz-Expires",
+                            20.minutes.inWholeSeconds.toString()
+                        )
+                    }
                 val request = Request(
                     input = url,
                     init = RequestInit(

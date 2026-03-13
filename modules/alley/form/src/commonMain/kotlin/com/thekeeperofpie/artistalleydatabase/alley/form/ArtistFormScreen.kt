@@ -135,6 +135,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -1086,7 +1087,7 @@ object ArtistFormScreen {
                     val showError by remember {
                         derivedStateOf {
                             val images = state.images.toList()
-                            images.size > ImageUtils.MAX_UPLOAD_COUNT || images.any {
+                            images.size > ImageUploadUtils.MAX_UPLOAD_COUNT || images.any {
                                 it is EditImage.LocalImage && PlatformImageCache[it.key]?.size()
                                     ?.asBytes()?.let { it > ImageUtils.MAX_UPLOAD_SIZE } == true
                             }
@@ -1096,7 +1097,7 @@ object ArtistFormScreen {
                         Text(
                             text = stringResource(
                                 Res.string.alley_form_catalog_subtitle_megabytes,
-                                ImageUtils.MAX_UPLOAD_COUNT,
+                                ImageUploadUtils.MAX_UPLOAD_COUNT,
                                 ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes
                             ),
                             style = MaterialTheme.typography.bodyMedium,

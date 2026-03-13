@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.asBytes
@@ -36,9 +37,9 @@ abstract class ImageUploader(
         val imagesToUpload = images.filterIsInstance<EditImage.LocalImage>()
         if (imagesToUpload.isEmpty()) {
             return flowOf(UploadResult(images = images, errors = emptyMap(), finished = true))
-        } else if (imagesToUpload.size > ImageUtils.MAX_UPLOAD_COUNT) {
+        } else if (imagesToUpload.size > ImageUploadUtils.MAX_UPLOAD_COUNT) {
             return flowOf(UploadResult(images = images, errors = imagesToUpload.associateWith {
-                "Only ${ImageUtils.MAX_UPLOAD_COUNT} images are allowed"
+                "Only ${ImageUploadUtils.MAX_UPLOAD_COUNT} images are allowed"
             }, finished = true))
         }
 
