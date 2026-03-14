@@ -106,8 +106,10 @@ actual class AlleyFormRemoteDatabase(
     actual suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
         artistId: Uuid,
-        imageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
-    ): Map<Uuid, String> = emptyMap()
+        artistImageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
+        stampRallyIdsToImageData: Map<String, List<BackendFormRequest.UploadImageUrls.ImageData>>,
+    ): BackendFormRequest.UploadImageUrls.Response =
+        BackendFormRequest.UploadImageUrls.Response.Success(emptyMap(), emptyMap())
 
     private suspend fun assertSignatureAndGetArtistId(request: BackendFormRequest): Uuid? {
         val accessKey = ArtistFormAccessKey.key ?: return null

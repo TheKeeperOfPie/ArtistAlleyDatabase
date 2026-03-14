@@ -133,6 +133,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.ErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
+import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
@@ -171,6 +172,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
+import kotlin.uuid.Uuid
 import artistalleydatabase.modules.alley.edit.generated.resources.Res as AlleyRes
 
 object ArtistFormScreen {
@@ -416,19 +418,23 @@ object ArtistFormScreen {
                                 InstructionsHeader()
 
                                 // TODO: Image support
-//                                CatalogSection(
-//                                    state = state.artistFormState,
-//                                    initialArtist = initialArtist,
-//                                    seriesById = seriesById,
-//                                    seriesPredictions = seriesPredictions,
-//                                    merchById = merchById,
-//                                    merchPredictions = merchPredictions,
-//                                    seriesImage = seriesImage,
-//                                    onClickEditImages = onClickEditImages,
-//                                    onClickImage = {
-//                                        // TODO: Open full size image?
-//                                    },
-//                                )
+                                if (initialArtist()?.id?.let(Uuid::parseOrNull) ==
+                                    AlleyCryptography.FAKE_ARTIST_ID
+                                ) {
+                                    CatalogSection(
+                                        state = state.artistFormState,
+                                        initialArtist = initialArtist,
+                                        seriesById = seriesById,
+                                        seriesPredictions = seriesPredictions,
+                                        merchById = merchById,
+                                        merchPredictions = merchPredictions,
+                                        seriesImage = seriesImage,
+                                        onClickEditImages = onClickEditImages,
+                                        onClickImage = {
+                                            // TODO: Open full size image?
+                                        },
+                                    )
+                                }
 
                                 Text(
                                     text = stringResource(Res.string.alley_form_artist_header),
@@ -461,12 +467,16 @@ object ArtistFormScreen {
                                         modifier = Modifier.weight(1f)
                                     )
 
-                                    FilledTonalButton(
-                                        onClick = {
-                                            state.stampRallyStates += newStampRallyFormState(state)
-                                        },
-                                    ) {
-                                        Text(stringResource(Res.string.alley_form_stamp_rallies_action_add))
+                                    if (state.stampRallyStates.size < StampRallyDatabaseEntry.MAX_STAMP_RALLIES) {
+                                        FilledTonalButton(
+                                            onClick = {
+                                                state.stampRallyStates += newStampRallyFormState(
+                                                    state
+                                                )
+                                            },
+                                        ) {
+                                            Text(stringResource(Res.string.alley_form_stamp_rallies_action_add))
+                                        }
                                     }
                                 }
 
@@ -754,20 +764,24 @@ object ArtistFormScreen {
                                 seriesImage = seriesImage,
                             ) {
                                 // TODO: Image support
-//                                val requestKey =
-//                                    rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
-//                                ImageSection(
-//                                    images = formState.images,
-//                                    requestKey = requestKey,
-//                                    onClickEditImages = { requestKey, images ->
-//                                        onClickEditImages(
-//                                            formState.fandom.value.text.toString(),
-//                                            requestKey,
-//                                            images,
-//                                        )
-//                                    },
-//                                    onClickImage = onClickImage,
-//                                )
+                                if (state.initialArtist.collectAsStateWithLifecycle().value?.id
+                                        ?.let(Uuid::parseOrNull) == AlleyCryptography.FAKE_ARTIST_ID
+                                ) {
+                                    val requestKey =
+                                        rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                                    ImagesSection(
+                                        images = formState.images,
+                                        requestKey = requestKey,
+                                        onClickEditImages = {
+                                            onClickEditImages(
+                                                formState.fandom.value.text.toString(),
+                                                requestKey,
+                                                formState.images.toList(),
+                                            )
+                                        },
+                                        onClickImage = onClickImage,
+                                    )
+                                }
                                 FandomSection(
                                     state = formState.fandom,
                                     label = { Text(stringResource(Res.string.alley_form_stamp_rally_name_placeholder)) },
@@ -1087,7 +1101,7 @@ object ArtistFormScreen {
                     val showError by remember {
                         derivedStateOf {
                             val images = state.images.toList()
-                            images.size > ImageUploadUtils.MAX_UPLOAD_COUNT || images.any {
+                            images.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT || images.any {
                                 it is EditImage.LocalImage && PlatformImageCache[it.key]?.size()
                                     ?.asBytes()?.let { it > ImageUtils.MAX_UPLOAD_SIZE } == true
                             }
@@ -1097,7 +1111,7 @@ object ArtistFormScreen {
                         Text(
                             text = stringResource(
                                 Res.string.alley_form_catalog_subtitle_megabytes,
-                                ImageUploadUtils.MAX_UPLOAD_COUNT,
+                                ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT,
                                 ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes
                             ),
                             style = MaterialTheme.typography.bodyMedium,
@@ -1137,7 +1151,7 @@ object ArtistFormScreen {
             ) {
                 ImagesSection(
                     images = state.images,
-                    requestKey = requestKey.takeIf { state.images.isEmpty() },
+                    requestKey = requestKey,
                     onClickEditImages = {
                         onClickEditImages(
                             state.info.booth.value.text.toString(),

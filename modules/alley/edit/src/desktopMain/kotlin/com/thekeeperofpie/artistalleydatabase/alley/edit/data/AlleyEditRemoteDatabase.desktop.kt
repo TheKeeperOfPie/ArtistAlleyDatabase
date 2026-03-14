@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -21,6 +22,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.toArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.toStampRallySummary
@@ -157,8 +160,12 @@ actual class AlleyEditRemoteDatabase(
         id: Uuid,
     ): EditImage {
         simulateLatency()
-        val prefix = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString())
-        val key = "$prefix/$id.${platformFile.extension}"
+        val key = ImageUploadUtils.makeArtistKey(
+            dataYear = dataYear,
+            artistId = artistId,
+            imageId = id,
+            extension = platformFile.extension,
+        )
         val imageKey = PlatformImageKey(id)
             .takeIf { PlatformImageCache[it] != null }
             ?: PlatformImageCache.add(platformFile)
@@ -174,8 +181,12 @@ actual class AlleyEditRemoteDatabase(
         id: Uuid,
     ): EditImage {
         simulateLatency()
-        val prefix = EditImage.NetworkImage.makePrefix(dataYear, stampRallyId)
-        val key = "$prefix/$id.${platformFile.extension}"
+        val key = ImageUploadUtils.makeStampRallyKey(
+            dataYear = dataYear,
+            stampRallyId = stampRallyId,
+            imageId = id,
+            extension = platformFile.extension,
+        )
         val imageKey = PlatformImageKey(id)
             .takeIf { PlatformImageCache[it] != null }
             ?: PlatformImageCache.add(platformFile)

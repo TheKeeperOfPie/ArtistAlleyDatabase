@@ -23,6 +23,7 @@ expect class AlleyFormRemoteDatabase {
     suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
         artistId: Uuid,
-        imageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
-    ): Map<Uuid, String>
+        artistImageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
+        stampRallyIdsToImageData: Map<String, List<BackendFormRequest.UploadImageUrls.ImageData>>,
+    ): BackendFormRequest.UploadImageUrls.Response
 }

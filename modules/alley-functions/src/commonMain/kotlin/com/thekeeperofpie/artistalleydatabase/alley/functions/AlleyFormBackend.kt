@@ -5,6 +5,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntry
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsClient
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsParamsInit
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsSignInit
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
@@ -14,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import kotlinx.coroutines.await
@@ -347,38 +350,73 @@ internal object AlleyFormBackend {
     private suspend fun generateUploadImageUrls(
         context: EventContext,
         request: BackendFormRequest.UploadImageUrls,
-    ): Map<Uuid, String> {
-        if (request.imageData.size > ImageUploadUtils.MAX_UPLOAD_COUNT) {
-            return emptyMap()
+    ): BackendFormRequest.UploadImageUrls.Response {
+        val errorMessage = when {
+            request.artistImageData.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT ->
+                "Too many artist images"
+            request.stampRallyIdsToImageData.size > StampRallyDatabaseEntry.MAX_STAMP_RALLIES ->
+                "Too many stamp rallies"
+            request.stampRallyIdsToImageData.any { it.value.size > ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT } ->
+                "Too many stamp rally images"
+            else -> null
         }
+        if (errorMessage != null) {
+            return BackendFormRequest.UploadImageUrls.Response.Failed(errorMessage)
+        }
+
         val awsClient = awsClient(context.env)
         val baseImagesUrl = "${context.env.IMAGES_CLOUDFLARE_URL}/artist-alley-images"
-        return request.imageData
-            .associate {
-                val key =
-                    "${request.dataYear.serializedName}/${request.artistId}/${it.id}.${it.extension}"
-                val url =
-                    URL("$baseImagesUrl/$key").apply {
-                        searchParams.set(
-                            "X-Amz-Expires",
-                            20.minutes.inWholeSeconds.toString()
-                        )
-                    }
-                val request = Request(
-                    input = url,
-                    init = RequestInit(
-                        headers = Headers(),
-                        method = "PUT",
-                        cache = undefined,
-                        integrity = undefined,
-                        redirect = RequestRedirect.FOLLOW,
-                    )
-                )
 
-                it.id to awsClient.sign(request, AwsParamsInit(AwsSignInit(signQuery = true)))
-                    .await()
-                    .url
+        val artistUrls = request.artistImageData
+            .associate {
+                val key = ImageUploadUtils.makeArtistKey(
+                    dataYear = request.dataYear,
+                    artistId = request.artistId,
+                    imageId = it.id,
+                    extension = it.extension,
+                )
+                it.id to awsClient.buildPresignedUrl(baseImagesUrl, key)
             }
+
+        val stampRallyUrls = request.stampRallyIdsToImageData.mapValues {
+            val stampRallyId = it.key
+            it.value.associate {
+                val key = ImageUploadUtils.makeStampRallyKey(
+                    dataYear = request.dataYear,
+                    stampRallyId = stampRallyId,
+                    imageId = it.id,
+                    extension = it.extension,
+                )
+                it.id to awsClient.buildPresignedUrl(baseImagesUrl, key)
+            }
+        }
+
+        return BackendFormRequest.UploadImageUrls.Response.Success(
+            artistUrls = artistUrls,
+            stampRallyUrls = stampRallyUrls,
+        )
+    }
+
+    private suspend fun AwsClient.buildPresignedUrl(baseImagesUrl: String, key: String): String {
+        val url =
+            URL("$baseImagesUrl/$key").apply {
+                searchParams.set(
+                    "X-Amz-Expires",
+                    20.minutes.inWholeSeconds.toString(),
+                )
+            }
+        val request = Request(
+            input = url,
+            init = RequestInit(
+                headers = Headers(),
+                method = "PUT",
+                cache = undefined,
+                integrity = undefined,
+                redirect = RequestRedirect.FOLLOW,
+            )
+        )
+
+        return sign(request, AwsParamsInit(AwsSignInit(signQuery = true))).await().url
     }
 
     private inline fun <reified Request : BackendFormRequest.WithResponse<Response>, reified Response> Request.makeResponse(

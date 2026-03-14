@@ -5,18 +5,19 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.form.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
-import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.await
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
-import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import kotlinx.browser.window
+import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
 import org.khronos.webgl.toUByteArray
@@ -35,10 +36,9 @@ import kotlin.uuid.Uuid
 
 @ContributesBinding(AppScope::class)
 class FormImageUploader(
-    dispatchers: CustomDispatchers,
     private val formDatabase: AlleyFormDatabase,
     httpClient: HttpClient,
-) : ImageUploader(dispatchers, httpClient) {
+) : ImageUploader(httpClient) {
     private val canvas by lazy {
         OffscreenCanvas(width = 1, height = 1)
     }
@@ -46,31 +46,65 @@ class FormImageUploader(
     override suspend fun getPresignedImageUrls(
         dataYear: DataYear,
         artistId: Uuid,
-        localImages: List<EditImage.LocalImage>,
+        localImages: List<PrepareImageResult.Success>,
+        stampRallyIdsToLocalImages: Map<String, List<PrepareImageResult.Success>>,
     ): Map<EditImage.LocalImage, String> {
-        val presignedUrls = formDatabase.fetchUploadImageUrls(
+        val response = formDatabase.fetchUploadImageUrls(
             dataYear = dataYear,
             artistId = artistId,
-            imageData = localImages.map {
-                BackendFormRequest.UploadImageUrls.ImageData(
-                    id = it.id,
-                    extension = it.extension
-                )
+            artistImageData = localImages.map { it.toImageData() },
+            stampRallyIdsToImageData = stampRallyIdsToLocalImages.mapValues {
+                it.value.map { it.toImageData() }
             },
         )
-
-        return if (BuildKonfig.isWasmDebug) {
-            localImages.associateWith {
-                val id = it.id
-                val key = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString()) +
-                        "/$id.${it.extension}"
-                "${window.origin}/form/api/uploadImage/$key".also {
-                    ConsoleLogger.log("Redirecting image upload from ${presignedUrls[id]} to $it")
+        return when (response) {
+            is BackendFormRequest.UploadImageUrls.Response.Failed -> emptyMap()
+            is BackendFormRequest.UploadImageUrls.Response.Success -> {
+                val artistUrls = if (BuildKonfig.isWasmDebug) {
+                    localImages.associateWith {
+                        val id = it.original.id
+                        val key = ImageUploadUtils.makeArtistKey(
+                            dataYear = dataYear,
+                            artistId = artistId,
+                            imageId = id,
+                            extension = it.original.extension,
+                        )
+                        "${window.origin}/form/api/uploadImage/$key".also {
+                            ConsoleLogger.log("Redirecting image upload from ${response.artistUrls[id]} to $it")
+                        }
+                    }
+                } else {
+                    localImages.associateWith { response.artistUrls[it.original.id]!! }
                 }
+
+                val stampRallyUrls = if (BuildKonfig.isWasmDebug) {
+                    stampRallyIdsToLocalImages.mapValues {
+                        val stampRallyId = it.key
+                        it.value.associateWith {
+                            val id = it.original.id
+                            val key = ImageUploadUtils.makeStampRallyKey(
+                                dataYear = dataYear,
+                                stampRallyId = stampRallyId,
+                                imageId = id,
+                                extension = it.original.extension,
+                            )
+                            "${window.origin}/form/api/uploadImage/$key".also {
+                                ConsoleLogger.log("Redirecting image upload from ${response.stampRallyUrls[stampRallyId]!![id]} to $it")
+                            }
+                        }
+                    }
+                } else {
+                    stampRallyIdsToLocalImages.mapValues {
+                        val stampRallyId = it.key
+                        it.value.associateWith { response.stampRallyUrls[stampRallyId]!![it.original.id]!! }
+                    }
+                }
+
+                (artistUrls.entries + stampRallyUrls.flatMap { it.value.entries })
+                    .associate { it.key.original to it.value }
             }
-        } else {
-            localImages.associateWith { presignedUrls[it.id]!! }
         }
+
     }
 
     override fun imageFromIdAndKey(
@@ -90,11 +124,10 @@ class FormImageUploader(
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
-    override suspend fun compressImage(file: PlatformFile): ByteArray {
-        val imageBitmap = file.toImageBitmap()
+    override suspend fun compressImage(bytes: ByteArray): ByteArray {
+        val imageBitmap = bytes.decodeToImageBitmap()
         canvas.width = imageBitmap.width
         canvas.height = imageBitmap.height
-        val bytes = file.readBytes()
         val context = canvas.getContext("2d", OffscreenCanvasAttributes(true))
             ?: return bytes
         val webBitmap = window.createImageBitmap(
@@ -143,6 +176,7 @@ private external class OffscreenCanvas(width: Int, height: Int) {
         contextType: String,
         contextAttributes: OffscreenCanvasAttributes,
     ): OffscreenCanvasRenderingContext2D?
+
     fun convertToBlob(options: ConvertToBlobOptions): Promise<Blob>
 
     var width: Int

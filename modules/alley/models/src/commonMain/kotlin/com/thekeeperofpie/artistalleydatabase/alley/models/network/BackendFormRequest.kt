@@ -57,8 +57,20 @@ sealed interface BackendFormRequest {
     data class UploadImageUrls(
         val dataYear: DataYear,
         val artistId: Uuid,
-        val imageData: List<ImageData>,
-    ) : BackendFormRequest, WithResponse<Map<Uuid, String>> {
+        val artistImageData: List<ImageData>,
+        val stampRallyIdsToImageData: Map<String, List<ImageData>>,
+    ) : BackendFormRequest, WithResponse<UploadImageUrls.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data class Success(
+                val artistUrls: Map<Uuid, String>,
+                val stampRallyUrls: Map<String, Map<Uuid, String>>,
+            ) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
 
         @Serializable
         data class ImageData(

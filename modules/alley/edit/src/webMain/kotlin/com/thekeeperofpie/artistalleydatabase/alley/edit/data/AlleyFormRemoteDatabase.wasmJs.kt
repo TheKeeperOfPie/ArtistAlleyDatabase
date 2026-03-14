@@ -75,11 +75,12 @@ actual class AlleyFormRemoteDatabase(
     actual suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
         artistId: Uuid,
-        imageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
-    ): Map<Uuid, String> = withContext(dispatchers.io) {
+        artistImageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
+        stampRallyIdsToImageData: Map<String, List<BackendFormRequest.UploadImageUrls.ImageData>>,
+    ): BackendFormRequest.UploadImageUrls.Response = withContext(dispatchers.io) {
         val accessKey = ArtistFormAccessKey.key ?: return@withContext null
-        sendRequest(BackendFormRequest.UploadImageUrls(dataYear, artistId, imageData), accessKey)
-    } ?: emptyMap()
+        sendRequest(BackendFormRequest.UploadImageUrls(dataYear, artistId, artistImageData, stampRallyIdsToImageData), accessKey)
+    } ?: BackendFormRequest.UploadImageUrls.Response.Failed("Failed to generate presigned URLs")
 
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,

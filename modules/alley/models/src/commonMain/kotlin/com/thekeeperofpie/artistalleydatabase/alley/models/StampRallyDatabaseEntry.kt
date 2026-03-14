@@ -30,6 +30,8 @@ data class StampRallyDatabaseEntry(
 ) {
     companion object {
 
+        const val MAX_STAMP_RALLIES = 10
+
         // Need to ignore metadata for equality
         fun hasChanged(before: StampRallyDatabaseEntry?, after: StampRallyDatabaseEntry) =
             before?.copy(confirmed = false, counter = 0, lastEditTime = null, lastEditor = null) !=

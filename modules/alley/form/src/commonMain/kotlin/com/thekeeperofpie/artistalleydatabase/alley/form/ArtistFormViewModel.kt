@@ -26,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -42,7 +41,6 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
@@ -247,12 +245,13 @@ class ArtistFormViewModel(
         val artist = artist.value ?: return
         saveTask.triggerManual {
             val (images, artist) = state.captureDatabaseEntry(artist)
-            val stampRallyEntries = state.stampRallyStates.toList()
-                .map { it.captureDatabaseEntry(dataYear).second }
+            val stampRallyData = state.stampRallyStates.toList()
+                .map { it.captureDatabaseEntry(dataYear) }
             CapturedState(
                 images = images,
                 artist = artist,
-                stampRallyEntries = stampRallyEntries,
+                stampRallyImages = stampRallyData.associate { it.second.id to it.first },
+                stampRallyEntries = stampRallyData.map { it.second },
                 deletedRallyIds = state.stampRallyStates.filter { it.editorState.deleted }
                     .map { it.editorState.id.value.text.toString() },
                 formNotes = state.artistFormState.formNotes.value.text.toString(),
@@ -300,24 +299,50 @@ class ArtistFormViewModel(
         val beforeArtist = artist.value!!
 
         // TODO: Image support
-        // Show incremental progress to the user
-        val imageResult = imageUploader.uploadImages(dataYear, Uuid.parse(beforeArtist.id), data.images)
-            .lastOrNull()
+        // TODO: Show incremental progress to the user
+        val imagesResult = imageUploader.uploadImages(
+            dataYear = dataYear,
+            artistId = Uuid.parse(beforeArtist.id),
+            artistImages = data.images,
+            stampRallyImages = data.stampRallyImages
+        )
 
-        if (imageResult == null || imageResult.errors.isNotEmpty()) {
-            progress.value = ArtistFormScreen.State.Progress.LOADED
-            return ArtistFormScreen.State.SaveResult.ImageUploadFailed(imageResult?.errors.orEmpty().values.joinToString())
+        val (artistCatalogImages, stampRallyCatalogImages, uploadedImages) = when (imagesResult) {
+            ImageUploader.UploadResult.Empty -> Triple(emptyList(), emptyMap(), emptyMap())
+            is ImageUploader.UploadResult.Error -> {
+                progress.value = ArtistFormScreen.State.Progress.LOADED
+                return ArtistFormScreen.State.SaveResult.ImageUploadFailed(imagesResult.message)
+            }
+            is ImageUploader.UploadResult.Success -> {
+                Triple(
+                    imagesResult.artistCatalogImages,
+                    imagesResult.stampRallyCatalogImages,
+                    imagesResult.uploadedImages,
+                )
+            }
         }
 
-        val afterArtist = data.artist.copy(images = imageResult.images.map {
-            CatalogImage(name = it.name, width = it.width, height = it.height)
-        })
+        val newArtistImages = state.artistFormState.images.toList()
+            .map { uploadedImages[it] ?: it }
+        state.artistFormState.images.replaceAll(newArtistImages)
+
+        val stampRallyStates = state.stampRallyStates.toList()
+        stampRallyStates.forEach {
+            val newStampRallyImages = it.images.toList()
+                .map { uploadedImages[it] ?: it }
+            it.images.replaceAll(newStampRallyImages)
+        }
+
+        val afterArtist = data.artist.copy(images = artistCatalogImages)
+        val afterStampRallies = data.stampRallyEntries.map {
+            it.copy(images = stampRallyCatalogImages[it.id].orEmpty())
+        }
         val artistResult = formDatabase.saveArtist(
             dataYear = dataYear,
             beforeArtist = beforeArtist,
             afterArtist = afterArtist,
             beforeStampRallies = rallies.value,
-            afterStampRallies = data.stampRallyEntries,
+            afterStampRallies = afterStampRallies,
             deletedRallyIds = data.deletedRallyIds,
             formNotes = data.formNotes,
         )
@@ -334,6 +359,7 @@ class ArtistFormViewModel(
     data class CapturedState(
         val images: List<EditImage>,
         val artist: ArtistDatabaseEntry.Impl,
+        val stampRallyImages: Map<String, List<EditImage>>,
         val stampRallyEntries: List<StampRallyDatabaseEntry>,
         val deletedRallyIds: List<String>,
         val formNotes: String,

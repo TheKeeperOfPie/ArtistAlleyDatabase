@@ -37,6 +37,12 @@ class AlleyFormDatabase(
     suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
         artistId: Uuid,
-        imageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
-    ) = remoteDatabase.fetchUploadImageUrls(dataYear, artistId, imageData)
+        artistImageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
+        stampRallyIdsToImageData: Map<String, List<BackendFormRequest.UploadImageUrls.ImageData>>,
+    ) = remoteDatabase.fetchUploadImageUrls(
+        dataYear = dataYear,
+        artistId = artistId,
+        artistImageData = artistImageData,
+        stampRallyIdsToImageData = stampRallyIdsToImageData,
+    )
 }

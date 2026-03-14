@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
 import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ImageWithDimensions
 import io.github.vinceglb.filekit.PlatformFile
@@ -15,6 +16,8 @@ sealed interface EditImage : ImageWithDimensions {
     val name: String
     override val width: Int? get() = null
     override val height: Int? get() = null
+
+    fun toCatalogImage() = CatalogImage(name, width, height)
 
     @Serializable
     data class DatabaseImage(

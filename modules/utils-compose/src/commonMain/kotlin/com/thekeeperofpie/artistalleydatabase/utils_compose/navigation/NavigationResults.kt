@@ -30,7 +30,7 @@ inline fun <reified T : Any> NavigationResultEffect(
     crossinline onResult: suspend (T) -> Unit,
 ) {
     val navigationResults = LocalNavigationResults.current
-    LaunchedEffect(navigationResults) {
+    LaunchedEffect(navigationResults.get(key)) {
         val result = withContext(PlatformDispatchers.IO) {
             navigationResults.remove<T>(key)
         }
@@ -51,6 +51,7 @@ private object SnapshotStateMapSaver : ComposeSaver<SnapshotStateMap<String, Str
 
 @Stable
 class NavigationResults(val scope: CoroutineScope, val map: SnapshotStateMap<String, String>) {
+    inline fun <reified T : Any> get(key: NavigationRequestKey<T>) = map[key.key]
     inline fun <reified T : Any> remove(key: NavigationRequestKey<T>) = map.remove(key.key)?.let {
         Json.decodeFromString<T>(it)
     }

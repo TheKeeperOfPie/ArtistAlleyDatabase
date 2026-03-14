@@ -35,6 +35,8 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_table_min
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_tables
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImagesSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormEditActions
@@ -60,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -172,6 +175,16 @@ abstract class StampRallyFormScope(
     entryFormScope: EntryFormScope,
 ) : EntryFormScope by entryFormScope {
     abstract val initialStampRally: StampRallyDatabaseEntry?
+
+    @Composable
+    fun ImagesSection(
+        images: SnapshotStateList<EditImage>,
+        requestKey: NavigationRequestKey<List<EditImage>>,
+        onClickEditImages: (() -> Unit)?,
+        onClickImage: (EditImage) -> Unit,
+    ) {
+        EditImagesSection(images, requestKey, onClickEditImages, onClickImage)
+    }
 
     @Composable
     fun IdSection(
