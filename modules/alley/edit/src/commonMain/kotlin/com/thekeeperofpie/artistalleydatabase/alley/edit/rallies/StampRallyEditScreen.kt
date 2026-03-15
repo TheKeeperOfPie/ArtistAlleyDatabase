@@ -35,13 +35,14 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.EditImagesButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ContentSavingBox
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.DeleteButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormHistoryButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormRefreshButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormSaveButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.GenericExitDialog
-import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
+import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.LazyColumnSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagePager
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
@@ -57,6 +58,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -72,7 +77,7 @@ object StampRallyEditScreen {
         stampRallyId: String,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
         viewModel: StampRallyEditViewModel = viewModel {
             graph.stampRallyEditViewModelFactory.create(
@@ -97,10 +102,11 @@ object StampRallyEditScreen {
             seriesImage = viewModel::seriesImage,
             hasPendingChanges = viewModel::hasPendingChanges,
             onClickBack = onClickBack,
-            onClickEditImages = {
+            onClickEditImages = { requestKey, images ->
                 onClickEditImages(
+                    requestKey,
                     viewModel.state.stampRallyFormState.fandom.value.text.toString(),
-                    it
+                    images,
                 )
             },
             onClickRefresh = { viewModel.initialize(force = true) },
@@ -122,7 +128,7 @@ object StampRallyEditScreen {
         seriesImage: (SeriesInfo) -> String?,
         hasPendingChanges: () -> Boolean,
         onClickBack: (force: Boolean) -> Unit,
-        onClickEditImages: (List<EditImage>) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
         onClickRefresh: () -> Unit,
         onClickHistory: () -> Unit,
         onClickSave: () -> Unit,
@@ -208,46 +214,56 @@ object StampRallyEditScreen {
                 val imagePagerState = rememberImagePagerState(state.stampRallyFormState.images, 0)
                 val initialStampRally by state.initialStampRally.collectAsStateWithLifecycle()
                 val stampRallyProgress by state.stampRallyProgress.collectAsStateWithLifecycle()
+                val imagesRequestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                NavigationResultEffect(imagesRequestKey) {
+                    state.stampRallyFormState.images.replaceAll(it)
+                }
 
-                ScrollableSideBySide(
-                    showSecondary = { false },
+                LazyColumnSideBySide(
+                    showSecondary = { state.stampRallyFormState.images.isNotEmpty() },
                     primary = {
-                        Form(
-                            state = state,
-                            stampRallyFormState = state.stampRallyFormState,
-                            initialStampRally = { initialStampRally },
-                            errorState = errorState,
-                            seriesById = seriesById,
-                            seriesPredictions = seriesPredictions,
-                            merchById = merchById,
-                            merchPredictions = merchPredictions,
-                            seriesImage = seriesImage,
-                            onConfirmDelete = onConfirmDelete,
-                        )
+                        item("form") {
+                            Form(
+                                state = state,
+                                stampRallyFormState = state.stampRallyFormState,
+                                initialStampRally = { initialStampRally },
+                                errorState = errorState,
+                                seriesById = seriesById,
+                                seriesPredictions = seriesPredictions,
+                                merchById = merchById,
+                                merchPredictions = merchPredictions,
+                                seriesImage = seriesImage,
+                                onConfirmDelete = onConfirmDelete,
+                            )
+                        }
                     },
                     secondary = {
-                        ImagePager(
-                            images = state.stampRallyFormState.images,
-                            pagerState = imagePagerState,
-                            sharedElementId = state.stampRallyFormState.editorState.id.value.text.toString(),
-                            onClickPage = {
-                                // TODO: Open images screen
-                            },
-                        )
+                        item("imagePager") {
+                            Column {
+                                ImagePager(
+                                    images = state.stampRallyFormState.images,
+                                    pagerState = imagePagerState,
+                                    sharedElementId = state.stampRallyFormState.editorState.id.value.text.toString(),
+                                    onClickPage = {
+                                        // TODO: Open images screen
+                                    },
+                                )
 
-                        if (initialStampRally != null && stampRallyProgress !is JobProgress.Loading) {
-                            EditImagesButton(
-                                images = state.stampRallyFormState.images,
-                                onClickEdit = { onClickEditImages(state.stampRallyFormState.images.toList()) },
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
+                                if (initialStampRally != null && stampRallyProgress !is JobProgress.Loading) {
+                                    EditImagesButton(
+                                        images = state.stampRallyFormState.images,
+                                        onClickEdit = { onClickEditImages(imagesRequestKey, state.stampRallyFormState.images.toList()) },
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                }
+                            }
                         }
                     },
                     secondaryExpanded = {
                         Column {
                             EditImagesButton(
                                 images = state.stampRallyFormState.images,
-                                onClickEdit = { onClickEditImages(state.stampRallyFormState.images.toList()) },
+                                onClickEdit = { onClickEditImages(imagesRequestKey, state.stampRallyFormState.images.toList()) },
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                             ImageGrid(

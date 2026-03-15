@@ -427,7 +427,7 @@ fun ImageGrid(
                     val size = cachedDimensions[image]
                     AsyncImage(
                         model = ImageRequest.Builder(LocalPlatformContext.current)
-                            .data(image)
+                            .data(image.coilImageModel)
                             .placeholderMemoryCacheKey(image.coilImageModel.toString())
                             .build(),
                         contentScale = ContentScale.FillWidth,

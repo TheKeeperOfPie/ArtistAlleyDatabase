@@ -43,6 +43,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_fandom
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_field_label_notes
@@ -61,6 +62,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ArtistAlleyEditGraph
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyForm
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.rememberErrorState
@@ -83,6 +85,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.LocalDateTimeFormatt
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.LocalNavigationResults
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -344,6 +347,7 @@ internal object StampRallyFormMergeScreen {
                     merchById = merchById,
                     merchPredictions = { emptyFlow() },
                     seriesImage = seriesImage,
+                    showImages = true,
                     modifier = modifier.fillMaxWidth(),
                 )
             }
@@ -412,6 +416,8 @@ internal object StampRallyFormMergeScreen {
                     Text(stringResource(field.label))
 
                     val fieldText = when (field) {
+                        StampRallyField.IMAGES_ADDED -> diff?.images?.added?.joinToString()
+                        StampRallyField.IMAGES_REMOVED -> diff?.images?.deleted?.joinToString()
                         StampRallyField.FANDOM -> diff?.fandom
                         StampRallyField.TABLES_ADDED -> diff?.tables?.added?.joinToString()
                         StampRallyField.TABLES_REMOVED -> diff?.tables?.deleted?.joinToString()
@@ -462,12 +468,12 @@ internal object StampRallyFormMergeScreen {
                 base
             }
 
-            fun applyDiff(
-                base: List<String>,
-                diff: ListDiff<String>?,
+            fun <T> applyDiff(
+                base: List<T>,
+                diff: ListDiff<T>?,
                 added: StampRallyField,
                 deleted: StampRallyField,
-            ): List<String> {
+            ): List<T> {
                 val base = base.toMutableSet()
                 if (this[deleted]) base.removeAll(diff?.deleted.orEmpty().toSet())
                 if (this[added]) base.addAll(diff?.added.orEmpty().toSet())
@@ -483,6 +489,12 @@ internal object StampRallyFormMergeScreen {
             val tableMin = applyDiff(base.tableMin, diff.tableMin, StampRallyField.TABLE_MIN)
 
             val stampRally = base.copy(
+                images = applyDiff(
+                    base.images,
+                    diff.images,
+                    StampRallyField.IMAGES_ADDED,
+                    StampRallyField.IMAGES_REMOVED,
+                ),
                 fandom = applyDiff(base.fandom, diff.fandom, StampRallyField.FANDOM),
                 tables = tables,
                 links = applyDiff(
@@ -525,7 +537,9 @@ internal object StampRallyFormMergeScreen {
                 seriesById = seriesById,
                 merchById = merchById,
                 mergeBehavior = FormMergeBehavior.REPLACE,
-            )
+            ).apply {
+                images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))
+            }
         }
     }
 
@@ -536,6 +550,8 @@ internal object StampRallyFormMergeScreen {
                 if (diff == null) return@apply
                 StampRallyField.entries.forEach {
                     val include = when (it) {
+                        StampRallyField.IMAGES_ADDED -> diff.images?.added != null
+                        StampRallyField.IMAGES_REMOVED -> diff.images?.deleted != null
                         StampRallyField.FANDOM -> diff.fandom != null
                         StampRallyField.TABLES_ADDED -> diff.tables?.added != null
                         StampRallyField.TABLES_REMOVED -> diff.tables?.deleted != null
@@ -559,6 +575,8 @@ internal object StampRallyFormMergeScreen {
     }
 
     private enum class StampRallyField(val label: StringResource) {
+        IMAGES_ADDED(Res.string.alley_edit_stamp_rally_field_label_images),
+        IMAGES_REMOVED(Res.string.alley_edit_stamp_rally_field_label_images),
         FANDOM(Res.string.alley_edit_stamp_rally_field_label_fandom),
         TABLES_ADDED(Res.string.alley_edit_stamp_rally_field_label_tables),
         TABLES_REMOVED(Res.string.alley_edit_stamp_rally_field_label_tables),
@@ -576,6 +594,7 @@ internal object StampRallyFormMergeScreen {
 
         val isRemoved: Boolean
             get() = when (this) {
+                IMAGES_ADDED,
                 FANDOM,
                 TABLES_ADDED,
                 LINKS_ADDED,
@@ -586,6 +605,7 @@ internal object StampRallyFormMergeScreen {
                 MERCH_ADDED,
                 NOTES,
                     -> false
+                IMAGES_REMOVED,
                 TABLES_REMOVED,
                 LINKS_REMOVED,
                 SERIES_REMOVED,

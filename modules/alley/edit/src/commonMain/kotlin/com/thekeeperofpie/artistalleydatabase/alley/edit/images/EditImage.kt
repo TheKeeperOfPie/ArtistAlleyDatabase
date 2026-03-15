@@ -17,7 +17,15 @@ sealed interface EditImage : ImageWithDimensions {
     override val width: Int? get() = null
     override val height: Int? get() = null
 
-    fun toCatalogImage() = CatalogImage(name, width, height)
+    fun toCatalogImage() = if (this is LocalImage) {
+        CatalogImage(
+            name = key.value.toString(),
+            width = width,
+            height = height,
+        )
+    } else {
+        CatalogImage(name, width, height)
+    }
 
     @Serializable
     data class DatabaseImage(
@@ -32,7 +40,7 @@ sealed interface EditImage : ImageWithDimensions {
     @Serializable
     data class LocalImage(
         val key: PlatformImageKey,
-        override val name: String,
+        override val name: String,  
         val extension: String,
         val id: Uuid = Uuid.random(),
     ) : EditImage {

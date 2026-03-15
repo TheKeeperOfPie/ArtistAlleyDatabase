@@ -79,7 +79,9 @@ class StampRallyFormMergeViewModel(
                 dataYear = dataYear,
                 artistId = artistId,
                 initial = data.initial,
-                updated = data.updated,
+                updated = data.updated.copy(
+                    images = data.images.map(EditImage::toCatalogImage)
+                ),
                 formEntryTimestamp = data.formEntryTimestamp,
             )
         }

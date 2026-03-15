@@ -89,7 +89,8 @@ class StampRallyEditViewModel(
                     merchById = tagAutocomplete.merchById.first(),
                     mergeBehavior = FormMergeBehavior.REPLACE,
                 )
-                state.stampRallyFormState.images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))
+                state.stampRallyFormState.images
+                    .replaceAll(stampRally.images.map(ImageUtils::toEditImage))
             }
         }
         hasLoaded = true

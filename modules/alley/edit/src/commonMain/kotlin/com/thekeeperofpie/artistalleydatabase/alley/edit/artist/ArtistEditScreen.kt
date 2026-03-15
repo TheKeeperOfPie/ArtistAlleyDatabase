@@ -120,7 +120,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -139,7 +142,7 @@ object ArtistEditScreen {
         artistId: Uuid,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
         onClickHistory: () -> Unit,
         onClickMerge: () -> Unit,
         onClickDebugForm: (formLink: String) -> Unit,
@@ -179,10 +182,11 @@ object ArtistEditScreen {
             generateFormLink = viewModel::generateFormLink,
             hasPendingChanges = viewModel::hasPendingChanges,
             onClickBack = onClickBack,
-            onClickEditImages = {
+            onClickEditImages = { requestKey, images ->
                 onClickEditImages(
+                    requestKey,
                     viewModel.state.artistFormState.info.name.value.text.toString(),
-                    it
+                    images,
                 )
             },
             onClickRefresh = { viewModel.initialize(force = true) },
@@ -212,7 +216,7 @@ object ArtistEditScreen {
         generateFormLink: (forceRegenerate: Boolean) -> Unit,
         hasPendingChanges: () -> Boolean,
         onClickBack: (force: Boolean) -> Unit,
-        onClickEditImages: (List<EditImage>) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
         onClickRefresh: () -> Unit,
         onClickHistory: () -> Unit,
         onClickMerge: () -> Unit,
@@ -314,6 +318,10 @@ object ArtistEditScreen {
                 val initialArtist by state.initialArtist.collectAsStateWithLifecycle()
                 val artistProgress by state.artistProgress.collectAsStateWithLifecycle()
                 val sameArtist by state.sameArtistState.sameArtist.collectAsStateWithLifecycle()
+                val imagesRequestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                NavigationResultEffect(imagesRequestKey) {
+                    state.artistFormState.images.replaceAll(it)
+                }
 
                 val sameArtistPrompt = remember {
                     movableContentOf {
@@ -411,7 +419,7 @@ object ArtistEditScreen {
                                     if (initialArtist != null && artistProgress !is JobProgress.Loading) {
                                         EditImagesButton(
                                             images = state.artistFormState.images,
-                                            onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                            onClickEdit = { onClickEditImages(imagesRequestKey, state.artistFormState.images.toList()) },
                                             modifier = Modifier.align(Alignment.CenterHorizontally)
                                         )
                                     }
@@ -432,7 +440,7 @@ object ArtistEditScreen {
                             Column {
                                 EditImagesButton(
                                     images = state.artistFormState.images,
-                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                    onClickEdit = { onClickEditImages(imagesRequestKey, state.artistFormState.images.toList()) },
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                                 ImageGrid(

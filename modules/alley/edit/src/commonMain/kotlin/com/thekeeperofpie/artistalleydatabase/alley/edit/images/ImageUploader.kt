@@ -54,8 +54,11 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
 
         val artistCatalogImages = preparedArtistImages.map {
             when (val uploadResult = uploadImage(localImageToUploadUrl, it)) {
-                is UploadImageResult.Error -> return UploadResult.Error(uploadResult.message, uploadedImages)
-                UploadImageResult.NotUploaded -> it.original.toCatalogImage()
+                is UploadImageResult.Error -> return UploadResult.Error(
+                    uploadResult.message,
+                    uploadedImages
+                )
+                is UploadImageResult.NotUploaded -> uploadResult.catalogImage
                 is UploadImageResult.Success -> {
                     val localImage = uploadResult.localImage
                     val key = ImageUploadUtils.makeArtistKey(
@@ -75,8 +78,11 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
             val stampRallyId = it.key
             it.value.map {
                 when (val uploadResult = uploadImage(localImageToUploadUrl, it)) {
-                    is UploadImageResult.Error -> return UploadResult.Error(uploadResult.message, uploadedImages)
-                    UploadImageResult.NotUploaded -> it.original.toCatalogImage()
+                    is UploadImageResult.Error -> return UploadResult.Error(
+                        uploadResult.message,
+                        uploadedImages
+                    )
+                    is UploadImageResult.NotUploaded -> uploadResult.catalogImage
                     is UploadImageResult.Success -> {
                         val localImage = uploadResult.localImage
                         val key = ImageUploadUtils.makeStampRallyKey(
@@ -205,13 +211,14 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         result: PrepareImageResult,
     ): UploadImageResult {
         val (localImage, bytes) = when (result) {
-            is PrepareImageResult.Ignore -> return UploadImageResult.NotUploaded
+            is PrepareImageResult.Ignore ->
+                return UploadImageResult.NotUploaded(result.original.toCatalogImage())
             is PrepareImageResult.Success.CompressedBytes -> result.original to result.bytes
             is PrepareImageResult.Success.ImageFile -> result.original to result.file.readBytes()
         }
         val uploadUrl = localImageToUploadUrl[localImage]
             ?: if (PlatformSpecificConfig.type == PlatformType.DESKTOP) {
-                return UploadImageResult.NotUploaded
+                return UploadImageResult.NotUploaded(result.original.toCatalogImage())
             } else {
                 return UploadImageResult.Error(
                     "Failed to get presigned URL for ${localImage.key} ${localImage.name}",
@@ -282,7 +289,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
     }
 
     private sealed interface UploadImageResult {
-        data object NotUploaded : UploadImageResult
+        data class NotUploaded(val catalogImage: CatalogImage) : UploadImageResult
         data class Error(val message: String) : UploadImageResult
         data class Success(val localImage: EditImage.LocalImage) : UploadImageResult
     }

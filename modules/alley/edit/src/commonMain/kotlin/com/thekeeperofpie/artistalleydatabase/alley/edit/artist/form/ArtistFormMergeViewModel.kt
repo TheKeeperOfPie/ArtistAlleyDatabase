@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
@@ -60,13 +59,9 @@ class ArtistFormMergeViewModel(
             database.saveArtistAndClearFormEntry(
                 dataYear = dataYear,
                 initial = data.initial,
-                updated = data.updated.copy(images = data.images.map {
-                    CatalogImage(
-                        name = it.name,
-                        width = it.width,
-                        height = it.height,
-                    )
-                }),
+                updated = data.updated.copy(
+                    images = data.images.map(EditImage::toCatalogImage)
+                ),
                 formEntryTimestamp = data.formEntryTimestamp,
             )
         }

@@ -37,6 +37,7 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImagesSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormEditActions
@@ -63,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -79,7 +81,10 @@ object StampRallyForm {
         merchById: () -> Map<String, MerchInfo>,
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
+        showImages: Boolean = false,
         forceLocked: Boolean = false,
+        onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
+        onClickImage: (EditImage) -> Unit = {},
         modifier: Modifier = Modifier,
     ) {
         val focusState = rememberFocusState(
@@ -111,6 +116,21 @@ object StampRallyForm {
             modifier = modifier,
         ) {
             MetadataSection(state.metadata)
+
+            if (showImages) {
+                val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                ImagesSection(
+                    images = state.images,
+                    requestKey = requestKey,
+                    onClickEditImages = if (onClickEditImages == null) null else {
+                        {
+                            onClickEditImages(requestKey, state.images.toList())
+                        }
+                    },
+                    onClickImage = onClickImage,
+                )
+            }
+
             IdSection(state.editorState.id, errorState.idErrorMessage)
             FandomSection(state.fandom)
             TablesSection(state.stateTables, state.tables)

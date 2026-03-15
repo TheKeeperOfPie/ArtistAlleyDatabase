@@ -50,7 +50,10 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.utils_compose.GenericTaskErrorEffect
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TaskState
 import com.thekeeperofpie.artistalleydatabase.utils_compose.TooltipIconButton
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -65,7 +68,7 @@ object ArtistAddScreen {
         artistId: Uuid,
         graph: ArtistAlleyEditGraph,
         onClickBack: (force: Boolean) -> Unit,
-        onClickEditImages: (displayName: String, List<EditImage>) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, displayName: String, List<EditImage>) -> Unit,
         viewModel: ArtistAddViewModel = viewModel {
             graph.artistAddViewModelFactory.create(
                 dataYear = dataYear,
@@ -91,10 +94,11 @@ object ArtistAddScreen {
             merchPredictions = viewModel::merchPredictions,
             seriesImage = viewModel::seriesImage,
             onClickBack = onClickBack,
-            onClickEditImages = {
+            onClickEditImages = { requestKey, images ->
                 onClickEditImages(
+                    requestKey,
                     viewModel.state.artistFormState.info.name.value.text.toString(),
-                    it
+                    images,
                 )
             },
             onClickSave = viewModel::onClickSave,
@@ -115,7 +119,7 @@ object ArtistAddScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickBack: (force: Boolean) -> Unit,
-        onClickEditImages: (List<EditImage>) -> Unit,
+        onClickEditImages: (NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
         onClickSave: () -> Unit,
         onClickDone: () -> Unit,
         onClickSameArtist: (artistId: Uuid) -> Unit,
@@ -179,6 +183,10 @@ object ArtistAddScreen {
             ) {
                 val imagePagerState = rememberImagePagerState(state.artistFormState.images, 0)
                 val sameArtist by state.sameArtistState.sameArtist.collectAsStateWithLifecycle()
+                val imagesRequestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                NavigationResultEffect(imagesRequestKey) {
+                    state.artistFormState.images.replaceAll(it)
+                }
                 val sameArtistPrompt = remember {
                     movableContentOf {
                         SameArtistPrompt(
@@ -208,7 +216,7 @@ object ArtistAddScreen {
                         if (sameArtist.isEmpty()) {
                             EditImagesButton(
                                 images = state.artistFormState.images,
-                                onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                onClickEdit = { onClickEditImages(imagesRequestKey, state.artistFormState.images.toList()) },
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                             ImagePager(
@@ -228,7 +236,7 @@ object ArtistAddScreen {
                             Column {
                                 EditImagesButton(
                                     images = state.artistFormState.images,
-                                    onClickEdit = { onClickEditImages(state.artistFormState.images.toList()) },
+                                    onClickEdit = { onClickEditImages(imagesRequestKey, state.artistFormState.images.toList()) },
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                                 ImageGrid(

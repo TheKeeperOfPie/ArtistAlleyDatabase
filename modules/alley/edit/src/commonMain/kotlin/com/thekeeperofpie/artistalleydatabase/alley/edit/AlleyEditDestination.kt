@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
+import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -47,8 +48,9 @@ sealed interface AlleyEditDestination : NavKey {
 
     @Serializable
     data class ImagesEdit(
-        val displayName: String,
+        val requestKey: NavigationRequestKey<List<EditImage>>,
         val images: List<EditImage>,
+        val displayName: String? = null,
     ) : AlleyEditDestination
 
     @Serializable

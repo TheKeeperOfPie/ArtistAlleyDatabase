@@ -678,6 +678,7 @@ actual class AlleyEditRemoteDatabase(
         fun toStampRallyEntryDiff(): StampRallyEntryDiff {
             return if (after == null) {
                 StampRallyEntryDiff(
+                    images = null,
                     id = stampRallyId,
                     fandom = null,
                     tables = null,
@@ -693,6 +694,7 @@ actual class AlleyEditRemoteDatabase(
                 )
             } else {
                 StampRallyEntryDiff(
+                    images = ListDiff.diffList(before?.images, after.images),
                     id = stampRallyId,
                     fandom = after.fandom.takeIf { it != before?.fandom.orEmpty() },
                     tables = ListDiff.diffList(before?.tables, after.tables),

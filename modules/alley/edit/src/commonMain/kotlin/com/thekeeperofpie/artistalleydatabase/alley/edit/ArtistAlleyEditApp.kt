@@ -178,9 +178,9 @@ private fun entryProvider(
             artistId = route.artistId,
             graph = graph,
             onClickBack = onClickBack,
-            onClickEditImages = { displayName, images ->
+            onClickEditImages = { requestKey, displayName, images ->
                 navStack.navigate(
-                    AlleyEditDestination.ImagesEdit(displayName, images)
+                    AlleyEditDestination.ImagesEdit(requestKey, images, displayName)
                 )
             },
         )
@@ -191,9 +191,9 @@ private fun entryProvider(
             artistId = route.artistId,
             graph = graph,
             onClickBack = onClickBack,
-            onClickEditImages = { displayName, images ->
+            onClickEditImages = { requestKey, displayName, images ->
                 navStack.navigate(
-                    AlleyEditDestination.ImagesEdit(displayName, images)
+                    AlleyEditDestination.ImagesEdit(requestKey, images, displayName)
                 )
             },
             onClickMerge = {
@@ -371,8 +371,10 @@ private fun entryProvider(
             stampRallyId = route.stampRallyId,
             graph = graph,
             onClickBack = onClickBack,
-            onClickEditImages = { _, _ ->
-                // TODO: Open images screen
+            onClickEditImages = { requestKey, displayName, images ->
+                navStack.navigate(
+                    AlleyEditDestination.ImagesEdit(requestKey, images, displayName)
+                )
             },
             onClickHistory = {
                 navStack.navigate(

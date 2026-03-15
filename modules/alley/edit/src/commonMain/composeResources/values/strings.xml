@@ -284,6 +284,7 @@
     <string name="alley_edit_stamp_rally_history_action_refresh_tooltip">Refresh</string>
     <string name="alley_edit_stamp_rally_history_select_all">Select all</string>
 
+    <string name="alley_edit_stamp_rally_field_label_images">Images:</string>
     <string name="alley_edit_stamp_rally_field_label_fandom">Name:</string>
     <string name="alley_edit_stamp_rally_field_label_tables">Tables:</string>
     <string name="alley_edit_stamp_rally_field_label_links">Links:</string>
