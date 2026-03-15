@@ -14,6 +14,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCac
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.uuid.Uuid
 
@@ -37,14 +39,17 @@ internal fun EditImagesButton(
     modifier: Modifier = Modifier,
 ) {
     if (images.isEmpty()) {
+        val scope = rememberCoroutineScope()
         val launcher = rememberFilePickerLauncher(
             type = FileKitType.Image,
             mode = FileKitMode.Multiple(),
         ) {
             if (it != null) {
-                images += it.map {
-                    val imageKey = PlatformImageCache.add(it)
-                    EditImage.LocalImage(imageKey, it)
+                scope.launch {
+                    images += it.map {
+                        val imageKey = PlatformImageCache.add(it)
+                        EditImage.LocalImage(imageKey, it)
+                    }
                 }
             }
         }

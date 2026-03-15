@@ -106,22 +106,6 @@ abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClie
 
     }
 
-    override fun imageFromIdAndKey(
-        original: EditImage,
-        dataYear: DataYear,
-        artistId: Uuid,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage {
-        val key = EditImage.NetworkImage.makeKey(dataYear, artistId, id, platformFile)
-        return EditImage.NetworkImage(
-            uri = Uri.parse(
-                IMAGES_URL.ifBlank { "${window.origin}/edit/api/image" } + "/$key"
-            ),
-            key = key,
-        )
-    }
-
     @OptIn(ExperimentalUnsignedTypes::class)
     override suspend fun compressImage(bytes: ByteArray): ByteArray {
         val imageBitmap = bytes.decodeToImageBitmap()

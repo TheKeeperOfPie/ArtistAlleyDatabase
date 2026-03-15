@@ -249,6 +249,8 @@
     <string name="alley_edit_stamp_rally_action_save_and_exit_tooltip">Save and exit</string>
     <string name="alley_edit_stamp_rally_error_saving_bad_fields">Could not save because some fields have errors</string>
 
+    <string name="alley_edit_stamp_rally_edit_images">Images</string>
+    <string name="alley_edit_stamp_rally_edit_images_subtitle_megabytes">Max of %1$d images at %2$d MB each</string>
     <string name="alley_edit_stamp_rally_edit_id">ID</string>
     <string name="alley_edit_stamp_rally_edit_fandom">Name</string>
     <string name="alley_edit_stamp_rally_edit_tables">Tables</string>

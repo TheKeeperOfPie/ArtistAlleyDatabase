@@ -19,6 +19,8 @@ actual object ImageUtils {
             name = catalogImage.name,
             extension = file.extension,
             id = id ?: Uuid.random(),
+            width = catalogImage.width,
+            height = catalogImage.height,
         )
     }
 }

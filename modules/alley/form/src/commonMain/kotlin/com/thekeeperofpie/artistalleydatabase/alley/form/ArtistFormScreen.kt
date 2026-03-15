@@ -436,6 +436,7 @@ object ArtistFormScreen {
                                     )
                                 }
 
+                                HorizontalDivider()
                                 Text(
                                     text = stringResource(Res.string.alley_form_artist_header),
                                     style = MaterialTheme.typography.headlineMedium,
@@ -1088,12 +1089,8 @@ object ArtistFormScreen {
     ) {
         Column {
             val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp).weight(1f)
-                ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.padding(16.dp).weight(1f)) {
                     Text(
                         text = stringResource(Res.string.alley_form_catalog_header),
                         style = MaterialTheme.typography.headlineMedium,
@@ -1129,7 +1126,7 @@ object ArtistFormScreen {
                                 state.images.toList(),
                             )
                         },
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
                             stringResource(AlleyRes.string.alley_edit_artist_action_edit_images)

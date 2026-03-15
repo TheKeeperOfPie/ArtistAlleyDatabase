@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +46,7 @@ import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.size
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -66,14 +68,17 @@ internal fun EditImagesSection(
                 val addLauncher = if (onClickEditImages == null) {
                     null
                 } else {
+                    val scope = rememberCoroutineScope()
                     rememberFilePickerLauncher(
                         type = FileKitType.Image,
                         mode = FileKitMode.Multiple(),
                     ) {
                         if (it != null) {
-                            images += it.map {
-                                val imageKey = PlatformImageCache.add(it)
-                                EditImage.LocalImage(imageKey, it)
+                            scope.launch {
+                                images += it.map {
+                                    val imageKey = PlatformImageCache.add(it)
+                                    EditImage.LocalImage(imageKey, it)
+                                }
                             }
                         }
                     }

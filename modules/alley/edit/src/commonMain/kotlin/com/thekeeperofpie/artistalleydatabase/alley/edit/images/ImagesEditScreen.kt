@@ -38,12 +38,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -83,6 +89,7 @@ import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.size
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import artistalleydatabase.modules.utils_compose.generated.resources.Res as UtilsComposeRes
 
@@ -163,14 +170,17 @@ object ImagesEditScreen {
                 },
                 modifier = Modifier.widthIn(max = 960.dp).fillMaxWidth()
             ) {
+                val scope = rememberCoroutineScope()
                 val addLauncher = rememberFilePickerLauncher(
                     type = FileKitType.Image,
                     mode = FileKitMode.Multiple(),
                 ) {
                     if (it != null) {
-                        images += it.map {
-                            val imageKey = PlatformImageCache.add(it)
-                            EditImage.LocalImage(imageKey, it)
+                        scope.launch {
+                            images += it.map {
+                                val imageKey = PlatformImageCache.add(it)
+                                EditImage.LocalImage(imageKey, it)
+                            }
                         }
                     }
                 }
@@ -208,8 +218,16 @@ object ImagesEditScreen {
                                     )
 
                                     Text(
-                                        text = index.toString(),
+                                        text = buildAnnotatedString {
+                                            if (index < 10) {
+                                                withStyle(SpanStyle(Color.Transparent)) {
+                                                    append("0")
+                                                }
+                                            }
+                                            append(index.toString())
+                                        },
                                         style = MaterialTheme.typography.headlineMediumEmphasized,
+                                        fontFamily = FontFamily.Monospace,
                                         modifier = Modifier.padding(16.dp)
                                     )
 
@@ -269,8 +287,13 @@ object ImagesEditScreen {
                                         mode = FileKitMode.Single,
                                     ) {
                                         if (it != null) {
-                                            images[index] =
-                                                EditImage.LocalImage(PlatformImageCache.add(it), it)
+                                            scope.launch {
+                                                images[index] =
+                                                    EditImage.LocalImage(
+                                                        key = PlatformImageCache.add(it),
+                                                        file = it,
+                                                    )
+                                            }
                                         }
                                     }
 

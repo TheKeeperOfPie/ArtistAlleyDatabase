@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.rallies
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.LayoutScopeMarker
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,10 +12,13 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.ProductionQuantityLimits
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.TableRestaurant
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -23,9 +27,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_artist_action_edit_images
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_editor_notes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_fandom
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_id
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_images
+import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_images_subtitle_megabytes
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_links
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_merch
 import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_stamp_rally_edit_notes
@@ -37,7 +44,9 @@ import artistalleydatabase.modules.alley.edit.generated.resources.alley_edit_sta
 import com.thekeeperofpie.artistalleydatabase.alley.edit.MetadataSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImagesSection
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImagesEditScreen
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.BasicMultiTextSection
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FieldRevertDialog
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.FormEditActions
@@ -52,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ShowListRevertIconBu
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ShowRevertIconButton
 import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.rememberListRevertDialogState
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkModel
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -61,13 +71,16 @@ import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryForm2.rememberFocusState
 import com.thekeeperofpie.artistalleydatabase.entry.form.EntryFormScope
 import com.thekeeperofpie.artistalleydatabase.entry.form.SingleTextSection
+import com.thekeeperofpie.artistalleydatabase.utils.asBytes
 import com.thekeeperofpie.artistalleydatabase.utils_compose.CustomIcons
 import com.thekeeperofpie.artistalleydatabase.utils_compose.digits
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.rememberNavigationRequestKey
+import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import artistalleydatabase.modules.alley.edit.generated.resources.Res as AlleyRes
 
 object StampRallyForm {
 
@@ -203,7 +216,53 @@ abstract class StampRallyFormScope(
         onClickEditImages: (() -> Unit)?,
         onClickImage: (EditImage) -> Unit,
     ) {
-        EditImagesSection(images, requestKey, onClickEditImages, onClickImage)
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.padding(16.dp).weight(1f)) {
+                    Text(
+                        text = stringResource(Res.string.alley_edit_stamp_rally_edit_images),
+                        style = MaterialTheme.typography.titleMediumEmphasized,
+                    )
+                    val showError by remember {
+                        derivedStateOf {
+                            val images = images.toList()
+                            images.size > ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT || images.any {
+                                it is EditImage.LocalImage && PlatformImageCache[it.key]?.size()
+                                    ?.asBytes()?.let { it > ImageUtils.MAX_UPLOAD_SIZE } == true
+                            }
+                        }
+                    }
+                    if (showError) {
+                        Text(
+                            text = stringResource(
+                                Res.string.alley_edit_stamp_rally_edit_images_subtitle_megabytes,
+                                ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT,
+                                ImageUtils.MAX_UPLOAD_SIZE.inWholeMegabytes
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AlleyTheme.colorScheme.negative,
+                        )
+                    }
+                }
+
+                if (images.isNotEmpty()) {
+                    FilledTonalButton(
+                        onClick = { onClickEditImages?.invoke() },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            stringResource(AlleyRes.string.alley_edit_artist_action_edit_images)
+                        )
+                    }
+                }
+            }
+            EditImagesSection(
+                images = images,
+                requestKey = requestKey,
+                onClickEditImages = onClickEditImages.takeIf { images.isEmpty() },
+                onClickImage = onClickImage,
+            )
+        }
     }
 
     @Composable

@@ -113,14 +113,6 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         stampRallyIdsToLocalImages: Map<String, List<PrepareImageResult.Success>>,
     ): Map<EditImage.LocalImage, String>
 
-    protected abstract fun imageFromIdAndKey(
-        original: EditImage,
-        dataYear: DataYear,
-        artistId: Uuid,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage
-
     protected abstract suspend fun compressImage(bytes: ByteArray): ByteArray
 
     private fun validateInput(
