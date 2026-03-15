@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -26,13 +27,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.extension
-import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
-import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -111,40 +108,18 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    actual suspend fun uploadImage(
+    actual suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
-        artistId: Uuid,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage = withContext(dispatchers.io) {
-        val key = EditImage.NetworkImage.makePrefix(dataYear, artistId.toString()) +
-                "/$id.${platformFile.extension}"
-        val bytes = platformFile.readBytes()
-
-        ktorClient.put(window.origin + "/edit/api/uploadImage/$key") {
-            contentType(ContentType.Application.OctetStream)
-            setBody(bytes)
+        artistId: Uuid?,
+        artistImageData: List<ImageFileData>,
+        stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
+    ): BackendRequest.UploadImageUrls.Response = withContext(dispatchers.io) {
+        try {
+            sendRequest(BackendRequest.UploadImageUrls(dataYear, artistId, artistImageData, stampRallyIdsToImageData))!!
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            BackendRequest.UploadImageUrls.Response.Failed(t.message.orEmpty())
         }
-
-        imageFromIdAndKey(key)
-    }
-
-    actual suspend fun uploadImage(
-        dataYear: DataYear,
-        stampRallyId: String,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage = withContext(dispatchers.io) {
-        val key = EditImage.NetworkImage.makePrefix(dataYear, stampRallyId) +
-                "/$id.${platformFile.extension}"
-        val bytes = platformFile.readBytes()
-
-        ktorClient.put(window.origin + "/edit/api/uploadImage/$key") {
-            contentType(ContentType.Application.OctetStream)
-            setBody(bytes)
-        }
-
-        imageFromIdAndKey(key)
     }
 
     // TODO: Cache this and rely on manual refresh to avoid extra row reads

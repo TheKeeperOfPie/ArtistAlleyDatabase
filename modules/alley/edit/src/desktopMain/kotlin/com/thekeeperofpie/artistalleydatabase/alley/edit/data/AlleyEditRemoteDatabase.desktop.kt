@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.ListDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
@@ -153,47 +154,13 @@ actual class AlleyEditRemoteDatabase(
         return BackendRequest.ArtistDelete.Response.Success
     }
 
-    actual suspend fun uploadImage(
+    actual suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
-        artistId: Uuid,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage {
-        simulateLatency()
-        val key = ImageUploadUtils.makeArtistKey(
-            dataYear = dataYear,
-            artistId = artistId,
-            imageId = id,
-            extension = platformFile.extension,
-        )
-        val imageKey = PlatformImageKey(id)
-            .takeIf { PlatformImageCache[it] != null }
-            ?: PlatformImageCache.add(platformFile)
-        val image = EditImage.LocalImage(imageKey, platformFile)
-        images[key] = image
-        return image
-    }
-
-    actual suspend fun uploadImage(
-        dataYear: DataYear,
-        stampRallyId: String,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage {
-        simulateLatency()
-        val key = ImageUploadUtils.makeStampRallyKey(
-            dataYear = dataYear,
-            stampRallyId = stampRallyId,
-            imageId = id,
-            extension = platformFile.extension,
-        )
-        val imageKey = PlatformImageKey(id)
-            .takeIf { PlatformImageCache[it] != null }
-            ?: PlatformImageCache.add(platformFile)
-        val image = EditImage.LocalImage(imageKey, platformFile)
-        images[key] = image
-        return image
-    }
+        artistId: Uuid?,
+        artistImageData: List<ImageFileData>,
+        stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
+    ): BackendRequest.UploadImageUrls.Response =
+        BackendRequest.UploadImageUrls.Response.Success(emptyMap(), emptyMap())
 
     actual suspend fun loadSeries(): List<SeriesInfo> = series.values.toList()
 

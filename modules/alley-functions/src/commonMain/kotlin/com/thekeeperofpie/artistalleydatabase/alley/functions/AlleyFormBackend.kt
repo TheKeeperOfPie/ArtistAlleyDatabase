@@ -5,9 +5,6 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
 import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntry
-import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsClient
-import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsParamsInit
-import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsSignInit
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
@@ -24,12 +21,6 @@ import kotlinx.io.bytestring.hexToByteString
 import kotlinx.serialization.json.Json
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
-import org.w3c.dom.url.URL
-import org.w3c.fetch.FOLLOW
-import org.w3c.fetch.Headers
-import org.w3c.fetch.Request
-import org.w3c.fetch.RequestInit
-import org.w3c.fetch.RequestRedirect
 import org.w3c.fetch.Response
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
@@ -375,7 +366,7 @@ internal object AlleyFormBackend {
                     imageId = it.id,
                     extension = it.extension,
                 )
-                it.id to awsClient.buildPresignedUrl(baseImagesUrl, key)
+                it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
             }
 
         val stampRallyUrls = request.stampRallyIdsToImageData.mapValues {
@@ -387,7 +378,7 @@ internal object AlleyFormBackend {
                     imageId = it.id,
                     extension = it.extension,
                 )
-                it.id to awsClient.buildPresignedUrl(baseImagesUrl, key)
+                it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
             }
         }
 
@@ -395,28 +386,6 @@ internal object AlleyFormBackend {
             artistUrls = artistUrls,
             stampRallyUrls = stampRallyUrls,
         )
-    }
-
-    private suspend fun AwsClient.buildPresignedUrl(baseImagesUrl: String, key: String): String {
-        val url =
-            URL("$baseImagesUrl/$key").apply {
-                searchParams.set(
-                    "X-Amz-Expires",
-                    20.minutes.inWholeSeconds.toString(),
-                )
-            }
-        val request = Request(
-            input = url,
-            init = RequestInit(
-                headers = Headers(),
-                method = "PUT",
-                cache = undefined,
-                integrity = undefined,
-                redirect = RequestRedirect.FOLLOW,
-            )
-        )
-
-        return sign(request, AwsParamsInit(AwsSignInit(signQuery = true))).await().url
     }
 
     private inline fun <reified Request : BackendFormRequest.WithResponse<Response>, reified Response> Request.makeResponse(

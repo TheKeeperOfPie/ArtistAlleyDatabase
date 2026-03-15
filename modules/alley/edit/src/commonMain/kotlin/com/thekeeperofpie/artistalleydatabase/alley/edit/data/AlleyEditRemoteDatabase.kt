@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
@@ -8,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -17,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntr
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
-import io.github.vinceglb.filekit.PlatformFile
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -43,19 +42,12 @@ expect class AlleyEditRemoteDatabase {
         expected: ArtistDatabaseEntry.Impl,
     ): BackendRequest.ArtistDelete.Response
 
-    suspend fun uploadImage(
+    suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
-        artistId: Uuid,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage
-
-    suspend fun uploadImage(
-        dataYear: DataYear,
-        stampRallyId: String,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage
+        artistId: Uuid?,
+        artistImageData: List<ImageFileData>,
+        stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
+    ): BackendRequest.UploadImageUrls.Response
 
     suspend fun loadSeries(): List<SeriesInfo>
     suspend fun saveSeries(

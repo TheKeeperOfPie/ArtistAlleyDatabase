@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendFormRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -23,7 +24,7 @@ expect class AlleyFormRemoteDatabase {
     suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
         artistId: Uuid,
-        artistImageData: List<BackendFormRequest.UploadImageUrls.ImageData>,
-        stampRallyIdsToImageData: Map<String, List<BackendFormRequest.UploadImageUrls.ImageData>>,
+        artistImageData: List<ImageFileData>,
+        stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
     ): BackendFormRequest.UploadImageUrls.Response
 }

@@ -3,13 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.merch.MerchEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -23,8 +23,6 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -90,37 +88,17 @@ class AlleyEditDatabase(
         expected: ArtistDatabaseEntry.Impl,
     ) = remoteDatabase.deleteArtist(dataYear, expected)
 
-    suspend fun uploadImage(
+    suspend fun fetchUploadImageUrls(
         dataYear: DataYear,
-        artistId: Uuid,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage? {
-        val (width, height) = try {
-            platformFile.toImageBitmap().run { width to height }
-        } catch (_: Throwable) {
-            // TODO: Error handling
-            return null
-        }
-        return remoteDatabase.uploadImage(dataYear, artistId, platformFile, id)
-            .fillSize(width, height)
-    }
-
-    suspend fun uploadImage(
-        dataYear: DataYear,
-        stampRallyId: String,
-        platformFile: PlatformFile,
-        id: Uuid,
-    ): EditImage? {
-        val (width, height) = try {
-            platformFile.toImageBitmap().run { width to height }
-        } catch (_: Throwable) {
-            // TODO: Error handling
-            return null
-        }
-        return remoteDatabase.uploadImage(dataYear, stampRallyId, platformFile, id)
-            .fillSize(width, height)
-    }
+        artistId: Uuid?,
+        artistImageData: List<ImageFileData>,
+        stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
+    ) = remoteDatabase.fetchUploadImageUrls(
+        dataYear = dataYear,
+        artistId = artistId,
+        artistImageData = artistImageData,
+        stampRallyIdsToImageData = stampRallyIdsToImageData,
+    )
 
     suspend fun saveSeries(
         initial: SeriesInfo?,

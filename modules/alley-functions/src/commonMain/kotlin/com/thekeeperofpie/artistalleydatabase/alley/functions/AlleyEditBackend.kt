@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -21,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -28,6 +30,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistory
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
+import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
@@ -127,6 +131,8 @@ object AlleyEditBackend {
                         makeResponse(submitRemoteArtistData(context, this))
                     is BackendRequest.SaveRemoteArtistData ->
                         makeResponse(saveRemoteArtistData(context, this))
+                    is BackendRequest.UploadImageUrls ->
+                        makeResponse(generateUploadImageUrls(context, this))
                 }
             }
         }
@@ -1103,6 +1109,61 @@ object AlleyEditBackend {
                 -> Unit
         }
         return BackendRequest.SaveRemoteArtistData.Response.Success
+    }
+
+    private suspend fun generateUploadImageUrls(
+        context: EventContext,
+        request: BackendRequest.UploadImageUrls,
+    ): BackendRequest.UploadImageUrls.Response {
+        val errorMessage = when {
+            request.artistImageData.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT ->
+                "Too many artist images"
+            request.stampRallyIdsToImageData.size > StampRallyDatabaseEntry.MAX_STAMP_RALLIES ->
+                "Too many stamp rallies"
+            request.stampRallyIdsToImageData.any { it.value.size > ImageUploadUtils.MAX_STAMP_RALLY_UPLOAD_COUNT } ->
+                "Too many stamp rally images"
+            else -> null
+        }
+        if (errorMessage != null) {
+            return BackendRequest.UploadImageUrls.Response.Failed(errorMessage)
+        }
+
+        val awsClient = awsClient(context.env)
+        val baseImagesUrl = "${context.env.IMAGES_CLOUDFLARE_URL}/artist-alley-images"
+
+        val artistId = request.artistId
+        val artistUrls = if (artistId == null) {
+            emptyMap()
+        } else {
+            request.artistImageData
+                .associate {
+                    val key = ImageUploadUtils.makeArtistKey(
+                        dataYear = request.dataYear,
+                        artistId = artistId,
+                        imageId = it.id,
+                        extension = it.extension,
+                    )
+                    it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
+                }
+        }
+
+        val stampRallyUrls = request.stampRallyIdsToImageData.mapValues {
+            val stampRallyId = it.key
+            it.value.associate {
+                val key = ImageUploadUtils.makeStampRallyKey(
+                    dataYear = request.dataYear,
+                    stampRallyId = stampRallyId,
+                    imageId = it.id,
+                    extension = it.extension,
+                )
+                it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
+            }
+        }
+
+        return BackendRequest.UploadImageUrls.Response.Success(
+            artistUrls = artistUrls,
+            stampRallyUrls = stampRallyUrls,
+        )
     }
 
     private fun literalJsonResponse(value: String) = Response(

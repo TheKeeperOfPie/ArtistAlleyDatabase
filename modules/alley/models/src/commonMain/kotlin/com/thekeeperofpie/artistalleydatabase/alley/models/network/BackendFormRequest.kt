@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.models.network
 
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
@@ -57,8 +58,8 @@ sealed interface BackendFormRequest {
     data class UploadImageUrls(
         val dataYear: DataYear,
         val artistId: Uuid,
-        val artistImageData: List<ImageData>,
-        val stampRallyIdsToImageData: Map<String, List<ImageData>>,
+        val artistImageData: List<ImageFileData>,
+        val stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
     ) : BackendFormRequest, WithResponse<UploadImageUrls.Response> {
         @Serializable
         sealed interface Response {
@@ -71,11 +72,5 @@ sealed interface BackendFormRequest {
             @Serializable
             data class Failed(val errorMessage: String) : Response
         }
-
-        @Serializable
-        data class ImageData(
-            val id: Uuid,
-            val extension: String,
-        )
     }
 }

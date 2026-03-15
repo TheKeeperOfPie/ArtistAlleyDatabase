@@ -13,7 +13,7 @@ import kotlin.uuid.Uuid
 class FormImageUploader(httpClient: HttpClient) : ImageUploader(httpClient) {
     override suspend fun getPresignedImageUrls(
         dataYear: DataYear,
-        artistId: Uuid,
+        artistId: Uuid?,
         localImages: List<PrepareImageResult.Success>,
         stampRallyIdsToLocalImages: Map<String, List<PrepareImageResult.Success>>,
     ): Map<EditImage.LocalImage, String> = emptyMap()

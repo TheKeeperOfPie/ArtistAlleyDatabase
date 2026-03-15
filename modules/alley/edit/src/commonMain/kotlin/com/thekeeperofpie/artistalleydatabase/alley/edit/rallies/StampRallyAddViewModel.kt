@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -14,11 +13,9 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendReques
 import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils_compose.ExclusiveTask
-import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -75,40 +72,19 @@ class StampRallyAddViewModel(
                 // Don't save if no data has changed
                 return@withContext BackendRequest.StampRallySave.Response.Success
             }
-            val finalImages = images.mapNotNull {
-                when (it) {
-                    is EditImage.DatabaseImage,
-                    is EditImage.NetworkImage,
-                        -> it
-                    is EditImage.LocalImage -> {
-                        // TODO: Error handling
-                        val file = PlatformImageCache[it.key] ?: return@mapNotNull null
-                        database.uploadImage(
-                            dataYear = dataYear,
-                            stampRallyId = databaseEntry.id,
-                            platformFile = file,
-                            id = it.key.value,
-                        )
-                    }
-                }
-            }
 
-            val updatedStampRally = databaseEntry.copy(images = finalImages.map {
-                CatalogImage(name = it.name, width = it.width, height = it.height)
-            })
             database.saveStampRally(
                 dataYear = dataYear,
                 initial = null,
-                updated = updatedStampRally,
+                updated = databaseEntry,
             ).also {
                 if (it is BackendRequest.StampRallySave.Response.Success) {
                     if (!isManual) {
                         state.stampRallyFormState.applyDatabaseEntry(
-                            stampRally = updatedStampRally,
+                            stampRally = databaseEntry,
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
                         )
-                        state.stampRallyFormState.images.replaceAll(finalImages)
                     }
                 }
             }

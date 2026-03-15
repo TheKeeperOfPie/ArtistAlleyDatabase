@@ -14,8 +14,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.inference.SameAr
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
@@ -49,6 +49,7 @@ class ArtistEditViewModel(
     private val artistInference: ArtistInference,
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
+    private val imageUploader: ImageUploader,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
@@ -226,27 +227,26 @@ class ArtistEditViewModel(
                 // Don't save if no data has changed
                 return@withContext BackendRequest.ArtistSave.Response.Success
             }
-            val finalImages = images.mapNotNull {
-                when (it) {
-                    is EditImage.DatabaseImage,
-                    is EditImage.NetworkImage,
-                        -> it
-                    is EditImage.LocalImage -> {
-                        // TODO: Error handling
-                        val file = PlatformImageCache[it.key] ?: return@mapNotNull null
-                        database.uploadImage(
-                            dataYear = dataYear,
-                            artistId = Uuid.parse(databaseEntry.id),
-                            platformFile = file,
-                            id = it.key.value,
-                        )
-                    }
-                }
+            val imagesResult = imageUploader.uploadImages(
+                dataYear = dataYear,
+                artistId = Uuid.parse(triple.second.id),
+                artistImages = images,
+                stampRallyImages = emptyMap(),
+            )
+
+            val (artistCatalogImages, uploadedImages) = when (imagesResult) {
+                ImageUploader.UploadResult.Empty -> emptyList<CatalogImage>() to emptyMap()
+                is ImageUploader.UploadResult.Error ->
+                    return@withContext BackendRequest.ArtistSave.Response.Failed(imagesResult.message)
+                is ImageUploader.UploadResult.Success ->
+                    imagesResult.artistCatalogImages to imagesResult.uploadedImages
             }
 
-            val updatedArtist = databaseEntry.copy(images = finalImages.map {
-                CatalogImage(name = it.name, width = it.width, height = it.height)
-            })
+            val newArtistImages = state.artistFormState.images.toList()
+                .map { uploadedImages[it] ?: it }
+            state.artistFormState.images.replaceAll(newArtistImages)
+
+            val updatedArtist = databaseEntry.copy(images = artistCatalogImages)
             database.saveArtist(
                 dataYear = dataYear,
                 initial = artist.value,
@@ -261,7 +261,6 @@ class ArtistEditViewModel(
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
                         )
-                        state.artistFormState.images.replaceAll(finalImages)
                     }
                 }
             }

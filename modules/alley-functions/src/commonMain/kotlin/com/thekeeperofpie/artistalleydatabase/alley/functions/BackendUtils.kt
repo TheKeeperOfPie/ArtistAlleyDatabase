@@ -4,6 +4,9 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsClient
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsParamsInit
+import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.AwsSignInit
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.ResponseWithBody
 import com.thekeeperofpie.artistalleydatabase.alley.functions.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -14,9 +17,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
+import org.w3c.dom.url.URL
+import org.w3c.fetch.FOLLOW
 import org.w3c.fetch.Headers
+import org.w3c.fetch.Request
+import org.w3c.fetch.RequestInit
+import org.w3c.fetch.RequestRedirect
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -209,6 +218,10 @@ internal object BackendUtils {
         .awaitAsList()
         .map { formEntry ->
             StampRallyEntryDiff(
+                images = ListDiff.diffList(
+                    formEntry.beforeImages,
+                    formEntry.afterImages,
+                ),
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
@@ -242,6 +255,10 @@ internal object BackendUtils {
         .awaitAsOneOrNull()
         ?.let { formEntry ->
             StampRallyEntryDiff(
+                images = ListDiff.diffList(
+                    formEntry.beforeImages,
+                    formEntry.afterImages
+                ),
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
@@ -276,6 +293,10 @@ internal object BackendUtils {
         .awaitAsOneOrNull()
         ?.let { formEntry ->
             StampRallyEntryDiff(
+                images = ListDiff.diffList(
+                    formEntry.beforeImages,
+                    formEntry.afterImages
+                ),
                 id = formEntry.stampRallyId,
                 fandom = formEntry.afterFandom.orEmpty()
                     .takeIf { it != formEntry.beforeFandom.orEmpty() },
@@ -320,5 +341,27 @@ internal object BackendUtils {
             .put(path, context.request.unsafeCast<ResponseWithBody>().body)
             .await()
         return Response("")
+    }
+
+    suspend fun buildPresignedUrl(client: AwsClient, baseImagesUrl: String, key: String): String {
+        val url =
+            URL("$baseImagesUrl/$key").apply {
+                searchParams.set(
+                    "X-Amz-Expires",
+                    20.minutes.inWholeSeconds.toString(),
+                )
+            }
+        val request = Request(
+            input = url,
+            init = RequestInit(
+                headers = Headers(),
+                method = "PUT",
+                cache = undefined,
+                integrity = undefined,
+                redirect = RequestRedirect.FOLLOW,
+            )
+        )
+
+        return client.sign(request, AwsParamsInit(AwsSignInit(signQuery = true))).await().url
     }
 }

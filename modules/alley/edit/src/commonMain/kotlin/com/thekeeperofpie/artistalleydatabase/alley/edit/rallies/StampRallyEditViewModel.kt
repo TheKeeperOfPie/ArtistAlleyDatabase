@@ -9,8 +9,8 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -37,6 +37,7 @@ import kotlinx.serialization.json.Json
 class StampRallyEditViewModel(
     private val database: AlleyEditDatabase,
     private val dispatchers: CustomDispatchers,
+    private val imageUploader: ImageUploader,
     seriesImagesStore: SeriesImagesStore,
     val tagAutocomplete: TagAutocomplete,
     @Assisted private val dataYear: DataYear,
@@ -136,27 +137,28 @@ class StampRallyEditViewModel(
                 // Don't save if no data has changed
                 return@withContext BackendRequest.StampRallySave.Response.Success
             }
-            val finalImages = images.mapNotNull {
-                when (it) {
-                    is EditImage.DatabaseImage,
-                    is EditImage.NetworkImage,
-                        -> it
-                    is EditImage.LocalImage -> {
-                        // TODO: Error handling
-                        val file = PlatformImageCache[it.key] ?: return@mapNotNull null
-                        database.uploadImage(
-                            dataYear = dataYear,
-                            stampRallyId = databaseEntry.id,
-                            platformFile = file,
-                            id = it.key.value,
-                        )
-                    }
-                }
+
+            val stampRallyId = triple.second.id
+            val imagesResult = imageUploader.uploadImages(
+                dataYear = dataYear,
+                artistId = null,
+                artistImages = emptyList(),
+                stampRallyImages = mapOf(stampRallyId to triple.first),
+            )
+
+            val (stampRallyCatalogImages, uploadedImages) = when (imagesResult) {
+                ImageUploader.UploadResult.Empty -> emptyList<CatalogImage>() to emptyMap()
+                is ImageUploader.UploadResult.Error ->
+                    return@withContext BackendRequest.StampRallySave.Response.Failed(imagesResult.message)
+                is ImageUploader.UploadResult.Success ->
+                    imagesResult.stampRallyCatalogImages[stampRallyId].orEmpty() to imagesResult.uploadedImages
             }
 
-            val updatedStampRally = databaseEntry.copy(images = finalImages.map {
-                CatalogImage(name = it.name, width = it.width, height = it.height)
-            })
+            val newStampRallyImages = state.stampRallyFormState.images.toList()
+                .map { uploadedImages[it] ?: it }
+            state.stampRallyFormState.images.replaceAll(newStampRallyImages)
+
+            val updatedStampRally = databaseEntry.copy(images = stampRallyCatalogImages)
             database.saveStampRally(
                 dataYear = dataYear,
                 initial = stampRally.value,
@@ -171,7 +173,6 @@ class StampRallyEditViewModel(
                             seriesById = tagAutocomplete.seriesById.first(),
                             merchById = tagAutocomplete.merchById.first(),
                         )
-                        state.stampRallyFormState.images.replaceAll(finalImages)
                     }
                 }
             }

@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
+import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -408,6 +409,26 @@ sealed interface BackendRequest {
 
             @Serializable
             data class Outdated(val current: ArtistDatabaseEntry.Impl) : Response
+
+            @Serializable
+            data class Failed(val errorMessage: String) : Response
+        }
+    }
+
+    @Serializable
+    data class UploadImageUrls(
+        val dataYear: DataYear,
+        val artistId: Uuid?,
+        val artistImageData: List<ImageFileData>,
+        val stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
+    ) : BackendRequest, WithResponse<UploadImageUrls.Response> {
+        @Serializable
+        sealed interface Response {
+            @Serializable
+            data class Success(
+                val artistUrls: Map<Uuid, String>,
+                val stampRallyUrls: Map<String, Map<Uuid, String>>,
+            ) : Response
 
             @Serializable
             data class Failed(val errorMessage: String) : Response
