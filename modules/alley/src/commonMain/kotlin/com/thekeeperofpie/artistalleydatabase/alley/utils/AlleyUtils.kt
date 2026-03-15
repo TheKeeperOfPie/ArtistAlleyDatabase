@@ -12,4 +12,5 @@ object AlleyUtils {
     const val contactLinkBluesky = BuildKonfig.contactLinkBluesky
     const val contactLinkInstagram = BuildKonfig.contactLinkInstagram
     const val contactLinkX = BuildKonfig.contactLinkX
+    const val prodImagesUrl = BuildKonfig.prodImagesUrl
 }

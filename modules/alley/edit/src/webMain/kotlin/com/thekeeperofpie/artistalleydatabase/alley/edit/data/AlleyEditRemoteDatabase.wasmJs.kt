@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
 import com.eygraber.uri.Uri
-import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography.generateOneTimeEncryptionKeys
@@ -568,13 +567,6 @@ actual class AlleyEditRemoteDatabase(
                 BackendRequest.SaveRemoteArtistData.Response.Failed(t.message.orEmpty())
             }
         }
-
-    private fun imageFromIdAndKey(key: String) = EditImage.NetworkImage(
-        uri = Uri.parse(
-            BuildKonfig.imagesUrl.ifBlank { "${window.origin}/edit/api/image" } + "/$key"
-        ),
-        key = key,
-    )
 
     private fun formLink(accessKey: String): String =
         Uri.parse(if (BuildKonfig.isWasmDebug) window.location.origin else AlleyUtils.formUrl)

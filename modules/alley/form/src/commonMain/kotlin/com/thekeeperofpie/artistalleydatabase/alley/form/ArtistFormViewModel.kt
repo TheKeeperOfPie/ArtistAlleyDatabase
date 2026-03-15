@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.form.FormMergeBehavior
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
+import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.rallies.StampRallyFormState
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.FormTagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -172,6 +173,7 @@ class ArtistFormViewModel(
                 merchById = tagAutocomplete.merchById.first(),
                 mergeBehavior = FormMergeBehavior.REPLACE,
             )
+            state.artistFormState.images.replaceAll(artist.images.map(ImageUtils::toEditImage))
 
             val existingStampRallyStates = state.stampRallyStates.toList()
             val emptyStampRallyDatabaseEntry by lazy {
@@ -196,6 +198,7 @@ class ArtistFormViewModel(
                             // TODO: hostTable isn't handled, remove in favor of index 0?
                             val tables = applyDiff(baseStampRally.tables, stampRallyFormDiff.tables)
                             baseStampRally.copy(
+                                images = applyDiff(baseStampRally.images, stampRallyFormDiff.images),
                                 fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
                                 hostTable = tables.firstOrNull().orEmpty(),
                                 tables = tables,
@@ -217,6 +220,7 @@ class ArtistFormViewModel(
                             merchById = tagAutocomplete.merchById.first(),
                             mergeBehavior = FormMergeBehavior.REPLACE,
                         )
+                        baseState.images.replaceAll(stampRally.images.map(ImageUtils::toEditImage))
                         baseState.editorState.deleted = stampRallyFormDiff?.deleted == true
                         baseState
                     }

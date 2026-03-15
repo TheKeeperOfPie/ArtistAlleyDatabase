@@ -356,7 +356,7 @@ internal object AlleyFormBackend {
         }
 
         val awsClient = awsClient(context.env)
-        val baseImagesUrl = "${context.env.IMAGES_CLOUDFLARE_URL}/artist-alley-images"
+        val baseImagesUrl = context.env.IMAGES_CLOUDFLARE_URL
 
         val artistUrls = request.artistImageData
             .associate {

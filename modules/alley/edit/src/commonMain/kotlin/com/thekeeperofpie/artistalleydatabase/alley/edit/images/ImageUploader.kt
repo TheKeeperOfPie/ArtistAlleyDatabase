@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
-import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
@@ -301,9 +300,5 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
             val stampRallyCatalogImages: Map<String, List<CatalogImage>>,
             val uploadedImages: Map<EditImage, EditImage>,
         ) : UploadResult
-    }
-
-    protected companion object {
-        const val IMAGES_URL = BuildKonfig.imagesUrl
     }
 }

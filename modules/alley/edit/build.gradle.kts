@@ -1,5 +1,4 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec
-import java.util.Properties
 
 plugins {
     id("library-compose")
@@ -47,37 +46,16 @@ kotlin {
     }
 }
 
-val properties = Properties().apply {
-    val secretsFile = projectDir.resolve("secrets.properties")
-    if (secretsFile.exists()) {
-        load(secretsFile.reader())
-    }
-}
-
 val isWasmDebug = project.hasProperty("wasmDebug")
 
 buildkonfig {
     packageName = "com.thekeeperofpie.artistalleydatabase.alley.edit.secrets"
 
     defaultConfigs {
-        properties.forEach {
-            buildConfigField(
-                type = FieldSpec.Type.STRING,
-                name = it.key.toString(),
-                value = it.value.toString(),
-                const = true,
-            )
-        }
         buildConfigField(
             type = FieldSpec.Type.BOOLEAN,
             name = "isWasmDebug",
             value = isWasmDebug.toString(),
-            const = true,
-        )
-        buildConfigField(
-            type = FieldSpec.Type.STRING,
-            name = "imagesUrl",
-            value = if (isWasmDebug) "" else properties.getProperty("prodImagesUrl"),
             const = true,
         )
     }
