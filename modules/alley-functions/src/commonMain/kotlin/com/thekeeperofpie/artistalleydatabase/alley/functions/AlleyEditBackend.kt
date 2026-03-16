@@ -29,7 +29,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormQueueEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyHistoryEntry
-import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.network.BackendRequest
@@ -538,27 +537,8 @@ object AlleyEditBackend {
         return BackendRequest.MerchDelete.Response.Success
     }
 
-    private suspend fun loadStampRallies(context: EventContext): Response {
-        val cacher = KeyValueCacher(context)
-        val cachedStampRalliesJson = cacher.getStampRalliesJson()
-        if (cachedStampRalliesJson != null) {
-            return literalJsonResponse(cachedStampRalliesJson)
-        }
-
-        val stampRallies = Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
-            .getStampRallies()
-            .awaitAsList()
-            .map {
-                StampRallySummary(
-                    id = it.id,
-                    fandom = it.fandom,
-                    hostTable = it.tables.firstOrNull().orEmpty(),
-                    tables = it.tables,
-                    series = it.series,
-                )
-            }
-        return literalJsonResponse(cacher.putStampRallies(stampRallies))
-    }
+    private suspend fun loadStampRallies(context: EventContext): Response =
+        literalJsonResponse(BackendUtils.loadStampRallySummaries(context).first)
 
     private suspend fun loadStampRally(
         context: EventContext,

@@ -232,7 +232,6 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         return UploadImageResult.Success(localImage)
     }
 
-
     private sealed interface ValidateResult {
         data object Empty : ValidateResult
         data class Error(val message: String) : ValidateResult

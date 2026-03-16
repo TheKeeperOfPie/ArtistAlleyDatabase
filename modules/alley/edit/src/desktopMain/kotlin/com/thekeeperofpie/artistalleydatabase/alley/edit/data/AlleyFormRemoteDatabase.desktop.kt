@@ -30,17 +30,15 @@ actual class AlleyFormRemoteDatabase(
             .map { it.value.toStampRallyEntryDiff() }
 
         val booth = artist.booth
-        val stampRallySummaries = editDatabase.loadStampRallies(dataYear)
-        val stampRallies =
-            stampRallySummaries.filter { it.hostTable == booth || it.tables.contains(booth) }
-                .mapNotNull { editDatabase.loadStampRally(dataYear, it.id) }
+        val stampRallies = editDatabase.loadStampRallies(dataYear)
+            .filter { it.hostTable == booth || it.tables.contains(booth) }
+            .mapNotNull { editDatabase.loadStampRally(dataYear, it.id) }
 
         return BackendFormRequest.Artist.Response(
             artist = artist,
             stampRallies = stampRallies,
             artistFormDiff = artistFormDiff,
             stampRallyFormDiffs = stampRallyFormDiffs,
-            allStampRallySummaries = stampRallySummaries
         )
     }
 

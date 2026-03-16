@@ -5,7 +5,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
-import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
@@ -28,7 +27,6 @@ sealed interface BackendFormRequest {
             val stampRallies: List<StampRallyDatabaseEntry>,
             val artistFormDiff: ArtistEntryDiff?,
             val stampRallyFormDiffs: List<StampRallyEntryDiff>,
-            val allStampRallySummaries: List<StampRallySummary>,
         )
     }
 

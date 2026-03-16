@@ -252,7 +252,7 @@ class ArtistFormViewModel(
             val stampRallyData = state.stampRallyStates.toList()
                 .map { it.captureDatabaseEntry(dataYear) }
             CapturedState(
-                images = images,
+                artistImages = images,
                 artist = artist,
                 stampRallyImages = stampRallyData.associate { it.second.id to it.first },
                 stampRallyEntries = stampRallyData.map { it.second },
@@ -307,7 +307,7 @@ class ArtistFormViewModel(
         val imagesResult = imageUploader.uploadImages(
             dataYear = dataYear,
             artistId = Uuid.parse(beforeArtist.id),
-            artistImages = data.images,
+            artistImages = data.artistImages,
             stampRallyImages = data.stampRallyImages
         )
 
@@ -361,7 +361,7 @@ class ArtistFormViewModel(
     }
 
     data class CapturedState(
-        val images: List<EditImage>,
+        val artistImages: List<EditImage>,
         val artist: ArtistDatabaseEntry.Impl,
         val stampRallyImages: Map<String, List<EditImage>>,
         val stampRallyEntries: List<StampRallyDatabaseEntry>,

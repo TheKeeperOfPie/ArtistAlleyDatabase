@@ -113,20 +113,20 @@ internal object AlleyFormBackend {
                         expectedArtistId
                     )
                 )
-                is BackendFormRequest.ArtistSave -> {
+                is BackendFormRequest.ArtistSave ->
                     if (Uuid.parse(this.afterArtist.id) != expectedArtistId) {
                         Utils.unauthorizedResponse
                     } else {
                         makeResponse(saveArtist(context, this, expectedArtistId))
                     }
-                }
-                is BackendFormRequest.UploadImageUrls -> {
+                is BackendFormRequest.UploadImageUrls ->
                     if (this.artistId != expectedArtistId) {
                         Utils.unauthorizedResponse
                     } else {
-                        makeResponse(generateUploadImageUrls(context, this))
+                        generateUploadImageUrls(context, this)
+                            ?.let { makeResponse(it) }
+                            ?: Utils.unauthorizedResponse
                     }
-                }
             }
         }
     }
@@ -159,30 +159,10 @@ internal object AlleyFormBackend {
             ?: return null
 
         val booth = artist.booth
-
-        val cacher = KeyValueCacher(context)
-        val cachedStampRalliesJson = cacher.getStampRalliesJson()
-        val stampRallySummaries = try {
-            cachedStampRalliesJson?.let { Json.decodeFromString<List<StampRallySummary>>(it) }
-        } catch (_: Exception) {
-            null
-        } ?: run {
-            Databases.editDatabase(context).stampRallyEntryAnimeExpo2026Queries
-                .getStampRallies()
-                .awaitAsList()
-                .map {
-                    StampRallySummary(
-                        id = it.id,
-                        fandom = it.fandom,
-                        hostTable = it.tables.firstOrNull().orEmpty(),
-                        tables = it.tables,
-                        series = it.series,
-                    )
-                }
-                .also { cacher.putStampRallies(it) }
-        }
+        val (cachedStampRalliesJson, cachedStampRallies) = BackendUtils.loadStampRallySummaries(context)
         val stampRallies =
-            stampRallySummaries.filter { it.hostTable == booth || it.tables.contains(booth) }
+            (cachedStampRallies ?: Json.decodeFromString<List<StampRallySummary>>(cachedStampRalliesJson))
+                .filter { it.hostTable == booth || it.tables.contains(booth) }
                 .mapNotNull {
                     val request = BackendRequest.StampRally(artist.year, it.id)
                     BackendUtils.loadStampRally(context, request)
@@ -196,7 +176,6 @@ internal object AlleyFormBackend {
             stampRallies = stampRallies,
             artistFormDiff = artistFormDiff,
             stampRallyFormDiffs = stampRallyFormDiffs,
-            allStampRallySummaries = stampRallySummaries,
         )
     }
 
@@ -341,7 +320,25 @@ internal object AlleyFormBackend {
     private suspend fun generateUploadImageUrls(
         context: EventContext,
         request: BackendFormRequest.UploadImageUrls,
-    ): BackendFormRequest.UploadImageUrls.Response {
+    ): BackendFormRequest.UploadImageUrls.Response? {
+        val artist = BackendUtils.loadArtist(context, request.dataYear, request.artistId)
+            ?: return null
+
+        val booth = artist.booth
+        val (cachedStampRalliesJson, cachedStampRallies) = BackendUtils.loadStampRallySummaries(context)
+        val stampRallies =
+            (cachedStampRallies ?: Json.decodeFromString<List<StampRallySummary>>(cachedStampRalliesJson))
+                .filter { it.hostTable == booth || it.tables.contains(booth) }
+                .mapNotNull {
+                    val request = BackendRequest.StampRally(artist.year, it.id)
+                    BackendUtils.loadStampRally(context, request)
+                }
+
+        val validRallies = request.stampRallyIdsToImageData.keys.all { stampRallyId ->
+            stampRallies.any { it.id == stampRallyId }
+        }
+        if (!validRallies) return null
+
         val errorMessage = when {
             request.artistImageData.size > ImageUploadUtils.MAX_ARTIST_UPLOAD_COUNT ->
                 "Too many artist images"
