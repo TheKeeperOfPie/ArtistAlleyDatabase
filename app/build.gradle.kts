@@ -92,12 +92,8 @@ kotlin {
 }
 
 dependencies {
-    arrayOf(
-        kspProcessors.room.compiler,
-    ).forEach {
-        add("kspAndroid", it)
-        add("kspDesktop", it)
-    }
+    add("kspAndroid", libs.room.compiler)
+    add("kspDesktop", libs.room.compiler)
 }
 
 room {

@@ -6,11 +6,12 @@ pluginManagement {
     }
 }
 
-
-apply(file("../versions.gradle.kts"))
 dependencyResolutionManagement {
-    @Suppress("UNCHECKED_CAST")
-    (extra["versions"] as (DependencyResolutionManagement) -> Unit)(this)
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
 }
 
 rootProject.name = "shared"

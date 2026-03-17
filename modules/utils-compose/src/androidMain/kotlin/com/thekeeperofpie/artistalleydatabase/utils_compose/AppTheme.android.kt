@@ -57,6 +57,7 @@ actual fun AppTheme(
             surfaceContainerLowest = Color.Black,
             surfaceDim = Color.Black,
         )
+        AppThemeSetting.MIKU -> AppTheme.mikuTheme
     }
     val isDarkTheme = appTheme == AppThemeSetting.DARK
             || appTheme == AppThemeSetting.BLACK

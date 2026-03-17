@@ -2,8 +2,6 @@
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
-val Project.libs: VersionCatalog
-    get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
 plugins {
     id("app.cash.burst")
     id("org.jetbrains.kotlin.multiplatform")
@@ -41,11 +39,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            libs.find(
-                "libs.flowExt",
-            ).forEach(::api)
+            resolveLibraries("libs.flowExt").forEach(::api)
 
-            libs.find(
+            resolveLibraries(
                 "libs.androidx.annotation",
                 "libs.kermit",
                 "libs.kotlinx.coroutines.core",
@@ -56,9 +52,9 @@ kotlin {
         commonTest.dependencies {
             implementation(project(":modules:test-utils"))
             implementation(kotlin("test"))
-            libs.find(
+            resolveLibraries(
+                "libs.google.truth",
                 "libs.kotlinx.coroutines.test",
-                "libs.truth",
                 "libs.turbine",
             ).forEach(::implementation)
         }

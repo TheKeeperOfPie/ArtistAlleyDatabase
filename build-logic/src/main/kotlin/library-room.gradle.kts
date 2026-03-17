@@ -1,7 +1,3 @@
-val Project.libs: VersionCatalog
-    get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
-val Project.kspProcessors: VersionCatalog
-    get() = extensions.getByType(VersionCatalogsExtension::class.java).named("kspProcessors")
 plugins {
     id("library-kotlin")
     id("com.google.devtools.ksp")
@@ -10,20 +6,14 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            libs.find(
-                "libs.room.paging",
-            ).forEach(::api)
-            libs.find(
-                "libs.room.runtime",
-            ).forEach(::runtimeOnly)
+            resolveLibraries("libs.room.paging").forEach(::api)
+            resolveLibraries("libs.room.runtime").forEach(::implementation)
         }
     }
 }
 
 dependencies {
-    kspProcessors.find(
-        "kspProcessors.room.compiler",
-    ).forEach {
+    resolveLibraries("libs.room.compiler").forEach {
         add("kspCommonMainMetadata", it)
     }
 }

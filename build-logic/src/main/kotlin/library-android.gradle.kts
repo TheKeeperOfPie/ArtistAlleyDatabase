@@ -2,8 +2,6 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-val Project.libs: VersionCatalog
-    get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
 plugins {
     id("library-kotlin")
     id("com.android.kotlin.multiplatform.library")
@@ -40,10 +38,8 @@ kotlin {
         getByName("androidDeviceTest").dependencies {
             implementation(project(":modules:test-utils"))
             implementation(project(":modules:utils-network"))
-
-            libs.find(
-                "libs.kotlinx.coroutines.test",
-            ).forEach(::implementation)
+            resolveLibraries("libs.kotlinx.coroutines.test")
+                .forEach(::implementation)
         }
     }
 }

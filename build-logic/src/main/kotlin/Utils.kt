@@ -22,8 +22,9 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin
 import kotlinx.serialization.json.Json
+import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.VersionCatalog
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.zip.CRC32
@@ -250,9 +251,10 @@ internal object Utils {
     }
 }
 
-fun VersionCatalog.find(vararg names: String) = names.map {
+fun Project.resolveLibraries(vararg names: String) = names.map {
+    val libs = project.extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
     try {
-        findLibrary(it.removePrefix("libs.").removePrefix("kspProcessors.")).get().get()
+        libs.findLibrary(it.removePrefix("libs.").removePrefix("kspProcessors.")).get().get()
     } catch (t: Throwable) {
         throw IllegalArgumentException("Failed to find $it", t)
     }

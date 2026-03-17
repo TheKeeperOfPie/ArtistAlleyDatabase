@@ -7,7 +7,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath("app.cash.burst:burst-gradle-plugin:2.12.0-beta1")
+        classpath(libs.burst.gradle.plugin)
     }
 }
 
@@ -24,8 +24,6 @@ plugins {
     id(libs.plugins.org.jetbrains.kotlin.android.get().pluginId).apply(false)
 
     alias(libs.plugins.com.github.ben.manes.versions)
-    // Disabled due to implicit dependency issue
-//    alias(libs.plugins.dev.iurysouza.modulegraph)
 }
 
 tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
@@ -72,12 +70,3 @@ dependencyAnalysis {
         }
     }
 }
-
-//moduleGraphConfig {
-//    readmePath.set("./README.md")
-//    heading = "#### Start Module Graph"
-//    theme.set(Theme.DARK)
-//    excludedConfigurationsRegex.set(".*test.*")
-//    excludedModulesRegex.set(":")
-//    rootModulesRegex.set(":app")
-//}

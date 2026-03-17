@@ -9,7 +9,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(libs.truth)
+            api(libs.google.truth)
             implementation(projects.modules.utilsCompose)
             implementation(libs.turbine)
             implementation(libs.jetBrainsAndroidX.navigation.compose)

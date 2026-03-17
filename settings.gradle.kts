@@ -74,10 +74,6 @@ dependencyResolutionManagement {
     }
 }
 
-apply(rootProject.projectDir.resolve("versions.gradle.kts"))
-@Suppress("UNCHECKED_CAST")
-(extra["versions"] as (DependencyResolutionManagement) -> Unit)(dependencyResolutionManagement)
-
 plugins {
     id("com.autonomousapps.build-health").version("2.16.0")
     id("com.android.application").version("8.13.2").apply(false)
@@ -90,14 +86,80 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "ArtistAlleyDatabase"
 includeBuild("build-logic")
 includeBuild("shared")
-include(":android-app", ":app")
-
-val excludedDirectories = setOf(".idea", "build")
-file("modules")
-    .walkTopDown()
-    .onEnter { !excludedDirectories.contains(it.name) }
-    .filter { it.isDirectory }
-    .filter { it.list()?.contains("build.gradle.kts") == true }
-    .map { it.relativeTo(rootProject.projectDir).path.replace(File.separator, ":") }
-    .toList()
-    .let { include(it) }
+include(
+    ":android-app",
+    ":app",
+    ":modules:alley",
+    ":modules:alley:data",
+    ":modules:alley:edit",
+    ":modules:alley:form",
+    ":modules:alley:models",
+    ":modules:alley:user",
+    ":modules:alley-app",
+    ":modules:alley-app:service-worker",
+    ":modules:alley-edit",
+    ":modules:alley-form",
+    ":modules:alley-functions",
+    ":modules:alley-functions:middleware",
+    ":modules:anilist",
+    ":modules:anilist:data",
+    ":modules:anime",
+    ":modules:anime:activities",
+    ":modules:anime:activities:data",
+    ":modules:anime:characters",
+    ":modules:anime:characters:data",
+    ":modules:anime:data",
+    ":modules:anime:favorites",
+    ":modules:anime:forums",
+    ":modules:anime:forums:data",
+    ":modules:anime:history",
+    ":modules:anime:ignore",
+    ":modules:anime:ignore:data",
+    ":modules:anime:ignore:testing",
+    ":modules:anime:media:data",
+    ":modules:anime:news",
+    ":modules:anime:notifications",
+    ":modules:anime:recommendations",
+    ":modules:anime:reviews",
+    ":modules:anime:schedule",
+    ":modules:anime:search",
+    ":modules:anime:search:data",
+    ":modules:anime:seasonal",
+    ":modules:anime:songs",
+    ":modules:anime:staff",
+    ":modules:anime:staff:data",
+    ":modules:anime:studios",
+    ":modules:anime:studios:data",
+    ":modules:anime:ui",
+    ":modules:anime:users",
+    ":modules:anime:users:data",
+    ":modules:anime2anime",
+    ":modules:animethemes",
+    ":modules:apollo",
+    ":modules:apollo:utils",
+    ":modules:art",
+    ":modules:browse",
+    ":modules:cds",
+    ":modules:data",
+    ":modules:debug",
+    ":modules:entry",
+    ":modules:image",
+    ":modules:markdown",
+    ":modules:media",
+    ":modules:monetization",
+    ":modules:monetization:debug",
+    ":modules:monetization:unity",
+    ":modules:musical-artists",
+    ":modules:play",
+    ":modules:secrets",
+    ":modules:settings",
+    ":modules:settings:ui",
+    ":modules:test-utils",
+    ":modules:utils",
+    ":modules:utils-build-config",
+    ":modules:utils-compose",
+    ":modules:utils-inject",
+    ":modules:utils-network",
+    ":modules:utils-room",
+    ":modules:vgmdb",
+)

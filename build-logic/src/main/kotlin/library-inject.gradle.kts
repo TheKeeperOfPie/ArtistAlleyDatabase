@@ -2,11 +2,6 @@
 
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 
-
-val Project.libs: VersionCatalog
-    get() = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
-val Project.kspProcessors: VersionCatalog
-    get() = extensions.getByType(VersionCatalogsExtension::class.java).named("kspProcessors")
 plugins {
     id("library-kotlin")
     id("library-desktop")

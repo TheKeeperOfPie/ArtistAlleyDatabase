@@ -147,7 +147,7 @@ android {
 
 dependencies {
     implementation(projects.app)
-    ksp(kspProcessors.room.compiler)
+    ksp(libs.room.compiler)
 
     // TODO: Figure out actual app dependencies, these were copied from :app when this module was
     //  split out
@@ -161,9 +161,9 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.apache.commons.compress)
     implementation(libs.coil3.coil.compose)
     implementation(libs.coil3.coil.network.okhttp)
-    implementation(libs.commons.compress)
     implementation(libs.jetBrainsAndroidX.lifecycle.viewmodel.compose)
     implementation(libs.jetBrainsAndroidX.navigation.compose)
     implementation(libs.kermit)
