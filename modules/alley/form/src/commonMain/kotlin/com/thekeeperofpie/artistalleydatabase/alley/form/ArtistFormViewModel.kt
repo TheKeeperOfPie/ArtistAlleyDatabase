@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.series.SeriesImagesStore
 import com.thekeeperofpie.artistalleydatabase.alley.series.toImageInfo
 import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesImageLoader
 import com.thekeeperofpie.artistalleydatabase.entry.EntryLockState
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ExclusiveProgressJob
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
@@ -198,7 +199,10 @@ class ArtistFormViewModel(
                             // TODO: hostTable isn't handled, remove in favor of index 0?
                             val tables = applyDiff(baseStampRally.tables, stampRallyFormDiff.tables)
                             baseStampRally.copy(
-                                images = applyDiff(baseStampRally.images, stampRallyFormDiff.images),
+                                images = applyDiff(
+                                    baseStampRally.images,
+                                    stampRallyFormDiff.images,
+                                ),
                                 fandom = stampRallyFormDiff.fandom ?: baseStampRally.fandom,
                                 hostTable = tables.firstOrNull().orEmpty(),
                                 tables = tables,
@@ -301,6 +305,20 @@ class ArtistFormViewModel(
 
     private suspend fun save(data: CapturedState): ArtistFormScreen.State.SaveResult {
         val beforeArtist = artist.value!!
+        val beforeStampRallies = rallies.value
+
+        // For new rallies whose ID is not final yet, strip their images and restore after saving
+        val stampRallyImages = data.stampRallyImages.toMutableMap()
+        val afterRallies = data.stampRallyEntries.toMutableList()
+        val deferredStampRallyImages = Array<List<EditImage>?>(afterRallies.size) { emptyList() }
+        for (index in 0 until afterRallies.size) {
+            val entry = afterRallies[index]
+            val isNewRally = beforeStampRallies.none { it.id == entry.id }
+            if (isNewRally) {
+                deferredStampRallyImages[index] = stampRallyImages.remove(entry.id)
+                afterRallies[index] = afterRallies[index].copy(images = emptyList())
+            }
+        }
 
         // TODO: Image support
         // TODO: Show incremental progress to the user
@@ -308,7 +326,7 @@ class ArtistFormViewModel(
             dataYear = dataYear,
             artistId = Uuid.parse(beforeArtist.id),
             artistImages = data.artistImages,
-            stampRallyImages = data.stampRallyImages
+            stampRallyImages = stampRallyImages,
         )
 
         val (artistCatalogImages, stampRallyCatalogImages, uploadedImages) = when (imagesResult) {
@@ -338,18 +356,37 @@ class ArtistFormViewModel(
         }
 
         val afterArtist = data.artist.copy(images = artistCatalogImages)
-        val afterStampRallies = data.stampRallyEntries.map {
+        val afterStampRallies = afterRallies.map {
             it.copy(images = stampRallyCatalogImages[it.id].orEmpty())
         }
-        val artistResult = formDatabase.saveArtist(
+        var artistResult = formDatabase.saveArtist(
             dataYear = dataYear,
             beforeArtist = beforeArtist,
             afterArtist = afterArtist,
-            beforeStampRallies = rallies.value,
+            beforeStampRallies = beforeStampRallies,
             afterStampRallies = afterStampRallies,
             deletedRallyIds = data.deletedRallyIds,
             formNotes = data.formNotes,
         )
+
+        if (artistResult is BackendFormRequest.ArtistSave.Response.Success &&
+            deferredStampRallyImages.any { !it.isNullOrEmpty() }
+        ) {
+            val (newArtistResult, reattachErrorMessage) = reattachDeferredStampRallyImages(
+                beforeArtist = beforeArtist,
+                afterArtist = afterArtist,
+                beforeStampRallies = beforeStampRallies,
+                initialArtistResult = artistResult,
+                deferredStampRallyImages = deferredStampRallyImages,
+                formNotes = data.formNotes,
+            )
+            if (newArtistResult == null) {
+                progress.value = ArtistFormScreen.State.Progress.LOADED
+                return ArtistFormScreen.State.SaveResult.ImageUploadFailed(reattachErrorMessage)
+            }
+
+            artistResult = newArtistResult
+        }
 
         return if (artistResult is BackendFormRequest.ArtistSave.Response.Failed) {
             progress.value = ArtistFormScreen.State.Progress.LOADED
@@ -358,6 +395,59 @@ class ArtistFormViewModel(
             progress.value = ArtistFormScreen.State.Progress.DONE
             ArtistFormScreen.State.SaveResult.Success
         }
+    }
+
+    private suspend fun reattachDeferredStampRallyImages(
+        beforeArtist: ArtistDatabaseEntry.Impl,
+        afterArtist: ArtistDatabaseEntry.Impl,
+        beforeStampRallies: List<StampRallyDatabaseEntry>,
+        initialArtistResult: BackendFormRequest.ArtistSave.Response.Success,
+        deferredStampRallyImages: Array<List<EditImage>?>,
+        formNotes: String,
+    ): Pair<BackendFormRequest.ArtistSave.Response?, String> {
+        val reattachedImages = mutableMapOf<String, List<EditImage>>()
+        deferredStampRallyImages.forEachIndexed { index, images ->
+            if (!images.isNullOrEmpty()) {
+                val key =
+                    initialArtistResult.stampRallies.getOrNull(index)?.id ?: return@forEachIndexed
+                reattachedImages[key] = images
+            }
+        }
+
+        val reattachedImagesResult = imageUploader.uploadImages(
+            dataYear = dataYear,
+            artistId = Uuid.parse(beforeArtist.id),
+            artistImages = emptyList(),
+            stampRallyImages = reattachedImages,
+        )
+
+        val (reattachedStampRallyCatalogImages, reattachedUploadedImages) = when (reattachedImagesResult) {
+            ImageUploader.UploadResult.Empty -> emptyMap<String, List<CatalogImage>>() to emptyMap()
+            is ImageUploader.UploadResult.Error -> return null to reattachedImagesResult.message
+            is ImageUploader.UploadResult.Success ->
+                reattachedImagesResult.stampRallyCatalogImages to reattachedImagesResult.uploadedImages
+        }
+
+        val stampRallyStates = state.stampRallyStates.toList()
+        stampRallyStates.forEach {
+            val newStampRallyImages = it.images.toList()
+                .map { reattachedUploadedImages[it] ?: it }
+            it.images.replaceAll(newStampRallyImages)
+        }
+        return formDatabase.saveArtist(
+            dataYear = dataYear,
+            beforeArtist = beforeArtist,
+            afterArtist = afterArtist,
+            beforeStampRallies = beforeStampRallies.mapIndexed { index, rally ->
+                // Copy the finalized IDs, otherwise they won't line up on the backend
+                rally.copy(id = initialArtistResult.stampRallies.getOrNull(index)?.id ?: rally.id)
+            },
+            afterStampRallies = initialArtistResult.stampRallies.map { entry ->
+                entry.copy(images = entry.images.ifEmpty { reattachedStampRallyCatalogImages[entry.id].orEmpty() })
+            },
+            deletedRallyIds = emptyList(),
+            formNotes = formNotes,
+        ) to ""
     }
 
     data class CapturedState(

@@ -45,7 +45,7 @@ sealed interface BackendFormRequest {
         @Serializable
         sealed interface Response {
             @Serializable
-            data object Success : Response
+            data class Success(val stampRallies: List<StampRallyDatabaseEntry>) : Response
 
             @Serializable
             data class Failed(val errorMessage: String) : Response

@@ -72,19 +72,25 @@ actual class AlleyFormRemoteDatabase(
                 formNotes = formNotes,
             )
 
-        afterStampRallies.forEach { after ->
+        val finalizedStampRallies = afterStampRallies.map { after ->
             val before = beforeStampRallies.find { it.id == after.id }
+                ?: editDatabase.stampRallyFormQueue.values.find { it.stampRallyId == after.id }
             val stampRallyId = if (before == null || Uuid.parseOrNull(after.id) == null) {
                 Uuid.random().toString()
             } else {
                 after.id
             }
+            after.copy(id = stampRallyId)
+        }
+        finalizedStampRallies.forEach { after ->
+            val before = beforeStampRallies.find { it.id == after.id }
+            val stampRallyId = after.id
             editDatabase.stampRallyFormQueue[artistId to stampRallyId] =
                 AlleyEditRemoteDatabase.StampRallyFormSubmission(
                     artistId = artistId,
                     stampRallyId = stampRallyId,
                     before = before,
-                    after = after.copy(id = stampRallyId),
+                    after = after,
                 )
         }
 
@@ -99,7 +105,7 @@ actual class AlleyFormRemoteDatabase(
                 )
         }
 
-        return BackendFormRequest.ArtistSave.Response.Success
+        return BackendFormRequest.ArtistSave.Response.Success(finalizedStampRallies)
     }
 
     actual suspend fun fetchUploadImageUrls(

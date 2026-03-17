@@ -676,7 +676,10 @@ object ArtistFormScreen {
                                     val before = initialRallies().find {
                                         it.id == formState.editorState.id.value.text.toString()
                                     }
-                                    val after = formState.captureDatabaseEntry(dataYear).second
+                                    val captured = formState.captureDatabaseEntry(dataYear)
+                                    val after = captured.second.copy(
+                                        images = captured.first.map { it.toCatalogImage() }
+                                    )
                                     StampRallyDatabaseEntry.hasChanged(before, after)
                                 }
                             }
