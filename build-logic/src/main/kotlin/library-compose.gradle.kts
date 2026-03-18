@@ -19,9 +19,10 @@ kotlin {
                 implementation(compose.components.uiToolingPreview)
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation("org.jetbrains.compose.material3:material3:1.11.0-alpha02")
                 implementation(compose.materialIconsExtended)
                 implementation(compose.ui)
+                resolveLibraries("libs.jetBrainsCompose.material3")
+                    .forEach(::implementation)
             }
         }
         commonTest.dependencies {

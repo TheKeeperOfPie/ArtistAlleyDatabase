@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -77,10 +78,13 @@ object ArtistAlleyAppScreen {
 
                 val decoratedNavEntries =
                     rememberDecoratedNavEntries(navStack.twoWayStack, entryProvider)
+                val sceneStrategies = remember {
+                    listOf(DialogSceneStrategy<NavKey>(), SinglePaneSceneStrategy())
+                }
                 NavDisplay(
                     entries = navStack.calculateBackStack(decoratedNavEntries),
                     onBack = navStack::onBack,
-                    sceneStrategy = DialogSceneStrategy<NavKey>() then SinglePaneSceneStrategy(),
+                    sceneStrategies = sceneStrategies,
                     transitionSpec = { transitionSpec },
                     popTransitionSpec = { transitionSpec },
                     predictivePopTransitionSpec = { transitionSpec },
