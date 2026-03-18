@@ -4,8 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformType
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
-import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
-import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
+import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
@@ -63,13 +62,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                     is UploadImageResult.NotUploaded -> uploadResult.catalogImage
                     is UploadImageResult.Success -> {
                         val localImage = uploadResult.localImage
-                        val key = ImageUploadUtils.makeArtistKey(
-                            dataYear = dataYear,
-                            artistId = artistId,
-                            imageId = localImage.id,
-                            extension = localImage.extension,
-                        )
-                        val catalogImage = CatalogImage(key, localImage.width, localImage.height)
+                        val catalogImage = CatalogImage(uploadResult.finalKey, localImage.width, localImage.height)
                         uploadedImages[localImage] = ImageUtils.toEditImage(catalogImage)
                         catalogImage
                     }
@@ -78,7 +71,6 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         }
 
         val stampRallyCatalogImages = preparedStampRallyImages.mapValues {
-            val stampRallyId = it.key
             it.value.map {
                 when (val uploadResult = uploadImage(localImageToUploadUrl, it)) {
                     is UploadImageResult.Error -> return UploadResult.Error(
@@ -88,13 +80,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                     is UploadImageResult.NotUploaded -> uploadResult.catalogImage
                     is UploadImageResult.Success -> {
                         val localImage = uploadResult.localImage
-                        val key = ImageUploadUtils.makeStampRallyKey(
-                            dataYear = dataYear,
-                            stampRallyId = stampRallyId,
-                            imageId = localImage.id,
-                            extension = localImage.extension,
-                        )
-                        val catalogImage = CatalogImage(key, localImage.width, localImage.height)
+                        val catalogImage = CatalogImage(uploadResult.finalKey, localImage.width, localImage.height)
                         uploadedImages[localImage] = ImageUtils.toEditImage(catalogImage)
                         catalogImage
                     }
@@ -110,7 +96,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         artistId: Uuid?,
         localImages: List<PrepareImageResult.Success>,
         stampRallyIdsToLocalImages: Map<String, List<PrepareImageResult.Success>>,
-    ): Map<EditImage.LocalImage, String>
+    ): Map<EditImage.LocalImage, PresignedImageUrl>
 
     protected abstract suspend fun compressImage(bytes: ByteArray): ByteArray
 
@@ -191,7 +177,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
         artistId: Uuid?,
         preparedArtistImages: List<PrepareImageResult>,
         preparedStampRallyImages: Map<String, List<PrepareImageResult>>,
-    ): Map<EditImage.LocalImage, String> = getPresignedImageUrls(
+    ): Map<EditImage.LocalImage, PresignedImageUrl> = getPresignedImageUrls(
         dataYear = dataYear,
         artistId = artistId,
         localImages = preparedArtistImages.filterIsInstance<PrepareImageResult.Success>(),
@@ -201,7 +187,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
     )
 
     private suspend fun uploadImage(
-        localImageToUploadUrl: Map<EditImage.LocalImage, String>,
+        localImageToUploadUrl: Map<EditImage.LocalImage, PresignedImageUrl>,
         result: PrepareImageResult,
     ): UploadImageResult {
         val (localImage, bytes) = when (result) {
@@ -218,7 +204,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
                     "Failed to get presigned URL for ${localImage.key} ${localImage.name}",
                 )
             }
-        val response = httpClient.put(uploadUrl) {
+        val response = httpClient.put(uploadUrl.url) {
             contentType(ContentType.Application.OctetStream)
             setBody(bytes)
         }
@@ -229,7 +215,7 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
             )
         }
 
-        return UploadImageResult.Success(localImage)
+        return UploadImageResult.Success(localImage, uploadUrl.key)
     }
 
     private sealed interface ValidateResult {
@@ -284,7 +270,10 @@ abstract class ImageUploader(private val httpClient: HttpClient) {
     private sealed interface UploadImageResult {
         data class NotUploaded(val catalogImage: CatalogImage) : UploadImageResult
         data class Error(val message: String) : UploadImageResult
-        data class Success(val localImage: EditImage.LocalImage) : UploadImageResult
+        data class Success(
+            val localImage: EditImage.LocalImage,
+            val finalKey: String,
+        ) : UploadImageResult
     }
 
     sealed interface UploadResult {

@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormData
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
+import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallySummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
@@ -358,7 +359,10 @@ internal object AlleyFormBackend {
                     imageId = Uuid.random(),
                     extension = it.extension,
                 )
-                it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
+                it.id to PresignedImageUrl(
+                    key = key,
+                    url = BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key),
+                )
             }
 
         val stampRallyUrls = request.stampRallyIdsToImageData.mapValues {
@@ -370,7 +374,10 @@ internal object AlleyFormBackend {
                     imageId = Uuid.random(),
                     extension = it.extension,
                 )
-                it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
+                it.id to PresignedImageUrl(
+                    key = key,
+                    url = BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key),
+                )
             }
         }
 

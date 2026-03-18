@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyEntryDiff
@@ -426,8 +427,8 @@ sealed interface BackendRequest {
         sealed interface Response {
             @Serializable
             data class Success(
-                val artistUrls: Map<Uuid, String>,
-                val stampRallyUrls: Map<String, Map<Uuid, String>>,
+                val artistUrls: Map<Uuid, PresignedImageUrl>,
+                val stampRallyUrls: Map<String, Map<Uuid, PresignedImageUrl>>,
             ) : Response
 
             @Serializable

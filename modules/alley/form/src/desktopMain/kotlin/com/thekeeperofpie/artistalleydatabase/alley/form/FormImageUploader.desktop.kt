@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.alley.form
 
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.EditImage
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.ImageUploader
+import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -15,7 +16,7 @@ class FormImageUploader(httpClient: HttpClient) : ImageUploader(httpClient) {
         artistId: Uuid?,
         localImages: List<PrepareImageResult.Success>,
         stampRallyIdsToLocalImages: Map<String, List<PrepareImageResult.Success>>,
-    ): Map<EditImage.LocalImage, String> = emptyMap()
+    ): Map<EditImage.LocalImage, PresignedImageUrl> = emptyMap()
 
     override suspend fun compressImage(bytes: ByteArray): ByteArray = bytes
 }

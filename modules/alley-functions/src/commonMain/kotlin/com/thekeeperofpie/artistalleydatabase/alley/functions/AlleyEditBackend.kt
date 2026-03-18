@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistRemoteSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.MerchInfo
+import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.alley.models.SeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyFormHistoryEntry
@@ -1123,7 +1124,10 @@ object AlleyEditBackend {
                         imageId = it.id,
                         extension = it.extension,
                     )
-                    it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
+                    it.id to PresignedImageUrl(
+                        key = key,
+                        url = BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key),
+                    )
                 }
         }
 
@@ -1136,7 +1140,10 @@ object AlleyEditBackend {
                     imageId = it.id,
                     extension = it.extension,
                 )
-                it.id to BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key)
+                it.id to PresignedImageUrl(
+                    key = key,
+                    url = BackendUtils.buildPresignedUrl(awsClient, baseImagesUrl, key),
+                )
             }
         }
 

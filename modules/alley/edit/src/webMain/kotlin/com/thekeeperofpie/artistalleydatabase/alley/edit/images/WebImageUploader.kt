@@ -1,15 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.images
 
-import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageFileData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
+import com.thekeeperofpie.artistalleydatabase.alley.models.PresignedImageUrl
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeArtistKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.makeStampRallyKey
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.await
-import io.github.vinceglb.filekit.PlatformFile
 import io.ktor.client.HttpClient
 import kotlinx.browser.window
 import org.jetbrains.compose.resources.decodeToImageBitmap
@@ -21,6 +20,17 @@ import org.w3c.dom.HIGH
 import org.w3c.dom.ImageBitmapOptions
 import org.w3c.dom.ResizeQuality
 import org.w3c.files.Blob
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.associate
+import kotlin.collections.associateWith
+import kotlin.collections.emptyMap
+import kotlin.collections.flatMap
+import kotlin.collections.forEachIndexed
+import kotlin.collections.map
+import kotlin.collections.mapValues
+import kotlin.collections.plus
+import kotlin.collections.toByteArray
 import kotlin.js.JsAny
 import kotlin.js.JsArray
 import kotlin.js.Promise
@@ -46,7 +56,7 @@ abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClie
         artistId: Uuid?,
         localImages: List<PrepareImageResult.Success>,
         stampRallyIdsToLocalImages: Map<String, List<PrepareImageResult.Success>>,
-    ): Map<EditImage.LocalImage, String> {
+    ): Map<EditImage.LocalImage, PresignedImageUrl> {
         val response = fetchUploadImageUrls(
             dataYear = dataYear,
             artistId = artistId,
@@ -61,16 +71,15 @@ abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClie
                 @Suppress("SimplifyBooleanWithConstants")
                 val artistUrls = if (BuildKonfig.isWasmDebug && artistId != null) {
                     localImages.associateWith {
-                        val id = it.original.id
                         val key = ImageUploadUtils.makeArtistKey(
                             dataYear = dataYear,
                             artistId = artistId,
-                            imageId = id,
+                            imageId = Uuid.random(),
                             extension = it.original.extension,
                         )
-                        "${window.origin}/form/api/uploadImage/$key".also {
-                            ConsoleLogger.log("Redirecting image upload from ${response.artistUrls[id]} to $it")
-                        }
+                        val url = "${window.origin}/form/api/uploadImage/$key"
+                        ConsoleLogger.log("Redirecting image upload from ${response.artistUrls[it.original.id]} to $url")
+                        PresignedImageUrl(key = key, url = url)
                     }
                 } else {
                     localImages.associateWith { response.artistUrls[it.original.id]!! }
@@ -80,16 +89,15 @@ abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClie
                     stampRallyIdsToLocalImages.mapValues {
                         val stampRallyId = it.key
                         it.value.associateWith {
-                            val id = it.original.id
                             val key = ImageUploadUtils.makeStampRallyKey(
                                 dataYear = dataYear,
                                 stampRallyId = stampRallyId,
-                                imageId = id,
+                                imageId = Uuid.random(),
                                 extension = it.original.extension,
                             )
-                            "${window.origin}/form/api/uploadImage/$key".also {
-                                ConsoleLogger.log("Redirecting image upload from ${response.stampRallyUrls[stampRallyId]!![id]} to $it")
-                            }
+                            val url = "${window.origin}/form/api/uploadImage/$key"
+                            ConsoleLogger.log("Redirecting image upload from ${response.stampRallyUrls[stampRallyId]!![it.original.id]} to $url")
+                            PresignedImageUrl(key = key, url = url)
                         }
                     }
                 } else {
@@ -151,8 +159,8 @@ abstract class WebImageUploader(httpClient: HttpClient) : ImageUploader(httpClie
 
     sealed interface Response {
         data class Success(
-            val artistUrls: Map<Uuid, String>,
-            val stampRallyUrls: Map<String, Map<Uuid, String>>,
+            val artistUrls: Map<Uuid, PresignedImageUrl>,
+            val stampRallyUrls: Map<String, Map<Uuid, PresignedImageUrl>>,
         ) : Response
 
         data class Failed(val errorMessage: String) : Response
