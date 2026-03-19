@@ -52,8 +52,8 @@ class MapViewModel(
                         DataYear.ANIME_EXPO_2023,
                         DataYear.ANIME_EXPO_2024,
                         DataYear.ANIME_EXPO_2025,
-                        DataYear.ANIME_EXPO_2026,
                             -> mapBooths(booths)
+                        DataYear.ANIME_EXPO_2026 -> mapAnimeExpo2026Booths(booths)
                         DataYear.ANIME_NYC_2024 -> mapAnimeNyc2024Booths(booths)
                         DataYear.ANIME_NYC_2025 -> mapAnimeNyc2025Booths(booths)
                     }
@@ -90,53 +90,15 @@ class MapViewModel(
                 .mapNotNull { (booth, artists) ->
                     booth?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     val tableNumber = booth.filter { it.isDigit() }.toInt()
-                    val artist = artists.singleOrNull()
-                    if (artist != null) {
-                        val images = AlleyImageUtils.getArtistImages(
-                            year = artist.year,
-                            images = artist.images,
-                        )
-                        val imageIndex = if (showRandomCatalogImage) {
-                            images.indices.randomOrNull()
-                        } else {
-                            0
-                        }
-                        Table.Single(
-                            year = artist.year,
-                            artistId = artist.id,
-                            booth = booth,
-                            section = Table.AnimeExpoSection.fromTableNumber(tableNumber),
-                            image = imageIndex?.let(images::getOrNull),
-                            imageIndex = imageIndex,
-                            favorite = artist.favorite,
-                            gridX = currentIndex,
-                            // There's a physical gap not accounted for in the numbers between 41 and 42
-                            gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
-                        )
-                    } else {
-                        val primaryArtist = artists.first()
-                        val images = AlleyImageUtils.getArtistImages(
-                            year = primaryArtist.year,
-                            images = primaryArtist.images,
-                        )
-                        val imageIndex = if (showRandomCatalogImage) {
-                            images.indices.randomOrNull()
-                        } else {
-                            0
-                        }
-                        Table.Shared(
-                            year = primaryArtist.year,
-                            artistIds = artists.map { it.id },
-                            booth = booth,
-                            section = Table.AnimeExpoSection.fromTableNumber(tableNumber),
-                            image = imageIndex?.let(images::getOrNull),
-                            imageIndex = imageIndex,
-                            favorite = artists.any { it.favorite },
-                            gridX = currentIndex,
-                            // There's a physical gap not accounted for in the numbers between 41 and 42
-                            gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
-                        )
-                    }
+                    table(
+                        booth = booth,
+                        gridX = currentIndex,
+                        // There's a physical gap not accounted for in the numbers between 41 and 42
+                        gridY = if (tableNumber >= 42) tableNumber + 1 else tableNumber,
+                        artists = artists,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                        section = Table.AnimeExpoSection.fromTableNumber(tableNumber),
+                    )
                 }.also {
                     currentIndex++
                     if (letterIndex == 11) {
@@ -148,6 +110,60 @@ class MapViewModel(
                     }
                 }
         }.flatten()
+    }
+
+    private fun table(
+        booth: String,
+        gridX: Int,
+        gridY: Int,
+        artists: List<BoothWithFavorite>,
+        showRandomCatalogImage: Boolean,
+        section: Table.AnimeExpoSection? = null,
+    ): Table {
+        val primaryArtist = artists.first()
+        val images = AlleyImageUtils.getArtistImages(
+            year = primaryArtist.year,
+            images = primaryArtist.images,
+        )
+        val imageIndex = if (showRandomCatalogImage) {
+            images.indices.randomOrNull()
+        } else {
+            0
+        }
+        return if (artists.size == 1) {
+            val images = AlleyImageUtils.getArtistImages(
+                year = primaryArtist.year,
+                images = primaryArtist.images,
+            )
+            val imageIndex = if (showRandomCatalogImage) {
+                images.indices.randomOrNull()
+            } else {
+                0
+            }
+            Table.Single(
+                year = primaryArtist.year,
+                artistId = primaryArtist.id,
+                booth = booth,
+                section = section,
+                image = imageIndex?.let(images::getOrNull),
+                imageIndex = imageIndex,
+                favorite = primaryArtist.favorite,
+                gridX = gridX,
+                gridY = gridY,
+            )
+        } else {
+            Table.Shared(
+                year = primaryArtist.year,
+                artistIds = artists.map { it.id },
+                booth = booth,
+                section = section,
+                image = imageIndex?.let(images::getOrNull),
+                imageIndex = imageIndex,
+                favorite = artists.any { it.favorite },
+                gridX = gridX,
+                gridY = gridY,
+            )
+        }
     }
 
     private fun animeNyc2024IndexX(letter: Char, booth: Int): Int {
@@ -193,59 +209,19 @@ class MapViewModel(
             .toList()
             .sortedBy { it.first }
         val showRandomCatalogImage = settings.showRandomCatalogImage.value
-        return letterToBooths.mapIndexed { letterIndex, pair ->
+        return letterToBooths.mapIndexed { _, pair ->
             pair.second.groupBy { it.booth }
                 .mapNotNull { (booth, artists) ->
                     booth ?: return@mapNotNull null
                     val tableNumber = booth.filter { it.isDigit() }.toInt()
                     val letter = booth[0]
-                    val gridX = animeNyc2024IndexX(letter, tableNumber)
-                    val gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1
-                    val artist = artists.singleOrNull()
-                    if (artist != null) {
-                        val images = AlleyImageUtils.getArtistImages(
-                            year = artist.year,
-                            images = artist.images,
-                        )
-                        val imageIndex = if (showRandomCatalogImage) {
-                            images.indices.randomOrNull()
-                        } else {
-                            0
-                        }
-                        Table.Single(
-                            year = artist.year,
-                            artistId = artist.id,
-                            booth = booth,
-                            section = null,
-                            image = imageIndex?.let(images::getOrNull),
-                            imageIndex = imageIndex,
-                            favorite = artist.favorite,
-                            gridX = gridX,
-                            gridY = gridY,
-                        )
-                    } else {
-                        val primaryArtist = artists.first()
-                        val images = AlleyImageUtils.getArtistImages(
-                            year = primaryArtist.year,
-                            images = primaryArtist.images,
-                        )
-                        val imageIndex = if (showRandomCatalogImage) {
-                            images.indices.randomOrNull()
-                        } else {
-                            0
-                        }
-                        Table.Shared(
-                            year = primaryArtist.year,
-                            artistIds = artists.map { it.id },
-                            booth = booth,
-                            section = null,
-                            image = imageIndex?.let(images::getOrNull),
-                            imageIndex = imageIndex,
-                            favorite = artists.any { it.favorite },
-                            gridX = gridX,
-                            gridY = gridY,
-                        )
-                    }
+                    table(
+                        booth = booth,
+                        gridX = animeNyc2024IndexX(letter, tableNumber),
+                        gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) + 1,
+                        artists = artists,
+                        showRandomCatalogImage = showRandomCatalogImage
+                    )
                 }
         }.flatten()
     }
@@ -296,60 +272,70 @@ class MapViewModel(
             .toList()
             .sortedBy { it.first }
         val showRandomCatalogImage = settings.showRandomCatalogImage.value
-        return letterToBooths.mapIndexed { letterIndex, pair ->
+        return letterToBooths.mapIndexed { _, pair ->
             pair.second.groupBy { it.booth }
                 .mapNotNull { (booth, artists) ->
                     booth ?: return@mapNotNull null
                     val tableNumber = booth.filter { it.isDigit() }.toInt()
                     val letter = booth[0]
-                    val gridX = animeNyc2025IndexX(letter, tableNumber)
-                    val gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) +
-                            (if (tableNumber > 16) 2 else 1)
-                    val artist = artists.singleOrNull()
-                    if (artist != null) {
-                        val images = AlleyImageUtils.getArtistImages(
-                            year = artist.year,
-                            images = artist.images,
-                        )
-                        val imageIndex = if (showRandomCatalogImage) {
-                            images.indices.randomOrNull()
-                        } else {
-                            0
-                        }
-                        Table.Single(
-                            year = artist.year,
-                            artistId = artist.id,
-                            booth = booth,
-                            section = null,
-                            image = imageIndex?.let(images::getOrNull),
-                            imageIndex = imageIndex,
-                            favorite = artist.favorite,
-                            gridX = gridX,
-                            gridY = gridY,
-                        )
-                    } else {
-                        val primaryArtist = artists.first()
-                        val images = AlleyImageUtils.getArtistImages(
-                            year = primaryArtist.year,
-                            images = primaryArtist.images,
-                        )
-                        val imageIndex = if (showRandomCatalogImage) {
-                            images.indices.randomOrNull()
-                        } else {
-                            0
-                        }
-                        Table.Shared(
-                            year = primaryArtist.year,
-                            artistIds = artists.map { it.id },
-                            booth = booth,
-                            section = null,
-                            image = imageIndex?.let(images::getOrNull),
-                            imageIndex = imageIndex,
-                            favorite = artists.any { it.favorite },
-                            gridX = gridX,
-                            gridY = gridY,
-                        )
-                    }
+                    table(
+                        booth = booth,
+                        gridX = animeNyc2025IndexX(letter, tableNumber),
+                        gridY = (tableNumber - 1) / 2 + (if (tableNumber > 4) 1 else 0) +
+                                (if (tableNumber > 16) 2 else 1),
+                        artists = artists,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
+                }
+        }.flatten()
+    }
+
+    private fun animeExpo2026IndexX(letter: Char) = when (letter) {
+        'A' -> 0
+        'B' -> 2
+        'C' -> 3
+        'D' -> 5
+        'E' -> 6
+        'F' -> 8
+        'G' -> 9
+        'H' -> 11
+        'I' -> 12
+        'J' -> 14
+        'K' -> 15
+        'L' -> 17
+        'M' -> 22
+        'N' -> 24
+        'O' -> 25
+        'P' -> 27
+        'Q' -> 28
+        'R' -> 30
+        'S' -> 31
+        'T' -> 33
+        'U' -> 34
+        'V' -> 36
+        else -> 37
+    }
+
+    private fun mapAnimeExpo2026Booths(booths: List<BoothWithFavorite>): List<Table> {
+        @Suppress("UNCHECKED_CAST")
+        val letterToBooths = (booths.groupBy { it.booth?.take(1) }
+            .filterKeys { it != null } as Map<String, List<BoothWithFavorite>>)
+            .toList()
+            .sortedBy { it.first }
+        val showRandomCatalogImage = settings.showRandomCatalogImage.value
+        return letterToBooths.mapIndexed { _, pair ->
+            pair.second.groupBy { it.booth }
+                .mapNotNull { (booth, artists) ->
+                    booth?.ifEmpty { null } ?: return@mapNotNull null
+                    val tableNumber = booth.filter { it.isDigit() }.toInt()
+                    val letter = booth[0]
+                    table(
+                        booth = booth,
+                        gridX = animeExpo2026IndexX(letter),
+                        gridY = tableNumber,
+                        artists = artists,
+                        showRandomCatalogImage = showRandomCatalogImage,
+                    )
                 }
         }.flatten()
     }
