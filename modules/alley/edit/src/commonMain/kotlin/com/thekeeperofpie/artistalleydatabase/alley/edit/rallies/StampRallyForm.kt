@@ -97,7 +97,6 @@ object StampRallyForm {
         showImages: Boolean = false,
         forceLocked: Boolean = false,
         onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
-        onClickImage: (EditImage) -> Unit = {},
         modifier: Modifier = Modifier,
     ) {
         val focusState = rememberFocusState(
@@ -140,7 +139,6 @@ object StampRallyForm {
                             onClickEditImages(requestKey, state.images.toList())
                         }
                     },
-                    onClickImage = onClickImage,
                 )
             }
 
@@ -214,7 +212,6 @@ abstract class StampRallyFormScope(
         images: SnapshotStateList<EditImage>,
         requestKey: NavigationRequestKey<List<EditImage>>,
         onClickEditImages: (() -> Unit)?,
-        onClickImage: (EditImage) -> Unit,
     ) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -260,7 +257,6 @@ abstract class StampRallyFormScope(
                 images = images,
                 requestKey = requestKey,
                 onClickEditImages = onClickEditImages.takeIf { images.isEmpty() },
-                onClickImage = onClickImage,
             )
         }
     }

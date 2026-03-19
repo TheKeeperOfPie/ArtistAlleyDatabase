@@ -131,7 +131,6 @@ interface ArtistFormScope : EntryFormScope {
         images: SnapshotStateList<EditImage>,
         requestKey: NavigationRequestKey<List<EditImage>>,
         onClickEditImages: (() -> Unit)? = null,
-        onClickImage: (EditImage) -> Unit,
     )
 
     @Composable
@@ -331,9 +330,8 @@ private abstract class ArtistFormScopeImpl(
         images: SnapshotStateList<EditImage>,
         requestKey: NavigationRequestKey<List<EditImage>>,
         onClickEditImages: (() -> Unit)?,
-        onClickImage: (EditImage) -> Unit,
     ) {
-        EditImagesSection(images, requestKey, onClickEditImages, onClickImage)
+        EditImagesSection(images, requestKey, onClickEditImages)
     }
 
     @Composable
@@ -935,7 +933,6 @@ object ArtistForm {
         showEditorNotes: Boolean = true,
         forceLocked: Boolean = false,
         onClickEditImages: ((NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit)? = null,
-        onClickImage: (EditImage) -> Unit = {},
     ) {
         val focusState = rememberFocusState(
             listOfNotNull(
@@ -979,7 +976,6 @@ object ArtistForm {
                             onClickEditImages(requestKey, state.images.toList())
                         }
                     },
-                    onClickImage = onClickImage,
                 )
             }
             IdSection(

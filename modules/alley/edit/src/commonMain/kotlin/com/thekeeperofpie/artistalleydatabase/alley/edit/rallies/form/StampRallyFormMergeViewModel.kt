@@ -74,7 +74,6 @@ class StampRallyFormMergeViewModel(
 
     private suspend fun save(data: SaveData) =
         withContext(dispatchers.io) {
-            // TODO: Image support
             database.saveStampRallyAndClearFormEntry(
                 dataYear = dataYear,
                 artistId = artistId,

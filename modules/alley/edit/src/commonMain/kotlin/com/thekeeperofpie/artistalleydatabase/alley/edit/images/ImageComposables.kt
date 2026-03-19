@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -21,10 +24,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.edit.generated.resources.Res
@@ -41,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.utils_compose.conditionallyNonNull
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationRequestKey
 import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.NavigationResultEffect
+import com.thekeeperofpie.artistalleydatabase.utils_compose.rememberTintPainter
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.replaceAll
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -54,7 +60,6 @@ internal fun EditImagesSection(
     images: SnapshotStateList<EditImage>,
     requestKey: NavigationRequestKey<List<EditImage>>,
     onClickEditImages: (() -> Unit)?,
-    onClickImage: (EditImage) -> Unit,
 ) {
     val listState = rememberLazyListState()
     val scrollAreaState = rememberScrollAreaState(listState)
@@ -83,6 +88,7 @@ internal fun EditImagesSection(
                         }
                     }
                 }
+
                 LazyRow(
                     state = listState,
                     verticalAlignment = Alignment.CenterVertically,
@@ -93,27 +99,50 @@ internal fun EditImagesSection(
                         Modifier.height(200.dp)
                     )
                 ) {
-                    items(items = images, key = { it.coilImageModel.toString() }) {
+                    itemsIndexed(
+                        items = images,
+                        key = { _, image -> image.coilImageModel.toString() }) { index, image ->
                         Box {
-                            val imageWidth = it.width
-                            val imageHeight = it.height
+                            val scope = rememberCoroutineScope()
+                            val replaceLauncher = rememberFilePickerLauncher(
+                                type = FileKitType.Image,
+                                mode = FileKitMode.Single,
+                            ) {
+                                if (it != null) {
+                                    scope.launch {
+                                        val imageKey = PlatformImageCache.add(it)
+                                        try {
+                                            Snapshot.withMutableSnapshot {
+                                                images[index] = EditImage.LocalImage(imageKey, it)
+                                            }
+                                        } catch (_: Throwable) {
+                                        }
+                                    }
+                                }
+                            }
+
+                            val imageWidth = image.width
+                            val imageHeight = image.height
                             val width = if (imageWidth == null || imageHeight == null) {
                                 null
                             } else {
-                                200.dp * (imageWidth / imageHeight)
+                                200.dp * (imageWidth.toFloat() / imageHeight)
                             }
+                            val placeholder = rememberVectorPainter(image = Icons.Default.MoreHoriz)
                             AsyncImage(
-                                model = it.coilImageModel,
+                                model = image.coilImageModel,
                                 contentDescription = null,
                                 contentScale = ContentScale.FillHeight,
+                                placeholder = rememberTintPainter(placeholder),
+                                error = rememberVectorPainter(Icons.Default.Error),
                                 modifier = Modifier
                                     .conditionallyNonNull(width) { width(it) }
                                     .height(200.dp)
-                                    .clickable { onClickImage(it) }
+                                    .clickable(onClick = replaceLauncher::launch)
                             )
-                            if (it is EditImage.LocalImage) {
-                                val size = remember(it.key) {
-                                    PlatformImageCache[it.key]?.size()?.asBytes()
+                            if (image is EditImage.LocalImage) {
+                                val size = remember(image.key) {
+                                    PlatformImageCache[image.key]?.size()?.asBytes()
                                 }
                                 if (size != null && size > ImageUtils.MAX_UPLOAD_SIZE) {
                                     Text(

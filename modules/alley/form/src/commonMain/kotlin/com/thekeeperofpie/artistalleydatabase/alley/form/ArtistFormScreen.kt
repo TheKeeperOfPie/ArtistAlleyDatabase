@@ -69,7 +69,6 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_art
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_commissions_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_form_notes_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_header
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_footer
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_instructions_header
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_name_placeholder
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_artist_notes_placeholder
@@ -133,7 +132,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.edit.ui.ScrollableSideBySide
 import com.thekeeperofpie.artistalleydatabase.alley.edit.utils.PreventUnloadEffect
 import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormScreen.State.ErrorState
 import com.thekeeperofpie.artistalleydatabase.alley.fullName
-import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistEntryDiff
 import com.thekeeperofpie.artistalleydatabase.alley.models.ImageUploadUtils
@@ -172,8 +170,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
-import kotlin.uuid.Uuid
-import artistalleydatabase.modules.alley.edit.generated.resources.Res as AlleyRes
+import artistalleydatabase.modules.alley.edit.generated.resources.Res as AlleyEditRes
 
 object ArtistFormScreen {
 
@@ -417,24 +414,16 @@ object ArtistFormScreen {
 
                                 InstructionsHeader()
 
-                                // TODO: Image support
-                                if (initialArtist()?.id?.let(Uuid::parseOrNull) ==
-                                    AlleyCryptography.FAKE_ARTIST_ID
-                                ) {
-                                    CatalogSection(
-                                        state = state.artistFormState,
-                                        initialArtist = initialArtist,
-                                        seriesById = seriesById,
-                                        seriesPredictions = seriesPredictions,
-                                        merchById = merchById,
-                                        merchPredictions = merchPredictions,
-                                        seriesImage = seriesImage,
-                                        onClickEditImages = onClickEditImages,
-                                        onClickImage = {
-                                            // TODO: Open full size image?
-                                        },
-                                    )
-                                }
+                                CatalogSection(
+                                    state = state.artistFormState,
+                                    initialArtist = initialArtist,
+                                    seriesById = seriesById,
+                                    seriesPredictions = seriesPredictions,
+                                    merchById = merchById,
+                                    merchPredictions = merchPredictions,
+                                    seriesImage = seriesImage,
+                                    onClickEditImages = onClickEditImages,
+                                )
 
                                 HorizontalDivider()
                                 Text(
@@ -491,9 +480,6 @@ object ArtistFormScreen {
                                     merchPredictions = merchPredictions,
                                     seriesImage = seriesImage,
                                     onClickEditImages = onClickEditImages,
-                                    onClickImage = {
-                                        // TODO: Open full size image?
-                                    },
                                 )
 
                                 if (state.stampRallyStates.isNotEmpty()) {
@@ -624,8 +610,6 @@ object ArtistFormScreen {
                 header = Res.string.alley_form_notes,
                 label = { Text(stringResource(Res.string.alley_form_artist_form_notes_placeholder)) },
             )
-
-            InstructionsFooter()
         }
     }
 
@@ -640,7 +624,6 @@ object ArtistFormScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
-        onClickImage: (EditImage) -> Unit,
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -767,25 +750,19 @@ object ArtistFormScreen {
                                 merchPredictions = merchPredictions,
                                 seriesImage = seriesImage,
                             ) {
-                                // TODO: Image support
-                                if (state.initialArtist.collectAsStateWithLifecycle().value?.id
-                                        ?.let(Uuid::parseOrNull) == AlleyCryptography.FAKE_ARTIST_ID
-                                ) {
-                                    val requestKey =
-                                        rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
-                                    ImagesSection(
-                                        images = formState.images,
-                                        requestKey = requestKey,
-                                        onClickEditImages = {
-                                            onClickEditImages(
-                                                formState.fandom.value.text.toString(),
-                                                requestKey,
-                                                formState.images.toList(),
-                                            )
-                                        },
-                                        onClickImage = onClickImage,
-                                    )
-                                }
+                                val requestKey =
+                                    rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
+                                ImagesSection(
+                                    images = formState.images,
+                                    requestKey = requestKey,
+                                    onClickEditImages = {
+                                        onClickEditImages(
+                                            formState.fandom.value.text.toString(),
+                                            requestKey,
+                                            formState.images.toList(),
+                                        )
+                                    },
+                                )
                                 FandomSection(
                                     state = formState.fandom,
                                     label = { Text(stringResource(Res.string.alley_form_stamp_rally_name_placeholder)) },
@@ -829,7 +806,7 @@ object ArtistFormScreen {
                                 NotesSection(
                                     state = formState.notes,
                                     initialValue = this.initialStampRally?.notes,
-                                    header = artistalleydatabase.modules.alley.edit.generated.resources.Res.string.alley_edit_stamp_rally_edit_notes,
+                                    header = AlleyEditRes.string.alley_edit_stamp_rally_edit_notes,
                                     label = { Text(stringResource(Res.string.alley_form_stamp_rally_notes_placeholder)) },
                                 )
                             }
@@ -989,21 +966,6 @@ object ArtistFormScreen {
     }
 
     @Composable
-    private fun InstructionsFooter() {
-        OutlinedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
-        ) {
-            Text(
-                text = stringResource(Res.string.alley_form_artist_instructions_footer),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
-        }
-    }
-
-    @Composable
     private fun DonePrompt(dataYear: DataYear, onClickEditAgain: () -> Unit) {
         Box(
             contentAlignment = Alignment.Center,
@@ -1088,7 +1050,6 @@ object ArtistFormScreen {
         merchPredictions: suspend (String) -> Flow<List<MerchInfo>>,
         seriesImage: (SeriesInfo) -> String?,
         onClickEditImages: (displayName: String, NavigationRequestKey<List<EditImage>>, List<EditImage>) -> Unit,
-        onClickImage: (EditImage) -> Unit,
     ) {
         Column {
             val requestKey = rememberNavigationRequestKey(ImagesEditScreen.REQUEST_KEY)
@@ -1132,7 +1093,7 @@ object ArtistFormScreen {
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            stringResource(AlleyRes.string.alley_edit_artist_action_edit_images)
+                            stringResource(AlleyEditRes.string.alley_edit_artist_action_edit_images)
                         )
                     }
                 }
@@ -1159,7 +1120,6 @@ object ArtistFormScreen {
                             state.images.toList(),
                         )
                     }.takeIf { state.images.isEmpty() },
-                    onClickImage = onClickImage,
                 )
 
                 if (state.images.isNotEmpty()) {

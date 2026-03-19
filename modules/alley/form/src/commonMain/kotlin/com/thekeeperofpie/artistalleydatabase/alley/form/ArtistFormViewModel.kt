@@ -320,7 +320,6 @@ class ArtistFormViewModel(
             }
         }
 
-        // TODO: Image support
         // TODO: Show incremental progress to the user
         val imagesResult = imageUploader.uploadImages(
             dataYear = dataYear,

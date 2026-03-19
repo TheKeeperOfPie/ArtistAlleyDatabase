@@ -59,11 +59,12 @@ class ArtistFormHistoryViewModel(
 
     private suspend fun save(data: SaveData) =
         withContext(dispatchers.io) {
-            // TODO: Image support
             database.saveArtistAndClearFormEntry(
                 dataYear = dataYear,
                 initial = data.initial,
-                updated = data.updated,
+                // History doesn't support restoring images because older images may have been
+                // deleted to save storage space
+                updated = data.updated.copy(images = data.initial.images),
                 formEntryTimestamp = data.formEntryTimestamp,
             )
         }
