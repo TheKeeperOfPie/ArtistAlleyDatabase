@@ -17,8 +17,11 @@ import androidx.navigationevent.NavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
+import coil3.network.DeDupeConcurrentRequestStrategy
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.toUri
 import com.eygraber.uri.Uri
@@ -36,6 +39,9 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWaySta
 import dev.zacsweers.metro.createGraphFactory
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
+import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +53,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.WebResourcesConfiguration
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalCoilApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
         SideEffect {
@@ -60,9 +66,21 @@ fun main() {
 
         SingletonImageLoader.setSafe {
             ImageLoader.Builder(it)
-                .crossfade(false)
                 .components {
-                    add(Mapper<com.eygraber.uri.Uri, coil3.Uri> { data, _ ->
+                    val concurrentRequestStrategy = DeDupeConcurrentRequestStrategy()
+                    add(
+                        KtorNetworkFetcherFactory(
+                            httpClient = {
+                                HttpClient {
+                                    install(HttpCookies) {
+                                        storage = AcceptAllCookiesStorage()
+                                    }
+                                }
+                            },
+                            concurrentRequestStrategy = { concurrentRequestStrategy },
+                        )
+                    )
+                    add(Mapper<Uri, coil3.Uri> { data, _ ->
                         data.toString().toUri()
                     })
                     add(Mapper<PlatformImageKey, PlatformFile> { data, _ ->

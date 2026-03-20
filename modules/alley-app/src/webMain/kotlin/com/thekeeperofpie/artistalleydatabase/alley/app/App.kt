@@ -29,6 +29,8 @@ import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.map.Mapper
 import coil3.memory.MemoryCache
+import coil3.network.DeDupeConcurrentRequestStrategy
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.size.Precision
 import coil3.toUri
@@ -67,6 +69,12 @@ fun App(graph: ArtistAlleyWebGraph) {
             .crossfade(false)
             .precision(Precision.INEXACT)
             .components {
+                val concurrentRequestStrategy = DeDupeConcurrentRequestStrategy()
+                add(
+                    KtorNetworkFetcherFactory(
+                        concurrentRequestStrategy = { concurrentRequestStrategy },
+                    )
+                )
                 add(Mapper<ImageWithDimensions, com.eygraber.uri.Uri> { data, _ ->
                     data.coilImageModel as? com.eygraber.uri.Uri
                 })
