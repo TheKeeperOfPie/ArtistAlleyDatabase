@@ -27,6 +27,7 @@ import coil3.toUri
 import com.eygraber.uri.Uri
 import com.thekeeperofpie.artistalleydatabase.alley.VariableFontEffect
 import com.thekeeperofpie.artistalleydatabase.alley.edit.artist.form.ArtistFormAccessKey
+import com.thekeeperofpie.artistalleydatabase.alley.edit.credentialsHttpClient
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageCache
 import com.thekeeperofpie.artistalleydatabase.alley.edit.images.PlatformImageKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
@@ -39,9 +40,6 @@ import com.thekeeperofpie.artistalleydatabase.utils_compose.navigation.TwoWaySta
 import dev.zacsweers.metro.createGraphFactory
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
-import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -70,13 +68,7 @@ fun main() {
                     val concurrentRequestStrategy = DeDupeConcurrentRequestStrategy()
                     add(
                         KtorNetworkFetcherFactory(
-                            httpClient = {
-                                HttpClient {
-                                    install(HttpCookies) {
-                                        storage = AcceptAllCookiesStorage()
-                                    }
-                                }
-                            },
+                            httpClient = { credentialsHttpClient() },
                             concurrentRequestStrategy = { concurrentRequestStrategy },
                         )
                     )
