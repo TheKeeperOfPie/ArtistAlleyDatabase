@@ -528,7 +528,6 @@ class AlleyExporterTest {
                     links = emptyList(),
                     catalogLinks = emptyList(),
                     driveLink = null,
-                    counter = index.toLong(),
                 )
             }
         )
@@ -552,7 +551,6 @@ class AlleyExporterTest {
                     seriesConfirmed = emptyList(),
                     merchInferred = emptyList(),
                     merchConfirmed = emptyList(),
-                    counter = index.toLong(),
                 )
             }
         )
@@ -580,7 +578,6 @@ class AlleyExporterTest {
                     seriesConfirmed = emptyList(),
                     merchInferred = emptyList(),
                     merchConfirmed = emptyList(),
-                    counter = index.toLong(),
                 )
             }
         )
@@ -608,7 +605,6 @@ class AlleyExporterTest {
                     seriesConfirmed = emptyList(),
                     merchInferred = emptyList(),
                     merchConfirmed = emptyList(),
-                    counter = index.toLong(),
                 )
             }
         )
@@ -637,7 +633,6 @@ class AlleyExporterTest {
                     merchInferred = emptyList(),
                     merchConfirmed = emptyList(),
                     exhibitorTagFlags = 0L,
-                    counter = index.toLong(),
                 )
             }
         )
@@ -652,7 +647,6 @@ class AlleyExporterTest {
                     hostTable = "",
                     tables = emptyList(),
                     links = emptyList(),
-                    counter = index.toLong(),
                 )
             }
         )
@@ -671,7 +665,6 @@ class AlleyExporterTest {
                     totalCost = null,
                     prizeLimit = null,
                     notes = null,
-                    counter = index.toLong(),
                 )
             }
         )
@@ -692,7 +685,6 @@ class AlleyExporterTest {
                     prizeLimit = null,
                     series = emptyList(),
                     notes = null,
-                    counter = index.toLong(),
                     confirmed = false,
                 )
             }

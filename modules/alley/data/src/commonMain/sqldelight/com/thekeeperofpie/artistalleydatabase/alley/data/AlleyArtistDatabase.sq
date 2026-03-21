@@ -19,7 +19,6 @@ CREATE TABLE
         catalogLinks TEXT AS List<String> NOT NULL,
         driveLink TEXT,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -28,7 +27,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntry2023_fts USING FTS5 (
     booth,
     name,
     summary,
-    counter,
     content=artistEntry2023,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -49,7 +47,6 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -62,7 +59,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntry2024_fts USING FTS5 (
     seriesConfirmed,
     merchInferred,
     merchConfirmed,
-    counter,
     content=artistEntry2024,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -87,7 +83,6 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -101,7 +96,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntry2025_fts USING FTS5 (
     seriesConfirmed,
     merchInferred,
     merchConfirmed,
-    counter,
     content=artistEntry2025,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -127,7 +121,6 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         editorNotes TEXT,
         lastEditor TEXT,
         lastEditTime TEXT AS Instant,
@@ -145,7 +138,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeExpo2026_fts USING FTS5 (
     seriesConfirmed,
     merchInferred,
     merchConfirmed,
-    counter,
     content=artistEntryAnimeExpo2026,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -185,7 +177,6 @@ CREATE TABLE
         merchConfirmed TEXT AS List<String> NOT NULL,
         exhibitorTagFlags INTEGER NOT NULL DEFAULT 0,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -199,7 +190,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2025_fts USING FTS5 (
     seriesConfirmed,
     merchInferred,
     merchConfirmed,
-    counter,
     content=artistEntryAnimeNyc2025,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -224,7 +214,6 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -238,7 +227,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artistEntryAnimeNyc2024_fts USING FTS5 (
     seriesConfirmed,
     merchInferred,
     merchConfirmed,
-    counter,
     content=artistEntryAnimeNyc2024,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -273,7 +261,6 @@ CREATE TABLE
         tables TEXT AS List<String> NOT NULL,
         links TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -281,7 +268,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2023_fts USING FTS5 (
     id,
     fandom,
     tables,
-    counter,
     content=stampRallyEntry2023,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -298,7 +284,6 @@ CREATE TABLE
         prizeLimit INTEGER,
         notes TEXT,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -307,7 +292,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2024_fts USING FTS5 (
     fandom,
     tables,
     notes,
-    counter,
     content=stampRallyEntry2024,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -326,7 +310,6 @@ CREATE TABLE
         series TEXT AS List<String> NOT NULL,
         notes TEXT,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         confirmed INTEGER AS Boolean NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     );
@@ -338,7 +321,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntry2025_fts USING FTS5 (
     prize,
     series,
     notes,
-    counter,
     content=stampRallyEntry2025,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -357,7 +339,6 @@ CREATE TABLE
         merch TEXT AS List<String> NOT NULL,
         notes TEXT,
         images TEXT AS List<CatalogImage> NOT NULL,
-        counter INTEGER NOT NULL DEFAULT 1,
         editorNotes TEXT,
         lastEditor TEXT,
         lastEditTime TEXT AS Instant,
@@ -371,7 +352,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS stampRallyEntryAnimeExpo2026_fts USING FTS5 (
     prize,
     series,
     notes,
-    counter,
     content=stampRallyEntryAnimeExpo2026,
     tokenize="unicode61 remove_diacritics 2"
 );
@@ -421,7 +401,6 @@ CREATE TABLE
         confirmedAnimeExpo2026 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeNyc2024 INTEGER NOT NULL DEFAULT 0,
         confirmedAnimeNyc2025 INTEGER NOT NULL DEFAULT 0,
-        counter INTEGER NOT NULL DEFAULT 1,
         PRIMARY KEY (id)
     );
 
@@ -445,7 +424,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS seriesEntry_fts USING FTS5 (
     confirmedAnimeExpo2026,
     confirmedAnimeNyc2024,
     confirmedAnimeNyc2025,
-    counter,
     content=seriesEntry,
     tokenize="unicode61 remove_diacritics 2"
 );

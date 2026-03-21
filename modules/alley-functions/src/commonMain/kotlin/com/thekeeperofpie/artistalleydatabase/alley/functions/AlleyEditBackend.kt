@@ -1184,7 +1184,6 @@ object AlleyEditBackend {
         confirmedAnimeExpo2026 = 0,
         confirmedAnimeNyc2024 = 0,
         confirmedAnimeNyc2025 = 0,
-        counter = 0,
     )
 
     private fun MerchInfo.toMerchEntry() = MerchEntry(

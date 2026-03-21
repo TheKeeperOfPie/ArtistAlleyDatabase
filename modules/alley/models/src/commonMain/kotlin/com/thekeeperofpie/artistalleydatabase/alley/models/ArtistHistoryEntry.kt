@@ -122,7 +122,6 @@ data class ArtistHistoryEntry(
                 merchInferred = merchInferred.orEmpty(),
                 merchConfirmed = merchConfirmed.orEmpty(),
                 images = images.orEmpty(),
-                counter = 0L,
                 editorNotes = editorNotes,
                 lastEditor = lastEditor,
                 lastEditTime = Clock.System.now(),

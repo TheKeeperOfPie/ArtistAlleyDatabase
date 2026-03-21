@@ -61,7 +61,6 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
             merch = emptyList(),
             notes = null,
             images = getString(5)!!.let(Json::decodeFromString),
-            counter = getLong(6)!!,
             confirmed = true,
             editorNotes = null,
             lastEditor = null,
@@ -69,8 +68,8 @@ fun SqlCursor.toStampRallyWithUserData2023(): StampRallyWithUserData {
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(7),
-            ignored = getBooleanFixed(8),
+            favorite = getBooleanFixed(6),
+            ignored = getBooleanFixed(7),
         )
     )
 }
@@ -93,7 +92,6 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
             merch = emptyList(),
             notes = getString(8),
             images = getString(9)!!.let(Json::decodeFromString),
-            counter = getLong(10)!!,
             confirmed = true,
             editorNotes = null,
             lastEditor = null,
@@ -101,8 +99,8 @@ fun SqlCursor.toStampRallyWithUserData2024(): StampRallyWithUserData {
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(11),
-            ignored = getBooleanFixed(12),
+            favorite = getBooleanFixed(10),
+            ignored = getBooleanFixed(11),
         )
     )
 }
@@ -125,16 +123,15 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
             merch = emptyList(),
             notes = getString(10),
             images = getString(11)!!.let(Json::decodeFromString),
-            counter = getLong(12)!!,
-            confirmed = getBooleanFixed(13),
+            confirmed = getBooleanFixed(12),
             editorNotes = null,
             lastEditor = null,
             lastEditTime = null,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(14),
-            ignored = getBooleanFixed(15),
+            favorite = getBooleanFixed(13),
+            ignored = getBooleanFixed(14),
         )
     )
 }
@@ -157,8 +154,7 @@ fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
             merch = getString(10)!!.let(Json::decodeFromString),
             notes = getString(11),
             images = getString(12)!!.let(Json::decodeFromString),
-            counter = getLong(13)!!,
-            confirmed = getBooleanFixed(14),
+            confirmed = getBooleanFixed(13),
             editorNotes = null,
             lastEditor = null,
             lastEditTime = null,
@@ -187,7 +183,6 @@ private fun GetEntry2023.toStampRallyWithUserData() = StampRallyWithUserData(
         merch = emptyList(),
         notes = null,
         images = images,
-        counter = counter,
         confirmed = true,
         editorNotes = null,
         lastEditor = null,
@@ -216,7 +211,6 @@ private fun GetEntry2024.toStampRallyWithUserData() = StampRallyWithUserData(
         merch = emptyList(),
         notes = notes,
         images = images,
-        counter = counter,
         confirmed = true,
         editorNotes = null,
         lastEditor = null,
@@ -245,7 +239,6 @@ private fun GetEntry2025.toStampRallyWithUserData() = StampRallyWithUserData(
         merch = emptyList(),
         notes = notes,
         images = images,
-        counter = counter,
         confirmed = confirmed,
         editorNotes = null,
         lastEditor = null,
@@ -274,7 +267,6 @@ private fun GetEntryAnimeExpo2026.toStampRallyWithUserData() = StampRallyWithUse
         merch = merch,
         notes = notes,
         images = images,
-        counter = counter,
         confirmed = links.isNotEmpty() || images.isNotEmpty(),
         editorNotes = null,
         lastEditor = null,
@@ -302,7 +294,6 @@ fun StampRallyEntry2023.toStampRallyEntry() = StampRallyDatabaseEntry(
     merch = emptyList(),
     notes = null,
     images = images,
-    counter = counter,
     confirmed = true,
     editorNotes = null,
     lastEditor = null,
@@ -324,7 +315,6 @@ fun StampRallyEntry2024.toStampRallyEntry() = StampRallyDatabaseEntry(
     merch = emptyList(),
     notes = notes,
     images = images,
-    counter = counter,
     confirmed = true,
     editorNotes = null,
     lastEditor = null,
@@ -346,7 +336,6 @@ fun StampRallyEntry2025.toStampRallyEntry() = StampRallyDatabaseEntry(
     merch = emptyList(),
     notes = notes,
     images = images,
-    counter = counter,
     confirmed = confirmed,
     editorNotes = null,
     lastEditor = null,
@@ -368,7 +357,6 @@ fun StampRallyEntryAnimeExpo2026.toStampRallyEntry() = StampRallyDatabaseEntry(
     merch = merch,
     notes = notes,
     images = images,
-    counter = counter,
     confirmed = links.isNotEmpty() || images.isNotEmpty(),
     editorNotes = null,
     lastEditor = null,
@@ -527,17 +515,13 @@ class StampRallyEntryDao(
                 "ORDER BY $tableName.hostTable COLLATE NOCASE $ascending"
             StampRallySearchSortOption.FANDOM ->
                 "ORDER BY $tableName.fandom COLLATE NOCASE $ascending"
-            StampRallySearchSortOption.RANDOM -> "ORDER BY orderIndex $ascending"
+            StampRallySearchSortOption.RANDOM ->
+                "ORDER BY SIN($tableName.rowid + ${searchQuery.randomSeed}) $ascending"
             StampRallySearchSortOption.PRIZE_LIMIT ->
                 "ORDER BY $tableName.prizeLimit $ascending NULLS LAST"
             StampRallySearchSortOption.TOTAL_COST ->
                 "ORDER BY $tableName.totalCost $ascending NULLS LAST"
         }
-        val randomSortSelectSuffix =
-            (", substr(${tableName}_fts.counter * 0.${searchQuery.randomSeed}," +
-                    " length(${tableName}_fts.counter) + 2) as orderIndex")
-                .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM }
-                .orEmpty()
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
 
         if (query.isEmpty()) {
@@ -552,7 +536,7 @@ class StampRallyEntryDao(
                 $andStatement
                 """.trimIndent()
             val statement = """
-                SELECT $tableName.*$selectSuffix${randomSortSelectSuffix.replace("_fts", "")}
+                SELECT $tableName.*$selectSuffix
                 FROM $tableName
                 LEFT OUTER JOIN stampRallyUserEntry
                 ON $tableName.id = stampRallyUserEntry.stampRallyId

@@ -98,7 +98,6 @@ data class StampRallyHistoryEntry(
                 merch = merch.orEmpty(),
                 notes = notes,
                 images = images.orEmpty(),
-                counter = 0L,
                 confirmed = !images.isNullOrEmpty() || !links.isNullOrEmpty(),
                 editorNotes = editorNotes,
                 lastEditor = lastEditor,

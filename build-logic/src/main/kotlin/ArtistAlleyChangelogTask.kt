@@ -45,88 +45,93 @@ abstract class ArtistAlleyChangelogTask : DefaultTask() {
         val diffs = snapshotsDirectory.get().asFileTree.files
             .windowed(size = 2, step = 1)
             .flatMap { (beforeSnapshot, afterSnapshot) ->
-                fun verifyDelete(file: File) {
-                    if (!file.delete()) {
-                        logger.error("Failed to delete ${file.absolutePath}")
-                    }
-                }
-                listOf(
-                    beforeSnapshotFilteredFile,
-                    afterSnapshotFilteredFile,
-                    beforeDatabaseFile,
-                    afterDatabaseFile,
-                ).forEach(::verifyDelete)
-
-                // First, create and immediately close the databases to initialize the schemas
-                Utils.createDatabase(beforeDatabaseFile).first.close()
-                Utils.createDatabase(afterDatabaseFile).first.close()
-
-                fun filterSnapshot(source: File, target: File) {
-                    target.writer().use { writer ->
-                        source.useLines {
-                            it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
-                                .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
-                                .forEach(writer::appendLine)
+                try {
+                    fun verifyDelete(file: File) {
+                        if (!file.delete()) {
+                            logger.error("Failed to delete ${file.absolutePath}")
                         }
                     }
-                }
+                    listOf(
+                        beforeSnapshotFilteredFile,
+                        afterSnapshotFilteredFile,
+                        beforeDatabaseFile,
+                        afterDatabaseFile,
+                    ).forEach(::verifyDelete)
 
-                filterSnapshot(beforeSnapshot, beforeSnapshotFilteredFile)
-                filterSnapshot(afterSnapshot, afterSnapshotFilteredFile)
+                    // First, create and immediately close the databases to initialize the schemas
+                    Utils.createDatabase(beforeDatabaseFile).first.close()
+                    Utils.createDatabase(afterDatabaseFile).first.close()
 
-                if (!Utils.readSqlFile(beforeDatabaseFile, beforeSnapshotFilteredFile)) {
-                    logger.error("Failed to apply before ${beforeSnapshot.absolutePath}")
-                    return@flatMap emptyList()
-                }
-                if (!Utils.readSqlFile(afterDatabaseFile, afterSnapshotFilteredFile)) {
-                    logger.error("Failed to apply after ${afterSnapshot.absolutePath}")
-                    return@flatMap emptyList()
-                }
-                val beforeDatabase =
-                    Utils.createDatabase(beforeDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
-                        .executeAsList()
-                val afterDatabase =
-                    Utils.createDatabase(afterDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
-                        .executeAsList()
-
-                val date = afterSnapshot.nameWithoutExtension
-                    .replace("_", ":")
-                    .replace(";", ":")
-                    .let(Instant::parse)
-                    .toLocalDateTime(TimeZone.UTC)
-                    .date
-
-                afterDatabase
-                    .map { afterArtist -> beforeDatabase.find { it.id == afterArtist.id } to afterArtist }
-                    .mapNotNull { (beforeArtist, afterArtist) ->
-                        val artistId = Uuid.parse(afterArtist.id)
-                        val seriesInferred = afterArtist.seriesInferred.toMutableSet()
-                        val seriesConfirmed = afterArtist.seriesConfirmed.toMutableSet()
-                        val merchInferred = afterArtist.merchInferred.toMutableSet()
-                        val merchConfirmed = afterArtist.merchConfirmed.toMutableSet()
-                        if (beforeArtist != null) {
-                            seriesInferred -= beforeArtist.seriesInferred.toSet()
-                            seriesConfirmed -= beforeArtist.seriesConfirmed.toSet()
-                            merchInferred -= beforeArtist.merchInferred.toSet()
-                            merchConfirmed -= beforeArtist.merchConfirmed.toSet()
+                    fun filterSnapshot(source: File, target: File) {
+                        target.writer().use { writer ->
+                            source.useLines {
+                                it.filter { it.contains("\"artistEntryAnimeExpo2026\"") }
+                                    .filterNot { it.contains("11111111-1111-1111-1111-111111111111") }
+                                    .forEach(writer::appendLine)
+                            }
                         }
-                        if (beforeArtist != null && seriesInferred.isEmpty() && seriesConfirmed.isEmpty() &&
-                            merchInferred.isEmpty() && merchConfirmed.isEmpty()
-                        ) {
-                            return@mapNotNull null
-                        }
-                        ArtistDiff(
-                            artistId = artistId,
-                            date = date,
-                            booth = afterArtist.booth?.ifEmpty { null },
-                            name = afterArtist.name,
-                            seriesInferred = seriesInferred.takeUnless { it.isEmpty() },
-                            seriesConfirmed = seriesConfirmed.takeUnless { it.isEmpty() },
-                            merchInferred = merchInferred.takeUnless { it.isEmpty() },
-                            merchConfirmed = merchConfirmed.takeUnless { it.isEmpty() },
-                            isBrandNew = beforeArtist == null,
-                        )
                     }
+
+                    filterSnapshot(beforeSnapshot, beforeSnapshotFilteredFile)
+                    filterSnapshot(afterSnapshot, afterSnapshotFilteredFile)
+
+                    if (!Utils.readSqlFile(beforeDatabaseFile, beforeSnapshotFilteredFile)) {
+                        logger.error("Failed to apply before ${beforeSnapshot.absolutePath}")
+                        return@flatMap emptyList()
+                    }
+                    if (!Utils.readSqlFile(afterDatabaseFile, afterSnapshotFilteredFile)) {
+                        logger.error("Failed to apply after ${afterSnapshot.absolutePath}")
+                        return@flatMap emptyList()
+                    }
+                    val beforeDatabase =
+                        Utils.createDatabase(beforeDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                            .executeAsList()
+                    val afterDatabase =
+                        Utils.createDatabase(afterDatabaseFile).second.artistEntryAnimeExpo2026Queries.getAllEntries()
+                            .executeAsList()
+
+                    val date = afterSnapshot.nameWithoutExtension
+                        .replace("_", ":")
+                        .replace(";", ":")
+                        .let(Instant::parse)
+                        .toLocalDateTime(TimeZone.UTC)
+                        .date
+
+                    afterDatabase
+                        .map { afterArtist -> beforeDatabase.find { it.id == afterArtist.id } to afterArtist }
+                        .mapNotNull { (beforeArtist, afterArtist) ->
+                            val artistId = Uuid.parse(afterArtist.id)
+                            val seriesInferred = afterArtist.seriesInferred.toMutableSet()
+                            val seriesConfirmed = afterArtist.seriesConfirmed.toMutableSet()
+                            val merchInferred = afterArtist.merchInferred.toMutableSet()
+                            val merchConfirmed = afterArtist.merchConfirmed.toMutableSet()
+                            if (beforeArtist != null) {
+                                seriesInferred -= beforeArtist.seriesInferred.toSet()
+                                seriesConfirmed -= beforeArtist.seriesConfirmed.toSet()
+                                merchInferred -= beforeArtist.merchInferred.toSet()
+                                merchConfirmed -= beforeArtist.merchConfirmed.toSet()
+                            }
+                            if (beforeArtist != null && seriesInferred.isEmpty() && seriesConfirmed.isEmpty() &&
+                                merchInferred.isEmpty() && merchConfirmed.isEmpty()
+                            ) {
+                                return@mapNotNull null
+                            }
+                            ArtistDiff(
+                                artistId = artistId,
+                                date = date,
+                                booth = afterArtist.booth?.ifEmpty { null },
+                                name = afterArtist.name,
+                                seriesInferred = seriesInferred.takeUnless { it.isEmpty() },
+                                seriesConfirmed = seriesConfirmed.takeUnless { it.isEmpty() },
+                                merchInferred = merchInferred.takeUnless { it.isEmpty() },
+                                merchConfirmed = merchConfirmed.takeUnless { it.isEmpty() },
+                                isBrandNew = beforeArtist == null,
+                            )
+                        }
+                } catch (t: Throwable) {
+                    logger.error("Failed to parse $beforeSnapshot, $afterSnapshot", t)
+                    throw t
+                }
             }
 
         outputFile.get().asFile.outputStream().use {

@@ -22,7 +22,6 @@ data class StampRallyDatabaseEntry(
     val merch: List<String>,
     val notes: String?,
     val images: List<CatalogImage>,
-    val counter: Long,
     val confirmed: Boolean,
     val editorNotes: String?,
     val lastEditor: String?,
@@ -34,13 +33,8 @@ data class StampRallyDatabaseEntry(
 
         // Need to ignore metadata for equality
         fun hasChanged(before: StampRallyDatabaseEntry?, after: StampRallyDatabaseEntry) =
-            before?.copy(confirmed = false, counter = 0, lastEditTime = null, lastEditor = null) !=
-                    after.copy(
-                        confirmed = false,
-                        counter = 0,
-                        lastEditTime = null,
-                        lastEditor = null,
-                    )
+            before?.copy(confirmed = false, lastEditTime = null, lastEditor = null) !=
+                    after.copy(confirmed = false, lastEditTime = null, lastEditor = null)
 
         fun empty(year: DataYear, id: String) = StampRallyDatabaseEntry(
             year = year,
@@ -57,7 +51,6 @@ data class StampRallyDatabaseEntry(
             merch = emptyList(),
             notes = null,
             images = emptyList(),
-            counter = 0,
             confirmed = false,
             editorNotes = null,
             lastEditor = null,

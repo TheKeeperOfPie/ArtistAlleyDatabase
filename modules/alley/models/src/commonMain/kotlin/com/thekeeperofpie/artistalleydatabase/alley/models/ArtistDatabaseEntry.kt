@@ -26,7 +26,6 @@ interface ArtistDatabaseEntry {
     val merchInferred: List<String>
     val merchConfirmed: List<String>
     val images: List<CatalogImage>
-    val counter: Long
     val editorNotes: String?
     val lastEditor: String?
     val lastEditTime: Instant?
@@ -52,7 +51,6 @@ interface ArtistDatabaseEntry {
         override val merchInferred: List<String>,
         override val merchConfirmed: List<String>,
         override val images: List<CatalogImage>,
-        override val counter: Long,
         override val editorNotes: String?,
         override val lastEditor: String?,
         override val lastEditTime: Instant?,
@@ -65,12 +63,10 @@ interface ArtistDatabaseEntry {
         fun hasChanged(before: Impl?, after: Impl) =
             before?.copy(
                 verifiedArtist = false,
-                counter = 0,
                 lastEditTime = null,
                 lastEditor = null
             ) != after.copy(
                 verifiedArtist = false,
-                counter = 0,
                 lastEditTime = null,
                 lastEditor = null
             )
@@ -92,7 +88,6 @@ interface ArtistDatabaseEntry {
             merchInferred: List<String>,
             merchConfirmed: List<String>,
             images: List<CatalogImage>,
-            counter: Long,
         ) = Impl(
             year = year,
             id = id,
@@ -111,7 +106,6 @@ interface ArtistDatabaseEntry {
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
             images = images,
-            counter = counter,
             status = ArtistStatus.UNKNOWN,
             editorNotes = null,
             lastEditor = null,

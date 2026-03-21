@@ -135,7 +135,6 @@ class ArtistFormState(
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
             images = emptyList(),
-            counter = 1,
             editorNotes = editorNotes,
             lastEditor = null, // This is filled on the backend
             lastEditTime = Clock.System.now(),

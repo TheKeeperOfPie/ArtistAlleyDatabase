@@ -122,7 +122,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                                 linkFlags2 = linkFlags2,
                                 commissionFlags = commissionFlags,
                                 images = updatedImages,
-                                counter = index.toLong() + 1000L,
                             )
                         ).await()
                     }

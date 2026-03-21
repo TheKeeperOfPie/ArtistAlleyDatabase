@@ -212,16 +212,11 @@ class SeriesEntryDao(
         }
         val ascending = if (seriesFilterParams.sortAscending) "ASC" else "DESC"
         val sortSuffix = when (seriesFilterParams.sortOption) {
-            SeriesSearchSortOption.RANDOM -> "ORDER BY orderIndex"
+            SeriesSearchSortOption.RANDOM -> "ORDER BY SIN(seriesEntry.rowid + $randomSeed)"
             SeriesSearchSortOption.NAME -> "ORDER BY seriesEntry.$nameOrderBy COLLATE NOCASE"
             SeriesSearchSortOption.POPULARITY -> "ORDER BY seriesEntry." +
                     "${popularityColumn.ifEmpty { "inferred2025" }} COLLATE NOCASE"
         } + " $ascending" + " NULLS LAST"
-        val randomSortSelectSuffix =
-            (", substr(seriesEntry_fts.counter * 0.$randomSeed," +
-                    " length(seriesEntry_fts.counter) + 2) as orderIndex")
-                .takeIf { seriesFilterParams.sortOption == SeriesSearchSortOption.RANDOM }
-                .orEmpty()
 
         if (query.isEmpty()) {
             val joinStatement = """
@@ -235,12 +230,7 @@ class SeriesEntryDao(
                 $whereStatement
             """.trimIndent()
             val statement = """
-                SELECT seriesEntry.*, seriesUserEntry.favorite${
-                randomSortSelectSuffix.replace(
-                    "_fts",
-                    ""
-                )
-            }
+                SELECT seriesEntry.*, seriesUserEntry.favorite
                 FROM seriesEntry
                 $joinStatement
                 $whereStatement

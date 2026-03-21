@@ -160,7 +160,6 @@ class StampRallyFormState(
             merch = merch.toList().map { it.name },
             notes = notes.value.text.toString(),
             images = emptyList(),
-            counter = 1,
             confirmed = false, // TODO: Is tracking confirmed still useful?
             editorNotes = editorNotes,
             lastEditor = null, // This is filled on the backend

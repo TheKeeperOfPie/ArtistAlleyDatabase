@@ -24,7 +24,6 @@ object StampRallyWithUserDataProvider : PreviewParameterProvider<StampRallyWithU
                 merch = emptyList(),
                 notes = null,
                 images = emptyList(),
-                counter = 1,
                 confirmed = true,
                 editorNotes = null,
                 lastEditor = null,
