@@ -60,7 +60,7 @@ class ArtistFormMergeViewModel(
                 dataYear = dataYear,
                 initial = data.initial,
                 updated = data.updated.copy(
-                    images = data.images.map(EditImage::toCatalogImage)
+                    _images = data.images.map(EditImage::toCatalogImage)
                 ),
                 formEntryTimestamp = data.formEntryTimestamp,
             )

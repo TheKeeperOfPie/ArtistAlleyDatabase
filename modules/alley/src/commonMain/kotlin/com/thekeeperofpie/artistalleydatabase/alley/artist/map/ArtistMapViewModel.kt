@@ -48,7 +48,6 @@ class ArtistMapViewModel(
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
                         showOutdatedCatalogs = showOutdatedCatalogs,
-                        fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                     )
                 }
         }

@@ -178,7 +178,6 @@ class FavoritesViewModel(
                         showOnlyConfirmedTags = showOnlyConfirmedTags,
                         entry = it,
                         showOutdatedCatalogs = filterParams.showOutdatedCatalogs,
-                        fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                     )
                 }
             }

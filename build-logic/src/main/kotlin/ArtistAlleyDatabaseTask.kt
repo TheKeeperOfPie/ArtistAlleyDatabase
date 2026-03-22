@@ -1,4 +1,3 @@
-
 import Utils.createDatabase
 import app.cash.sqldelight.Query
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026Changelog
@@ -14,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TagYearFlag
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import org.gradle.api.DefaultTask
@@ -126,6 +126,87 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                         ).await()
                     }
 
+                val mutationQueries = database.mutationQueries
+
+                // Need to reverse to ensure that earlier years don't overwrite
+                // before later years can calculate a fallback
+                DataYear.entries.sortedByDescending { it.dates.start }.forEach { year ->
+                    when (year) {
+                        // 2023 is the earliest year and doesn't have any fallback data
+                        DataYear.ANIME_EXPO_2023 -> Unit
+                        DataYear.ANIME_EXPO_2024 -> mutationQueries.getAllArtistEntryAnimeExpo2024()
+                            .executeAsList()
+                            .forEach { artist ->
+                                if (artist.images.isNotEmpty()) return@forEach
+                                val (fallbackImagesYear, fallbackImages) =
+                                    mutationQueries.getFallbackImages(year, artist.id)
+                                        ?: return@forEach
+                                mutationQueries.updateArtistEntryAnimeExpo2024(
+                                    artist.copy(
+                                        images = fallbackImages,
+                                        fallbackImageYear = fallbackImagesYear,
+                                    )
+                                )
+                            }
+                        DataYear.ANIME_EXPO_2025 -> mutationQueries.getAllArtistEntryAnimeExpo2025()
+                            .executeAsList()
+                            .forEach { artist ->
+                                if (artist.images.isNotEmpty()) return@forEach
+                                val (fallbackImagesYear, fallbackImages) =
+                                    mutationQueries.getFallbackImages(year, artist.id)
+                                        ?: return@forEach
+                                mutationQueries.updateArtistEntryAnimeExpo2025(
+                                    artist.copy(
+                                        images = fallbackImages,
+                                        fallbackImageYear = fallbackImagesYear,
+                                    )
+                                )
+                            }
+                        DataYear.ANIME_EXPO_2026 -> mutationQueries.getAllArtistEntryAnimeExpo2026()
+                            .executeAsList()
+                            .forEach { artist ->
+                                if (artist.images.isNotEmpty()) return@forEach
+                                val (fallbackImagesYear, fallbackImages) =
+                                    mutationQueries.getFallbackImages(year, artist.id)
+                                        ?: return@forEach
+                                mutationQueries.updateArtistEntryAnimeExpo2026(
+                                    artist.copy(
+                                        images = fallbackImages,
+                                        fallbackImageYear = fallbackImagesYear,
+                                    )
+                                )
+                            }
+                        DataYear.ANIME_NYC_2024 -> mutationQueries.getAllArtistEntryAnimeNyc2024()
+                            .executeAsList()
+                            .forEach { artist ->
+                                if (artist.images.isNotEmpty()) return@forEach
+                                val (fallbackImagesYear, fallbackImages) =
+                                    mutationQueries.getFallbackImages(year, artist.id)
+                                        ?: return@forEach
+                                mutationQueries.updateArtistEntryAnimeNyc2024(
+                                    artist.copy(
+                                        images = fallbackImages,
+                                        fallbackImageYear = fallbackImagesYear,
+                                    )
+                                )
+                            }
+                        DataYear.ANIME_NYC_2025 -> mutationQueries.getAllArtistEntryAnimeNyc2025()
+                            .executeAsList()
+                            .forEach { artist ->
+                                if (artist.images.isNotEmpty()) return@forEach
+                                val (fallbackImagesYear, fallbackImages) =
+                                    mutationQueries.getFallbackImages(year, artist.id)
+                                        ?: return@forEach
+                                mutationQueries.updateArtistEntryAnimeNyc2025(
+                                    artist.copy(
+                                        images = fallbackImages,
+                                        fallbackImageYear = fallbackImagesYear,
+                                    )
+                                )
+                            }
+                    }
+                }
+
                 buildStampRallyConnections(database)
 
                 val artistTagConnections = buildArtistConnections(database)
@@ -133,7 +214,6 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
                 updateMerchYearFlags(database, artistTagConnections)
 
                 val (seriesConnections, merchConnections) = artistTagConnections
-                val mutationQueries = database.mutationQueries
                 mutationQueries.transaction {
                     seriesConnections.values.forEach(mutationQueries::insertSeriesConnection)
                     merchConnections.values.forEach(mutationQueries::insertMerchConnection)
@@ -224,6 +304,29 @@ abstract class ArtistAlleyDatabaseTask : DefaultTask() {
             outputResources.file("files/databaseHash.txt").get().asFile.writeText(hash.toString())
         }
     }
+
+    private val DataYear.Dates.start
+        get() = LocalDate(year = year, month = month, day = startDay)
+
+    private fun MutationQueries.getFallbackImages(
+        year: DataYear,
+        id: String,
+    ): Pair<DataYear, List<CatalogImage>>? =
+        DataYear.entries
+            .filter { it.dates.start < year.dates.start }
+            .sortedByDescending { it.dates.start }
+            .firstNotNullOfOrNull { queryYear ->
+                when (queryYear) {
+                    DataYear.ANIME_EXPO_2023 -> null
+                    DataYear.ANIME_EXPO_2024 -> getImagesAnimeExpo2024(id).executeAsOneOrNull()
+                    DataYear.ANIME_EXPO_2025 -> getImagesAnimeExpo2025(id).executeAsOneOrNull()
+                    DataYear.ANIME_EXPO_2026 -> getImagesAnimeExpo2026(id).executeAsOneOrNull()
+                    DataYear.ANIME_NYC_2024 -> getImagesAnimeNyc2024(id).executeAsOneOrNull()
+                    DataYear.ANIME_NYC_2025 -> getImagesAnimeNyc2025(id).executeAsOneOrNull()
+                }.orEmpty()
+                    .ifEmpty { null }
+                    ?.let { queryYear to it }
+            }
 
     private fun <T : Any> fixLegacyArtistImages(
         database: BuildLogicDatabase,

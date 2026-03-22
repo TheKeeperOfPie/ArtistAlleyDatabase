@@ -451,7 +451,7 @@ internal object ArtistFormMergeScreen {
             }
 
             val artist = base.copy(
-                images = applyDiff(
+                _images = applyDiff(
                     base.images,
                     diff.images,
                     ArtistField.IMAGES_ADDED,

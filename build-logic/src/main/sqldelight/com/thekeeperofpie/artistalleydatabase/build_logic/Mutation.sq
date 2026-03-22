@@ -42,11 +42,59 @@ UPDATE stampRallyEntry2024 SET images = :images WHERE id = :id;
 updateStampRallyAnimeExpo2025Images:
 UPDATE stampRallyEntry2025 SET images = :images WHERE id = :id;
 
+getAllArtistEntryAnimeExpo2024:
+SELECT * FROM artistEntry2024;
+
+getImagesAnimeExpo2024:
+SELECT images FROM artistEntry2024
+WHERE id = :id;
+
+updateArtistEntryAnimeExpo2024:
+INSERT OR REPLACE INTO artistEntry2024
+VALUES ?;
+
+getAllArtistEntryAnimeExpo2025:
+SELECT * FROM artistEntry2025;
+
+getImagesAnimeExpo2025:
+SELECT images FROM artistEntry2025
+WHERE id = :id;
+
+updateArtistEntryAnimeExpo2025:
+INSERT OR REPLACE INTO artistEntry2025
+VALUES ?;
+
 getAllArtistEntryAnimeExpo2026:
 SELECT * FROM artistEntryAnimeExpo2026;
 
+getImagesAnimeExpo2026:
+SELECT images FROM artistEntryAnimeExpo2026
+WHERE id = :id;
+
 updateArtistEntryAnimeExpo2026:
 INSERT OR REPLACE INTO artistEntryAnimeExpo2026
+VALUES ?;
+
+getAllArtistEntryAnimeNyc2024:
+SELECT * FROM artistEntryAnimeNyc2024;
+
+getImagesAnimeNyc2024:
+SELECT images FROM artistEntryAnimeNyc2024
+WHERE id = :id;
+
+updateArtistEntryAnimeNyc2024:
+INSERT OR REPLACE INTO artistEntryAnimeNyc2024
+VALUES ?;
+
+getAllArtistEntryAnimeNyc2025:
+SELECT * FROM artistEntryAnimeNyc2025;
+
+getImagesAnimeNyc2025:
+SELECT images FROM artistEntryAnimeNyc2025
+WHERE id = :id;
+
+updateArtistEntryAnimeNyc2025:
+INSERT OR REPLACE INTO artistEntryAnimeNyc2025
 VALUES ?;
 
 updateSeriesTagCounts:

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.alley.edit.artist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.alley.edit.data.AlleyEditDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.edit.tags.TagAutocomplete
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
@@ -69,7 +68,7 @@ class ArtistHistoryViewModel(
                 seriesConfirmed = entry.seriesConfirmed ?: initial.seriesConfirmed,
                 merchInferred = entry.merchInferred ?: initial.merchInferred,
                 merchConfirmed = entry.merchConfirmed ?: initial.merchConfirmed,
-                images = entry.images ?: initial.images,
+                _images = entry.images ?: initial.images,
                 editorNotes = entry.editorNotes ?: initial.editorNotes,
                 lastEditor = null,
                 lastEditTime = Clock.System.now(),

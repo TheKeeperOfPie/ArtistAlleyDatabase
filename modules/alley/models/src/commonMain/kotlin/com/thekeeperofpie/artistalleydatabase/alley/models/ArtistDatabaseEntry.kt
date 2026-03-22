@@ -26,6 +26,8 @@ interface ArtistDatabaseEntry {
     val merchInferred: List<String>
     val merchConfirmed: List<String>
     val images: List<CatalogImage>
+    val fallbackImages: List<CatalogImage>
+    val fallbackImageYear: DataYear?
     val editorNotes: String?
     val lastEditor: String?
     val lastEditTime: Instant?
@@ -50,12 +52,18 @@ interface ArtistDatabaseEntry {
         override val seriesConfirmed: List<String>,
         override val merchInferred: List<String>,
         override val merchConfirmed: List<String>,
-        override val images: List<CatalogImage>,
+        val _images: List<CatalogImage>,
+        override val fallbackImageYear: DataYear?,
         override val editorNotes: String?,
         override val lastEditor: String?,
         override val lastEditTime: Instant?,
         override val verifiedArtist: Boolean,
-    ) : ArtistDatabaseEntry
+    ) : ArtistDatabaseEntry {
+        override val images: List<CatalogImage>
+            get() = _images.takeIf { fallbackImageYear == null }.orEmpty()
+        override val fallbackImages: List<CatalogImage>
+            get() = _images.takeIf { fallbackImageYear != null }.orEmpty()
+    }
 
     companion object {
 
@@ -88,6 +96,7 @@ interface ArtistDatabaseEntry {
             merchInferred: List<String>,
             merchConfirmed: List<String>,
             images: List<CatalogImage>,
+            fallbackImageYear: DataYear?,
         ) = Impl(
             year = year,
             id = id,
@@ -105,7 +114,8 @@ interface ArtistDatabaseEntry {
             seriesConfirmed = seriesConfirmed,
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
-            images = images,
+            _images = images,
+            fallbackImageYear = fallbackImageYear,
             status = ArtistStatus.UNKNOWN,
             editorNotes = null,
             lastEditor = null,

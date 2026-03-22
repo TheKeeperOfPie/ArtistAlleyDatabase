@@ -246,7 +246,7 @@ class ArtistEditViewModel(
                 .map { uploadedImages[it] ?: it }
             state.artistFormState.images.replaceAll(newArtistImages)
 
-            val updatedArtist = databaseEntry.copy(images = artistCatalogImages)
+            val updatedArtist = databaseEntry.copy(_images = artistCatalogImages)
             database.saveArtist(
                 dataYear = dataYear,
                 initial = artist.value,

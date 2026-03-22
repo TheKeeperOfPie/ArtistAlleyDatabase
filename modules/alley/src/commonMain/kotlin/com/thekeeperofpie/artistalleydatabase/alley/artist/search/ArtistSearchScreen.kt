@@ -539,7 +539,6 @@ object ArtistSearchScreen {
                     showOnlyConfirmedTags = false,
                     entry = it,
                     showOutdatedCatalogs = true,
-                    fallbackCatalog = null,
                 )
             }
         val state = State(

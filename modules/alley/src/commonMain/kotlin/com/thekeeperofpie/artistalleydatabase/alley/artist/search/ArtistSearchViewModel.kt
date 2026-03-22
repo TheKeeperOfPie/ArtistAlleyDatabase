@@ -184,7 +184,6 @@ class ArtistSearchViewModel(
                             showOnlyConfirmedTags = searchQuery.filterParams.showOnlyConfirmedTags,
                             entry = it,
                             showOutdatedCatalogs = searchQuery.filterParams.showOutdatedCatalogs,
-                            fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
                         )
                     }
                 }

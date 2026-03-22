@@ -148,6 +148,7 @@ internal object Utils {
                 merchInferredAdapter = listStringAdapter,
                 merchConfirmedAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                fallbackImageYearAdapter = dataYearAdapter,
             ),
             artistEntry2025Adapter = ArtistEntry2025.Adapter(
                 linksAdapter = listStringAdapter,
@@ -159,6 +160,7 @@ internal object Utils {
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                fallbackImageYearAdapter = dataYearAdapter,
             ),
             artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
                 statusAdapter = artistStatusAdapter,
@@ -172,6 +174,7 @@ internal object Utils {
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                fallbackImageYearAdapter = dataYearAdapter,
                 lastEditTimeAdapter = instantAdapter,
             ),
             artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(
@@ -191,6 +194,7 @@ internal object Utils {
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                fallbackImageYearAdapter = dataYearAdapter,
             ),
             artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
                 linksAdapter = listStringAdapter,
@@ -202,6 +206,7 @@ internal object Utils {
                 merchConfirmedAdapter = listStringAdapter,
                 commissionsAdapter = listStringAdapter,
                 imagesAdapter = listCatalogImageAdapter,
+                fallbackImageYearAdapter = dataYearAdapter,
             ),
             stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
                 tablesAdapter = listStringAdapter,

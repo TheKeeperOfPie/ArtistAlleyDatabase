@@ -33,7 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.utils.kotlin.combineStates
 import com.thekeeperofpie.artistalleydatabase.utils_compose.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.utils_compose.state.Fixed
-import com.thekeeperofpie.artistalleydatabase.utils_compose.stateInForCompose
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -76,43 +75,6 @@ class ArtistDetailsViewModel(
     val showFallbackImages =
         combineStates(requestedShowFallback, settings.showOutdatedCatalogs, Boolean::or)
 
-    private val imagesOrFallback = flow {
-        if (route.images.isNullOrEmpty()) {
-            val fallbackImages = artistEntryDao.getFallbackImages(year, route.id, emptyList())
-            emit( LoadingResult.success(fallbackImages ?: (year to emptyList())))
-        }
-    }.stateInForCompose(
-        if (route.images == null) {
-            LoadingResult.loading()
-        } else {
-            LoadingResult.success(
-                route.year to AlleyImageUtils.getArtistImages(
-                    route.year,
-                    route.images,
-                )
-            )
-        }
-    )
-
-    val catalog =
-        combineStates(
-            showFallbackImages,
-            imagesOrFallback
-        ) { showFallbackImages, imagesOrFallback ->
-            imagesOrFallback.transformResult {
-                val (imagesYear, images) = it
-                if (imagesYear == route.year) {
-                    DetailsScreenCatalog(images, null, null)
-                } else {
-                    DetailsScreenCatalog(
-                        images = images.takeIf { showFallbackImages }.orEmpty(),
-                        showOutdatedCatalogs = showFallbackImages,
-                        fallbackYear = imagesYear,
-                    )
-                }
-            }
-        }
-
     val entry = flowFromSuspend {
         val entryWithStampRallies = artistEntryDao.getEntryWithStampRallies(year, id)
             ?: return@flowFromSuspend null
@@ -126,6 +88,40 @@ class ArtistDetailsViewModel(
         )
     }.flowOn(dispatchers.io)
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val catalog = combineStates(showFallbackImages, entry) { showFallbackImages, entry ->
+        val artist = entry?.artist
+        val fallbackImageYear = artist?.fallbackImageYear
+        when {
+            artist == null -> LoadingResult.loading()
+            artist.images.isNotEmpty() || fallbackImageYear == null ->
+                LoadingResult.success(
+                    DetailsScreenCatalog(
+                        images = AlleyImageUtils.getArtistImages(artist.year, artist.images),
+                        showOutdatedCatalogs = null,
+                        fallbackYear = null,
+                    )
+                )
+            !showFallbackImages ->
+                LoadingResult.success(
+                    DetailsScreenCatalog(
+                        images = emptyList(),
+                        showOutdatedCatalogs = showFallbackImages,
+                        fallbackYear = artist.fallbackImageYear,
+                    )
+                )
+            else -> LoadingResult.success(
+                DetailsScreenCatalog(
+                    images = AlleyImageUtils.getArtistImages(
+                        fallbackImageYear,
+                        artist.fallbackImages
+                    ),
+                    showOutdatedCatalogs = showFallbackImages,
+                    fallbackYear = fallbackImageYear,
+                )
+            )
+        }
+    }
 
     val otherArtists = entry.mapNotNull { it?.artist?.booth?.ifBlank { null } }
         .mapLatest { artistEntryDao.getEntriesByBooth(year, it).filter { it.id != id } }

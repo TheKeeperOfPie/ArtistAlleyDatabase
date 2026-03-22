@@ -138,7 +138,7 @@ class ArtistFormViewModel(
                 baseArtist
             } else {
                 baseArtist.copy(
-                    images = applyDiff(baseArtist.images, artistFormDiff.images),
+                    _images = applyDiff(baseArtist.images, artistFormDiff.images),
                     booth = artistFormDiff.booth ?: baseArtist.booth,
                     name = artistFormDiff.name ?: baseArtist.name,
                     summary = artistFormDiff.summary ?: baseArtist.summary,
@@ -354,7 +354,7 @@ class ArtistFormViewModel(
             it.images.replaceAll(newStampRallyImages)
         }
 
-        val afterArtist = data.artist.copy(images = artistCatalogImages)
+        val afterArtist = data.artist.copy(_images = artistCatalogImages)
         val afterStampRallies = afterRallies.map {
             it.copy(images = stampRallyCatalogImages[it.id].orEmpty())
         }

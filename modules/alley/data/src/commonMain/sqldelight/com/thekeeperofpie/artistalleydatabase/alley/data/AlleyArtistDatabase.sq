@@ -5,6 +5,7 @@ import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.ArtistStatus;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage;
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.SeriesSource;
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.TableMin;
 
@@ -47,6 +48,7 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
+        fallbackImageYear TEXT AS DataYear DEFAULT NULL,
         PRIMARY KEY (id)
     );
 
@@ -83,6 +85,7 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
+        fallbackImageYear TEXT AS DataYear DEFAULT NULL,
         PRIMARY KEY (id)
     );
 
@@ -121,6 +124,7 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
+        fallbackImageYear TEXT AS DataYear DEFAULT NULL,
         editorNotes TEXT,
         lastEditor TEXT,
         lastEditTime TEXT AS Instant,
@@ -177,6 +181,7 @@ CREATE TABLE
         merchConfirmed TEXT AS List<String> NOT NULL,
         exhibitorTagFlags INTEGER NOT NULL DEFAULT 0,
         images TEXT AS List<CatalogImage> NOT NULL,
+        fallbackImageYear TEXT AS DataYear DEFAULT NULL,
         PRIMARY KEY (id)
     );
 
@@ -214,6 +219,7 @@ CREATE TABLE
         merchInferred TEXT AS List<String> NOT NULL,
         merchConfirmed TEXT AS List<String> NOT NULL,
         images TEXT AS List<CatalogImage> NOT NULL,
+        fallbackImageYear TEXT AS DataYear DEFAULT NULL,
         PRIMARY KEY (id)
     );
 

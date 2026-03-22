@@ -25,20 +25,18 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntry2025
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeNyc2025
+import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
 import com.thekeeperofpie.artistalleydatabase.alley.data.toArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.database.ArtistAlleyDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.database.DaoUtils
 import com.thekeeperofpie.artistalleydatabase.alley.database.getBooleanFixed
-import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistInferenceData
 import com.thekeeperofpie.artistalleydatabase.alley.models.ArtistSummary
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.toStampRallyEntry
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
-import com.thekeeperofpie.artistalleydatabase.alley.utils.start
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.AnimeNycExhibitorTags
-import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.CommissionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
@@ -85,6 +83,7 @@ private fun SqlCursor.toArtistWithUserData2023(
                 merchInferred = emptyList(),
                 merchConfirmed = emptyList(),
                 images = getString(7)!!.let(Json::decodeFromString),
+                fallbackImageYear = null,
             )
         ),
         userEntry = ArtistUserEntry(
@@ -119,13 +118,14 @@ private fun SqlCursor.toArtistWithUserData2024(
                 merchInferred = getString(11)!!.let(Json::decodeFromString),
                 merchConfirmed = getString(12)!!.let(Json::decodeFromString),
                 images = getString(13)!!.let(Json::decodeFromString),
+                fallbackImageYear = getString(14)?.let(ColumnAdapters.dataYearAdapter::decode),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2024,
-            favorite = getBooleanFixed(14),
-            ignored = getBooleanFixed(15),
+            favorite = getBooleanFixed(15),
+            ignored = getBooleanFixed(16),
         )
     )
 }
@@ -154,13 +154,14 @@ private fun SqlCursor.toArtistWithUserData2025(
                 merchInferred = getString(12)!!.let(Json::decodeFromString),
                 merchConfirmed = getString(13)!!.let(Json::decodeFromString),
                 images = getString(14)!!.let(Json::decodeFromString),
+                fallbackImageYear = getString(15)?.let(ColumnAdapters.dataYearAdapter::decode),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2025,
-            favorite = getBooleanFixed(15),
-            ignored = getBooleanFixed(16),
+            favorite = getBooleanFixed(16),
+            ignored = getBooleanFixed(17),
         )
     )
 }
@@ -193,13 +194,14 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(
                 merchInferred = getString(12)!!.let(Json::decodeFromString),
                 merchConfirmed = getString(13)!!.let(Json::decodeFromString),
                 images = getString(14)!!.let(Json::decodeFromString),
+                fallbackImageYear = getString(15)?.let(ColumnAdapters.dataYearAdapter::decode),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2024,
-            favorite = getBooleanFixed(15),
-            ignored = getBooleanFixed(16),
+            favorite = getBooleanFixed(16),
+            ignored = getBooleanFixed(17),
         )
     )
 }
@@ -227,13 +229,14 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(
                 merchInferred = getString(12)!!.let(Json::decodeFromString),
                 merchConfirmed = getString(13)!!.let(Json::decodeFromString),
                 images = getString(14)!!.let(Json::decodeFromString),
+                fallbackImageYear = getString(15)?.let(ColumnAdapters.dataYearAdapter::decode),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2025,
-            favorite = getBooleanFixed(15),
-            ignored = getBooleanFixed(16),
+            favorite = getBooleanFixed(16),
+            ignored = getBooleanFixed(17),
         )
     )
 }
@@ -257,6 +260,7 @@ private fun GetEntry2023.toArtistWithUserData() = ArtistWithUserData(
             merchInferred = emptyList(),
             merchConfirmed = emptyList(),
             images = emptyList(),
+            fallbackImageYear = null,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -286,6 +290,7 @@ private fun GetEntry2024.toArtistWithUserData() = ArtistWithUserData(
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
             images = images,
+            fallbackImageYear = fallbackImageYear,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -315,6 +320,7 @@ private fun GetEntry2025.toArtistWithUserData() = ArtistWithUserData(
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
             images = images,
+            fallbackImageYear = fallbackImageYear,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -345,7 +351,8 @@ private fun GetEntryAnimeExpo2026.toArtistWithUserData() = ArtistWithUserData(
             seriesConfirmed = seriesConfirmed,
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
-            images = images,
+            _images = images,
+            fallbackImageYear = fallbackImageYear,
             editorNotes = editorNotes,
             lastEditor = lastEditor,
             lastEditTime = lastEditTime,
@@ -379,6 +386,7 @@ private fun GetEntryAnimeNyc2024.toArtistWithUserData() = ArtistWithUserData(
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
             images = images,
+            fallbackImageYear = fallbackImageYear,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -408,6 +416,7 @@ private fun GetEntryAnimeNyc2025.toArtistWithUserData() = ArtistWithUserData(
             merchInferred = merchInferred,
             merchConfirmed = merchConfirmed,
             images = images,
+            fallbackImageYear = fallbackImageYear,
         )
     ),
     userEntry = ArtistUserEntry(
@@ -436,6 +445,7 @@ fun ArtistEntry2023.toArtistEntry() = ArtistEntry(
         merchInferred = emptyList(),
         merchConfirmed = emptyList(),
         images = images,
+        fallbackImageYear = null,
     )
 )
 
@@ -457,6 +467,7 @@ fun ArtistEntry2024.toArtistEntry() = ArtistEntry(
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
         images = images,
+        fallbackImageYear = fallbackImageYear,
     )
 )
 
@@ -478,6 +489,7 @@ fun ArtistEntry2025.toArtistEntry() = ArtistEntry(
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
         images = images,
+        fallbackImageYear = fallbackImageYear,
     )
 )
 
@@ -501,6 +513,7 @@ fun ArtistEntryAnimeNyc2024.toArtistEntry() = ArtistEntry(
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
         images = images,
+        fallbackImageYear = fallbackImageYear,
     )
 )
 
@@ -522,6 +535,7 @@ fun ArtistEntryAnimeNyc2025.toArtistEntry() = ArtistEntry(
         merchInferred = merchInferred,
         merchConfirmed = merchConfirmed,
         images = images,
+        fallbackImageYear = fallbackImageYear,
     )
 )
 
@@ -572,26 +586,6 @@ class ArtistEntryDao(
                 .awaitAsOneOrNull()
                 ?.toArtistWithUserData()
         }
-
-    suspend fun getFallbackImages(entry: ArtistEntry) =
-        getFallbackImages(entry.year, entry.id, entry.images)
-
-    suspend fun getFallbackImages(
-        year: DataYear,
-        id: String,
-        images: List<CatalogImage>,
-    ): Pair<DataYear, List<com.thekeeperofpie.artistalleydatabase.alley.images.CatalogImage>>? {
-        // This check is required in every use case, so it's moved into this method
-        if (images.isNotEmpty()) return null
-        return DataYear.entries
-            .filter { it.dates.start < year.dates.start }
-            .sortedByDescending { it.dates.start }
-            .firstNotNullOfOrNull { year ->
-                getEntry(year, id)
-                    ?.artist?.images?.takeIf { it.isNotEmpty() }
-                    ?.let { year to AlleyImageUtils.getArtistImages(year, it) }
-            }
-    }
 
     suspend fun getEntriesByBooth(year: DataYear, booth: String) =
         when (year) {
@@ -855,6 +849,7 @@ class ArtistEntryDao(
                 "merchInferred",
                 "merchConfirmed",
                 "images",
+                "fallbackImageYear",
             )
             DataYear.ANIME_EXPO_2025 -> listOf(
                 "id",
@@ -872,6 +867,7 @@ class ArtistEntryDao(
                 "merchInferred",
                 "merchConfirmed",
                 "images",
+                "fallbackImageYear",
             )
             DataYear.ANIME_EXPO_2026 -> listOf(
                 "id",
@@ -893,6 +889,7 @@ class ArtistEntryDao(
                 "merchInferred",
                 "merchConfirmed",
                 "images",
+                "fallbackImageYear",
                 "editorNotes",
                 "lastEditor",
                 "lastEditTime",
@@ -914,6 +911,7 @@ class ArtistEntryDao(
                 "merchInferred",
                 "merchConfirmed",
                 "images",
+                "fallbackImageYear",
             )
             DataYear.ANIME_NYC_2025 -> listOf(
                 "id",
@@ -931,6 +929,7 @@ class ArtistEntryDao(
                 "merchInferred",
                 "merchConfirmed",
                 "images",
+                "fallbackImageYear",
             )
         }.joinToString { "$tableName.$it" }
 

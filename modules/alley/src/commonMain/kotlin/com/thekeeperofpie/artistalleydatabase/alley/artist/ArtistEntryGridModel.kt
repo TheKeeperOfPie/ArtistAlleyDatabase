@@ -19,9 +19,8 @@ class ArtistEntryGridModel(
     val hasMoreSeries: Boolean,
     val merch: List<String>,
     val hasMoreMerch: Boolean,
+    val showOutdatedCatalogs: Boolean,
     override val images: List<CatalogImage>,
-    override val fallbackImages: List<CatalogImage>,
-    override val fallbackYear: DataYear?,
     override val placeholderText: String,
 ) : SearchScreen.SearchEntryModel {
 
@@ -31,6 +30,13 @@ class ArtistEntryGridModel(
     override val imageHeight get() = 0
     override val imageWidthToHeightRatio get() = 1f
 
+    override val fallbackImages: List<CatalogImage> = artist.fallbackImageYear
+        ?.takeIf { showOutdatedCatalogs }
+        ?.let {
+            AlleyImageUtils.getArtistImages(year = it, images = artist.fallbackImages)
+        }.orEmpty()
+    override val fallbackYear: DataYear?
+        get() = artist.fallbackImageYear?.takeIf { showOutdatedCatalogs }
     override var favorite by mutableStateOf(userEntry.favorite)
     override var ignored by mutableStateOf(userEntry.ignored)
 
@@ -43,7 +49,6 @@ class ArtistEntryGridModel(
             showOnlyConfirmedTags: Boolean,
             entry: ArtistWithUserData,
             showOutdatedCatalogs: Boolean, // TODO: Move this to UI layer?
-            fallbackCatalog: Pair<DataYear, List<CatalogImage>>?,
         ): ArtistEntryGridModel {
             val merch = TagUtils.combineForDisplay(
                 inferred = entry.artist.merchInferred,
@@ -71,9 +76,8 @@ class ArtistEntryGridModel(
                 hasMoreSeries = series.size > TagUtils.TAGS_TO_SHOW,
                 merch = merch.take(TagUtils.TAGS_TO_SHOW),
                 hasMoreMerch = merch.size > TagUtils.TAGS_TO_SHOW,
+                showOutdatedCatalogs = showOutdatedCatalogs,
                 images = images,
-                fallbackImages = fallbackCatalog?.second?.takeIf { showOutdatedCatalogs }.orEmpty(),
-                fallbackYear = fallbackCatalog?.first?.takeIf { showOutdatedCatalogs },
                 placeholderText = entry.artist.booth ?: entry.artist.name,
             )
         }

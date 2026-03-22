@@ -64,7 +64,7 @@ class ArtistFormHistoryViewModel(
                 initial = data.initial,
                 // History doesn't support restoring images because older images may have been
                 // deleted to save storage space
-                updated = data.updated.copy(images = data.initial.images),
+                updated = data.updated.copy(_images = data.initial.images),
                 formEntryTimestamp = data.formEntryTimestamp,
             )
         }

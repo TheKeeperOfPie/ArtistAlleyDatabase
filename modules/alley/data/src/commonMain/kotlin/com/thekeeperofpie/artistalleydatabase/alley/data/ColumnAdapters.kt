@@ -77,6 +77,7 @@ object ColumnAdapters {
         merchInferredAdapter = listStringAdapter,
         merchConfirmedAdapter = listStringAdapter,
         imagesAdapter = listCatalogImageAdapter,
+        fallbackImageYearAdapter = dataYearAdapter,
     )
     val artistEntry2025Adapter = ArtistEntry2025.Adapter(
         linksAdapter = listStringAdapter,
@@ -88,6 +89,7 @@ object ColumnAdapters {
         merchConfirmedAdapter = listStringAdapter,
         commissionsAdapter = listStringAdapter,
         imagesAdapter = listCatalogImageAdapter,
+        fallbackImageYearAdapter = dataYearAdapter,
     )
     val artistEntryAnimeExpo2026Adapter = ArtistEntryAnimeExpo2026.Adapter(
         statusAdapter = artistStatusAdapter,
@@ -101,6 +103,7 @@ object ColumnAdapters {
         merchConfirmedAdapter = listStringAdapter,
         commissionsAdapter = listStringAdapter,
         imagesAdapter = listCatalogImageAdapter,
+        fallbackImageYearAdapter = dataYearAdapter,
         lastEditTimeAdapter = instantAdapter,
     )
     val artistEntryAnimeExpo2026ChangelogAdapter = ArtistEntryAnimeExpo2026Changelog.Adapter(
@@ -120,6 +123,7 @@ object ColumnAdapters {
         merchConfirmedAdapter = listStringAdapter,
         commissionsAdapter = listStringAdapter,
         imagesAdapter = listCatalogImageAdapter,
+        fallbackImageYearAdapter = dataYearAdapter,
     )
     val artistEntryAnimeNyc2025Adapter = ArtistEntryAnimeNyc2025.Adapter(
         linksAdapter = listStringAdapter,
@@ -131,6 +135,7 @@ object ColumnAdapters {
         merchConfirmedAdapter = listStringAdapter,
         commissionsAdapter = listStringAdapter,
         imagesAdapter = listCatalogImageAdapter,
+        fallbackImageYearAdapter = dataYearAdapter,
     )
     val stampRallyEntry2023Adapter = StampRallyEntry2023.Adapter(
         tablesAdapter = listStringAdapter,

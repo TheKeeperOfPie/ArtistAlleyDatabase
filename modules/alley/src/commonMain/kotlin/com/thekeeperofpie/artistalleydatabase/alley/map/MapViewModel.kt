@@ -355,7 +355,6 @@ class MapViewModel(
                 showOnlyConfirmedTags = false, // This shouldn't matter here
                 entry = it,
                 showOutdatedCatalogs = false,
-                fallbackCatalog = artistEntryDao.getFallbackImages(it.artist),
             )
         }
 
