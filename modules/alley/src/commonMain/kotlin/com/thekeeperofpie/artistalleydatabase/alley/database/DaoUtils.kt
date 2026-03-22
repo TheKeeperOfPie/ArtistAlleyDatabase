@@ -155,24 +155,19 @@ object DaoUtils {
         additionalSelectStatement: String = "",
         additionalJoinStatement: String = "",
         orderBy: String = "ORDER BY rank",
-        randomSeed: Int? = null,
         andStatement: String = "",
     ): String {
-        val randomOrderIndex = randomSeed?.let {
-            (", substr($ftsTableName.counter * 0.$randomSeed," +
-                    " length($ftsTableName.counter) + 2) as orderIndex")
-        }.orEmpty()
         return """
             SELECT $select FROM (
                 SELECT * FROM(
-                    SELECT $ftsTableName.$idField as idAsKey$additionalSelectStatement, rank as rank$randomOrderIndex
+                    SELECT $ftsTableName.$idField as idAsKey$additionalSelectStatement, rank as rank
                     FROM $ftsTableName
                     WHERE $ftsTableName MATCH $matchQuery
                     ORDER BY rank
                 )
                 UNION
                 SELECT * FROM(
-                    SELECT $ftsTableName.$idField$additionalSelectStatement, 999$randomOrderIndex
+                    SELECT $ftsTableName.$idField$additionalSelectStatement, 999
                     FROM $ftsTableName
                     WHERE (
                         $likeStatement

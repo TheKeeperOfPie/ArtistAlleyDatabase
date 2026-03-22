@@ -300,8 +300,6 @@ class SeriesEntryDao(
             idField = "id",
             likeOrderBy = "",
             orderBy = sortSuffix,
-            randomSeed = randomSeed
-                .takeIf { seriesFilterParams.sortOption == SeriesSearchSortOption.RANDOM },
             matchQuery = matchQuery,
             likeStatement = likeStatement,
             additionalSelectStatement = additionalSelectStatement,

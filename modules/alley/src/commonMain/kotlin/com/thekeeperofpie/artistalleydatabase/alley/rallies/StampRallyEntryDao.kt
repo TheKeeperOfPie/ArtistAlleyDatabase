@@ -647,8 +647,6 @@ class StampRallyEntryDao(
             likeStatement = likeStatement,
             additionalJoinStatement = joinStatement,
             orderBy = sortSuffix,
-            randomSeed = searchQuery.randomSeed
-                .takeIf { filterParams.sortOption == StampRallySearchSortOption.RANDOM },
             andStatement = andStatement,
         )
 

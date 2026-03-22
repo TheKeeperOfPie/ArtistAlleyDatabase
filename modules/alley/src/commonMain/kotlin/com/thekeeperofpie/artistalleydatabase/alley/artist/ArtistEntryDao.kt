@@ -1003,8 +1003,6 @@ class ArtistEntryDao(
             likeStatement = likeStatement,
             additionalJoinStatement = joinStatement,
             orderBy = sortSuffix,
-            randomSeed = searchQuery.randomSeed
-                .takeIf { filterParams.sortOption == ArtistSearchSortOption.RANDOM },
             andStatement = andStatement,
         )
 
