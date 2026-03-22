@@ -87,7 +87,11 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val inputFolder: DirectoryProperty
+    abstract val inputsFolder: DirectoryProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val imagesFolder: DirectoryProperty
 
     @get:OutputDirectory
     abstract val outputResources: DirectoryProperty
@@ -96,7 +100,8 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     abstract val outputSource: DirectoryProperty
 
     init {
-        inputFolder.convention(layout.projectDirectory.dir("inputs"))
+        inputsFolder.convention(layout.projectDirectory.dir("inputs"))
+        imagesFolder.convention(layout.projectDirectory.dir("images"))
         outputResources.convention(layout.buildDirectory.dir("generated/composeResources"))
         outputSource.convention(layout.buildDirectory.dir("generated/source"))
     }
@@ -104,7 +109,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
     @Suppress("NewApi")
     @TaskAction
     fun process() {
-        if (!inputFolder.get().asFile.exists()) return
+        if (!inputsFolder.get().asFile.exists()) return
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1).use {
             val imageCacheDir = temporaryDir.resolve("imageCache").apply(File::mkdirs)
             val dispatcher = it.asCoroutineDispatcher()
@@ -118,7 +123,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
                     "animeNyc2024",
                     "animeNyc2025"
                 ).forEach {
-                    val processed = inputFolder.dir("images/$it/processed").get().asFile
+                    val processed = imagesFolder.dir("$it/processed").get().asFile
                     if (processed.exists()) {
                         val output = outputResources.dir("files/$it").get().asFile
                             .apply { mkdirs() }
@@ -220,7 +225,7 @@ abstract class ArtistAlleyProcessInputsTask : DefaultTask() {
             "${index.toString().padStart(2, '0')}-$hash.webp"
         }
     ): List<CatalogFolder> {
-        val input = inputFolder.dir("images/$path").get().asFile
+        val input = imagesFolder.dir(path).get().asFile
         val output = outputResources.dir("files/$path").get().asFile
         return processFolders(
             imageCacheDir = imageCacheDir,
