@@ -151,7 +151,7 @@ object DaoUtils {
         likeOrderBy: String,
         matchQuery: String,
         likeStatement: String,
-        select: String = "$tableName.*",
+        select: String,
         additionalSelectStatement: String = "",
         additionalJoinStatement: String = "",
         orderBy: String = "ORDER BY rank",

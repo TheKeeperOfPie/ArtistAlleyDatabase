@@ -73,25 +73,25 @@ private fun SqlCursor.toArtistWithUserData2023(
                 id = artistId,
                 booth = getString(1),
                 name = getString(2)!!,
-                summary = getString(4),
-                socialLinks = getString(5)!!.let(Json::decodeFromString),
+                summary = getString(3),
+                socialLinks = getString(4)!!.let(Json::decodeFromString),
                 storeLinks = emptyList(),
-                catalogLinks = getString(6)!!.let(Json::decodeFromString),
-                driveLink = getString(7),
+                catalogLinks = getString(5)!!.let(Json::decodeFromString),
+                driveLink = getString(6),
                 notes = null,
                 commissions = emptyList(),
                 seriesInferred = emptyList(),
                 seriesConfirmed = emptyList(),
                 merchInferred = emptyList(),
                 merchConfirmed = emptyList(),
-                images = getString(8)!!.let(Json::decodeFromString),
+                images = getString(7)!!.let(Json::decodeFromString),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2023,
-            favorite = getBooleanFixed(9),
-            ignored = getBooleanFixed(10),
+            favorite = getBooleanFixed(8),
+            ignored = getBooleanFixed(9),
         )
     )
 }
@@ -145,23 +145,22 @@ private fun SqlCursor.toArtistWithUserData2025(
                 socialLinks = getString(4)!!.let(Json::decodeFromString),
                 storeLinks = getString(5)!!.let(Json::decodeFromString),
                 catalogLinks = getString(6)!!.let(Json::decodeFromString),
-                // Skip 2 for link flags
-                driveLink = getString(9),
-                notes = getString(10),
-                commissions = getString(11)!!.let(Json::decodeFromString),
+                driveLink = getString(7),
+                notes = getString(8),
+                commissions = getString(9)!!.let(Json::decodeFromString),
                 // Skip 1 for commission flags
-                seriesInferred = getString(13)!!.let(Json::decodeFromString),
-                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-                merchInferred = getString(15)!!.let(Json::decodeFromString),
-                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-                images = getString(17)!!.let(Json::decodeFromString),
+                seriesInferred = getString(10)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(11)!!.let(Json::decodeFromString),
+                merchInferred = getString(12)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(13)!!.let(Json::decodeFromString),
+                images = getString(14)!!.let(Json::decodeFromString),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_EXPO_2025,
-            favorite = getBooleanFixed(18),
-            ignored = getBooleanFixed(19),
+            favorite = getBooleanFixed(15),
+            ignored = getBooleanFixed(16),
         )
     )
 }
@@ -186,23 +185,21 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2024(
                 socialLinks = getString(4)!!.let(Json::decodeFromString),
                 storeLinks = getString(5)!!.let(Json::decodeFromString),
                 catalogLinks = getString(6)!!.let(Json::decodeFromString),
-                // Skip 2 for link flags
-                driveLink = getString(9),
-                notes = getString(10),
-                commissions = getString(11)!!.let(Json::decodeFromString),
-                // Skip 1 for commission flags
-                seriesInferred = getString(13)!!.let(Json::decodeFromString),
-                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-                merchInferred = getString(15)!!.let(Json::decodeFromString),
-                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-                images = getString(17)!!.let(Json::decodeFromString),
+                driveLink = getString(7),
+                notes = getString(8),
+                commissions = getString(9)!!.let(Json::decodeFromString),
+                seriesInferred = getString(10)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(11)!!.let(Json::decodeFromString),
+                merchInferred = getString(12)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(13)!!.let(Json::decodeFromString),
+                images = getString(14)!!.let(Json::decodeFromString),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2024,
-            favorite = getBooleanFixed(18),
-            ignored = getBooleanFixed(19),
+            favorite = getBooleanFixed(15),
+            ignored = getBooleanFixed(16),
         )
     )
 }
@@ -222,24 +219,21 @@ private fun SqlCursor.toArtistWithUserDataAnimeNyc2025(
                 socialLinks = getString(4)!!.let(Json::decodeFromString),
                 storeLinks = getString(5)!!.let(Json::decodeFromString),
                 catalogLinks = getString(6)!!.let(Json::decodeFromString),
-                // Skip 2 for link flags
-                driveLink = getString(9),
-                notes = getString(10),
-                commissions = getString(11)!!.let(Json::decodeFromString),
-                // Skip 1 for commission flags
-                seriesInferred = getString(13)!!.let(Json::decodeFromString),
-                seriesConfirmed = getString(14)!!.let(Json::decodeFromString),
-                merchInferred = getString(15)!!.let(Json::decodeFromString),
-                merchConfirmed = getString(16)!!.let(Json::decodeFromString),
-                // Skip 1 for exhibitor tag flags
-                images = getString(18)!!.let(Json::decodeFromString),
+                driveLink = getString(7),
+                notes = getString(8),
+                commissions = getString(9)!!.let(Json::decodeFromString),
+                seriesInferred = getString(10)!!.let(Json::decodeFromString),
+                seriesConfirmed = getString(11)!!.let(Json::decodeFromString),
+                merchInferred = getString(12)!!.let(Json::decodeFromString),
+                merchConfirmed = getString(13)!!.let(Json::decodeFromString),
+                images = getString(14)!!.let(Json::decodeFromString),
             )
         ),
         userEntry = ArtistUserEntry(
             artistId = artistId,
             dataYear = DataYear.ANIME_NYC_2025,
-            favorite = getBooleanFixed(19),
-            ignored = getBooleanFixed(20),
+            favorite = getBooleanFixed(15),
+            ignored = getBooleanFixed(16),
         )
     )
 }
@@ -835,6 +829,111 @@ class ArtistEntryDao(
         val andStatement = andClauses.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "WHERE ", separator = "\nAND ").orEmpty()
 
+        val selectFields = when (year) {
+            DataYear.ANIME_EXPO_2023 -> listOf(
+                "id",
+                "booth",
+                "name",
+                "summary",
+                "links",
+                "catalogLinks",
+                "driveLink",
+                "images",
+            )
+            DataYear.ANIME_EXPO_2024 -> listOf(
+                "id",
+                "booth",
+                "name",
+                "summary",
+                "links",
+                "storeLinks",
+                "catalogLinks",
+                "driveLink",
+                "notes",
+                "seriesInferred",
+                "seriesConfirmed",
+                "merchInferred",
+                "merchConfirmed",
+                "images",
+            )
+            DataYear.ANIME_EXPO_2025 -> listOf(
+                "id",
+                "booth",
+                "name",
+                "summary",
+                "links",
+                "storeLinks",
+                "catalogLinks",
+                "driveLink",
+                "notes",
+                "commissions",
+                "seriesInferred",
+                "seriesConfirmed",
+                "merchInferred",
+                "merchConfirmed",
+                "images",
+            )
+            DataYear.ANIME_EXPO_2026 -> listOf(
+                "id",
+                "status",
+                "booth",
+                "name",
+                "summary",
+                "socialLinks",
+                "storeLinks",
+                "portfolioLinks",
+                "catalogLinks",
+                "linkFlags",
+                "linkFlags2",
+                "notes",
+                "commissions",
+                "commissionFlags",
+                "seriesInferred",
+                "seriesConfirmed",
+                "merchInferred",
+                "merchConfirmed",
+                "images",
+                "editorNotes",
+                "lastEditor",
+                "lastEditTime",
+                "verifiedArtist",
+            )
+            DataYear.ANIME_NYC_2024 -> listOf(
+                "id",
+                "booth",
+                "name",
+                "summary",
+                "links",
+                "storeLinks",
+                "catalogLinks",
+                "driveLink",
+                "notes",
+                "commissions",
+                "seriesInferred",
+                "seriesConfirmed",
+                "merchInferred",
+                "merchConfirmed",
+                "images",
+            )
+            DataYear.ANIME_NYC_2025 -> listOf(
+                "id",
+                "booth",
+                "name",
+                "summary",
+                "links",
+                "storeLinks",
+                "catalogLinks",
+                "driveLink",
+                "notes",
+                "commissions",
+                "seriesInferred",
+                "seriesConfirmed",
+                "merchInferred",
+                "merchConfirmed",
+                "images",
+            )
+        }.joinToString { "$tableName.$it" }
+
         if (query.isEmpty()) {
             val countStatement = """
                 SELECT COUNT(*)
@@ -843,7 +942,7 @@ class ArtistEntryDao(
                 $andStatement
             """.trimIndent()
             val statement = """
-                SELECT $tableName.*$selectSuffix
+                SELECT $selectFields$selectSuffix
                 FROM $tableName
                 ${joinStatement.replace("idAsKey", "$tableName.id")}
                 $andStatement
@@ -898,7 +997,7 @@ class ArtistEntryDao(
         val statement = DaoUtils.buildSearchStatement(
             tableName = tableName,
             ftsTableName = "${tableName}_fts",
-            select = "$tableName.*$selectSuffix",
+            select = "$selectFields$selectSuffix",
             idField = "id",
             likeOrderBy = "",
             matchQuery = matchQuery,

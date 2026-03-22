@@ -69,6 +69,14 @@ class MerchEntryDao(
         database = database::database,
     )
 
+    private val selectFields = listOf(
+        "name",
+        "uuid",
+        "notes",
+        "categories",
+        "yearFlags",
+    ).joinToString { "merchEntry.$it" }
+
     fun getMerchById(id: String) = flowFromSuspend { merchDao() }
         .flatMapLatest {
             it.getMerchById(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO)
@@ -102,7 +110,7 @@ class MerchEntryDao(
             WHERE $favoritePrefix $yearFilter
         """.trimIndent()
         val statement = """
-            SELECT merchEntry.*, merchUserEntry.favorite FROM merchEntry
+            SELECT $selectFields, merchUserEntry.favorite FROM merchEntry
             $joinStatement
             WHERE $favoritePrefix $yearFilter
             ORDER BY name COLLATE NOCASE
@@ -165,7 +173,7 @@ class MerchEntryDao(
         val statement = DaoUtils.buildSearchStatement(
             tableName = "merchEntry",
             ftsTableName = "merchEntry_fts",
-            select = "merchEntry.*, merchUserEntry.favorite",
+            select = "$selectFields, merchUserEntry.favorite",
             idField = "name",
             likeOrderBy = "ORDER BY merchEntry_fts.name COLLATE NOCASE",
             matchQuery = matchQuery,

@@ -525,6 +525,60 @@ class StampRallyEntryDao(
                 "ORDER BY $tableName.totalCost $ascending NULLS LAST"
         }
         val selectSuffix = ", stampRallyUserEntry.favorite, stampRallyUserEntry.ignored"
+        val selectFields = when (year) {
+            DataYear.ANIME_EXPO_2023 -> listOf(
+                "id",
+                "fandom",
+                "hostTable",
+                "tables",
+                "links",
+                "images",
+            )
+            DataYear.ANIME_EXPO_2024 -> listOf(
+                "id",
+                "fandom",
+                "hostTable",
+                "tables",
+                "links",
+                "tableMin",
+                "totalCost",
+                "prizeLimit",
+                "notes",
+                "images",
+            )
+            DataYear.ANIME_EXPO_2025 -> listOf(
+                "id",
+                "fandom",
+                "hostTable",
+                "tables",
+                "links",
+                "tableMin",
+                "totalCost",
+                "prize",
+                "prizeLimit",
+                "series",
+                "notes",
+                "images",
+                "confirmed",
+            )
+            DataYear.ANIME_EXPO_2026 -> listOf(
+                "id",
+                "fandom",
+                "tables",
+                "links",
+                "tableMin",
+                "totalCost",
+                "prize",
+                "prizeLimit",
+                "series",
+                "merch",
+                "notes",
+                "images",
+            )
+            DataYear.ANIME_NYC_2024,
+            DataYear.ANIME_NYC_2025,
+                -> throw IllegalStateException("Cannot load rallies for $year")
+        }.joinToString { "$tableName.$it" }
 
         if (query.isEmpty()) {
             val andStatement = andClauses.takeIf { it.isNotEmpty() }
@@ -538,7 +592,7 @@ class StampRallyEntryDao(
                 $andStatement
                 """.trimIndent()
             val statement = """
-                SELECT $tableName.*$selectSuffix
+                SELECT $selectFields$selectSuffix
                 FROM $tableName
                 LEFT OUTER JOIN stampRallyUserEntry
                 ON $tableName.id = stampRallyUserEntry.stampRallyId
@@ -586,7 +640,7 @@ class StampRallyEntryDao(
         val statement = DaoUtils.buildSearchStatement(
             tableName = tableName,
             ftsTableName = "${tableName}_fts",
-            select = "$tableName.*$selectSuffix",
+            select = "$selectFields$selectSuffix",
             idField = "id",
             likeOrderBy = "",
             matchQuery = matchQuery,

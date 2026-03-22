@@ -97,6 +97,32 @@ class SeriesEntryDao(
         database = database::database,
     )
 
+    private val selectFields = listOf(
+        "id",
+        "uuid",
+        "notes",
+        "aniListId",
+        "aniListType",
+        "wikipediaId",
+        "source",
+        "titlePreferred",
+        "titleEnglish",
+        "titleRomaji",
+        "titleNative",
+        "synonyms",
+        "link",
+        "inferred2024",
+        "inferred2025",
+        "inferredAnimeExpo2026",
+        "inferredAnimeNyc2024",
+        "inferredAnimeNyc2025",
+        "confirmed2024",
+        "confirmed2025",
+        "confirmedAnimeExpo2026",
+        "confirmedAnimeNyc2024",
+        "confirmedAnimeNyc2025",
+    ).joinToString { "seriesEntry.$it" }
+
     suspend fun getSeriesIds() = seriesDao().getSeriesAndImageIds().awaitAsList()
 
     fun getSeriesById(id: String): Flow<SeriesInfo> =
@@ -106,7 +132,9 @@ class SeriesEntryDao(
 
     fun getSeriesByIdWithUserData(id: String): Flow<SeriesWithUserData> =
         flowFromSuspend { seriesDao() }
-            .flatMapLatest { it.getSeriesByIdWithUserData(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO) }
+            .flatMapLatest {
+                it.getSeriesByIdWithUserData(id).asFlow().mapToOneOrNull(PlatformDispatchers.IO)
+            }
             .mapLatest { it?.toSeriesWithUserData() ?: fallbackSeriesWithUserData(id) }
 
     suspend fun getSeriesByIds(ids: List<String>): List<SeriesInfo> {
@@ -230,7 +258,7 @@ class SeriesEntryDao(
                 $whereStatement
             """.trimIndent()
             val statement = """
-                SELECT seriesEntry.*, seriesUserEntry.favorite
+                SELECT $selectFields, seriesUserEntry.favorite
                 FROM seriesEntry
                 $joinStatement
                 $whereStatement
@@ -268,7 +296,7 @@ class SeriesEntryDao(
         val statement = DaoUtils.buildSearchStatement(
             tableName = "seriesEntry",
             ftsTableName = "seriesEntry_fts",
-            select = "seriesEntry.*, seriesUserEntry.favorite",
+            select = "$selectFields, seriesUserEntry.favorite",
             idField = "id",
             likeOrderBy = "",
             orderBy = sortSuffix,
@@ -307,6 +335,7 @@ class SeriesEntryDao(
         val likeStatement = targetColumns.joinToString(separator = "\nOR ") {
             "(${DaoUtils.makeLikeAndQuery("seriesEntry_fts.$it", queries)})"
         }
+
         val statement = DaoUtils.buildSearchStatement(
             tableName = "seriesEntry",
             ftsTableName = "seriesEntry_fts",
@@ -314,6 +343,7 @@ class SeriesEntryDao(
             likeOrderBy = "ORDER BY rank",
             matchQuery = matchQuery,
             likeStatement = likeStatement,
+            select = selectFields,
         ) + " LIMIT 10"
 
         val database = database()
