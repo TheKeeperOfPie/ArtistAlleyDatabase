@@ -138,31 +138,33 @@ fun SqlCursor.toStampRallyWithUserData2025(): StampRallyWithUserData {
 
 fun SqlCursor.toStampRallyWithUserDataAnimeExpo2026(): StampRallyWithUserData {
     val stampRallyId = getString(0)!!
+    val tables: List<String> = getString(2)!!.let(Json::decodeFromString)
+    val links: List<String> = getString(3)!!.let(Json::decodeFromString)
     return StampRallyWithUserData(
         stampRally = StampRallyDatabaseEntry(
             year = DataYear.ANIME_EXPO_2026,
             id = stampRallyId,
             fandom = getString(1)!!,
-            hostTable = getString(2)!!,
-            tables = getString(3)!!.let(Json::decodeFromString),
-            links = getString(4)!!.let(Json::decodeFromString),
-            tableMin = getLong(5)?.toInt()?.let(TableMin::parseFromValue),
-            totalCost = getLong(6),
-            prize = getString(7),
-            prizeLimit = getLong(8),
-            series = getString(9)!!.let(Json::decodeFromString),
-            merch = getString(10)!!.let(Json::decodeFromString),
-            notes = getString(11),
-            images = getString(12)!!.let(Json::decodeFromString),
-            confirmed = getBooleanFixed(13),
+            hostTable = tables.firstOrNull().orEmpty(),
+            tables = tables,
+            links = links,
+            tableMin = getLong(4)?.toInt()?.let(TableMin::parseFromValue),
+            totalCost = getLong(5),
+            prize = getString(6),
+            prizeLimit = getLong(7),
+            series = getString(8)!!.let(Json::decodeFromString),
+            merch = getString(9)!!.let(Json::decodeFromString),
+            notes = getString(10),
+            images = getString(11)!!.let(Json::decodeFromString),
+            confirmed = links.isNotEmpty(),
             editorNotes = null,
             lastEditor = null,
             lastEditTime = null,
         ),
         userEntry = StampRallyUserEntry(
             stampRallyId = stampRallyId,
-            favorite = getBooleanFixed(14),
-            ignored = getBooleanFixed(15),
+            favorite = getBooleanFixed(12),
+            ignored = getBooleanFixed(13),
         )
     )
 }
