@@ -43,8 +43,11 @@ private val SavedStateConfig = SavedStateConfiguration {
 }
 
 @Composable
-fun rememberAlleyNavStack(): AlleyNavStack {
-    val twoWayStack = rememberTwoWayStack(AlleyDestination.Home, SavedStateConfig)
+fun rememberAlleyNavStack(vararg initialDestinations: AlleyDestination): AlleyNavStack {
+    val twoWayStack = rememberTwoWayStack(
+        *initialDestinations.ifEmpty { arrayOf(AlleyDestination.Home) },
+        savedStateConfiguration = SavedStateConfig,
+    )
     return remember(twoWayStack) { AlleyNavStack(twoWayStack) }
 }
 
@@ -64,6 +67,10 @@ class AlleyNavStack(
                 forward = emptyList(),
             )
         )
+
+    init {
+        updateInfo()
+    }
 
     fun calculateBackStack(navEntries: List<NavEntry<NavKey>>) =
         navEntries.take(twoWayStack.navBackStack.size)

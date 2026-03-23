@@ -104,7 +104,8 @@ private fun Content(graph: ArtistAlleyWebGraph) {
                 AppThemeSetting.AUTO,
                 AppThemeSetting.LIGHT,
                 AppThemeSetting.DARK,
-                AppThemeSetting.BLACK -> "#EE3C35"
+                AppThemeSetting.BLACK,
+                    -> "#EE3C35"
                 AppThemeSetting.MIKU -> "#00DBE4"
             }
 
@@ -149,7 +150,14 @@ private fun Content(graph: ArtistAlleyWebGraph) {
                 globalSkipWaitingBridge.onComposeReady(updateShowWaiting)
             }
 
-            val navStack = rememberAlleyNavStack()
+            val route = AlleyDestination.parseRoute(window.location.pathname)
+            val navStack = rememberAlleyNavStack(
+                *if (route == null || route == AlleyDestination.Home) {
+                    arrayOf(AlleyDestination.Home)
+                } else {
+                    arrayOf(AlleyDestination.Home, route)
+                }
+            )
             Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) {
                 ArtistAlleyAppScreen(
                     graph = graph,

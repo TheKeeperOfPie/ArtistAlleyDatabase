@@ -1,3 +1,4 @@
+
 import dev.zacsweers.metro.gradle.DelicateMetroGradleApi
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -455,6 +456,12 @@ tasks.register("webRelease") {
                     .replace("webpackChunkalley_form", "webpackChunkalley_app")
                 it.writeText(edited)
             }
+
+        val appJs = folder.resolve("alley-app.js")
+        val appJsEdited = appJs.readText()
+            .replace("\"originWasmAlley-app.js\"", "\"/originWasmAlley-app.js\"")
+            .replace("\"originJsAlley-app.js\"", "\"/originJsAlley-app.js\"")
+        appJs.writeText(appJsEdited)
 
         val publicPath = folder.resolve("public").apply { mkdir() }.toPath()
         val filesToKeepInRoot = setOf(

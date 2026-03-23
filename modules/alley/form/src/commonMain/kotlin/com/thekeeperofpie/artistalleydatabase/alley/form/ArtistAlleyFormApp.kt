@@ -50,7 +50,8 @@ private val SavedStateConfig = SavedStateConfiguration {
 }
 
 @Composable
-fun rememberFormTwoWayStack() = rememberTwoWayStack(AlleyFormDestination.Home, SavedStateConfig)
+fun rememberFormTwoWayStack() =
+    rememberTwoWayStack(AlleyFormDestination.Home, savedStateConfiguration = SavedStateConfig)
 
 @Composable
 fun ArtistAlleyFormApp(

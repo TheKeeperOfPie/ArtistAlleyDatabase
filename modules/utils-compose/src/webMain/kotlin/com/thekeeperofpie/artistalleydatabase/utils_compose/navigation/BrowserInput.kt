@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.utils_compose.navigation
 import androidx.navigation3.runtime.NavKey
 import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventInput
-import com.thekeeperofpie.artistalleydatabase.utils.ConsoleLogger
 import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope

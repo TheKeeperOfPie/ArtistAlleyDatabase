@@ -131,7 +131,6 @@ private suspend fun fetchCacheFirst(
 ): Response {
     val cached = self.caches.match(cacheRequest).await()
     return if (cached is Response) {
-        console.log("Cache hit", path)
         if (cached.redirected) {
             Response(cached.body, object : ResponseInit {
                 override var headers = cached.headers

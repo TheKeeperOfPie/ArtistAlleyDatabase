@@ -16,12 +16,12 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 
 @Composable
 fun rememberTwoWayStack(
-    initialDestination: NavKey,
+    vararg initialDestinations: NavKey,
     savedStateConfiguration: SavedStateConfiguration,
 ): TwoWayStack {
     val backStack = rememberNavBackStack(
         savedStateConfiguration,
-        initialDestination,
+        *initialDestinations,
     )
     val forwardStack = rememberNavBackStack(savedStateConfiguration)
     return remember(backStack, forwardStack) {

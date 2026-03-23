@@ -64,7 +64,7 @@ private val SavedStateConfig = SavedStateConfiguration {
 fun rememberArtistAlleyEditTopLevelStacks(): ArtistAlleyEditTopLevelStacks {
     val stacks = TopLevelStackKey.entries.map {
         key(it) {
-            rememberTwoWayStack(it.initialDestination, SavedStateConfig)
+            rememberTwoWayStack(it.initialDestination, savedStateConfiguration = SavedStateConfig)
         }
     }
     val topLevelStackIndex = rememberSaveable { mutableIntStateOf(0) }
