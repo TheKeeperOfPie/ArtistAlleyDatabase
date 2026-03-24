@@ -1,0 +1,13 @@
+{
+    "name": "artist-alley-discord-bot",
+    "main": "ArtistAlleyDatabase-modules-alley-discord.mjs",
+    "compatibility_date": "2026-03-10",
+    "observability": {
+        "enabled": true
+    },
+    "vars": {
+        "DISCORD_BOT_APP_ID": "discordBotAppID",
+        "DISCORD_BOT_PUBLIC_KEY": "discordBotPublicKey",
+        "DISCORD_BOT_TOKEN": "discordBotToken"
+    }
+}

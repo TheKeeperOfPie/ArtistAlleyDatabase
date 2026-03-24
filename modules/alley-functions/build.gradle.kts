@@ -73,7 +73,6 @@ artifacts {
     add(distribution.name, tasks.named("jsProductionExecutableCompileSync"))
 }
 
-
 val isWasmDebug = project.hasProperty("wasmDebug")
 
 buildkonfig {

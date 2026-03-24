@@ -97,6 +97,7 @@ include(
     ":modules:alley:user",
     ":modules:alley-app",
     ":modules:alley-app:service-worker",
+    ":modules:alley-discord",
     ":modules:alley-edit",
     ":modules:alley-form",
     ":modules:alley-functions",

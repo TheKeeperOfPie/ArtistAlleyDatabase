@@ -1232,6 +1232,11 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
+discord-interactions@4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/discord-interactions/-/discord-interactions-4.4.0.tgz#8dfb7f1a985ba7649943fac9c7f918bca7300111"
+  integrity sha512-jjJx8iwAeJcj8oEauV43fue9lNqkf38fy60aSs2+G8D1nJmDxUIrk08o3h0F3wgwuBWWJUZO+X/VgfXsxpCiJA==
+
 dns-packet@^5.2.2:
   version "5.6.1"
   resolved "https://registry.yarnpkg.com/dns-packet/-/dns-packet-5.6.1.tgz#ae888ad425a9d1478a0674256ab866de1012cf2f"
