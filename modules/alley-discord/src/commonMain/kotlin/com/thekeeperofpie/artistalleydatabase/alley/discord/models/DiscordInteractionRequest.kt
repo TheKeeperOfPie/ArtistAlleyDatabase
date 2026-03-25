@@ -7,5 +7,6 @@ internal data class DiscordInteractionRequest(
     val type: InteractionType? = null,
     val id: String,
     val token: String,
+    val data: InteractionRequestData,
 )
 

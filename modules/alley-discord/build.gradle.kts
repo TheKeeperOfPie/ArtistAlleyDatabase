@@ -89,8 +89,11 @@ tasks.register("webRelease") {
         val wranglerJson = folder.resolve("wrangler.jsonc")
         val wranglerJsonEdited = wranglerJson.readText()
             .replace("discordBotAppID", properties.getProperty("discordBotAppID"))
+            .replace("discordBotClientSecret", properties.getProperty("discordBotClientSecret"))
             .replace("discordBotPublicKey", properties.getProperty("discordBotPublicKey"))
             .replace("discordBotToken", properties.getProperty("discordBotToken"))
+            .replace("discordBotRedirectUrl", properties.getProperty("discordBotRedirectUrl"))
+            .replace("discordBotVerifyUrl", properties.getProperty("discordBotVerifyUrl"))
         wranglerJson.writeText(wranglerJsonEdited)
     }
 }

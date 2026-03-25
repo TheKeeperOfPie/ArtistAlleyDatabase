@@ -32,16 +32,16 @@ internal abstract class IntEnumSerializer<T : Enum<T>>(
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-internal abstract class NullableIntEnumSerializer<T : Enum<T>>(
+internal abstract class NullableStringEnumSerializer<T : Enum<T>>(
     private val entries: EnumEntries<T>,
     serialName: String,
-    private val value: (T) -> Int,
+    private val value: (T) -> String,
 ) : KSerializer<T?> {
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor(serialName, PrimitiveKind.INT)
+        PrimitiveSerialDescriptor(serialName, PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): T? {
-        val value = decoder.decodeInt()
+        val value = decoder.decodeString()
         return entries.find { value(it) == value }
     }
 
@@ -52,7 +52,7 @@ internal abstract class NullableIntEnumSerializer<T : Enum<T>>(
         if (value == null) {
             encoder.encodeNull()
         } else {
-            encoder.encodeInt(value(value))
+            encoder.encodeString(value(value))
         }
     }
 }

@@ -7,7 +7,10 @@
     },
     "vars": {
         "DISCORD_BOT_APP_ID": "discordBotAppID",
+        "DISCORD_BOT_CLIENT_SECRET": "discordBotClientSecret",
         "DISCORD_BOT_PUBLIC_KEY": "discordBotPublicKey",
-        "DISCORD_BOT_TOKEN": "discordBotToken"
+        "DISCORD_BOT_TOKEN": "discordBotToken",
+        "DISCORD_BOT_REDIRECT_URL": "discordBotRedirectUrl",
+        "DISCORD_BOT_VERIFY_URL": "discordBotVerifyUrl"
     }
 }

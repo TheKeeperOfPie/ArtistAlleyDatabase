@@ -7,7 +7,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine
 import kotlin.js.Promise
 
-external interface EventContext {
+internal external interface EventContext {
     val request: Request
     val env: Env
     val functionPath: String?
@@ -15,8 +15,11 @@ external interface EventContext {
 
 external interface Env {
     val DISCORD_BOT_APP_ID: String
+    val DISCORD_BOT_CLIENT_SECRET: String
     val DISCORD_BOT_PUBLIC_KEY: String
     val DISCORD_BOT_TOKEN: String
+    val DISCORD_BOT_REDIRECT_URL: String
+    val DISCORD_BOT_VERIFY_URL: String
 }
 
 internal fun <T> promise(block: suspend () -> T) =

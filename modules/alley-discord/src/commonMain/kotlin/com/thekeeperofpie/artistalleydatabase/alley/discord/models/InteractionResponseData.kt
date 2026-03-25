@@ -1,8 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord.models
 
+import com.thekeeperofpie.artistalleydatabase.alley.discord.MessageFlags
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class InteractionResponseData(
-    val content: String? = null,
+internal data class InteractionResponseData(
+    val flags: MessageFlags? = null,
 )
