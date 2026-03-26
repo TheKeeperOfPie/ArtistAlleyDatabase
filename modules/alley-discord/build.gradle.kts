@@ -26,6 +26,8 @@ kotlin {
             implementation("com.thekeeperofpie.artistalleydatabase.shared:shared:0.0.1")
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.whyoleg.cryptography.core)
+            implementation(libs.whyoleg.cryptography.provider.optimal)
             implementation(npm("discord-interactions", "4.4.0"))
         }
     }
@@ -89,11 +91,10 @@ tasks.register("webRelease") {
         val wranglerJson = folder.resolve("wrangler.jsonc")
         val wranglerJsonEdited = wranglerJson.readText()
             .replace("discordBotAppID", properties.getProperty("discordBotAppID"))
-            .replace("discordBotClientSecret", properties.getProperty("discordBotClientSecret"))
             .replace("discordBotPublicKey", properties.getProperty("discordBotPublicKey"))
-            .replace("discordBotToken", properties.getProperty("discordBotToken"))
             .replace("discordBotRedirectUrl", properties.getProperty("discordBotRedirectUrl"))
             .replace("discordBotVerifyUrl", properties.getProperty("discordBotVerifyUrl"))
+            .replace("artistAlleyBotKvId", properties.getProperty("artistAlleyBotKvId"))
         wranglerJson.writeText(wranglerJsonEdited)
     }
 }

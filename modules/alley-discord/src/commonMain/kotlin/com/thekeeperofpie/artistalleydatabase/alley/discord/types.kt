@@ -20,6 +20,14 @@ external interface Env {
     val DISCORD_BOT_TOKEN: String
     val DISCORD_BOT_REDIRECT_URL: String
     val DISCORD_BOT_VERIFY_URL: String
+    val ENCRYPTION_KEY: String
+    val ARTIST_ALLEY_BOT_KV: KeyValueStore
+}
+
+external interface KeyValueStore {
+    fun get(key: String): Promise<String?>
+    fun put(key: String, value: String): Promise<dynamic>
+    fun delete(key: String): Promise<dynamic>
 }
 
 internal fun <T> promise(block: suspend () -> T) =

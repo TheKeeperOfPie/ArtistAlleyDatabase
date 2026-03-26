@@ -17,7 +17,16 @@ internal sealed interface InteractionRequestData {
     data class SlashCommand(
         override val type: Int = 1,
         val name: String,
-    ) : InteractionRequestData
+        val options: List<Option>? = null,
+    ) : InteractionRequestData {
+
+        @Serializable
+        data class Option(
+            val type: OptionType,
+            val name: String,
+            val value: String,
+        )
+    }
 
     object Serializer :
         JsonContentPolymorphicSerializer<InteractionRequestData>(InteractionRequestData::class) {

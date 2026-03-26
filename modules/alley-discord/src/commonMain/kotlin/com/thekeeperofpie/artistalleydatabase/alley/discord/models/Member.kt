@@ -1,0 +1,9 @@
+package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+internal data class Member(
+    val user: User,
+) {
+}

@@ -9,7 +9,14 @@ import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionCa
 import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionRequestData
 import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionType
 import com.thekeeperofpie.artistalleydatabase.alley.discord.models.MessageComponent
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
+import dev.whyoleg.cryptography.CryptographyProvider
+import dev.whyoleg.cryptography.algorithms.AES
 import kotlinx.coroutines.await
+import kotlinx.io.bytestring.decodeToString
+import kotlinx.io.bytestring.encodeToByteString
+import kotlinx.io.bytestring.hexToByteString
+import kotlinx.io.bytestring.toHexString
 import kotlinx.serialization.json.Json
 import org.w3c.dom.url.URL
 import org.w3c.fetch.Headers
@@ -48,7 +55,7 @@ class Worker {
                 return@promise jsonResponse("Updated commands $result")
             }
             if (path == "verify") {
-                return@promise verifyArtist(request, api)
+                return@promise verifyArtist(request, env, api)
             } else if (path != "interactions") {
                 return@promise response404
             }
@@ -86,37 +93,52 @@ class Worker {
                         content = "Loaded artist",
                         flags = MessageFlags(MessageFlag.EPHEMERAL),
                     )
-                    "verify" -> DiscordInteractionPatchResponse(
-                        content = """
-                            ## Verify your Artist Profile 
-                            Click below to check your Discord connections. We’ll use this to match a social connection (i.e. Bluesky) to your artist page.
-                            ### Privacy
-                            This should only ask for the "connections" permission, and hidden accounts will still work. No data will be stored. Immediately after verification, the bot will revoke this permission from itself.
-                        """.trimIndent(),
-                        flags = MessageFlags(MessageFlag.EPHEMERAL),
-                        components = listOf(
-                            MessageComponent.ActionRow(
-                                MessageComponent.Button(
-                                    style = MessageComponent.Button.Style.LINK,
-                                    label = "Verify",
-                                    // TODO: Add state
-                                    url = env.DISCORD_BOT_VERIFY_URL,
+                    "verify" -> {
+                        val options = data.options
+                        if (options.isNullOrEmpty()) return@promise response404
+                        env.ARTIST_ALLEY_BOT_KV.put(interaction.member.user.id, interaction.token)
+                            .await()
+                        DiscordInteractionPatchResponse(
+                            content = """
+                                ## Verify your Artist Profile 
+                                Click below to check your Discord connections. We’ll use this to match a social connection (i.e. Bluesky) to your artist page.
+                                ### Privacy
+                                This should only ask for the "connections" permission, and hidden accounts will still work. No data will be stored. Immediately after verification, the bot will revoke this permission from itself.
+                            """.trimIndent(),
+                            flags = MessageFlags(MessageFlag.EPHEMERAL),
+                            components = listOf(
+                                MessageComponent.ActionRow(
+                                    MessageComponent.Button(
+                                        style = MessageComponent.Button.Style.LINK,
+                                        label = "Verify",
+                                        url = buildOAuthUrl(env, interaction, options),
+                                    )
                                 )
                             )
                         )
-                    )
+                    }
                     else -> null
                 }
             } ?: return@promise response404
 
-            api.patchInteractionResponse(interaction, response)
+            api.patchInteractionResponse(interaction.token, response)
 
             return@promise response202
         }
 
-        private suspend fun verifyArtist(request: Request, api: DiscordApi): Response {
-            val code = URL(request.url).searchParams.get("code")
-            if (code.isNullOrBlank()) return response401
+        private suspend fun verifyArtist(request: Request, env: Env, api: DiscordApi): Response {
+            val params = URL(request.url).searchParams
+            val code = params.get("code")
+            val state = params.get("state")
+            if (code.isNullOrBlank() || state.isNullOrBlank()) return response401
+
+            val oAuthState = OAuthState.decode(symmetricDecrypt(env.ENCRYPTION_KEY, state))
+                ?: return response401
+
+            val interactionToken = env.ARTIST_ALLEY_BOT_KV.get(oAuthState.userId).await()
+            env.ARTIST_ALLEY_BOT_KV.delete(oAuthState.userId).await()
+            if (interactionToken.isNullOrBlank()) return response401
+
             val authResponse = api.getAuth(code)
             try {
                 api.getConnections(authResponse.accessToken)
@@ -128,7 +150,69 @@ class Worker {
                 }
             }
 
-            return response200
+            // TODO: Actually verify connection
+            if (oAuthState.booth.startsWith("C")) {
+                api.patchInteractionResponse(
+                    interactionToken = interactionToken,
+                    response = DiscordInteractionPatchResponse(
+                        content = """
+                            ## Verified!
+                            Your URL is https://form.artistalley.directory/form
+                            
+                            Be sure to bookmark this so that you can return to edit your data in the future.
+                            ### Warning
+                            Do not share this link with anyone or they'll be able to edit your data. If you ever lose it, use the bot to re-verify.
+                        """.trimIndent(),
+                        flags = MessageFlags(MessageFlag.EPHEMERAL),
+                        components = emptyList(),
+                    )
+                )
+            } else {
+                // TODO: Use working booth link?
+                api.patchInteractionResponse(
+                    interactionToken = interactionToken,
+                    response = DiscordInteractionPatchResponse(
+                        content = """
+                            ## Verification failed
+                            Make sure that your Discord account has one of the social media accounts listed under your table at https://artistalley.directory and try again
+                        """.trimIndent(),
+                        flags = MessageFlags(MessageFlag.EPHEMERAL),
+                    )
+                )
+            }
+
+            return response202
         }
+
+        private suspend fun buildOAuthUrl(
+            env: Env,
+            interaction: DiscordInteractionRequest,
+            options: List<InteractionRequestData.SlashCommand.Option>,
+        ): String {
+            val encryptedState = symmetricEncrypt(
+                key = env.ENCRYPTION_KEY,
+                payload = OAuthState(
+                    userId = interaction.member.user.id,
+                    dataYear = DataYear.deserialize(options.first { it.name == "convention" }.value)!!,
+                    booth = options.first { it.name == "booth" }.value,
+                ).encode(),
+            )
+            return "${env.DISCORD_BOT_VERIFY_URL}&state=$encryptedState"
+        }
+
+        private suspend fun symmetricEncrypt(key: String, payload: String): String =
+            CryptographyProvider.Default.get(AES.GCM).keyDecoder()
+                .decodeFromByteString(AES.Key.Format.RAW, key.hexToByteString())
+                .cipher()
+                .encrypt(payload.encodeToByteString())
+                .toHexString()
+
+        private suspend fun symmetricDecrypt(key: String, payload: String): String =
+            CryptographyProvider.Default.get(AES.GCM)
+                .keyDecoder()
+                .decodeFromByteString(AES.Key.Format.RAW, key.hexToByteString())
+                .cipher()
+                .decrypt(payload.hexToByteString())
+                .decodeToString()
     }
 }

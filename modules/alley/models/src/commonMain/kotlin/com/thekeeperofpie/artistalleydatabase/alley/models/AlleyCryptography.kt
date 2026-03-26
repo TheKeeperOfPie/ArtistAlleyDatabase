@@ -104,11 +104,12 @@ object AlleyCryptography {
             .decrypt(payload.removeSurrounding("\"").hexToByteString())
             .decodeToString()
 
-    suspend fun generateSymmetricEncryptionKey(): String {
-        val aesGcm = CryptographyProvider.Default.get(AES.GCM)
-        return aesGcm.keyGenerator().generateKey().encodeToByteString(AES.Key.Format.RAW)
+    suspend fun generateSymmetricEncryptionKey(): String =
+        CryptographyProvider.Default.get(AES.GCM)
+            .keyGenerator()
+            .generateKey()
+            .encodeToByteString(AES.Key.Format.RAW)
             .toHexString()
-    }
 
     suspend fun symmetricEncrypt(key: String, payload: String): String =
         CryptographyProvider.Default.get(AES.GCM).keyDecoder()

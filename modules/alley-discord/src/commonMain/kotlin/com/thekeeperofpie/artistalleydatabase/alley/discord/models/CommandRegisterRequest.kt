@@ -31,30 +31,12 @@ internal data class CommandRegisterRequest(
         val type: OptionType,
         val description: String,
         val required: Boolean = false,
-        val choices: List<String>? = null,
+        val choices: List<Choice>? = null,
     ) {
-
-        @Serializable(with = OptionType.Serializer::class)
-        enum class OptionType(val value: Int) {
-            SUB_COMMAND(1),
-            SUB_COMMAND_GROUP(2),
-            STRING(3),
-            INTEGER(4),
-            BOOLEAN(5),
-            USER(6),
-            CHANNEL(7),
-            ROLE(8),
-            MENTIONABLE(9),
-            NUMBER(10),
-            ATTACHMENT(11),
-            ;
-
-            internal object Serializer :
-                IntEnumSerializer<OptionType>(
-                    entries = OptionType.entries,
-                    serialName = "OptionType",
-                    value = { it.value },
-                )
-        }
+        @Serializable
+        data class Choice(
+            val name: String,
+            val value: String,
+        )
     }
 }

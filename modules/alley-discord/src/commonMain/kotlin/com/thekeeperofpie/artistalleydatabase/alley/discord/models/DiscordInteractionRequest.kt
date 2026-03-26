@@ -8,5 +8,6 @@ internal data class DiscordInteractionRequest(
     val id: String,
     val token: String,
     val data: InteractionRequestData,
+    val member: Member,
 )
 

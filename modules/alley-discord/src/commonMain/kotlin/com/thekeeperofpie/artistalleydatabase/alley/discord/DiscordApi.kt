@@ -8,6 +8,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordIntera
 import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordInteractionResponse
 import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionCallbackType
 import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionResponseData
+import com.thekeeperofpie.artistalleydatabase.alley.discord.models.OptionType
+import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
 import org.w3c.dom.url.URLSearchParams
@@ -31,8 +33,8 @@ internal class DiscordApi(
                     options = listOf(
                         CommandRegisterRequest.Option(
                             name = "booth",
-                            type = CommandRegisterRequest.Option.OptionType.STRING,
-                            description = "Table number",
+                            type = OptionType.STRING,
+                            description = "Table number (e.g. M39)",
                         )
                     ),
                 )
@@ -42,6 +44,26 @@ internal class DiscordApi(
                     name = "verify",
                     type = CommandRegisterRequest.CommandType.CHAT_INPUT,
                     description = "Verify as an artist tabling",
+                    options = listOf(
+                        CommandRegisterRequest.Option(
+                            name = "convention",
+                            type = OptionType.STRING,
+                            description = "Convention and year",
+                            required = true,
+                            choices = listOf(
+                                CommandRegisterRequest.Option.Choice(
+                                    name = "AX 2026",
+                                    value = DataYear.ANIME_EXPO_2026.serializedName,
+                                ),
+                            ),
+                        ),
+                        CommandRegisterRequest.Option(
+                            name = "booth",
+                            type = OptionType.STRING,
+                            description = "Table number",
+                            required = true,
+                        )
+                    ),
                 )
             ),
         )
@@ -82,13 +104,13 @@ internal class DiscordApi(
     }
 
     suspend fun patchInteractionResponse(
-        interaction: DiscordInteractionRequest,
+        interactionToken: String,
         response: DiscordInteractionPatchResponse,
     ) {
         val body = json.encodeToString(response)
         val result = fetch(
             Request(
-                "$BASE_URL/webhooks/${env.DISCORD_BOT_APP_ID}/${interaction.token}/messages/@original",
+                "$BASE_URL/webhooks/${env.DISCORD_BOT_APP_ID}/$interactionToken/messages/@original",
                 RequestInit(
                     method = "PATCH",
                     headers = headers(),
