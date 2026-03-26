@@ -1,3 +1,4 @@
 [submodule "modules/alley/data/inputs"]
 	path = modules/alley/data/inputs
 	url = https://github.com/TheKeeperOfPie/Artist-Alley-Inputs
+	branch = main

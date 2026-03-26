@@ -26,7 +26,7 @@ val editExportFile = buildDir.resolve("editExport.sql")
 val formExportFile = buildDir.resolve("formExport.sql")
 
 val snapshotTime = Clock.System.now().toString().replace(":", ";")
-val dataDir = if (PROD) scriptDir.parentFile else buildDir
+val dataDir = buildDir
 
 if (PULL_REMOTE) {
     editExportFile.delete()
