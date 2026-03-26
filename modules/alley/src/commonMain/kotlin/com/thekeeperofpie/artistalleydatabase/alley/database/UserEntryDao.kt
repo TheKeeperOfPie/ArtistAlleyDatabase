@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeE
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2024
 import com.thekeeperofpie.artistalleydatabase.alley.GetBoothsWithFavoritesAnimeNyc2025
 import com.thekeeperofpie.artistalleydatabase.alley.UserEntryQueries
-import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.alley.artist.BoothWithFavorite
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.user.ArtistUserEntry
@@ -38,6 +37,7 @@ private fun GetBoothsWithFavorites2023.toBoothWithFavorite() =
         booth = booth,
         name = name,
         images = images,
+        fallbackImageYear = null,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -48,6 +48,7 @@ private fun GetBoothsWithFavorites2024.toBoothWithFavorite() =
         booth = booth,
         name = name,
         images = images,
+        fallbackImageYear = fallbackImageYear,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -58,6 +59,7 @@ private fun GetBoothsWithFavorites2025.toBoothWithFavorite() =
         booth = booth,
         name = name,
         images = images,
+        fallbackImageYear = fallbackImageYear,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -68,6 +70,7 @@ private fun GetBoothsWithFavoritesAnimeExpo2026.toBoothWithFavorite() =
         booth = booth,
         name = name,
         images = images,
+        fallbackImageYear = fallbackImageYear,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -78,6 +81,7 @@ private fun GetBoothsWithFavoritesAnimeNyc2024.toBoothWithFavorite() =
         booth = booth,
         name = name,
         images = images,
+        fallbackImageYear = fallbackImageYear,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 
@@ -88,6 +92,7 @@ private fun GetBoothsWithFavoritesAnimeNyc2025.toBoothWithFavorite() =
         booth = booth,
         name = name,
         images = images,
+        fallbackImageYear = fallbackImageYear,
         favorite = DaoUtils.coerceBooleanForJs(favorite),
     )
 

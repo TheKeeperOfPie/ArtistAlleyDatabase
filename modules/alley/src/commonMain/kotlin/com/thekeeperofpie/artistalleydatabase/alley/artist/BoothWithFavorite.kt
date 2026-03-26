@@ -9,5 +9,6 @@ data class BoothWithFavorite(
     val booth: String?,
     val name: String?,
     val images: List<CatalogImage>,
+    val fallbackImageYear: DataYear?,
     val favorite: Boolean,
 )

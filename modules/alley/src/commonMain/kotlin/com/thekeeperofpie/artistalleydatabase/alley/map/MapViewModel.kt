@@ -121,25 +121,20 @@ class MapViewModel(
         section: Table.AnimeExpoSection? = null,
     ): Table {
         val primaryArtist = artists.first()
-        val images = AlleyImageUtils.getArtistImages(
-            year = primaryArtist.year,
-            images = primaryArtist.images,
-        )
+        val images = if (primaryArtist.fallbackImageYear != null) {
+            emptyList()
+        } else {
+            AlleyImageUtils.getArtistImages(
+                year = primaryArtist.year,
+                images = primaryArtist.images,
+            )
+        }
         val imageIndex = if (showRandomCatalogImage) {
             images.indices.randomOrNull()
         } else {
             0
         }
         return if (artists.size == 1) {
-            val images = AlleyImageUtils.getArtistImages(
-                year = primaryArtist.year,
-                images = primaryArtist.images,
-            )
-            val imageIndex = if (showRandomCatalogImage) {
-                images.indices.randomOrNull()
-            } else {
-                0
-            }
             Table.Single(
                 year = primaryArtist.year,
                 artistId = primaryArtist.id,
