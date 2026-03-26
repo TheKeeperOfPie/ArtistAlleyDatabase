@@ -28,10 +28,33 @@ import kotlin.js.Promise
 @JsExport
 class Worker {
     companion object {
-        private val response401 = Response("Bad signature", ResponseInit(status = 401))
-        private val response404 = Response("Failed to resolve request", ResponseInit(status = 404))
-        private val response200 = Response(null, ResponseInit(status = 200))
-        private val response202 = Response(null, ResponseInit(status = 202))
+        private val response401 get() = Response("Bad signature", ResponseInit(status = 401))
+        private val response404
+            get() = Response("Failed to resolve request", ResponseInit(status = 404))
+        private val response200 get() = Response(null, ResponseInit(status = 200))
+        private val response202 get() = Response(null, ResponseInit(status = 202))
+        private val responseReturnToDiscord
+            get() = Response(
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                  <head>
+                    <meta charset="utf-8">
+                    <meta name="color-scheme" content="dark light" />
+                    <title>Artist Alley Directory Verification</title>
+                  </head>
+                  <body>
+                    <h1>Please return to Discord to see the verification result</h1>
+                  </body>
+                </html>
+            """.trimIndent(),
+                ResponseInit(
+                    status = 202,
+                    headers = Headers().apply {
+                        set("Content-Type", "text/html")
+                    },
+                )
+            )
 
         private val json = Json {
             encodeDefaults = false
@@ -181,7 +204,7 @@ class Worker {
                 )
             }
 
-            return response202
+            return responseReturnToDiscord
         }
 
         private suspend fun buildOAuthUrl(
