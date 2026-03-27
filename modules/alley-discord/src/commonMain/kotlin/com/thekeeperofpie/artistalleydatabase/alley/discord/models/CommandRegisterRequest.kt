@@ -32,6 +32,7 @@ internal data class CommandRegisterRequest(
         val description: String,
         val required: Boolean = false,
         val choices: List<Choice>? = null,
+        val options: List<Option>? = null,
     ) {
         @Serializable
         data class Choice(

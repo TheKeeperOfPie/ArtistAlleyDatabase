@@ -24,7 +24,8 @@ internal sealed interface InteractionRequestData {
         data class Option(
             val type: OptionType,
             val name: String,
-            val value: String,
+            val value: String? = null,
+            val options: List<Option>? = null,
         )
     }
 

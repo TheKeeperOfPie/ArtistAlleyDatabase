@@ -54,45 +54,64 @@ internal object BotBackend {
             return jsonResponse(
                 DiscordInteractionResponse(type = InteractionCallbackType.PONG)
             )
-        } else if (interactionType == null) {
+        } else if (interactionType == null || interaction.member == null) {
             return Responses.response404
         }
 
         api.deferResponse(interaction)
 
-        val response = when (val data = interaction.data) {
-            is InteractionRequestData.SlashCommand -> when (data.name) {
-                "artist" -> DiscordInteractionPatchResponse(
-                    content = "Loaded artist",
+        val command = (interaction.data as? InteractionRequestData.SlashCommand)
+            ?.options?.singleOrNull()
+            ?: return Responses.response404
+
+        val response = when (command.name) {
+            "artist" -> DiscordInteractionPatchResponse(
+                content = "Loaded artist",
+                flags = MessageFlags(MessageFlag.EPHEMERAL),
+            )
+            "verify" -> {
+                val options = command.options
+                if (options.isNullOrEmpty()) return Responses.response404
+                val dataYear =
+                    DataYear.deserialize(options.first { it.name == "convention" }.value!!)!!
+                val boothValue = options.first { it.name == "booth" }.value
+                    ?.takeIf { it.length <= 3 }
+                    ?: return Responses.response404
+                val boothLetter = boothValue.first().takeIf { it.isLetter() }
+                    ?: return Responses.response404
+                val boothNumber = boothValue.drop(1).toIntOrNull()
+                    ?: return Responses.response404
+                val booth = "$boothLetter${boothNumber.toString().padStart(2, '0')}"
+
+                val userId = interaction.member.user.id
+                env.ARTIST_ALLEY_BOT_KV.put(userId, interaction.token).await()
+                DiscordInteractionPatchResponse(
+                    // TODO: Use UI string for name
+                    content = """
+                            ## Verify your Artist Profile 
+                            Click below to check your Discord connections. We’ll use this to match a social connection (i.e. Bluesky) to your ${dataYear.serializedName} artist page.
+                            ### Privacy
+                            This should only ask for the "connections" permission, and hidden accounts will still work. No data will be stored. Immediately after verification, the bot will revoke this permission from itself.
+                        """.trimIndent(),
                     flags = MessageFlags(MessageFlag.EPHEMERAL),
-                )
-                "verify" -> {
-                    val options = data.options
-                    if (options.isNullOrEmpty()) return Responses.response404
-                    env.ARTIST_ALLEY_BOT_KV.put(interaction.member.user.id, interaction.token)
-                        .await()
-                    DiscordInteractionPatchResponse(
-                        content = """
-                                ## Verify your Artist Profile 
-                                Click below to check your Discord connections. We’ll use this to match a social connection (i.e. Bluesky) to your artist page.
-                                ### Privacy
-                                This should only ask for the "connections" permission, and hidden accounts will still work. No data will be stored. Immediately after verification, the bot will revoke this permission from itself.
-                            """.trimIndent(),
-                        flags = MessageFlags(MessageFlag.EPHEMERAL),
-                        components = listOf(
-                            MessageComponent.ActionRow(
-                                MessageComponent.Button(
-                                    style = MessageComponent.Button.Style.LINK,
-                                    label = "Verify",
-                                    url = buildOAuthUrl(env, interaction, options),
-                                )
+                    components = listOf(
+                        MessageComponent.ActionRow(
+                            MessageComponent.Button(
+                                style = MessageComponent.Button.Style.LINK,
+                                label = "Verify",
+                                url = buildOAuthUrl(
+                                    env = env,
+                                    userId = userId,
+                                    dataYear = dataYear,
+                                    booth = booth,
+                                ),
                             )
                         )
                     )
-                }
-                else -> null
+                )
             }
-        } ?: return Responses.response404
+            else -> return Responses.response404
+        }
 
         api.patchInteractionResponse(interaction.token, response)
 
@@ -110,8 +129,7 @@ internal object BotBackend {
                 env.ENCRYPTION_KEY,
                 state
             )
-        )
-            ?: return Responses.response401
+        ) ?: return Responses.response401
 
         val interactionToken = env.ARTIST_ALLEY_BOT_KV.get(oAuthState.userId).await()
         env.ARTIST_ALLEY_BOT_KV.delete(oAuthState.userId).await()
@@ -135,7 +153,7 @@ internal object BotBackend {
         if (artistEntry == null) {
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
-                response = failureResponse(),
+                response = failureResponse(oAuthState.booth),
             )
             return Responses.responseReturnToDiscord
         }
@@ -185,32 +203,33 @@ internal object BotBackend {
         } else {
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
-                response = failureResponse(),
+                response = failureResponse(oAuthState.booth),
             )
         }
 
         return Responses.responseReturnToDiscord
     }
 
-    private fun failureResponse() = DiscordInteractionPatchResponse(
+    private fun failureResponse(booth: String) = DiscordInteractionPatchResponse(
         content = """
             ## Verification failed
-            Make sure that your Discord account has one of the social media accounts listed under your table at https://artistalley.directory and try again
+            Make sure that your Discord account has one of the social media accounts listed under your table ($booth) at https://artistalley.directory and try again
         """.trimIndent(),
         flags = MessageFlags(MessageFlag.EPHEMERAL),
     )
 
     private suspend fun buildOAuthUrl(
         env: Env,
-        interaction: DiscordInteractionRequest,
-        options: List<InteractionRequestData.SlashCommand.Option>,
+        userId: String,
+        dataYear: DataYear,
+        booth: String,
     ): String {
         val encryptedState = AlleyCryptography.symmetricEncrypt(
             key = env.ENCRYPTION_KEY,
             payload = OAuthState(
-                userId = interaction.member.user.id,
-                dataYear = DataYear.deserialize(options.first { it.name == "convention" }.value)!!,
-                booth = options.first { it.name == "booth" }.value,
+                userId = userId,
+                dataYear = dataYear,
+                booth = booth,
             ).encode(),
         )
         return "${env.DISCORD_BOT_VERIFY_URL}&state=$encryptedState"

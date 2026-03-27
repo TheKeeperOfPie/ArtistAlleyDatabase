@@ -20,8 +20,8 @@ internal object Responses {
                 set("Content-Type", "text/plain")
             })
         )
-    val response200 get() = Response(null, ResponseInit(status = 200))
-    val response202 get() = Response(null, ResponseInit(status = 202))
+    val response200 get() = Response(null, ResponseInit(status = 200, headers = Headers()))
+    val response202 get() = Response(null, ResponseInit(status = 202, headers = Headers()))
     val responseReturnToDiscord
         get() = Response(
             """
