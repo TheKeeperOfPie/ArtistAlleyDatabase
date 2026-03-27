@@ -258,6 +258,24 @@ internal class DiscordApi(
         return connections
     }
 
+    suspend fun grantRole(userId: String) {
+        val result = fetch(
+            Request(
+                "$BASE_URL/guilds/${env.DISCORD_GUILD_ID}/members/$userId/roles/${env.DISCORD_ARTIST_ROLE_ID}",
+                RequestInit(
+                    method = "PUT",
+                    headers = headers(),
+                    cache = undefined,
+                    integrity = undefined,
+                    redirect = RequestRedirect.FOLLOW,
+                )
+            )
+        ).await()
+        if (!result.ok) {
+            println("Failed to apply role to $userId: ${result.text().await()}")
+        }
+    }
+
     private fun headers() = Headers().apply {
         this.set("Authorization", "Bot ${env.DISCORD_BOT_TOKEN}")
         this.set("Content-Type", "application/json")

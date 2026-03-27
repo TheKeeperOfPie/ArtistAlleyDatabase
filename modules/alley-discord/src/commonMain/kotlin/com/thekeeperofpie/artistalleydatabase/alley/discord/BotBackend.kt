@@ -54,7 +54,10 @@ internal object BotBackend {
             return jsonResponse(
                 DiscordInteractionResponse(type = InteractionCallbackType.PONG)
             )
-        } else if (interactionType == null || interaction.member == null) {
+        } else if (interactionType == null ||
+            interaction.member == null ||
+            interaction.guildId != env.DISCORD_GUILD_ID
+        ) {
             return Responses.response404
         }
 
@@ -89,7 +92,7 @@ internal object BotBackend {
                     // TODO: Use UI string for name
                     content = """
                             ## Verify your Artist Profile 
-                            Click below to check your Discord connections. We’ll use this to match a social connection (i.e. Bluesky) to your ${dataYear.serializedName} artist page.
+                            Click below to check your Discord connections. We’ll use this to match a social connection (i.e. Bluesky) to your ${dataYear.serializedName} artist page at ${env.ARTIST_ALLEY_URL}
                             ### Privacy
                             This should only ask for the "connections" permission, and hidden accounts will still work. No data will be stored. Immediately after verification, the bot will revoke this permission from itself.
                         """.trimIndent(),
@@ -153,7 +156,7 @@ internal object BotBackend {
         if (artistEntry == null) {
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
-                response = failureResponse(oAuthState.booth),
+                response = failureResponse(env, oAuthState.booth),
             )
             return Responses.responseReturnToDiscord
         }
@@ -185,16 +188,21 @@ internal object BotBackend {
                     )
                 )
             val accessUrl = AlleyDataUtils.formLink(BuildKonfig.formUrl, keys.privateKey)
+            try {
+                api.grantRole(oAuthState.userId)
+            } catch (_: Throwable) {
+                // Ignore if role doesn't grant, not important enough to fail on
+            }
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
                 response = DiscordInteractionPatchResponse(
                     content = """
-                            ## Verified!
+                            ## Thank you… anime artist
                             Your URL is $accessUrl
                             
-                            Be sure to bookmark this so that you can return to edit your data in the future. Any previous links are now invalid.
-                            ### Warning
-                            Do not share this link with anyone or they'll be able to edit your data. If you ever lose it, use the bot to re-verify.
+                            Bookmark this so you can edit your data in the future; previous links are now invalid. **Do not share** this link with anyone or they'll be able to edit your data. If you ever lose it, use the bot to re-verify.
+                            ### You feel an odd compulsion to draw Miku…
+                            The doors to <#${env.DISCORD_ARTIST_CHANNEL_ID}> have opened to you
                         """.trimIndent(),
                     flags = MessageFlags(MessageFlag.EPHEMERAL),
                     components = emptyList(),
@@ -203,17 +211,17 @@ internal object BotBackend {
         } else {
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
-                response = failureResponse(oAuthState.booth),
+                response = failureResponse(env, oAuthState.booth),
             )
         }
 
         return Responses.responseReturnToDiscord
     }
 
-    private fun failureResponse(booth: String) = DiscordInteractionPatchResponse(
+    private fun failureResponse(env: Env, booth: String) = DiscordInteractionPatchResponse(
         content = """
             ## Verification failed
-            Make sure that your Discord account has one of the social media accounts listed under your table ($booth) at https://artistalley.directory and try again
+            Make sure that your Discord account has one of the social media accounts listed under your table ($booth) at ${env.ARTIST_ALLEY_URL} and try again
         """.trimIndent(),
         flags = MessageFlags(MessageFlag.EPHEMERAL),
     )

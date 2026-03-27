@@ -142,9 +142,13 @@ tasks.register("webRelease") {
             .replace("discordBotPublicKey", properties.getProperty("discordBotPublicKey"))
             .replace("discordBotRedirectUrl", properties.getProperty("discordBotRedirectUrl"))
             .replace("discordBotVerifyUrl", properties.getProperty("discordBotVerifyUrl"))
+            .replace("discordGuildId", properties.getProperty("discordGuildId"))
+            .replace("discordArtistRoleId", properties.getProperty("discordArtistRoleId"))
+            .replace("discordArtistChannelId", properties.getProperty("discordArtistChannelId"))
             .replace("artistAlleyBotKvId", properties.getProperty("artistAlleyBotKvId"))
             .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
             .replace("artistAlleyFormDatabaseId", properties.getProperty("artistAlleyFormDatabaseId"))
+            .replace("artistAlleyUrl", properties.getProperty("artistAlleyUrl"))
         wranglerJson.writeText(wranglerJsonEdited)
     }
 }

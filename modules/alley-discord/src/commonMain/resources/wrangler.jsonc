@@ -9,7 +9,11 @@
         "DISCORD_BOT_APP_ID": "discordBotAppID",
         "DISCORD_BOT_PUBLIC_KEY": "discordBotPublicKey",
         "DISCORD_BOT_REDIRECT_URL": "discordBotRedirectUrl",
-        "DISCORD_BOT_VERIFY_URL": "discordBotVerifyUrl"
+        "DISCORD_BOT_VERIFY_URL": "discordBotVerifyUrl",
+        "DISCORD_GUILD_ID": "discordGuildId",
+        "DISCORD_ARTIST_ROLE_ID": "discordArtistRoleId",
+        "DISCORD_ARTIST_CHANNEL_ID": "discordArtistChannelId",
+        "ARTIST_ALLEY_URL": "artistAlleyUrl"
     },
     "kv_namespaces": [
         {
