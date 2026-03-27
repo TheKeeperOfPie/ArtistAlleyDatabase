@@ -1,7 +1,10 @@
 {
     "name": "artist-alley-discord-bot",
-    "main": "ArtistAlleyDatabase-modules-alley-discord.mjs",
+    "main": "src/ArtistAlleyDatabase-modules-alley-discord.mjs",
     "compatibility_date": "2026-03-10",
+    "build": {
+        "command": "npm install discord-interactions"
+    },
     "observability": {
         "enabled": true
     },

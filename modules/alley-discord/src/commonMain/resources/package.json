@@ -3,7 +3,6 @@
 	"version": "0.0.0",
 	"private": true,
 	"dependencies": {
-		"@cloudflare/workers-types": "^4.20260317.1",
 		"discord-interactions": "^4.4.0",
 		"wrangler": "^4.76.0"
 	}

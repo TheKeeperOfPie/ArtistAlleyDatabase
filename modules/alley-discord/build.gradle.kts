@@ -1,3 +1,4 @@
+
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import java.util.Properties
@@ -89,10 +90,13 @@ val syncOutput by tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir(outputDir))
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
+    filesMatching("**.mjs") { path = "src/$path" }
+    filesMatching("**.mjs.map") { path = "src/$path" }
+
     val outputDir = project.layout.buildDirectory.dir(outputDir)
     doLast {
         outputDir.get().asFile
-            .resolve("ArtistAlleyDatabase-modules-alley-discord.mjs")
+            .resolve("src/ArtistAlleyDatabase-modules-alley-discord.mjs")
             .appendText(
                 """
                 export default {
