@@ -55,18 +55,6 @@ internal class DiscordApi(
                 description = "Interact with the artistalley.directory site",
                 options = listOf(
                     CommandRegisterRequest.Option(
-                        name = "artist",
-                        type = OptionType.SUB_COMMAND,
-                        description = "Look up an artist",
-                        options = listOf(
-                            CommandRegisterRequest.Option(
-                                name = "booth",
-                                type = OptionType.STRING,
-                                description = "Table number (e.g. M39)",
-                            )
-                        ),
-                    ),
-                    CommandRegisterRequest.Option(
                         name = "verify",
                         type = OptionType.SUB_COMMAND,
                         description = "Verify as an artist tabling",
@@ -86,7 +74,7 @@ internal class DiscordApi(
                             CommandRegisterRequest.Option(
                                 name = "booth",
                                 type = OptionType.STRING,
-                                description = "Table number",
+                                description = "Table number (e.g. M39)",
                                 required = true,
                             )
                         ),

@@ -68,10 +68,6 @@ internal object BotBackend {
             ?: return Responses.response404
 
         val response = when (command.name) {
-            "artist" -> DiscordInteractionPatchResponse(
-                content = "Loaded artist",
-                flags = MessageFlags(MessageFlag.EPHEMERAL),
-            )
             "verify" -> {
                 val options = command.options
                 if (options.isNullOrEmpty()) return Responses.response404
