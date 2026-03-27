@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.edit.data
 
-import com.eygraber.uri.Uri
+import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
 import com.thekeeperofpie.artistalleydatabase.alley.edit.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography.generateOneTimeEncryptionKeys
@@ -114,7 +114,14 @@ actual class AlleyEditRemoteDatabase(
         stampRallyIdsToImageData: Map<String, List<ImageFileData>>,
     ): BackendRequest.UploadImageUrls.Response = withContext(dispatchers.io) {
         try {
-            sendRequest(BackendRequest.UploadImageUrls(dataYear, artistId, artistImageData, stampRallyIdsToImageData))!!
+            sendRequest(
+                BackendRequest.UploadImageUrls(
+                    dataYear,
+                    artistId,
+                    artistImageData,
+                    stampRallyIdsToImageData
+                )
+            )!!
         } catch (t: Throwable) {
             t.printStackTrace()
             BackendRequest.UploadImageUrls.Response.Failed(t.message.orEmpty())
@@ -568,13 +575,10 @@ actual class AlleyEditRemoteDatabase(
             }
         }
 
-    private fun formLink(accessKey: String): String =
-        Uri.parse(if (BuildKonfig.isWasmDebug) window.location.origin else AlleyUtils.formUrl)
-            .buildUpon()
-            .path("/form/artist")
-            .appendQueryParameter(AlleyCryptography.ACCESS_KEY_PARAM, accessKey)
-            .build()
-            .toString()
+    private fun formLink(accessKey: String): String = AlleyDataUtils.formLink(
+        if (BuildKonfig.isWasmDebug) window.location.origin else AlleyUtils.formUrl,
+        accessKey
+    )
 
     private suspend inline fun <reified Request, reified Response> sendRequest(
         request: Request,

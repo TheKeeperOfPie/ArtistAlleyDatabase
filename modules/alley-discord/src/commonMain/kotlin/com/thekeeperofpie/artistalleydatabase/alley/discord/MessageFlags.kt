@@ -5,9 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal value class MessageFlags(val flags: Int) {
     constructor(vararg flags: MessageFlag) : this(
-        flags = flags.fold(0) { acc, value -> acc or value.flag }.also {
-            println("flags ${flags.toList()} = $it")
-        }
+        flags = flags.fold(0) { acc, value -> acc or value.flag }
     )
 }
 

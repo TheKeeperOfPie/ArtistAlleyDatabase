@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
+import com.thekeeperofpie.artistalleydatabase.cloudflare.promise
 import org.w3c.fetch.Response
 import org.w3c.fetch.ResponseInit
 import kotlin.js.Promise

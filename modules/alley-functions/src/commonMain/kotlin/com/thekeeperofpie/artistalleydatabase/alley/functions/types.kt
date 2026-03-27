@@ -3,9 +3,9 @@
 package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.CloudflareAccessPlugin
-import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.D1Database
-import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.KeyValueStore
-import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.R2Bucket
+import com.thekeeperofpie.artistalleydatabase.cloudflare.D1Database
+import com.thekeeperofpie.artistalleydatabase.cloudflare.KeyValueStore
+import com.thekeeperofpie.artistalleydatabase.cloudflare.R2Bucket
 import org.w3c.fetch.Request
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -33,13 +33,3 @@ external interface Env {
     val IMAGES_SECRET_ACCESS_KEY_ID: String
     val IMAGES_CLOUDFLARE_URL: String
 }
-
-internal fun <T> promise(block: suspend () -> T) =
-    Promise { resolve, reject ->
-        block.startCoroutine(completion = object : Continuation<T> {
-            override val context: CoroutineContext = EmptyCoroutineContext
-            override fun resumeWith(result: Result<T>) {
-                result.fold(resolve, reject)
-            }
-        })
-    }

@@ -13,9 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
 import org.w3c.dom.url.URLSearchParams
+import org.w3c.fetch.FOLLOW
 import org.w3c.fetch.Headers
 import org.w3c.fetch.Request
 import org.w3c.fetch.RequestInit
+import org.w3c.fetch.RequestRedirect
 
 private const val BASE_URL = "https://discord.com/api/v10"
 
@@ -75,6 +77,9 @@ internal class DiscordApi(
                 method = "POST",
                 headers = headers(),
                 body = json.encodeToString(command),
+                cache = undefined,
+                integrity = undefined,
+                redirect = RequestRedirect.FOLLOW,
             )
         )
     ).await().text().await()
@@ -95,6 +100,9 @@ internal class DiscordApi(
                     method = "POST",
                     headers = headers(),
                     body = body,
+                    cache = undefined,
+                    integrity = undefined,
+                    redirect = RequestRedirect.FOLLOW,
                 )
             )
         ).await()
@@ -115,6 +123,9 @@ internal class DiscordApi(
                     method = "PATCH",
                     headers = headers(),
                     body = body,
+                    cache = undefined,
+                    integrity = undefined,
+                    redirect = RequestRedirect.FOLLOW,
                 )
             )
         ).await()
@@ -139,7 +150,10 @@ internal class DiscordApi(
                         set("grant_type", "authorization_code")
                         set("code", authCode)
                         set("redirect_uri", env.DISCORD_BOT_REDIRECT_URL)
-                    }
+                    },
+                    cache = undefined,
+                    integrity = undefined,
+                    redirect = RequestRedirect.FOLLOW,
                 )
             )
         ).await().text().await()
@@ -165,6 +179,9 @@ internal class DiscordApi(
                             if (isRefreshToken) "refresh_token" else "access_token"
                         )
                     },
+                    cache = undefined,
+                    integrity = undefined,
+                    redirect = RequestRedirect.FOLLOW,
                 )
             )
         ).await()
@@ -183,7 +200,10 @@ internal class DiscordApi(
                     headers = Headers().apply {
                         this.set("Authorization", "Bearer $accessToken")
                         this.set("Content-Type", "application/json")
-                    }
+                    },
+                    cache = undefined,
+                    integrity = undefined,
+                    redirect = RequestRedirect.FOLLOW,
                 )
             )
         ).await()

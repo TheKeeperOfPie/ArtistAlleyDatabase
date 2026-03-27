@@ -1,18 +1,15 @@
-@file:OptIn(ExperimentalJsCollectionsApi::class)
-
-package com.thekeeperofpie.artistalleydatabase.alley.functions
+package com.thekeeperofpie.artistalleydatabase.cloudflare
 
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
-import com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare.D1Database
 import kotlinx.coroutines.await
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
 
-internal class WorkerSqlDriver(
+class WorkerSqlDriver(
     private val database: D1Database,
 ) : SqlDriver {
     override fun <R> executeQuery(

@@ -16,5 +16,17 @@
             "binding": "ARTIST_ALLEY_BOT_KV",
             "id": "artistAlleyBotKvId"
         }
+    ],
+    "d1_databases": [
+        {
+            "binding": "ARTIST_ALLEY_DB",
+            "database_name": "ARTIST_ALLEY_DB",
+            "database_id": "artistAlleyDatabaseId"
+        },
+        {
+            "binding": "ARTIST_ALLEY_FORM_DB",
+            "database_name": "ARTIST_ALLEY_FORM_DB",
+            "database_id": "artistAlleyFormDatabaseId"
+        },
     ]
 }

@@ -1,0 +1,3 @@
+insertPublicKey:
+INSERT OR REPLACE INTO artistFormPublicKey
+VALUES ?;

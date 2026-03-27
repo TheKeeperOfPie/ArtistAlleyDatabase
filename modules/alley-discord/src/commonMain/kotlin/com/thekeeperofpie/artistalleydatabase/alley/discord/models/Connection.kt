@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class Connection(
     val type: Type? = null,
+    val name: String,
     val revoked: Boolean? = null,
     val verified: Boolean,
 ) {
@@ -13,7 +14,7 @@ internal data class Connection(
         BLUESKY("bluesky"),
         INSTAGRAM("instagram"),
         TWITCH("twitch"),
-        YOUTUBE("youtube"),
+        YOU_TUBE("youtube"),
         X("twitter"),
         ;
 

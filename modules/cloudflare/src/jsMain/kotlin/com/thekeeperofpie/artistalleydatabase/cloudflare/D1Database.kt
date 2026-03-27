@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.functions.cloudflare
+package com.thekeeperofpie.artistalleydatabase.cloudflare
 
 import kotlin.js.Promise
 

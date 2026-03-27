@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.data.toMerchInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toSeriesInfo
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.data.toStampRallyEntryAnimeExpo2026
-import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormPublicKey
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
 import com.thekeeperofpie.artistalleydatabase.alley.models.AniListType

@@ -32,7 +32,9 @@ kotlin {
             implementation(libs.sqldelight.coroutines.extensions)
 
             implementation(projects.modules.alley.data)
+            implementation(projects.modules.alley.form.data)
             implementation(projects.modules.alley.models)
+            implementation(projects.modules.cloudflare)
             implementation(npm("@cloudflare/pages-plugin-cloudflare-access", "1.0.5"))
             implementation(npm("@noble/curves", "2.0.1"))
             implementation(npm("aws4fetch", "1.0.20"))
@@ -53,6 +55,7 @@ sqldelight {
             packageName.set("com.thekeeperofpie.artistalleydatabase.alley.functions.form")
             dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             generateAsync = true
+            dependency(project(":modules:alley:form:data"))
             srcDirs(file("src/commonMain/sqldelight/form"))
         }
     }

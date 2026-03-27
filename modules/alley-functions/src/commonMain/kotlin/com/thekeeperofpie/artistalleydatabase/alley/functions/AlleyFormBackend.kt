@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.alley.functions
 
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
-import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormEntry
-import com.thekeeperofpie.artistalleydatabase.alley.form.ArtistFormNonce
-import com.thekeeperofpie.artistalleydatabase.alley.form.StampRallyFormEntry
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormEntry
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormNonce
+import com.thekeeperofpie.artistalleydatabase.alley.form.data.StampRallyFormEntry
 import com.thekeeperofpie.artistalleydatabase.alley.functions.aws4fetch.awsClient
 import com.thekeeperofpie.artistalleydatabase.alley.functions.form.AlleyFormDatabase
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography

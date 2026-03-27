@@ -1,9 +1,12 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import java.util.Properties
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("app.cash.sqldelight")
+    alias(libs.plugins.com.codingfeline.buildkonfig)
 }
 
 group = "com.thekeeperofpie.artistalleydatabase.alley.discord"
@@ -28,7 +31,30 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.whyoleg.cryptography.core)
             implementation(libs.whyoleg.cryptography.provider.optimal)
+            implementation(projects.modules.alley.data)
+            implementation(projects.modules.alley.form.data)
+            implementation(projects.modules.alley.models)
+            implementation(projects.modules.cloudflare)
             implementation(npm("discord-interactions", "4.4.0"))
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("AlleySqlDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.alley.discord")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
+            generateAsync = true
+            dependency(project(":modules:alley:data"))
+            srcDirs(file("src/commonMain/sqldelight/alley"))
+        }
+        create("AlleyFormDatabase") {
+            packageName.set("com.thekeeperofpie.artistalleydatabase.alley.discord.form")
+            dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
+            generateAsync = true
+            dependency(project(":modules:alley:form:data"))
+            srcDirs(file("src/commonMain/sqldelight/form"))
         }
     }
 }
@@ -79,6 +105,28 @@ val syncOutput by tasks.registering(Sync::class) {
     }
 }
 
+val properties = Properties().apply {
+    val secretsFile = projectDir.resolve("secrets.properties")
+    if (secretsFile.exists()) {
+        load(secretsFile.reader())
+    }
+}
+
+buildkonfig {
+    packageName = "com.thekeeperofpie.artistalleydatabase.alley.discord.secrets"
+
+    defaultConfigs {
+        properties.forEach {
+            buildConfigField(
+                type = FieldSpec.Type.STRING,
+                name = it.key.toString(),
+                value = it.value.toString(),
+                const = true,
+            )
+        }
+    }
+}
+
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
     dependsOn(syncOutput)
@@ -95,6 +143,8 @@ tasks.register("webRelease") {
             .replace("discordBotRedirectUrl", properties.getProperty("discordBotRedirectUrl"))
             .replace("discordBotVerifyUrl", properties.getProperty("discordBotVerifyUrl"))
             .replace("artistAlleyBotKvId", properties.getProperty("artistAlleyBotKvId"))
+            .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
+            .replace("artistAlleyFormDatabaseId", properties.getProperty("artistAlleyFormDatabaseId"))
         wranglerJson.writeText(wranglerJsonEdited)
     }
 }

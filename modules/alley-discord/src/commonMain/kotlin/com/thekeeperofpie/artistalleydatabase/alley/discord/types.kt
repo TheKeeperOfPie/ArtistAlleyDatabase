@@ -1,17 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
-import org.w3c.fetch.Request
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.startCoroutine
-import kotlin.js.Promise
-
-internal external interface EventContext {
-    val request: Request
-    val env: Env
-    val functionPath: String?
-}
+import com.thekeeperofpie.artistalleydatabase.cloudflare.D1Database
+import com.thekeeperofpie.artistalleydatabase.cloudflare.KeyValueStore
 
 external interface Env {
     val DISCORD_BOT_APP_ID: String
@@ -22,20 +12,6 @@ external interface Env {
     val DISCORD_BOT_VERIFY_URL: String
     val ENCRYPTION_KEY: String
     val ARTIST_ALLEY_BOT_KV: KeyValueStore
+    val ARTIST_ALLEY_DB: D1Database
+    val ARTIST_ALLEY_FORM_DB: D1Database
 }
-
-external interface KeyValueStore {
-    fun get(key: String): Promise<String?>
-    fun put(key: String, value: String): Promise<dynamic>
-    fun delete(key: String): Promise<dynamic>
-}
-
-internal fun <T> promise(block: suspend () -> T) =
-    Promise { resolve, reject ->
-        block.startCoroutine(completion = object : Continuation<T> {
-            override val context: CoroutineContext = EmptyCoroutineContext
-            override fun resumeWith(result: Result<T>) {
-                result.fold(resolve, reject)
-            }
-        })
-    }
