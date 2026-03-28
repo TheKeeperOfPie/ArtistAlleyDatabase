@@ -712,7 +712,23 @@ class ArtistEntryDao(
 
             // Search for "http" as a simplification of logic, since checking
             // not empty would require a separate query template
-            if (filterParams.showOnlyWithCatalog) this += "$tableName.driveLink LIKE 'http%'"
+            if (filterParams.showOnlyWithCatalog) {
+                when (year) {
+                    DataYear.ANIME_EXPO_2023,
+                    DataYear.ANIME_EXPO_2024,
+                    DataYear.ANIME_EXPO_2025,
+                    DataYear.ANIME_NYC_2024,
+                    DataYear.ANIME_NYC_2025,
+                        ->
+                        this += "$tableName.driveLink LIKE 'http%'"
+                    DataYear.ANIME_EXPO_2026 -> {
+                        this += "$tableName.images != '[]'"
+                        if (!filterParams.showOutdatedCatalogs) {
+                            this += "$tableName.fallbackImageYear != NULL"
+                        }
+                    }
+                }
+            }
 
             if (year != DataYear.ANIME_EXPO_2023 && year != DataYear.ANIME_EXPO_2024) {
                 val commissionFlags = filterParams.commissionsIn.fold(0) { flags, type ->
