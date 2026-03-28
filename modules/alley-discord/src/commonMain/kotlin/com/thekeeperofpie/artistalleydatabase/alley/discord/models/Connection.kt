@@ -12,7 +12,9 @@ internal data class Connection(
     @Serializable(with = Type.Serializer::class)
     enum class Type(val value: String) {
         BLUESKY("bluesky"),
+        FACEBOOK("facebook"),
         INSTAGRAM("instagram"),
+        TIK_TOK("tiktok"),
         TWITCH("twitch"),
         YOU_TUBE("youtube"),
         X("twitter"),

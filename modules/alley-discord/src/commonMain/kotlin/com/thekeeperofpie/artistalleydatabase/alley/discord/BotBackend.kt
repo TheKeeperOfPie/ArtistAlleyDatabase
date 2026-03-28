@@ -162,7 +162,9 @@ internal object BotBackend {
         val verified = connections.any {
             val type = when (it.type) {
                 Connection.Type.BLUESKY -> Link.Type.BLUESKY
+                Connection.Type.FACEBOOK -> Link.Type.FACEBOOK
                 Connection.Type.INSTAGRAM -> Link.Type.INSTAGRAM
+                Connection.Type.TIK_TOK -> Link.Type.TIK_TOK
                 Connection.Type.TWITCH -> Link.Type.TWITCH
                 Connection.Type.YOU_TUBE -> Link.Type.YOU_TUBE
                 Connection.Type.X -> Link.Type.X
