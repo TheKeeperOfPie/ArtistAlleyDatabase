@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord.models
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,6 +34,10 @@ internal data class CommandRegisterRequest(
         val required: Boolean = false,
         val choices: List<Choice>? = null,
         val options: List<Option>? = null,
+        @SerialName("min_length")
+        val minLength: Int? = null,
+        @SerialName("max_length")
+        val maxLength: Int? = null,
     ) {
         @Serializable
         data class Choice(

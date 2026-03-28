@@ -26,63 +26,42 @@ internal class DiscordApi(
     private val env: Env,
     private val json: Json,
 ) {
-    suspend fun syncCommands(): String {
-        val listCommandsResult = fetch(
-            Request(
-                "$BASE_URL/applications/${env.DISCORD_BOT_APP_ID}/commands",
-                RequestInit(
-                    method = "GET",
-                    headers = Headers().apply {
-                        this.set("Authorization", "Bot ${env.DISCORD_BOT_TOKEN}")
-                    },
-                    cache = undefined,
-                    integrity = undefined,
-                    redirect = RequestRedirect.FOLLOW,
-                )
-            )
-        ).await()
-        val listCommandsBody = listCommandsResult.text().await()
-        if (!listCommandsResult.ok) {
-            println("Failed to list commands: $listCommandsBody")
-        }
-        json.decodeFromString<List<Command>>(listCommandsBody)
-            .forEach { deleteCommand(it) }
-
-        return registerCommand(
-            CommandRegisterRequest(
-                name = "aa",
-                type = CommandRegisterRequest.CommandType.CHAT_INPUT,
-                description = "Interact with the artistalley.directory site",
-                options = listOf(
-                    CommandRegisterRequest.Option(
-                        name = "verify",
-                        type = OptionType.SUB_COMMAND,
-                        description = "Verify as an artist tabling",
-                        options = listOf(
-                            CommandRegisterRequest.Option(
-                                name = "convention",
-                                type = OptionType.STRING,
-                                description = "Convention and year",
-                                required = true,
-                                choices = listOf(
-                                    CommandRegisterRequest.Option.Choice(
-                                        name = "AX 2026",
-                                        value = DataYear.ANIME_EXPO_2026.serializedName,
-                                    ),
+    suspend fun syncCommands(): String = registerCommand(
+        CommandRegisterRequest(
+            name = "aa",
+            type = CommandRegisterRequest.CommandType.CHAT_INPUT,
+            description = "Interact with the artistalley.directory site",
+            options = listOf(
+                CommandRegisterRequest.Option(
+                    name = "verify",
+                    type = OptionType.SUB_COMMAND,
+                    description = "Verify as an artist tabling",
+                    options = listOf(
+                        CommandRegisterRequest.Option(
+                            name = "convention",
+                            type = OptionType.STRING,
+                            description = "Convention and year",
+                            required = true,
+                            choices = listOf(
+                                CommandRegisterRequest.Option.Choice(
+                                    name = "AX 2026",
+                                    value = DataYear.ANIME_EXPO_2026.serializedName,
                                 ),
                             ),
-                            CommandRegisterRequest.Option(
-                                name = "booth",
-                                type = OptionType.STRING,
-                                description = "Table number (e.g. M39)",
-                                required = true,
-                            )
                         ),
-                    )
-                ),
-            )
+                        CommandRegisterRequest.Option(
+                            name = "booth",
+                            type = OptionType.STRING,
+                            description = "Table number (e.g. M39)",
+                            required = true,
+                            minLength = 2,
+                            maxLength = 3,
+                        )
+                    ),
+                )
+            ),
         )
-    }
+    )
 
     private suspend fun deleteCommand(command: Command) {
         fetch(
