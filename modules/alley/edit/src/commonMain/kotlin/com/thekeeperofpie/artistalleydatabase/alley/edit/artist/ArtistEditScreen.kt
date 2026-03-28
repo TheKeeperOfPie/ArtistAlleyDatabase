@@ -414,6 +414,7 @@ object ArtistEditScreen {
                                         onClickPage = {
                                             // TODO: Open images screen
                                         },
+                                        onClickFullscreen = null,
                                     )
 
                                     if (initialArtist != null && artistProgress !is JobProgress.Loading) {

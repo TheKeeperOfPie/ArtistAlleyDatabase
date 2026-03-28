@@ -335,6 +335,7 @@ object DetailsScreen {
                     pagerState = headerPagerState,
                     sharedElementId = sharedElementId,
                     onClickPage = onClickImage,
+                    onClickFullscreen = null,
                 )
                 if (fallbackYear != null) {
                     ImageFallbackBanner(sharedElementId, fallbackYear)
@@ -439,5 +440,6 @@ private fun ImagePagerGrid() = PreviewDark {
         pagerState = rememberImagePagerState(images = images, initialImageIndex = 0),
         images = images,
         onClickPage = {},
+        onClickFullscreen = {},
     )
 }

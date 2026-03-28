@@ -37,7 +37,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.Icon
@@ -69,9 +69,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import artistalleydatabase.modules.alley.generated.resources.Res
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_catalog_image
+import artistalleydatabase.modules.alley.generated.resources.alley_image_fullscreen_content_description
 import artistalleydatabase.modules.alley.generated.resources.alley_next_page
 import artistalleydatabase.modules.alley.generated.resources.alley_previous_page
-import artistalleydatabase.modules.alley.generated.resources.alley_show_catalog_grid_content_description
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
@@ -131,6 +131,7 @@ fun ImagePager(
     pagerState: PagerState,
     sharedElementId: Any,
     onClickPage: ((Int) -> Unit)?,
+    onClickFullscreen: ((index: Int) -> Unit)?,
     modifier: Modifier = Modifier,
     clipCorners: Boolean = true,
     forceMinHeight: Boolean = true,
@@ -255,6 +256,7 @@ fun ImagePager(
             images = images,
             pagerState = pagerState,
             userScrollEnabled = { userScrollEnabled },
+            onClickFullscreen = onClickFullscreen,
         )
 
         val context = LocalPlatformContext.current
@@ -283,6 +285,7 @@ private fun BoxScope.ImagePagerActions(
     images: List<ImageWithDimensions>,
     pagerState: PagerState,
     userScrollEnabled: () -> Boolean,
+    onClickFullscreen: ((index: Int) -> Unit)?,
 ) {
     AnimatedVisibility(
         visible = userScrollEnabled(),
@@ -298,30 +301,41 @@ private fun BoxScope.ImagePagerActions(
         )
     }
 
-    val scope = rememberCoroutineScope()
-    AnimatedVisibility(
-        visible = pagerState.currentPage != 0 && userScrollEnabled(),
-        enter = fadeIn(),
-        exit = fadeOut(),
-        modifier = Modifier.align(Alignment.BottomEnd)
-    ) {
-        IconButton(
-            onClick = {
-                scope.launch {
-                    pagerState.animateScrollToPage(0)
-                }
-            },
-            modifier = Modifier.sharedElement("gridIcon", sharedElementId, zIndexInOverlay = 1f)
+    if (onClickFullscreen != null) {
+        val fullscreenInteractionSource = remember { MutableInteractionSource() }
+        AnimatedVisibility(
+            visible = pagerState.currentPage != 0 && userScrollEnabled(),
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomEnd)
         ) {
-            Icon(
-                imageVector = Icons.Filled.GridOn,
-                contentDescription = stringResource(
-                    Res.string.alley_show_catalog_grid_content_description
-                )
-            )
+            IconButton(
+                onClick = { onClickFullscreen(pagerState.currentPage) },
+                modifier = Modifier.hoverable(fullscreenInteractionSource)
+            ) {
+                val fullscreenIsHovered by fullscreenInteractionSource.collectIsHoveredAsState()
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceDim
+                                .copy(alpha = if (fullscreenIsHovered) 0.15f else 0.5f),
+                            shape = CircleShape,
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Fullscreen,
+                        contentDescription = stringResource(
+                            Res.string.alley_image_fullscreen_content_description
+                        ),
+                    )
+                }
+            }
         }
     }
 
+    val scope = rememberCoroutineScope()
     val previousPageInteractionSource = remember { MutableInteractionSource() }
     AnimatedVisibility(
         visible = pagerState.pageCount > 1 && pagerState.currentPage != 0,
@@ -477,7 +491,6 @@ fun ImageGrid(
         PrimaryVerticalScrollbar(gridState)
     }
 }
-
 
 
 @Composable

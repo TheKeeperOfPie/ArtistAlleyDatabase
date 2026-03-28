@@ -532,6 +532,9 @@ object SearchScreen {
                                     onClick = { entry, imageIndex ->
                                         eventSink(Event.OpenEntry(entry, imageIndex))
                                     },
+                                    onClickFullscreen = { entry, imageIndex ->
+                                        eventSink(Event.OpenImageFullscreen(entry, imageIndex))
+                                    },
                                     itemRow = itemRow,
                                     modifier = Modifier.sharedBounds(
                                         "itemContainer",
@@ -547,6 +550,9 @@ object SearchScreen {
                                     onIgnoredToggle = onIgnoredToggle,
                                     onClick = { entry, imageIndex ->
                                         eventSink(Event.OpenEntry(entry, imageIndex))
+                                    },
+                                    onClickFullscreen = { entry, imageIndex ->
+                                        eventSink(Event.OpenImageFullscreen(entry, imageIndex))
                                     },
                                     itemRow = itemRow,
                                     modifier = Modifier.sharedBounds(
@@ -608,6 +614,11 @@ object SearchScreen {
         ) : Event<EntryModel>
 
         data class OpenEntry<EntryModel : SearchEntryModel>(
+            val entry: EntryModel,
+            val imageIndex: Int,
+        ) : Event<EntryModel>
+
+        data class OpenImageFullscreen<EntryModel : SearchEntryModel>(
             val entry: EntryModel,
             val imageIndex: Int,
         ) : Event<EntryModel>

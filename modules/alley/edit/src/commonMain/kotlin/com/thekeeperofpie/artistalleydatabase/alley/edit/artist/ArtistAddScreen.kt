@@ -226,6 +226,7 @@ object ArtistAddScreen {
                                 onClickPage = {
                                     // TODO: Open images screen
                                 },
+                                onClickFullscreen = null,
                             )
                         } else {
                             sameArtistPrompt()

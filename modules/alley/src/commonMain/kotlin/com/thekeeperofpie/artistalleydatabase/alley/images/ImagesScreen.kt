@@ -98,6 +98,7 @@ object ImagesScreen {
                     pagerState = imagePagerState,
                     sharedElementId = route.id,
                     onClickPage = null,
+                    onClickFullscreen = null,
                     clipCorners = false,
                     forceMinHeight = false,
                     imageContentScale = ContentScale.Fit,

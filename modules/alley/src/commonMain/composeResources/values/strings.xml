@@ -61,7 +61,7 @@
     <string name="alley_sort_total_cost">Total cost</string>
     <string name="alley_filter_favorites">Only favorites</string>
     <string name="alley_filter_only_catalogs">Only with catalog images</string>
-    <string name="alley_show_catalog_grid_content_description">Show content grid</string>
+    <string name="alley_image_fullscreen_content_description">Fullscreen image</string>
     <string name="alley_filter_show_grid_by_default">Grid by default</string>
     <string name="alley_filter_show_random_catalog_image">Random catalog image</string>
     <string name="alley_filter_show_only_confirmed_tags">Only confirmed tags</string>

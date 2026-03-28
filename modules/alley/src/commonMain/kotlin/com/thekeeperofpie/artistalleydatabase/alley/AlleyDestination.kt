@@ -99,10 +99,9 @@ sealed interface AlleyDestination : NavKey {
         val hostTable: String?,
         val fandom: String?,
         val images: List<CatalogImage>?,
-        // TODO: Why is this a string?
-        val initialImageIndex: String? = null,
+        val initialImageIndex: Int? = null,
     ) : AlleyDestination {
-        constructor(entry: StampRallyDatabaseEntry, initialImageIndex: String? = null) : this(
+        constructor(entry: StampRallyDatabaseEntry, initialImageIndex: Int? = null) : this(
             year = entry.year,
             id = entry.id,
             hostTable = entry.hostTable,

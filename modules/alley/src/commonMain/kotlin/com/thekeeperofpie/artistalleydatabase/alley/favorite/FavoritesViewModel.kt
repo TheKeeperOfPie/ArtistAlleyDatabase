@@ -322,9 +322,11 @@ class FavoritesViewModel(
         onNavigateToSeries: () -> Unit,
         onNavigateToMerch: () -> Unit,
         onOpenArtist: (ArtistEntry, Int) -> Unit,
+        onOpenArtistImageFullscreen: (ArtistEntry, Int) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
-        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: String) -> Unit,
+        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
+        onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenExport: () -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
@@ -360,7 +362,19 @@ class FavoritesViewModel(
                 is StampRallyEntryGridModel ->
                     onOpenStampRally(
                         searchEvent.entry.stampRally,
-                        searchEvent.imageIndex.toString(),
+                        searchEvent.imageIndex,
+                    )
+                else -> throw IllegalArgumentException(
+                    "Entry model not supported: ${searchEvent.entry}"
+                )
+            }
+            is SearchScreen.Event.OpenImageFullscreen<*> -> when (searchEvent.entry) {
+                is ArtistEntryGridModel ->
+                    onOpenArtistImageFullscreen(searchEvent.entry.artist, searchEvent.imageIndex)
+                is StampRallyEntryGridModel ->
+                    onOpenStampRallyImageFullscreen(
+                        searchEvent.entry.stampRally,
+                        searchEvent.imageIndex,
                     )
                 else -> throw IllegalArgumentException(
                     "Entry model not supported: ${searchEvent.entry}"

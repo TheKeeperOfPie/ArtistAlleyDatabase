@@ -188,6 +188,7 @@ fun <EntryModel : SearchEntryModel> ItemCard(
     onFavoriteToggle: (Boolean) -> Unit,
     onIgnoredToggle: (Boolean) -> Unit,
     onClick: (EntryModel, Int) -> Unit,
+    onClickFullscreen: (EntryModel, Int) -> Unit,
     modifier: Modifier = Modifier,
     itemRow: @Composable (
         entry: EntryModel,
@@ -216,6 +217,7 @@ fun <EntryModel : SearchEntryModel> ItemCard(
                 pagerState = pagerState,
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
+                onClickFullscreen = { onClickFullscreen(entry, it) },
             )
             if (showingFallback) {
                 ImageFallbackBanner(
@@ -238,6 +240,7 @@ fun <EntryModel : SearchEntryModel> ItemImage(
     onFavoriteToggle: (Boolean) -> Unit,
     onIgnoredToggle: (Boolean) -> Unit,
     onClick: (EntryModel, Int) -> Unit,
+    onClickFullscreen: (EntryModel, Int) -> Unit,
     modifier: Modifier = Modifier,
     itemRow: @Composable (
         entry: EntryModel,
@@ -279,6 +282,7 @@ fun <EntryModel : SearchEntryModel> ItemImage(
                 pagerState = pagerState,
                 sharedElementId = sharedElementId,
                 onClickPage = { onClick(entry, it) },
+                onClickFullscreen = { onClickFullscreen(entry, it) },
                 clipCorners = false,
             )
 

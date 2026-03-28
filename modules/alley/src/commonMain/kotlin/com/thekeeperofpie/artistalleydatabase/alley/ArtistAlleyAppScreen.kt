@@ -21,7 +21,6 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.SinglePaneSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
-import com.thekeeperofpie.artistalleydatabase.alley.AlleyDestination.Images.Type.StampRally
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistMerchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.ArtistSeriesScreen
@@ -30,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.artist.map.ArtistMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.artist.search.ArtistSearchScreen
 import com.thekeeperofpie.artistalleydatabase.alley.changelog.ChangelogScreen
 import com.thekeeperofpie.artistalleydatabase.alley.export.QrCodeScreen
+import com.thekeeperofpie.artistalleydatabase.alley.images.AlleyImageUtils
 import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.import.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
@@ -103,6 +103,28 @@ object ArtistAlleyAppScreen {
                 AlleyDestination.ArtistDetails(entry, imageIndex)
             )
         }
+        val onOpenArtistImageFullscreen = { entry: ArtistEntry, imageIndex: Int? ->
+            navStack.navigate(
+                AlleyDestination.Images(
+                    year = entry.year,
+                    id = entry.id,
+                    type = AlleyDestination.Images.Type.Artist(
+                        id = entry.id,
+                        booth = entry.booth.orEmpty(),
+                        name = entry.name,
+                    ),
+                    images = AlleyImageUtils.getArtistImages(
+                        year = entry.fallbackImageYear ?: entry.year,
+                        images = if (entry.fallbackImageYear == null) {
+                            entry.images
+                        } else {
+                            entry.fallbackImages
+                        },
+                    ),
+                    initialImageIndex = imageIndex,
+                )
+            )
+        }
         val onOpenSeries = { year: DataYear?, series: String ->
             navStack.navigate(
                 AlleyDestination.Series(year, series)
@@ -113,7 +135,7 @@ object ArtistAlleyAppScreen {
                 AlleyDestination.Merch(year, merch)
             )
         }
-        val onOpenStampRally = { entry: StampRallyDatabaseEntry, initialImageIndex: String? ->
+        val onOpenStampRally = { entry: StampRallyDatabaseEntry, initialImageIndex: Int? ->
             navStack.navigate(
                 AlleyDestination.StampRallyDetails(
                     entry = entry,
@@ -121,6 +143,25 @@ object ArtistAlleyAppScreen {
                 )
             )
         }
+        val onOpenStampRallyImageFullscreen =
+            { entry: StampRallyDatabaseEntry, initialImageIndex: Int? ->
+                navStack.navigate(
+                    AlleyDestination.Images(
+                        year = entry.year,
+                        id = entry.id,
+                        type = AlleyDestination.Images.Type.StampRally(
+                            id = entry.id,
+                            hostTable = entry.hostTable,
+                            fandom = entry.fandom,
+                        ),
+                        images = AlleyImageUtils.getRallyImages(
+                            year = entry.year,
+                            images = entry.images,
+                        ),
+                        initialImageIndex = initialImageIndex,
+                    )
+                )
+            }
         val onOpenExport = { navStack.navigate(AlleyDestination.Export) }
         val onOpenChangelog = { navStack.navigate(AlleyDestination.Changelog) }
         val onOpenSettings = { navStack.navigate(AlleyDestination.Settings) }
@@ -131,9 +172,11 @@ object ArtistAlleyAppScreen {
                 AlleyRootScreen(
                     graph = graph,
                     onOpenArtist = onOpenArtist,
+                    onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
                     onOpenSeries = onOpenSeries,
                     onOpenMerch = onOpenMerch,
                     onOpenStampRally = onOpenStampRally,
+                    onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                     onOpenExport = onOpenExport,
                     onOpenChangelog = onOpenChangelog,
                     onOpenSettings = onOpenSettings,
@@ -204,11 +247,8 @@ object ArtistAlleyAppScreen {
                     lockedSerializedBooths = it.serializedBooths,
                     scrollStateSaver = ScrollStateSaver(),
                     onClickBack = navStack::onBack,
-                    onOpenArtist = { artist, imageIndex ->
-                        navStack.navigate(
-                            AlleyDestination.ArtistDetails(artist, imageIndex)
-                        )
-                    },
+                    onOpenArtist = onOpenArtist,
+                    onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
@@ -286,6 +326,7 @@ object ArtistAlleyAppScreen {
                     scrollStateSaver = ScrollStateSaver(),
                     onClickBack = navStack::onBack,
                     onOpenStampRally = onOpenStampRally,
+                    onOpenStampRallyImageFullscreen = onOpenStampRallyImageFullscreen,
                     onOpenExport = onOpenExport,
                     onOpenChangelog = onOpenChangelog,
                     onOpenSettings = onOpenSettings,
@@ -302,7 +343,7 @@ object ArtistAlleyAppScreen {
                             AlleyDestination.Images(
                                 year = route.year,
                                 id = route.id,
-                                type = StampRally(
+                                type = AlleyDestination.Images.Type.StampRally(
                                     id = rallyId,
                                     hostTable = hostTable,
                                     fandom = fandom,
@@ -355,6 +396,7 @@ object ArtistAlleyAppScreen {
                         )
                     },
                     onOpenArtist = onOpenArtist,
+                    onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,
@@ -375,6 +417,7 @@ object ArtistAlleyAppScreen {
                         )
                     },
                     onOpenArtist = onOpenArtist,
+                    onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
                     onOpenMerch = onOpenMerch,
                     onOpenSeries = onOpenSeries,
                     onOpenExport = onOpenExport,

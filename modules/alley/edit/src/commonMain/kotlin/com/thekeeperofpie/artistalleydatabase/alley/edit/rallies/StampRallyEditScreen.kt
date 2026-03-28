@@ -247,6 +247,7 @@ object StampRallyEditScreen {
                                     onClickPage = {
                                         // TODO: Open images screen
                                     },
+                                    onClickFullscreen = null,
                                 )
 
                                 if (initialStampRally != null && stampRallyProgress !is JobProgress.Loading) {

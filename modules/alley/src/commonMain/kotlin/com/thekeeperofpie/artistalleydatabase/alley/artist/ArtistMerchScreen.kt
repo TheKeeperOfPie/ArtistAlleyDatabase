@@ -44,6 +44,7 @@ object ArtistMerchScreen {
         scrollStateSaver: ScrollStateSaver,
         onClickMap: (DataYear?) -> Unit,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
+        onOpenArtistImageFullscreen: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenExport: () -> Unit,
@@ -75,6 +76,7 @@ object ArtistMerchScreen {
             scrollStateSaver = scrollStateSaver,
             onClickMap = { onClickMap(artistSearchViewModel.lockedYear) },
             onOpenArtist = onOpenArtist,
+            onOpenArtistImageFullscreen = onOpenArtistImageFullscreen,
             onOpenMerch = onOpenMerch,
             onOpenSeries = onOpenSeries,
             onOpenExport = onOpenExport,
@@ -93,6 +95,7 @@ object ArtistMerchScreen {
         onClickBack: (() -> Unit)?,
         onClickMap: () -> Unit,
         onOpenArtist: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
+        onOpenArtistImageFullscreen: (artist: ArtistEntry, imageIndex: Int?) -> Unit,
         onOpenMerch: (DataYear, String) -> Unit,
         onOpenSeries: (DataYear, String) -> Unit,
         onOpenExport: () -> Unit,
@@ -124,6 +127,8 @@ object ArtistMerchScreen {
                             )
                         is SearchScreen.Event.OpenEntry<ArtistEntryGridModel> ->
                             onOpenArtist(searchEvent.entry.artist, searchEvent.imageIndex)
+                        is SearchScreen.Event.OpenImageFullscreen<ArtistEntryGridModel> ->
+                            onOpenArtistImageFullscreen(searchEvent.entry.artist, searchEvent.imageIndex)
                         is SearchScreen.Event.ClearFilters<*> -> sortFilterController.clear()
                     }
                     is Event.OpenMerch -> onOpenMerch(artistSearchViewModel.year.value, it.merch)

@@ -46,7 +46,8 @@ object StampRallySearchScreen {
         lockedSeries: String?,
         scrollStateSaver: ScrollStateSaver,
         onClickBack: (() -> Unit)? = null,
-        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: String) -> Unit,
+        onOpenStampRally: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
+        onOpenStampRallyImageFullscreen: (StampRallyDatabaseEntry, initialImageIndex: Int) -> Unit,
         onOpenExport: () -> Unit,
         onOpenChangelog: () -> Unit,
         onOpenSettings: () -> Unit,
@@ -77,7 +78,9 @@ object StampRallySearchScreen {
                         is SearchScreen.Event.IgnoreToggle<StampRallyEntryGridModel> ->
                             viewModel.toggleIgnored(it.entry, it.ignored)
                         is SearchScreen.Event.OpenEntry<StampRallyEntryGridModel> ->
-                            onOpenStampRally(it.entry.stampRally, it.imageIndex.toString())
+                            onOpenStampRally(it.entry.stampRally, it.imageIndex)
+                        is SearchScreen.Event.OpenImageFullscreen<StampRallyEntryGridModel> ->
+                            onOpenStampRallyImageFullscreen(it.entry.stampRally, it.imageIndex)
                         is SearchScreen.Event.ClearFilters<*> -> viewModel.sortFilterController.clear()
                     }
                 },
