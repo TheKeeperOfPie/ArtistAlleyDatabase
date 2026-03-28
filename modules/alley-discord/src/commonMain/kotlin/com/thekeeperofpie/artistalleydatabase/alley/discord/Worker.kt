@@ -3,6 +3,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
 import com.thekeeperofpie.artistalleydatabase.alley.discord.Responses.response404
+import com.thekeeperofpie.artistalleydatabase.alley.discord.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.cloudflare.promise
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
@@ -20,7 +21,7 @@ class Worker {
             isLenient = true
         }
 
-        private const val DEBUG = false
+        private const val DEBUG = BuildKonfig.isWasmDebug
 
         @JsStatic
         fun request(request: Request, env: Env): Promise<Response> = promise {

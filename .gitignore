@@ -16,4 +16,4 @@
 default.jks
 keystore.properties
 local.properties
-secrets.properties
+/**/**secrets.properties

@@ -81,6 +81,7 @@ artifacts {
     add(distribution.name, tasks.named("jsProductionExecutableCompileSync"))
 }
 
+val isWasmDebug = project.hasProperty("wasmDebug")
 val outputDir = "dist/web"
 val buildTask = tasks.named("jsProductionExecutableCompileSync")
 
@@ -128,6 +129,12 @@ buildkonfig {
                 const = true,
             )
         }
+        buildConfigField(
+            type = FieldSpec.Type.BOOLEAN,
+            name = "isWasmDebug",
+            value = isWasmDebug.toString(),
+            const = true,
+        )
     }
 }
 
@@ -136,7 +143,9 @@ tasks.register("webRelease") {
     dependsOn(syncOutput)
 
     val outputDir = layout.buildDirectory.dir(outputDir)
-    val propertiesFile = project.layout.projectDirectory.file("secrets.properties")
+    val propertiesFile = project.layout.projectDirectory.file(
+        if (isWasmDebug) "dev.secrets.properties" else "secrets.properties"
+    )
     doLast {
         val folder = outputDir.get().asFile
         val properties = Properties().apply { load(propertiesFile.asFile.reader()) }
