@@ -58,28 +58,47 @@ internal object BotBackend {
             interaction.member == null ||
             interaction.guildId != env.DISCORD_GUILD_ID
         ) {
-            return Responses.response404
+            return api.patchFailure(
+                interactionToken = interaction.token,
+                message = "AA Directory bot cannot be invoked in this server",
+            )
         }
 
         api.deferResponse(interaction)
 
         val command = (interaction.data as? InteractionRequestData.SlashCommand)
             ?.options?.singleOrNull()
-            ?: return Responses.response404
+            ?: return api.patchFailure(
+                interactionToken = interaction.token,
+                message = "Invalid command",
+            )
 
         val response = when (command.name) {
             "verify" -> {
                 val options = command.options
-                if (options.isNullOrEmpty()) return Responses.response404
+                if (options.isNullOrEmpty()) {
+                    return api.patchFailure(
+                        interactionToken = interaction.token,
+                        message = "Invalid options, make sure the booth is formatted correctly",
+                    )
+                }
+
                 val dataYear =
-                    DataYear.deserialize(options.first { it.name == "convention" }.value!!)!!
+                    DataYear.deserialize(options.first { it.name == "convention" }.value!!)
                 val boothValue = options.first { it.name == "booth" }.value
                     ?.takeIf { it.length <= 3 }
-                    ?: return Responses.response404
-                val boothLetter = boothValue.first().takeIf { it.isLetter() }
-                    ?: return Responses.response404
-                val boothNumber = boothValue.drop(1).toIntOrNull()
-                    ?: return Responses.response404
+                val boothLetter = boothValue?.first()
+                    ?.takeIf { it.isLetter() }
+                    ?.uppercaseChar()
+                val boothNumber = boothValue?.drop(1)?.toIntOrNull()
+
+                if (dataYear == null || boothLetter == null || boothNumber == null) {
+                    return api.patchFailure(
+                        interactionToken = interaction.token,
+                        message = "Invalid inputs, make sure the booth is formatted correctly (e.g. A01)",
+                    )
+                }
+
                 val booth = "$boothLetter${boothNumber.toString().padStart(2, '0')}"
 
                 val userId = interaction.member.user.id
@@ -109,7 +128,10 @@ internal object BotBackend {
                     )
                 )
             }
-            else -> return Responses.response404
+            else -> return api.patchFailure(
+                interactionToken = interaction.token,
+                message = "Invalid command",
+            )
         }
 
         api.patchInteractionResponse(interaction.token, response)
@@ -152,7 +174,7 @@ internal object BotBackend {
         if (artistEntry == null) {
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
-                response = failureResponse(env, oAuthState.booth),
+                response = verifyFailureResponse(env, oAuthState.booth),
             )
             return Responses.responseReturnToDiscord
         }
@@ -209,14 +231,28 @@ internal object BotBackend {
         } else {
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
-                response = failureResponse(env, oAuthState.booth),
+                response = verifyFailureResponse(env, oAuthState.booth),
             )
         }
 
         return Responses.responseReturnToDiscord
     }
 
-    private fun failureResponse(env: Env, booth: String) = DiscordInteractionPatchResponse(
+    private suspend fun DiscordApi.patchFailure(
+        interactionToken: String,
+        message: String,
+    ): Response {
+        patchInteractionResponse(
+            interactionToken = interactionToken,
+            response = DiscordInteractionPatchResponse(
+                content = message,
+                flags = MessageFlags(MessageFlag.EPHEMERAL),
+            )
+        )
+        return Responses.response202
+    }
+
+    private fun verifyFailureResponse(env: Env, booth: String) = DiscordInteractionPatchResponse(
         content = """
             ## Verification failed
             Make sure that your Discord account has one of the social media accounts listed under your table ($booth) at ${env.ARTIST_ALLEY_URL} and try again in a few minutes
