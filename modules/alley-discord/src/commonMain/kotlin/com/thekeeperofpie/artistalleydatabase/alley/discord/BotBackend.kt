@@ -219,7 +219,7 @@ internal object BotBackend {
     private fun failureResponse(env: Env, booth: String) = DiscordInteractionPatchResponse(
         content = """
             ## Verification failed
-            Make sure that your Discord account has one of the social media accounts listed under your table ($booth) at ${env.ARTIST_ALLEY_URL} and try again
+            Make sure that your Discord account has one of the social media accounts listed under your table ($booth) at ${env.ARTIST_ALLEY_URL} and try again in a few minutes
         """.trimIndent(),
         flags = MessageFlags(MessageFlag.EPHEMERAL),
     )
