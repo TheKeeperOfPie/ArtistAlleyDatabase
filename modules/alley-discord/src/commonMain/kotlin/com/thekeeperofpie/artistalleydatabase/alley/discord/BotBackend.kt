@@ -196,9 +196,9 @@ internal object BotBackend {
                             ## Thank you… anime artist
                             Your URL is $accessUrl
                             
-                            Bookmark this so you can edit your data in the future; previous links are now invalid. **Do not share** this link with anyone or they'll be able to edit your data. If you ever lose it, use the bot to re-verify.
+                            Bookmark it so you can edit your data in the future; previous links are now invalid. **Do not share** it with anyone. If you ever lose the link, use the bot to re-verify.
                             ### You feel an odd compulsion to draw Miku…
-                            The doors to <#${env.DISCORD_ARTIST_CHANNEL_ID}> have opened to you
+                            The doors to <#${env.DISCORD_ARTIST_CHANNEL_ID}> have opened for you
                         """.trimIndent(),
                     flags = MessageFlags(MessageFlag.EPHEMERAL),
                     components = emptyList(),
