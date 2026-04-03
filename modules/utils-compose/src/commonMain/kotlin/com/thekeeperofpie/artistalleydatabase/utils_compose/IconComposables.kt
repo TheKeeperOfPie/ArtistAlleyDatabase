@@ -43,9 +43,10 @@ fun FilledTonalButton(
     icon: ImageVector,
     text: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     contentDescription: String? = null,
 ) {
-    FilledTonalButton(onClick = onClick) {
+    FilledTonalButton(onClick = onClick, modifier = modifier) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,

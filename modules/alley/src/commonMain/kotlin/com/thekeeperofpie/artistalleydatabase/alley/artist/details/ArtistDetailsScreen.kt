@@ -26,13 +26,11 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
@@ -45,9 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,14 +67,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_artist_detail
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_stamp_rallies
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_store
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_details_tags_unconfirmed_explanation
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_action_close
 import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_action_is_this_you
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_catalog
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_copy_discord_username
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_dm_on_bluesky
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_dm_on_instagram
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_dm_on_x
-import artistalleydatabase.modules.alley.generated.resources.alley_artist_verification_prompt_intro
 import artistalleydatabase.modules.alley.generated.resources.alley_maintainer_notes
 import artistalleydatabase.modules.alley.generated.resources.alley_open_in_map
 import artistalleydatabase.modules.alley.generated.resources.alley_open_year
@@ -98,7 +87,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.images.ImagesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.images.rememberImagePagerState
 import com.thekeeperofpie.artistalleydatabase.alley.links.CommissionModel
 import com.thekeeperofpie.artistalleydatabase.alley.links.LinkRow
-import com.thekeeperofpie.artistalleydatabase.alley.links.Logo
 import com.thekeeperofpie.artistalleydatabase.alley.links.text
 import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEntry
 import com.thekeeperofpie.artistalleydatabase.alley.notes.UserNotesText
@@ -110,7 +98,6 @@ import com.thekeeperofpie.artistalleydatabase.alley.tags.SeriesRow
 import com.thekeeperofpie.artistalleydatabase.alley.tags.previewSeriesWithUserData
 import com.thekeeperofpie.artistalleydatabase.alley.ui.InfiniteProgressIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ui.PreviewDark
-import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.utils.isOver
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
@@ -528,11 +515,9 @@ object ArtistDetailsScreen {
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
+                        // TODO: verifiedArtist check was removed here, re-add as a badge?
                         val entry = entry()
-                        if (entry != null &&
-                            !entry.artist.verifiedArtist &&
-                            !entry.artist.year.dates.isOver
-                        ) {
+                        if (entry != null && !entry.artist.year.dates.isOver) {
                             var showVerificationDialog by remember { mutableStateOf(false) }
                             FilledTonalButton(
                                 icon = Icons.Default.Verified,
@@ -749,80 +734,6 @@ object ArtistDetailsScreen {
                 content = content,
             )
         }
-    }
-
-    @Composable
-    private fun ArtistVerificationDialog(artist: ArtistEntry, onDismiss: () -> Unit) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            confirmButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(Res.string.alley_artist_verification_action_close))
-                }
-            },
-            title = { Text(stringResource(Res.string.alley_artist_verification_action_is_this_you)) },
-            text = {
-                Column {
-                    Text(
-                        stringResource(
-                            Res.string.alley_artist_verification_prompt_intro,
-                            AlleyUtils.primaryContactDiscordUsername,
-                        )
-                    )
-
-                    FlowRow(
-                        horizontalArrangement =
-                            Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(16.dp)
-                    ) {
-                        val uriHandler = LocalUriHandler.current
-                        val socialLinkModels = artist.socialLinkModels
-                        val hasBluesky = socialLinkModels.any { it.logo == Logo.BLUESKY }
-                        val hasInstagram = socialLinkModels.any { it.logo == Logo.INSTAGRAM }
-                        val hasX = socialLinkModels.any { it.logo == Logo.X }
-                        val hasAny = hasBluesky || hasInstagram || hasX
-                        if (hasBluesky || !hasAny) {
-                            FilledTonalButton(
-                                icon = Logo.BLUESKY.icon,
-                                text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_bluesky),
-                                onClick = { uriHandler.openUri(AlleyUtils.contactLinkBluesky) },
-                            )
-                        }
-                        if (hasInstagram || !hasAny) {
-                            FilledTonalButton(
-                                icon = Logo.INSTAGRAM.icon,
-                                text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_instagram),
-                                onClick = { uriHandler.openUri(AlleyUtils.contactLinkInstagram) },
-                            )
-                        }
-                        if (hasX || !hasAny) {
-                            FilledTonalButton(
-                                icon = Logo.X.icon,
-                                text = stringResource(Res.string.alley_artist_verification_prompt_dm_on_x),
-                                onClick = { uriHandler.openUri(AlleyUtils.contactLinkX) },
-                            )
-                        }
-
-                        val clipboardManager = LocalClipboardManager.current
-                        FilledTonalButton(
-                            icon = Logo.DISCORD.icon,
-                            text = stringResource(Res.string.alley_artist_verification_prompt_copy_discord_username),
-                            onClick = {
-                                clipboardManager.setText(
-                                    AnnotatedString(
-                                        AlleyUtils.primaryContactDiscordUsername.removePrefix("@")
-                                    )
-                                )
-                            },
-                        )
-                    }
-
-                    Text(stringResource(Res.string.alley_artist_verification_prompt_catalog))
-                }
-            }
-        )
     }
 
     sealed interface Event {
