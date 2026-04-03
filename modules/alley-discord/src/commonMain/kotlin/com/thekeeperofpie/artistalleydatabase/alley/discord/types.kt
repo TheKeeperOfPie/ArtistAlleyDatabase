@@ -18,4 +18,5 @@ external interface Env {
     val ARTIST_ALLEY_DB: D1Database
     val ARTIST_ALLEY_FORM_DB: D1Database
     val ARTIST_ALLEY_URL: String
+    val BROWSER_REDIRECT_URL: String
 }

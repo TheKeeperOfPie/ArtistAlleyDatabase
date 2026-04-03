@@ -18,7 +18,8 @@
         "DISCORD_GUILD_ID": "discordGuildId",
         "DISCORD_ARTIST_ROLE_ID": "discordArtistRoleId",
         "DISCORD_ARTIST_CHANNEL_ID": "discordArtistChannelId",
-        "ARTIST_ALLEY_URL": "artistAlleyUrl"
+        "ARTIST_ALLEY_URL": "artistAlleyUrl",
+        "BROWSER_REDIRECT_URL": "browserRedirectUrl"
     },
     "kv_namespaces": [
         {

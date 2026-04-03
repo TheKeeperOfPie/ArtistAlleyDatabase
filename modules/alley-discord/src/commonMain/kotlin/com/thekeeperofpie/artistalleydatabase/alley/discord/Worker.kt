@@ -28,7 +28,8 @@ class Worker {
             val path = URL(request.url).pathname.removePrefix("/")
             val api = DiscordApi(env, json)
             return@promise when (path) {
-                "verify" -> BotBackend.verifyArtist(request, env, api)
+                "connect" -> BotBackend.verifyArtistBrowser(request, env, api)
+                "verify" -> BotBackend.verifyArtistDiscord(request, env, api)
                 "interactions" -> BotBackend.handleInteraction(request, env, json, api)
                 "commands" -> {
                     if (DEBUG) {

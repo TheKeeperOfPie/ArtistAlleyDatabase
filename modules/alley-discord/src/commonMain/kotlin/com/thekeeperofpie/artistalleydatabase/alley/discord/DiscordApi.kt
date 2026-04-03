@@ -144,7 +144,7 @@ internal class DiscordApi(
         }
     }
 
-    suspend fun getAuth(authCode: String): AuthTokenResponse {
+    suspend fun getAuth(authCode: String, redirectUri: String): AuthTokenResponse {
         val result = fetch(
             Request(
                 "https://discord.com/api/oauth2/token",
@@ -159,7 +159,7 @@ internal class DiscordApi(
                         set("client_secret", env.DISCORD_BOT_CLIENT_SECRET)
                         set("grant_type", "authorization_code")
                         set("code", authCode)
-                        set("redirect_uri", env.DISCORD_BOT_REDIRECT_URL)
+                        set("redirect_uri", redirectUri)
                     },
                     cache = undefined,
                     integrity = undefined,

@@ -44,6 +44,55 @@ internal object Responses {
                 },
             )
         )
+
+    val failedToConnectInBrowser
+        get() = Response(
+            """
+                <!DOCTYPE html>
+                <html lang="en">
+                  <head>
+                    <meta charset="utf-8">
+                    <meta name="color-scheme" content="dark light" />
+                    <title>Artist Alley Directory Verification</title>
+                  </head>
+                  <body>
+                    <h2>Failed to connect Discord account, make sure your account has one of the social media sites from your artist page connected and try again in a few minutes</h2>
+                  </body>
+                </html>
+            """.trimIndent(),
+            ResponseInit(
+                status = 202,
+                headers = Headers().apply {
+                    set("Content-Type", "text/html")
+                },
+            )
+        )
+
+    fun successConnectInBrowser(accessUrl: String) =
+        Response(
+            """
+                <!DOCTYPE html>
+                <html lang="en">
+                  <head>
+                    <meta charset="utf-8">
+                    <meta name="color-scheme" content="dark light" />
+                    <title>Artist Alley Directory Verification</title>
+                  </head>
+                  <body>
+                    <div style="word-break: break-all">
+                        <h2>Your access link is <a href="$accessUrl">$accessUrl<a/></h2>
+                        <h3>Bookmark it so you can edit your data in the future; previous links are now invalid. Do not share it with anyone. If you ever lose the link, re-verify on your artist page.</h3>
+                    </div>
+                  </body>
+                </html>
+            """.trimIndent(),
+            ResponseInit(
+                status = 202,
+                headers = Headers().apply {
+                    set("Content-Type", "text/html")
+                },
+            )
+        )
 }
 
 internal inline fun <reified T> jsonResponse(value: T) = Response(

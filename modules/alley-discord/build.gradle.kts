@@ -82,7 +82,11 @@ artifacts {
 }
 
 val isWasmDebug = project.hasProperty("wasmDebug")
-val outputDir = "dist/web"
+val outputDir = if (isWasmDebug) {
+    "dist/web/development"
+} else {
+    "dist/web/production"
+}
 val buildTask = tasks.named("jsProductionExecutableCompileSync")
 
 val syncOutput by tasks.registering(Sync::class) {
@@ -162,6 +166,7 @@ tasks.register("webRelease") {
             .replace("artistAlleyDatabaseId", properties.getProperty("artistAlleyDatabaseId"))
             .replace("artistAlleyFormDatabaseId", properties.getProperty("artistAlleyFormDatabaseId"))
             .replace("artistAlleyUrl", properties.getProperty("artistAlleyUrl"))
+            .replace("browserRedirectUrl", properties.getProperty("browserRedirectUrl"))
         wranglerJson.writeText(wranglerJsonEdited)
     }
 }

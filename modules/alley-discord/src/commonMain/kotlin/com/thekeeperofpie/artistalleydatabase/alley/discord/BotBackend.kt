@@ -139,7 +139,27 @@ internal object BotBackend {
         return Responses.response202
     }
 
-    suspend fun verifyArtist(request: Request, env: Env, api: DiscordApi): Response {
+    suspend fun verifyArtistBrowser(request: Request, env: Env, api: DiscordApi): Response {
+        val params = URL(request.url).searchParams
+        val code = params.get("code")
+        val booth = params.get("state")?.takeIf { it.length == 3 }
+        if (code.isNullOrBlank() || booth.isNullOrBlank()) return Responses.response401
+
+        val accessUrl = verifyArtist(
+            env = env,
+            api = api,
+            redirectUri = env.BROWSER_REDIRECT_URL,
+            code = code,
+            booth = booth
+        )
+        return if (accessUrl == null) {
+            Responses.failedToConnectInBrowser
+        } else {
+            Responses.successConnectInBrowser(accessUrl)
+        }
+    }
+
+    suspend fun verifyArtistDiscord(request: Request, env: Env, api: DiscordApi): Response {
         val params = URL(request.url).searchParams
         val code = params.get("code")
         val state = params.get("state")
@@ -156,58 +176,19 @@ internal object BotBackend {
         env.ARTIST_ALLEY_BOT_KV.delete(oAuthState.userId).await()
         if (interactionToken.isNullOrBlank()) return Responses.response401
 
-        val authResponse = api.getAuth(code)
-        val connections = try {
-            api.getConnections(authResponse.accessToken)
-        } finally {
-            try {
-                api.revokeToken(authResponse.accessToken, isRefreshToken = false)
-            } finally {
-                api.revokeToken(authResponse.accessToken, isRefreshToken = true)
-            }
-        }
-
-        val artistEntry = Databases.editDatabase(env)
-            .artistEntryAnimeExpo2026Queries
-            .getArtistByBooth(oAuthState.booth)
-            .awaitAsOneOrNull()
-        if (artistEntry == null) {
+        val accessUrl = verifyArtist(
+            env = env,
+            api = api,
+            redirectUri = env.DISCORD_BOT_REDIRECT_URL,
+            code = code,
+            booth = oAuthState.booth,
+        )
+        if (accessUrl == null) {
             api.patchInteractionResponse(
                 interactionToken = interactionToken,
                 response = verifyFailureResponse(env, oAuthState.booth),
             )
-            return Responses.responseReturnToDiscord
-        }
-
-        val linkTypeToIdentifier = artistEntry.socialLinks.mapNotNull(Link::parse)
-            .associate { it.type to it.identifier }
-        val verified = connections.any {
-            val type = when (it.type) {
-                Connection.Type.BLUESKY -> Link.Type.BLUESKY
-                Connection.Type.FACEBOOK -> Link.Type.FACEBOOK
-                Connection.Type.INSTAGRAM -> Link.Type.INSTAGRAM
-                Connection.Type.TIK_TOK -> Link.Type.TIK_TOK
-                Connection.Type.TWITCH -> Link.Type.TWITCH
-                Connection.Type.YOU_TUBE -> Link.Type.YOU_TUBE
-                Connection.Type.X -> Link.Type.X
-                null -> return@any false
-            }
-            val identifier = linkTypeToIdentifier[type]?.ifBlank { null }
-                ?: return@any false
-            it.name.equals(identifier, ignoreCase = true)
-        }
-
-        if (verified) {
-            val keys = AlleyCryptography.generate()
-            Databases.formDatabase(env)
-                .alleyFormPublicKeyQueries
-                .insertPublicKey(
-                    ArtistFormPublicKey(
-                        artistId = Uuid.parse(artistEntry.id),
-                        publicKey = keys.publicKey,
-                    )
-                )
-            val accessUrl = AlleyDataUtils.formLink(BuildKonfig.formUrl, keys.privateKey)
+        } else {
             try {
                 api.grantRole(oAuthState.userId)
             } catch (_: Throwable) {
@@ -228,14 +209,65 @@ internal object BotBackend {
                     components = emptyList(),
                 )
             )
-        } else {
-            api.patchInteractionResponse(
-                interactionToken = interactionToken,
-                response = verifyFailureResponse(env, oAuthState.booth),
-            )
         }
 
         return Responses.responseReturnToDiscord
+    }
+
+    private suspend fun verifyArtist(
+        env: Env,
+        api: DiscordApi,
+        redirectUri: String,
+        code: String,
+        booth: String,
+    ): String? {
+        val authResponse = api.getAuth(code, redirectUri)
+        val connections = try {
+            api.getConnections(authResponse.accessToken)
+        } finally {
+            try {
+                api.revokeToken(authResponse.accessToken, isRefreshToken = false)
+            } finally {
+                api.revokeToken(authResponse.accessToken, isRefreshToken = true)
+            }
+        }
+
+        val artistEntry = Databases.editDatabase(env)
+            .artistEntryAnimeExpo2026Queries
+            .getArtistByBooth(booth)
+            .awaitAsOneOrNull()
+            ?: return null
+
+        val linkTypeToIdentifier = artistEntry.socialLinks.mapNotNull(Link::parse)
+            .associate { it.type to it.identifier }
+        val verified = connections.any {
+            val type = when (it.type) {
+                Connection.Type.BLUESKY -> Link.Type.BLUESKY
+                Connection.Type.FACEBOOK -> Link.Type.FACEBOOK
+                Connection.Type.INSTAGRAM -> Link.Type.INSTAGRAM
+                Connection.Type.TIK_TOK -> Link.Type.TIK_TOK
+                Connection.Type.TWITCH -> Link.Type.TWITCH
+                Connection.Type.YOU_TUBE -> Link.Type.YOU_TUBE
+                Connection.Type.X -> Link.Type.X
+                null -> return@any false
+            }
+            val identifier = linkTypeToIdentifier[type]?.ifBlank { null }
+                ?: return@any false
+            it.name.equals(identifier, ignoreCase = true)
+        }
+
+        if (!verified) return null
+
+        val keys = AlleyCryptography.generate()
+        Databases.formDatabase(env)
+            .alleyFormPublicKeyQueries
+            .insertPublicKey(
+                ArtistFormPublicKey(
+                    artistId = Uuid.parse(artistEntry.id),
+                    publicKey = keys.publicKey,
+                )
+            )
+        return AlleyDataUtils.formLink(BuildKonfig.formUrl, keys.privateKey)
     }
 
     private suspend fun DiscordApi.patchFailure(
