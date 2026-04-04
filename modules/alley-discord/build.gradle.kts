@@ -36,6 +36,7 @@ kotlin {
             implementation(projects.modules.alley.form.data)
             implementation(projects.modules.alley.models)
             implementation(projects.modules.cloudflare)
+            implementation(projects.modules.discord)
             implementation(npm("discord-interactions", "4.4.0"))
         }
     }

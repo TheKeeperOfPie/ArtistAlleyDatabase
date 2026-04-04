@@ -87,6 +87,7 @@
             <option value="$PROJECT_DIR$/modules/cloudflare" />
             <option value="$PROJECT_DIR$/modules/data" />
             <option value="$PROJECT_DIR$/modules/debug" />
+            <option value="$PROJECT_DIR$/modules/discord" />
             <option value="$PROJECT_DIR$/modules/entry" />
             <option value="$PROJECT_DIR$/modules/image" />
             <option value="$PROJECT_DIR$/modules/markdown" />

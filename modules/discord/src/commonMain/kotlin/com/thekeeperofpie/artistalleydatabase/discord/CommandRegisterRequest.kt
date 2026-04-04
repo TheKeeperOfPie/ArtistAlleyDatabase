@@ -1,10 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class CommandRegisterRequest(
+data class CommandRegisterRequest(
     val name: String,
     val type: CommandType,
     val description: String,
@@ -18,7 +18,7 @@ internal data class CommandRegisterRequest(
         PRIMARY_ENTRY_POINT(4),
         ;
 
-        internal object Serializer :
+        object Serializer :
             IntEnumSerializer<CommandType>(
                 entries = CommandType.entries,
                 serialName = "CommandType",

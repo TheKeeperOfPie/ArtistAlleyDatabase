@@ -1,9 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class Connection(
+data class Connection(
     val type: Type? = null,
     val name: String,
     val revoked: Boolean? = null,

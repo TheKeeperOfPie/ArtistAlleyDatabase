@@ -1,9 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.Serializable
 
 @Serializable(with = InteractionType.Serializer::class)
-internal enum class InteractionType(val value: Int) {
+enum class InteractionType(val value: Int) {
     PING(1),
     APPLICATION_COMMAND(2),
     MESSAGE_COMPONENT(3),
@@ -11,7 +11,7 @@ internal enum class InteractionType(val value: Int) {
     MODAL_SUBMIT(5),
     ;
 
-    internal object Serializer :
+    object Serializer :
         IntEnumSerializer<InteractionType>(
             entries = InteractionType.entries,
             serialName = "InteractionType",

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -10,7 +10,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlin.enums.EnumEntries
 
 @OptIn(ExperimentalSerializationApi::class)
-internal abstract class IntEnumSerializer<T : Enum<T>>(
+abstract class IntEnumSerializer<T : Enum<T>>(
     private val entries: EnumEntries<T>,
     serialName: String,
     private val value: (T) -> Int,
@@ -32,7 +32,7 @@ internal abstract class IntEnumSerializer<T : Enum<T>>(
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-internal abstract class NullableStringEnumSerializer<T : Enum<T>>(
+abstract class NullableStringEnumSerializer<T : Enum<T>>(
     private val entries: EnumEntries<T>,
     serialName: String,
     private val value: (T) -> String,

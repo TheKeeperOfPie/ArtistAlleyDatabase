@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
-import com.thekeeperofpie.artistalleydatabase.alley.discord.Responses.response404
 import com.thekeeperofpie.artistalleydatabase.alley.discord.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.cloudflare.promise
 import kotlinx.coroutines.await
@@ -36,7 +35,7 @@ class Worker {
                         val result = api.syncCommands()
                         jsonResponse("Updated commands $result")
                     } else {
-                        response404
+                        Responses.response404
                     }
                 }
                 "database" -> {
@@ -94,10 +93,10 @@ class Worker {
                         queries.updateTestArtistSocialLink(listOf(socialLink))
                         jsonResponse("Updated test artist social link to $socialLink")
                     } else {
-                        response404
+                        Responses.response404
                     }
                 }
-                else -> response404
+                else -> Responses.response404
             }
         }
     }

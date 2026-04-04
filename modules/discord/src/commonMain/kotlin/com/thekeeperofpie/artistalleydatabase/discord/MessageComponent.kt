@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -9,7 +9,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = MessageComponent.Serializer::class)
-internal sealed interface MessageComponent {
+sealed interface MessageComponent {
 
     val type: Int
 

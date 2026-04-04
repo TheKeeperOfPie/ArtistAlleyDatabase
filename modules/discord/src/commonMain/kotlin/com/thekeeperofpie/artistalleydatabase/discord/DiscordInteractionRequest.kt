@@ -1,10 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class DiscordInteractionRequest(
+data class DiscordInteractionRequest(
     val type: InteractionType? = null,
     val id: String,
     val token: String,

@@ -1,9 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.Serializable
 
 @Serializable(with = OptionType.Serializer::class)
-internal enum class OptionType(val value: Int) {
+enum class OptionType(val value: Int) {
     SUB_COMMAND(1),
     SUB_COMMAND_GROUP(2),
     STRING(3),

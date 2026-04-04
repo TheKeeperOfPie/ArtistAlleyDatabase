@@ -1,15 +1,15 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal value class MessageFlags(val flags: Int) {
+value class MessageFlags(val flags: Int) {
     constructor(vararg flags: MessageFlag) : this(
         flags = flags.fold(0) { acc, value -> acc or value.flag }
     )
 }
 
-internal enum class MessageFlag(val flag: Int) {
+enum class MessageFlag(val flag: Int) {
     CROSSPOSTED(1 shl 0),
     IS_CROSSPOST(1 shl 1),
     SUPPRESS_EMBEDS(1 shl 2),

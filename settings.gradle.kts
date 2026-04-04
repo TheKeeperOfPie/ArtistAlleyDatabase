@@ -145,6 +145,7 @@ include(
     ":modules:cloudflare",
     ":modules:data",
     ":modules:debug",
+    ":modules:discord",
     ":modules:entry",
     ":modules:image",
     ":modules:markdown",

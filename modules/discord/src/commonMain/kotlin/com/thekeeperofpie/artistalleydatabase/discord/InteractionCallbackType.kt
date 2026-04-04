@@ -1,9 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.alley.discord.models
+package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.Serializable
 
 @Serializable(with = InteractionCallbackType.Serializer::class)
-internal enum class InteractionCallbackType(val value: Int) {
+enum class InteractionCallbackType(val value: Int) {
     PONG(1),
     CHANNEL_MESSAGE_WITH_SOURCE(4),
     DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE(5),
@@ -15,7 +15,7 @@ internal enum class InteractionCallbackType(val value: Int) {
     LAUNCH_ACTIVITY(12),
     ;
 
-    internal object Serializer :
+    object Serializer :
         IntEnumSerializer<InteractionCallbackType>(
             entries = InteractionCallbackType.entries,
             serialName = "InteractionCallbackType",

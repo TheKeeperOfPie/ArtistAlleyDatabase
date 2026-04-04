@@ -2,17 +2,19 @@ package com.thekeeperofpie.artistalleydatabase.alley.discord
 
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.thekeeperofpie.artistalleydatabase.alley.data.AlleyDataUtils
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.Connection
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordInteractionPatchResponse
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordInteractionRequest
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordInteractionResponse
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionCallbackType
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionRequestData
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionType
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.MessageComponent
 import com.thekeeperofpie.artistalleydatabase.alley.discord.secrets.BuildKonfig
 import com.thekeeperofpie.artistalleydatabase.alley.form.data.ArtistFormPublicKey
 import com.thekeeperofpie.artistalleydatabase.alley.models.AlleyCryptography
+import com.thekeeperofpie.artistalleydatabase.discord.Connection
+import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionPatchResponse
+import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionRequest
+import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionResponse
+import com.thekeeperofpie.artistalleydatabase.discord.InteractionCallbackType
+import com.thekeeperofpie.artistalleydatabase.discord.InteractionRequestData
+import com.thekeeperofpie.artistalleydatabase.discord.InteractionType
+import com.thekeeperofpie.artistalleydatabase.discord.MessageComponent
+import com.thekeeperofpie.artistalleydatabase.discord.MessageFlag
+import com.thekeeperofpie.artistalleydatabase.discord.MessageFlags
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.Link
 import kotlinx.coroutines.await
@@ -50,12 +52,13 @@ internal object BotBackend {
 
         val interaction = json.decodeFromString<DiscordInteractionRequest>(body)
         val interactionType = interaction.type
+        val member = interaction.member
         if (interactionType == InteractionType.PING) {
             return jsonResponse(
                 DiscordInteractionResponse(type = InteractionCallbackType.PONG)
             )
         } else if (interactionType == null ||
-            interaction.member == null ||
+            member == null ||
             interaction.guildId != env.DISCORD_GUILD_ID
         ) {
             return api.patchFailure(
@@ -101,7 +104,7 @@ internal object BotBackend {
 
                 val booth = "$boothLetter${boothNumber.toString().padStart(2, '0')}"
 
-                val userId = interaction.member.user.id
+                val userId = member.user.id
                 env.ARTIST_ALLEY_BOT_KV.put(userId, interaction.token).await()
                 DiscordInteractionPatchResponse(
                     // TODO: Use UI string for name

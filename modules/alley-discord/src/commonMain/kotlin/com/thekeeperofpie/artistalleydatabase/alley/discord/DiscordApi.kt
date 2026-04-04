@@ -1,15 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.alley.discord
 
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.AuthTokenResponse
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.Command
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.CommandRegisterRequest
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.Connection
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordInteractionPatchResponse
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordInteractionRequest
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.DiscordInteractionResponse
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionCallbackType
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.InteractionResponseData
-import com.thekeeperofpie.artistalleydatabase.alley.discord.models.OptionType
+import com.thekeeperofpie.artistalleydatabase.discord.AuthTokenResponse
+import com.thekeeperofpie.artistalleydatabase.discord.Command
+import com.thekeeperofpie.artistalleydatabase.discord.CommandRegisterRequest
+import com.thekeeperofpie.artistalleydatabase.discord.Connection
+import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionPatchResponse
+import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionRequest
+import com.thekeeperofpie.artistalleydatabase.discord.DiscordInteractionResponse
+import com.thekeeperofpie.artistalleydatabase.discord.InteractionCallbackType
+import com.thekeeperofpie.artistalleydatabase.discord.InteractionResponseData
+import com.thekeeperofpie.artistalleydatabase.discord.MessageFlag
+import com.thekeeperofpie.artistalleydatabase.discord.MessageFlags
+import com.thekeeperofpie.artistalleydatabase.discord.OptionType
 import com.thekeeperofpie.artistalleydatabase.shared.alley.data.DataYear
 import kotlinx.coroutines.await
 import kotlinx.serialization.json.Json
