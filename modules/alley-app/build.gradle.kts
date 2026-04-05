@@ -172,6 +172,10 @@ dependencies {
     }
 }
 
+tasks.named("copyNonXmlValueResourcesForCommonMain").configure {
+    dependsOn("exportLibraryDefinitions")
+}
+
 val isWasmDebug = project.hasProperty("wasmDebug")
 val outputDir = if (isWasmDebug) {
     "dist/web/developmentExecutable"

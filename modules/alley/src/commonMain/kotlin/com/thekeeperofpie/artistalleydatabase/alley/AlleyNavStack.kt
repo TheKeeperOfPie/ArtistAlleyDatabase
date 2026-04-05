@@ -23,6 +23,7 @@ private val SavedStateConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(baseClass = NavKey::class) {
             subclass(serializer = AlleyDestination.Home.serializer())
+            subclass(serializer = AlleyDestination.AboutLibraries.serializer())
             subclass(serializer = AlleyDestination.ArtistDetails.serializer())
             subclass(serializer = AlleyDestination.ArtistMap.serializer())
             subclass(serializer = AlleyDestination.ArtistsList.serializer())
