@@ -36,6 +36,7 @@
             <option value="$PROJECT_DIR$/modules/alley-discord" />
             <option value="$PROJECT_DIR$/modules/alley-edit" />
             <option value="$PROJECT_DIR$/modules/alley-form" />
+            <option value="$PROJECT_DIR$/modules/alley-forum" />
             <option value="$PROJECT_DIR$/modules/alley-functions" />
             <option value="$PROJECT_DIR$/modules/alley-functions/middleware" />
             <option value="$PROJECT_DIR$/modules/alley/data" />

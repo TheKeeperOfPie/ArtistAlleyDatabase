@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.discord
 
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
+@JvmInline
 @Serializable
 value class MessageFlags(val flags: Int) {
     constructor(vararg flags: MessageFlag) : this(

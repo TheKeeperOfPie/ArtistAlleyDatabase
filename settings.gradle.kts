@@ -101,6 +101,7 @@ include(
     ":modules:alley-discord",
     ":modules:alley-edit",
     ":modules:alley-form",
+    ":modules:alley-forum",
     ":modules:alley-functions",
     ":modules:alley-functions:middleware",
     ":modules:anilist",

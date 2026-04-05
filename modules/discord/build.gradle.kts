@@ -1,4 +1,5 @@
 plugins {
+    id("library-desktop")
     id("library-web")
     id("org.jetbrains.kotlin.plugin.serialization")
 }

@@ -1,0 +1,154 @@
+package com.thekeeperofpie.artistalleydatabase.alley.forum
+
+import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import artistalleydatabase.modules.alley.data.generated.resources.Res
+import com.thekeeperofpie.artistalleydatabase.alley.data.ArtistEntryAnimeExpo2026
+import com.thekeeperofpie.artistalleydatabase.alley.data.ColumnAdapters
+import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.discord.Thread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.nio.file.Files
+import kotlin.time.Duration.Companion.seconds
+
+internal object ForumSyncer {
+
+    suspend fun syncThreads() = withContext(Dispatchers.IO) {
+        val database = AlleySqlDatabase(
+            driver = createDriver(),
+            artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
+        )
+        val artists = database.artistEntryAnimeExpo2026Queries.getArtists()
+            .awaitAsList()
+            .filterNot { it.booth.isNullOrBlank() }
+            .take(10)
+            .map { it to it.threadContent }
+            .shuffled()
+
+        val threadsList = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        println("threadsList = $threadsList")
+
+        val threads = threadsList.threads
+            .map {
+                delay(1.seconds)
+                it to DiscordApi.getChannelMessage(it.id, it.id)
+            }
+            .toMutableSet()
+
+        val missing = mutableListOf<ArtistEntryAnimeExpo2026>()
+        val changed = mutableListOf<Pair<ArtistEntryAnimeExpo2026, Thread>>()
+        artists.forEach { (artist, expectedContent) ->
+            val thread = threads.find { it.first.name == artist.threadTitle }
+            threads.remove(thread)
+            if (thread == null) {
+                missing += artist
+            } else if (thread.second.content != expectedContent) {
+                changed += artist to thread.first
+            }
+        }
+
+        println("Missing = ${missing.sortedBy { it.booth }.map { it.threadTitle }}")
+        println("Changed = ${changed.sortedBy { it.first.booth }.map { it.first.threadTitle }}")
+        println("Removed = ${threads.map { it.first.name }}")
+
+        missing.forEach {
+            delay(1.seconds)
+            DiscordApi.createThread(
+                channelId = BuildKonfig.discordForumChannelId,
+                title = it.threadTitle,
+                message = it.threadContent,
+            )
+            println("Created ${it.threadTitle}")
+        }
+
+        changed.forEach {
+            delay(1.seconds)
+            DiscordApi.editMessage(
+                channelId = it.second.id,
+                messageId = it.second.id,
+                message = it.first.threadContent,
+            )
+            if (it.second.name != it.first.threadTitle) {
+                delay(1.seconds)
+                DiscordApi.modifyThread(threadId = it.second.id, name = it.first.threadTitle)
+            }
+            println("Updated ${it.second.name}")
+        }
+
+        threads.forEach {
+            delay(1.seconds)
+            DiscordApi.modifyThread(threadId = it.first.id, archived = true)
+        }
+    }
+
+    private val ArtistEntryAnimeExpo2026.threadTitle get() = "$booth - $name"
+    private val ArtistEntryAnimeExpo2026.threadContent
+        get() = buildString {
+            if (!summary.isNullOrBlank()) {
+                appendLine(summary)
+            }
+
+            // Portfolio goes first to ensure image preview shows artwork
+            if (portfolioLinks.isNotEmpty()) {
+                appendLine("### Portfolio")
+                portfolioLinks.forEach {
+                    appendLine("- $it")
+                }
+            }
+
+            if (socialLinks.isNotEmpty()) {
+                appendLine("### Links")
+                socialLinks.forEach {
+                    appendLine("- $it")
+                }
+            }
+
+            if (storeLinks.isNotEmpty()) {
+                appendLine("### Store")
+                storeLinks.forEach {
+                    appendLine("- $it")
+                }
+            }
+
+            if (commissions.isNotEmpty()) {
+                appendLine("### Commissions")
+                commissions.forEach {
+                    appendLine("- $it")
+                }
+            }
+
+            if (seriesConfirmed.isNotEmpty()) {
+                appendLine("### Series")
+                seriesConfirmed.forEach {
+                    appendLine("- $it")
+                }
+            } else if (seriesInferred.isNotEmpty()) {
+                appendLine("### Series - Unconfirmed")
+                seriesInferred.forEach {
+                    appendLine("- $it")
+                }
+            }
+
+            if (merchConfirmed.isNotEmpty()) {
+                appendLine("### Merch")
+                merchConfirmed.forEach {
+                    appendLine("- $it")
+                }
+            } else if (merchInferred.isNotEmpty()) {
+                appendLine("### Merch - Unconfirmed")
+                merchInferred.forEach {
+                    appendLine("- $it")
+                }
+            }
+        }
+
+    private suspend fun createDriver(): SqlDriver = withContext(Dispatchers.IO) {
+        val file = Files.createTempFile(null, ".sqlite").toFile()
+        file.deleteOnExit()
+        file.writeBytes(Res.readBytes("files/database.sqlite"))
+        JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+    }
+}

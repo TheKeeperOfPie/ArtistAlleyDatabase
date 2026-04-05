@@ -1,0 +1,3 @@
+getArtists:
+SELECT * FROM artistEntryAnimeExpo2026
+ORDER BY booth ASC;
