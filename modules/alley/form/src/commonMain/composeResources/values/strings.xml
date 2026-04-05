@@ -6,9 +6,6 @@
     <string name="alley_form_saved_changes">Saved changes</string>
     <string name="alley_form_action_save_tooltip">Save changes</string>
     <string name="alley_form_action_done">Submit response</string>
-    <string name="alley_form_log_out_prompt">It's also possible that Cloudflare invalidated your session. You can try logging out and logging back in to re-select your Google account.</string>
-    <string name="alley_form_log_out_prompt_action_log_out">Log out</string>
-    <string name="alley_form_log_out_prompt_action_log_in">Log in</string>
 
     <string name="alley_form_artist_title">Form for %1$s - %2$s</string>
     <string name="alley_form_action_submit_private_key">Submit</string>

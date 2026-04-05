@@ -21,7 +21,6 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -92,7 +91,8 @@ internal object ArtistFormHomeScreen {
                 appendLine()
                 appendLine(
                     "You were linked here because you're an artist tabling at one of the " +
-                            "conventions we tag, Anime Expo or Anime NYC."
+                            "conventions we tag, Anime Expo or Anime NYC. The following page " +
+                            "will let you edit the data on your artist profile."
                 )
                 appendLine()
                 append("You can see the public site ")
@@ -103,31 +103,16 @@ internal object ArtistFormHomeScreen {
                 }
                 appendLine()
                 append(
-                    "On the next page, you will be required to log in with a Google account. This is " +
-                            "for spam protection. Cloudflare will see your email address and will " +
-                            "retain access logs per their "
-                )
-
-                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    withLink(LinkAnnotation.Url("https://developers.cloudflare.com/cloudflare-one/insights/logs/#log-retention")) {
-                        append("retention policy")
-                    }
-                }
-                append(", but we do")
-                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                    append(" NOT ")
-                }
-                appendLine(
-                    "use this information for anything else. The access key in the link " +
-                            "you were provided is used to identify you and should not be shared with " +
-                            "anyone."
-                )
-                appendLine()
-                appendLine(
                     "If you have questions/concerns, or want to submit your info in an " +
                             "alternative manner, please contact " +
-                            "${AlleyUtils.primaryContactDiscordUsername} on Discord."
+                            "${AlleyUtils.primaryContactDiscordUsername} on Discord or visit us in "
                 )
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    withLink(LinkAnnotation.Url(AlleyUtils.serverUrl)) {
+                        append("the AX Discord server")
+                    }
+                }
+                appendLine(".")
             },
             modifier = modifier
         )

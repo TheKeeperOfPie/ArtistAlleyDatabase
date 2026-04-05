@@ -88,9 +88,6 @@ import artistalleydatabase.modules.alley.form.generated.resources.alley_form_don
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_done_validation_text
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_error_saving_bad_fields
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_last_response_restored
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_log_out_prompt
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_log_out_prompt_action_log_in
-import artistalleydatabase.modules.alley.form.generated.resources.alley_form_log_out_prompt_action_log_out
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_notes
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_action_confirm
 import artistalleydatabase.modules.alley.form.generated.resources.alley_form_previous_year_prompt
@@ -873,6 +870,8 @@ object ArtistFormScreen {
                                 style = MaterialTheme.typography.titleMedium,
                             )
 
+                            Spacer(Modifier.height(16.dp))
+
                             // Do not use rememberTextFieldState to avoid key being persisted
                             val state = remember { TextFieldState("") }
                             OutlinedTextField(state = state, modifier = Modifier.fillMaxWidth())
@@ -880,24 +879,6 @@ object ArtistFormScreen {
                             // TODO: Show a new error message if the key is incorrect
                             FilledTonalButton(onClick = { onSubmitKey(state.text.toString()) }) {
                                 Text(stringResource(Res.string.alley_form_action_submit_private_key))
-                            }
-
-                            Spacer(Modifier.height(24.dp))
-
-                            Text(
-                                text = stringResource(Res.string.alley_form_log_out_prompt),
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-
-                            val uriHandler = LocalUriHandler.current
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                FilledTonalButton(onClick = { uriHandler.openUri(AlleyUtils.logOutUrl) }) {
-                                    Text(stringResource(Res.string.alley_form_log_out_prompt_action_log_out))
-                                }
-
-                                FilledTonalButton(onClick = { uriHandler.openUri(AlleyUtils.formLogInUrl) }) {
-                                    Text(stringResource(Res.string.alley_form_log_out_prompt_action_log_in))
-                                }
                             }
                         }
                         Box(modifier = Modifier.matchParentSize()) {

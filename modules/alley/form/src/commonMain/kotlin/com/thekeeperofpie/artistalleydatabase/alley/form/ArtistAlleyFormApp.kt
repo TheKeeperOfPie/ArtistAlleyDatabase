@@ -57,7 +57,6 @@ fun rememberFormTwoWayStack() =
 fun ArtistAlleyFormApp(
     graph: ArtistAlleyFormGraph,
     navStack: TwoWayStack = rememberFormTwoWayStack(),
-    onOpenForm: (() -> Unit)? = null,
 ) {
     CompositionLocalProvider(LocalNavigationController provides remember {
         object : NavigationController {
@@ -108,7 +107,6 @@ fun ArtistAlleyFormApp(
                         graph = graph,
                         onNavigate = navStack::navigate,
                         onClickBack = onClickBack,
-                        onOpenForm = onOpenForm,
                     )
                 }
 
@@ -142,18 +140,13 @@ fun EntryProviderScope<NavKey>.addFormEntryProviders(
     graph: ArtistAlleyFormGraph,
     onNavigate: (NavKey) -> Unit,
     onClickBack: (force: Boolean) -> Unit,
-    onOpenForm: (() -> Unit)?,
 ) {
     sharedElementEntry<AlleyFormDestination.Home> {
         ArtistFormHomeScreen(
             onOpenForm = {
-                if (onOpenForm != null) {
-                    onOpenForm()
-                } else {
-                    onNavigate(
-                        AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026)
-                    )
-                }
+                onNavigate(
+                    AlleyFormDestination.ArtistForm(DataYear.ANIME_EXPO_2026)
+                )
             },
         )
     }

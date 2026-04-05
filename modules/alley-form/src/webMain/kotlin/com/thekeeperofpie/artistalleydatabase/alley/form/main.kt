@@ -122,9 +122,7 @@ private fun Content(graph: ArtistAlleyFormGraph) {
         CompositionLocalProvider(
             LocalWindowConfiguration provides windowConfiguration,
         ) {
-            ArtistAlleyFormApp(graph = graph, navStack = navStack, onOpenForm = {
-                window.open(window.location.origin + "/form/api/login?openForm=true", "_self")
-            })
+            ArtistAlleyFormApp(graph = graph, navStack = navStack)
 
             val scope = rememberCoroutineScope()
             val browserInput = remember(scope, navStack) { BrowserInput(scope, navStack) }
