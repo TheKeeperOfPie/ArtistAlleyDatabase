@@ -24,12 +24,7 @@ class Middleware {
             } else when {
                 pathSegments.getOrNull(1) == "form" &&
                         pathSegments.getOrNull(2) == "api" ->
-                    cloudflare.onRequest(
-                        pluginData = PluginArgs(
-                            domain = BuildKonfig.cloudflareAccessDomain,
-                            aud = BuildKonfig.cloudflareAccessFormAudienceTag,
-                        )
-                    )(context)
+                    context.next(context.request)
                 pathSegments.getOrNull(1) == "edit" &&
                         pathSegments.getOrNull(2) == "api" ->
                     cloudflare.onRequest(
