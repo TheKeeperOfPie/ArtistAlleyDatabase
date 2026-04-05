@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.com.google.devtools.ksp.gradle.plugin)
     implementation(libs.apache.commons.csv)
     implementation(libs.apache.commons.io)
+    implementation(libs.com.mikepenz.aboutlibraries.plugin.gradle.plugin)
     implementation(libs.compose.compiler.gradle.plugin)
     implementation(libs.dev.zacsweers.metro.gradle.plugin)
     implementation(libs.gradle)

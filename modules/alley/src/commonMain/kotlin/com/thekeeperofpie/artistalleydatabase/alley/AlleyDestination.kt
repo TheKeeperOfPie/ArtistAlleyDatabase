@@ -14,6 +14,9 @@ sealed interface AlleyDestination : NavKey {
     data object Home : AlleyDestination
 
     @Serializable
+    data object AboutLibraries: AlleyDestination
+
+    @Serializable
     data class ArtistDetails(
         val year: DataYear,
         val id: String,
@@ -115,6 +118,7 @@ sealed interface AlleyDestination : NavKey {
     data class StampRallyMap(val year: DataYear, val id: String) : AlleyDestination
 
     fun toEncodedRoute() = when (this) {
+        AboutLibraries -> "libraries"
         is ArtistDetails -> "artist/${year.serializedName}/$id"
         is ArtistMap -> "artist/map/$id"
         is ArtistsList -> "artists/${year.serializedName}/$serializedBooths"
@@ -172,6 +176,7 @@ sealed interface AlleyDestination : NavKey {
                     "changelog" -> Changelog
                     "export" -> Export
                     "import" -> Import(parts.getOrNull(1).orEmpty())
+                    "libraries" -> AboutLibraries
                     "merch" -> when (parts.size) {
                         4 if parts[1] == "map" -> MerchMap(
                             year = parts[2].toDataYearOrNull(),

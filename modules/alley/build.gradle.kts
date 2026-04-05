@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.util.Properties
 
 plugins {
+    id("about-libraries")
     id("library-android")
     id("library-compose")
     id("library-desktop")
@@ -34,6 +35,7 @@ kotlin {
             implementation(projects.modules.utilsCompose)
 
             implementation(compose.material3AdaptiveNavigationSuite)
+            implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.coil3.coil.compose)
             implementation(libs.compose.placeholder.material3)
             implementation(libs.composeunstyled.primitives)

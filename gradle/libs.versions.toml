@@ -1,4 +1,5 @@
 [versions]
+aboutLibraries = "13.2.1"
 android-gradle = "8.13.2"
 androidx-activity = "1.13.0"
 androidx-annotation = "1.9.1"
@@ -79,6 +80,7 @@ whyoleg-cryptography = "0.6.0"
 xml-util = "1.0.0-rc2"
 
 [libraries]
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }      # Material 3 UI
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidx-annotation" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidx-browser" }
@@ -106,6 +108,7 @@ coil3-coil-network-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-kt
 coil3-coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 colormath-ext-jetpack-compose = { group = "com.github.ajalt.colormath", name = "colormath-ext-jetpack-compose", version.ref = "colormath" }
 com-google-devtools-ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "google-ksp" }
+com-mikepenz-aboutlibraries-plugin-gradle-plugin = { group ="com.mikepenz.aboutlibraries.plugin", name = "com.mikepenz.aboutlibraries.plugin.gradle.plugin", version.ref = "aboutLibraries" }
 compose-compiler-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin-core" }
 compose-placeholder-material3 = { group = "com.eygraber", name = "compose-placeholder-material3", version.ref = "placeholder" }
 composeunstyled-primitives = { group = "com.composables", name = "composeunstyled-primitives", version.ref = "compose-unstyled" }
@@ -213,6 +216,7 @@ com-apollographql-apollo3-external = { id = "com.apollographql.apollo3.external"
 com-codingfeline-buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "build-konfig" }
 com-github-ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "ben-manes-versions" }
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
+com-mikepenz-aboutlibraries-plugin = { id ="com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 dev-zacsweers-metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 org-jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose-multiplatform-plugin" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-core" }

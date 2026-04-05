@@ -22,6 +22,8 @@ plugins {
     id(libs.plugins.com.android.application.get().pluginId).apply(false)
     id(libs.plugins.com.android.kotlin.multiplatform.library.get().pluginId).apply(false)
     id(libs.plugins.org.jetbrains.kotlin.android.get().pluginId).apply(false)
+    id(libs.plugins.com.mikepenz.aboutlibraries.plugin.get().pluginId) version
+            libs.plugins.com.mikepenz.aboutlibraries.plugin.get().version.toString() apply false
 
     alias(libs.plugins.com.github.ben.manes.versions)
 }

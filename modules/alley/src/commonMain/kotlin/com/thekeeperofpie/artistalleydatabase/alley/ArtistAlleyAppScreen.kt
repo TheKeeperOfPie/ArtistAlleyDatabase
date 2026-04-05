@@ -36,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.models.StampRallyDatabaseEnt
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapScreen
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchScreen
+import com.thekeeperofpie.artistalleydatabase.alley.settings.AboutLibrariesScreen
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapScreen
 import com.thekeeperofpie.artistalleydatabase.anilist.data.LocalLanguageOptionMedia
@@ -315,6 +316,16 @@ object ArtistAlleyAppScreen {
                     onOpenExport = {
                         navStack.navigate(AlleyDestination.Export)
                     },
+                    onOpenLibraries = {
+                        navStack.navigate(AlleyDestination.AboutLibraries)
+                    }
+                )
+            }
+
+            sharedElementEntry<AlleyDestination.AboutLibraries> {
+                AboutLibrariesScreen(
+                    graph = graph,
+                    onNavigateBack = navStack::onBack,
                 )
             }
 

@@ -14,11 +14,15 @@ import com.thekeeperofpie.artistalleydatabase.alley.map.favorites.FavoritesSortF
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.details.StampRallyDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.map.StampRallyMapViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.rallies.search.StampRallySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.alley.settings.AboutLibrariesProvider
+import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleyAboutLibrariesProvider
 import com.thekeeperofpie.artistalleydatabase.alley.settings.AlleySettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.settings.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.tags.TagsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.tags.map.TagMapViewModel
+import dev.zacsweers.metro.IntoSet
 import dev.zacsweers.metro.Provider
+import dev.zacsweers.metro.Provides
 
 interface ArtistAlleyGraph {
 
@@ -42,4 +46,9 @@ interface ArtistAlleyGraph {
     val qrCodeViewModel: Provider<QrCodeViewModel>
 
     val settings: ArtistAlleySettings
+    val aboutLibrariesProviders: Set<AboutLibrariesProvider>
+
+    @IntoSet
+    @Provides
+    fun provideAlleyAboutLibrariesProvider(): AboutLibrariesProvider = AlleyAboutLibrariesProvider
 }

@@ -238,6 +238,8 @@
     <string name="alley_settings_clear_confirm">Delete user data</string>
     <string name="alley_settings_clear_cancel">Cancel</string>
 
+    <string name="alley_settings_open_libraries">About libraries</string>
+
     <string name="alley_author_link">GitHub link</string>
     <string name="alley_server_link">Discord link</string>
     <string name="alley_sheet_link">Spreadsheet link</string>
@@ -385,4 +387,6 @@
     <string name="alley_changelog_title">What's new</string>
     <string name="alley_changelog_title_added">ADDED</string>
     <string name="alley_changelog_title_updated">UPDATED</string>
+
+    <string name="alley_libraries_title">Libraries</string>
 </resources>

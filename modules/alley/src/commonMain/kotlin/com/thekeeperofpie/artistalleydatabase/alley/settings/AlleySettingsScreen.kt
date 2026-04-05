@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +60,7 @@ import artistalleydatabase.modules.alley.generated.resources.alley_settings_impo
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_file
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_success
 import artistalleydatabase.modules.alley.generated.resources.alley_settings_import_summary
+import artistalleydatabase.modules.alley.generated.resources.alley_settings_open_libraries
 import artistalleydatabase.modules.alley.generated.resources.alley_sheet_link
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyGraph
 import com.thekeeperofpie.artistalleydatabase.alley.PlatformSpecificConfig
@@ -103,6 +105,7 @@ internal fun AlleySettingsScreen(
     graph: ArtistAlleyGraph,
     onNavigateBack: () -> Unit,
     onOpenExport: () -> Unit,
+    onOpenLibraries: () -> Unit,
 ) {
     val viewModel = viewModel { graph.alleySettingsViewModel() }
     Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
@@ -113,7 +116,7 @@ internal fun AlleySettingsScreen(
             modifier = Modifier.widthIn(max = 1200.dp),
         ) {
             when (it.id) {
-                "header" -> Header()
+                "header" -> Header(onOpenLibraries)
                 "export" -> ExportSection(onOpenExport)
                 "import" -> ImportSection(
                     state = { viewModel.state.importState },
@@ -135,7 +138,7 @@ internal fun AlleySettingsScreen(
 }
 
 @Composable
-private fun Header() {
+private fun Header(onOpenLibraries: () -> Unit) {
     OutlinedCard(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val colorScheme = MaterialTheme.colorScheme
@@ -183,28 +186,39 @@ private fun Header() {
                 modifier = Modifier.weight(1f).padding(16.dp)
             )
 
-            val uriHandler = LocalUriHandler.current
+            Column(
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
+                Row {
+                    val uriHandler = LocalUriHandler.current
 
-            TooltipIconButton(
-                icon = Logo.GITHUB.icon,
-                tooltipText = BuildKonfig.authorTwoUrl,
-                onClick = { uriHandler.openUri(BuildKonfig.authorTwoUrl) },
-                contentDescription = stringResource(Res.string.alley_author_link),
-            )
+                    TooltipIconButton(
+                        icon = Logo.GITHUB.icon,
+                        tooltipText = BuildKonfig.authorTwoUrl,
+                        onClick = { uriHandler.openUri(BuildKonfig.authorTwoUrl) },
+                        contentDescription = stringResource(Res.string.alley_author_link),
+                    )
 
-            TooltipIconButton(
-                icon = Logo.DISCORD.icon,
-                tooltipText = BuildKonfig.serverUrl,
-                onClick = { uriHandler.openUri(BuildKonfig.serverUrl) },
-                contentDescription = stringResource(Res.string.alley_server_link),
-            )
+                    TooltipIconButton(
+                        icon = Logo.DISCORD.icon,
+                        tooltipText = BuildKonfig.serverUrl,
+                        onClick = { uriHandler.openUri(BuildKonfig.serverUrl) },
+                        contentDescription = stringResource(Res.string.alley_server_link),
+                    )
 
-            TooltipIconButton(
-                icon = Icons.Default.Description,
-                tooltipText = BuildKonfig.sheetLink,
-                onClick = { uriHandler.openUri(BuildKonfig.sheetLink) },
-                contentDescription = stringResource(Res.string.alley_sheet_link),
-            )
+                    TooltipIconButton(
+                        icon = Icons.Default.Description,
+                        tooltipText = BuildKonfig.sheetLink,
+                        onClick = { uriHandler.openUri(BuildKonfig.sheetLink) },
+                        contentDescription = stringResource(Res.string.alley_sheet_link),
+                    )
+                }
+
+                FilledTonalButton(onClick = onOpenLibraries) {
+                    Text(stringResource(Res.string.alley_settings_open_libraries))
+                }
+            }
         }
     }
 }
@@ -534,7 +548,7 @@ private fun FaqSection(onInstallClick: () -> Unit, onOpenExport: () -> Unit) {
 @Preview
 @Composable
 private fun HeaderPreview() = PreviewDark {
-    Header()
+    Header(onOpenLibraries = {})
 }
 
 @Preview

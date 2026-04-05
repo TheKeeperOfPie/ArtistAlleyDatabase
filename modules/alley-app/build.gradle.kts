@@ -8,6 +8,7 @@ import java.util.Properties
 import java.util.zip.CRC32
 
 plugins {
+    id("about-libraries")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -347,6 +348,7 @@ configurations.all {
 // Replicates Workbox InjectManifest since configuring that doesn't seem to work
 tasks.register("webRelease") {
     outputs.upToDateWhen { false }
+    dependsOn("exportLibraryDefinitions")
     dependsOn(":modules:alley:user:verifySqlDelightMigration")
     dependsOn(
         buildBothWebVariants,
