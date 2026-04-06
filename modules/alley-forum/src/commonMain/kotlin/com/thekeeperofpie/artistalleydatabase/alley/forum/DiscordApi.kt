@@ -18,7 +18,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.jsonIo
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -82,7 +82,7 @@ internal object DiscordApi {
     }
 
     private suspend fun HttpResponse.assertSuccess() {
-        if (status != HttpStatusCode.OK) {
+        if (!status.isSuccess()) {
             println("Failed request ${this.request.url}: ${bodyAsText()}")
         }
     }

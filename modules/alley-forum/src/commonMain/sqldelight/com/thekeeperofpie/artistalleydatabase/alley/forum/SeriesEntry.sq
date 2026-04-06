@@ -1,0 +1,2 @@
+getSeries:
+SELECT * FROM seriesEntry;
