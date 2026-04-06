@@ -9,6 +9,7 @@ data class Thread(
     val name: String?,
     @SerialName("thread_metadata")
     val metadata: Metadata?,
+    val flags: ChannelFlags? = null,
 ) {
     @Serializable
     data class Metadata(

@@ -40,6 +40,7 @@ kotlin {
             implementation(libs.ktor.client.java)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.sqldelight.sqlite.driver)
+            implementation(projects.modules.alley)
             implementation(projects.modules.alley.data)
             implementation(projects.modules.alley.models)
             implementation(projects.modules.discord)

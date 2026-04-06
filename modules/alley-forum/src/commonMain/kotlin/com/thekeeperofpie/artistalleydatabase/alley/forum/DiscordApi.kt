@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.alley.forum
 
 import com.thekeeperofpie.artistalleydatabase.alley.forum.secrets.BuildKonfig
+import com.thekeeperofpie.artistalleydatabase.discord.Channel
 import com.thekeeperofpie.artistalleydatabase.discord.CreateMessage
 import com.thekeeperofpie.artistalleydatabase.discord.CreateThread
 import com.thekeeperofpie.artistalleydatabase.discord.Message
@@ -46,13 +47,25 @@ internal object DiscordApi {
         client.get("guilds/${BuildKonfig.discordGuildId}/threads/active")
             .body<ThreadsList>()
 
+    suspend fun getChannel(channelId: String) =
+        client.get("channels/$channelId").body<Channel>()
+
     suspend fun getChannelMessage(channelId: String, messageId: String) =
         client.get("channels/$channelId/messages/$messageId")
             .body<Message>()
 
-    suspend fun createThread(channelId: String, title: String, message: String) {
+    suspend fun createThread(
+        channelId: String,
+        title: String,
+        message: String,
+    ) {
         client.post("channels/$channelId/threads") {
-            setBody(CreateThread(name = title, message = CreateMessage(message)))
+            setBody(
+                CreateThread(
+                    name = title,
+                    message = CreateMessage(message),
+                )
+            )
         }
     }
 
