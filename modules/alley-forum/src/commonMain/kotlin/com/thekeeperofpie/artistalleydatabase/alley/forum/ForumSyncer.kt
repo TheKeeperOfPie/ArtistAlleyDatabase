@@ -14,6 +14,8 @@ import com.thekeeperofpie.artistalleydatabase.alley.utils.AlleyUtils
 import com.thekeeperofpie.artistalleydatabase.discord.ChannelFlag
 import com.thekeeperofpie.artistalleydatabase.discord.ForumLayout
 import com.thekeeperofpie.artistalleydatabase.discord.Thread
+import io.github.petertrr.diffutils.text.DiffRow
+import io.github.petertrr.diffutils.text.DiffRowGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -70,7 +72,7 @@ internal object ForumSyncer {
         }
     }
 
-    suspend fun syncThreads() = withContext(Dispatchers.IO) {
+    suspend fun syncThreads(range: ClosedRange<Booth>? = null) = withContext(Dispatchers.IO) {
         val database = AlleySqlDatabase(
             driver = createDriver(),
             artistEntryAnimeExpo2026Adapter = ColumnAdapters.artistEntryAnimeExpo2026Adapter,
@@ -78,34 +80,62 @@ internal object ForumSyncer {
         val artists = database.artistEntryAnimeExpo2026Queries.getArtists()
             .awaitAsList()
             .filterNot { it.booth.isNullOrBlank() }
-            .take(10)
+            .filter {
+                range ?: return@filter true
+                val booth = it.booth?.let(Booth::fromStringOrNull)
+                booth != null && booth in range
+            }
             .map { it to it.threadContent }
             .shuffled()
 
         val threadsList = DiscordApi.getThreads(BuildKonfig.discordForumChannelId)
+        println("Threads = ${threadsList.threads.map { it.name }}")
 
         val threads = threadsList.threads
+            .filter {
+                val flags = it.flags
+                flags == null || (flags.flags and ChannelFlag.PINNED.flag) == 0
+            }
             .map {
                 delay(1.seconds)
-                it to DiscordApi.getChannelMessage(it.id, it.id)
+                val threadBooth = it.name?.substringBefore("-")?.trim()
+                    ?.let(Booth::fromStringOrNull)
+                val message = if (threadBooth == null || range == null || threadBooth in range) {
+                    println("Fetching ${it.name}")
+                    DiscordApi.getChannelMessage(it.id, it.id)
+                } else {
+                    null
+                }
+                it to message
             }
             .toMutableSet()
 
         val missing = mutableListOf<ArtistEntryAnimeExpo2026>()
         val changed = mutableListOf<Pair<ArtistEntryAnimeExpo2026, Thread>>()
         artists.forEach { (artist, expectedContent) ->
-            val thread = threads.find { it.first.name == artist.threadTitle }
-            threads.remove(thread)
-            if (thread == null) {
+            val pair = threads.find { it.first.name == artist.threadTitle }
+            threads.remove(pair)
+            if (pair == null) {
                 missing += artist
-            } else if (thread.second.content != expectedContent) {
-                changed += artist to thread.first
+            } else if (pair.second?.content?.trim()?.removeSuffix("\n") !=
+                expectedContent.trim().removeSuffix("\n")
+            ) {
+                val original = pair.second?.content.orEmpty().lines()
+                val revised = expectedContent.lines()
+                val diff = DiffRowGenerator().generateDiffRows(original, revised)
+                println("Diff for ${pair.first.name}: ")
+                diff.withIndex()
+                    .filter { it.value.tag != DiffRow.Tag.EQUAL }
+                    .forEach { println("\t ${it.index}: ${it.value}") }
+                changed += artist to pair.first
             }
         }
 
         println("Missing = ${missing.sortedBy { it.booth }.map { it.threadTitle }}")
         println("Changed = ${changed.sortedBy { it.first.booth }.map { it.first.threadTitle }}")
-        println("Removed = ${threads.map { it.first.name }}")
+        if (range == null) {
+            println("Removed = ${threads.map { it.first.name }}")
+        }
 
         missing.forEach {
             delay(1.seconds)
@@ -131,9 +161,11 @@ internal object ForumSyncer {
             println("Updated ${it.second.name}")
         }
 
-        threads.forEach {
-            delay(1.seconds)
-            DiscordApi.modifyThread(threadId = it.first.id, archived = true)
+        if (range == null) {
+            threads.forEach {
+                delay(1.seconds)
+                DiscordApi.modifyThread(threadId = it.first.id, archived = true)
+            }
         }
     }
 

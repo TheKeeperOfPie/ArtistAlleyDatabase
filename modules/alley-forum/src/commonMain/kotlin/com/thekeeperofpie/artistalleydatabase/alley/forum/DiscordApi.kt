@@ -66,7 +66,7 @@ internal object DiscordApi {
                     message = CreateMessage(message),
                 )
             )
-        }
+        }.assertSuccess()
     }
 
     suspend fun editMessage(channelId: String, messageId: String, message: String) {
@@ -78,7 +78,7 @@ internal object DiscordApi {
     suspend fun modifyThread(threadId: String, name: String? = null, archived: Boolean? = null) {
         client.patch("channels/$threadId") {
             setBody(ModifyThread(name = name, archived = archived))
-        }
+        }.assertSuccess()
     }
 
     private suspend fun HttpResponse.assertSuccess() {
